@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Logging
         /// <param name="logger"></param>
         /// <param name="eventType"></param>
         /// <returns></returns>
-        public static bool IsEnabled(this ILogger logger, TraceEventType eventType)
+        public static bool IsEnabled(this ILogger logger, TraceType eventType)
         {
             if (logger == null)
             {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.WriteCore(TraceEventType.Verbose, 0, data, null, TheMessage);
+            logger.WriteCore(TraceType.Verbose, 0, data, null, TheMessage);
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.WriteCore(TraceEventType.Information, 0, message, null, TheMessage);
+            logger.WriteCore(TraceType.Information, 0, message, null, TheMessage);
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.WriteCore(TraceEventType.Warning, 0,
+            logger.WriteCore(TraceType.Warning, 0,
                 string.Format(CultureInfo.InvariantCulture, message, args), null, TheMessage);
         }
 
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.WriteCore(TraceEventType.Warning, 0, message, error, TheMessageAndError);
+            logger.WriteCore(TraceType.Warning, 0, message, error, TheMessageAndError);
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.WriteCore(TraceEventType.Error, 0, message, null, TheMessage);
+            logger.WriteCore(TraceType.Error, 0, message, null, TheMessage);
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.WriteCore(TraceEventType.Error, 0, message, error, TheMessageAndError);
+            logger.WriteCore(TraceType.Error, 0, message, error, TheMessageAndError);
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.WriteCore(TraceEventType.Critical, 0, message, null, TheMessage);
+            logger.WriteCore(TraceType.Critical, 0, message, null, TheMessage);
         }
 
         /// <summary>
@@ -153,7 +153,7 @@ namespace Microsoft.AspNet.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.WriteCore(TraceEventType.Critical, 0, message, error, TheMessageAndError);
+            logger.WriteCore(TraceType.Critical, 0, message, error, TheMessageAndError);
         }
     }
 }

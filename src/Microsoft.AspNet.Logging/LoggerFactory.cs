@@ -9,7 +9,9 @@ namespace Microsoft.AspNet.Logging
     {
         static LoggerFactory()
         {
+#if NET45
             Default = new DiagnosticsLoggerFactory();
+#endif
         }
 
         /// <summary>

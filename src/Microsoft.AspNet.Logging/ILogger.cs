@@ -21,6 +21,6 @@ namespace Microsoft.AspNet.Logging
         /// <param name="exception"></param>
         /// <param name="formatter"></param>
         /// <returns></returns>
-        bool WriteCore(TraceEventType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter);
+        bool WriteCore(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter);
     }
 }

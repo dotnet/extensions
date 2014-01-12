@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
-
+#if NET45
 using System;
 using System.Diagnostics;
 
@@ -14,8 +14,10 @@ namespace Microsoft.AspNet.Logging
             _traceSource = traceSource;
         }
 
-        public bool WriteCore(TraceEventType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public bool WriteCore(TraceType traceType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
+            var eventType = (TraceEventType)traceType;
+
             if (!_traceSource.Switch.ShouldTrace(eventType))
             {
                 return false;
@@ -28,3 +30,4 @@ namespace Microsoft.AspNet.Logging
         }
     }
 }
+#endif
