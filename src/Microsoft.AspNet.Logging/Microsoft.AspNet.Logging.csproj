@@ -38,7 +38,6 @@
     <Compile Include="ILogger.cs" />
     <Compile Include="ILoggerFactory.cs" />
     <Compile Include="LoggerExtensions.cs" />
-    <Compile Include="LoggerFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TraceType.cs" />
   </ItemGroup>
