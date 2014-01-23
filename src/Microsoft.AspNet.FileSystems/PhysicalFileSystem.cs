@@ -59,12 +59,16 @@ namespace Microsoft.Owin.FileSystems
 
         private static string GetFullRoot(string root)
         {
+#if NET45
             var applicationBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+#else // CORECLR_TODO: This is absolutely wrong
+            var applicationBase = Directory.GetCurrentDirectory();
+#endif
             var fullRoot = Path.GetFullPath(Path.Combine(applicationBase, root));
             if (!fullRoot.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
             {
                 // When we do matches in GetFullPath, we want to only match full directory names.
-                fullRoot += Path.DirectorySeparatorChar; 
+                fullRoot += Path.DirectorySeparatorChar;
             }
             return fullRoot;
         }
@@ -135,18 +139,18 @@ namespace Microsoft.Owin.FileSystems
                         return false;
                     }
 
-                    FileSystemInfo[] physicalInfos = directoryInfo.GetFileSystemInfos();
-                    var virtualInfos = new IFileInfo[physicalInfos.Length];
-                    for (int index = 0; index != physicalInfos.Length; ++index)
+                    IEnumerable<FileSystemInfo> physicalInfos = directoryInfo.EnumerateFileSystemInfos();
+                    var virtualInfos = new List<IFileInfo>();
+                    foreach (var fileSystemInfo in physicalInfos)
                     {
-                        var fileInfo = physicalInfos[index] as FileInfo;
+                        var fileInfo = fileSystemInfo as FileInfo;
                         if (fileInfo != null)
                         {
-                            virtualInfos[index] = new PhysicalFileInfo(fileInfo);
+                            virtualInfos.Add(new PhysicalFileInfo(fileInfo));
                         }
                         else
                         {
-                            virtualInfos[index] = new PhysicalDirectoryInfo((DirectoryInfo)physicalInfos[index]);
+                            virtualInfos.Add(new PhysicalDirectoryInfo((DirectoryInfo)fileSystemInfo));
                         }
                     }
                     contents = virtualInfos;
@@ -208,9 +212,14 @@ namespace Microsoft.Owin.FileSystems
 
             public Stream CreateReadStream()
             {
+#if NET45
                 // Note: Buffer size must be greater than zero, even if the file size is zero.
                 return new FileStream(PhysicalPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1024 * 64,
                     FileOptions.Asynchronous | FileOptions.SequentialScan);
+#else
+                // Note: Buffer size must be greater than zero, even if the file size is zero.
+                return new FileStream(PhysicalPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1024 * 64);
+#endif
             }
         }
 
