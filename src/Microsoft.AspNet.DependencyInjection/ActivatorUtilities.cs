@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
-namespace Microsoft.AspNet.CoreServices
+namespace Microsoft.AspNet.DependencyInjection
 {
     /// <summary>
     /// Helper code for the various activator services.
