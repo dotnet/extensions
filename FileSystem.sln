@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.FileSystem
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.FileSystems.k10", "src\Microsoft.AspNet.FileSystems\Microsoft.AspNet.FileSystems.k10.csproj", "{66BBBF13-8B97-4F09-8B1A-A44FE3F9B3CE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A1477614-E825-4204-A684-385004B63AEB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3F879512-C270-4305-8D1C-FE34D3574DDA} = {A1477614-E825-4204-A684-385004B63AEB}
+		{66BBBF13-8B97-4F09-8B1A-A44FE3F9B3CE} = {A1477614-E825-4204-A684-385004B63AEB}
 	EndGlobalSection
 EndGlobal
