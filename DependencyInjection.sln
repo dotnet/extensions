@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Dependency
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.DependencyInjection.k10", "src\Microsoft.AspNet.DependencyInjection\Microsoft.AspNet.DependencyInjection.k10.csproj", "{A8E92356-6511-4DB6-AAE1-CA497F73F4A3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D26F6F80-63EE-4081-A814-EF3DBABE24D9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BFAE6189-50E9-49EA-B863-7F733998810B} = {D26F6F80-63EE-4081-A814-EF3DBABE24D9}
+		{A8E92356-6511-4DB6-AAE1-CA497F73F4A3} = {D26F6F80-63EE-4081-A814-EF3DBABE24D9}
 	EndGlobalSection
 EndGlobal
