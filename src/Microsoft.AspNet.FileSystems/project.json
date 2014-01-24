@@ -1,6 +1,7 @@
 {
-    "configurations": {
-        "net45" : {},
-        "k10" : {}
-    }
+  "version": "0.1-alpha-*",
+  "configurations": {
+    "net45" : {},
+    "k10" : {}
+  }
 }
