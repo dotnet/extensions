@@ -29,9 +29,9 @@ namespace Microsoft.AspNet.Configuration
             return this;
         }
 
-        public ConfigurationContainer AddFile(string path)
+        public ConfigurationContainer AddIniFile(string path)
         {
-            return Add(new FileConfiguration(path));
+            return Add(new IniConfigurationFile(path));
         }
 #if NET45
         public ConfigurationContainer AddCommandLine()
