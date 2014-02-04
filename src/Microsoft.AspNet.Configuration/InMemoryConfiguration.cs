@@ -3,15 +3,15 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Configuration
 {
-    public class ManualConfiguration : IConfiguration
+    public class InMemoryConfiguration : IConfiguration
     {
         private IDictionary<string, string> _data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        public ManualConfiguration()
+        public InMemoryConfiguration()
         {
         }
 
-        public ManualConfiguration(IEnumerable<KeyValuePair<string, string>> initialData)
+        public InMemoryConfiguration(IEnumerable<KeyValuePair<string, string>> initialData)
         {
             foreach (var pair in initialData)
             {

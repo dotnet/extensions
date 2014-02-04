@@ -28,20 +28,5 @@ namespace Microsoft.AspNet.Configuration
             _configurations.Add(configuration);
             return this;
         }
-
-        public ConfigurationContainer AddIniFile(string path)
-        {
-            return Add(new IniConfigurationFile(path));
-        }
-#if NET45
-        public ConfigurationContainer AddCommandLine()
-        {
-            return Add(new CommandLineConfiguration());
-        }
-#endif
-        public ConfigurationContainer AddEnvironment()
-        {
-            return Add(new EnvironmentConfiguration());
-        }
     }
 }
