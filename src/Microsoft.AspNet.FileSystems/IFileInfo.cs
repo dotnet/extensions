@@ -3,7 +3,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.Owin.FileSystems
+namespace Microsoft.AspNet.FileSystems
 {
     /// <summary>
     /// Represents a file in the given file system.

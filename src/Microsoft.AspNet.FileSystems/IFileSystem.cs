@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Owin.FileSystems
+namespace Microsoft.AspNet.FileSystems
 {
     /// <summary>
     /// A file system abstraction

@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.Owin.FileSystems
+namespace Microsoft.AspNet.FileSystems
 {
     /// <summary>
     /// Looks up files using the on-disk file system

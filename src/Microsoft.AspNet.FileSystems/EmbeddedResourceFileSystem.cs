@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-namespace Microsoft.Owin.FileSystems
+namespace Microsoft.AspNet.FileSystems
 {
     /// <summary>
     /// Looks up files using embedded resources in the specified assembly.
