@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 
 namespace Microsoft.AspNet.FileSystems
 {
@@ -61,8 +62,8 @@ namespace Microsoft.AspNet.FileSystems
         {
 #if NET45
             var applicationBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
-#else // CORECLR_TODO: This is absolutely wrong
-            var applicationBase = Directory.GetCurrentDirectory();
+#else // CORECLR_TODO: ApplicationBase
+            var applicationBase = (string)typeof(AppDomain).GetRuntimeMethod("GetData", new[] { typeof(string) }).Invoke(AppDomain.CurrentDomain, new object[] { "APPBASE" });
 #endif
             var fullRoot = Path.GetFullPath(Path.Combine(applicationBase, root));
             if (!fullRoot.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
