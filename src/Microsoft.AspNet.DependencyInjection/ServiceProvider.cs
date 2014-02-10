@@ -160,5 +160,30 @@ namespace Microsoft.AspNet.DependencyInjection
             _services[serviceType] = serviceFactory;
             return this;
         }
+
+        public virtual ServiceProvider Add(IServiceDescriptor serviceDescriptor)
+        {
+            if (serviceDescriptor.ImplementationType != null)
+            {
+                return Add(
+                    serviceDescriptor.ServiceType,
+                    serviceDescriptor.ImplementationType);
+            }
+            else
+            {
+                return AddInstance(
+                    serviceDescriptor.ServiceType,
+                    serviceDescriptor.ImplementationInstance);
+            }
+        }
+
+        public virtual ServiceProvider Add(params IEnumerable<IServiceDescriptor>[] serviceDescriptors)
+        {
+            foreach (var descriptor in serviceDescriptors.SelectMany(descriptors => descriptors))
+            {
+                Add(descriptor);
+            }
+            return this;
+        }
     }
 }
