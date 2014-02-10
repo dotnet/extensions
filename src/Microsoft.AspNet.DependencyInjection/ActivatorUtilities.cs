@@ -46,6 +46,17 @@ namespace Microsoft.AspNet.DependencyInjection
         }
 
         /// <summary>
+        /// Instantiate an object of the given type, using constructor service injection if possible.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static T CreateInstance<T>(IServiceProvider services)
+        {
+            return (T)CreateInstance(services, typeof(T));
+        }
+
+        /// <summary>
         /// Creates a factory to instantiate a type using constructor service injection if possible.
         /// </summary>
         /// <param name="type"></param>
