@@ -1,0 +1,9 @@
+{
+  "version": "0.1-alpha-*",
+  "dependencies": {
+    "structuremap": "2.6.4.1"
+  },
+  "configurations": {
+    "net45": {}
+  }
+}

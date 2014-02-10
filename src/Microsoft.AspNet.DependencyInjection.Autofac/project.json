@@ -1,0 +1,9 @@
+{
+  "version": "0.1-alpha-*",
+  "dependencies": {
+    "Autofac": "3.3.0"
+  },
+  "configurations": {
+    "net45": {}
+  }
+}

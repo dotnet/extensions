@@ -1,0 +1,9 @@
+{
+  "version": "0.1-alpha-*",
+  "dependencies": {
+    "Castle.Windsor": "3.2.1"
+  },
+  "configurations": {
+    "net45": {}
+  }
+}

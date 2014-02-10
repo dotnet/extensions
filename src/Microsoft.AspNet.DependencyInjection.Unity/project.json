@@ -1,0 +1,9 @@
+{
+  "version": "0.1-alpha-*",
+  "dependencies": {
+    "Unity": "3.0.1304.1"
+  },
+  "configurations": {
+    "net45": {}
+  }
+}
