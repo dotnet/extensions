@@ -3,7 +3,7 @@ namespace Microsoft.AspNet.DependencyInjection
     public enum LifecycleKind
     {
         Singleton,
-        PerScope,
+        Scoped,
         Transient
     }
 }
