@@ -1,0 +1,12 @@
+{
+  "version": "0.1-alpha-*",
+  "dependencies": {
+    "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
+    "Microsoft.AspNet.DependencyInjection.Autofac": "0.1-alpha-*",
+    "Autofac": "3.3.0",
+    "xunit": "1.9.2"
+  },
+  "configurations": {
+    "net45": {}
+  }
+}
