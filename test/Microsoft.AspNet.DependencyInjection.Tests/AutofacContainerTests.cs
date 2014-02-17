@@ -10,10 +10,19 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
         {
             var builder = new ContainerBuilder();
             builder.RegisterType<AutofacServiceProvider>().As<IServiceProvider>();
+
             foreach (var descriptor in TestServices.DefaultServices())
             {
-                builder.RegisterType(descriptor.ImplementationType).As(descriptor.ServiceType);
+                if (descriptor.ImplementationType != null)
+                {
+                    builder.RegisterType(descriptor.ImplementationType).As(descriptor.ServiceType);
+                }
+                else
+                {
+                    builder.RegisterInstance(descriptor.ImplementationInstance).As(descriptor.ServiceType);
+                }
             }
+
             IContainer container = builder.Build();
             return container.Resolve<IServiceProvider>();
         }

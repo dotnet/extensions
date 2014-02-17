@@ -21,6 +21,28 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
             Assert.Equal("FakeServiceSimpleMethod", service.SimpleMethod());
         }
 
+        public void ServiceInstanceCanBeResolved()
+        {
+            var container = CreateContainer();
+
+            var service = container.GetService<IFakeServiceInstance>();
+
+            Assert.NotNull(service);
+            Assert.Equal("Instance", service.SimpleMethod());
+        }
+
+        [Fact]
+        public void TransientServiceCanBeResolved()
+        {
+            var container = CreateContainer();
+
+            var service1 = container.GetService<IFakeService>();
+            var service2 = container.GetService<IFakeService>();
+
+            Assert.NotNull(service1);
+            Assert.NotEqual(service1, service2);
+        }
+
         [Fact]
         public void SingleServiceCanBeIEnumerableResolved()
         {

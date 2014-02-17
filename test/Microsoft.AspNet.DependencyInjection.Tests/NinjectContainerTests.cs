@@ -33,7 +33,14 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
             {
                 foreach (var descriptor in _serviceDescriptors)
                 {
-                    Bind(descriptor.ServiceType).To(descriptor.ImplementationType);
+                    if (descriptor.ImplementationType != null)
+                    {
+                        Bind(descriptor.ServiceType).To(descriptor.ImplementationType);
+                    }
+                    else
+                    {
+                        Bind(descriptor.ServiceType).ToConstant(descriptor.ImplementationInstance);
+                    }
                 }
             }
         }

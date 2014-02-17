@@ -6,11 +6,18 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
 {
-    public class FakeService : IFakeService
+    public class FakeService : IFakeService, IFakeServiceInstance
     {
+        public FakeService()
+        {
+            Message = "FakeServiceSimpleMethod";
+        }
+
+        public string Message { get; set; }
+
         public string SimpleMethod()
         {
-            return "FakeServiceSimpleMethod";
+            return Message;
         }
     }
 }
