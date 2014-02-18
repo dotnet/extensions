@@ -61,36 +61,8 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
 
             private object GetMultiService(Type collectionType)
             {
-                if (IsIEnumerable(collectionType))
-                {
-                    Type serviceType = collectionType.GetTypeInfo().GenericTypeArguments.Single();
-
-                    // _kernel.GetAll(Type) returns IEnumerable<object>.
-                    // We need to return IEnumerable<{serviceType}> so we copy everything
-                    // out into our own List<{serviceType}> and return that.
-                    IList services = CreateEmptyServiceList(serviceType);
-
-                    foreach (object service in _kernel.GetAll(serviceType))
-                    {
-                        services.Add(service);
-                    }
-
-                    return services;
-                }
-
-                return null;
-            }
-
-            private static bool IsIEnumerable(Type type)
-            {
-                return type.GetTypeInfo().IsGenericType &&
-                    type.GetGenericTypeDefinition() == typeof(IEnumerable<>);
-            }
-
-            private static IList CreateEmptyServiceList(Type serviceType)
-            {
-                Type listType = typeof(List<>).MakeGenericType(serviceType);
-                return (IList)Activator.CreateInstance(listType);
+                return MultiServiceHelpers.GetMultiService(collectionType,
+                    serviceType => _kernel.GetAll(serviceType));
             }
         }
     }
