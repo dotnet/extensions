@@ -1,5 +1,4 @@
-﻿#if NET45
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -18,6 +17,7 @@ namespace Microsoft.AspNet.FileSystems
         private readonly string _baseNamespace;
         private readonly DateTime _lastModified;
 
+#if NET45
         /// <summary>
         /// Initializes a new instance of the <see cref="EmbeddedResourceFileSystem" /> class using the calling
         /// assembly and empty base namespace.
@@ -26,6 +26,7 @@ namespace Microsoft.AspNet.FileSystems
             : this(Assembly.GetCallingAssembly())
         {
         }
+#endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EmbeddedResourceFileSystem" /> class using the specified
@@ -37,6 +38,7 @@ namespace Microsoft.AspNet.FileSystems
         {
         }
 
+#if NET45
         /// <summary>
         /// Initializes a new instance of the <see cref="EmbeddedResourceFileSystem" /> class using the calling
         /// assembly and specified base namespace.
@@ -46,6 +48,7 @@ namespace Microsoft.AspNet.FileSystems
             : this(Assembly.GetCallingAssembly(), baseNamespace)
         {
         }
+#endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EmbeddedResourceFileSystem" /> class using the specified
@@ -191,4 +194,3 @@ namespace Microsoft.AspNet.FileSystems
         }
     }
 }
-#endif
