@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.DependencyInjection.NestedProviders
 {
-    public class NestedProviderManager<T> : INestedProviderManagerAsync<T>
+    public class NestedProviderManager<T> : INestedProviderManagerAsync<T>, INestedProviderManager<T>
     {
         private readonly INestedProvider<T>[] _syncProviders;
         private readonly INestedProviderAsync<T>[] _asyncProviders;
