@@ -4,6 +4,6 @@ namespace Microsoft.AspNet.DependencyInjection
 {
     public interface INestedProviderManagerAsync<T>
     {
-        Task InvokeAsync(NestedProviderContext<T> context);
+        Task InvokeAsync(T context);
     }
 }

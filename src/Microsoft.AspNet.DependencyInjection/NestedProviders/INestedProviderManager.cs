@@ -2,6 +2,6 @@
 {
     interface INestedProviderManager<T>
     {
-        void Invoke(NestedProviderContext<T> context);
+        void Invoke(T context);
     }
 }

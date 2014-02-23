@@ -6,6 +6,6 @@ namespace Microsoft.AspNet.DependencyInjection
     {
         int Order { get; }
 
-        void Invoke(NestedProviderContext<T> context, Action callNext);
+        void Invoke(T context, Action callNext);
     }
 }
