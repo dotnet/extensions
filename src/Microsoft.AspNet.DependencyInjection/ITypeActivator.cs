@@ -4,6 +4,6 @@ namespace Microsoft.AspNet.DependencyInjection
 {
     public interface ITypeActivator
     {
-        object CreateInstance(Type instanceType);
+        object CreateInstance(Type instanceType, params object[] parameters);
     }
 }
