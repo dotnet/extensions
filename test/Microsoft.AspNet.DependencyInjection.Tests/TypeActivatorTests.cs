@@ -20,5 +20,21 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
 
             Assert.Equal("[FakeServiceSimpleMethod]", result);
         }
+
+        [Fact]
+        public void TypeActivatorAcceptsAnyNumberOfAdditionalConstructorParametersToProvide()
+        {
+            var serviceProvider = new ServiceProvider()
+                .Add<IFakeService, FakeService>()
+                .Add<ITypeActivator, TypeActivator>();
+
+            var typeActivator = serviceProvider.GetService<ITypeActivator>();
+
+            var anotherClass = typeActivator.CreateInstance<AnotherClassAcceptingData>("1", "2");
+
+            var result = anotherClass.LessSimpleMethod();
+
+            Assert.Equal("[FakeServiceSimpleMethod] 1 2", result);
+        }
     }
 }
