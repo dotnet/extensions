@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.DependencyInjection.NestedProviders
         public async Task InvokeAsync(T context)
         {
             var caller = new CallNextAsync(context, _asyncProviders);
-
+            
             await caller.CallNextProvider();
         }
 
