@@ -1,0 +1,12 @@
+{
+    "version": "0.1-alpha-*",
+    "dependencies": {
+        "System.Runtime": "",
+        "xunit2": "0.1-alpha-*",
+        "xunit.abstractions": "3.0.0-alpha-*"
+    },
+    "configurations": {
+        "net45": {},
+        "k10": {}
+    }
+}

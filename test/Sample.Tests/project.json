@@ -1,0 +1,18 @@
+{
+    "dependencies": {
+        "Xunit.KRunner": "",
+        "xunit2": "0.1-alpha-*",
+        "xunit2.assert": "0.1-alpha-*"
+    },
+    "commands": {
+        "test": "Xunit.KRunner"
+    },
+    "configurations": {
+        "net45": {
+            "dependencies": {
+                "System.Runtime": ""
+            }
+        },
+        "k10": {}
+    }
+}
