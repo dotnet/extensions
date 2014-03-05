@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
 {
-    public class FakeService : IFakeService, IFakeServiceInstance
+    public class FakeService : IFakeService, IFakeServiceInstance, IFakeSingletonService
     {
         public FakeService()
         {

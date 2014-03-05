@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Autofac;
+using Autofac.Builder;
 
 namespace Microsoft.AspNet.DependencyInjection.Autofac
 {
@@ -31,15 +32,37 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
                 {
                     builder
                         .RegisterType(serviceDescriptor.ImplementationType)
-                        .As(serviceDescriptor.ServiceType);
+                        .As(serviceDescriptor.ServiceType)
+                        .ConfigureLifecycle(serviceDescriptor.Lifecycle);
                 }
                 else
                 {
                     builder
                         .RegisterInstance(serviceDescriptor.ImplementationInstance)
-                        .As(serviceDescriptor.ServiceType);
+                        .As(serviceDescriptor.ServiceType)
+                        .ConfigureLifecycle(serviceDescriptor.Lifecycle);
                 }
             }
+        }
+
+        private static IRegistrationBuilder<object, T, SingleRegistrationStyle> ConfigureLifecycle<T>(
+                this IRegistrationBuilder<object, T, SingleRegistrationStyle> registrationBuilder,
+                LifecycleKind lifecycleKind)
+        {
+            switch (lifecycleKind)
+            {
+                case LifecycleKind.Singleton:
+                    registrationBuilder.SingleInstance();
+                    break;
+                case LifecycleKind.Scoped:
+                    registrationBuilder.InstancePerLifetimeScope();
+                    break;
+                case LifecycleKind.Transient:
+                    registrationBuilder.InstancePerDependency();
+                    break;
+            }
+
+            return registrationBuilder;
         }
 
         private class AutofacServiceProvider : IServiceProvider

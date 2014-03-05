@@ -13,7 +13,8 @@ namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
                 new ServiceDescriptor<IFakeMultipleService, FakeOneMultipleService>(),
                 new ServiceDescriptor<IFakeMultipleService, FakeTwoMultipleService>(),
                 new ServiceDescriptor<IFakeOuterService, FakeOuterService>(),
-                new ServiceInstanceDescriptor<IFakeServiceInstance>(new FakeService() { Message = "Instance" })
+                new ServiceInstanceDescriptor<IFakeServiceInstance>(new FakeService() { Message = "Instance" }),
+                new ServiceDescriptor<IFakeSingletonService, FakeService>(LifecycleKind.Singleton)
             };
         }
 
@@ -44,13 +45,15 @@ namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
 
         public class ServiceInstanceDescriptor<TService> : IServiceDescriptor
         {
-            public ServiceInstanceDescriptor(object instance, LifecycleKind lifecycle = LifecycleKind.Transient)
+            public ServiceInstanceDescriptor(object instance)
             {
                 ImplementationInstance = instance;
-                Lifecycle = lifecycle;
             }
 
-            public LifecycleKind Lifecycle { get; private set; }
+            public LifecycleKind Lifecycle
+            {
+                get { return LifecycleKind.Singleton; }
+            }
 
             public Type ServiceType
             {

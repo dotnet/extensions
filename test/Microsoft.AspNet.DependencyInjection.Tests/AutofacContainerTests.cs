@@ -2,6 +2,7 @@
 using Autofac;
 using Microsoft.AspNet.DependencyInjection.Autofac;
 using Microsoft.AspNet.DependencyInjection.Tests.Fakes;
+using Xunit;
 
 namespace Microsoft.AspNet.DependencyInjection.Tests
 {
@@ -15,6 +16,18 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
 
             IContainer container = builder.Build();
             return container.Resolve<IServiceProvider>();
+        }
+
+        [Fact]
+        public void SingletonServiceCanBeResolved()
+        {
+            var container = CreateContainer();
+
+            var service1 = container.GetService<IFakeSingletonService>();
+            var service2 = container.GetService<IFakeSingletonService>();
+
+            Assert.NotNull(service1);
+            Assert.Equal(service1, service2);
         }
 
         public class AutofacServiceProvider : IServiceProvider
