@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.AspNet.Configuration
+namespace Microsoft.AspNet.ConfigurationModel
 {
-    public class IniConfigurationFile : IConfiguration
+    public class IniConfigurationFile : BaseConfigurationSource
     {
-        private IDictionary<string, string> _data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        public string Path { get; set; }
 
         // http://en.wikipedia.org/wiki/INI_file
         /// <summary>
@@ -21,8 +21,15 @@ namespace Microsoft.AspNet.Configuration
         /// <param name="path">The path and file name to load.</param>
         public IniConfigurationFile(string path)
         {
+            Path = path;
+        }
+
+        public override void Load()
+        {
+            var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
             string sectionPrefix = string.Empty;
-            foreach (string rawLine in File.ReadLines(path))
+            foreach (string rawLine in File.ReadLines(Path))
             {
                 string line = rawLine.Trim();
                 // Ignore blank lines
@@ -59,18 +66,10 @@ namespace Microsoft.AspNet.Configuration
                     value = value.Substring(1, value.Length - 2);
                 }
 
-                _data[key] = value;
+                data[key] = value;
             }
-        }
 
-        public string Get(string key)
-        {
-            string value;
-            if (_data.TryGetValue(key, out value))
-            {
-                return value;
-            }
-            return null;
+            ReplaceData(data);
         }
     }
 }

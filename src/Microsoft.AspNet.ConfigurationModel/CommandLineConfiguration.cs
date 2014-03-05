@@ -1,20 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Configuration
+namespace Microsoft.AspNet.ConfigurationModel
 {
-    public class CommandLineConfiguration : IConfiguration
+    public class CommandLineConfiguration : BaseConfigurationSource
     {
-        private IDictionary<string, string> _data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        public string[] Args { get; set; }
+
 #if NET45
         public CommandLineConfiguration()
             : this(Environment.GetCommandLineArgs())
         {
+            Args = Environment.GetCommandLineArgs();
         }
 #endif
+
         public CommandLineConfiguration(string[] args)
         {
-            foreach (string pair in args)
+            Args = args;
+        }
+
+        public override void Load()
+        {
+            var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (string pair in Args)
             {
                 int split = pair.IndexOf('=');
                 if (split > 0)
@@ -26,19 +35,10 @@ namespace Microsoft.AspNet.Configuration
                         // Remove quotes
                         value = value.Substring(1, value.Length - 2);
                     }
-                    _data[key] = value;
+                    data[key] = value;
                 }
             }
-        }
-
-        public string Get(string key)
-        {
-            string value;
-            if (_data.TryGetValue(key, out value))
-            {
-                return value;
-            }
-            return null;
+            ReplaceData(data);
         }
     }
 }
