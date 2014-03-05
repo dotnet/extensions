@@ -1,5 +1,6 @@
 ﻿using System;
 using Autofac;
+using Microsoft.AspNet.DependencyInjection.Autofac;
 using Microsoft.AspNet.DependencyInjection.Tests.Fakes;
 
 namespace Microsoft.AspNet.DependencyInjection.Tests
@@ -9,19 +10,8 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
         protected override IServiceProvider CreateContainer()
         {
             var builder = new ContainerBuilder();
-            builder.RegisterType<AutofacServiceProvider>().As<IServiceProvider>();
 
-            foreach (var descriptor in TestServices.DefaultServices())
-            {
-                if (descriptor.ImplementationType != null)
-                {
-                    builder.RegisterType(descriptor.ImplementationType).As(descriptor.ServiceType);
-                }
-                else
-                {
-                    builder.RegisterInstance(descriptor.ImplementationInstance).As(descriptor.ServiceType);
-                }
-            }
+            AutofacRegistration.Populate(builder, TestServices.DefaultServices());
 
             IContainer container = builder.Build();
             return container.Resolve<IServiceProvider>();
