@@ -2,6 +2,6 @@
 {
     public static class Constants
     {
-        public const string KeyDelimiter = ":";
+        public static string KeyDelimiter = ":";
     }
 }

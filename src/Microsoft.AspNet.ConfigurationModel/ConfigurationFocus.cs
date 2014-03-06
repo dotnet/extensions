@@ -18,6 +18,11 @@ namespace Microsoft.AspNet.ConfigurationModel
             return _root.Get(_prefix + key);
         }
 
+        public IConfiguration GetSubKey(string key)
+        {
+            return _root.GetSubKey(_prefix + key);
+        }
+
         public void Set(string key, string value)
         {
             _root.Set(_prefix + key, value);
@@ -33,14 +38,14 @@ namespace Microsoft.AspNet.ConfigurationModel
             _root.Commit();
         }
 
-        public IEnumerable<KeyValuePair<string, IConfiguration>> Enumerate()
+        public IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys()
         {
-            return _root.Enumerate(_prefix.Substring(_prefix.Length - 1));
+            return _root.GetSubKeys(_prefix.Substring(_prefix.Length - 1));
         }
 
-        public IEnumerable<KeyValuePair<string, IConfiguration>> Enumerate(string key)
+        public IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys(string key)
         {
-            return _root.Enumerate(_prefix + key);
+            return _root.GetSubKeys(_prefix + key);
         }
     }
 }

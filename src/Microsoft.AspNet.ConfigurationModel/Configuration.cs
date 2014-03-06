@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.ConfigurationModel.Sources;
 
 namespace Microsoft.AspNet.ConfigurationModel
 {
-    public class Configuration : IConfiguration
+    public class Configuration : IConfiguration, IExtendableConfiguration
     {
-        private readonly IList<IReadableConfigurationSource> _readableSources = new List<IReadableConfigurationSource>();
+        private readonly IList<IConfigurationSource> _readableSources = new List<IConfigurationSource>();
         private readonly IList<ISettableConfigurationSource> _settableSources = new List<ISettableConfigurationSource>();
         private readonly IList<ICommitableConfigurationSource> _committableSources = new List<ICommitableConfigurationSource>();
 
@@ -20,14 +21,15 @@ namespace Microsoft.AspNet.ConfigurationModel
 
             for (int i = 0; i < _readableSources.Count; i++)
             {
-                string value = _readableSources[i].Get(key);
-                if (!string.IsNullOrEmpty(value))
+                string value;
+                if (_readableSources[i].TryGet(key, out value))
                 {
                     return value;
                 }
             }
             return null;
         }
+
 
         public void Set(string key, string value)
         {
@@ -58,26 +60,44 @@ namespace Microsoft.AspNet.ConfigurationModel
             final.Commit();
         }
 
-        public IEnumerable<KeyValuePair<string, IConfiguration>> Enumerate()
+        public IConfiguration GetSubKey(string key)
         {
-            return _readableSources
-                .SelectMany(source => source.EnumerateDistinct(string.Empty, Constants.KeyDelimiter))
-                .Distinct()
-                .Select(segment => new KeyValuePair<string, IConfiguration>(segment + Constants.KeyDelimiter, new ConfigurationFocus(this, segment)));
+            return new ConfigurationFocus(this, key);
         }
 
-        public IEnumerable<KeyValuePair<string, IConfiguration>> Enumerate(string key)
+        public IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys()
+        {
+            return GetSubKeysImplementation(string.Empty);
+        }
+
+        public IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys(string key)
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            var prefix = key + Constants.KeyDelimiter;
-            return _readableSources
-                .SelectMany(source => source.EnumerateDistinct(prefix, Constants.KeyDelimiter))
-                .Distinct()
-                .Select(segment => new KeyValuePair<string, IConfiguration>(prefix + segment + Constants.KeyDelimiter, new ConfigurationFocus(this, segment)));
+            return GetSubKeysImplementation(key + Constants.KeyDelimiter);
         }
 
-        public Configuration Add(IReadableConfigurationSource configurationSource)
+        private IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeysImplementation(string prefix)
+        {
+            var sources = _readableSources;
+            
+            var segments = sources.Aggregate(
+                Enumerable.Empty<string>(),
+                (seed, source) => source.ProduceSubKeys(seed, prefix, Constants.KeyDelimiter));
+
+            var distinctSegments = segments.Distinct();
+
+            return distinctSegments.Select(CreateConfigurationFocus);
+        }
+
+        private KeyValuePair<string, IConfiguration> CreateConfigurationFocus(string segment)
+        {
+            return new KeyValuePair<string, IConfiguration>(
+                segment + Constants.KeyDelimiter, 
+                new ConfigurationFocus(this, segment));
+        }
+
+        public void Add(IConfigurationSource configurationSource)
         {
             configurationSource.Load();
 
@@ -90,8 +110,6 @@ namespace Microsoft.AspNet.ConfigurationModel
             {
                 _committableSources.Add(configurationSource as ICommitableConfigurationSource);
             }
-
-            return this;
         }
     }
 }

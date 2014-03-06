@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNet.ConfigurationModel
+namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
-    public abstract class BaseConfigurationSource : IReadableConfigurationSource
+    public abstract class BaseConfigurationSource : IConfigurationSource
     {
         public IDictionary<string, string> Data { get; private set; }
 
@@ -18,10 +18,9 @@ namespace Microsoft.AspNet.ConfigurationModel
             Data = data;
         }
 
-        public virtual string Get(string key)
+        public virtual bool TryGet(string key, out string value)
         {
-            string value;
-            return Data.TryGetValue(key, out value) ? value : null;
+            return Data.TryGetValue(key, out value);
         }
 
         public virtual void Set(string key, string value)
@@ -32,13 +31,13 @@ namespace Microsoft.AspNet.ConfigurationModel
         public virtual void Load()
         {
         }
-
-        public virtual IEnumerable<string> EnumerateDistinct(string prefix, string delimiter)
+       
+        public virtual IEnumerable<string> ProduceSubKeys(IEnumerable<string> earlierKeys, string prefix, string delimiter)
         {
             return Data
                 .Where(kv => kv.Value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                 .Select(kv => Segment(kv.Key, prefix, delimiter))
-                .Distinct();
+                .Concat(earlierKeys);
         }
 
         private static string Segment(string key, string prefix, string delimiter)

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.AspNet.ConfigurationModel
+namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
-    public class IniConfigurationFile : BaseConfigurationSource
+    public class IniFileConfigurationSource : BaseConfigurationSource
     {
         public string Path { get; set; }
 
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.ConfigurationModel
         /// / comment
         /// </summary>
         /// <param name="path">The path and file name to load.</param>
-        public IniConfigurationFile(string path)
+        public IniFileConfigurationSource(string path)
         {
             Path = path;
         }

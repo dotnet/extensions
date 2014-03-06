@@ -2,18 +2,18 @@
 using System.Collections;
 using System.Linq;
 
-namespace Microsoft.AspNet.ConfigurationModel
+namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
-    public class EnvironmentConfiguration : BaseConfigurationSource
+    public class EnvironmentVariablesConfigurationSource : BaseConfigurationSource
     {
         private readonly string _prefix;
 
-        public EnvironmentConfiguration(string prefix)
+        public EnvironmentVariablesConfigurationSource(string prefix)
         {
             _prefix = prefix;
         }
 
-        public EnvironmentConfiguration()
+        public EnvironmentVariablesConfigurationSource()
         {
             _prefix = string.Empty;
         }

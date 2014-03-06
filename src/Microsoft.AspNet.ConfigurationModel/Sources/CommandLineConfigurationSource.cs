@@ -1,27 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.ConfigurationModel
+namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
-    public class CommandLineConfiguration : BaseConfigurationSource
+    public class CommandLineConfigurationSource : BaseConfigurationSource
     {
         public string[] Args { get; set; }
 
 #if NET45
-        public CommandLineConfiguration()
+        public CommandLineConfigurationSource()
             : this(Environment.GetCommandLineArgs())
         {
             Args = Environment.GetCommandLineArgs();
         }
 #endif
 
-        public CommandLineConfiguration(string[] args)
+        public CommandLineConfigurationSource(string[] args)
         {
             Args = args;
         }
 
         public override void Load()
         {
+#warning TODO - this is a placeholder algorithm which must be replaced
+
             var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (string pair in Args)
             {

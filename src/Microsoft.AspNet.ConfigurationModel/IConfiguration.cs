@@ -1,8 +1,10 @@
 ﻿
 using System.Collections.Generic;
+using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.ConfigurationModel
 {
+    [AssemblyNeutral]
     public interface IConfiguration
     {
         /// <summary>
@@ -12,33 +14,20 @@ namespace Microsoft.AspNet.ConfigurationModel
         /// <returns>The value associated with the given key, or null if none is found.</returns>
         string Get(string key);
 
-        void Set(string key, string value);
+        IConfiguration GetSubKey(string key);
+
+        IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys();
+
+        IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys(string key);
 
         void Reload();
 
-        void Commit();
-
-        IEnumerable<KeyValuePair<string, IConfiguration>> Enumerate();
-
-        IEnumerable<KeyValuePair<string, IConfiguration>> Enumerate(string key);
-    }
-
-    public interface IReadableConfigurationSource
-    {
-        string Get(string key);
-
-        void Load();
-
-        IEnumerable<string> EnumerateDistinct(string prefix, string delimiter);
-    }
-
-    public interface ISettableConfigurationSource : IReadableConfigurationSource
-    {
         void Set(string key, string value);
-    }
 
-    public interface ICommitableConfigurationSource : ISettableConfigurationSource
-    {
         void Commit();
     }
+}
+
+namespace Microsoft.Net.Runtime
+{
 }
