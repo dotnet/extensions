@@ -27,7 +27,3 @@ namespace Microsoft.AspNet.ConfigurationModel
         void Commit();
     }
 }
-
-namespace Microsoft.Net.Runtime
-{
-}

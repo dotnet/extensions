@@ -2,6 +2,6 @@
 {
     public static class Constants
     {
-        public static string KeyDelimiter = ":";
+        public static readonly string KeyDelimiter = ":";
     }
 }
