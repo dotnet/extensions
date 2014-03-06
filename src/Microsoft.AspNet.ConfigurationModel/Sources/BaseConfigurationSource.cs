@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         public virtual IEnumerable<string> ProduceSubKeys(IEnumerable<string> earlierKeys, string prefix, string delimiter)
         {
             return Data
-                .Where(kv => kv.Value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                .Where(kv => kv.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                 .Select(kv => Segment(kv.Key, prefix, delimiter))
                 .Concat(earlierKeys);
         }

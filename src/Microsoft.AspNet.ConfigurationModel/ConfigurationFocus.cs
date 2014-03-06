@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.ConfigurationModel
 
         public IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys()
         {
-            return _root.GetSubKeys(_prefix.Substring(_prefix.Length - 1));
+            return _root.GetSubKeys(_prefix.Substring(0, _prefix.Length - 1));
         }
 
         public IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys(string key)

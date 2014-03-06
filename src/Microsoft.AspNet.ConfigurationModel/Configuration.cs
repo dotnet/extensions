@@ -80,21 +80,21 @@ namespace Microsoft.AspNet.ConfigurationModel
         private IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeysImplementation(string prefix)
         {
             var sources = _readableSources;
-            
+
             var segments = sources.Aggregate(
                 Enumerable.Empty<string>(),
                 (seed, source) => source.ProduceSubKeys(seed, prefix, Constants.KeyDelimiter));
 
             var distinctSegments = segments.Distinct();
 
-            return distinctSegments.Select(CreateConfigurationFocus);
+            return distinctSegments.Select(segment => CreateConfigurationFocus(prefix, segment));
         }
 
-        private KeyValuePair<string, IConfiguration> CreateConfigurationFocus(string segment)
+        private KeyValuePair<string, IConfiguration> CreateConfigurationFocus(string prefix, string segment)
         {
             return new KeyValuePair<string, IConfiguration>(
-                segment + Constants.KeyDelimiter, 
-                new ConfigurationFocus(this, segment));
+                segment,
+                new ConfigurationFocus(this, prefix + segment + Constants.KeyDelimiter));
         }
 
         public void Add(IConfigurationSource configurationSource)
