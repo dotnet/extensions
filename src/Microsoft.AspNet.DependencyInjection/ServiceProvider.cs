@@ -11,14 +11,18 @@ namespace Microsoft.AspNet.DependencyInjection
     /// </summary>
     public class ServiceProvider : IServiceProvider
     {
+        private readonly IServiceProvider _defaultServiceProvider;
         private readonly IDictionary<Type, Func<object>> _services = new Dictionary<Type, Func<object>>();
         private readonly IDictionary<Type, List<Func<object>>> _priorServices = new Dictionary<Type, List<Func<object>>>();
 
-        /// <summary>
-        /// 
-        /// </summary>
         public ServiceProvider()
         {
+            _services[typeof(IServiceProvider)] = () => this;
+        }
+
+        public ServiceProvider(IServiceProvider defaultServiceProvider)
+        {
+            _defaultServiceProvider = defaultServiceProvider;
             _services[typeof(IServiceProvider)] = () => this;
         }
 
@@ -29,7 +33,7 @@ namespace Microsoft.AspNet.DependencyInjection
         /// <returns></returns>
         public virtual object GetService(Type serviceType)
         {
-            return GetSingleService(serviceType) ?? GetMultiService(serviceType);
+            return GetSingleService(serviceType) ?? GetMultiService(serviceType) ?? GetDefaultService(serviceType);
         }
 
         private object GetSingleService(Type serviceType)
@@ -66,6 +70,11 @@ namespace Microsoft.AspNet.DependencyInjection
                 return services;
             }
             return null;
+        }
+
+        private object GetDefaultService(Type serviceType)
+        {
+            return _defaultServiceProvider != null ? _defaultServiceProvider.GetService(serviceType) : null;
         }
 
         /// <summary>
