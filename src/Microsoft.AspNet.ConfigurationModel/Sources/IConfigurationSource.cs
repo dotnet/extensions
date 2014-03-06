@@ -3,7 +3,7 @@ using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
-    [AssemblyNeutral]
+    [NotAssemblyNeutral]
     public interface IConfigurationSource
     {
         bool TryGet(string key, out string value);
