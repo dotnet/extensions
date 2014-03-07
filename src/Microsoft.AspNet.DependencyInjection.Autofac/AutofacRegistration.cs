@@ -9,14 +9,14 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
     {
         public static void Populate(
                 ContainerBuilder builder,
-                IEnumerable<IServiceDescriptor> firstServiceDescriptors,
-                params IEnumerable<IServiceDescriptor>[] moreServiceDescriptors)
+                IEnumerable<IServiceDescriptor> descriptors,
+                params IEnumerable<IServiceDescriptor>[] moreDescriptors)
         {
             builder.RegisterType<AutofacServiceProvider>().As<IServiceProvider>();
 
-            Register(builder, firstServiceDescriptors);
+            Register(builder, descriptors);
 
-            foreach (var serviceDescriptors in moreServiceDescriptors)
+            foreach (var serviceDescriptors in moreDescriptors)
             {
                 Register(builder, serviceDescriptors);
             }
@@ -24,23 +24,23 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
 
         private static void Register(
                 ContainerBuilder builder,
-                IEnumerable<IServiceDescriptor> serviceDescriptors)
+                IEnumerable<IServiceDescriptor> descriptors)
         {
-            foreach (var serviceDescriptor in serviceDescriptors)
+            foreach (var descriptor in descriptors)
             {
-                if (serviceDescriptor.ImplementationType != null)
+                if (descriptor.ImplementationType != null)
                 {
                     builder
-                        .RegisterType(serviceDescriptor.ImplementationType)
-                        .As(serviceDescriptor.ServiceType)
-                        .ConfigureLifecycle(serviceDescriptor.Lifecycle);
+                        .RegisterType(descriptor.ImplementationType)
+                        .As(descriptor.ServiceType)
+                        .ConfigureLifecycle(descriptor.Lifecycle);
                 }
                 else
                 {
                     builder
-                        .RegisterInstance(serviceDescriptor.ImplementationInstance)
-                        .As(serviceDescriptor.ServiceType)
-                        .ConfigureLifecycle(serviceDescriptor.Lifecycle);
+                        .RegisterInstance(descriptor.ImplementationInstance)
+                        .As(descriptor.ServiceType)
+                        .ConfigureLifecycle(descriptor.Lifecycle);
                 }
             }
         }
