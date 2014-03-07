@@ -2,6 +2,12 @@
   "version": "0.1-alpha-*",
   "configurations": {
     "net45": {},
-    "k10": {}
+    "k10": {
+      "dependencies": {
+        "System.Globalization": "4.0.10.0",
+        "System.Runtime": "4.0.20.0",
+        "System.Runtime.InteropServices": "4.0.10.0"
+      }
+    }
   }
 }
