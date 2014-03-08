@@ -1,13 +1,12 @@
 ﻿namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
 {
-    public interface IFakeMultipleService
+    public interface IFakeMultipleService : IFakeService
     {
-        string AnotherMethod();
     }
 
     public class FakeOneMultipleService : IFakeMultipleService
     {
-        public string AnotherMethod()
+        public string SimpleMethod()
         {
             return "FakeOneMultipleServiceAnotherMethod";
         }
@@ -15,7 +14,7 @@
 
     public class FakeTwoMultipleService : IFakeMultipleService
     {
-        public string AnotherMethod()
+        public string SimpleMethod()
         {
             return "FakeTwoMultipleServiceAnotherMethod";
         }

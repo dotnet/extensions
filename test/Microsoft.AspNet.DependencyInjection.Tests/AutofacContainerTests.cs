@@ -30,19 +30,61 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
             Assert.Equal(service1, service2);
         }
 
-        public class AutofacServiceProvider : IServiceProvider
+        [Fact]
+        public void ScopedServiceCanBeResolved()
         {
-            private readonly IComponentContext _componentContext;
+            var container = CreateContainer();
 
-            public AutofacServiceProvider(IComponentContext componentContext)
+            var scopeFactory = container.GetService<IServiceScopeFactory>();
+            IServiceProvider scope;
+            using (scopeFactory.CreateScope(out scope))
             {
-                _componentContext = componentContext;
+                var containerScopedService = container.GetService<IFakeScopedService>();
+                var scopedService1 = scope.GetService<IFakeScopedService>();
+                var scopedService2 = scope.GetService<IFakeScopedService>();
+
+                Assert.NotEqual(containerScopedService, scopedService1);
+                Assert.Equal(scopedService1, scopedService2);
+            }
+        }
+
+        [Fact]
+        public void NestedScopedServiceCanBeResolved()
+        {
+            var container = CreateContainer();
+
+            var outerScopeFactory = container.GetService<IServiceScopeFactory>();
+            IServiceProvider outerScope;
+            using (outerScopeFactory.CreateScope(out outerScope))
+            {
+                var innerScopeFactory = outerScope.GetService<IServiceScopeFactory>();
+                IServiceProvider innerScope;
+                using (innerScopeFactory.CreateScope(out innerScope))
+                {
+                    var outerScopedService = outerScope.GetService<IFakeScopedService>();
+                    var innerScopedService = innerScope.GetService<IFakeScopedService>();
+
+                    Assert.NotEqual(outerScopedService, innerScopedService);
+                }
+            }
+        }
+
+        [Fact]
+        public void DisposingScopeDisposesService()
+        {
+            var container = CreateContainer();
+            FakeService disposableService;
+
+            var scopeFactory = container.GetService<IServiceScopeFactory>();
+            IServiceProvider scope;
+            using (scopeFactory.CreateScope(out scope))
+            {
+                disposableService = (FakeService)scope.GetService<IFakeScopedService>();
+
+                Assert.False(disposableService.Disposed);
             }
 
-            public object GetService(Type serviceType)
-            {
-                return _componentContext.Resolve(serviceType);
-            }
+            Assert.True(disposableService.Disposed);
         }
     }
 }

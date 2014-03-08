@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
 
             var services = container.GetService<IEnumerable<IFakeMultipleService>>();
 
-            var results = services.Select(x => x.AnotherMethod()).ToArray();
+            var results = services.Select(x => x.SimpleMethod()).ToArray();
 
             Assert.NotNull(results);
             Assert.Equal(2, results.Count());

@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
             singleValue = _singleService.SimpleMethod();
 
             multipleValues = _multipleServices
-                .Select(x => x.AnotherMethod())
+                .Select(x => x.SimpleMethod())
                 .ToArray();
         }
     }
