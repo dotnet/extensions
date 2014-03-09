@@ -6,9 +6,19 @@
     "Autofac": "3.3.0",
     "Ninject": "3.0.1.10",
     "structuremap": "2.6.4.1",
-    "xunit": "1.9.2"
+    "Xunit.KRunner": "0.1-alpha-*",
+    "xunit.abstractions": "3.0.0-alpha-*",
+    "xunit2": "0.1-alpha-*",
+    "xunit2.assert": "0.1-alpha-*"
   },
   "configurations": {
-    "net45": {}
+    "net45": {
+        "dependencies": {
+            "System.Runtime" : ""
+        }
+    }
+  },
+  "commands": {
+    "test": "Xunit.KRunner"
   }
 }
