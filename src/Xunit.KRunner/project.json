@@ -1,12 +1,27 @@
 {
-    "version": "0.1-alpha-*",
-    "dependencies": {
-        "System.Runtime": "",
-        "xunit2": "0.1-alpha-*",
-        "xunit.abstractions": "3.0.0-alpha-*"
+  "version": "0.1-alpha-*",
+  "dependencies": {
+    "xunit2": "0.1-alpha-*",
+    "xunit.abstractions": "3.0.0-alpha-*"
+  },
+  "configurations": {
+    "net45": {
+      "dependencies": {
+        "System.Runtime": ""
+      }
     },
-    "configurations": {
-        "net45": {},
-        "k10": {}
+    "k10": {
+      "dependencies": {
+        "System.Collections": "4.0.0.0",
+        "System.Collections.Concurrent": "4.0.0.0",
+        "System.Console": "4.0.0.0",
+        "System.Diagnostics.Process": "4.0.0.0",
+        "System.Linq": "4.0.0.0",
+        "System.Runtime": "4.0.20.0",
+        "System.Runtime.Extensions": "4.0.10.0",
+        "System.Runtime.Hosting": "3.9.0.0",
+        "System.Threading": "4.0.0.0"
+      }
     }
+  }
 }
