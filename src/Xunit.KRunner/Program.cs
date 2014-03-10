@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.Net.Runtime;
 using Xunit.ConsoleClient;
+#if !NET45
+using System.Diagnostics;
+#endif
 
 namespace Xunit.KRunner
 {
@@ -84,7 +86,7 @@ namespace Xunit.KRunner
             else
                 Console.WriteLine("Error of unknown type thrown in application domain");
 
-#if NET45            
+#if NET45
             Environment.Exit(1);
 #else
             Process.GetCurrentProcess().Kill();
@@ -162,6 +164,12 @@ namespace Xunit.KRunner
 
                     e = e.InnerException;
                 }
+
+#if NET45
+                Environment.Exit(1);
+#else
+                Process.GetCurrentProcess().Kill();
+#endif
             }
         }
     }
