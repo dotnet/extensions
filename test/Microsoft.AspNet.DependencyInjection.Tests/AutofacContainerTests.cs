@@ -36,12 +36,11 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
             var container = CreateContainer();
 
             var scopeFactory = container.GetService<IServiceScopeFactory>();
-            IServiceProvider scope;
-            using (scopeFactory.CreateScope(out scope))
+            using (var scope = scopeFactory.CreateScope())
             {
                 var containerScopedService = container.GetService<IFakeScopedService>();
-                var scopedService1 = scope.GetService<IFakeScopedService>();
-                var scopedService2 = scope.GetService<IFakeScopedService>();
+                var scopedService1 = scope.ServiceProvider.GetService<IFakeScopedService>();
+                var scopedService2 = scope.ServiceProvider.GetService<IFakeScopedService>();
 
                 Assert.NotEqual(containerScopedService, scopedService1);
                 Assert.Equal(scopedService1, scopedService2);
@@ -54,15 +53,13 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
             var container = CreateContainer();
 
             var outerScopeFactory = container.GetService<IServiceScopeFactory>();
-            IServiceProvider outerScope;
-            using (outerScopeFactory.CreateScope(out outerScope))
+            using (var outerScope = outerScopeFactory.CreateScope())
             {
-                var innerScopeFactory = outerScope.GetService<IServiceScopeFactory>();
-                IServiceProvider innerScope;
-                using (innerScopeFactory.CreateScope(out innerScope))
+                var innerScopeFactory = outerScope.ServiceProvider.GetService<IServiceScopeFactory>();
+                using (var innerScope = innerScopeFactory.CreateScope())
                 {
-                    var outerScopedService = outerScope.GetService<IFakeScopedService>();
-                    var innerScopedService = innerScope.GetService<IFakeScopedService>();
+                    var outerScopedService = outerScope.ServiceProvider.GetService<IFakeScopedService>();
+                    var innerScopedService = innerScope.ServiceProvider.GetService<IFakeScopedService>();
 
                     Assert.NotEqual(outerScopedService, innerScopedService);
                 }
@@ -76,10 +73,9 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
             FakeService disposableService;
 
             var scopeFactory = container.GetService<IServiceScopeFactory>();
-            IServiceProvider scope;
-            using (scopeFactory.CreateScope(out scope))
+            using (var scope = scopeFactory.CreateScope())
             {
-                disposableService = (FakeService)scope.GetService<IFakeScopedService>();
+                disposableService = (FakeService)scope.ServiceProvider.GetService<IFakeScopedService>();
 
                 Assert.False(disposableService.Disposed);
             }
