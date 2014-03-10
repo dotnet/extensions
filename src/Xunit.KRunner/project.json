@@ -1,11 +1,15 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
-    "xunit.abstractions": "2.0.0-k-*",
-    "xunit.execution": "2.0.0-k-*"
+    "xunit.abstractions": "2.0.0-aspnet-*",
+    "xunit.execution": "2.0.0-aspnet-*"
   },
   "configurations": {
-    "net45": {},
+    "net45": {
+      "dependencies": {
+        "System.Runtime": ""
+      }
+    },
     "k10": {
       "dependencies": {
         "System.Collections": "4.0.0.0",

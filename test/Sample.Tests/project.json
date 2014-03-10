@@ -1,14 +1,20 @@
 {
   "dependencies": {
     "Xunit.KRunner": "",
-    "xunit.core": "2.0.0-k-*",
-    "xunit.assert": "2.0.0-k-*"
+    "xunit.abstractions": "2.0.0-aspnet-*",
+    "xunit.assert": "2.0.0-aspnet-*",
+    "xunit.core": "2.0.0-aspnet-*",
+    "xunit.execution": "2.0.0-aspnet-*"
   },
   "commands": {
     "test": "Xunit.KRunner"
   },
   "configurations": {
-    "net45": {},
+    "net45": {
+      "dependencies": {
+        "System.Runtime": ""
+      }
+    },
     "k10": {
       "dependencies": {
         "System.Collections": "4.0.0.0",
