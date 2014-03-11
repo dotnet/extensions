@@ -6,7 +6,7 @@ using Microsoft.AspNet.ConfigurationModel.Sources;
 
 namespace Microsoft.AspNet.ConfigurationModel
 {
-    public class Configuration : IConfiguration, IExtendableConfiguration
+    public class Configuration : IConfiguration, IConfigurationSourceContainer
     {
         private readonly IList<IConfigurationSource> _readableSources = new List<IConfigurationSource>();
         private readonly IList<ISettableConfigurationSource> _settableSources = new List<ISettableConfigurationSource>();
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.ConfigurationModel
                 new ConfigurationFocus(this, prefix + segment + Constants.KeyDelimiter));
         }
 
-        public IExtendableConfiguration Add(IConfigurationSource configurationSource)
+        public IConfigurationSourceContainer Add(IConfigurationSource configurationSource)
         {
             configurationSource.Load();
 

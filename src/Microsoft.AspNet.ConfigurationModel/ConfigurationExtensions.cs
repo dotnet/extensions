@@ -1,31 +1,32 @@
 ﻿
+using System.Collections.Generic;
 using Microsoft.AspNet.ConfigurationModel.Sources;
 
 namespace Microsoft.AspNet.ConfigurationModel
 {
     public static class ConfigurationExtensions
     {
-        public static IExtendableConfiguration AddIniFile(this IExtendableConfiguration configuration, string path)
+        public static IConfigurationSourceContainer AddIniFile(this IConfigurationSourceContainer configuration, string path)
         {
             configuration.Add(new IniFileConfigurationSource(path));
             return configuration;
         }
 
 #if NET45
-        public static IExtendableConfiguration AddCommandLine(this IExtendableConfiguration configuration)
+        public static IConfigurationSourceContainer AddCommandLine(this IConfigurationSourceContainer configuration)
         {
             configuration.Add(new CommandLineConfigurationSource());
             return configuration;
         }
 #endif
 
-        public static IExtendableConfiguration AddEnvironmentVariables(this IExtendableConfiguration configuration)
+        public static IConfigurationSourceContainer AddEnvironmentVariables(this IConfigurationSourceContainer configuration)
         {
             configuration.Add(new EnvironmentVariablesConfigurationSource());
             return configuration;
         }
 
-        public static IExtendableConfiguration AddEnvironmentVariables(this IExtendableConfiguration configuration, string prefix)
+        public static IConfigurationSourceContainer AddEnvironmentVariables(this IConfigurationSourceContainer configuration, string prefix)
         {
             configuration.Add(new EnvironmentVariablesConfigurationSource(prefix));
             return configuration;
