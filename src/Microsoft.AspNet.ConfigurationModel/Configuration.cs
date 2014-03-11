@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.ConfigurationModel.Sources;
@@ -19,15 +20,23 @@ namespace Microsoft.AspNet.ConfigurationModel
         {
             if (key == null) throw new ArgumentNullException("key");
 
+            string value;
+            return TryGet(key, out value) ? value : null;
+        }
+
+        public bool TryGet(string key, out string value)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
             for (int i = 0; i < _readableSources.Count; i++)
             {
-                string value;
                 if (_readableSources[i].TryGet(key, out value))
                 {
-                    return value;
+                    return true;
                 }
             }
-            return null;
+            value = null;
+            return false;
         }
 
 
@@ -62,7 +71,7 @@ namespace Microsoft.AspNet.ConfigurationModel
 
         public IConfiguration GetSubKey(string key)
         {
-            return new ConfigurationFocus(this, key);
+            return new ConfigurationFocus(this, key + Constants.KeyDelimiter);
         }
 
         public IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys()
@@ -97,7 +106,7 @@ namespace Microsoft.AspNet.ConfigurationModel
                 new ConfigurationFocus(this, prefix + segment + Constants.KeyDelimiter));
         }
 
-        public void Add(IConfigurationSource configurationSource)
+        public IExtendableConfiguration Add(IConfigurationSource configurationSource)
         {
             configurationSource.Load();
 
@@ -110,6 +119,17 @@ namespace Microsoft.AspNet.ConfigurationModel
             {
                 _committableSources.Add(configurationSource as ICommitableConfigurationSource);
             }
+            return this;
+        }
+
+        public IEnumerator<IConfigurationSource> GetEnumerator()
+        {
+            return _readableSources.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

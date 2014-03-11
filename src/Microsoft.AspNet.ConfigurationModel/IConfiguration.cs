@@ -14,6 +14,8 @@ namespace Microsoft.AspNet.ConfigurationModel
         /// <returns>The value associated with the given key, or null if none is found.</returns>
         string Get(string key);
 
+        bool TryGet(string key, out string value);
+
         IConfiguration GetSubKey(string key);
 
         IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys();

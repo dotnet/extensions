@@ -18,6 +18,11 @@ namespace Microsoft.AspNet.ConfigurationModel
             return _root.Get(_prefix + key);
         }
 
+        public bool TryGet(string key, out string value)
+        {
+            return _root.TryGet(_prefix + key, out value);
+        }
+
         public IConfiguration GetSubKey(string key)
         {
             return _root.GetSubKey(_prefix + key);
