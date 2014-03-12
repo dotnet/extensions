@@ -20,6 +20,12 @@ namespace Microsoft.AspNet.ConfigurationModel
         }
 #endif
 
+        public static IConfigurationSourceContainer AddCommandLine(this IConfigurationSourceContainer configuration, string[] args)
+        {
+            configuration.Add(new CommandLineConfigurationSource(args));
+            return configuration;
+        }
+
         public static IConfigurationSourceContainer AddEnvironmentVariables(this IConfigurationSourceContainer configuration)
         {
             configuration.Add(new EnvironmentVariablesConfigurationSource());
