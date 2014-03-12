@@ -11,7 +11,8 @@ namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
             IFakeMultipleService,
             IFakeScopedService,
             IFakeServiceInstance,
-            IFakeSingletonService
+            IFakeSingletonService,
+            IFakeFallbackService
     {
     }
 }

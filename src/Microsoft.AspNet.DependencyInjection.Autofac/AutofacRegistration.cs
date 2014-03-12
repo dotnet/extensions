@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Autofac;
 using Autofac.Builder;
+using Autofac.Core;
 
 namespace Microsoft.AspNet.DependencyInjection.Autofac
 {
@@ -12,6 +14,20 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
                 IEnumerable<IServiceDescriptor> descriptors,
                 params IEnumerable<IServiceDescriptor>[] moreDescriptors)
         {
+            Populate(builder, null, descriptors, moreDescriptors);
+        }
+
+        public static void Populate(
+                ContainerBuilder builder,
+                IServiceProvider fallbackServiceProvider,
+                IEnumerable<IServiceDescriptor> descriptors,
+                params IEnumerable<IServiceDescriptor>[] moreDescriptors)
+        {
+            if (fallbackServiceProvider != null)
+            {
+                builder.RegisterSource(new ChainedRegistrationSource(fallbackServiceProvider));
+            }
+
             builder.RegisterType<AutofacServiceProvider>().As<IServiceProvider>();
             builder.RegisterType<AutofacServiceScopeFactory>().As<IServiceScopeFactory>();
 
@@ -115,6 +131,53 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
             public void Dispose()
             {
                 _lifetimeScope.Dispose();
+            }
+        }
+
+        private class ChainedRegistrationSource : IRegistrationSource
+        {
+            private readonly IServiceProvider _fallbackServiceProvider;
+
+            public ChainedRegistrationSource(IServiceProvider fallbackServiceProvider)
+            {
+                _fallbackServiceProvider = fallbackServiceProvider;
+            }
+
+            public bool IsAdapterForIndividualComponents
+            {
+                get { return false; }
+            }
+
+            public IEnumerable<IComponentRegistration> RegistrationsFor(
+                    Service service,
+                    Func<Service, IEnumerable<IComponentRegistration>> registrationAcessor)
+            {
+                var serviceWithType = service as IServiceWithType;
+                if (serviceWithType != null)
+                {
+                    var serviceType = serviceWithType.ServiceType;
+                    if (HasService(_fallbackServiceProvider, serviceType))
+                    {
+                        yield return RegistrationBuilder.ForDelegate(serviceType, (c, p) =>
+                        {
+                            return _fallbackServiceProvider.GetService(serviceType);
+                        })
+                            .PreserveExistingDefaults()
+                            .CreateRegistration();
+                    }
+                }
+            }
+
+            private bool HasService(IServiceProvider provider, Type serviceType)
+            {
+                try
+                {
+                    return provider.GetService(serviceType) != null;
+                }
+                catch
+                {
+                    return false;
+                }
             }
         }
     }

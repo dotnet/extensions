@@ -15,7 +15,8 @@ namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
                 new ServiceDescriptor<IFakeOuterService, FakeOuterService>(),
                 new ServiceInstanceDescriptor<IFakeServiceInstance>(new FakeService() { Message = "Instance" }),
                 new ServiceDescriptor<IFakeScopedService, FakeService>(LifecycleKind.Scoped),
-                new ServiceDescriptor<IFakeSingletonService, FakeService>(LifecycleKind.Singleton)
+                new ServiceDescriptor<IFakeSingletonService, FakeService>(LifecycleKind.Singleton),
+                new ServiceDescriptor<IFakeFallbackService, FakeService>()
             };
         }
 

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 using Autofac;
 using Microsoft.AspNet.DependencyInjection.Autofac;
 using Microsoft.AspNet.DependencyInjection.Tests.Fakes;
@@ -12,7 +14,10 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
         {
             var builder = new ContainerBuilder();
 
-            AutofacRegistration.Populate(builder, TestServices.DefaultServices());
+            AutofacRegistration.Populate(
+                builder,
+                new FakeFallbackServiceProvider(),
+                TestServices.DefaultServices());
 
             IContainer container = builder.Build();
             return container.Resolve<IServiceProvider>();
@@ -81,6 +86,39 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
             }
 
             Assert.True(disposableService.Disposed);
+        }
+
+        [Fact]
+        public void ServicesCanBeResolvedFromFallbackServiceProvider()
+        {
+            var container = CreateContainer();
+
+            var service = container.GetService<string>();
+
+            Assert.Equal("FakeFallbackServiceProvider", service);
+        }
+
+        [Fact]
+        public void ServicesFromFallbackServicProviderCanBeReplaced()
+        {
+            var container = CreateContainer();
+
+            var service = container.GetService<IFakeFallbackService>();
+
+            Assert.Equal("FakeServiceSimpleMethod", service.SimpleMethod());
+        }
+
+        [Fact]
+        public void ServicesCanBeAddedToServicesFromFallbackServiceProvider()
+        {
+            var container = CreateContainer();
+
+            var services = container.GetService<IEnumerable<IFakeFallbackService>>();
+            var messages = services.Select(service => service.SimpleMethod());
+
+            Assert.Equal(2, services.Count());
+            Assert.Contains("FakeServiceSimpleMethod", messages);
+            Assert.Contains("FakeFallbackServiceProvider", messages);
         }
     }
 }
