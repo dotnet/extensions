@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.DependencyInjection.Tests.Fakes;
+﻿using Microsoft.AspNet.DependencyInjection.Fallback;
+using Microsoft.AspNet.DependencyInjection.Tests.Fakes;
 using Xunit;
 
 namespace Microsoft.AspNet.DependencyInjection.Tests
@@ -8,9 +9,10 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
         [Fact]
         public void TypeActivatorEnablesYouToCreateAnyTypeWithServicesEvenWhenNotInIocContainer()
         {
-            var serviceProvider = new ServiceProvider()
-                .Add<IFakeService, FakeService>()
-                .Add<ITypeActivator, TypeActivator>();
+            var serviceProvider = new ServiceCollection()
+                .AddTransient<IFakeService, FakeService>()
+                .AddTransient<ITypeActivator, TypeActivator>()
+                .BuildServiceProvider();
 
             var typeActivator = serviceProvider.GetService<ITypeActivator>();
 
@@ -24,9 +26,10 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
         [Fact]
         public void TypeActivatorAcceptsAnyNumberOfAdditionalConstructorParametersToProvide()
         {
-            var serviceProvider = new ServiceProvider()
-                .Add<IFakeService, FakeService>()
-                .Add<ITypeActivator, TypeActivator>();
+            var serviceProvider = new ServiceCollection()
+                .AddTransient<IFakeService, FakeService>()
+                .AddTransient<ITypeActivator, TypeActivator>()
+                .BuildServiceProvider();
 
             var typeActivator = serviceProvider.GetService<ITypeActivator>();
 

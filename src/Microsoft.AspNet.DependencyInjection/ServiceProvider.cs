@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.DependencyInjection
     /// <summary>
     /// The default IServiceProvider.
     /// </summary>
-    public class ServiceProvider : IServiceProvider
+    internal class ServiceProvider : IServiceProvider
     {
         private readonly IServiceProvider _defaultServiceProvider;
         private readonly IDictionary<Type, Func<object>> _services = new Dictionary<Type, Func<object>>();

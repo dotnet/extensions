@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.AspNet.DependencyInjection.Fallback;
 using Microsoft.AspNet.DependencyInjection.Tests.Fakes;
 
 namespace Microsoft.AspNet.DependencyInjection.Tests
@@ -7,7 +8,9 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
     {
         protected override IServiceProvider CreateContainer()
         {
-            return new ServiceProvider().Add(TestServices.DefaultServices());
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.Add(TestServices.DefaultServices());
+            return serviceCollection.BuildServiceProvider();
         }
     }
 }
