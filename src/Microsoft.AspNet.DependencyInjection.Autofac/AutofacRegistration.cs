@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Autofac;
@@ -162,8 +163,8 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
                         {
                             return _fallbackServiceProvider.GetService(serviceType);
                         })
-                            .PreserveExistingDefaults()
-                            .CreateRegistration();
+                        .PreserveExistingDefaults()
+                        .CreateRegistration();
                     }
                 }
             }
@@ -172,7 +173,15 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
             {
                 try
                 {
-                    return provider.GetService(serviceType) != null;
+                    var obj = provider.GetService(serviceType);
+
+                    // Return false for empty enumerables
+                    if(obj is IEnumerable)
+                    {
+                        return ((IEnumerable)obj).GetEnumerator().MoveNext();
+                    }
+
+                    return obj != null;
                 }
                 catch
                 {
