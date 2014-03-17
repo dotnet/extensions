@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.DependencyInjection.Fallback
                 this IEnumerable<IServiceDescriptor> collection,
                 IServiceProvider fallbackServices)
         {
-            return new ServiceProvider(fallbackServices).Add(collection);
+            return new ServiceProvider(collection, fallbackServices);
         }
     }
 }

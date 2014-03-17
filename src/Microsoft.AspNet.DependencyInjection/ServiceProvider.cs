@@ -1,29 +1,65 @@
 ﻿using System;
-using System.Reflection;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
+using Microsoft.AspNet.DependencyInjection.MultiServiceFactories;
 
 namespace Microsoft.AspNet.DependencyInjection
 {
     /// <summary>
     /// The default IServiceProvider.
     /// </summary>
-    internal class ServiceProvider : IServiceProvider
+    internal class ServiceProvider : IServiceProvider, IDisposable
     {
-        private readonly IServiceProvider _defaultServiceProvider;
-        private readonly IDictionary<Type, Func<object>> _services = new Dictionary<Type, Func<object>>();
-        private readonly IDictionary<Type, List<Func<object>>> _priorServices = new Dictionary<Type, List<Func<object>>>();
+        private readonly IServiceProvider _fallbackServiceProvider;
+        private readonly IDictionary<Type, IMultiServiceFactory> _factories;
 
-        public ServiceProvider()
+        private ConcurrentBag<IDisposable> _disposables = new ConcurrentBag<IDisposable>();
+
+        public ServiceProvider(IEnumerable<IServiceDescriptor> serviceDescriptors)
+            : this(serviceDescriptors, fallbackServiceProvider: null)
         {
-            _services[typeof(IServiceProvider)] = () => this;
         }
 
-        public ServiceProvider(IServiceProvider defaultServiceProvider)
+        public ServiceProvider(
+                IEnumerable<IServiceDescriptor> serviceDescriptors,
+                IServiceProvider fallbackServiceProvider)
         {
-            _defaultServiceProvider = defaultServiceProvider;
-            _services[typeof(IServiceProvider)] = () => this;
+            _fallbackServiceProvider = fallbackServiceProvider;
+
+            var groupedDescriptors = serviceDescriptors.GroupBy(descriptor => descriptor.ServiceType);
+            _factories = groupedDescriptors.ToDictionary(
+                grouping => grouping.Key,
+                grouping => (IMultiServiceFactory)new MultiServiceFactory(this, grouping.ToArray()));
+
+            _factories[typeof(IServiceProvider)] = new ServiceProviderFactory(this);
+            _factories[typeof(IServiceScopeFactory)] = new ServiceScopeFactoryFactory(this);
+        }
+
+        // This constructor is called exclusively to create a child scope from the parent
+        internal ServiceProvider(ServiceProvider parent)
+        {
+            // Rescope the fallback service provider if it contains an IServiceScopeFactory
+            var scopeFactory = GetFallbackServiceOrNull<IServiceScopeFactory>();
+            if (scopeFactory != null)
+            {
+                var scope = scopeFactory.CreateScope();
+                _fallbackServiceProvider = scope.ServiceProvider;
+                _disposables.Add(scope);
+            }
+            else
+            {
+                _fallbackServiceProvider = parent._fallbackServiceProvider;
+            }
+
+            // Rescope all the factories
+            _factories = parent._factories.ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value.Scope(this));
         }
 
         /// <summary>
@@ -33,166 +69,76 @@ namespace Microsoft.AspNet.DependencyInjection
         /// <returns></returns>
         public virtual object GetService(Type serviceType)
         {
-            return GetSingleService(serviceType) ?? GetMultiService(serviceType) ?? GetDefaultService(serviceType);
+            return GetSingleService(serviceType) ??
+                GetMultiService(serviceType) ??
+                GetFallbackService(serviceType);
         }
 
         private object GetSingleService(Type serviceType)
         {
-            Func<object> serviceFactory;
-            return _services.TryGetValue(serviceType, out serviceFactory)
-                ? serviceFactory.Invoke()
+            IMultiServiceFactory serviceFactory;
+            return _factories.TryGetValue(serviceType, out serviceFactory)
+                ? serviceFactory.GetSingleService()
                 : null;
         }
 
-        private object GetMultiService(Type collectionType)
+        private IList GetMultiService(Type collectionType)
         {
             if (collectionType.GetTypeInfo().IsGenericType &&
                 collectionType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
             {
                 Type serviceType = collectionType.GetTypeInfo().GenericTypeArguments.Single();
-                Type listType = typeof(List<>).MakeGenericType(serviceType);
-                var services = (IList)Activator.CreateInstance(listType);
 
-                Func<object> serviceFactory;
-                if (_services.TryGetValue(serviceType, out serviceFactory))
+                IMultiServiceFactory serviceFactory;
+                if (_factories.TryGetValue(serviceType, out serviceFactory))
                 {
-                    services.Add(serviceFactory());
-
-                    List<Func<object>> prior;
-                    if (_priorServices.TryGetValue(serviceType, out prior))
-                    {
-                        foreach (var factory in prior)
-                        {
-                            services.Add(factory());
-                        }
-                    }
+                    return serviceFactory.GetMultiService();
                 }
-                return services;
             }
+
             return null;
         }
 
-        private object GetDefaultService(Type serviceType)
+        private object GetFallbackService(Type serviceType)
         {
-            return _defaultServiceProvider != null ? _defaultServiceProvider.GetService(serviceType) : null;
+            return _fallbackServiceProvider != null ? _fallbackServiceProvider.GetService(serviceType) : null;
         }
 
-        /// <summary>
-        /// Remove all occurrences of the given type from the provider.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public virtual ServiceProvider RemoveAll<T>()
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "IServiceProvider may throw unknown exceptions")]
+        private T GetFallbackServiceOrNull<T>() where T : class
         {
-            return RemoveAll(typeof(T));
-        }
-
-        /// <summary>
-        /// Remove all occurrences of the given type from the provider.
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public virtual ServiceProvider RemoveAll(Type type)
-        {
-            _services.Remove(type);
-            _priorServices.Remove(type);
-            return this;
-        }
-
-        /// <summary>
-        /// Add an instance of type TService to the list of providers.
-        /// </summary>
-        /// <typeparam name="TService"></typeparam>
-        /// <param name="instance"></param>
-        /// <returns></returns>
-        public virtual ServiceProvider AddInstance<TService>(object instance)
-        {
-            return AddInstance(typeof(TService), instance);
-        }
-
-        /// <summary>
-        /// Add an instance of the given type to the list of providers.
-        /// </summary>
-        /// <param name="service"></param>
-        /// <param name="instance"></param>
-        /// <returns></returns>
-        public virtual ServiceProvider AddInstance(Type service, object instance)
-        {
-            return Add(service, () => instance);
-        }
-
-        /// <summary>
-        /// Specify that services of the type TService should be fulfilled by the type TImplementation.
-        /// </summary>
-        /// <typeparam name="TService"></typeparam>
-        /// <typeparam name="TImplementation"></typeparam>
-        /// <returns></returns>
-        public virtual ServiceProvider Add<TService, TImplementation>()
-        {
-            return Add(typeof(TService), typeof(TImplementation));
-        }
-
-        /// <summary>
-        /// Specify that services of the type serviceType should be fulfilled by the type implementationType.
-        /// </summary>
-        /// <param name="serviceType"></param>
-        /// <param name="implementationType"></param>
-        /// <returns></returns>
-        public virtual ServiceProvider Add(Type serviceType, Type implementationType)
-        {
-            Func<IServiceProvider, object> factory = ActivatorUtilities.CreateFactory(implementationType);
-            return Add(serviceType, () => factory(this));
-        }
-
-        /// <summary>
-        /// Specify that services of the given type should be created with the given serviceFactory.
-        /// </summary>
-        /// <param name="serviceType"></param>
-        /// <param name="serviceFactory"></param>
-        /// <returns></returns>
-        public virtual ServiceProvider Add(Type serviceType, Func<object> serviceFactory)
-        {
-            Func<object> existing;
-            if (_services.TryGetValue(serviceType, out existing))
+            try
             {
-                List<Func<object>> prior;
-                if (_priorServices.TryGetValue(serviceType, out prior))
+                return (T)GetFallbackService(typeof(T));
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public void Dispose()
+        {
+            var disposables = Interlocked.Exchange(ref _disposables, null);
+
+            if (disposables != null)
+            {
+                foreach (var disposable in disposables)
                 {
-                    prior.Add(existing);
-                }
-                else
-                {
-                    prior = new List<Func<object>> { existing };
-                    _priorServices.Add(serviceType, prior);
+                    disposable.Dispose();
                 }
             }
-            _services[serviceType] = serviceFactory;
-            return this;
         }
 
-        public virtual ServiceProvider Add(IServiceDescriptor serviceDescriptor)
+        internal object CaptureDisposableService(object service)
         {
-            if (serviceDescriptor.ImplementationType != null)
+            IDisposable disposable = service as IDisposable;
+            if (disposable != null)
             {
-                return Add(
-                    serviceDescriptor.ServiceType,
-                    serviceDescriptor.ImplementationType);
+                _disposables.Add(disposable);
             }
-            else
-            {
-                return AddInstance(
-                    serviceDescriptor.ServiceType,
-                    serviceDescriptor.ImplementationInstance);
-            }
-        }
 
-        public virtual ServiceProvider Add(params IEnumerable<IServiceDescriptor>[] serviceDescriptors)
-        {
-            foreach (var descriptor in serviceDescriptors.SelectMany(descriptors => descriptors))
-            {
-                Add(descriptor);
-            }
-            return this;
+            return service;
         }
     }
 }
