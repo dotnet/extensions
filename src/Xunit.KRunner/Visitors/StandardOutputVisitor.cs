@@ -56,13 +56,13 @@ namespace Xunit.ConsoleClient
 #if NET45
                 Console.ForegroundColor = ConsoleColor.Red;
 #endif
-                Console.Error.WriteLine("   {0} [FATAL]", Escape(error.ExceptionType));
+                Console.Error.WriteLine("   {0} [FATAL]", Escape(error.ExceptionTypes[0]));
 #if NET45
                 Console.ForegroundColor = ConsoleColor.Gray;
 #endif
-                Console.Error.WriteLine("      {0}", Escape(error.Message));
+                Console.Error.WriteLine("      {0}", Escape(ExceptionUtility.CombineMessages(error)));
 
-                WriteStackTrace(error.StackTrace);
+                WriteStackTrace(ExceptionUtility.CombineStackTraces(error));
             }
 
             return base.Visit(error);
@@ -80,9 +80,9 @@ namespace Xunit.ConsoleClient
 #if NET45
                 Console.ForegroundColor = ConsoleColor.Gray;
 #endif
-                Console.Error.WriteLine("      {0}", Escape(testFailed.Message));
+                Console.Error.WriteLine("      {0}", Escape(ExceptionUtility.CombineMessages(testFailed)));
 
-                WriteStackTrace(testFailed.StackTrace);
+                WriteStackTrace(ExceptionUtility.CombineStackTraces(testFailed));
             }
 
             return base.Visit(testFailed);

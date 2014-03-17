@@ -13,8 +13,13 @@ namespace Xunit.ConsoleClient
                 arguments.Push(args[i]);
 
             TeamCity = Environment.GetEnvironmentVariable("TEAMCITY_PROJECT_NAME") != null;
+            ParallelizeTestCollections = true;
             Parse();
         }
+
+        public int MaxParallelThreads { get; set; }
+
+        public bool ParallelizeTestCollections { get; set; }
 
         public bool TeamCity { get; protected set; }
 
@@ -33,13 +38,46 @@ namespace Xunit.ConsoleClient
         {
             while (arguments.Count > 0)
             {
-                KeyValuePair<string, string> option = PopOption(arguments);
-                string optionName = option.Key.ToLowerInvariant();
+                var option = PopOption(arguments);
+                var optionName = option.Key.ToLowerInvariant();
 
                 if (!optionName.StartsWith("-"))
                     throw new ArgumentException(String.Format("unknown command line option: {0}", option.Key));
 
-                if (optionName == "-teamcity")
+                if (optionName == "-maxthreads")
+                {
+                    if (option.Value == null)
+                        throw new ArgumentException("missing argument for -maxthreads");
+
+                    int threadValue;
+                    if (!Int32.TryParse(option.Value, out threadValue) || threadValue < 0)
+                        throw new ArgumentException("incorrect argument value for -maxthreads");
+
+                    MaxParallelThreads = threadValue;
+                }
+                else if (optionName == "-parallel")
+                {
+                    if (option.Value == null)
+                        throw new ArgumentException("missing argument for -parallel");
+
+                    ParallelismOption parallelismOption;
+                    if (!Enum.TryParse<ParallelismOption>(option.Value, out parallelismOption))
+                        throw new ArgumentException("incorrect argument value for -parallel");
+
+                    switch (parallelismOption)
+                    {
+                        case ParallelismOption.all:
+                        case ParallelismOption.collections:
+                            ParallelizeTestCollections = true;
+                            break;
+
+                        case ParallelismOption.none:
+                        default:
+                            ParallelizeTestCollections = false;
+                            break;
+                    }
+                }
+                else if (optionName == "-teamcity")
                 {
                     GuardNoOptionValue(option);
                     TeamCity = true;
@@ -52,7 +90,7 @@ namespace Xunit.ConsoleClient
             string option = arguments.Pop();
             string value = null;
 
-            if (arguments.Count > 0 && !arguments.Peek().StartsWith("/"))
+            if (arguments.Count > 0 && !arguments.Peek().StartsWith("-"))
                 value = arguments.Pop();
 
             return new KeyValuePair<string, string>(option, value);

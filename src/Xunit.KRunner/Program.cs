@@ -1,19 +1,21 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Net.Runtime;
 using Xunit.ConsoleClient;
+using Xunit.Sdk;
 #if !NET45
 using System.Diagnostics;
 #endif
 
 namespace Xunit.KRunner
 {
-    internal class Program
+    public class Program
     {
-        private volatile bool cancel;
-        private readonly ConcurrentDictionary<string, ExecutionSummary> completionMessages =
-            new ConcurrentDictionary<string, ExecutionSummary>();
+        volatile bool cancel;
+        bool failed;
+        readonly ConcurrentDictionary<string, ExecutionSummary> completionMessages = new ConcurrentDictionary<string, ExecutionSummary>();
         private readonly IApplicationEnvironment _environment;
         private readonly IFileMonitor _fileMonitor;
 
@@ -23,13 +25,9 @@ namespace Xunit.KRunner
             _fileMonitor = fileMonitor;
         }
 
-        private int Main(string[] args)
+        public int Main(string[] args)
         {
-            Console.WriteLine(
-                "xUnit.net Project K test runner ({0}-bit {1} {2})",
-                IntPtr.Size * 8,
-                _environment.TargetFramework.Identifier,
-                _environment.TargetFramework.Version);
+            Console.WriteLine("xUnit.net Project K test runner ({0}-bit {1})", IntPtr.Size * 8, _environment.TargetFramework);
             Console.WriteLine("Copyright (C) 2014 Outercurve Foundation, Microsoft Open Technologies, Inc.");
             Console.WriteLine();
 
@@ -59,25 +57,23 @@ namespace Xunit.KRunner
             {
                 var commandLine = CommandLine.Parse(args);
 
-                int failCount = RunProject(commandLine.TeamCity);
+                int failCount = RunProject(commandLine.TeamCity, commandLine.ParallelizeTestCollections, commandLine.MaxParallelThreads);
 
                 return failCount;
             }
             catch (ArgumentException ex)
             {
-                Console.WriteLine();
                 Console.WriteLine("error: {0}", ex.Message);
                 return 1;
             }
             catch (BadImageFormatException ex)
             {
-                Console.WriteLine();
                 Console.WriteLine("{0}", ex.Message);
                 return 1;
             }
         }
 
-        private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var ex = e.ExceptionObject as Exception;
 
@@ -93,19 +89,26 @@ namespace Xunit.KRunner
 #endif
         }
 
-        private static void PrintUsage()
+        static void PrintUsage()
         {
             Console.WriteLine("usage: Xunit.KRunner [options]");
             Console.WriteLine();
             Console.WriteLine("Valid options:");
+            Console.WriteLine("  -parallel option       : set parallelization based on option");
+            Console.WriteLine("                         :   none - turn off all parallelization");
+            Console.WriteLine("                         :   collections - only parallelize collections");
+            Console.WriteLine("                         :   all - parallelize collections");
+            Console.WriteLine("  -maxthreads count      : maximum thread count for collection parallelization");
+            Console.WriteLine("                         :   0 - run with unbounded thread count");
+            Console.WriteLine("                         :   >0 - limit task thread pool size to 'count'");
             Console.WriteLine("  -teamcity              : forces TeamCity mode (normally auto-detected)");
         }
 
-        private int RunProject(bool teamcity)
+        int RunProject(bool teamcity, bool parallelizeTestCollections, int maxThreadCount)
         {
             var consoleLock = new object();
 
-            ExecuteAssembly(consoleLock, _environment.ApplicationName, teamcity);
+            ExecuteAssembly(consoleLock, _environment.ApplicationName, teamcity, parallelizeTestCollections, maxThreadCount);
 
             if (completionMessages.Count > 0)
             {
@@ -126,10 +129,10 @@ namespace Xunit.KRunner
                                       message.Value.Time.ToString("0.000s").PadLeft(longestTime));
             }
 
-            return completionMessages.Values.Sum(summary => summary.Failed);
+            return failed ? 1 : completionMessages.Values.Sum(summary => summary.Failed);
         }
 
-        private XmlTestExecutionVisitor CreateVisitor(object consoleLock, bool teamCity)
+        XmlTestExecutionVisitor CreateVisitor(object consoleLock, bool teamCity)
         {
             if (teamCity)
                 return new TeamCityVisitor(() => cancel);
@@ -137,39 +140,32 @@ namespace Xunit.KRunner
             return new StandardOutputVisitor(consoleLock, () => cancel, completionMessages);
         }
 
-        private void ExecuteAssembly(object consoleLock, string assemblyName, bool teamCity)
+        void ExecuteAssembly(object consoleLock, string assemblyName, bool teamCity, bool parallelizeTestCollections, int maxThreadCount)
         {
             if (cancel)
                 return;
 
             try
             {
-                var framework = new Xunit.Sdk.XunitTestFramework();
-                var executor = framework.GetExecutor(assemblyName);
+                var name = new AssemblyName(assemblyName);
+                var assembly = Reflector.Wrap(Assembly.Load(name));
+                var framework = new XunitTestFramework();
+                var discoverer = framework.GetDiscoverer(assembly);
+                var executor = framework.GetExecutor(name);
+                var discoveryVisitor = new TestDiscoveryVisitor();
 
+                discoverer.Find(includeSourceInformation: false, messageSink: discoveryVisitor, options: new TestFrameworkOptions());
+                discoveryVisitor.Finished.WaitOne();
+
+                var executionOptions = new XunitExecutionOptions { DisableParallelization = !parallelizeTestCollections, MaxParallelThreads = maxThreadCount };
                 var resultsVisitor = CreateVisitor(consoleLock, teamCity);
-                executor.Run(resultsVisitor, new XunitDiscoveryOptions(), new XunitExecutionOptions());
+                executor.Run(discoveryVisitor.TestCases, resultsVisitor, executionOptions);
                 resultsVisitor.Finished.WaitOne();
             }
             catch (Exception ex)
             {
-                var e = ex;
-
-                while (e != null)
-                {
-                    Console.WriteLine("{0}: {1}", e.GetType().FullName, e.Message);
-
-                    foreach (string stackLine in e.StackTrace.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
-                        Console.WriteLine(stackLine);
-
-                    e = e.InnerException;
-                }
-
-#if NET45
-                Environment.Exit(1);
-#else
-                Process.GetCurrentProcess().Kill();
-#endif
+                Console.WriteLine("{0}: {1}", ex.GetType().FullName, ex.Message);
+                failed = true;
             }
         }
     }
