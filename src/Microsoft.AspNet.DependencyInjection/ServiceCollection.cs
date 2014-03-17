@@ -12,14 +12,21 @@ namespace Microsoft.AspNet.DependencyInjection
         private readonly ServiceDescriber _describe;
 
         public ServiceCollection()
-            : this(new Configuration())
+            : this(fallbackServices: null)
         {
         }
 
-        public ServiceCollection(IConfiguration configuration)
+        public ServiceCollection(IServiceProvider fallbackServices)
+            : this(fallbackServices, new Configuration())
+        {
+        }
+
+        public ServiceCollection(IServiceProvider fallbackServices, IConfiguration configuration)
         {
             _descriptors = new List<IServiceDescriptor>();
             _describe = new ServiceDescriber(configuration);
+
+            FallbackServices = fallbackServices;
         }
 
         public IServiceProvider FallbackServices { get; set; }
