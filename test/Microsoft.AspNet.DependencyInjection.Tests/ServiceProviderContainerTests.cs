@@ -8,9 +8,9 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
     {
         protected override IServiceProvider CreateContainer()
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.Add(TestServices.DefaultServices());
-            return serviceCollection.BuildServiceProvider();
+            return new ServiceCollection()
+                .Add(TestServices.DefaultServices())
+                .BuildServiceProvider();
         }
     }
 }

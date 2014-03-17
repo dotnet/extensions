@@ -31,17 +31,16 @@ namespace Microsoft.AspNet.DependencyInjection
 
         public IServiceProvider FallbackServices { get; set; }
 
-        public void Add(IServiceDescriptor descriptor)
+        public ServiceCollection Add(IServiceDescriptor descriptor)
         {
             _descriptors.Add(descriptor);
+            return this;
         }
 
-        public void Add(
-                IEnumerable<IServiceDescriptor> descriptors,
-                params IEnumerable<IServiceDescriptor>[] moreDescriptors)
+        public ServiceCollection Add(IEnumerable<IServiceDescriptor> descriptors)
         {
             _descriptors.AddRange(descriptors);
-            _descriptors.AddRange(moreDescriptors.SelectMany(d => d));
+            return this;
         }
 
         public ServiceCollection AddTransient<TService, TImplementation>()
