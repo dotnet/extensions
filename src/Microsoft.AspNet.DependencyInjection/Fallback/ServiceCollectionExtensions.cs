@@ -1,12 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNet.DependencyInjection.Fallback
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceProvider BuildServiceProvider(this ServiceCollection collection)
+        public static IServiceProvider BuildServiceProvider(
+                this IEnumerable<IServiceDescriptor> collection)
         {
-            return new ServiceProvider(collection.FallbackServices).Add(collection);
+            return BuildServiceProvider(collection, fallbackServices: null);
+        }
+
+        public static IServiceProvider BuildServiceProvider(
+                this IEnumerable<IServiceDescriptor> collection,
+                IServiceProvider fallbackServices)
+        {
+            return new ServiceProvider(fallbackServices).Add(collection);
         }
     }
 }
