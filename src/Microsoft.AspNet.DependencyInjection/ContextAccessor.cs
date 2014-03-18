@@ -16,19 +16,19 @@ namespace Microsoft.AspNet.DependencyInjection
         {
             get
             {
-                return _source.Access == null ? _value : _source.Access();
+                return _source.Access != null ? _source.Access() : _value;
             }
-            set
+        }
+
+        public TContext ExchangeValue(TContext value)
+        {
+            if (_source.Exchange != null)
             {
-                if (_source.Exchange == null)
-                {
-                    _value = value;
-                }
-                else
-                {
-                    _source.Exchange(value); 
-                }
+                return _source.Exchange(value);
             }
+            var prior = _value;
+            _value = value;
+            return prior;
         }
 
         public IDisposable SetContextSource(Func<TContext> access, Func<TContext, TContext> exchange)
