@@ -37,7 +37,11 @@ namespace Microsoft.AspNet.DependencyInjection
 
             if (bestMatcher == null)
             {
-                throw new Exception(string.Format("TODO: unable to locate suitable constructor for {0}", instanceType));
+                throw new Exception(
+                    string.Format(
+                        "TODO: unable to locate suitable constructor for {0}. " + 
+                        "Ensure 'instanceType' is concrete and all parameters are accepted by a constructor.",
+                        instanceType));
             }
 
             return bestMatcher.CreateInstance(_services);
