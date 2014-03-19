@@ -154,7 +154,9 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
                     Func<Service, IEnumerable<IComponentRegistration>> registrationAcessor)
             {
                 var serviceWithType = service as IServiceWithType;
-                if (serviceWithType != null)
+
+                // Only introduce services that are not already registered
+                if (serviceWithType != null && !registrationAcessor(service).Any())
                 {
                     var serviceType = serviceWithType.ServiceType;
                     if (HasService(_fallbackServiceProvider, serviceType))
