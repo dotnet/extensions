@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.AspNet.DependencyInjection.MultiServiceFactories
+namespace Microsoft.AspNet.DependencyInjection.ServiceLookup
 {
     internal class ServiceScope : IServiceScope
     {

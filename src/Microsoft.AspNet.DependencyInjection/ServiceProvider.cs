@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
 using System.Threading;
-using Microsoft.AspNet.DependencyInjection.MultiServiceFactories;
+using Microsoft.AspNet.DependencyInjection.ServiceLookup;
 
 namespace Microsoft.AspNet.DependencyInjection
 {
@@ -15,9 +12,13 @@ namespace Microsoft.AspNet.DependencyInjection
     /// </summary>
     internal class ServiceProvider : IServiceProvider, IDisposable
     {
-        private readonly IServiceProvider _fallbackServiceProvider;
-        private readonly IDictionary<Type, IMultiServiceFactory> _factories;
+        private readonly object _sync = new object();
 
+        private readonly ServiceProvider _parent;
+        private readonly ServiceTable _table;
+        private readonly IServiceProvider _fallback;
+
+        private readonly Dictionary<IService, object> _resolvedServices = new Dictionary<IService,object>();
         private ConcurrentBag<IDisposable> _disposables = new ConcurrentBag<IDisposable>();
 
         public ServiceProvider(IEnumerable<IServiceDescriptor> serviceDescriptors)
@@ -29,37 +30,32 @@ namespace Microsoft.AspNet.DependencyInjection
                 IEnumerable<IServiceDescriptor> serviceDescriptors,
                 IServiceProvider fallbackServiceProvider)
         {
-            _fallbackServiceProvider = fallbackServiceProvider;
+            _table = new ServiceTable(serviceDescriptors);
+            _fallback = fallbackServiceProvider;
 
-            var groupedDescriptors = serviceDescriptors.GroupBy(descriptor => descriptor.ServiceType);
-            _factories = groupedDescriptors.ToDictionary(
-                grouping => grouping.Key,
-                grouping => (IMultiServiceFactory)new MultiServiceFactory(this, grouping.ToArray()));
-
-            _factories[typeof(IServiceProvider)] = new ServiceProviderFactory(this);
-            _factories[typeof(IServiceScopeFactory)] = new ServiceScopeFactoryFactory(this);
+            _table.Add(typeof(IServiceProvider), new ServiceProviderService());
+            _table.Add(typeof(IServiceScopeFactory), new ServiceScopeService());
+            _table.Add(typeof(IEnumerable<>), new OpenIEnumerableService(_table));
         }
 
         // This constructor is called exclusively to create a child scope from the parent
         internal ServiceProvider(ServiceProvider parent)
         {
+            _parent = parent;
+            _table = parent._table;
+
             // Rescope the fallback service provider if it contains an IServiceScopeFactory
             var scopeFactory = GetFallbackServiceOrNull<IServiceScopeFactory>();
             if (scopeFactory != null)
             {
                 var scope = scopeFactory.CreateScope();
-                _fallbackServiceProvider = scope.ServiceProvider;
+                _fallback = scope.ServiceProvider;
                 _disposables.Add(scope);
             }
             else
             {
-                _fallbackServiceProvider = parent._fallbackServiceProvider;
+                _fallback = parent._fallback;
             }
-
-            // Rescope all the factories
-            _factories = parent._factories.ToDictionary(
-                kvp => kvp.Key,
-                kvp => kvp.Value.Scope(this));
         }
 
         /// <summary>
@@ -67,53 +63,38 @@ namespace Microsoft.AspNet.DependencyInjection
         /// </summary>
         /// <param name="serviceType"></param>
         /// <returns></returns>
-        public virtual object GetService(Type serviceType)
+        public object GetService(Type serviceType)
         {
-            return GetSingleService(serviceType) ??
-                GetMultiService(serviceType) ??
+            ServiceEntry entry;
+            return _table.TryGetEntry(serviceType, out entry) ?
+                ResolveService(entry.Last) :
                 GetFallbackService(serviceType);
         }
 
-        private object GetSingleService(Type serviceType)
+        internal object ResolveService(IService service)
         {
-            IMultiServiceFactory serviceFactory;
-            return _factories.TryGetValue(serviceType, out serviceFactory)
-                ? serviceFactory.GetSingleService()
-                : null;
-        }
-
-        private IList GetMultiService(Type collectionType)
-        {
-            if (collectionType.GetTypeInfo().IsGenericType &&
-                collectionType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+            if (service.Lifecycle == LifecycleKind.Singleton && _parent != null)
             {
-                Type serviceType = collectionType.GetTypeInfo().GenericTypeArguments.Single();
-
-                IMultiServiceFactory serviceFactory;
-                if (_factories.TryGetValue(serviceType, out serviceFactory))
+                return _parent.ResolveService(service);
+            }
+            if (service.Lifecycle == LifecycleKind.Transient)
+            {
+                return CaptureDisposable(service.Create(this));
+            }
+            else
+            {
+                // At this point we are either resolving a scoped service or a singleton
+                // from the root ServiceProvider.
+                lock (_sync)
                 {
-                    return serviceFactory.GetMultiService();
+                    object resolved;
+                    if (!_resolvedServices.TryGetValue(service, out resolved))
+                    {
+                        resolved = CaptureDisposable(service.Create(this));
+                        _resolvedServices[service] = resolved;
+                    }
+                    return resolved;
                 }
-            }
-
-            return null;
-        }
-
-        private object GetFallbackService(Type serviceType)
-        {
-            return _fallbackServiceProvider != null ? _fallbackServiceProvider.GetService(serviceType) : null;
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "IServiceProvider may throw unknown exceptions")]
-        private T GetFallbackServiceOrNull<T>() where T : class
-        {
-            try
-            {
-                return (T)GetFallbackService(typeof(T));
-            }
-            catch
-            {
-                return null;
             }
         }
 
@@ -130,14 +111,31 @@ namespace Microsoft.AspNet.DependencyInjection
             }
         }
 
-        internal object CaptureDisposableService(object service)
+        private object GetFallbackService(Type serviceType)
         {
-            IDisposable disposable = service as IDisposable;
+            return _fallback != null ? _fallback.GetService(serviceType) : null;
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "IServiceProvider may throw unknown exceptions")]
+        private T GetFallbackServiceOrNull<T>() where T : class
+        {
+            try
+            {
+                return (T)GetFallbackService(typeof(T));
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private object CaptureDisposable(object service)
+        {
+            var disposable = service as IDisposable;
             if (disposable != null)
             {
                 _disposables.Add(disposable);
             }
-
             return service;
         }
     }

@@ -22,6 +22,10 @@ namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
             {
                 return "FakeFallbackServiceProvider";
             }
+            else if (serviceType == typeof(IEnumerable<string>))
+            {
+                return new[] { "FakeFallbackServiceProvider" };
+            }
             else if (serviceType == typeof(IFakeFallbackService))
             {
                 return new FakeService()

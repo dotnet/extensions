@@ -8,6 +8,16 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
     public abstract class ScopingContainerTestBase : AllContainerTestsBase
     {
         [Fact]
+        public void LastServiceReplacesPreviousServices()
+        {
+            var container = CreateContainer();
+
+            var service = container.GetService<IFakeMultipleService>();
+
+            Assert.Equal("FakeTwoMultipleServiceAnotherMethod", service.SimpleMethod());
+        }
+
+        [Fact]
         public void SingletonServiceCanBeResolved()
         {
             var container = CreateContainer();
@@ -83,6 +93,17 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
         }
 
         [Fact]
+        public void IEnumerableServicesCanBeResolvedFromFallbackServiceProvider()
+        {
+            var container = CreateContainer();
+
+            var service = container.GetService<IEnumerable<string>>();
+
+            Assert.Equal(1, service.Count());
+            Assert.Equal("FakeFallbackServiceProvider", service.First());
+        }
+
+        [Fact]
         public void ServicesFromFallbackServiceProviderCanBeReplaced()
         {
             var container = CreateContainer();
@@ -102,6 +123,27 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
 
             Assert.Equal(1, services.Count());
             Assert.Contains("FakeServiceSimpleMethod", messages);
+        }
+
+        [Fact]
+        public void OpenGenericServicesCanBeResolved()
+        {
+            var container = CreateContainer();
+
+            var genericService = container.GetService<IFakeOpenGenericService<IFakeSingletonService>>();
+            var singletonService = container.GetService<IFakeSingletonService>();
+
+            Assert.Equal(singletonService, genericService.SimpleMethod());
+        }
+
+        [Fact]
+        public void ClosedServicesPreferredOverOpenGenericServices()
+        {
+            var container = CreateContainer();
+
+            var service = container.GetService<IFakeOpenGenericService<string>>();
+
+            Assert.Equal("FakeServiceSimpleMethod", service.SimpleMethod());
         }
     }
 }
