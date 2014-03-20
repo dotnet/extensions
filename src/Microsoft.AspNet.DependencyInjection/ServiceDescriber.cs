@@ -7,6 +7,11 @@ namespace Microsoft.AspNet.DependencyInjection
     {
         private IConfiguration _configuration;
 
+        public ServiceDescriber()
+            : this(new Configuration())
+        {
+        }
+
         public ServiceDescriber(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -45,7 +50,7 @@ namespace Microsoft.AspNet.DependencyInjection
                 lifecycle);
         }
 
-        private ServiceDescriptor Describe(
+        public ServiceDescriptor Describe(
                 Type serviceType,
                 Type implementationType,
                 object implementationInstance,

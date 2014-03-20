@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Autofac;
 using Autofac.Builder;
 using Autofac.Core;
@@ -48,10 +49,22 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
             {
                 if (descriptor.ImplementationType != null)
                 {
-                    builder
-                        .RegisterType(descriptor.ImplementationType)
-                        .As(descriptor.ServiceType)
-                        .ConfigureLifecycle(descriptor.Lifecycle);
+                    // Test if the an open generic type is being registered
+                    var serviceTypeInfo = descriptor.ServiceType.GetTypeInfo();
+                    if (serviceTypeInfo.IsGenericTypeDefinition)
+                    {
+                        builder
+                            .RegisterGeneric(descriptor.ImplementationType)
+                            .As(descriptor.ServiceType)
+                            .ConfigureLifecycle(descriptor.Lifecycle);
+                    }
+                    else
+                    {
+                        builder
+                            .RegisterType(descriptor.ImplementationType)
+                            .As(descriptor.ServiceType)
+                            .ConfigureLifecycle(descriptor.Lifecycle);
+                    }
                 }
                 else
                 {
@@ -63,8 +76,8 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
             }
         }
 
-        private static IRegistrationBuilder<object, T, SingleRegistrationStyle> ConfigureLifecycle<T>(
-                this IRegistrationBuilder<object, T, SingleRegistrationStyle> registrationBuilder,
+        private static IRegistrationBuilder<object, T, U> ConfigureLifecycle<T, U>(
+                this IRegistrationBuilder<object, T, U> registrationBuilder,
                 LifecycleKind lifecycleKind)
         {
             switch (lifecycleKind)
