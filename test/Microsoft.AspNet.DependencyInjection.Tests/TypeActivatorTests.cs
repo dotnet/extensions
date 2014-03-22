@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
 
             var typeActivator = serviceProvider.GetService<ITypeActivator>();
 
-            var anotherClass = typeActivator.CreateInstance<AnotherClass>();
+            var anotherClass = typeActivator.CreateInstance<AnotherClass>(serviceProvider);
 
             var result = anotherClass.LessSimpleMethod();
 
@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
 
             var typeActivator = serviceProvider.GetService<ITypeActivator>();
 
-            var anotherClass = typeActivator.CreateInstance<AnotherClassAcceptingData>("1", "2");
+            var anotherClass = typeActivator.CreateInstance<AnotherClassAcceptingData>(serviceProvider, "1", "2");
 
             var result = anotherClass.LessSimpleMethod();
 

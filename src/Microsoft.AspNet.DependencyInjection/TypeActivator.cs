@@ -6,14 +6,7 @@ namespace Microsoft.AspNet.DependencyInjection
 {
     public class TypeActivator : ITypeActivator
     {
-        private readonly IServiceProvider _services;
-
-        public TypeActivator(IServiceProvider services)
-        {
-            _services = services;
-        }
-
-        public object CreateInstance(Type instanceType, params object[] parameters)
+        public object CreateInstance(IServiceProvider services, Type instanceType, params object[] parameters)
         {
             int bestLength = -1;
             ConstructorMatcher bestMatcher = null;
@@ -44,7 +37,7 @@ namespace Microsoft.AspNet.DependencyInjection
                         instanceType));
             }
 
-            return bestMatcher.CreateInstance(_services);
+            return bestMatcher.CreateInstance(services);
         }
 
         class ConstructorMatcher
