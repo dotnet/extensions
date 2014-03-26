@@ -39,5 +39,19 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
 
             Assert.Equal("[FakeServiceSimpleMethod] 1 2", result);
         }
+
+        [Fact]
+        public void TypeActivatorWorksWithStaticCtor()
+        {
+            var serviceProvider = new ServiceCollection()
+                .AddTransient<ITypeActivator, TypeActivator>()
+                .BuildServiceProvider();
+
+            var typeActivator = serviceProvider.GetService<ITypeActivator>();
+
+            var anotherClass = typeActivator.CreateInstance<ClassWithStaticCtor>(serviceProvider);
+
+            Assert.NotNull(anotherClass);
+        }
     }
 }

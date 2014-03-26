@@ -14,6 +14,7 @@ namespace Microsoft.AspNet.DependencyInjection
             foreach (var matcher in instanceType
                 .GetTypeInfo()
                 .DeclaredConstructors
+                .Where(c => !c.IsStatic)
                 .Select(constructor => new ConstructorMatcher(constructor)))
             {
                 var length = matcher.Match(parameters);
