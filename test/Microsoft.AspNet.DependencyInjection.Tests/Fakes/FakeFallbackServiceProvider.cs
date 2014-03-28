@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
 {
-    public class FakeFallbackServiceProvider : IServiceProvider
+    public interface IFakeFallbackServiceProvider : IServiceProvider, IDisposable
+    {
+    }
+
+    public class FakeFallbackServiceProvider : IFakeFallbackServiceProvider
     {
         private int _timesGetServiceHasBeenInvoked = 0;
         private string _prefix;
@@ -44,6 +48,10 @@ namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
                     Message = _prefix + "FakeFallbackServiceProvider"
                 };
             }
+            else if (serviceType == typeof(IFakeFallbackServiceProvider))
+            {
+                return this;
+            }
             else if (serviceType == typeof(IServiceScopeFactory))
             {
                 return new FakeFallbackScopeFactory(_prefix);
@@ -54,9 +62,14 @@ namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
             }
         }
 
+        public void Dispose()
+        {
+            _prefix = "disposed-";
+        }
+
         private class FakeFallbackScopeFactory : IServiceScopeFactory
         {
-            private string _prefix;
+            private readonly string _prefix;
 
             public FakeFallbackScopeFactory(string prefix)
             {
@@ -70,15 +83,21 @@ namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
 
             private class FakeFallbackScope : IServiceScope
             {
+                private readonly IFakeFallbackServiceProvider _serviceProvider;
+
                 public FakeFallbackScope(string prefix)
                 {
-                    ServiceProvider = new FakeFallbackServiceProvider("scope-" + prefix);
+                    _serviceProvider = new FakeFallbackServiceProvider("scope-" + prefix);
                 }
 
-                public IServiceProvider ServiceProvider { get; private set; }
+                public IServiceProvider ServiceProvider
+                {
+                    get { return _serviceProvider; }
+                }
 
                 public void Dispose()
                 {
+                    _serviceProvider.Dispose();
                 }
             }
         }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.DependencyInjection.Tests.Fakes;
 using Xunit;
@@ -123,6 +124,46 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
 
             Assert.Equal(1, services.Count());
             Assert.Contains("FakeServiceSimpleMethod", messages);
+        }
+
+        [Fact]
+        public void NestedScopedServiceCanBeResolvedFromFallbackProvider()
+        {
+            var container = CreateContainer();
+
+            var outerScopeFactory = container.GetService<IServiceScopeFactory>();
+            using (var outerScope = outerScopeFactory.CreateScope())
+            {
+                var innerScopeFactory = outerScope.ServiceProvider.GetService<IServiceScopeFactory>();
+                using (var innerScope = innerScopeFactory.CreateScope())
+                {
+                    var outerScopedService = outerScope.ServiceProvider.GetService<string>();
+                    var innerScopedService = innerScope.ServiceProvider.GetService<string>();
+
+                    Assert.Equal("scope-FakeFallbackServiceProvider", outerScopedService);
+                    Assert.Equal("scope-scope-FakeFallbackServiceProvider", innerScopedService);
+                }
+            }
+        }
+
+        [Fact]
+        public void FallbackScopeGetsDisposedAlongWithChainedScope()
+        {
+            var container = CreateContainer();
+
+            var scopeFactory = container.GetService<IServiceScopeFactory>();
+            IServiceProvider fallbackProvider;
+            using (var scope = scopeFactory.CreateScope())
+            {
+                fallbackProvider = scope.ServiceProvider.GetService<IFakeFallbackServiceProvider>();
+                var scopedService = fallbackProvider.GetService<string>();
+
+                Assert.Equal("scope-FakeFallbackServiceProvider", scopedService);
+            }
+
+            var disposedScopedService = fallbackProvider.GetService<string>();
+
+            Assert.Equal("disposed-FakeFallbackServiceProvider", disposedScopedService);
         }
 
         [Fact]
