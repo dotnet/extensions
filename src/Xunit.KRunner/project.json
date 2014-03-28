@@ -21,7 +21,6 @@
         "System.Reflection": "4.0.10.0",
         "System.Runtime": "4.0.20.0",
         "System.Runtime.Extensions": "4.0.10.0",
-        "System.Runtime.Hosting": "3.9.0.0",
         "System.Threading": "4.0.0.0"
       }
     }

@@ -37,8 +37,9 @@ namespace Xunit.KRunner
                 return 1;
             }
 
-            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 #if NET45
+            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+
             Console.CancelKeyPress += (sender, e) =>
             {
                 if (!cancel)
@@ -73,6 +74,7 @@ namespace Xunit.KRunner
             }
         }
 
+#if NET45
         static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var ex = e.ExceptionObject as Exception;
@@ -82,12 +84,10 @@ namespace Xunit.KRunner
             else
                 Console.WriteLine("Error of unknown type thrown in application domain");
 
-#if NET45
+
             Environment.Exit(1);
-#else
-            Process.GetCurrentProcess().Kill();
-#endif
         }
+#endif
 
         static void PrintUsage()
         {
