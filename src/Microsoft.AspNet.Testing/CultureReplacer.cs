@@ -20,11 +20,16 @@ namespace Microsoft.AspNet.Testing
         // UICulture => Language
         public CultureReplacer(string culture = _defaultCultureName, string uiCulture = _defaultUICultureName)
         {
-            _originalCulture = CultureInfo.DefaultThreadCurrentCulture;
-            _originalUICulture = CultureInfo.DefaultThreadCurrentUICulture;
+            _originalCulture = CultureInfo.CurrentCulture;
+            _originalUICulture = CultureInfo.CurrentUICulture;
             _threadId = Thread.CurrentThread.ManagedThreadId;
-            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(culture);
-            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(uiCulture);
+#if NET45
+            Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+            Thread.CurrentThread.CurrentUICulture = new CultureInfo(uiCulture);
+#else
+            CultureInfo.CurrentCulture = new CultureInfo(culture);
+            CultureInfo.CurrentUICulture = new CultureInfo(uiCulture);
+#endif
         }
 
         /// <summary>
@@ -36,7 +41,7 @@ namespace Microsoft.AspNet.Testing
         }
 
         /// <summary>
-        /// The name of the culture that is used as the default value for CultureInfo.DefaultThreadCurrentUICulture when CultureReplacer is used.
+        /// The name of the culture that is used as the default value for [Thread.CurrentThread(NET45)/CultureInfo(K10)].CurrentUICulture when CultureReplacer is used.
         /// </summary>
         public static string DefaultUICultureName
         {
@@ -44,7 +49,7 @@ namespace Microsoft.AspNet.Testing
         }
 
         /// <summary>
-        /// The culture that is used as the default value for CultureInfo.DefaultThreadCurrentCulture when CultureReplacer is used.
+        /// The culture that is used as the default value for [Thread.CurrentThread(NET45)/CultureInfo(K10)].CurrentCulture when CultureReplacer is used.
         /// </summary>
         public static CultureInfo DefaultCulture
         {
@@ -63,8 +68,13 @@ namespace Microsoft.AspNet.Testing
             {
                 Assert.True(Thread.CurrentThread.ManagedThreadId == _threadId,
                     "The current thread is not the same as the thread invoking the constructor. This should never happen.");
-                CultureInfo.DefaultThreadCurrentCulture = _originalCulture;
-                CultureInfo.DefaultThreadCurrentUICulture = _originalUICulture;
+#if NET45
+                Thread.CurrentThread.CurrentCulture = _originalCulture;
+                Thread.CurrentThread.CurrentUICulture = _originalUICulture;
+#else
+                CultureInfo.CurrentCulture = _originalCulture;
+                CultureInfo.CurrentUICulture = _originalUICulture;
+#endif
             }
         }
     }

@@ -41,17 +41,28 @@ namespace Microsoft.AspNet.Testing
 
         public override void Before(MethodInfo methodUnderTest)
         {
-            _originalCulture = CultureInfo.DefaultThreadCurrentCulture;
-            _originalUICulture = CultureInfo.DefaultThreadCurrentUICulture;
+            _originalCulture = CultureInfo.CurrentCulture;
+            _originalUICulture = CultureInfo.CurrentUICulture;
 
-            CultureInfo.DefaultThreadCurrentCulture = Culture;
-            CultureInfo.DefaultThreadCurrentUICulture = UICulture;
+#if NET45
+            Thread.CurrentThread.CurrentCulture = Culture;
+            Thread.CurrentThread.CurrentUICulture = UICulture;
+#else
+            CultureInfo.CurrentCulture = Culture;
+            CultureInfo.CurrentUICulture = UICulture;
+#endif
+
         }
 
         public override void After(MethodInfo methodUnderTest)
         {
-            CultureInfo.DefaultThreadCurrentCulture = _originalCulture;
-            CultureInfo.DefaultThreadCurrentUICulture = _originalUICulture;
+#if NET45
+            Thread.CurrentThread.CurrentCulture = _originalCulture;
+            Thread.CurrentThread.CurrentUICulture = _originalUICulture;
+#else
+            CultureInfo.CurrentCulture = _originalCulture;
+            CultureInfo.CurrentUICulture = _originalUICulture;
+#endif
         }
     }
 }
