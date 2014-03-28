@@ -172,7 +172,7 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
                 if (serviceWithType != null && !registrationAcessor(service).Any())
                 {
                     var serviceType = serviceWithType.ServiceType;
-                    if (HasService(_fallbackServiceProvider, serviceType))
+                    if (_fallbackServiceProvider.HasService(serviceType))
                     {
                         yield return RegistrationBuilder.ForDelegate(serviceType, (c, p) =>
                         {
@@ -181,26 +181,6 @@ namespace Microsoft.AspNet.DependencyInjection.Autofac
                         .PreserveExistingDefaults()
                         .CreateRegistration();
                     }
-                }
-            }
-
-            private bool HasService(IServiceProvider provider, Type serviceType)
-            {
-                try
-                {
-                    var obj = provider.GetService(serviceType);
-
-                    // Return false for empty enumerables
-                    if(obj is IEnumerable)
-                    {
-                        return ((IEnumerable)obj).GetEnumerator().MoveNext();
-                    }
-
-                    return obj != null;
-                }
-                catch
-                {
-                    return false;
                 }
             }
         }

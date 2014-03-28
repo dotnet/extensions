@@ -3,6 +3,7 @@
   "dependencies": {
     "Microsoft.AspNet.DependencyInjection": "0.1-alpha-*",
     "Microsoft.AspNet.DependencyInjection.Autofac": "0.1-alpha-*",
+    "Microsoft.AspNet.DependencyInjection.Ninject": "0.1-alpha-*",
     "Autofac": "3.3.0",
     "Ninject": "3.0.1.10",
     "structuremap": "2.6.4.1",
