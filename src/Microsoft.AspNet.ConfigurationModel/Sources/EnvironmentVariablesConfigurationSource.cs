@@ -20,15 +20,13 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
         public override void Load()
         {
-#if NET45
             ReplaceData(Environment.GetEnvironmentVariables()
                 .Cast<DictionaryEntry>()
-                .Where(entry => ((string) entry.Key).StartsWith(_prefix, StringComparison.OrdinalIgnoreCase))
+                .Where(entry => ((string)entry.Key).StartsWith(_prefix, StringComparison.OrdinalIgnoreCase))
                 .ToDictionary(
-                    entry => ((string) entry.Key).Substring(_prefix.Length),
-                    entry => (string) entry.Value,
+                    entry => ((string)entry.Key).Substring(_prefix.Length),
+                    entry => (string)entry.Value,
                     StringComparer.OrdinalIgnoreCase));
-#endif
         }
     }
 }
