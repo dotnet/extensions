@@ -8,6 +8,8 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
 {
     public abstract class ScopingContainerTestBase : AllContainerTestsBase
     {
+        protected abstract IServiceProvider CreateContainer(IServiceProvider fallbackProvider);
+
         [Fact]
         public void LastServiceReplacesPreviousServices()
         {
@@ -164,6 +166,58 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
             var disposedScopedService = fallbackProvider.GetService<string>();
 
             Assert.Equal("disposed-FakeFallbackServiceProvider", disposedScopedService);
+        }
+
+        [Fact]
+        public void NestedScopedServiceCanBeResolvedWithNoFallbackProvider()
+        {
+            var container = CreateContainer(fallbackProvider: null);
+
+            var outerScopeFactory = container.GetService<IServiceScopeFactory>();
+            using (var outerScope = outerScopeFactory.CreateScope())
+            {
+                var innerScopeFactory = outerScope.ServiceProvider.GetService<IServiceScopeFactory>();
+                using (var innerScope = innerScopeFactory.CreateScope())
+                {
+                    var outerScopedService = outerScope.ServiceProvider.GetService<IFakeScopedService>();
+                    var innerScopedService = innerScope.ServiceProvider.GetService<IFakeScopedService>();
+
+                    Assert.NotEqual(outerScopedService, innerScopedService);
+                }
+            }
+        }
+
+        [Fact]
+        public void NestedScopedServiceCanBeResolvedWithNonScopingFallbackProvider()
+        {
+            var container = CreateContainer(new FakeNonScopingFallbackServiceProvder());
+
+            var outerScopeFactory = container.GetService<IServiceScopeFactory>();
+            using (var outerScope = outerScopeFactory.CreateScope())
+            {
+                var innerScopeFactory = outerScope.ServiceProvider.GetService<IServiceScopeFactory>();
+                using (var innerScope = innerScopeFactory.CreateScope())
+                {
+                    var outerScopedService = outerScope.ServiceProvider.GetService<IFakeScopedService>();
+                    var innerScopedService = innerScope.ServiceProvider.GetService<IFakeScopedService>();
+
+                    Assert.NotEqual(outerScopedService, innerScopedService);
+                }
+            }
+        }
+
+        [Fact]
+        public void FallbackServiceCanBeResolvedInScopeWithNonScopingFallbackProvider()
+        {
+            var container = CreateContainer(new FakeNonScopingFallbackServiceProvder());
+
+            var scopeFactory = container.GetService<IServiceScopeFactory>();
+            using (var scope = scopeFactory.CreateScope())
+            {
+                var fallbackService = scope.ServiceProvider.GetService<string>();
+
+                Assert.Equal("FakeNonScopingFallbackServiceProvder", fallbackService);
+            }
         }
 
         [Fact]

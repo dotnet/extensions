@@ -8,8 +8,12 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
     {
         protected override IServiceProvider CreateContainer()
         {
-            return TestServices.DefaultServices()
-                .BuildServiceProvider(new FakeFallbackServiceProvider());
+            return CreateContainer(new FakeFallbackServiceProvider());
+        }
+
+        protected override IServiceProvider CreateContainer(IServiceProvider fallbackProvider)
+        {
+            return TestServices.DefaultServices().BuildServiceProvider(fallbackProvider);
         }
     }
 }

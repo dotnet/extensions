@@ -9,12 +9,14 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
     {
         protected override IServiceProvider CreateContainer()
         {
+            return CreateContainer(new FakeFallbackServiceProvider());
+        }
+
+        protected override IServiceProvider CreateContainer(IServiceProvider fallbackProvider)
+        {
             IKernel kernel = new StandardKernel();
 
-            NinjectRegistration.Populate(
-                kernel,
-                TestServices.DefaultServices(),
-                new FakeFallbackServiceProvider());
+            NinjectRegistration.Populate(kernel, TestServices.DefaultServices(), fallbackProvider);
 
             return kernel.Get<IServiceProvider>();
         }

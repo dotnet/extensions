@@ -9,12 +9,17 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
     {
         protected override IServiceProvider CreateContainer()
         {
+            return CreateContainer(new FakeFallbackServiceProvider());
+        }
+
+        protected override IServiceProvider CreateContainer(IServiceProvider fallbackProvider)
+        {
             var builder = new ContainerBuilder();
 
             AutofacRegistration.Populate(
                 builder,
                 TestServices.DefaultServices(),
-                new FakeFallbackServiceProvider());
+                fallbackProvider);
 
             IContainer container = builder.Build();
             return container.Resolve<IServiceProvider>();
