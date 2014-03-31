@@ -43,6 +43,7 @@ namespace Microsoft.AspNet.DependencyInjection
         {
             _parent = parent;
             _table = parent._table;
+            _fallback = parent._fallback;
 
             // Rescope the fallback service provider if it contains an IServiceScopeFactory
             var scopeFactory = GetFallbackServiceOrNull<IServiceScopeFactory>();
@@ -51,10 +52,6 @@ namespace Microsoft.AspNet.DependencyInjection
                 var scope = scopeFactory.CreateScope();
                 _fallback = scope.ServiceProvider;
                 _disposables.Add(scope);
-            }
-            else
-            {
-                _fallback = parent._fallback;
             }
         }
 
