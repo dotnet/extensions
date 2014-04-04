@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Configuration.Json.Test
         private static readonly string ArbitraryFilePath = "Unit tests do not touch file system";
 
         [Fact]
-        public void LoadsKeyValuePairsFromValidJson()
+        public void LoadKeyValuePairsFromValidJson()
         {
             var json = @"{
                 'name': 'test',
@@ -24,6 +24,7 @@ namespace Microsoft.AspNet.Configuration.Json.Test
 
             jsonConfigSrc.Load(StringToStream(json));
 
+            Assert.Equal(3, jsonConfigSrc.Data.Count);
             Assert.Equal("test", jsonConfigSrc.Data["name"]);
             Assert.Equal("Something street", jsonConfigSrc.Data["address:street"]);
             Assert.Equal("12345", jsonConfigSrc.Data["address:zipcode"]);
@@ -53,6 +54,7 @@ namespace Microsoft.AspNet.Configuration.Json.Test
 
             jsonConfigSrc.Load(StringToStream(json));
 
+            Assert.Equal(3, jsonConfigSrc.Data.Count);
             Assert.Equal("test", jsonConfigSrc.Data["name"]);
             Assert.Equal("Something street", jsonConfigSrc.Data["address:street"]);
             Assert.Equal("12345", jsonConfigSrc.Data["address:zipcode"]);
@@ -63,7 +65,7 @@ namespace Microsoft.AspNet.Configuration.Json.Test
         {
             var json = @"{
                 'name': 'test',
-                'address': ['Something stree', '12345']
+                'address': ['Something street', '12345']
             }";
             var jsonConfigSource = new JsonConfigurationSource(ArbitraryFilePath);
 
@@ -71,7 +73,7 @@ namespace Microsoft.AspNet.Configuration.Json.Test
         }
 
         [Fact]
-        public void UnexpectedEndBeforeFinishParsing()
+        public void ThrowExceptionWhenUnexpectedEndFoundBeforeFinishParsing()
         {
             var json = @"{
                 'name': 'test',
@@ -100,6 +102,7 @@ namespace Microsoft.AspNet.Configuration.Json.Test
 
             jsonConfigSrc.Load(StringToStream(json));
 
+            Assert.Equal(3, jsonConfigSrc.Data.Count);
             Assert.Equal("new name", jsonConfigSrc.Data["name"]);
             Assert.Equal("Something street", jsonConfigSrc.Data["address:street"]);
             Assert.Equal("12345", jsonConfigSrc.Data["address:zipcode"]);

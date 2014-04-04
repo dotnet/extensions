@@ -8,12 +8,12 @@ namespace Microsoft.AspNet.Configuration.Json
 {
     public class JsonConfigurationSource : BaseConfigurationSource
     {
-        public string Path { get; set; }
-
         public JsonConfigurationSource(string path)
         {
             Path = path;
         }
+
+        public string Path { get; private set; }
 
         public override void Load()
         {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Configuration.Json
         {
             var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            using (JsonReader reader = new JsonTextReader(new StreamReader(stream)))
+            using (var reader = new JsonTextReader(new StreamReader(stream)))
             {
                 var startObjectCount = 0;
 
@@ -76,19 +76,17 @@ namespace Microsoft.AspNet.Configuration.Json
                         // End of file
                         case JsonToken.None:
                             {
-                                var lineInfo = reader as IJsonLineInfo;
                                 throw new FormatException("Unexpected end when parsing JSON. Path '" +
-                                    reader.Path + "', line " + lineInfo.LineNumber +
-                                    " position " + lineInfo.LinePosition);
+                                    reader.Path + "', line " + reader.LineNumber +
+                                    " position " + reader.LinePosition);
                             }
 
                         default:
                             {
                                 // Unsupported elements: Array, Constructor, Undefined
-                                var lineInfo = reader as IJsonLineInfo;
                                 throw new FormatException("Unsupported JSON token: " + reader.TokenType +
-                                    ". Path '" + reader.Path + "', line " + lineInfo.LineNumber +
-                                    " position " + lineInfo.LinePosition);
+                                    ". Path '" + reader.Path + "', line " + reader.LineNumber +
+                                    " position " + reader.LinePosition);
                             }
                     }
 
