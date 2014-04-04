@@ -1,0 +1,24 @@
+{
+  "version": "0.1-alpha-*",
+  "dependencies": {
+    "Microsoft.AspNet.ConfigurationModel": "0.1-alpha-*",
+    "Microsoft.AspNet.Configuration.Json": "0.1-alpha-*",
+    "Newtonsoft.Json": "5.0.8",
+    "Xunit.KRunner": "0.1-alpha-*",
+    "xunit.abstractions": "2.0.0-aspnet-*",
+    "xunit.assert": "2.0.0-aspnet-*",
+    "xunit.core": "2.0.0-aspnet-*",
+    "xunit.execution": "2.0.0-aspnet-*"
+  },
+  "configurations": {
+    "net45": {},
+    "k10": {
+      "dependencies": {
+        "System.IO": "4.0.0.0",
+        "System.Runtime": "4.0.20.0",
+        "System.Text.Encoding": "4.0.10.0",
+        "System.Threading.Tasks": "4.0.0.0"
+      }
+    }
+  }
+}
