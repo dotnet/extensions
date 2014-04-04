@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.ConfigurationModel.Sources;
+using Microsoft.AspNet.ConfigurationModel;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Configuration.Json
@@ -70,7 +71,7 @@ namespace Microsoft.AspNet.Configuration.Json
                         case JsonToken.Bytes:
                         case JsonToken.Raw:
                         case JsonToken.Null:
-                            data[reader.Path.Replace('.', ':')] = reader.Value.ToString();
+                            data[reader.Path.Replace(".", Constants.KeyDelimiter)] = reader.Value.ToString();
                             break;
 
                         // End of file
