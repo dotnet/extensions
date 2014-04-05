@@ -1,26 +1,30 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.30327.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Logging.net45", "src\Microsoft.AspNet.Logging\Microsoft.AspNet.Logging.net45.csproj", "{75D5A646-553D-491B-A969-18FDD45434B9}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNet.Logging.k10", "src\Microsoft.AspNet.Logging\Microsoft.AspNet.Logging.k10.csproj", "{153BDB4F-FD8B-4663-B929-2A92C796755E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Logging", "src\Microsoft.AspNet.Logging\Microsoft.AspNet.Logging.kproj", "{19D1B6C5-8A62-4387-8816-C54874D1DF5F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{75D5A646-553D-491B-A969-18FDD45434B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{75D5A646-553D-491B-A969-18FDD45434B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{75D5A646-553D-491B-A969-18FDD45434B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{75D5A646-553D-491B-A969-18FDD45434B9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{153BDB4F-FD8B-4663-B929-2A92C796755E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{153BDB4F-FD8B-4663-B929-2A92C796755E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{153BDB4F-FD8B-4663-B929-2A92C796755E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{153BDB4F-FD8B-4663-B929-2A92C796755E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.Debug|x86.ActiveCfg = Debug|x86
+		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.Debug|x86.Build.0 = Debug|x86
+		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.Release|Any CPU.ActiveCfg = Release|x86
+		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.Release|Mixed Platforms.Build.0 = Release|x86
+		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.Release|x86.ActiveCfg = Release|x86
+		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
