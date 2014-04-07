@@ -11,6 +11,11 @@ namespace Microsoft.AspNet.Configuration.Json
     {
         public JsonConfigurationSource(string path)
         {
+            if (string.IsNullOrEmpty(path) || string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentException("File path must be a non-empty string", "path");
+            }
+
             Path = path;
         }
 
