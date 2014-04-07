@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNet.ConfigurationModel.Sources;
 using Microsoft.AspNet.ConfigurationModel;
+using Microsoft.AspNet.ConfigurationModel.Sources;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Configuration.Json
@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.Configuration.Json
         {
             if (string.IsNullOrEmpty(path) || string.IsNullOrWhiteSpace(path))
             {
+                // TODO: exception message localization
                 throw new ArgumentException("File path must be a non-empty string", "path");
             }
 
@@ -23,7 +24,10 @@ namespace Microsoft.AspNet.Configuration.Json
 
         public override void Load()
         {
-            Load(new FileStream(Path, FileMode.Open));
+            using (var stream = new FileStream(Path, FileMode.Open))
+            {
+                Load(stream);
+            }
         }
 
         internal void Load(Stream stream)
@@ -45,6 +49,7 @@ namespace Microsoft.AspNet.Configuration.Json
                 if (reader.TokenType != JsonToken.StartObject)
                 {
                     var lineInfo = reader as IJsonLineInfo;
+                    // TODO: exception message localization
                     throw new FormatException("Only an object can be the root. Path '" +
                                     reader.Path + "', line " + lineInfo.LineNumber +
                                     " position " + lineInfo.LinePosition);
@@ -82,6 +87,7 @@ namespace Microsoft.AspNet.Configuration.Json
                         // End of file
                         case JsonToken.None:
                             {
+                                // TODO: exception message localization
                                 throw new FormatException("Unexpected end when parsing JSON. Path '" +
                                     reader.Path + "', line " + reader.LineNumber +
                                     " position " + reader.LinePosition);
@@ -89,6 +95,7 @@ namespace Microsoft.AspNet.Configuration.Json
 
                         default:
                             {
+                                // TODO: exception message localization
                                 // Unsupported elements: Array, Constructor, Undefined
                                 throw new FormatException("Unsupported JSON token: " + reader.TokenType +
                                     ". Path '" + reader.Path + "', line " + reader.LineNumber +
