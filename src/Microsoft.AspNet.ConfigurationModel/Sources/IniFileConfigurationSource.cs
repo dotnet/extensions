@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         /// <param name="path">The path and file name to load.</param>
         public IniFileConfigurationSource(string path)
         {
-            if (string.IsNullOrEmpty(path) || string.IsNullOrWhiteSpace(path))
+            if (string.IsNullOrEmpty(path))
             {
                 // TODO: exception message localization
                 throw new ArgumentException("File path must be a non-empty string", "path");
