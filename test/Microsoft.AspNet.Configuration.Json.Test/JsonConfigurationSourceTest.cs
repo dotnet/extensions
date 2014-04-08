@@ -98,12 +98,6 @@ namespace Microsoft.AspNet.Configuration.Json.Test
         }
 
         [Fact]
-        public void ThrowExceptionWhenPassingWhiteSpacesAsFilePath()
-        {
-            Assert.Throws<ArgumentException>(() => new JsonConfigurationSource(" \t\n\r"));
-        }
-
-        [Fact]
         public void OverrideValueWhenKeyIsDuplicated()
         {
             var json = @"{
