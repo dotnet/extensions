@@ -6,8 +6,6 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
     public class IniFileConfigurationSource : BaseConfigurationSource
     {
-        public string Path { get; set; }
-
         // http://en.wikipedia.org/wiki/INI_file
         /// <summary>
         /// Files are simple line structures
@@ -21,8 +19,16 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         /// <param name="path">The path and file name to load.</param>
         public IniFileConfigurationSource(string path)
         {
+            if (string.IsNullOrEmpty(path) || string.IsNullOrWhiteSpace(path))
+            {
+                // TODO: exception message localization
+                throw new ArgumentException("File path must be a non-empty string", "path");
+            }
+
             Path = path;
         }
+
+        public string Path { get; private set; }
 
         public override void Load()
         {
@@ -54,6 +60,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                 int seperator = line.IndexOf('=');
                 if (seperator < 0)
                 {
+                    // TODO: exception message localization
                     throw new FormatException("Unrecognized line format: '" + rawLine + "'");
                 }
 

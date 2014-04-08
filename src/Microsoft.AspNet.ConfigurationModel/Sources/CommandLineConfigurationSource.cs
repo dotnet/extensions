@@ -5,8 +5,6 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
     public class CommandLineConfigurationSource : BaseConfigurationSource
     {
-        public string[] Args { get; set; }
-
 #if NET45
         public CommandLineConfigurationSource()
             : this(Environment.GetCommandLineArgs())
@@ -19,6 +17,8 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         {
             Args = args;
         }
+
+        public string[] Args { get; private set; }
 
         public override void Load()
         {

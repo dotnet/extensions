@@ -6,12 +6,12 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
     public abstract class BaseConfigurationSource : IConfigurationSource
     {
-        public IDictionary<string, string> Data { get; private set; }
-
         protected BaseConfigurationSource()
         {
             Data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
+
+        public IDictionary<string, string> Data { get; private set; }
 
         protected virtual void ReplaceData(Dictionary<string, string> data)
         {
