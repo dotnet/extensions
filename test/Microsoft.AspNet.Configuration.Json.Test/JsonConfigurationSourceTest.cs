@@ -4,10 +4,8 @@ using Xunit;
 
 namespace Microsoft.AspNet.Configuration.Json.Test
 {
-
     public class JsonConfigurationSourceTest
     {
-
         private static readonly string ArbitraryFilePath = "Unit tests do not touch file system";
 
         [Fact]
