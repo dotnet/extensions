@@ -1,8 +1,9 @@
 ﻿using System;
 using System.IO;
+using Microsoft.AspNet.ConfigurationModel.Sources;
 using Xunit;
 
-namespace Microsoft.AspNet.Configuration.Json.Test
+namespace Microsoft.AspNet.ConfigurationModel.Test
 {
     public class JsonConfigurationSourceTest
     {

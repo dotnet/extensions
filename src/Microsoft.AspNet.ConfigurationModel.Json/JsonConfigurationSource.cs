@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNet.ConfigurationModel;
-using Microsoft.AspNet.ConfigurationModel.Sources;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNet.Configuration.Json
+namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
     public class JsonConfigurationSource : BaseConfigurationSource
     {
