@@ -3,7 +3,7 @@ using System.IO;
 using Microsoft.AspNet.ConfigurationModel.Sources;
 using Xunit;
 
-namespace Microsoft.AspNet.ConfigurationModel.Test
+namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
     public class JsonConfigurationSourceTest
     {
