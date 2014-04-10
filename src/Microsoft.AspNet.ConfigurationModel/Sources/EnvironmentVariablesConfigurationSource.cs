@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         {
             ReplaceData(Environment.GetEnvironmentVariables()
                 .Cast<DictionaryEntry>()
-                .SelectMany(entry => AzureEnvToAppEnv(entry))
+                .SelectMany(AzureEnvToAppEnv)
                 .Where(entry => ((string)entry.Key).StartsWith(_prefix, StringComparison.OrdinalIgnoreCase))
                 .ToDictionary(
                     entry => ((string)entry.Key).Substring(_prefix.Length),
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                     StringComparer.OrdinalIgnoreCase));
         }
 
-        private IEnumerable<DictionaryEntry> AzureEnvToAppEnv(DictionaryEntry entry)
+        private static IEnumerable<DictionaryEntry> AzureEnvToAppEnv(DictionaryEntry entry)
         {
             var key = (string)entry.Key;
             var prefix = string.Empty;
@@ -87,7 +87,6 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                     string.Format(ProviderKeyFormat, key.Substring(prefix.Length)),
                     provider);
             }
-
         }
     }
 }
