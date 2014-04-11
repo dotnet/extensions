@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
                 // We process the root element individually since it doesn't contribute to prefix 
                 ProcessAttributes(reader, prefixStack, data, AddNamePrefix);
-                ProcessAttributes(reader, prefixStack, data, AddAttributePairs);
+                ProcessAttributes(reader, prefixStack, data, AddAttributePair);
 
                 while (reader.Read())
                 {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                         case XmlNodeType.Element:
                             prefixStack.Add(reader.LocalName);
                             ProcessAttributes(reader, prefixStack, data, AddNamePrefix);
-                            ProcessAttributes(reader, prefixStack, data, AddAttributePairs);
+                            ProcessAttributes(reader, prefixStack, data, AddAttributePair);
 
                             // If current element is self-closing
                             if (reader.IsEmptyElement)
@@ -164,7 +164,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
         // Common attributes contribute to key-value pairs
         // This method adds a key-value pair if given key-value pair represents a common attribute
-        private static void AddAttributePairs(string attrKey, string attrVal, List<string> prefixStack,
+        private static void AddAttributePair(string attrKey, string attrVal, List<string> prefixStack,
             Dictionary<string, string> data)
         {
             if (string.Equals(attrKey, NameAttributeKey, StringComparison.OrdinalIgnoreCase))
