@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
             using (var reader = XmlReader.Create(stream, readerSettings))
             {
-                var prefixStack = new List<string>();
+                var prefixStack = new Stack<string>();
 
                 SkipUntilRootElement(reader);
 
@@ -57,27 +57,34 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                     switch (reader.NodeType)
                     {
                         case XmlNodeType.Element:
-                            prefixStack.Add(reader.LocalName);
+                            prefixStack.Push(reader.LocalName);
                             ProcessAttributes(reader, prefixStack, data, AddNamePrefix);
                             ProcessAttributes(reader, prefixStack, data, AddAttributePair);
 
                             // If current element is self-closing
                             if (reader.IsEmptyElement)
                             {
-                                prefixStack.RemoveAt(prefixStack.Count - 1);
+                                prefixStack.Pop();
                             }
                             break;
 
                         case XmlNodeType.EndElement:
                             if (prefixStack.Any())
                             {
-                                prefixStack.RemoveAt(prefixStack.Count - 1);
+                                prefixStack.Pop();
                             }
                             break;
 
                         case XmlNodeType.CDATA:
                         case XmlNodeType.Text:
-                            var key = string.Join(Constants.KeyDelimiter, prefixStack);
+                            var key = string.Join(Constants.KeyDelimiter, prefixStack.Reverse<string>());
+
+                            if (data.ContainsKey(key))
+                            {
+                                throw new FormatException(string.Format("Key '{0}' is duplicated.{1}",
+                                    key, GetLineInfo(reader)));
+                            }
+
                             data[key] = reader.Value;
                             break;
 
@@ -90,8 +97,8 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
                         default:
                             // TODO: exception message localization
-                            throw new FormatException("Unsupported node type '" + reader.NodeType + "' is found." +
-                                GetLineInfo(reader));
+                            throw new FormatException(string.Format("Unsupported node type '{0}' is found.{1}",
+                                reader.NodeType, GetLineInfo(reader)));
                     }
                 }
             }
@@ -111,7 +118,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             }
         }
 
-        private string GetLineInfo(XmlReader reader)
+        private static string GetLineInfo(XmlReader reader)
         {
             var lineInfo = reader as IXmlLineInfo;
             // TODO: exception message localization
@@ -119,10 +126,10 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                 string.Format(" Line {0}, position {1}.", lineInfo.LineNumber, lineInfo.LinePosition);
         }
 
-        private void ProcessAttributes(XmlReader reader, List<string> prefixStack,
-            Dictionary<string, string> data, Action<string, string, List<string>, Dictionary<string, string>> act)
+        private void ProcessAttributes(XmlReader reader, Stack<string> prefixStack,
+            Dictionary<string, string> data, Action<XmlReader, Stack<string>, Dictionary<string, string>> act)
         {
-            for (int i = 0; i < reader.AttributeCount; ++i)
+            for (int i = 0; i < reader.AttributeCount; i++)
             {
                 reader.MoveToAttribute(i);
 
@@ -130,11 +137,11 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                 if (!string.IsNullOrEmpty(reader.NamespaceURI))
                 {
                     // TODO: exception message localization
-                    throw new FormatException("Namespace is not supported in configuration files." +
-                        GetLineInfo(reader));
+                    throw new FormatException(string.Format("Namespace is not supported in configuration files.{0}",
+                        GetLineInfo(reader)));
                 }
 
-                act(reader.LocalName, reader.Value, prefixStack, data);
+                act(reader, prefixStack, data);
             }
 
             // Go back to the element containing the attributes we just processed
@@ -142,11 +149,10 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         }
 
         // The special attribute "Name" only contributes to prefix
-        // This method adds a prefix if given key-value pair represents a "Name" attribute
-        private static void AddNamePrefix(string attrKey, string attrVal, List<string> prefixStack,
-            Dictionary<string, string> data)
+        // This method adds a prefix if current node in reader represents a "Name" attribute
+        private static void AddNamePrefix(XmlReader reader, Stack<string> prefixStack, Dictionary<string, string> data)
         {
-            if (!string.Equals(attrKey, NameAttributeKey, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(reader.LocalName, NameAttributeKey, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
@@ -154,28 +160,35 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             // If current element is not root element
             if (prefixStack.Any())
             {
-                prefixStack[prefixStack.Count - 1] = prefixStack.Last() + ":" + attrVal;
+                var lastPrefix = prefixStack.Pop();
+                prefixStack.Push(lastPrefix + Constants.KeyDelimiter + reader.Value);
             }
             else
             {
-                prefixStack.Add(attrVal);
+                prefixStack.Push(reader.Value);
             }
         }
 
         // Common attributes contribute to key-value pairs
         // This method adds a key-value pair if given key-value pair represents a common attribute
-        private static void AddAttributePair(string attrKey, string attrVal, List<string> prefixStack,
+        private static void AddAttributePair(XmlReader reader, Stack<string> prefixStack,
             Dictionary<string, string> data)
         {
-            if (string.Equals(attrKey, NameAttributeKey, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(reader.LocalName, NameAttributeKey, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
-            prefixStack.Add(attrKey);
-            var key = string.Join(Constants.KeyDelimiter, prefixStack);
-            data[key] = attrVal;
-            prefixStack.RemoveAt(prefixStack.Count - 1);
+            prefixStack.Push(reader.LocalName);
+            var key = string.Join(Constants.KeyDelimiter, prefixStack.Reverse<string>());
+
+            if (data.ContainsKey(key))
+            {
+                throw new FormatException(string.Format("Key '{0}' is duplicated.{1}", key, GetLineInfo(reader)));
+            }
+
+            data[key] = reader.Value;
+            prefixStack.Pop();
         }
     }
 }

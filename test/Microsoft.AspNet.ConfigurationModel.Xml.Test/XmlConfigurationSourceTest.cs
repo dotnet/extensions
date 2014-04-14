@@ -324,7 +324,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         }
 
         [Fact]
-        public void OverrideValueWhenKeyIsDuplicated()
+        public void ThrowExceptionWhenKeyIsDuplicated()
         {
             var xml = 
                 @"<settings>
@@ -340,11 +340,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                 </settings>";
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
 
-            xmlConfigSrc.Load(StringToStream(xml));
-
-            Assert.Equal(2, xmlConfigSrc.Data.Count);
-            Assert.Equal("NewConnectionString", xmlConfigSrc.Data["Data:DefaultConnection:ConnectionString"]);
-            Assert.Equal("NewProvider", xmlConfigSrc.Data["Data:DefaultConnection:Provider"]);
+            Assert.Throws<FormatException>(() => xmlConfigSrc.Load(StringToStream(xml)));
         }
 
         private static Stream StringToStream(string str)
