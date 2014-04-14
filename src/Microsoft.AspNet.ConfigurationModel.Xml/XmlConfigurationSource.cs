@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         }
 
         // Common attributes contribute to key-value pairs
-        // This method adds a key-value pair if given key-value pair represents a common attribute
+        // This method adds a key-value pair if current node in reader represents a common attribute
         private static void AddAttributePair(XmlReader reader, Stack<string> prefixStack,
             Dictionary<string, string> data)
         {
