@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                 if (seperator < 0)
                 {
                     // TODO: exception message localization
-                    throw new FormatException("Unrecognized line format: '" + rawLine + "'");
+                    throw new FormatException(string.Format("Unrecognized line format: '{0}'.", rawLine));
                 }
 
                 string key = sectionPrefix + line.Substring(0, seperator).Trim();
@@ -71,6 +71,11 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                 if (value.Length > 1 && value[0] == '"' && value[value.Length - 1] == '"')
                 {
                     value = value.Substring(1, value.Length - 2);
+                }
+
+                if (data.ContainsKey(key))
+                {
+                    throw new FormatException(string.Format("Key '{0}' is duplicated.", key));
                 }
 
                 data[key] = value;
