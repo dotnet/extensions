@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNet.ConfigurationModel.Sources;
 
-namespace Microsoft.AspNet.Configuration.Json
+namespace Microsoft.AspNet.ConfigurationModel
 {
     public static class JsonConfigurationExtension
     {

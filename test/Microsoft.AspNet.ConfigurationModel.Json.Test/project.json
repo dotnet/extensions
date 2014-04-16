@@ -2,7 +2,7 @@
   "version": "0.1-alpha-*",
   "dependencies": {
     "Microsoft.AspNet.ConfigurationModel": "",
-    "Microsoft.AspNet.Configuration.Json": "",
+    "Microsoft.AspNet.ConfigurationModel.Json": "",
     "Newtonsoft.Json": "5.0.8",
     "Xunit.KRunner": "0.1-alpha-*",
     "xunit.abstractions": "2.0.0-aspnet-*",
