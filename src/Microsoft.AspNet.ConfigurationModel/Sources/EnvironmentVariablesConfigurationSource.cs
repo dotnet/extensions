@@ -72,7 +72,8 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             }
             else if (key.StartsWith(AppSettingPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                prefix = AppSettingPrefix;
+                yield return new DictionaryEntry(key.Substring(AppSettingPrefix.Length), entry.Value);
+                yield break;
             }
             else
             {
