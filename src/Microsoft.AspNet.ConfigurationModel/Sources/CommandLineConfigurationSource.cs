@@ -37,6 +37,12 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                         // Remove quotes
                         value = value.Substring(1, value.Length - 2);
                     }
+
+                    if (data.ContainsKey(key))
+                    {
+                        throw new FormatException(string.Format("Key '{0}' is duplicated.", key));
+                    }
+
                     data[key] = value;
                 }
             }
