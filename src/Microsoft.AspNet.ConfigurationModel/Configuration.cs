@@ -109,7 +109,11 @@ namespace Microsoft.AspNet.ConfigurationModel
         public IConfigurationSourceContainer Add(IConfigurationSource configurationSource)
         {
             configurationSource.Load();
+            return AddLoadedSource(configurationSource);
+        }
 
+        internal IConfigurationSourceContainer AddLoadedSource(IConfigurationSource configurationSource)
+        {
             _readableSources.Add(configurationSource);
             if (configurationSource is ISettableConfigurationSource)
             {
