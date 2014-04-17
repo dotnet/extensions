@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                 if (split <= 0)
                 {
                     // TODO: exception message localization
-                    throw new FormatException(string.Format("Unrecognized argument '{0}.'", pair));
+                    throw new FormatException(string.Format("Unrecognized argument '{0}'.", pair));
                 }
 
                 string key = pair.Substring(0, split);
