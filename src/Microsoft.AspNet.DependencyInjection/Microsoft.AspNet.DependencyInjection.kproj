@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="__ToolsVersion__" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.Props" Condition="'$(VSToolsPath)' != ''" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>07abdd98-9974-48cb-8265-53d1a8ec9e34</ProjectGuid>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ActivatorUtilities.cs" />
+    <Compile Include="ContextAccessor.cs" />
+    <Compile Include="Fallback\ServiceCollectionExtensions.cs" />
+    <Compile Include="IContextAccessor.cs" />
+    <Compile Include="IServiceDescriptor.cs" />
+    <Compile Include="IServiceScope.cs" />
+    <Compile Include="IServiceScopeFactory.cs" />
+    <Compile Include="ITypeActivator.cs" />
+    <Compile Include="LifecycleKind.cs" />
+    <Compile Include="MultiServiceHelpers.cs" />
+    <Compile Include="NestedProviders\INestedProvider.cs" />
+    <Compile Include="NestedProviders\INestedProviderAsync.cs" />
+    <Compile Include="NestedProviders\INestedProviderManager.cs" />
+    <Compile Include="NestedProviders\INestedProviderManagerAsync.cs" />
+    <Compile Include="NestedProviders\NestedProviderManager.cs" />
+    <Compile Include="NestedProviders\NestedProviderManagerAsync.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceCollection.cs" />
+    <Compile Include="ServiceDescriber.cs" />
+    <Compile Include="ServiceDescriptor.cs" />
+    <Compile Include="ServiceLookup\ClosedIEnumerableService.cs" />
+    <Compile Include="ServiceLookup\GenericService.cs" />
+    <Compile Include="ServiceLookup\IGenericService.cs" />
+    <Compile Include="ServiceLookup\IService.cs" />
+    <Compile Include="ServiceLookup\OpenIEnumerableService.cs" />
+    <Compile Include="ServiceLookup\Service.cs" />
+    <Compile Include="ServiceLookup\ServiceEntry.cs" />
+    <Compile Include="ServiceLookup\ServiceProviderService.cs" />
+    <Compile Include="ServiceLookup\ServiceScope.cs" />
+    <Compile Include="ServiceLookup\ServiceScopeFactory.cs" />
+    <Compile Include="ServiceLookup\ServiceScopeService.cs" />
+    <Compile Include="ServiceLookup\ServiceTable.cs" />
+    <Compile Include="ServiceProvider.cs" />
+    <Compile Include="ServiceProviderExtensions.cs" />
+    <Compile Include="TypeActivator.cs" />
+    <Compile Include="TypeActivatorExtensions.cs" />
+  </ItemGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
+</Project>

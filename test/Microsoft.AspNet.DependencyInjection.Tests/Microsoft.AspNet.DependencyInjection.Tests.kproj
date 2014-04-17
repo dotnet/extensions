@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="__ToolsVersion__" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.Props" Condition="'$(VSToolsPath)' != ''" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>20201277-5461-49ef-811b-63ed3cd274ef</ProjectGuid>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AllContainerTestsBase.cs" />
+    <Compile Include="AutofacContainerTests.cs" />
+    <Compile Include="Fakes\AnotherClass.cs" />
+    <Compile Include="Fakes\AnotherClassAcceptingData.cs" />
+    <Compile Include="Fakes\ClassWithStaticCtor.cs" />
+    <Compile Include="Fakes\FakeFallbackServiceProvider.cs" />
+    <Compile Include="Fakes\FakeNonScopingFallbackServiceProvder.cs" />
+    <Compile Include="Fakes\FakeOpenGenericService.cs" />
+    <Compile Include="Fakes\FakeOuterService.cs" />
+    <Compile Include="Fakes\FakeService.cs" />
+    <Compile Include="Fakes\IFakeEveryService.cs" />
+    <Compile Include="Fakes\IFakeMultipleService.cs" />
+    <Compile Include="Fakes\IFakeOpenGenericService.cs" />
+    <Compile Include="Fakes\IFakeOuterService.cs" />
+    <Compile Include="Fakes\IFakeScopedService.cs" />
+    <Compile Include="Fakes\IFakeService.cs" />
+    <Compile Include="Fakes\IFakeServiceInstance.cs" />
+    <Compile Include="Fakes\IFakeSingletonService.cs" />
+    <Compile Include="Fakes\IReplaceFallbackService.cs" />
+    <Compile Include="Fakes\TestServices.cs" />
+    <Compile Include="NinjectContainerTests.cs" />
+    <Compile Include="ScopingContainerTestBase.cs" />
+    <Compile Include="ServiceProviderContainerTests.cs" />
+    <Compile Include="StructureMapContainerTests.cs" />
+    <Compile Include="TypeActivatorTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
+</Project>
