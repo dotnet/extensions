@@ -28,9 +28,12 @@ namespace Microsoft.AspNet.ConfigurationModel
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            for (int i = 0; i < _readableSources.Count; i++)
+            // If a key in the newly added configuration source is identical to a key in a 
+            // formerly added configuration source, the new one overrides the former one.
+            // So we search in reverse order, starting with latest configuration source.
+            foreach (var src in _readableSources.Reverse())
             {
-                if (_readableSources[i].TryGet(key, out value))
+                if (src.TryGet(key, out value))
                 {
                     return true;
                 }
