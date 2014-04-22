@@ -2,9 +2,9 @@
 
 namespace Microsoft.Net.Runtime
 {
-    [NotAssemblyNeutral]
+    [AssemblyNeutralAttribute]
     [AttributeUsage(AttributeTargets.All, Inherited = false, AllowMultiple = true)]
-    public sealed class NotAssemblyNeutralAttribute : Attribute
+    public sealed class AssemblyNeutralAttribute : Attribute
     {
     }
 }

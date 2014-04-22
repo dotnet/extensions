@@ -2,7 +2,7 @@
 
 namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
-    [NotAssemblyNeutral]
+    [AssemblyNeutral]
     public interface ICommitableConfigurationSource
     {
         void Commit();

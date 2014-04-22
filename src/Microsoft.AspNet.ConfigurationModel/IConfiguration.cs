@@ -4,7 +4,7 @@ using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.ConfigurationModel
 {
-    [NotAssemblyNeutral]
+    [AssemblyNeutral]
     public interface IConfiguration
     {
         /// <summary>
