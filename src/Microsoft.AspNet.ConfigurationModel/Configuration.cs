@@ -8,8 +8,7 @@ namespace Microsoft.AspNet.ConfigurationModel
 {
     public class Configuration : IConfiguration, IConfigurationSourceContainer
     {
-        private readonly IList<IConfigurationSource> _readableSources = new List<IConfigurationSource>();
-        private readonly IList<ISettableConfigurationSource> _settableSources = new List<ISettableConfigurationSource>();
+        private readonly IList<IConfigurationSource> _sources = new List<IConfigurationSource>();
         private readonly IList<ICommitableConfigurationSource> _committableSources = new List<ICommitableConfigurationSource>();
 
         public Configuration()
@@ -31,7 +30,7 @@ namespace Microsoft.AspNet.ConfigurationModel
             // If a key in the newly added configuration source is identical to a key in a 
             // formerly added configuration source, the new one overrides the former one.
             // So we search in reverse order, starting with latest configuration source.
-            foreach (var src in _readableSources.Reverse())
+            foreach (var src in _sources.Reverse())
             {
                 if (src.TryGet(key, out value))
                 {
@@ -48,17 +47,17 @@ namespace Microsoft.AspNet.ConfigurationModel
             if (key == null) throw new ArgumentNullException("key");
             if (value == null) throw new ArgumentNullException("value");
 
-            for (int i = 0; i < _settableSources.Count; i++)
+            foreach (var src in _sources)
             {
-                _settableSources[i].Set(key, value);
+                src.Set(key, value);
             }
         }
 
         public void Reload()
         {
-            for (int i = 0; i < _readableSources.Count; i++)
+            foreach (var src in _sources)
             {
-                _readableSources[i].Load();
+                src.Load();
             }
         }
 
@@ -91,9 +90,7 @@ namespace Microsoft.AspNet.ConfigurationModel
 
         private IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeysImplementation(string prefix)
         {
-            var sources = _readableSources;
-
-            var segments = sources.Aggregate(
+            var segments = _sources.Aggregate(
                 Enumerable.Empty<string>(),
                 (seed, source) => source.ProduceSubKeys(seed, prefix, Constants.KeyDelimiter));
 
@@ -117,11 +114,8 @@ namespace Microsoft.AspNet.ConfigurationModel
 
         internal IConfigurationSourceContainer AddLoadedSource(IConfigurationSource configurationSource)
         {
-            _readableSources.Add(configurationSource);
-            if (configurationSource is ISettableConfigurationSource)
-            {
-                _settableSources.Add(configurationSource as ISettableConfigurationSource);
-            }
+            _sources.Add(configurationSource);
+
             if (configurationSource is ICommitableConfigurationSource)
             {
                 _committableSources.Add(configurationSource as ICommitableConfigurationSource);
@@ -131,7 +125,7 @@ namespace Microsoft.AspNet.ConfigurationModel
 
         public IEnumerator<IConfigurationSource> GetEnumerator()
         {
-            return _readableSources.GetEnumerator();
+            return _sources.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

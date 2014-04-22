@@ -8,6 +8,8 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
     {
         bool TryGet(string key, out string value);
 
+        void Set(string key, string value);
+
         void Load();
 
         IEnumerable<string> ProduceSubKeys(IEnumerable<string> earlierKeys, string prefix, string delimiter);

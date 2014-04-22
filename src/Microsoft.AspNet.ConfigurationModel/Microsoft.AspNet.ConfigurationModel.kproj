@@ -34,7 +34,6 @@
     <Compile Include="Sources\IConfigurationSource.cs" />
     <Compile Include="Sources\IConfigurationSourceContainer.cs" />
     <Compile Include="Sources\IniFileConfigurationSource.cs" />
-    <Compile Include="Sources\ISettableConfigurationSource.cs" />
     <Compile Include="Sources\MemoryConfigurationSource.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />

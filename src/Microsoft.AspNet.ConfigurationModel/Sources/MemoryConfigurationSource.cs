@@ -5,7 +5,6 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
     public class MemoryConfigurationSource : 
         BaseConfigurationSource, 
-        ISettableConfigurationSource, 
         IEnumerable<KeyValuePair<string,string>>
     {
         public MemoryConfigurationSource()
