@@ -15,11 +15,26 @@ namespace Microsoft.AspNet.ConfigurationModel
 
         public string Get(string key)
         {
+            // Null key indicates that the prefix passed to ctor should be used as a key
+            if (key == null)
+            {
+                // Strip off the trailing colon to get a valid key
+                var defaultKey = _prefix.Substring(0, _prefix.Length - 1);
+                return _root.Get(defaultKey);
+            }
+
             return _root.Get(_prefix + key);
         }
 
         public bool TryGet(string key, out string value)
         {
+            // Null key indicates that the prefix passed to ctor should be used as a key
+            if (key == null)
+            {
+                // Strip off the trailing colon to get a valid key
+                var defaultKey = _prefix.Substring(0, _prefix.Length - 1);
+                return _root.TryGet(defaultKey, out value);
+            }
             return _root.TryGet(_prefix + key, out value);
         }
 
