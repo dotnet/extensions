@@ -1,17 +1,23 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30327.0
+VisualStudioVersion = 12.0.30401.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.ConfigurationModel", "src\Microsoft.AspNet.ConfigurationModel\Microsoft.AspNet.ConfigurationModel.kproj", "{62BD48B5-BB0C-4C2C-9C4B-04CF75CDCCF1}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Configuration.Json", "src\Microsoft.AspNet.Configuration.Json\Microsoft.AspNet.Configuration.Json.kproj", "{4C4CD1BC-4411-4AFD-9D04-147053F0E259}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F141E2D0-F9B8-4ADB-A19A-7B6FF4CA19A1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B54371FF-B920-46C8-8D55-6B19DBB43EBF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Configuration.Json.Test", "test\Microsoft.AspNet.Configuration.Json.Test\Microsoft.AspNet.Configuration.Json.Test.kproj", "{AE8F8C20-9ED9-4A16-9565-27DF77683789}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.ConfigurationModel.Json", "src\Microsoft.AspNet.ConfigurationModel.Json\Microsoft.AspNet.ConfigurationModel.Json.kproj", "{4C4CD1BC-4411-4AFD-9D04-147053F0E259}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.ConfigurationModel.Xml", "src\Microsoft.AspNet.ConfigurationModel.Xml\Microsoft.AspNet.ConfigurationModel.Xml.kproj", "{1BEC97C1-56B9-4B2B-A95A-C0DF72F1E96A}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.ConfigurationModel.Json.Test", "test\Microsoft.AspNet.ConfigurationModel.Json.Test\Microsoft.AspNet.ConfigurationModel.Json.Test.kproj", "{AE8F8C20-9ED9-4A16-9565-27DF77683789}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.ConfigurationModel.Xml.Test", "test\Microsoft.AspNet.ConfigurationModel.Xml.Test\Microsoft.AspNet.ConfigurationModel.Xml.Test.kproj", "{0786C785-944A-4423-96A6-4E7BFDB4A1B0}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.ConfigurationModel.Test", "test\Microsoft.AspNet.ConfigurationModel.Test\Microsoft.AspNet.ConfigurationModel.Test.kproj", "{8777C77E-CA2A-42C1-90CD-2EA9CBF28937}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,13 +30,20 @@ Global
 		{62BD48B5-BB0C-4C2C-9C4B-04CF75CDCCF1}.Release|x86.ActiveCfg = Release|x86
 		{62BD48B5-BB0C-4C2C-9C4B-04CF75CDCCF1}.Release|x86.Build.0 = Release|x86
 		{4C4CD1BC-4411-4AFD-9D04-147053F0E259}.Debug|x86.ActiveCfg = Debug|x86
-		{4C4CD1BC-4411-4AFD-9D04-147053F0E259}.Debug|x86.Build.0 = Debug|x86
 		{4C4CD1BC-4411-4AFD-9D04-147053F0E259}.Release|x86.ActiveCfg = Release|x86
 		{4C4CD1BC-4411-4AFD-9D04-147053F0E259}.Release|x86.Build.0 = Release|x86
+		{1BEC97C1-56B9-4B2B-A95A-C0DF72F1E96A}.Debug|x86.ActiveCfg = Debug|x86
+		{1BEC97C1-56B9-4B2B-A95A-C0DF72F1E96A}.Release|x86.ActiveCfg = Release|x86
+		{1BEC97C1-56B9-4B2B-A95A-C0DF72F1E96A}.Release|x86.Build.0 = Release|x86
 		{AE8F8C20-9ED9-4A16-9565-27DF77683789}.Debug|x86.ActiveCfg = Debug|x86
-		{AE8F8C20-9ED9-4A16-9565-27DF77683789}.Debug|x86.Build.0 = Debug|x86
 		{AE8F8C20-9ED9-4A16-9565-27DF77683789}.Release|x86.ActiveCfg = Release|x86
 		{AE8F8C20-9ED9-4A16-9565-27DF77683789}.Release|x86.Build.0 = Release|x86
+		{0786C785-944A-4423-96A6-4E7BFDB4A1B0}.Debug|x86.ActiveCfg = Debug|x86
+		{0786C785-944A-4423-96A6-4E7BFDB4A1B0}.Release|x86.ActiveCfg = Release|x86
+		{0786C785-944A-4423-96A6-4E7BFDB4A1B0}.Release|x86.Build.0 = Release|x86
+		{8777C77E-CA2A-42C1-90CD-2EA9CBF28937}.Debug|x86.ActiveCfg = Debug|x86
+		{8777C77E-CA2A-42C1-90CD-2EA9CBF28937}.Release|x86.ActiveCfg = Release|x86
+		{8777C77E-CA2A-42C1-90CD-2EA9CBF28937}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -38,6 +51,9 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{62BD48B5-BB0C-4C2C-9C4B-04CF75CDCCF1} = {F141E2D0-F9B8-4ADB-A19A-7B6FF4CA19A1}
 		{4C4CD1BC-4411-4AFD-9D04-147053F0E259} = {F141E2D0-F9B8-4ADB-A19A-7B6FF4CA19A1}
+		{1BEC97C1-56B9-4B2B-A95A-C0DF72F1E96A} = {F141E2D0-F9B8-4ADB-A19A-7B6FF4CA19A1}
 		{AE8F8C20-9ED9-4A16-9565-27DF77683789} = {B54371FF-B920-46C8-8D55-6B19DBB43EBF}
+		{0786C785-944A-4423-96A6-4E7BFDB4A1B0} = {B54371FF-B920-46C8-8D55-6B19DBB43EBF}
+		{8777C77E-CA2A-42C1-90CD-2EA9CBF28937} = {B54371FF-B920-46C8-8D55-6B19DBB43EBF}
 	EndGlobalSection
 EndGlobal

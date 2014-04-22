@@ -30,7 +30,12 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
         public override void Load()
         {
-            ReplaceData(Environment.GetEnvironmentVariables()
+            Load(Environment.GetEnvironmentVariables());
+        }
+
+        internal void Load(IDictionary envVariables)
+        {
+            ReplaceData(envVariables
                 .Cast<DictionaryEntry>()
                 .SelectMany(AzureEnvToAppEnv)
                 .Where(entry => ((string)entry.Key).StartsWith(_prefix, StringComparison.OrdinalIgnoreCase))
@@ -67,7 +72,8 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             }
             else if (key.StartsWith(AppSettingPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                prefix = AppSettingPrefix;
+                yield return new DictionaryEntry(key.Substring(AppSettingPrefix.Length), entry.Value);
+                yield break;
             }
             else
             {
