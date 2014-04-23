@@ -11,8 +11,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         {
             if (string.IsNullOrEmpty(path))
             {
-                // TODO: exception message localization
-                throw new ArgumentException("File path must be a non-empty string", "path");
+                throw new ArgumentException(Resources.Error_InvalidFilePath, "path");
             }
 
             Path = path;
@@ -46,11 +45,8 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
                 if (reader.TokenType != JsonToken.StartObject)
                 {
-                    var lineInfo = reader as IJsonLineInfo;
-                    // TODO: exception message localization
-                    throw new FormatException("Only an object can be the root. Path '" +
-                                    reader.Path + "', line " + lineInfo.LineNumber +
-                                    " position " + lineInfo.LinePosition);
+                    throw new FormatException(string.Format(Resources.Error_RootMustBeAnObject,
+                        reader.Path, reader.LineNumber, reader.LinePosition));
                 }
 
                 do
@@ -85,19 +81,15 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                         // End of file
                         case JsonToken.None:
                             {
-                                // TODO: exception message localization
-                                throw new FormatException("Unexpected end when parsing JSON. Path '" +
-                                    reader.Path + "', line " + reader.LineNumber +
-                                    " position " + reader.LinePosition);
+                                throw new FormatException(string.Format(Resources.Error_UnexpectedEnd,
+                                    reader.Path, reader.LineNumber, reader.LinePosition));
                             }
 
                         default:
                             {
-                                // TODO: exception message localization
                                 // Unsupported elements: Array, Constructor, Undefined
-                                throw new FormatException("Unsupported JSON token: " + reader.TokenType +
-                                    ". Path '" + reader.Path + "', line " + reader.LineNumber +
-                                    " position " + reader.LinePosition);
+                                throw new FormatException(string.Format(Resources.Error_UnsupportedJSONToken,
+                                    reader.TokenType, reader.Path, reader.LineNumber, reader.LinePosition));
                             }
                     }
 
