@@ -25,7 +25,7 @@
     <Compile Include="ConfigurationFocus.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="IConfiguration.cs" />
-    <Compile Include="NotAssemblyNeutralAttribute.cs" />
+    <Compile Include="AssemblyNeutralAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sources\BaseConfigurationSource.cs" />
     <Compile Include="Sources\CommandLineConfigurationSource.cs" />
