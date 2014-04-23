@@ -3,7 +3,7 @@ using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
-    [AssemblyNeutral]
+    //[AssemblyNeutral]
     public interface IConfigurationSourceContainer : IConfiguration, IEnumerable<IConfigurationSource>
     {
         IConfigurationSourceContainer Add(IConfigurationSource configurationSource);
