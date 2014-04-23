@@ -20,9 +20,6 @@
     <Content Include="Project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="AutofacRegistration.cs" />
     <Compile Include="ChainedRegistrationSource.cs" />
   </ItemGroup>

@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.DependencyInjection
     /// <see cref="Microsoft.AspNet.DependencyInjection.IServiceScope.ServiceProvider"/> will be
     /// disposed.
     /// </summary>
-    [NotAssemblyNeutral]
+    [AssemblyNeutral]
     public interface IServiceScope : IDisposable
     {
         /// <summary>

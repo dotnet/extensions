@@ -46,8 +46,5 @@
     <Compile Include="StructureMapContainerTests.cs" />
     <Compile Include="TypeActivatorTests.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
