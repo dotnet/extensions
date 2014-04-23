@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
                     if (data.ContainsKey(key))
                     {
-                        throw new FormatException(string.Format("Key '{0}' is duplicated.", key));
+                        throw new FormatException(string.Format(Resources.Error_KeyIsDuplicated, key));
                     }
 
                     data[key] = value;

@@ -21,8 +21,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         {
             if (string.IsNullOrEmpty(path))
             {
-                // TODO: exception message localization
-                throw new ArgumentException("File path must be a non-empty string", "path");
+                throw new ArgumentException(Resources.Error_InvalidFilePath, "path");
             }
 
             Path = path;
@@ -73,8 +72,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                     int seperator = line.IndexOf('=');
                     if (seperator < 0)
                     {
-                        // TODO: exception message localization
-                        throw new FormatException(string.Format("Unrecognized line format: '{0}'.", rawLine));
+                        throw new FormatException(string.Format(Resources.Error_UnrecognizedLineFormat, rawLine));
                     }
 
                     string key = sectionPrefix + line.Substring(0, seperator).Trim();
@@ -88,7 +86,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
                     if (data.ContainsKey(key))
                     {
-                        throw new FormatException(string.Format("Key '{0}' is duplicated.", key));
+                        throw new FormatException(string.Format(Resources.Error_KeyIsDuplicated, key));
                     }
 
                     data[key] = value;
