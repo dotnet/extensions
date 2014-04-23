@@ -3,7 +3,7 @@ using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.DependencyInjection
 {
-    [AssemblyNeutral]
+    //[AssemblyNeutral]
     public interface IServiceScopeFactory
     {
         /// <summary>
