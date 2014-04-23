@@ -1,5 +1,5 @@
 using System;
-using Microsoft.Net.Runtime;
+//using Microsoft.Net.Runtime;
 
 namespace Microsoft.AspNet.DependencyInjection
 {
