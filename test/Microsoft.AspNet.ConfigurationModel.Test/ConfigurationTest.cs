@@ -22,23 +22,6 @@ namespace Microsoft.AspNet.ConfigurationModel
                 };
             var memConfigSrc = new MemoryConfigurationSource(dic);
 
-            var json = @"{
-                'JsonFile': {
-                    'KeyInJson': 'ValueInJson'
-                }
-            }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
-            jsonConfigSrc.Load(StringToStream(json));
-
-            var xml = 
-                @"<settings>
-                    <XmlFile>
-                        <KeyInXml>ValueInXml</KeyInXml>
-                    </XmlFile>
-                </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
-            xmlConfigSrc.Load(StringToStream(xml));
-
             var hashTable = new Hashtable()
                 {
                     {"EnvVariable:KeyInEnv", "ValueInEnv"}
@@ -54,45 +37,33 @@ namespace Microsoft.AspNet.ConfigurationModel
 
             var config = new Configuration();
 
-            string memVal, jsonVal, xmlVal, envVal, iniVal;
-            bool memRet, jsonRet, xmlRet, envRet, iniRet;
+            string memVal, envVal, iniVal;
+            bool memRet, envRet, iniRet;
 
             // Act
             config.AddLoadedSource(memConfigSrc);
-            config.AddLoadedSource(jsonConfigSrc);
-            config.AddLoadedSource(xmlConfigSrc);
             config.AddLoadedSource(envConfigSrc);
             config.AddLoadedSource(iniConfigSrc);
 
             memRet = config.TryGet("Mem:KeyInMem", out memVal);
-            jsonRet = config.TryGet("JsonFile:KeyInJson", out jsonVal);
-            xmlRet = config.TryGet("XmlFile:KeyInXml", out xmlVal);
             envRet = config.TryGet("EnvVariable:KeyInEnv", out envVal);
             iniRet = config.TryGet("IniFile:KeyInIni", out iniVal);
 
             // Assert
-            Assert.Equal(5, CountAllEntries(config));
+            Assert.Equal(3, CountAllEntries(config));
             Assert.Contains(memConfigSrc, config);
-            Assert.Contains(jsonConfigSrc, config);
-            Assert.Contains(xmlConfigSrc, config);
             Assert.Contains(envConfigSrc, config);
             Assert.Contains(iniConfigSrc, config);
 
             Assert.True(memRet);
-            Assert.True(jsonRet);
-            Assert.True(xmlRet);
             Assert.True(envRet);
             Assert.True(iniRet);
 
             Assert.Equal("ValueInMem", memVal);
-            Assert.Equal("ValueInJson", jsonVal);
-            Assert.Equal("ValueInXml", xmlVal);
             Assert.Equal("ValueInEnv", envVal);
             Assert.Equal("ValueInIni", iniVal);
 
             Assert.Equal("ValueInMem", config.Get("Mem:KeyInMem"));
-            Assert.Equal("ValueInJson", config.Get("JsonFile:KeyInJson"));
-            Assert.Equal("ValueInXml", config.Get("XmlFile:KeyInXml"));
             Assert.Equal("ValueInEnv", config.Get("EnvVariable:KeyInEnv"));
             Assert.Equal("ValueInIni", config.Get("IniFile:KeyInIni"));
             Assert.Null(config.Get("NotExist"));
@@ -102,32 +73,27 @@ namespace Microsoft.AspNet.ConfigurationModel
         public void NewConfigurationSourceOverridesOldOneWhenKeyIsDuplicated()
         {
             // Arrange
-            var json = @"{
-                'Key1': {
-                    'Key2': 'ValueInJson'
-                }
-            }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
-            jsonConfigSrc.Load(StringToStream(json));
+            var dic = new Dictionary<string, string>()
+                { 
+                    {"Key1:Key2", "ValueInMem"}
+                };
+            var memConfigSrc = new MemoryConfigurationSource(dic);
 
-            var xml = 
-                @"<settings>
-                    <Key1>
-                        <Key2>ValueInXml</Key2>
-                    </Key1>
-                </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
-            xmlConfigSrc.Load(StringToStream(xml));
+            var ini = @"
+            [Key1]
+            Key2=ValueInIni";
+            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+            iniConfigSrc.Load(StringToStream(ini));
 
             var config = new Configuration();
 
             // Act
-            config.AddLoadedSource(jsonConfigSrc);
-            config.AddLoadedSource(xmlConfigSrc);
+            config.AddLoadedSource(memConfigSrc);
+            config.AddLoadedSource(iniConfigSrc);
 
             // Assert
             Assert.Equal(2, CountAllEntries(config));
-            Assert.Equal("ValueInXml", config.Get("Key1:Key2"));
+            Assert.Equal("ValueInIni", config.Get("Key1:Key2"));
         }
 
         [Fact]
@@ -139,19 +105,6 @@ namespace Microsoft.AspNet.ConfigurationModel
                     {"Key", "Value"}
                 };
             var memConfigSrc = new MemoryConfigurationSource(dic);
-
-            var json = @"{
-                'Key': 'Value'
-                }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
-            jsonConfigSrc.Load(StringToStream(json));
-
-            var xml = 
-                @"<settings>
-                    <Key>Value</Key>
-                </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
-            xmlConfigSrc.Load(StringToStream(xml));
 
             var hashTable = new Hashtable()
                 {
@@ -167,8 +120,6 @@ namespace Microsoft.AspNet.ConfigurationModel
 
             var config = new Configuration();
             config.AddLoadedSource(memConfigSrc);
-            config.AddLoadedSource(jsonConfigSrc);
-            config.AddLoadedSource(xmlConfigSrc);
             config.AddLoadedSource(iniConfigSrc);
             config.AddLoadedSource(envConfigSrc);
 
@@ -176,11 +127,9 @@ namespace Microsoft.AspNet.ConfigurationModel
             config.Set("Key", "NewValue");
 
             // Assert
-            Assert.Equal(5, CountAllEntries(config));
+            Assert.Equal(3, CountAllEntries(config));
             Assert.Equal("NewValue", config.Get("Key"));
             Assert.Equal("NewValue", memConfigSrc.Data["Key"]);
-            Assert.Equal("NewValue", jsonConfigSrc.Data["Key"]);
-            Assert.Equal("NewValue", xmlConfigSrc.Data["Key"]);
             Assert.Equal("NewValue", envConfigSrc.Data["Key"]);
             Assert.Equal("NewValue", iniConfigSrc.Data["Key"]);
         }
@@ -189,79 +138,58 @@ namespace Microsoft.AspNet.ConfigurationModel
         public void CanGetSubKey()
         {
             // Arrange
-            var json = @"{
-                            'Data': {
-                                'DB1': {
-                                    'Connection1': 'JsonValue1',
-                                    'Connection2': 'JsonValue2'
-                                }
-                            }
-                        }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
-            jsonConfigSrc.Load(StringToStream(json));
-
-            var xml = 
-                @"<settings>
-                    <Data Name='DB2' Connection1='XmlValue1' />
-                    <Data Name='DB2' Connection2='XmlValue2' />
-                </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
-            xmlConfigSrc.Load(StringToStream(xml));
+            var dic = new Dictionary<string, string>()
+                { 
+                    {"Data:DB1:Connection1", "MemVal1"},
+                    {"Data:DB1:Connection2", "MemVal2"}
+                };
+            var memConfigSrc = new MemoryConfigurationSource(dic);
 
             var ini = @"
-            DataSource:DB3:Connection=IniValue";
+            DataSource:DB2:Connection=IniVal";
             var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
             iniConfigSrc.Load(StringToStream(ini));
 
             var hashTable = new Hashtable()
                 {
-                    {"Data", "EnvValue"}
+                    {"Data", "EnvVal"}
                 };
             var envConfigSrc = new EnvironmentVariablesConfigurationSource();
             envConfigSrc.Load(hashTable);
 
             var config = new Configuration();
-            config.AddLoadedSource(jsonConfigSrc);
-            config.AddLoadedSource(xmlConfigSrc);
+            config.AddLoadedSource(memConfigSrc);
             config.AddLoadedSource(iniConfigSrc);
             config.AddLoadedSource(envConfigSrc);
 
-            string jsonVal1, jsonVal2, xmlVal1, xmlVal2, iniVal1, iniVal2, envVal;
-            bool jsonRet1, jsonRet2, xmlRet1, xmlRet2, iniRet1, iniRet2, envRet;
+            string memVal1, memVal2, iniVal1, iniVal2, envVal1;
+            bool memRet1, memRet2, iniRet1, iniRet2, envRet1;
 
             // Act
             var configFocus = config.GetSubKey("Data");
 
-            jsonRet1 = configFocus.TryGet("DB1:Connection1", out jsonVal1);
-            jsonRet2 = configFocus.TryGet("DB1:Connection2", out jsonVal2);
-            xmlRet1 = configFocus.TryGet("DB2:Connection1", out xmlVal1);
-            xmlRet2 = configFocus.TryGet("DB2:Connection2", out xmlVal2);
-            iniRet1 = configFocus.TryGet("DB3:Connection", out iniVal1);
-            iniRet2 = configFocus.TryGet("Source:DB3:Connection", out iniVal2);
-            envRet = configFocus.TryGet(null, out envVal);
+            memRet1 = configFocus.TryGet("DB1:Connection1", out memVal1);
+            memRet2 = configFocus.TryGet("DB1:Connection2", out memVal2);
+            iniRet1 = configFocus.TryGet("DB2:Connection", out iniVal1);
+            iniRet2 = configFocus.TryGet("Source:DB2:Connection", out iniVal2);
+            envRet1 = configFocus.TryGet(null, out envVal1);
 
             // Assert
-            Assert.True(jsonRet1);
-            Assert.True(jsonRet2);
-            Assert.True(xmlRet1);
-            Assert.True(xmlRet2);
+            Assert.True(memRet1);
+            Assert.True(memRet2);
             Assert.False(iniRet1);
             Assert.False(iniRet2);
-            Assert.True(envRet);
+            Assert.True(envRet1);
 
-            Assert.Equal("JsonValue1", jsonVal1);
-            Assert.Equal("JsonValue2", jsonVal2);
-            Assert.Equal("XmlValue1", xmlVal1);
-            Assert.Equal("XmlValue2", xmlVal2);
-            Assert.Equal("EnvValue", envVal);
+            Assert.Equal("MemVal1", memVal1);
+            Assert.Equal("MemVal2", memVal2);
+            Assert.Equal("EnvVal", envVal1);
 
-            Assert.Equal("JsonValue1", configFocus.Get("DB1:Connection1"));
-            Assert.Equal("JsonValue2", configFocus.Get("DB1:Connection2"));
-            Assert.Equal("XmlValue1", configFocus.Get("DB2:Connection1"));
-            Assert.Equal("XmlValue2", configFocus.Get("DB2:Connection2"));
-            Assert.Null(configFocus.Get("DB3:Connection"));
-            Assert.Null(configFocus.Get("Source:DB3:Connection"));
-            Assert.Equal("EnvValue", configFocus.Get(null));
+            Assert.Equal("MemVal1", configFocus.Get("DB1:Connection1"));
+            Assert.Equal("MemVal2", configFocus.Get("DB1:Connection2"));
+            Assert.Null(configFocus.Get("DB2:Connection"));
+            Assert.Null(configFocus.Get("Source:DB2:Connection"));
+            Assert.Equal("EnvVal", configFocus.Get(null));
         }
 
         [Fact]
@@ -275,51 +203,34 @@ namespace Microsoft.AspNet.ConfigurationModel
                 };
             var memConfigSrc = new MemoryConfigurationSource(dic);
 
-            var json = @"{
-                            'Data': {
-                                'DB2': {
-                                    'Connection1': 'JsonValue1',
-                                    'Connection2': 'JsonValue2'
-                                }
-                            }
-                        }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
-            jsonConfigSrc.Load(StringToStream(json));
-
-            var xml = 
-                @"<settings>
-                    <Data DB3Connection1='XmlValue1' />
-                    <Data DB3Connection2='XmlValue2' />
-                </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
-            xmlConfigSrc.Load(StringToStream(xml));
-
             var ini = @"
-            DataSource:DB4:Connection1=IniValue1
-            DataSource:DB4:Connection2=IniValue2";
+            Data:DB2Connection=IniValue";
             var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
             iniConfigSrc.Load(StringToStream(ini));
 
+            var hashTable = new Hashtable()
+                {
+                    {"DataSource:DB3:Connection", "EnvValue"}
+                };
+            var envConfigSrc = new EnvironmentVariablesConfigurationSource();
+            envConfigSrc.Load(hashTable);
+
             var config = new Configuration();
             config.AddLoadedSource(memConfigSrc);
-            config.AddLoadedSource(jsonConfigSrc);
-            config.AddLoadedSource(xmlConfigSrc);
             config.AddLoadedSource(iniConfigSrc);
+            config.AddLoadedSource(envConfigSrc);
 
             // Act
             var configFocusList = config.GetSubKeys("Data");
             var subKeysSet = configFocusList.ToDictionary(e => e.Key, e => e.Value);
 
             // Assert
-            Assert.Equal(4, configFocusList.Count());
+            Assert.Equal(2, configFocusList.Count());
             Assert.Equal("MemValue1", subKeysSet["DB1"].Get("Connection1"));
             Assert.Equal("MemValue2", subKeysSet["DB1"].Get("Connection2"));
-            Assert.Equal("JsonValue1", subKeysSet["DB2"].Get("Connection1"));
-            Assert.Equal("JsonValue2", subKeysSet["DB2"].Get("Connection2"));
-            Assert.Equal("XmlValue1", subKeysSet["DB3Connection1"].Get(null));
-            Assert.Equal("XmlValue2", subKeysSet["DB3Connection2"].Get(null));
-            Assert.False(subKeysSet.ContainsKey("DB4"));
-            Assert.False(subKeysSet.ContainsKey("Source:DB4"));
+            Assert.Equal("IniValue", subKeysSet["DB2Connection"].Get(null));
+            Assert.False(subKeysSet.ContainsKey("DB3"));
+            Assert.False(subKeysSet.ContainsKey("Source:DB3"));
         }
 
         [Fact]
@@ -331,23 +242,6 @@ namespace Microsoft.AspNet.ConfigurationModel
                     {"Mem:KeyInMem", "ValueInMem"}
                 };
             var memConfigSrc = new MemoryConfigurationSource(dic);
-
-            var json = @"{
-                'JsonFile': {
-                    'KeyInJson': 'ValueInJson'
-                }
-            }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
-            jsonConfigSrc.Load(StringToStream(json));
-
-            var xml = 
-                @"<settings>
-                    <XmlFile>
-                        <KeyInXml>ValueInXml</KeyInXml>
-                    </XmlFile>
-                </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
-            xmlConfigSrc.Load(StringToStream(xml));
 
             var hashTable = new Hashtable()
                 {
@@ -365,8 +259,6 @@ namespace Microsoft.AspNet.ConfigurationModel
             var srcSet = new HashSet<IConfigurationSource>()
                 {
                     memConfigSrc,
-                    jsonConfigSrc,
-                    xmlConfigSrc,
                     envConfigSrc,
                     iniConfigSrc
                 };
@@ -375,8 +267,6 @@ namespace Microsoft.AspNet.ConfigurationModel
 
             // Act
             config.AddLoadedSource(memConfigSrc);
-            config.AddLoadedSource(jsonConfigSrc);
-            config.AddLoadedSource(xmlConfigSrc);
             config.AddLoadedSource(envConfigSrc);
             config.AddLoadedSource(iniConfigSrc);
 
@@ -390,7 +280,7 @@ namespace Microsoft.AspNet.ConfigurationModel
                 ++srcCount;
             }
 
-            Assert.Equal(5, srcCount);
+            Assert.Equal(3, srcCount);
         }
 
         [Fact]
@@ -402,23 +292,6 @@ namespace Microsoft.AspNet.ConfigurationModel
                     {"Mem:KeyInMem", "ValueInMem"}
                 };
             var memConfigSrc = new MemoryConfigurationSource(dic);
-
-            var json = @"{
-                'JsonFile': {
-                    'KeyInJson': 'ValueInJson'
-                }
-            }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
-            jsonConfigSrc.Load(StringToStream(json));
-
-            var xml = 
-                @"<settings>
-                    <XmlFile>
-                        <KeyInXml>ValueInXml</KeyInXml>
-                    </XmlFile>
-                </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
-            xmlConfigSrc.Load(StringToStream(xml));
 
             var hashTable = new Hashtable()
                 {
@@ -436,8 +309,6 @@ namespace Microsoft.AspNet.ConfigurationModel
             var srcSet = new HashSet<IConfigurationSource>()
                 {
                     memConfigSrc,
-                    jsonConfigSrc,
-                    xmlConfigSrc,
                     envConfigSrc,
                     iniConfigSrc
                 };
@@ -446,8 +317,6 @@ namespace Microsoft.AspNet.ConfigurationModel
 
             // Act
             config.AddLoadedSource(memConfigSrc);
-            config.AddLoadedSource(jsonConfigSrc);
-            config.AddLoadedSource(xmlConfigSrc);
             config.AddLoadedSource(envConfigSrc);
             config.AddLoadedSource(iniConfigSrc);
 
@@ -462,7 +331,7 @@ namespace Microsoft.AspNet.ConfigurationModel
                 ++srcCount;
             }
 
-            Assert.Equal(5, srcCount);
+            Assert.Equal(3, srcCount);
         }
 
         private static int CountAllEntries(Configuration config)
