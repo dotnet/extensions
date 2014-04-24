@@ -52,7 +52,25 @@ namespace Microsoft.AspNet.DependencyInjection
             return this;
         }
 
-        public ServiceCollection AddInstance<TService>(object implementationInstance)
+        public ServiceCollection AddSingleton<TService>()
+        {
+            AddSingleton<TService, TService>();
+            return this;
+        }
+        
+        public ServiceCollection AddTransient<TService>()
+        {
+            AddTransient<TService, TService>();
+            return this;
+        }
+
+        public ServiceCollection AddScoped<TService>()
+        {
+            AddScoped<TService, TService>();
+            return this;
+        }
+
+        public ServiceCollection AddInstance<TService>(TService implementationInstance)
         {
             Add(_describe.Instance<TService>(implementationInstance));
             return this;
