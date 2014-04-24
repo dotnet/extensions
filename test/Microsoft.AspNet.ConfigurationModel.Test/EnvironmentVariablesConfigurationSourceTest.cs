@@ -63,7 +63,8 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             envConfigSrc.Load(dic);
 
             Assert.Equal(9, envConfigSrc.Data.Count);
-            Assert.Equal("TestAppName", envConfigSrc.Data["AppName"]);
+            Assert.Equal("TestAppName", envConfigSrc.Data["APPSETTING_AppName"]);
+            Assert.False(envConfigSrc.Data.ContainsKey("AppName"));
             Assert.Equal("CustomConnStr", envConfigSrc.Data["Data:db1:ConnectionString"]);
             Assert.Equal("SQLConnStr", envConfigSrc.Data["Data:db2:ConnectionString"]);
             Assert.Equal("System.Data.SqlClient", envConfigSrc.Data["Data:db2:ProviderName"]);
@@ -79,7 +80,6 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         {
             var dic = new Hashtable()
                 {
-                    {"APPSETTING_AppName", "TestAppName"},
                     {"CUSTOMCONNSTR_db1", "CustomConnStr"},
                     {"SQLCONNSTR_db2", "SQLConnStr"},
                     {"MYSQLCONNSTR_db3", "MySQLConnStr"},

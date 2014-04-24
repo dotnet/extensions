@@ -11,7 +11,6 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         private const string SqlAzureServerPrefix = "SQLAZURECONNSTR_";
         private const string SqlServerPrefix = "SQLCONNSTR_";
         private const string CustomPrefix = "CUSTOMCONNSTR_";
-        private const string AppSettingPrefix = "APPSETTING_";
 
         private const string ConnStrKeyFormat = "Data:{0}:ConnectionString";
         private const string ProviderKeyFormat = "Data:{0}:ProviderName";
@@ -69,11 +68,6 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             else if (key.StartsWith(CustomPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 prefix = CustomPrefix;
-            }
-            else if (key.StartsWith(AppSettingPrefix, StringComparison.OrdinalIgnoreCase))
-            {
-                yield return new DictionaryEntry(key.Substring(AppSettingPrefix.Length), entry.Value);
-                yield break;
             }
             else
             {
