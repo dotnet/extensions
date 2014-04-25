@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.DependencyInjection
         // https://github.com/aspnet/DependencyInjection/issues/73
         public ServiceCollection AddSetup(Type setupType)
         {
-            var serviceTypes = setupType.GetInterfaces()
+            var serviceTypes = setupType.GetTypeInfo().ImplementedInterfaces
                 .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsSetup<>));
             foreach (var serviceType in serviceTypes)
             {
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.DependencyInjection
                 throw new ArgumentNullException("setupInstance");
             }
             var setupType = setupInstance.GetType();
-            var serviceTypes = setupType.GetInterfaces()
+            var serviceTypes = setupType.GetTypeInfo().ImplementedInterfaces
                 .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsSetup<>));
             foreach (var serviceType in serviceTypes)
             {

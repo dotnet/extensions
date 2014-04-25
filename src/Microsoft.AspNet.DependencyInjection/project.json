@@ -14,11 +14,25 @@
         "System.Diagnostics.Tools": "4.0.0.0",
         "System.Linq": "4.0.0.0",
         "System.Reflection": "4.0.10.0",
-        "System.Reflection.Compatibility": "4.0.0.0",
         "System.Runtime": "4.0.20.0",
         "System.Runtime.InteropServices": "4.0.20.0",
         "System.Threading": "4.0.0.0",
         "System.Threading.Tasks": "4.0.10.0"
+      }
+    },
+    ".NETPortable,Version=v4.6,Profile=Profile151": {
+      "dependencies": {
+        "System.Collections": "",
+        "System.Collections.Concurrent": "",
+        "System.ComponentModel": "",
+        "System.Diagnostics.Debug": "",
+        "System.Diagnostics.Tools": "",
+        "System.Linq": "",
+        "System.Reflection": "",
+        "System.Runtime": "",
+        "System.Runtime.InteropServices": "",
+        "System.Threading": "",
+        "System.Threading.Tasks": ""
       }
     }
   }
