@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                     'zipcode': '12345'
                 }
             }";
-            var jsonConfigSrc = new JsonConfigurationSource("ThisFilePathWillNotBeUsed");
+            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
 
             jsonConfigSrc.Load(StringToStream(json));
 
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                 },
                 'name': 'new name'
             }";
-            var jsonConfigSrc = new JsonConfigurationSource("ThisFilePathWillNotBeUsed");
+            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
 
             jsonConfigSrc.Load(StringToStream(json));
 
