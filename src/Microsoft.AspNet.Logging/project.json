@@ -8,6 +8,13 @@
         "System.Runtime": "4.0.20.0",
         "System.Runtime.InteropServices": "4.0.20.0"
       }
+    },
+    ".NETPortable,Version=v4.6,Profile=Profile151": {
+      "dependencies": {
+        "System.Globalization": "",
+        "System.Runtime": "",
+        "System.Runtime.InteropServices": ""
+      }
     }
   }
 }
