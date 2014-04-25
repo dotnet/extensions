@@ -14,6 +14,20 @@
         "System.Runtime.Extensions": "4.0.10.0",
         "System.Runtime.InteropServices": "4.0.20.0"
       }
+    },
+    ".NETPortable,Version=v4.6,Profile=Profile151": {
+      "dependencies": {
+        "System.Collections": "",
+        "System.Diagnostics.Debug": "",
+        "System.Diagnostics.Tools": "",
+        "System.Globalization": "",
+        "System.Linq": "",
+        "System.Reflection": "",
+        "System.Resources.ResourceManager": "",
+        "System.Runtime": "",
+        "System.Runtime.Extensions": "",
+        "System.Runtime.InteropServices": ""
+      }
     }
   }
 }

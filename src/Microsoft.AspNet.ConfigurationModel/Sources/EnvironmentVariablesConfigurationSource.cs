@@ -27,10 +27,12 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             _prefix = string.Empty;
         }
 
+#if NET45 || K10
         public override void Load()
         {
             Load(Environment.GetEnvironmentVariables());
         }
+#endif
 
         internal void Load(IDictionary envVariables)
         {

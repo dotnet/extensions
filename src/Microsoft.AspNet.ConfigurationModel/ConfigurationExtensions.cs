@@ -6,11 +6,13 @@ namespace Microsoft.AspNet.ConfigurationModel
 {
     public static class ConfigurationExtensions
     {
+#if NET45 || K10
         public static IConfigurationSourceContainer AddIniFile(this IConfigurationSourceContainer configuration, string path)
         {
             configuration.Add(new IniFileConfigurationSource(path));
             return configuration;
         }
+#endif
 
 #if NET45
         public static IConfigurationSourceContainer AddCommandLine(this IConfigurationSourceContainer configuration)

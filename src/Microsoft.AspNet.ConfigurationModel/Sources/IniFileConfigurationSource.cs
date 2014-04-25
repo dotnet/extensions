@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NET45 || K10
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -248,3 +249,4 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         }
     }
 }
+#endif
