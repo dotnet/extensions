@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Json
         }
 
         /// <summary>
-        /// Unsupported JSON token: '{0}'. Path '{1}', line {2} position {3}.
+        /// Unsupported JSON token '{0}' was found. Path '{1}', line {2} position {3}.
         /// </summary>
         internal static string Error_UnsupportedJSONToken
         {
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Json
         }
 
         /// <summary>
-        /// Unsupported JSON token: '{0}'. Path '{1}', line {2} position {3}.
+        /// Unsupported JSON token '{0}' was found. Path '{1}', line {2} position {3}.
         /// </summary>
         internal static string FormatError_UnsupportedJSONToken(object p0, object p1, object p2, object p3)
         {

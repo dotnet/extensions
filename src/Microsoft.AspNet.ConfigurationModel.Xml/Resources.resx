@@ -121,13 +121,13 @@
     <value>File path must be a non-empty string.</value>
   </data>
   <data name="Error_KeyIsDuplicated" xml:space="preserve">
-    <value>Key '{0}' is duplicated.{1}</value>
+    <value>A duplicate key '{0}' was found.{1}</value>
   </data>
   <data name="Error_NamespaceIsNotSupported" xml:space="preserve">
-    <value>Namespace is not supported in XML configuration file.{0}</value>
+    <value>XML namespaces are not supported.{0}</value>
   </data>
   <data name="Error_UnsupportedNodeType" xml:space="preserve">
-    <value>Unsupported node type '{0}' is found.{1}</value>
+    <value>Unsupported node type '{0}' was found.{1}</value>
   </data>
   <data name="Msg_LineInfo" xml:space="preserve">
     <value> Line {0}, position {1}.</value>

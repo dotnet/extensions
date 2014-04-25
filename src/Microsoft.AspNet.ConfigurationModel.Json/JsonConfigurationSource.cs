@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
                 if (reader.TokenType != JsonToken.StartObject)
                 {
-                    throw new FormatException(Resources.FormatError_RootMustBeAnObject( reader.Path,
+                    throw new FormatException(Resources.FormatError_RootMustBeAnObject(reader.Path,
                         reader.LineNumber, reader.LinePosition));
                 }
 

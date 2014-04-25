@@ -127,6 +127,6 @@
     <value>Unexpected end when parsing JSON. Path '{0}', line {1} position {2}.</value>
   </data>
   <data name="Error_UnsupportedJSONToken" xml:space="preserve">
-    <value>Unsupported JSON token: '{0}'. Path '{1}', line {2} position {3}.</value>
+    <value>Unsupported JSON token '{0}' was found. Path '{1}', line {2} position {3}.</value>
   </data>
 </root>

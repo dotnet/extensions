@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.ConfigurationModel
         }
 
         /// <summary>
-        /// Key '{0}' is duplicated.
+        /// A duplicate key '{0}' was found.
         /// </summary>
         internal static string Error_KeyIsDuplicated
         {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.ConfigurationModel
         }
 
         /// <summary>
-        /// Key '{0}' is duplicated.
+        /// A duplicate key '{0}' was found.
         /// </summary>
         internal static string FormatError_KeyIsDuplicated(object p0)
         {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.ConfigurationModel
         }
 
         /// <summary>
-        /// No configuration source is capable of committing changes.
+        /// No registered configuration source is capable of committing changes.
         /// </summary>
         internal static string Error_NoCommitableSource
         {
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.ConfigurationModel
         }
 
         /// <summary>
-        /// No configuration source is capable of committing changes.
+        /// No registered configuration source is capable of committing changes.
         /// </summary>
         internal static string FormatError_NoCommitableSource()
         {

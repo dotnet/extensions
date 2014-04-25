@@ -121,10 +121,10 @@
     <value>File path must be a non-empty string.</value>
   </data>
   <data name="Error_KeyIsDuplicated" xml:space="preserve">
-    <value>Key '{0}' is duplicated.</value>
+    <value>A duplicate key '{0}' was found.</value>
   </data>
   <data name="Error_NoCommitableSource" xml:space="preserve">
-    <value>No configuration source is capable of committing changes.</value>
+    <value>No registered configuration source is capable of committing changes.</value>
   </data>
   <data name="Error_UnrecognizedLineFormat" xml:space="preserve">
     <value>Unrecognized line format: '{0}'.</value>

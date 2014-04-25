@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Xml
         }
 
         /// <summary>
-        /// Key '{0}' is duplicated.{1}
+        /// A duplicate key '{0}' was found.{1}
         /// </summary>
         internal static string Error_KeyIsDuplicated
         {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Xml
         }
 
         /// <summary>
-        /// Key '{0}' is duplicated.{1}
+        /// A duplicate key '{0}' was found.{1}
         /// </summary>
         internal static string FormatError_KeyIsDuplicated(object p0, object p1)
         {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Xml
         }
 
         /// <summary>
-        /// Namespace is not supported in XML configuration file.{0}
+        /// XML namespaces are not supported.{0}
         /// </summary>
         internal static string Error_NamespaceIsNotSupported
         {
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Xml
         }
 
         /// <summary>
-        /// Namespace is not supported in XML configuration file.{0}
+        /// XML namespaces are not supported.{0}
         /// </summary>
         internal static string FormatError_NamespaceIsNotSupported(object p0)
         {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Xml
         }
 
         /// <summary>
-        /// Unsupported node type '{0}' is found.{1}
+        /// Unsupported node type '{0}' was found.{1}
         /// </summary>
         internal static string Error_UnsupportedNodeType
         {
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Xml
         }
 
         /// <summary>
-        /// Unsupported node type '{0}' is found.{1}
+        /// Unsupported node type '{0}' was found.{1}
         /// </summary>
         internal static string FormatError_UnsupportedNodeType(object p0, object p1)
         {
