@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 
+using Resources = Microsoft.AspNet.ConfigurationModel.Json.Resources;
+
 namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
     public class JsonConfigurationSource : BaseConfigurationSource
@@ -45,8 +47,8 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
                 if (reader.TokenType != JsonToken.StartObject)
                 {
-                    throw new FormatException(string.Format(Resources.Error_RootMustBeAnObject,
-                        reader.Path, reader.LineNumber, reader.LinePosition));
+                    throw new FormatException(Resources.FormatError_RootMustBeAnObject( reader.Path,
+                        reader.LineNumber, reader.LinePosition));
                 }
 
                 do
@@ -81,14 +83,14 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                         // End of file
                         case JsonToken.None:
                             {
-                                throw new FormatException(string.Format(Resources.Error_UnexpectedEnd,
-                                    reader.Path, reader.LineNumber, reader.LinePosition));
+                                throw new FormatException(Resources.FormatError_UnexpectedEnd( reader.Path,
+                                    reader.LineNumber, reader.LinePosition));
                             }
 
                         default:
                             {
                                 // Unsupported elements: Array, Constructor, Undefined
-                                throw new FormatException(string.Format(Resources.Error_UnsupportedJSONToken,
+                                throw new FormatException(Resources.FormatError_UnsupportedJSONToken(
                                     reader.TokenType, reader.Path, reader.LineNumber, reader.LinePosition));
                             }
                     }

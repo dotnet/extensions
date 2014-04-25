@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                     int seperator = line.IndexOf('=');
                     if (seperator < 0)
                     {
-                        throw new FormatException(string.Format(Resources.Error_UnrecognizedLineFormat, rawLine));
+                        throw new FormatException(Resources.FormatError_UnrecognizedLineFormat(rawLine));
                     }
 
                     string key = sectionPrefix + line.Substring(0, seperator).Trim();
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
                     if (data.ContainsKey(key))
                     {
-                        throw new FormatException(string.Format(Resources.Error_KeyIsDuplicated, key));
+                        throw new FormatException(Resources.FormatError_KeyIsDuplicated(key));
                     }
 
                     data[key] = value;

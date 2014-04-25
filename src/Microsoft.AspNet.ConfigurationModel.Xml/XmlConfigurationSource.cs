@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 
+using Resources = Microsoft.AspNet.ConfigurationModel.Xml.Resources;
+
 namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
     public class XmlConfigurationSource : BaseConfigurationSource
@@ -80,8 +82,8 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
                             if (data.ContainsKey(key))
                             {
-                                throw new FormatException(string.Format(Resources.Error_KeyIsDuplicated,
-                                    key, GetLineInfo(reader)));
+                                throw new FormatException(Resources.FormatError_KeyIsDuplicated(key,
+                                    GetLineInfo(reader)));
                             }
 
                             data[key] = reader.Value;
@@ -96,8 +98,8 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
                         default:
                             // TODO: exception message localization
-                            throw new FormatException(string.Format(Resources.Error_UnsupportedNodeType,
-                                reader.NodeType, GetLineInfo(reader)));
+                            throw new FormatException(Resources.FormatError_UnsupportedNodeType( reader.NodeType,
+                                GetLineInfo(reader)));
                     }
                 }
             }
@@ -122,7 +124,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             var lineInfo = reader as IXmlLineInfo;
             // TODO: exception message localization
             return lineInfo == null ?  string.Empty :
-                string.Format(Resources.Msg_LineInfo, lineInfo.LineNumber, lineInfo.LinePosition);
+                Resources.FormatMsg_LineInfo(lineInfo.LineNumber, lineInfo.LinePosition);
         }
 
         private void ProcessAttributes(XmlReader reader, Stack<string> prefixStack,
@@ -136,8 +138,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                 if (!string.IsNullOrEmpty(reader.NamespaceURI))
                 {
                     // TODO: exception message localization
-                    throw new FormatException(string.Format(Resources.Error_NamespaceIsNotSupported,
-                        GetLineInfo(reader)));
+                    throw new FormatException(Resources.FormatError_NamespaceIsNotSupported(GetLineInfo(reader)));
                 }
 
                 act(reader, prefixStack, data);
@@ -183,7 +184,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
             if (data.ContainsKey(key))
             {
-                throw new FormatException(string.Format(Resources.Error_KeyIsDuplicated, key, GetLineInfo(reader)));
+                throw new FormatException(Resources.FormatError_KeyIsDuplicated(key, GetLineInfo(reader)));
             }
 
             data[key] = reader.Value;
