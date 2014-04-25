@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.ConfigurationModel
             var final = _committableSources.LastOrDefault();
             if (final == null)
             {
-                throw new Exception("TODO: no configuration sources capable of committing changes");
+                throw new Exception(Resources.Error_NoCommitableSource);
             }
             final.Commit();
         }

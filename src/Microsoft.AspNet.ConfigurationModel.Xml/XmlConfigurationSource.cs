@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 
+using Resources = Microsoft.AspNet.ConfigurationModel.Xml.Resources;
+
 namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
     public class XmlConfigurationSource : BaseConfigurationSource
@@ -14,8 +16,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         {
             if (string.IsNullOrEmpty(path))
             {
-                // TODO: exception message localization
-                throw new ArgumentException("File path must be a non-empty string", "path");
+                throw new ArgumentException(Resources.Error_InvalidFilePath, "path");
             }
 
             Path = path;
@@ -81,8 +82,8 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
                             if (data.ContainsKey(key))
                             {
-                                throw new FormatException(string.Format("Key '{0}' is duplicated.{1}",
-                                    key, GetLineInfo(reader)));
+                                throw new FormatException(Resources.FormatError_KeyIsDuplicated(key,
+                                    GetLineInfo(reader)));
                             }
 
                             data[key] = reader.Value;
@@ -97,8 +98,8 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
                         default:
                             // TODO: exception message localization
-                            throw new FormatException(string.Format("Unsupported node type '{0}' is found.{1}",
-                                reader.NodeType, GetLineInfo(reader)));
+                            throw new FormatException(Resources.FormatError_UnsupportedNodeType( reader.NodeType,
+                                GetLineInfo(reader)));
                     }
                 }
             }
@@ -123,7 +124,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             var lineInfo = reader as IXmlLineInfo;
             // TODO: exception message localization
             return lineInfo == null ?  string.Empty :
-                string.Format(" Line {0}, position {1}.", lineInfo.LineNumber, lineInfo.LinePosition);
+                Resources.FormatMsg_LineInfo(lineInfo.LineNumber, lineInfo.LinePosition);
         }
 
         private void ProcessAttributes(XmlReader reader, Stack<string> prefixStack,
@@ -137,8 +138,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                 if (!string.IsNullOrEmpty(reader.NamespaceURI))
                 {
                     // TODO: exception message localization
-                    throw new FormatException(string.Format("Namespace is not supported in configuration files.{0}",
-                        GetLineInfo(reader)));
+                    throw new FormatException(Resources.FormatError_NamespaceIsNotSupported(GetLineInfo(reader)));
                 }
 
                 act(reader, prefixStack, data);
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
             if (data.ContainsKey(key))
             {
-                throw new FormatException(string.Format("Key '{0}' is duplicated.{1}", key, GetLineInfo(reader)));
+                throw new FormatException(Resources.FormatError_KeyIsDuplicated(key, GetLineInfo(reader)));
             }
 
             data[key] = reader.Value;
