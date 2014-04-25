@@ -3,6 +3,8 @@ using System.IO;
 using Microsoft.AspNet.ConfigurationModel.Sources;
 using Xunit;
 
+using Resources = Microsoft.AspNet.ConfigurationModel.Json.Resources;
+
 namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
     public class JsonConfigurationSourceTest
@@ -34,8 +36,11 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         {
             var json = @"'test'";
             var jsonConfigSource = new JsonConfigurationSource(ArbitraryFilePath);
+            var expectedMsg = Resources.FormatError_RootMustBeAnObject(string.Empty, 1, 6);
 
-            Assert.Throws<FormatException>(() => jsonConfigSource.Load(StringToStream(json)));
+            var exception = Assert.Throws<FormatException>(() => jsonConfigSource.Load(StringToStream(json)));
+
+            Assert.Equal(expectedMsg, exception.Message);
         }
 
         [Fact]
@@ -67,8 +72,11 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                 'address': ['Something street', '12345']
             }";
             var jsonConfigSource = new JsonConfigurationSource(ArbitraryFilePath);
+            var expectedMsg = Resources.FormatError_UnsupportedJSONToken("StartArray", "address", 3, 29);
 
-            Assert.Throws<FormatException>(() => jsonConfigSource.Load(StringToStream(json)));
+            var exception = Assert.Throws<FormatException>(() => jsonConfigSource.Load(StringToStream(json)));
+
+            Assert.Equal(expectedMsg, exception.Message);
         }
 
         [Fact]
@@ -82,20 +90,31 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                 }
             /* Missing a right brace here*/";
             var jsonConfigSource = new JsonConfigurationSource(ArbitraryFilePath);
+            var expectedMsg = Resources.FormatError_UnexpectedEnd("address", 7, 44);
 
-            Assert.Throws<FormatException>(() => jsonConfigSource.Load(StringToStream(json)));
+            var exception = Assert.Throws<FormatException>(() => jsonConfigSource.Load(StringToStream(json)));
+
+            Assert.Equal(expectedMsg, exception.Message);
         }
 
         [Fact]
         public void ThrowExceptionWhenPassingNullAsFilePath()
         {
-            Assert.Throws<ArgumentException>(() => new JsonConfigurationSource(null));
+            var expectedMsg = new ArgumentException(Resources.Error_InvalidFilePath, "path").Message;
+
+            var exception = Assert.Throws<ArgumentException>(() => new JsonConfigurationSource(null));
+
+            Assert.Equal(expectedMsg, exception.Message);
         }
 
         [Fact]
         public void ThrowExceptionWhenPassingEmptyStringAsFilePath()
         {
-            Assert.Throws<ArgumentException>(() => new JsonConfigurationSource(string.Empty));
+            var expectedMsg = new ArgumentException(Resources.Error_InvalidFilePath, "path").Message;
+
+            var exception = Assert.Throws<ArgumentException>(() => new JsonConfigurationSource(string.Empty));
+
+            Assert.Equal(expectedMsg, exception.Message);
         }
 
         [Fact]

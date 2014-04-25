@@ -28,7 +28,7 @@
     <Compile Include="IConfiguration.cs" />
     <Compile Include="AssemblyNeutralAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Resources.Designer.cs" />
+    <Compile Include="Properties\Resources.Designer.cs" />
     <Compile Include="Sources\BaseConfigurationSource.cs" />
     <Compile Include="Sources\CommandLineConfigurationSource.cs" />
     <Compile Include="Sources\EnvironmentVariablesConfigurationSource.cs" />
