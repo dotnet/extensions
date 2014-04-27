@@ -17,17 +17,6 @@ namespace Microsoft.AspNet.FileSystems
         private readonly string _baseNamespace;
         private readonly DateTime _lastModified;
 
-#if NET45
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EmbeddedResourceFileSystem" /> class using the calling
-        /// assembly and empty base namespace.
-        /// </summary>
-        public EmbeddedResourceFileSystem()
-            : this(Assembly.GetCallingAssembly())
-        {
-        }
-#endif
-
         /// <summary>
         /// Initializes a new instance of the <see cref="EmbeddedResourceFileSystem" /> class using the specified
         /// assembly and empty base namespace.
@@ -37,18 +26,6 @@ namespace Microsoft.AspNet.FileSystems
             : this(assembly, string.Empty)
         {
         }
-
-#if NET45
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EmbeddedResourceFileSystem" /> class using the calling
-        /// assembly and specified base namespace.
-        /// </summary>
-        /// <param name="baseNamespace">The base namespace that contains the embedded resources.</param>
-        public EmbeddedResourceFileSystem(string baseNamespace)
-            : this(Assembly.GetCallingAssembly(), baseNamespace)
-        {
-        }
-#endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EmbeddedResourceFileSystem" /> class using the specified
@@ -64,7 +41,8 @@ namespace Microsoft.AspNet.FileSystems
             }
             _baseNamespace = string.IsNullOrEmpty(baseNamespace) ? string.Empty : baseNamespace + ".";
             _assembly = assembly;
-            _lastModified = new FileInfo(assembly.Location).LastWriteTime;
+            // REVIEW: Does this even make sense?
+            _lastModified = DateTime.MaxValue;
         }
 
         /// <summary>

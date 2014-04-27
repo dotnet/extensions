@@ -62,20 +62,8 @@ namespace Microsoft.AspNet.FileSystems
         {
 #if NET45
             var applicationBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
-#else // CORECLR_TODO: ApplicationBase
-            var appDomainType = typeof(object)
-                                    .GetTypeInfo()
-                                    .Assembly
-                                    .GetType("System.AppDomain");
-
-            var currentAppDomainProperty = appDomainType.GetRuntimeProperty("CurrentDomain");
-
-            var currentAppDomain = currentAppDomainProperty.GetValue(null);
-
-            var getDataMethod = appDomainType
-                .GetRuntimeMethod("GetData", new[] { typeof(string) });
-
-            string applicationBase = (string)getDataMethod.Invoke(currentAppDomain, new object[] { "APPBASE" });
+#else
+            var applicationBase = ApplicationContext.BaseDirectory; 
 #endif
             var fullRoot = Path.GetFullPath(Path.Combine(applicationBase, root));
             if (!fullRoot.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
