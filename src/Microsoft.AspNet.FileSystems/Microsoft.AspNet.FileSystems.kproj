@@ -24,6 +24,7 @@
     <Compile Include="IFileInfo.cs" />
     <Compile Include="IFileSystem.cs" />
     <Compile Include="PhysicalFileSystem.cs" />
+    <Compile Include="PlatformHelper.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

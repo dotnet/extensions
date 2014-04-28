@@ -61,7 +61,9 @@ namespace Microsoft.AspNet.FileSystems
         private static string GetFullRoot(string root)
         {
 #if NET45
-            var applicationBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+            // Need to figure out how to tweak mono's AppBase
+            var applicationBase = PlatformHelper.IsMono ? Directory.GetCurrentDirectory() :
+                                                          AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
 #else
             var applicationBase = ApplicationContext.BaseDirectory; 
 #endif
