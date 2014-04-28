@@ -129,35 +129,49 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         public void ThrowExceptionWhenFoundInvalidLine()
         {
             var ini = @"
-            ConnectionString
+ConnectionString
             ";
             var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+            var expectedMsg = Resources.FormatError_UnrecognizedLineFormat("ConnectionString");
 
-            Assert.Throws<FormatException>(() => iniConfigSrc.Load(StringToStream(ini)));
+            var exception = Assert.Throws<FormatException>(() => iniConfigSrc.Load(StringToStream(ini)));
+
+            Assert.Equal(expectedMsg, exception.Message);
         }
 
         [Fact]
         public void ThrowExceptionWhenFoundBrokenSectionHeader()
         {
             var ini = @"
-            [ConnectionString
-            DefaultConnection=TestConnectionString
+[ConnectionString
+DefaultConnection=TestConnectionString
             ";
             var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+            var expectedMsg = Resources.FormatError_UnrecognizedLineFormat("[ConnectionString");
+            
+            var exception = Assert.Throws<FormatException>(() => iniConfigSrc.Load(StringToStream(ini)));
 
-            Assert.Throws<FormatException>(() => iniConfigSrc.Load(StringToStream(ini)));
+            Assert.Equal(expectedMsg, exception.Message);
         }
 
         [Fact]
         public void ThrowExceptionWhenPassingNullAsFilePath()
         {
-            Assert.Throws<ArgumentException>(() => new IniFileConfigurationSource(null));
+            var expectedMsg = new ArgumentException(Resources.Error_InvalidFilePath, "path").Message;
+
+            var exception = Assert.Throws<ArgumentException>(() => new IniFileConfigurationSource(null));
+
+            Assert.Equal(expectedMsg, exception.Message);
         }
 
         [Fact]
         public void ThrowExceptionWhenPassingEmptyStringAsFilePath()
         {
-            Assert.Throws<ArgumentException>(() => new IniFileConfigurationSource(string.Empty));
+            var expectedMsg = new ArgumentException(Resources.Error_InvalidFilePath, "path").Message;
+
+            var exception = Assert.Throws<ArgumentException>(() => new IniFileConfigurationSource(string.Empty));
+
+            Assert.Equal(expectedMsg, exception.Message);
         }
 
         [Fact]
@@ -172,8 +186,11 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             Provider=MySql
             ";
             var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+            var expectedMsg = Resources.FormatError_KeyIsDuplicated("Data:DefaultConnection:ConnectionString");
 
-            Assert.Throws<FormatException>(() => iniConfigSrc.Load(StringToStream(ini)));
+            var exception = Assert.Throws<FormatException>(() => iniConfigSrc.Load(StringToStream(ini)));
+
+            Assert.Equal(expectedMsg, exception.Message);
         }
 
         private static Stream StringToStream(string str)

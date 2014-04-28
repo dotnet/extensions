@@ -109,8 +109,11 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                     {"SQLCONNSTR_db2", "SQLConnStr"},
                 };
             var envConfigSrc = new EnvironmentVariablesConfigurationSource();
+            var expectedMsg = "An item with the same key has already been added.";
 
-            Assert.ThrowsAny<Exception>(() => envConfigSrc.Load(dic));
+            var exception = Assert.Throws<ArgumentException>(() => envConfigSrc.Load(dic));
+
+            Assert.Equal(expectedMsg, exception.Message);
         }
 
         [Fact]

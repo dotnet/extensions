@@ -18,8 +18,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="Project.json" />
+    <Content Include="Resources.resx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Properties\Resources.Designer.cs" />
     <Compile Include="XmlConfigurationExtension.cs" />
     <Compile Include="XmlConfigurationSource.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
