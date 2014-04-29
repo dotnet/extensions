@@ -262,7 +262,8 @@ Provider=SqlClient";
             ConnectionString=TestConnectionString
             / Comments
             Provider=SqlClient";
-            var modifiedIni = string.Format("NewKey = NewValue{0}{1}", Environment.NewLine, ini);
+            var modifiedIni = string.Format("NewKey1 = NewValue1{0}NewKey2 = NewValue2{0}{1}",
+                Environment.NewLine, ini);
             var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
             var outputCacheStream = new MemoryStream();
             iniConfigSrc.Load(StringToStream(ini));
@@ -270,7 +271,7 @@ Provider=SqlClient";
             var exception = Assert.Throws<InvalidOperationException>(
                 () => iniConfigSrc.Commit(StringToStream(modifiedIni), outputCacheStream));
 
-            Assert.Equal(Resources.FormatError_CommitWhenNewKeyFound("NewKey"), exception.Message);
+            Assert.Equal(Resources.FormatError_CommitWhenNewKeyFound("NewKey1"), exception.Message);
         }
 
         [Fact]
@@ -291,7 +292,8 @@ Provider=SqlClient";
             var exception = Assert.Throws<InvalidOperationException>(
                 () => iniConfigSrc.Commit(StringToStream(modifiedIni), outputCacheStream));
 
-            Assert.Equal(Resources.FormatError_CommitWhenKeyMissing("Data:DefaultConnection:Provider"), exception.Message);
+            Assert.Equal(Resources.FormatError_CommitWhenKeyMissing("Data:DefaultConnection:Provider"),
+                exception.Message);
         }
 
         [Fact]

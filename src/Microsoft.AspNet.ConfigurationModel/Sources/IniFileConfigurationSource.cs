@@ -42,14 +42,36 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         {
             if (!File.Exists(Path))
             {
-                using (var outputStream = new FileStream(Path, FileMode.CreateNew))
+                var outputStream = new FileStream(Path, FileMode.CreateNew);
+
+                try
                 {
                     GenerateNewConfig(outputStream);
+                }
+                catch (Exception e)
+                {
+                    outputStream.Dispose();
+
+                    // The new config scenario should be atomic
+                    // So we roll back if the operation fails
+                    if (File.Exists(Path))
+                    {
+                        File.Delete(Path);
+                    }
+
+                    // Rethrow the exception
+                    throw;
+                }
+                finally
+                {
+                    outputStream.Dispose();
                 }
 
                 return;
             }
 
+            // Because we need to read the original contents while generating new contents, the new contents are
+            // cached in memory and used to overwrite original contents after we finish reading the original contents
             using (var cacheStream = new MemoryStream())
             {
                 using (var inputStream = new FileStream(Path, FileMode.Open))
@@ -57,8 +79,8 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                     Commit(inputStream, cacheStream);
                 }
 
+                // Use the cached new contents to overwrite original contents
                 cacheStream.Seek(0, SeekOrigin.Begin);
-
                 using (var outputStream = new FileStream(Path, FileMode.Truncate))
                 {
                     cacheStream.CopyTo(outputStream);
@@ -204,7 +226,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
             if (Data.Count() != processedKeys.Count())
             {
-                var missingKeys = string.Join(" ", Data.Keys.Except(processedKeys));
+                var missingKeys = string.Join(", ", Data.Keys.Except(processedKeys));
                 throw new InvalidOperationException(Resources.FormatError_CommitWhenKeyMissing(missingKeys));
             }
         }
