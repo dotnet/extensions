@@ -28,7 +28,9 @@
     <Compile Include="Fakes\FakeFallbackServiceProvider.cs" />
     <Compile Include="Fakes\FakeNonScopingFallbackServiceProvder.cs" />
     <Compile Include="Fakes\FakeOpenGenericService.cs" />
+    <Compile Include="Fakes\FakeOptionsSetup.cs" />
     <Compile Include="Fakes\FakeOuterService.cs" />
+    <Compile Include="Fakes\FakeOptions.cs" />
     <Compile Include="Fakes\FakeService.cs" />
     <Compile Include="Fakes\IFakeEveryService.cs" />
     <Compile Include="Fakes\IFakeMultipleService.cs" />

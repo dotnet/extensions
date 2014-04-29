@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNet.ConfigurationModel;
 
 namespace Microsoft.AspNet.DependencyInjection
@@ -67,6 +68,50 @@ namespace Microsoft.AspNet.DependencyInjection
         public ServiceCollection AddScoped<TService>()
         {
             AddScoped<TService, TService>();
+            return this;
+        }
+
+        // TODO: Move AddSetup to yet to be created IServiceCollection
+        // https://github.com/aspnet/DependencyInjection/issues/73
+        public ServiceCollection AddSetup(Type setupType)
+        {
+            var serviceTypes = setupType.GetInterfaces()
+                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsSetup<>));
+            foreach (var serviceType in serviceTypes)
+            {
+                Add(new ServiceDescriptor
+                {
+                    ServiceType = serviceType,
+                    ImplementationType = setupType,
+                    Lifecycle = LifecycleKind.Transient
+                });
+            }
+            return this;
+        }
+
+        public ServiceCollection AddSetup<TSetup>()
+        {
+            return AddSetup(typeof(TSetup));
+        }
+
+        public ServiceCollection AddSetup(object setupInstance)
+        {
+            if (setupInstance == null)
+            {
+                throw new ArgumentNullException("setupInstance");
+            }
+            var setupType = setupInstance.GetType();
+            var serviceTypes = setupType.GetInterfaces()
+                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsSetup<>));
+            foreach (var serviceType in serviceTypes)
+            {
+                Add(new ServiceDescriptor
+                {
+                    ServiceType = serviceType,
+                    ImplementationInstance = setupInstance,
+                    Lifecycle = LifecycleKind.Singleton
+                });
+            }
             return this;
         }
 

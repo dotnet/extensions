@@ -27,6 +27,17 @@ namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
                 typeof(FakeOpenGenericService<>),
                 implementationInstance: null,
                 lifecycle: LifecycleKind.Transient);
+
+            yield return describer.Singleton<IOptionsAccessor<FakeOptions>, OptionsAccessor<FakeOptions>>();
+
+            ServiceCollection services = new ServiceCollection();
+            services.AddSetup<FakeOptionsSetupC>();
+            services.AddSetup(new FakeOptionsSetupB());
+            services.AddSetup(typeof(FakeOptionsSetupA));
+            foreach (var description in services)
+            {
+                yield return description;
+            }
         }
     }
 }
