@@ -117,17 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Error_CommitWhenFileNotExist" xml:space="preserve">
-    <value>Unable to commit since the configuration file does not exist.</value>
-  </data>
   <data name="Error_CommitWhenKeyMissing" xml:space="preserve">
-    <value>Unable to commit since the following keys are missing from the configuration file: {0}.</value>
+    <value>Unable to commit because the following keys are missing from the configuration file: {0}.</value>
   </data>
   <data name="Error_CommitWhenNewKeyFound" xml:space="preserve">
-    <value>Unable to commit since a new key was added to the configuration file after last load operation. The newly added key is '{0}'.</value>
-  </data>
-  <data name="Error_CommitWhenNotLoaded" xml:space="preserve">
-    <value>Unable to commit since the configuration file is not loaded.</value>
+    <value>Unable to commit because a new key was added to the configuration file after last load operation. The newly added key is '{0}'.</value>
   </data>
   <data name="Error_InvalidFilePath" xml:space="preserve">
     <value>File path must be a non-empty string.</value>

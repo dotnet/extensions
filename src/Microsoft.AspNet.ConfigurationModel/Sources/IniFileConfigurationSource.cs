@@ -7,8 +7,6 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 {
     public class IniFileConfigurationSource : BaseConfigurationSource, ICommitableConfigurationSource
     {
-        private bool _loaded;
-        
         // http://en.wikipedia.org/wiki/INI_file
         /// <summary>
         /// Files are simple line structures
@@ -28,7 +26,6 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             }
 
             Path = path;
-            _loaded = false;
         }
 
         public string Path { get; private set; }
@@ -39,32 +36,33 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             {
                 Load(stream);
             }
-            
-            _loaded = true;
         }
         
         public virtual void Commit()
         {
-            if (!_loaded)
-            {
-                throw new InvalidOperationException(Resources.Error_CommitWhenNotLoaded);
-            }
-
             if (!File.Exists(Path))
             {
-                throw new InvalidOperationException(Resources.Error_CommitWhenFileNotExist);
+                using (var outputStream = new FileStream(Path, FileMode.CreateNew))
+                {
+                    GenerateNewConfig(outputStream);
+                }
+
+                return;
             }
 
-            Stream newContentsStream = null;
-
-            using (var stream = new FileStream(Path, FileMode.Open))
+            using (var cacheStream = new MemoryStream())
             {
-                newContentsStream = Commit(stream);
-            }
+                using (var inputStream = new FileStream(Path, FileMode.Open))
+                {
+                    Commit(inputStream, cacheStream);
+                }
 
-            using (var stream = new FileStream(Path, FileMode.Truncate))
-            {
-                newContentsStream.CopyTo(stream);
+                cacheStream.Seek(0, SeekOrigin.Begin);
+
+                using (var outputStream = new FileStream(Path, FileMode.Truncate))
+                {
+                    cacheStream.CopyTo(outputStream);
+                }
             }
         }
 
@@ -129,39 +127,39 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
         // Parse the original file while generating new file contents
         // to make sure the format is consistent and comments are not lost
-        internal Stream Commit(Stream configFileStream)
+        internal void Commit(Stream inputStream, Stream outputStream)
         {
-            var newContentsStream = new MemoryStream();
-            var newContentsWriter = new StreamWriter(newContentsStream);
+            var processedKeys = new HashSet<string>();
+            var outputWriter = new StreamWriter(outputStream);
 
-            using (var configFileReader = new StreamReader(configFileStream))
+            using (var inputReader = new StreamReader(inputStream))
             {
                 var sectionPrefix = string.Empty;
 
-                while (configFileReader.Peek() != -1)
+                while (inputReader.Peek() != -1)
                 {
-                    var rawLine = configFileReader.ReadLine();
+                    var rawLine = inputReader.ReadLine();
                     var line = rawLine.Trim();
 
                     // Is this the last line?
-                    var lineEnd = configFileReader.Peek() == -1 ? string.Empty : Environment.NewLine;
+                    var lineEnd = inputReader.Peek() == -1 ? string.Empty : Environment.NewLine;
 
                     // Ignore blank lines
                     if (string.IsNullOrWhiteSpace(line))
                     {
-                        newContentsWriter.Write(rawLine + lineEnd);
+                        outputWriter.Write(rawLine + lineEnd);
                         continue;
                     }
                     // Ignore comments
                     if (line[0] == ';' || line[0] == '#' || line[0] == '/')
                     {
-                        newContentsWriter.Write(rawLine + lineEnd);
+                        outputWriter.Write(rawLine + lineEnd);
                         continue;
                     }
                     // [Section:header] 
                     if (line[0] == '[' && line[line.Length - 1] == ']')
                     {
-                        newContentsWriter.Write(rawLine + lineEnd);
+                        outputWriter.Write(rawLine + lineEnd);
 
                         // remove the brackets
                         sectionPrefix = line.Substring(1, line.Length - 2) + ":";
@@ -196,21 +194,32 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
                     outValueStr = outValueStr.Replace(value, Data[key]);
 
-                    newContentsWriter.Write(string.Format("{0}={1}{2}", outKeyStr, outValueStr, lineEnd));
+                    outputWriter.Write(string.Format("{0}={1}{2}", outKeyStr, outValueStr, lineEnd));
 
-                    Data.Remove(key);
+                    processedKeys.Add(key);
                 }
+
+                outputWriter.Flush();
             }
 
-            if (Data.Any())
+            if (Data.Count() != processedKeys.Count())
             {
-                var missingKeys = string.Join(" ", Data.Keys);
+                var missingKeys = string.Join(" ", Data.Keys.Except(processedKeys));
                 throw new InvalidOperationException(Resources.FormatError_CommitWhenKeyMissing(missingKeys));
             }
+        }
 
-            newContentsWriter.Flush();
-            newContentsStream.Seek(0, SeekOrigin.Begin);
-            return newContentsStream;
+        // Write the contents of newly created config file to given stream
+        internal void GenerateNewConfig(Stream outputStream)
+        {
+            var outputWriter = new StreamWriter(outputStream);
+
+            foreach (var entry in Data)
+            {
+                outputWriter.WriteLine(string.Format("{0}={1}", entry.Key, entry.Value));
+            }
+
+            outputWriter.Flush();
         }
     }
 }

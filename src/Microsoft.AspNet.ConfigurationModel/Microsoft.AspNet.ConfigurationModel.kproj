@@ -17,6 +17,8 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="crossgen.err.log" />
+    <Content Include="crossgen.log" />
     <Content Include="Project.json" />
     <Content Include="Resources.resx" />
   </ItemGroup>

@@ -11,23 +11,7 @@ namespace Microsoft.AspNet.ConfigurationModel
             = new ResourceManager("Microsoft.AspNet.ConfigurationModel.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// Unable to commit since the configuration file does not exist.
-        /// </summary>
-        internal static string Error_CommitWhenFileNotExist
-        {
-            get { return GetString("Error_CommitWhenFileNotExist"); }
-        }
-
-        /// <summary>
-        /// Unable to commit since the configuration file does not exist.
-        /// </summary>
-        internal static string FormatError_CommitWhenFileNotExist()
-        {
-            return GetString("Error_CommitWhenFileNotExist");
-        }
-
-        /// <summary>
-        /// Unable to commit since the following keys are missing from the configuration file: {0}.
+        /// Unable to commit because the following keys are missing from the configuration file: {0}.
         /// </summary>
         internal static string Error_CommitWhenKeyMissing
         {
@@ -35,7 +19,7 @@ namespace Microsoft.AspNet.ConfigurationModel
         }
 
         /// <summary>
-        /// Unable to commit since the following keys are missing from the configuration file: {0}.
+        /// Unable to commit because the following keys are missing from the configuration file: {0}.
         /// </summary>
         internal static string FormatError_CommitWhenKeyMissing(object p0)
         {
@@ -43,7 +27,7 @@ namespace Microsoft.AspNet.ConfigurationModel
         }
 
         /// <summary>
-        /// Unable to commit since a new key was added to the configuration file after last load operation. The newly added key is '{0}'.
+        /// Unable to commit because a new key was added to the configuration file after last load operation. The newly added key is '{0}'.
         /// </summary>
         internal static string Error_CommitWhenNewKeyFound
         {
@@ -51,27 +35,11 @@ namespace Microsoft.AspNet.ConfigurationModel
         }
 
         /// <summary>
-        /// Unable to commit since a new key was added to the configuration file after last load operation. The newly added key is '{0}'.
+        /// Unable to commit because a new key was added to the configuration file after last load operation. The newly added key is '{0}'.
         /// </summary>
         internal static string FormatError_CommitWhenNewKeyFound(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("Error_CommitWhenNewKeyFound"), p0);
-        }
-
-        /// <summary>
-        /// Unable to commit since the configuration file is not loaded.
-        /// </summary>
-        internal static string Error_CommitWhenNotLoaded
-        {
-            get { return GetString("Error_CommitWhenNotLoaded"); }
-        }
-
-        /// <summary>
-        /// Unable to commit since the configuration file is not loaded.
-        /// </summary>
-        internal static string FormatError_CommitWhenNotLoaded()
-        {
-            return GetString("Error_CommitWhenNotLoaded");
         }
 
         /// <summary>
