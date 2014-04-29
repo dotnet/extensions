@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using Xunit;
 
 namespace Microsoft.AspNet.ConfigurationModel.Sources
@@ -193,6 +194,112 @@ DefaultConnection=TestConnectionString
             Assert.Equal(expectedMsg, exception.Message);
         }
 
+        [Fact]
+        public void CommitMethodPreservesCommentsAndWhiteSpaces()
+        {
+            var ini = @"
+            ; Comments
+            [Data:DefaultConnection]
+            # Comments
+            ConnectionString=TestConnectionString
+            / Comments
+            Provider=SqlClient";
+            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+            iniConfigSrc.Load(StringToStream(ini));
+
+            var newContentsStream = iniConfigSrc.Commit(StringToStream(ini));
+
+            var newContents = StreamToString(newContentsStream);
+            Assert.Equal(ini, newContents);
+        }
+
+        [Fact]
+        public void CommitMethodUpdatesValues()
+        {
+            var ini = @"
+            ; Comments
+            [Data:DefaultConnection]
+            # Comments
+            ConnectionString=TestConnectionString
+            / Comments
+            Provider=SqlClient";
+            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+            iniConfigSrc.Load(StringToStream(ini));
+            iniConfigSrc.Set("Data:DefaultConnection:ConnectionString", "NewTestConnectionString");
+
+            var newContentsStream = iniConfigSrc.Commit(StringToStream(ini));
+
+            var newContents = StreamToString(newContentsStream);
+            Assert.Equal(ini.Replace("TestConnectionString", "NewTestConnectionString"), newContents);
+        }
+
+        [Fact]
+        public void CommitOperationThrowsExceptionWhenNotLoaded()
+        {
+            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+
+            var exception = Assert.Throws<InvalidOperationException>(() => iniConfigSrc.Commit());
+
+            Assert.Equal(Resources.Error_CommitWhenNotLoaded, exception.Message);
+        }
+
+        [Fact]
+        public void CommitOperationThrowsExceptionWhenFindInvalidModificationAfterLoadOperation()
+        {
+            var ini = @"
+            ; Comments
+            [Data:DefaultConnection]
+            # Comments
+            ConnectionString=TestConnectionString
+            / Comments
+            Provider=SqlClient";
+            var modifiedIni = string.Format("This is an invalid line{0}{1}", Environment.NewLine, ini);
+            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+            iniConfigSrc.Load(StringToStream(ini));
+
+            var exception = Assert.Throws<FormatException>(() => iniConfigSrc.Commit(StringToStream(modifiedIni)));
+
+            Assert.Equal(Resources.FormatError_UnrecognizedLineFormat("This is an invalid line"), exception.Message);
+        }
+
+        [Fact]
+        public void CommitOperationThrowsExceptionWhenFindNewlyAddedKeyAfterLoadOperation()
+        {
+            var ini = @"
+            ; Comments
+            [Data:DefaultConnection]
+            # Comments
+            ConnectionString=TestConnectionString
+            / Comments
+            Provider=SqlClient";
+            var modifiedIni = string.Format("NewKey = NewValue{0}{1}", Environment.NewLine, ini);
+            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+            iniConfigSrc.Load(StringToStream(ini));
+
+            var exception = Assert.Throws<InvalidOperationException>(() => iniConfigSrc.Commit(StringToStream(modifiedIni)));
+
+            Assert.Equal(Resources.FormatError_CommitWhenNewKeyFound("NewKey"), exception.Message);
+        }
+
+        [Fact]
+        public void CommitOperationThrowsExceptionWhenKeysAreMissingInConfigFile()
+        {
+            var ini = @"
+            ; Comments
+            [Data:DefaultConnection]
+            # Comments
+            ConnectionString=TestConnectionString
+            / Comments
+            Provider=SqlClient";
+            var modifiedIni = ini.Replace("Provider=SqlClient", string.Empty);
+            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+            iniConfigSrc.Load(StringToStream(ini));
+
+            var exception = Assert.Throws<InvalidOperationException>(() => iniConfigSrc.Commit(StringToStream(modifiedIni)));
+
+            Assert.Equal(Resources.FormatError_CommitWhenKeyMissing("Data:DefaultConnection:Provider"), exception.Message);
+        }
+
         private static Stream StringToStream(string str)
         {
             var memStream = new MemoryStream();
@@ -203,5 +310,13 @@ DefaultConnection=TestConnectionString
 
             return memStream;
         }
+
+        private static string StreamToString(Stream stream)
+        {
+            StreamReader reader = new StreamReader(stream);
+
+            return reader.ReadToEnd();
+        }
+
     }
 }
