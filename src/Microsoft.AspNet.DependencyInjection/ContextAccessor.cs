@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.DependencyInjection
             }
         }
 
-        public TContext ExchangeValue(TContext value)
+        public TContext SetValue(TContext value)
         {
             if (_source.Exchange != null)
             {

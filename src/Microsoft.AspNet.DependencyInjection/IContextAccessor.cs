@@ -6,7 +6,7 @@ namespace Microsoft.AspNet.DependencyInjection
     {
         TContext Value { get; }
 
-        TContext ExchangeValue(TContext value);
+        TContext SetValue(TContext value);
 
         IDisposable SetContextSource(Func<TContext> access, Func<TContext, TContext> exchange);
     }
