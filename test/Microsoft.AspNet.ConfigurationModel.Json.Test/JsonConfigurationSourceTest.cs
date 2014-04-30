@@ -14,13 +14,14 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         [Fact]
         public void LoadKeyValuePairsFromValidJson()
         {
-            var json = @"{
-                'name': 'test',
-                'address': {
-                    'street': 'Something street',
-                    'zipcode': '12345'
-                }
-            }";
+            var json = @"
+{
+    'name': 'test',
+    'address': {
+        'street': 'Something street',
+        'zipcode': '12345'
+    }
+}";
             var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
 
             jsonConfigSrc.Load(StringToStream(json));
@@ -46,7 +47,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         [Fact]
         public void SupportAndIgnoreComments()
         {
-            var json = @" /* Comments */
+            var json = @"/* Comments */
                 {/* Comments */
                 'name': /* Comments */ 'test',
                 'address': {
@@ -138,6 +139,142 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             Assert.Equal("12345", jsonConfigSrc.Data["address:zipcode"]);
         }
 
+        [Fact]
+        public void CommitMethodPreservesCommments()
+        {
+            var json = @"{
+  'name': 'test',
+  'address': {
+    'street': 'Something street',
+    'zipcode': '12345'
+  }
+}";
+            json = json.Replace('\'', '"');
+            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
+            var outputCacheStream = new MemoryStream();
+            jsonConfigSrc.Load(StringToStream(json));
+
+            jsonConfigSrc.Commit(StringToStream(json), outputCacheStream);
+
+            var newContents = StreamToString(outputCacheStream);
+            Assert.Equal(json, newContents);
+        }
+
+        [Fact]
+        public void CommitMethodUpdatesValues()
+        {
+            var json = @"{
+  'name': 'test',
+  'address': {
+    'street': 'Something street',
+    'zipcode': '12345'
+  }
+}";
+            json = json.Replace('\'', '"');
+            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
+            var outputCacheStream = new MemoryStream();
+            jsonConfigSrc.Load(StringToStream(json));
+            jsonConfigSrc.Set("name", "new_name");
+            jsonConfigSrc.Set("address:zipcode", "67890");
+
+            jsonConfigSrc.Commit(StringToStream(json), outputCacheStream);
+
+            var newContents = StreamToString(outputCacheStream);
+            Assert.Equal(json.Replace("test", "new_name").Replace("12345", "67890"), newContents);
+        }
+
+        [Fact]
+        public void CommitOperationThrowsExceptionWhenFindInvalidModificationAfterLoadOperation()
+        {
+            var json = @"{
+  'name': 'test',
+  'address': {
+    'street': 'Something street',
+    'zipcode': '12345'
+  }
+}";
+            json = json.Replace('\'', '"');
+            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
+            var outputCacheStream = new MemoryStream();
+            jsonConfigSrc.Load(StringToStream(json));
+            jsonConfigSrc.Set("name", "new_name");
+            jsonConfigSrc.Set("address:zipcode", "67890");
+
+            jsonConfigSrc.Commit(StringToStream(json), outputCacheStream);
+
+            var newContents = StreamToString(outputCacheStream);
+            Assert.Equal(json.Replace("test", "new_name").Replace("12345", "67890"), newContents);
+        }
+
+        [Fact]
+        public void CommitOperationThrowsExceptionWhenFindNewlyAddedKeyAfterLoadOperation()
+        {
+            var json = @"{
+  'name': 'test',
+  'address': {
+    'street': 'Something street',
+    'zipcode': '12345'
+  }
+}";
+            var newJson = @"{
+  'name': 'test',
+  'address': {
+    'street': 'Something street',
+    'zipcode': '12345'
+  },
+  'NewKey': 'NewValue'
+}";
+            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
+            var outputCacheStream = new MemoryStream();
+            jsonConfigSrc.Load(StringToStream(json));
+
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => jsonConfigSrc.Commit(StringToStream(newJson), outputCacheStream));
+
+            Assert.Equal(Resources.FormatError_CommitWhenNewKeyFound("NewKey"), exception.Message);
+        }
+
+        [Fact]
+        public void CommitOperationThrowsExceptionWhenKeysAreMissingInConfigFile()
+        {
+            var json = @"{
+  'name': 'test',
+  'address': {
+    'street': 'Something street',
+    'zipcode': '12345'
+  }
+}";
+            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
+            var outputCacheStream = new MemoryStream();
+            jsonConfigSrc.Load(StringToStream(json));
+            json = json.Replace("'name': 'test',", string.Empty);
+
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => jsonConfigSrc.Commit(StringToStream(json), outputCacheStream));
+
+            Assert.Equal(Resources.FormatError_CommitWhenKeyMissing("name"), exception.Message);
+        }
+
+        [Fact]
+        public void CanCreateNewConfig()
+        {
+            var targetJson = @"{
+  'name': 'test',
+  'address:street': 'Something street',
+  'address:zipcode': '12345'
+}";
+            targetJson = targetJson.Replace('\'', '"');
+            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
+            var outputCacheStream = new MemoryStream();
+            jsonConfigSrc.Data["name"] = "test";
+            jsonConfigSrc.Data["address:street"] = "Something street";
+            jsonConfigSrc.Data["address:zipcode"] = "12345";
+
+            jsonConfigSrc.GenerateNewConfig(outputCacheStream);
+
+            Assert.Equal(targetJson, StreamToString(outputCacheStream));
+        }
+
         private static Stream StringToStream(string str)
         {
             var memStream = new MemoryStream();
@@ -147,6 +284,14 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             memStream.Seek(0, SeekOrigin.Begin);
 
             return memStream;
+        }
+
+        private static string StreamToString(Stream stream)
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+            StreamReader reader = new StreamReader(stream);
+
+            return reader.ReadToEnd();
         }
     }
 }
