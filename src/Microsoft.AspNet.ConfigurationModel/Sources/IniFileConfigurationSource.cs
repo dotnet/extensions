@@ -40,19 +40,22 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         
         public virtual void Commit()
         {
+            // If the config file is not found in given path
+            // i.e. we don't have a template to follow when generating contents of new config file
             if (!File.Exists(Path))
             {
-                var outputStream = new FileStream(Path, FileMode.CreateNew);
+                var newConfigFileStream = new FileStream(Path, FileMode.CreateNew);
 
                 try
                 {
-                    GenerateNewConfig(outputStream);
+                    // Generate contents and write it to the newly created config file
+                    GenerateNewConfig(newConfigFileStream);
                 }
-                catch (Exception e)
+                catch
                 {
-                    outputStream.Dispose();
+                    newConfigFileStream.Dispose();
 
-                    // The new config scenario should be atomic
+                    // The operation should be atomic because we don't want a corrupted config file
                     // So we roll back if the operation fails
                     if (File.Exists(Path))
                     {
@@ -64,7 +67,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                 }
                 finally
                 {
-                    outputStream.Dispose();
+                    newConfigFileStream.Dispose();
                 }
 
                 return;
@@ -147,7 +150,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             ReplaceData(data);
         }
 
-        // Parse the original file while generating new file contents
+        // Use the original file as a template while generating new file contents
         // to make sure the format is consistent and comments are not lost
         internal void Commit(Stream inputStream, Stream outputStream)
         {
