@@ -26,8 +26,8 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             jsonConfigSrc.Load(StringToStream(json));
 
             Assert.Equal(3, jsonConfigSrc.Data.Count);
-            Assert.Equal("test", jsonConfigSrc.Data["name"]);
-            Assert.Equal("Something street", jsonConfigSrc.Data["address:street"]);
+            Assert.Equal("test", jsonConfigSrc.Data["NAME"]);
+            Assert.Equal("Something street", jsonConfigSrc.Data["address:STREET"]);
             Assert.Equal("12345", jsonConfigSrc.Data["address:zipcode"]);
         }
 

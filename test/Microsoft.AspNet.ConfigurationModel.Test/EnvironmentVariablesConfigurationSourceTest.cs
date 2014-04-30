@@ -21,9 +21,9 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             envConfigSrc.Load(dic);
 
             Assert.Equal(4, envConfigSrc.Data.Count);
-            Assert.Equal("TestConnectionString", envConfigSrc.Data["DefaultConnection:ConnectionString"]);
-            Assert.Equal("SqlClient", envConfigSrc.Data["DefaultConnection:Provider"]);
-            Assert.Equal("AnotherTestConnectionString", envConfigSrc.Data["Inventory:ConnectionString"]);
+            Assert.Equal("TestConnectionString", envConfigSrc.Data["defaultconnection:ConnectionString"]);
+            Assert.Equal("SqlClient", envConfigSrc.Data["DEFAULTCONNECTION:PROVIDER"]);
+            Assert.Equal("AnotherTestConnectionString", envConfigSrc.Data["Inventory:CONNECTIONSTRING"]);
             Assert.Equal("MySql", envConfigSrc.Data["Inventory:Provider"]);
         }
 

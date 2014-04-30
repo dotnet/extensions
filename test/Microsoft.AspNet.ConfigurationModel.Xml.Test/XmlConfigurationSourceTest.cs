@@ -31,9 +31,9 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             xmlConfigSrc.Load(StringToStream(xml));
 
             Assert.Equal(4, xmlConfigSrc.Data.Count);
-            Assert.Equal("TestConnectionString", xmlConfigSrc.Data["Data:DefaultConnection:ConnectionString"]);
-            Assert.Equal("SqlClient", xmlConfigSrc.Data["Data:DefaultConnection:Provider"]);
-            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Data["Data:Inventory:ConnectionString"]);
+            Assert.Equal("TestConnectionString", xmlConfigSrc.Data["DATA:DEFAULTCONNECTION:CONNECTIONSTRING"]);
+            Assert.Equal("SqlClient", xmlConfigSrc.Data["DATA:DefaultConnection:Provider"]);
+            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Data["data:inventory:connectionstring"]);
             Assert.Equal("MySql", xmlConfigSrc.Data["Data:Inventory:Provider"]);
         }
 
