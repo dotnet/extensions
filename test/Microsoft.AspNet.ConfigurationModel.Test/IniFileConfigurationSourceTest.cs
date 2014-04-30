@@ -11,14 +11,12 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         [Fact]
         public void LoadKeyValuePairsFromValidIniFile()
         {
-            var ini = @"
-            [DefaultConnection]
-            ConnectionString=TestConnectionString
-            Provider=SqlClient
-            [Data:Inventory]
-            ConnectionString=AnotherTestConnectionString
-            SubHeader:Provider=MySql
-            ";
+            var ini = @"[DefaultConnection]
+ConnectionString=TestConnectionString
+Provider=SqlClient
+[Data:Inventory]
+ConnectionString=AnotherTestConnectionString
+SubHeader:Provider=MySql";
             var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
 
             iniConfigSrc.Load(StringToStream(ini));
@@ -193,6 +191,127 @@ DefaultConnection=TestConnectionString
             Assert.Equal(expectedMsg, exception.Message);
         }
 
+        [Fact]
+        public void CommitMethodPreservesCommentsAndWhiteSpaces()
+        {
+            var ini = @"
+            ; Comments
+            [Data:DefaultConnection]
+            # Comments
+            ConnectionString=TestConnectionString
+            / Comments
+            Provider=SqlClient";
+            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+            var outputCacheStream = new MemoryStream();
+            iniConfigSrc.Load(StringToStream(ini));
+
+            iniConfigSrc.Commit(StringToStream(ini), outputCacheStream);
+
+            var newContents = StreamToString(outputCacheStream);
+            Assert.Equal(ini, newContents);
+        }
+
+        [Fact]
+        public void CommitMethodUpdatesValues()
+        {
+            var ini = @"; Comments
+[Data:DefaultConnection]
+# Comments
+ConnectionString=TestConnectionString
+/ Comments
+Provider=SqlClient";
+            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+            var outputCacheStream = new MemoryStream();
+            iniConfigSrc.Load(StringToStream(ini));
+            iniConfigSrc.Set("Data:DefaultConnection:ConnectionString", "NewTestConnectionString");
+
+            iniConfigSrc.Commit(StringToStream(ini), outputCacheStream);
+
+            var newContents = StreamToString(outputCacheStream);
+            Assert.Equal(ini.Replace("TestConnectionString", "NewTestConnectionString"), newContents);
+        }
+
+        [Fact]
+        public void CommitOperationThrowsExceptionWhenFindInvalidModificationAfterLoadOperation()
+        {
+            var ini = @"
+            ; Comments
+            [Data:DefaultConnection]
+            # Comments
+            ConnectionString=TestConnectionString
+            / Comments
+            Provider=SqlClient";
+            var modifiedIni = string.Format("This is an invalid line{0}{1}", Environment.NewLine, ini);
+            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+            var outputCacheStream = new MemoryStream();
+            iniConfigSrc.Load(StringToStream(ini));
+
+            var exception = Assert.Throws<FormatException>(
+                () => iniConfigSrc.Commit(StringToStream(modifiedIni), outputCacheStream));
+
+            Assert.Equal(Resources.FormatError_UnrecognizedLineFormat("This is an invalid line"), exception.Message);
+        }
+
+        [Fact]
+        public void CommitOperationThrowsExceptionWhenFindNewlyAddedKeyAfterLoadOperation()
+        {
+            var ini = @"
+            ; Comments
+            [Data:DefaultConnection]
+            # Comments
+            ConnectionString=TestConnectionString
+            / Comments
+            Provider=SqlClient";
+            var modifiedIni = string.Format("NewKey1 = NewValue1{0}NewKey2 = NewValue2{0}{1}",
+                Environment.NewLine, ini);
+            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+            var outputCacheStream = new MemoryStream();
+            iniConfigSrc.Load(StringToStream(ini));
+
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => iniConfigSrc.Commit(StringToStream(modifiedIni), outputCacheStream));
+
+            Assert.Equal(Resources.FormatError_CommitWhenNewKeyFound("NewKey1"), exception.Message);
+        }
+
+        [Fact]
+        public void CommitOperationThrowsExceptionWhenKeysAreMissingInConfigFile()
+        {
+            var ini = @"
+            ; Comments
+            [Data:DefaultConnection]
+            # Comments
+            ConnectionString=TestConnectionString
+            / Comments
+            Provider=SqlClient";
+            var modifiedIni = ini.Replace("Provider=SqlClient", string.Empty);
+            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+            var outputCacheStream = new MemoryStream();
+            iniConfigSrc.Load(StringToStream(ini));
+
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => iniConfigSrc.Commit(StringToStream(modifiedIni), outputCacheStream));
+
+            Assert.Equal(Resources.FormatError_CommitWhenKeyMissing("Data:DefaultConnection:Provider"),
+                exception.Message);
+        }
+
+        [Fact]
+        public void CanCreateNewConfig()
+        {
+            var targetIni = @"Data:DefaultConnection:ConnectionString=TestConnectionString
+Data:DefaultConnection:Provider=SqlClient
+";
+            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+            iniConfigSrc.Data["Data:DefaultConnection:ConnectionString"] = "TestConnectionString";
+            iniConfigSrc.Data["Data:DefaultConnection:Provider"] = "SqlClient";
+            var cacheStream = new MemoryStream();
+
+            iniConfigSrc.GenerateNewConfig(cacheStream);
+
+            Assert.Equal(targetIni, StreamToString(cacheStream));
+        }
+
         private static Stream StringToStream(string str)
         {
             var memStream = new MemoryStream();
@@ -203,5 +322,14 @@ DefaultConnection=TestConnectionString
 
             return memStream;
         }
+
+        private static string StreamToString(Stream stream)
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+            StreamReader reader = new StreamReader(stream);
+
+            return reader.ReadToEnd();
+        }
+
     }
 }
