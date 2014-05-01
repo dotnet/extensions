@@ -22,9 +22,9 @@ SubHeader:Provider=MySql";
             iniConfigSrc.Load(StringToStream(ini));
 
             Assert.Equal(4, iniConfigSrc.Data.Count);
-            Assert.Equal("TestConnectionString", iniConfigSrc.Data["DefaultConnection:ConnectionString"]);
-            Assert.Equal("SqlClient", iniConfigSrc.Data["DefaultConnection:Provider"]);
-            Assert.Equal("AnotherTestConnectionString", iniConfigSrc.Data["Data:Inventory:ConnectionString"]);
+            Assert.Equal("TestConnectionString", iniConfigSrc.Data["defaultconnection:ConnectionString"]);
+            Assert.Equal("SqlClient", iniConfigSrc.Data["DEFAULTCONNECTION:PROVIDER"]);
+            Assert.Equal("AnotherTestConnectionString", iniConfigSrc.Data["Data:Inventory:CONNECTIONSTRING"]);
             Assert.Equal("MySql", iniConfigSrc.Data["Data:Inventory:SubHeader:Provider"]);
         }
 

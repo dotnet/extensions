@@ -45,9 +45,9 @@ namespace Microsoft.AspNet.ConfigurationModel
             config.AddLoadedSource(envConfigSrc);
             config.AddLoadedSource(iniConfigSrc);
 
-            memRet = config.TryGet("Mem:KeyInMem", out memVal);
+            memRet = config.TryGet("mem:keyinmem", out memVal);
             envRet = config.TryGet("EnvVariable:KeyInEnv", out envVal);
-            iniRet = config.TryGet("IniFile:KeyInIni", out iniVal);
+            iniRet = config.TryGet("INIFILE:KeyInIni", out iniVal);
 
             // Assert
             Assert.Equal(3, CountAllEntries(config));
@@ -63,8 +63,8 @@ namespace Microsoft.AspNet.ConfigurationModel
             Assert.Equal("ValueInEnv", envVal);
             Assert.Equal("ValueInIni", iniVal);
 
-            Assert.Equal("ValueInMem", config.Get("Mem:KeyInMem"));
-            Assert.Equal("ValueInEnv", config.Get("EnvVariable:KeyInEnv"));
+            Assert.Equal("ValueInMem", config.Get("mem:keyinmem"));
+            Assert.Equal("ValueInEnv", config.Get("EnvVariable:KEYINENV"));
             Assert.Equal("ValueInIni", config.Get("IniFile:KeyInIni"));
             Assert.Null(config.Get("NotExist"));
         }
