@@ -77,7 +77,12 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                         case JsonToken.Bytes:
                         case JsonToken.Raw:
                         case JsonToken.Null:
-                            data[reader.Path.Replace(".", Constants.KeyDelimiter)] = reader.Value.ToString();
+                            var key = reader.Path.Replace(".", Constants.KeyDelimiter);
+                            if (data.ContainsKey(key))
+                            {
+                                throw new FormatException(Resources.FormatError_KeyIsDuplicated(key));
+                            }
+                            data[key] = reader.Value.ToString();
                             break;
 
                         // End of file

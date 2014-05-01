@@ -120,6 +120,9 @@
   <data name="Error_InvalidFilePath" xml:space="preserve">
     <value>File path must be a non-empty string.</value>
   </data>
+  <data name="Error_KeyIsDuplicated" xml:space="preserve">
+    <value>A duplicate key '{0}' was found.</value>
+  </data>
   <data name="Error_RootMustBeAnObject" xml:space="preserve">
     <value>Only an object can be the root. Path '{0}', line {1} position {2}.</value>
   </data>

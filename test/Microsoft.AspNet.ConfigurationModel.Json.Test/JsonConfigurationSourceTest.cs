@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         }
 
         [Fact]
-        public void OverrideValueWhenKeyIsDuplicated()
+        public void ThrowExceptionWhenKeyIsDuplicated()
         {
             var json = @"{
                 'name': 'test',
@@ -130,12 +130,9 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
             }";
             var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
 
-            jsonConfigSrc.Load(StringToStream(json));
+            var exception = Assert.Throws<FormatException>(() => jsonConfigSrc.Load(StringToStream(json)));
 
-            Assert.Equal(3, jsonConfigSrc.Data.Count);
-            Assert.Equal("new name", jsonConfigSrc.Data["name"]);
-            Assert.Equal("Something street", jsonConfigSrc.Data["address:street"]);
-            Assert.Equal("12345", jsonConfigSrc.Data["address:zipcode"]);
+            Assert.Equal(Resources.FormatError_KeyIsDuplicated("name"), exception.Message);
         }
 
         private static Stream StringToStream(string str)

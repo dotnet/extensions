@@ -27,6 +27,22 @@ namespace Microsoft.AspNet.ConfigurationModel.Json
         }
 
         /// <summary>
+        /// A duplicate key '{0}' was found.
+        /// </summary>
+        internal static string Error_KeyIsDuplicated
+        {
+            get { return GetString("Error_KeyIsDuplicated"); }
+        }
+
+        /// <summary>
+        /// A duplicate key '{0}' was found.
+        /// </summary>
+        internal static string FormatError_KeyIsDuplicated(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_KeyIsDuplicated"), p0);
+        }
+
+        /// <summary>
         /// Only an object can be the root. Path '{0}', line {1} position {2}.
         /// </summary>
         internal static string Error_RootMustBeAnObject
