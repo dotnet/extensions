@@ -65,11 +65,13 @@ namespace Xunit.KRunner
             catch (ArgumentException ex)
             {
                 Console.WriteLine("error: {0}", ex.Message);
+                Console.WriteLine(ex);
                 return 1;
             }
             catch (BadImageFormatException ex)
             {
                 Console.WriteLine("{0}", ex.Message);
+                Console.WriteLine(ex);
                 return 1;
             }
         }
@@ -165,6 +167,8 @@ namespace Xunit.KRunner
             catch (Exception ex)
             {
                 Console.WriteLine("{0}: {1}", ex.GetType().FullName, ex.Message);
+                Console.WriteLine(ex);
+
                 failed = true;
             }
         }
