@@ -1,5 +1,4 @@
-﻿#if NET45
-using System;
+﻿using System;
 using System.Collections;
 using Xunit;
 
@@ -129,4 +128,3 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         }
     }
 }
-#endif
