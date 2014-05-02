@@ -194,16 +194,23 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
   }
 }";
             json = json.Replace('\'', '"');
+            var modifiedJson = @"
+{
+  'name': ['first', 'last'],
+  'address': {
+    'street': 'Something street',
+    'zipcode': '12345'
+  }
+}";
+            modifiedJson = modifiedJson.Replace('\'', '"');
             var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
             var outputCacheStream = new MemoryStream();
             jsonConfigSrc.Load(StringToStream(json));
-            jsonConfigSrc.Set("name", "new_name");
-            jsonConfigSrc.Set("address:zipcode", "67890");
 
-            jsonConfigSrc.Commit(StringToStream(json), outputCacheStream);
+            var exception = Assert.Throws<FormatException>(
+                () => jsonConfigSrc.Commit(StringToStream(modifiedJson), outputCacheStream));
 
-            var newContents = StreamToString(outputCacheStream);
-            Assert.Equal(json.Replace("test", "new_name").Replace("12345", "67890"), newContents);
+            Assert.Equal(Resources.FormatError_UnsupportedJSONToken("StartArray", "name", 3, 12), exception.Message);
         }
 
         [Fact]
