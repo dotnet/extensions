@@ -132,6 +132,9 @@
   <data name="Error_NoCommitableSource" xml:space="preserve">
     <value>No registered configuration source is capable of committing changes.</value>
   </data>
+  <data name="Error_UnrecognizedArgumentFormat" xml:space="preserve">
+    <value>Unrecognized argument format: '{0}'.</value>
+  </data>
   <data name="Error_UnrecognizedLineFormat" xml:space="preserve">
     <value>Unrecognized line format: '{0}'.</value>
   </data>
