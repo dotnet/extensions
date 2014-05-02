@@ -48,9 +48,11 @@ namespace Microsoft.AspNet.DependencyInjection.Tests.Fakes
             yield return describer.Singleton<IOptionsAccessor<FakeOptions>, OptionsAccessor<FakeOptions>>();
 
             ServiceCollection services = new ServiceCollection();
+            services.SetupOptions<FakeOptions>(o => o.Message += "a", -100);
             services.AddSetup<FakeOptionsSetupC>();
             services.AddSetup(new FakeOptionsSetupB());
             services.AddSetup(typeof(FakeOptionsSetupA));
+            services.SetupOptions<FakeOptions>(o => o.Message += "z", 10000);
             foreach (var description in services)
             {
                 yield return description;

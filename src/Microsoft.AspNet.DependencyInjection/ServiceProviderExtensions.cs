@@ -59,6 +59,11 @@ namespace Microsoft.AspNet.DependencyInjection
             }
         }
 
+        public static bool HasService<TService>(this IServiceProvider provider)
+        {
+            return provider.HasService(typeof(TService));
+        }
+
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "IServiceProvider may throw unknown exceptions")]
         public static bool HasService(this IServiceProvider provider, Type serviceType)
         {

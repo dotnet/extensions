@@ -21,6 +21,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActivatorUtilities.cs" />
+    <Compile Include="NotNullAttribute.cs" />
+    <Compile Include="OptionsSetup.cs" />
     <Compile Include="IOptionsSetup.cs" />
     <Compile Include="IOptionsAccessor.cs" />
     <Compile Include="OptionsAccessor.cs" />
@@ -40,6 +42,7 @@
     <Compile Include="NestedProviders\NestedProviderManager.cs" />
     <Compile Include="NestedProviders\NestedProviderManagerAsync.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="IServiceCollection.cs" />
     <Compile Include="ServiceCollection.cs" />
     <Compile Include="ServiceDescriber.cs" />
     <Compile Include="ServiceDescriptor.cs" />
@@ -56,6 +59,7 @@
     <Compile Include="ServiceLookup\ServiceScopeService.cs" />
     <Compile Include="ServiceLookup\ServiceTable.cs" />
     <Compile Include="ServiceProvider.cs" />
+    <Compile Include="ServiceCollectionExtensions.cs" />
     <Compile Include="ServiceProviderExtensions.cs" />
     <Compile Include="TypeActivator.cs" />
     <Compile Include="TypeActivatorExtensions.cs" />

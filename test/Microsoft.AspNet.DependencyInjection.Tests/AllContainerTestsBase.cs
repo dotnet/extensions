@@ -114,8 +114,7 @@ namespace Microsoft.AspNet.DependencyInjection.Tests
             Assert.NotNull(service);
             var options = service.Options;
             Assert.NotNull(options);
-            Assert.Equal("ABC", options.Message);
+            Assert.Equal("aABCz", options.Message);
         }
-
     }
 }
