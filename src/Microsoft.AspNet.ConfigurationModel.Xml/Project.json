@@ -16,6 +16,7 @@
                 "System.IO": "4.0.0.0",
                 "System.IO.Compression": "4.0.0.0",
                 "System.IO.FileSystem": "4.0.10.0",
+                "System.IO.FileSystem.Primitives": "4.0.20.0",
                 "System.Resources.ResourceManager": "4.0.0.0",
                 "System.Runtime": "4.0.20.0",
                 "System.Runtime.Extensions": "4.0.10.0",
