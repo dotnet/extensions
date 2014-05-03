@@ -47,8 +47,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                 int split = pair.IndexOf('=');
                 if (split <= 0)
                 {
-                    // TODO: exception message localization
-                    throw new FormatException(string.Format("Unrecognized argument '{0}'.", pair));
+                    throw new FormatException(Resources.FormatError_UnrecognizedArgumentFormat(pair));
                 }
 
                 string key = pair.Substring(0, split);
@@ -61,7 +60,7 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
 
                 if (data.ContainsKey(key))
                 {
-                    throw new FormatException(string.Format("Key '{0}' is duplicated.", key));
+                    throw new FormatException(Resources.FormatError_KeyIsDuplicated(key));
                 }
 
                 data[key] = value;
