@@ -49,10 +49,10 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         {
             var json = @"/* Comments */
                 {/* Comments */
-                'name': /* Comments */ 'test',
-                'address': {
-                    'street': 'Something street', /* Comments */
-                    'zipcode': '12345'
+                ""name"": /* Comments */ ""test"",
+                ""address"": {
+                    ""street"": ""Something street"", /* Comments */
+                    ""zipcode"": ""12345""
                 }
             }";
             var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
@@ -143,13 +143,12 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         public void CommitMethodPreservesCommments()
         {
             var json = @"{
-  'name': 'test',
-  'address': {
-    'street': 'Something street',
-    'zipcode': '12345'
+  ""name"": ""test"",
+  ""address"": {
+    ""street"": ""Something street"",
+    ""zipcode"": ""12345""
   }
 }";
-            json = json.Replace('\'', '"');
             var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
             var outputCacheStream = new MemoryStream();
             jsonConfigSrc.Load(StringToStream(json));
@@ -164,13 +163,12 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         public void CommitMethodUpdatesValues()
         {
             var json = @"{
-  'name': 'test',
-  'address': {
-    'street': 'Something street',
-    'zipcode': '12345'
+  ""name"": ""test"",
+  ""address"": {
+    ""street"": ""Something street"",
+    ""zipcode"": ""12345""
   }
 }";
-            json = json.Replace('\'', '"');
             var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
             var outputCacheStream = new MemoryStream();
             jsonConfigSrc.Load(StringToStream(json));
@@ -187,22 +185,20 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         public void CommitOperationThrowsExceptionWhenFindInvalidModificationAfterLoadOperation()
         {
             var json = @"{
-  'name': 'test',
-  'address': {
-    'street': 'Something street',
-    'zipcode': '12345'
+  ""name"": ""test"",
+  ""address"": {
+    ""street"": ""Something street"",
+    ""zipcode"": ""12345""
   }
 }";
-            json = json.Replace('\'', '"');
             var modifiedJson = @"
 {
-  'name': ['first', 'last'],
-  'address': {
-    'street': 'Something street',
-    'zipcode': '12345'
+  ""name"": [""first"", ""last""],
+  ""address"": {
+    ""street"": ""Something street"",
+    ""zipcode"": ""12345""
   }
 }";
-            modifiedJson = modifiedJson.Replace('\'', '"');
             var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
             var outputCacheStream = new MemoryStream();
             jsonConfigSrc.Load(StringToStream(json));
@@ -217,19 +213,19 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         public void CommitOperationThrowsExceptionWhenFindNewlyAddedKeyAfterLoadOperation()
         {
             var json = @"{
-  'name': 'test',
-  'address': {
-    'street': 'Something street',
-    'zipcode': '12345'
+  ""name"": ""test"",
+  ""address"": {
+    ""street"": ""Something street"",
+    ""zipcode"": ""12345""
   }
 }";
             var newJson = @"{
-  'name': 'test',
-  'address': {
-    'street': 'Something street',
-    'zipcode': '12345'
+  ""name"": ""test"",
+  ""address"": {
+    ""street"": ""Something street"",
+    ""zipcode"": ""12345""
   },
-  'NewKey': 'NewValue'
+  ""NewKey"": ""NewValue""
 }";
             var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
             var outputCacheStream = new MemoryStream();
@@ -245,16 +241,16 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         public void CommitOperationThrowsExceptionWhenKeysAreMissingInConfigFile()
         {
             var json = @"{
-  'name': 'test',
-  'address': {
-    'street': 'Something street',
-    'zipcode': '12345'
+  ""name"": ""test"",
+  ""address"": {
+    ""street"": ""Something street"",
+    ""zipcode"": ""12345""
   }
 }";
             var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
             var outputCacheStream = new MemoryStream();
             jsonConfigSrc.Load(StringToStream(json));
-            json = json.Replace("'name': 'test',", string.Empty);
+            json = json.Replace(@"""name"": ""test"",", string.Empty);
 
             var exception = Assert.Throws<InvalidOperationException>(
                 () => jsonConfigSrc.Commit(StringToStream(json), outputCacheStream));
@@ -266,11 +262,10 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         public void CanCreateNewConfig()
         {
             var targetJson = @"{
-  'name': 'test',
-  'address:street': 'Something street',
-  'address:zipcode': '12345'
+  ""name"": ""test"",
+  ""address:street"": ""Something street"",
+  ""address:zipcode"": ""12345""
 }";
-            targetJson = targetJson.Replace('\'', '"');
             var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
             var outputCacheStream = new MemoryStream();
             jsonConfigSrc.Data["name"] = "test";
