@@ -7,19 +7,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D26F6F80-63E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{88B347C1-CCEC-4827-9564-FFF07C9BF7C7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DependencyInjection", "src\Microsoft.AspNet.DependencyInjection\Microsoft.AspNet.DependencyInjection.kproj", "{07ABDD98-9974-48CB-8265-53D1A8EC9E34}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.DependencyInjection", "src\Microsoft.Framework.DependencyInjection\Microsoft.Framework.DependencyInjection.kproj", "{07ABDD98-9974-48CB-8265-53D1A8EC9E34}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DependencyInjection.Autofac", "src\Microsoft.AspNet.DependencyInjection.Autofac\Microsoft.AspNet.DependencyInjection.Autofac.kproj", "{02E94030-B7B8-4629-8664-1096A56FFDD5}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.DependencyInjection.Autofac", "src\Microsoft.Framework.DependencyInjection.Autofac\Microsoft.Framework.DependencyInjection.Autofac.kproj", "{02E94030-B7B8-4629-8664-1096A56FFDD5}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DependencyInjection.Ninject", "src\Microsoft.AspNet.DependencyInjection.Ninject\Microsoft.AspNet.DependencyInjection.Ninject.kproj", "{19124943-DEEF-4782-A7E8-DC91387EEDF3}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.DependencyInjection.Ninject", "src\Microsoft.Framework.DependencyInjection.Ninject\Microsoft.Framework.DependencyInjection.Ninject.kproj", "{19124943-DEEF-4782-A7E8-DC91387EEDF3}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DependencyInjection.StructureMap", "src\Microsoft.AspNet.DependencyInjection.StructureMap\Microsoft.AspNet.DependencyInjection.StructureMap.kproj", "{497C15BE-CE5E-4076-961A-F8A88D560945}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.DependencyInjection.StructureMap", "src\Microsoft.Framework.DependencyInjection.StructureMap\Microsoft.Framework.DependencyInjection.StructureMap.kproj", "{497C15BE-CE5E-4076-961A-F8A88D560945}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DependencyInjection.Unity", "src\Microsoft.AspNet.DependencyInjection.Unity\Microsoft.AspNet.DependencyInjection.Unity.kproj", "{D8C11452-5C68-452C-82F8-A87B1E6460A3}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.DependencyInjection.Unity", "src\Microsoft.Framework.DependencyInjection.Unity\Microsoft.Framework.DependencyInjection.Unity.kproj", "{D8C11452-5C68-452C-82F8-A87B1E6460A3}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DependencyInjection.Windsor", "src\Microsoft.AspNet.DependencyInjection.Windsor\Microsoft.AspNet.DependencyInjection.Windsor.kproj", "{B01A5956-436F-400E-BE6A-44916A4D49A0}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.DependencyInjection.Windsor", "src\Microsoft.Framework.DependencyInjection.Windsor\Microsoft.Framework.DependencyInjection.Windsor.kproj", "{B01A5956-436F-400E-BE6A-44916A4D49A0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DependencyInjection.Tests", "test\Microsoft.AspNet.DependencyInjection.Tests\Microsoft.AspNet.DependencyInjection.Tests.kproj", "{20201277-5461-49EF-811B-63ED3CD274EF}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.DependencyInjection.Tests", "test\Microsoft.Framework.DependencyInjection.Tests\Microsoft.Framework.DependencyInjection.Tests.kproj", "{20201277-5461-49EF-811B-63ED3CD274EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

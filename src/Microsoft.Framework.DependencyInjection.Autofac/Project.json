@@ -1,0 +1,10 @@
+{
+  "version": "0.1-alpha-*",
+  "dependencies": {
+    "Microsoft.Framework.DependencyInjection": "",
+    "Autofac": "3.3.0"
+  },
+  "configurations": {
+    "net45": {}
+  }
+}

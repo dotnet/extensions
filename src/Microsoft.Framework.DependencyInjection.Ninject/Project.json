@@ -1,0 +1,10 @@
+{
+  "version": "0.1-alpha-*",
+  "dependencies": {
+    "Microsoft.Framework.DependencyInjection": "",
+    "Ninject": "3.0.1.10"
+  },
+  "configurations": {
+    "net45": {}
+  }
+}
