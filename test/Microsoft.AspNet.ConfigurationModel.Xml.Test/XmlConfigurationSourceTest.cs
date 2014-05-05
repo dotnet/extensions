@@ -41,14 +41,14 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         public void CommonAttributesContributeToKeyValuePairs()
         {
             var xml =
-@"<settings Port='8008'>
+@"<settings Port=""8008"">
     <Data>
         <DefaultConnection
-            ConnectionString='TestConnectionString'
-            Provider='SqlClient'/>
+            ConnectionString=""TestConnectionString""
+            Provider=""SqlClient""/>
         <Inventory
-            ConnectionString='AnotherTestConnectionString'
-            Provider='MySql'/>
+            ConnectionString=""AnotherTestConnectionString""
+            Provider=""MySql""/>
     </Data>
 </settings>";
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
@@ -368,10 +368,10 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         [Fact]
         public void CommitMethodPreservesCommmentsAndProcessingInstructionsAndWhiteSpaces()
         {
-            var xml = @"<?xml version='1.0' encoding='UTF-8'?>
-                    <?xml-stylesheet type='text/xsl' href='style1.xsl'?>
+            var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+                    <?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
                     <settings>
-                        <?xml-stylesheet type='text/xsl' href='style2.xsl'?>
+                        <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
                         <Data>
                             <DefaultConnection>
                                 <ConnectionString>TestConnectionString</ConnectionString>
@@ -383,7 +383,6 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                             </Inventory>
                         </Data>
                     </settings>";
-            xml = xml.Replace('\'', '"');
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
             var outputCacheStream = new MemoryStream();
             xmlConfigSrc.Load(StringToStream(xml));
@@ -397,10 +396,10 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         [Fact]
         public void CommitMethodUpdatesValues()
         {
-            var xml = @"<?xml version='1.0' encoding='UTF-8'?>
-<?xml-stylesheet type='text/xsl' href='style1.xsl'?>
+            var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
 <settings>
-    <?xml-stylesheet type='text/xsl' href='style2.xsl'?>
+    <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
     <Data>
         <DefaultConnection>
             <ConnectionString>TestConnectionString</ConnectionString>
@@ -412,7 +411,6 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         </Inventory>
     </Data>
 </settings>";
-            xml = xml.Replace('\'', '"');
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
             var outputCacheStream = new MemoryStream();
             xmlConfigSrc.Load(StringToStream(xml));
@@ -428,10 +426,10 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         [Fact]
         public void CommitOperationThrowsExceptionWhenFindInvalidModificationAfterLoadOperation()
         {
-            var xml = @"<?xml version='1.0' encoding='UTF-8'?>
-                    <?xml-stylesheet type='text/xsl' href='style1.xsl'?>
+            var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+                    <?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
                     <settings>
-                        <?xml-stylesheet type='text/xsl' href='style2.xsl'?>
+                        <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
                         <Data>
                             <DefaultConnection>
                                 <ConnectionString>TestConnectionString</ConnectionString>
@@ -443,10 +441,10 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
                             </Inventory>
                         </Data>
                     </settings>";
-            var modifiedXml = @"<?xml version='1.0' encoding='UTF-8'?>
-                    <?xml-stylesheet type='text/xsl' href='style1.xsl'?>
-                    <settings xmlns:MyNameSpace='http://microsoft.com/wwa/mynamespace'>
-                        <?xml-stylesheet type='text/xsl' href='style2.xsl'?>
+            var modifiedXml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+                    <?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
+                    <settings xmlns:MyNameSpace=""http://microsoft.com/wwa/mynamespace"">
+                        <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
                         <MyNameSpace:Data>
                             <DefaultConnection>
                                 <ConnectionString>TestConnectionString</ConnectionString>
@@ -472,10 +470,10 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         [Fact]
         public void CommitOperationThrowsExceptionWhenFindNewlyAddedKeyAfterLoadOperation()
         {
-            var xml = @"<?xml version='1.0' encoding='UTF-8'?>
-<?xml-stylesheet type='text/xsl' href='style1.xsl'?>
+            var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
 <settings>
-    <?xml-stylesheet type='text/xsl' href='style2.xsl'?>
+    <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
     <Data>
         <DefaultConnection>
             <ConnectionString>TestConnectionString</ConnectionString>
@@ -487,10 +485,10 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         </Inventory>
     </Data>
 </settings>";
-            var modifiedXml = @"<?xml version='1.0' encoding='UTF-8'?>
-<?xml-stylesheet type='text/xsl' href='style1.xsl'?>
+            var modifiedXml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
 <settings>
-    <?xml-stylesheet type='text/xsl' href='style2.xsl'?>
+    <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
     <Data>
         <DefaultConnection>
             <ConnectionString>TestConnectionString</ConnectionString>
@@ -517,10 +515,10 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         [Fact]
         public void CommitOperationThrowsExceptionWhenKeysAreMissingInConfigFile()
         {
-            var xml = @"<?xml version='1.0' encoding='UTF-8'?>
-<?xml-stylesheet type='text/xsl' href='style1.xsl'?>
+            var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
 <settings>
-    <?xml-stylesheet type='text/xsl' href='style2.xsl'?>
+    <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
     <Data>
         <DefaultConnection>
             <ConnectionString>TestConnectionString</ConnectionString>
@@ -532,10 +530,10 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         </Inventory>
     </Data>
 </settings>";
-            var modifiedXml = @"<?xml version='1.0' encoding='UTF-8'?>
-<?xml-stylesheet type='text/xsl' href='style1.xsl'?>
+            var modifiedXml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
 <settings>
-    <?xml-stylesheet type='text/xsl' href='style2.xsl'?>
+    <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
     <Data>
         <DefaultConnection>
             <ConnectionString>TestConnectionString</ConnectionString>
@@ -561,12 +559,11 @@ namespace Microsoft.AspNet.ConfigurationModel.Sources
         [Fact]
         public void CanCreateNewConfig()
         {
-            var targetXml = @"<?xml version='1.0' encoding='utf-8'?>
+            var targetXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <settings>
-  <Key1 Name='Key2:Key3'>Value1</Key1>
+  <Key1 Name=""Key2:Key3"">Value1</Key1>
   <Key4>Value2</Key4>
 </settings>";
-            targetXml = targetXml.Replace('\'', '"');
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
             var outputCacheStream = new MemoryStream();
             xmlConfigSrc.Data["Key1:Key2:Key3"] = "Value1";
