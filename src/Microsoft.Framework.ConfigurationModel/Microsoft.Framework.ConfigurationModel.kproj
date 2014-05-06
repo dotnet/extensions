@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="__ToolsVersion__" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.Props" Condition="'$(VSToolsPath)' != ''" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>62bd48b5-bb0c-4c2c-9c4b-04cf75cdccf1</ProjectGuid>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Project.json" />
+    <Content Include="Resources.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Configuration.cs" />
+    <Compile Include="ConfigurationExtensions.cs" />
+    <Compile Include="ConfigurationFocus.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="IConfiguration.cs" />
+    <Compile Include="AssemblyNeutralAttribute.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs" />
+    <Compile Include="Sources\BaseConfigurationSource.cs" />
+    <Compile Include="Sources\CommandLineConfigurationSource.cs" />
+    <Compile Include="Sources\EnvironmentVariablesConfigurationSource.cs" />
+    <Compile Include="Sources\ICommitableConfigurationSource.cs" />
+    <Compile Include="Sources\IConfigurationSource.cs" />
+    <Compile Include="Sources\IConfigurationSourceContainer.cs" />
+    <Compile Include="Sources\IniFileConfigurationSource.cs" />
+    <Compile Include="Sources\MemoryConfigurationSource.cs" />
+  </ItemGroup>
+  <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
+</Project>
