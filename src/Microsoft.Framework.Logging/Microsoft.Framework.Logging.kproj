@@ -25,7 +25,6 @@
     <Compile Include="ILogger.cs" />
     <Compile Include="ILoggerFactory.cs" />
     <Compile Include="LoggerExtensions.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TraceType.cs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />

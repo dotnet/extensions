@@ -18,7 +18,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Microsoft.AspNet.Logging
+namespace Microsoft.Framework.Logging
 {
     /// <summary>
     /// A generic interface for logging.

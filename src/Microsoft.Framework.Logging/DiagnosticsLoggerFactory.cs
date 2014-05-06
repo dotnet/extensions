@@ -20,7 +20,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
-namespace Microsoft.AspNet.Logging
+namespace Microsoft.Framework.Logging
 {
     /// <summary>
     /// Provides an ILoggerFactory based on System.Diagnostics.TraceSource.

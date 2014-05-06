@@ -19,7 +19,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 
-namespace Microsoft.AspNet.Logging
+namespace Microsoft.Framework.Logging
 {
     /// <summary>
     /// ILogger extension methods for common scenarios.

@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30327.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.21628.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Logging", "src\Microsoft.AspNet.Logging\Microsoft.AspNet.Logging.kproj", "{19D1B6C5-8A62-4387-8816-C54874D1DF5F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging", "src\Microsoft.Framework.Logging\Microsoft.Framework.Logging.kproj", "{19D1B6C5-8A62-4387-8816-C54874D1DF5F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

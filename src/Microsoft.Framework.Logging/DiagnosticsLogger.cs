@@ -19,7 +19,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Microsoft.AspNet.Logging
+namespace Microsoft.Framework.Logging
 {
     internal class DiagnosticsLogger : ILogger
     {
