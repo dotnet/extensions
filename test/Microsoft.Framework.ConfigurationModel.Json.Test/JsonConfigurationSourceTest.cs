@@ -17,12 +17,11 @@
 
 using System;
 using System.IO;
-using Microsoft.Framework.ConfigurationModel.Sources;
 using Xunit;
 
 using Resources = Microsoft.Framework.ConfigurationModel.Json.Resources;
 
-namespace Microsoft.Framework.ConfigurationModel.Sources
+namespace Microsoft.Framework.ConfigurationModel
 {
     public class JsonConfigurationSourceTest
     {

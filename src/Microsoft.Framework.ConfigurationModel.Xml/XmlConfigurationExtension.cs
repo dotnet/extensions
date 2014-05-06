@@ -15,8 +15,6 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-using Microsoft.Framework.ConfigurationModel.Sources;
-
 namespace Microsoft.Framework.ConfigurationModel
 {
     public static class XmlConfigurationExtension

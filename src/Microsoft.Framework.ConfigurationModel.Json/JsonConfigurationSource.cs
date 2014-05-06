@@ -23,7 +23,7 @@ using Newtonsoft.Json;
 
 using Resources = Microsoft.Framework.ConfigurationModel.Json.Resources;
 
-namespace Microsoft.Framework.ConfigurationModel.Sources
+namespace Microsoft.Framework.ConfigurationModel
 {
     public class JsonConfigurationSource : BaseConfigurationSource, ICommitableConfigurationSource
     {

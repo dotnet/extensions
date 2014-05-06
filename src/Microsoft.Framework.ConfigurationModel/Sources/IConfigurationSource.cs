@@ -18,7 +18,7 @@
 using System.Collections.Generic;
 using Microsoft.Net.Runtime;
 
-namespace Microsoft.Framework.ConfigurationModel.Sources
+namespace Microsoft.Framework.ConfigurationModel
 {
     //[AssemblyNeutral]
     public interface IConfigurationSource

@@ -19,7 +19,7 @@ using System;
 using System.Collections;
 using Xunit;
 
-namespace Microsoft.Framework.ConfigurationModel.Sources
+namespace Microsoft.Framework.ConfigurationModel
 {
     public class EnvironmentVariablesConfigurationSourceTest
     {

@@ -21,7 +21,7 @@ using Xunit;
 
 using Resources = Microsoft.Framework.ConfigurationModel.Xml.Resources;
 
-namespace Microsoft.Framework.ConfigurationModel.Sources
+namespace Microsoft.Framework.ConfigurationModel
 {
     public class XmlConfigurationSourceTest
     {

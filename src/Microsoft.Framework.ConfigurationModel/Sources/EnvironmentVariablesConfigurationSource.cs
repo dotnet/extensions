@@ -20,7 +20,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Framework.ConfigurationModel.Sources
+namespace Microsoft.Framework.ConfigurationModel
 {
     public class EnvironmentVariablesConfigurationSource : BaseConfigurationSource
     {

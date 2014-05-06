@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Framework.ConfigurationModel.Sources
+namespace Microsoft.Framework.ConfigurationModel
 {
     public class CommandLineConfigurationSource : BaseConfigurationSource
     {

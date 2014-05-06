@@ -19,7 +19,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.ConfigurationModel.Sources;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
