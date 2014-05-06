@@ -18,7 +18,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.AspNet.ConfigurationModel;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.AspNet.DependencyInjection
 {

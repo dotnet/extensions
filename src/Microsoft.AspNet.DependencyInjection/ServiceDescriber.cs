@@ -16,7 +16,7 @@
 // permissions and limitations under the License.
 
 using System;
-using Microsoft.AspNet.ConfigurationModel;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.AspNet.DependencyInjection
 {
