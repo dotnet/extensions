@@ -1,8 +1,8 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
-    "Microsoft.Framework.DependencyInjection": "",
-    "Autofac": "3.3.0"
+    "Autofac": "3.3.0",
+    "Microsoft.Framework.DependencyInjection": ""
   },
   "configurations": {
     "net45": {}
