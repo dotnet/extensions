@@ -123,8 +123,14 @@
   <data name="Error_CommitWhenNewKeyFound" xml:space="preserve">
     <value>Unable to commit because a new key was added to the configuration file after last load operation. The newly added key is '{0}'.</value>
   </data>
+  <data name="Error_DuplicatesInSwitchMappings" xml:space="preserve">
+    <value>Keys in switch mappings should be case-insensitive. The following keys are duplicates of some other keys: {0}.</value>
+  </data>
   <data name="Error_InvalidFilePath" xml:space="preserve">
     <value>File path must be a non-empty string.</value>
+  </data>
+  <data name="Error_InvalidSwitchMapping" xml:space="preserve">
+    <value>Given switch mappings contain invalid switch '{0}'.</value>
   </data>
   <data name="Error_KeyIsDuplicated" xml:space="preserve">
     <value>A duplicate key '{0}' was found.</value>
@@ -132,10 +138,16 @@
   <data name="Error_NoCommitableSource" xml:space="preserve">
     <value>No registered configuration source is capable of committing changes.</value>
   </data>
+  <data name="Error_ShortSwitchNotDefined" xml:space="preserve">
+    <value>The short switch '{0}' is not defined in given switch mappings.</value>
+  </data>
   <data name="Error_UnrecognizedArgumentFormat" xml:space="preserve">
     <value>Unrecognized argument format: '{0}'.</value>
   </data>
   <data name="Error_UnrecognizedLineFormat" xml:space="preserve">
     <value>Unrecognized line format: '{0}'.</value>
+  </data>
+  <data name="Error_ValueIsMissing" xml:space="preserve">
+    <value>Value for switch '{0}' is missing.</value>
   </data>
 </root>

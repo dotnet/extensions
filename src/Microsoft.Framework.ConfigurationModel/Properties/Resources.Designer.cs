@@ -43,6 +43,22 @@ namespace Microsoft.Framework.ConfigurationModel
         }
 
         /// <summary>
+        /// Keys in switch mappings should be case-insensitive. The following keys are duplicates of some other keys: {0}.
+        /// </summary>
+        internal static string Error_DuplicatesInSwitchMappings
+        {
+            get { return GetString("Error_DuplicatesInSwitchMappings"); }
+        }
+
+        /// <summary>
+        /// Keys in switch mappings should be case-insensitive. The following keys are duplicates of some other keys: {0}.
+        /// </summary>
+        internal static string FormatError_DuplicatesInSwitchMappings(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_DuplicatesInSwitchMappings"), p0);
+        }
+
+        /// <summary>
         /// File path must be a non-empty string.
         /// </summary>
         internal static string Error_InvalidFilePath
@@ -56,6 +72,22 @@ namespace Microsoft.Framework.ConfigurationModel
         internal static string FormatError_InvalidFilePath()
         {
             return GetString("Error_InvalidFilePath");
+        }
+
+        /// <summary>
+        /// Given switch mappings contain invalid switch '{0}'.
+        /// </summary>
+        internal static string Error_InvalidSwitchMapping
+        {
+            get { return GetString("Error_InvalidSwitchMapping"); }
+        }
+
+        /// <summary>
+        /// Given switch mappings contain invalid switch '{0}'.
+        /// </summary>
+        internal static string FormatError_InvalidSwitchMapping(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_InvalidSwitchMapping"), p0);
         }
 
         /// <summary>
@@ -91,6 +123,22 @@ namespace Microsoft.Framework.ConfigurationModel
         }
 
         /// <summary>
+        /// The short switch '{0}' is not defined in given switch mappings.
+        /// </summary>
+        internal static string Error_ShortSwitchNotDefined
+        {
+            get { return GetString("Error_ShortSwitchNotDefined"); }
+        }
+
+        /// <summary>
+        /// The short switch '{0}' is not defined in given switch mappings.
+        /// </summary>
+        internal static string FormatError_ShortSwitchNotDefined(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_ShortSwitchNotDefined"), p0);
+        }
+
+        /// <summary>
         /// Unrecognized argument format: '{0}'.
         /// </summary>
         internal static string Error_UnrecognizedArgumentFormat
@@ -120,6 +168,22 @@ namespace Microsoft.Framework.ConfigurationModel
         internal static string FormatError_UnrecognizedLineFormat(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("Error_UnrecognizedLineFormat"), p0);
+        }
+
+        /// <summary>
+        /// Value for switch '{0}' is missing.
+        /// </summary>
+        internal static string Error_ValueIsMissing
+        {
+            get { return GetString("Error_ValueIsMissing"); }
+        }
+
+        /// <summary>
+        /// Value for switch '{0}' is missing.
+        /// </summary>
+        internal static string FormatError_ValueIsMissing(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_ValueIsMissing"), p0);
         }
 
         private static string GetString(string name, params string[] formatterNames)
