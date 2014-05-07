@@ -36,7 +36,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 throw new ArgumentException(Resources.Error_InvalidFilePath, "path");
             }
 
-            Path = path;
+            Path = PathResolver.ResolveAppRelativePath(path);
         }
 
         public string Path { get; private set; }
