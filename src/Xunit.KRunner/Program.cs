@@ -19,7 +19,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Net.Runtime;
+using Microsoft.Framework.Runtime;
 using Xunit.ConsoleClient;
 using Xunit.Sdk;
 #if !NET45

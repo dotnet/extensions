@@ -17,7 +17,7 @@
 
 using System;
 
-namespace Microsoft.Net.Runtime
+namespace Microsoft.Framework.Runtime
 {
     [AssemblyNeutral]
     public interface IFileMonitor
