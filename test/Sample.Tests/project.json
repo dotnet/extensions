@@ -1,10 +1,10 @@
 {
   "dependencies": {
-    "Xunit.KRunner": "",
     "xunit.abstractions": "2.0.0-aspnet-*",
     "xunit.assert": "2.0.0-aspnet-*",
     "xunit.core": "2.0.0-aspnet-*",
-    "xunit.execution": "2.0.0-aspnet-*"
+    "xunit.execution": "2.0.0-aspnet-*",
+    "Xunit.KRunner": ""
   },
   "commands": {
     "test": "Xunit.KRunner"
