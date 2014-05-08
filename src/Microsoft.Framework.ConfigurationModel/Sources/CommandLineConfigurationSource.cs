@@ -158,7 +158,7 @@ namespace Microsoft.Framework.ConfigurationModel
             foreach (var mapping in switchMappings)
             {
                 // Only keys start with "--" or "-" are acceptable
-                if (!mapping.Key.StartsWith("--") && !mapping.Key.StartsWith("-"))
+                if (!mapping.Key.StartsWith("-") && !mapping.Key.StartsWith("--"))
                 {
                     throw new ArgumentException(Resources.FormatError_InvalidSwitchMapping(mapping.Key),
                         "switchMappings");
