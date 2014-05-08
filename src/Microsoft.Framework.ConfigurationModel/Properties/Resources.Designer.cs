@@ -43,19 +43,19 @@ namespace Microsoft.Framework.ConfigurationModel
         }
 
         /// <summary>
-        /// Keys in switch mappings should be case-insensitive. The following keys are duplicates of some other keys: {0}.
+        /// Keys in switch mappings are case-insensitive. A duplicated key '{0}' was found.
         /// </summary>
-        internal static string Error_DuplicatesInSwitchMappings
+        internal static string Error_DuplicatedKeyInSwitchMappings
         {
-            get { return GetString("Error_DuplicatesInSwitchMappings"); }
+            get { return GetString("Error_DuplicatedKeyInSwitchMappings"); }
         }
 
         /// <summary>
-        /// Keys in switch mappings should be case-insensitive. The following keys are duplicates of some other keys: {0}.
+        /// Keys in switch mappings are case-insensitive. A duplicated key '{0}' was found.
         /// </summary>
-        internal static string FormatError_DuplicatesInSwitchMappings(object p0)
+        internal static string FormatError_DuplicatedKeyInSwitchMappings(object p0)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_DuplicatesInSwitchMappings"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_DuplicatedKeyInSwitchMappings"), p0);
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Microsoft.Framework.ConfigurationModel
         }
 
         /// <summary>
-        /// Given switch mappings contain invalid switch '{0}'.
+        /// The switch mappings contain an invalid switch '{0}'.
         /// </summary>
         internal static string Error_InvalidSwitchMapping
         {
@@ -83,7 +83,7 @@ namespace Microsoft.Framework.ConfigurationModel
         }
 
         /// <summary>
-        /// Given switch mappings contain invalid switch '{0}'.
+        /// The switch mappings contain an invalid switch '{0}'.
         /// </summary>
         internal static string FormatError_InvalidSwitchMapping(object p0)
         {
@@ -123,7 +123,7 @@ namespace Microsoft.Framework.ConfigurationModel
         }
 
         /// <summary>
-        /// The short switch '{0}' is not defined in given switch mappings.
+        /// The short switch '{0}' is not defined in the switch mappings.
         /// </summary>
         internal static string Error_ShortSwitchNotDefined
         {
@@ -131,7 +131,7 @@ namespace Microsoft.Framework.ConfigurationModel
         }
 
         /// <summary>
-        /// The short switch '{0}' is not defined in given switch mappings.
+        /// The short switch '{0}' is not defined in the switch mappings.
         /// </summary>
         internal static string FormatError_ShortSwitchNotDefined(object p0)
         {

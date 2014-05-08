@@ -81,6 +81,7 @@ namespace Microsoft.Framework.ConfigurationModel
         [Fact]
         public void ThrowExceptionWhenPassingSwitchMappingsWithDuplicatedKeys()
         {
+            // Arrange
             var args = new string[]
                 {
                     "-K1=Value1",
@@ -96,14 +97,29 @@ namespace Microsoft.Framework.ConfigurationModel
                     { "-Key2", "LongKey2" },
                     { "-KEY2", "LongKey2"}
                 };
-            var caseInsensitiveKeySet = new HashSet<string>(switchMappings.Keys, StringComparer.OrdinalIgnoreCase);
-            var expectedDup = string.Join(", ", switchMappings.Keys.Except(caseInsensitiveKeySet));
-            var expectedMsg = new ArgumentException(Resources.
-                FormatError_DuplicatesInSwitchMappings(expectedDup), "switchMappings").Message;
 
+            // Find out the duplicate expected be be reported
+            var expectedDup = string.Empty;
+            var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var mapping in switchMappings)
+            {
+                if (set.Contains(mapping.Key))
+                {
+                    expectedDup = mapping.Key;
+                    break;
+                }
+
+                set.Add(mapping.Key);
+            }
+
+            var expectedMsg = new ArgumentException(Resources.
+                FormatError_DuplicatedKeyInSwitchMappings(expectedDup), "switchMappings").Message;
+
+            // Act
             var exception = Assert.Throws<ArgumentException>(
                 () => new CommandLineConfigurationSource(args, switchMappings));
 
+            // Assert
             Assert.Equal(expectedMsg, exception.Message);
         }
 

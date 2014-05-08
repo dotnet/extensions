@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
@@ -26,22 +25,17 @@ namespace Microsoft.Framework.ConfigurationModel
         private readonly Dictionary<string, string> _switchMappings;
 
 #if NET45
-        public CommandLineConfigurationSource(Dictionary<string, string> switchMappings = null)
+        public CommandLineConfigurationSource(IDictionary<string, string> switchMappings = null)
             : this(Environment.GetCommandLineArgs())
         {
             if (switchMappings != null)
             {
-                ValidateSwitchMappings(switchMappings);
-                _switchMappings = new Dictionary<string, string>(switchMappings, StringComparer.OrdinalIgnoreCase);
-            }
-            else
-            {
-                _switchMappings = null;
+                _switchMappings = GetValidatedSwitchMappingsCopy(switchMappings);
             }
         }
 #endif
 
-        public CommandLineConfigurationSource(string[] args, Dictionary<string, string> switchMappings = null)
+        public CommandLineConfigurationSource(string[] args, IDictionary<string, string> switchMappings = null)
         {
             if (args == null)
             {
@@ -52,12 +46,7 @@ namespace Microsoft.Framework.ConfigurationModel
 
             if (switchMappings != null)
             {
-                ValidateSwitchMappings(switchMappings);
-                _switchMappings = new Dictionary<string, string>(switchMappings, StringComparer.OrdinalIgnoreCase);
-            }
-            else
-            {
-                _switchMappings = null;
+                _switchMappings = GetValidatedSwitchMappingsCopy(switchMappings);
             }
         }
 
@@ -160,28 +149,31 @@ namespace Microsoft.Framework.ConfigurationModel
             ReplaceData(data);
         }
 
-        private void ValidateSwitchMappings(Dictionary<string, string> switchMappings)
+        private Dictionary<string, string> GetValidatedSwitchMappingsCopy(IDictionary<string, string> switchMappings)
         {
             // The dictionary passed in might be constructed with a case-sensitive comparer
             // However, the keys in configuration sources are all case-insensitive
             // So we check whether the given switch mappings contain duplicated keys with case-insensitive comparer
-            var caseInsensitiveKeySet = new HashSet<string>(switchMappings.Keys, StringComparer.OrdinalIgnoreCase);
-            if (caseInsensitiveKeySet.Count < switchMappings.Count)
-            {
-                var duplicates = string.Join(", ", switchMappings.Keys.Except(caseInsensitiveKeySet));
-                throw new ArgumentException(
-                    Resources.FormatError_DuplicatesInSwitchMappings(duplicates), "switchMappings");
-            }
-
-            // Only keys start with "--" or "-" are acceptable
+            var switchMappingsCopy = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var mapping in switchMappings)
             {
+                // Only keys start with "--" or "-" are acceptable
                 if (!mapping.Key.StartsWith("--") && !mapping.Key.StartsWith("-"))
                 {
                     throw new ArgumentException(Resources.FormatError_InvalidSwitchMapping(mapping.Key),
                         "switchMappings");
                 }
+
+                if (switchMappingsCopy.ContainsKey(mapping.Key))
+                {
+                    throw new ArgumentException(Resources.FormatError_DuplicatedKeyInSwitchMappings(mapping.Key),
+                        "switchMappings");
+                }
+
+                switchMappingsCopy.Add(mapping.Key, mapping.Value);
             }
+
+            return switchMappingsCopy;
         }
     }
 }
