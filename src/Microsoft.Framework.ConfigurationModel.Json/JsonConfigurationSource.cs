@@ -27,7 +27,7 @@ namespace Microsoft.Framework.ConfigurationModel
 
         public override void Load()
         {
-            using (var stream = new FileStream(Path, FileMode.Open))
+            using (var stream = new FileStream(Path, FileMode.Open, FileAccess.Read))
             {
                 Load(stream);
             }
