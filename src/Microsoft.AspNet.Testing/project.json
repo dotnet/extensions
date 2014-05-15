@@ -1,30 +1,24 @@
 {
   "version": "0.1-alpha-*",
   "dependencies": {
-    "xunit.abstractions": "2.0.0-aspnet-*",
     "xunit.assert": "2.0.0-aspnet-*",
-    "xunit.core": "2.0.0-aspnet-*",
-    "xunit.execution": "2.0.0-aspnet-*"
+    "xunit.core": "2.0.0-aspnet-*"
   },
   "configurations": {
     "net45": {
       "dependencies": {
+        "System.Runtime": "",
         "System.Reflection": "",
-        "System.Runtime": ""
+        "System.Threading.Tasks": ""
       }
     },
     "k10": {
       "dependencies": {
-        "System.Collections": "4.0.0.0",
-        "System.Diagnostics.Debug": "4.0.10.0",
-        "System.Globalization": "4.0.10.0",
-        "System.Linq": "4.0.0.0",
-        "System.Reflection": "4.0.10.0",
-        "System.Resources.ResourceManager": "4.0.0.0",
         "System.Runtime": "4.0.20.0",
-        "System.Runtime.Extensions": "4.0.10.0",
-        "System.Threading": "4.0.0.0",
-        "System.Threading.Tasks": "4.0.10.0"
+        "System.Globalization": "4.0.10.0",
+        "System.Threading.Tasks": "4.0.10.0",
+        "System.Reflection": "4.0.10.0",
+        "System.Threading.Thread": "4.0.0.0"
       }
     }
   }

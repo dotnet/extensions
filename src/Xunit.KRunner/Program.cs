@@ -164,7 +164,7 @@ namespace Xunit.KRunner
 
                 var executionOptions = new XunitExecutionOptions { DisableParallelization = !parallelizeTestCollections, MaxParallelThreads = maxThreadCount };
                 var resultsVisitor = CreateVisitor(consoleLock, teamCity);
-                executor.Run(discoveryVisitor.TestCases, resultsVisitor, executionOptions);
+                executor.RunTests(discoveryVisitor.TestCases, resultsVisitor, executionOptions);
                 resultsVisitor.Finished.WaitOne();
             }
             catch (Exception ex)
