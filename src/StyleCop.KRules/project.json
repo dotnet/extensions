@@ -1,0 +1,12 @@
+﻿{
+    "version": "0.1-alpha-*",
+    "dependencies": {
+        "StyleCop":  "4.7.10.0"
+    },
+    "configurations" : {
+        "net45" : { 
+            "dependencies": {
+            }
+        }
+    }
+}
