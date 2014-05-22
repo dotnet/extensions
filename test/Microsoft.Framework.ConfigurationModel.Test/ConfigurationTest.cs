@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Xunit;
 
@@ -18,56 +17,53 @@ namespace Microsoft.Framework.ConfigurationModel
         public void LoadAndCombineKeyValuePairsFromDifferentConfigurationSources()
         {
             // Arrange
-            var dic = new Dictionary<string, string>()
+            var dic1 = new Dictionary<string, string>()
                 { 
-                    {"Mem:KeyInMem", "ValueInMem"}
+                    {"Mem1:KeyInMem1", "ValueInMem1"}
                 };
-            var memConfigSrc = new MemoryConfigurationSource(dic);
-
-            var hashTable = new Hashtable()
+            var dic2 = new Dictionary<string, string>()
                 {
-                    {"EnvVariable:KeyInEnv", "ValueInEnv"}
+                    {"Mem2:KeyInMem2", "ValueInMem2"}
                 };
-            var envConfigSrc = new EnvironmentVariablesConfigurationSource();
-            envConfigSrc.Load(hashTable);
-
-            var ini = @"
-            [IniFile]
-            KeyInIni=ValueInIni ";
-            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
-            iniConfigSrc.Load(StringToStream(ini));
+            var dic3 = new Dictionary<string, string>()
+                {
+                    {"Mem3:KeyInMem3", "ValueInMem3"}
+                };
+            var memConfigSrc1 = new MemoryConfigurationSource(dic1);
+            var memConfigSrc2 = new MemoryConfigurationSource(dic2);
+            var memConfigSrc3 = new MemoryConfigurationSource(dic3);
 
             var config = new Configuration();
 
-            string memVal, envVal, iniVal;
-            bool memRet, envRet, iniRet;
+            string memVal1, memVal2, memVal3;
+            bool memRet1, memRet2, memRet3;
 
             // Act
-            config.AddLoadedSource(memConfigSrc);
-            config.AddLoadedSource(envConfigSrc);
-            config.AddLoadedSource(iniConfigSrc);
+            config.AddLoadedSource(memConfigSrc1);
+            config.AddLoadedSource(memConfigSrc2);
+            config.AddLoadedSource(memConfigSrc3);
 
-            memRet = config.TryGet("mem:keyinmem", out memVal);
-            envRet = config.TryGet("EnvVariable:KeyInEnv", out envVal);
-            iniRet = config.TryGet("INIFILE:KeyInIni", out iniVal);
+            memRet1 = config.TryGet("mem1:keyinmem1", out memVal1);
+            memRet2 = config.TryGet("Mem2:KeyInMem2", out memVal2);
+            memRet3 = config.TryGet("MEM3:KEYINMEM3", out memVal3);
 
             // Assert
             Assert.Equal(3, CountAllEntries(config));
-            Assert.Contains(memConfigSrc, config);
-            Assert.Contains(envConfigSrc, config);
-            Assert.Contains(iniConfigSrc, config);
+            Assert.Contains(memConfigSrc1, config);
+            Assert.Contains(memConfigSrc2, config);
+            Assert.Contains(memConfigSrc3, config);
 
-            Assert.True(memRet);
-            Assert.True(envRet);
-            Assert.True(iniRet);
+            Assert.True(memRet1);
+            Assert.True(memRet2);
+            Assert.True(memRet3);
 
-            Assert.Equal("ValueInMem", memVal);
-            Assert.Equal("ValueInEnv", envVal);
-            Assert.Equal("ValueInIni", iniVal);
+            Assert.Equal("ValueInMem1", memVal1);
+            Assert.Equal("ValueInMem2", memVal2);
+            Assert.Equal("ValueInMem3", memVal3);
 
-            Assert.Equal("ValueInMem", config.Get("mem:keyinmem"));
-            Assert.Equal("ValueInEnv", config.Get("EnvVariable:KEYINENV"));
-            Assert.Equal("ValueInIni", config.Get("IniFile:KeyInIni"));
+            Assert.Equal("ValueInMem1", config.Get("mem1:keyinmem1"));
+            Assert.Equal("ValueInMem2", config.Get("Mem2:KeyInMem2"));
+            Assert.Equal("ValueInMem3", config.Get("MEM3:KEYINMEM3"));
             Assert.Null(config.Get("NotExist"));
         }
 
@@ -75,27 +71,26 @@ namespace Microsoft.Framework.ConfigurationModel
         public void NewConfigurationSourceOverridesOldOneWhenKeyIsDuplicated()
         {
             // Arrange
-            var dic = new Dictionary<string, string>()
+            var dic1 = new Dictionary<string, string>()
                 { 
-                    {"Key1:Key2", "ValueInMem"}
+                    {"Key1:Key2", "ValueInMem1"}
                 };
-            var memConfigSrc = new MemoryConfigurationSource(dic);
-
-            var ini = @"
-            [Key1]
-            Key2=ValueInIni";
-            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
-            iniConfigSrc.Load(StringToStream(ini));
+            var dic2 = new Dictionary<string, string>()
+                {
+                    {"Key1:Key2", "ValueInMem2"}
+                };
+            var memConfigSrc1 = new MemoryConfigurationSource(dic1);
+            var memConfigSrc2 = new MemoryConfigurationSource(dic2);
 
             var config = new Configuration();
 
             // Act
-            config.AddLoadedSource(memConfigSrc);
-            config.AddLoadedSource(iniConfigSrc);
+            config.AddLoadedSource(memConfigSrc1);
+            config.AddLoadedSource(memConfigSrc2);
 
             // Assert
             Assert.Equal(2, CountAllEntries(config));
-            Assert.Equal("ValueInIni", config.Get("Key1:Key2"));
+            Assert.Equal("ValueInMem2", config.Get("Key1:Key2"));
         }
 
         [Fact]
@@ -106,24 +101,14 @@ namespace Microsoft.Framework.ConfigurationModel
                 { 
                     {"Key", "Value"}
                 };
-            var memConfigSrc = new MemoryConfigurationSource(dic);
-
-            var hashTable = new Hashtable()
-                {
-                    {"Key", "Value"}
-                };
-            var envConfigSrc = new EnvironmentVariablesConfigurationSource();
-            envConfigSrc.Load(hashTable);
-
-            var ini = @"
-            Key=Value";
-            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
-            iniConfigSrc.Load(StringToStream(ini));
+            var memConfigSrc1 = new MemoryConfigurationSource(dic);
+            var memConfigSrc2 = new MemoryConfigurationSource(dic);
+            var memConfigSrc3 = new MemoryConfigurationSource(dic);
 
             var config = new Configuration();
-            config.AddLoadedSource(memConfigSrc);
-            config.AddLoadedSource(iniConfigSrc);
-            config.AddLoadedSource(envConfigSrc);
+            config.AddLoadedSource(memConfigSrc1);
+            config.AddLoadedSource(memConfigSrc2);
+            config.AddLoadedSource(memConfigSrc3);
 
             // Act
             config.Set("Key", "NewValue");
@@ -131,96 +116,92 @@ namespace Microsoft.Framework.ConfigurationModel
             // Assert
             Assert.Equal(3, CountAllEntries(config));
             Assert.Equal("NewValue", config.Get("Key"));
-            Assert.Equal("NewValue", memConfigSrc.Data["Key"]);
-            Assert.Equal("NewValue", envConfigSrc.Data["Key"]);
-            Assert.Equal("NewValue", iniConfigSrc.Data["Key"]);
+            Assert.Equal("NewValue", memConfigSrc1.Data["Key"]);
+            Assert.Equal("NewValue", memConfigSrc2.Data["Key"]);
+            Assert.Equal("NewValue", memConfigSrc3.Data["Key"]);
         }
 
         [Fact]
         public void CanGetSubKey()
         {
             // Arrange
-            var dic = new Dictionary<string, string>()
+            var dic1 = new Dictionary<string, string>()
                 { 
                     {"Data:DB1:Connection1", "MemVal1"},
                     {"Data:DB1:Connection2", "MemVal2"}
                 };
-            var memConfigSrc = new MemoryConfigurationSource(dic);
-
-            var ini = @"
-            DataSource:DB2:Connection=IniVal";
-            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
-            iniConfigSrc.Load(StringToStream(ini));
-
-            var hashTable = new Hashtable()
+            var dic2 = new Dictionary<string, string>()
                 {
-                    {"Data", "EnvVal"}
+                    {"DataSource:DB2:Connection", "MemVal3"}
                 };
-            var envConfigSrc = new EnvironmentVariablesConfigurationSource();
-            envConfigSrc.Load(hashTable);
+            var dic3 = new Dictionary<string, string>()
+                {
+                    {"Data", "MemVal4"}
+                };
+            var memConfigSrc1 = new MemoryConfigurationSource(dic1);
+            var memConfigSrc2 = new MemoryConfigurationSource(dic2);
+            var memConfigSrc3 = new MemoryConfigurationSource(dic3);
 
             var config = new Configuration();
-            config.AddLoadedSource(memConfigSrc);
-            config.AddLoadedSource(iniConfigSrc);
-            config.AddLoadedSource(envConfigSrc);
+            config.AddLoadedSource(memConfigSrc1);
+            config.AddLoadedSource(memConfigSrc2);
+            config.AddLoadedSource(memConfigSrc3);
 
-            string memVal1, memVal2, iniVal1, iniVal2, envVal1;
-            bool memRet1, memRet2, iniRet1, iniRet2, envRet1;
+            string memVal1, memVal2, memVal3, memVal4, memVal5;
+            bool memRet1, memRet2, memRet3, memRet4, memRet5;
 
             // Act
             var configFocus = config.GetSubKey("Data");
 
             memRet1 = configFocus.TryGet("DB1:Connection1", out memVal1);
             memRet2 = configFocus.TryGet("DB1:Connection2", out memVal2);
-            iniRet1 = configFocus.TryGet("DB2:Connection", out iniVal1);
-            iniRet2 = configFocus.TryGet("Source:DB2:Connection", out iniVal2);
-            envRet1 = configFocus.TryGet(null, out envVal1);
+            memRet3 = configFocus.TryGet("DB2:Connection", out memVal3);
+            memRet4 = configFocus.TryGet("Source:DB2:Connection", out memVal4);
+            memRet5 = configFocus.TryGet(null, out memVal5);
 
             // Assert
             Assert.True(memRet1);
             Assert.True(memRet2);
-            Assert.False(iniRet1);
-            Assert.False(iniRet2);
-            Assert.True(envRet1);
+            Assert.False(memRet3);
+            Assert.False(memRet4);
+            Assert.True(memRet5);
 
             Assert.Equal("MemVal1", memVal1);
             Assert.Equal("MemVal2", memVal2);
-            Assert.Equal("EnvVal", envVal1);
+            Assert.Equal("MemVal4", memVal5);
 
             Assert.Equal("MemVal1", configFocus.Get("DB1:Connection1"));
             Assert.Equal("MemVal2", configFocus.Get("DB1:Connection2"));
             Assert.Null(configFocus.Get("DB2:Connection"));
             Assert.Null(configFocus.Get("Source:DB2:Connection"));
-            Assert.Equal("EnvVal", configFocus.Get(null));
+            Assert.Equal("MemVal4", configFocus.Get(null));
         }
 
         [Fact]
         public void CanGetSubKeys()
         {
             // Arrange
-            var dic = new Dictionary<string, string>()
-                { 
-                    {"Data:DB1:Connection1", "MemValue1"},
-                    {"Data:DB1:Connection2", "MemValue2"}
-                };
-            var memConfigSrc = new MemoryConfigurationSource(dic);
-
-            var ini = @"
-            Data:DB2Connection=IniValue";
-            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
-            iniConfigSrc.Load(StringToStream(ini));
-
-            var hashTable = new Hashtable()
+            var dic1 = new Dictionary<string, string>()
                 {
-                    {"DataSource:DB3:Connection", "EnvValue"}
+                    {"Data:DB1:Connection1", "MemVal1"},
+                    {"Data:DB1:Connection2", "MemVal2"}
                 };
-            var envConfigSrc = new EnvironmentVariablesConfigurationSource();
-            envConfigSrc.Load(hashTable);
+            var dic2 = new Dictionary<string, string>()
+                {
+                    {"Data:DB2Connection", "MemVal3"}
+                };
+            var dic3 = new Dictionary<string, string>()
+                {
+                    {"DataSource:DB3:Connection", "MemVal4"}
+                };
+            var memConfigSrc1 = new MemoryConfigurationSource(dic1);
+            var memConfigSrc2 = new MemoryConfigurationSource(dic2);
+            var memConfigSrc3 = new MemoryConfigurationSource(dic3);
 
             var config = new Configuration();
-            config.AddLoadedSource(memConfigSrc);
-            config.AddLoadedSource(iniConfigSrc);
-            config.AddLoadedSource(envConfigSrc);
+            config.AddLoadedSource(memConfigSrc1);
+            config.AddLoadedSource(memConfigSrc2);
+            config.AddLoadedSource(memConfigSrc3);
 
             // Act
             var configFocusList = config.GetSubKeys("Data");
@@ -228,9 +209,9 @@ namespace Microsoft.Framework.ConfigurationModel
 
             // Assert
             Assert.Equal(2, configFocusList.Count());
-            Assert.Equal("MemValue1", subKeysSet["DB1"].Get("Connection1"));
-            Assert.Equal("MemValue2", subKeysSet["DB1"].Get("Connection2"));
-            Assert.Equal("IniValue", subKeysSet["DB2Connection"].Get(null));
+            Assert.Equal("MemVal1", subKeysSet["DB1"].Get("Connection1"));
+            Assert.Equal("MemVal2", subKeysSet["DB1"].Get("Connection2"));
+            Assert.Equal("MemVal3", subKeysSet["DB2Connection"].Get(null));
             Assert.False(subKeysSet.ContainsKey("DB3"));
             Assert.False(subKeysSet.ContainsKey("Source:DB3"));
         }
@@ -241,37 +222,25 @@ namespace Microsoft.Framework.ConfigurationModel
             // Arrange
             var dic = new Dictionary<string, string>()
                 { 
-                    {"Mem:KeyInMem", "ValueInMem"}
+                    {"Mem:KeyInMem", "MemVal"}
                 };
-            var memConfigSrc = new MemoryConfigurationSource(dic);
-
-            var hashTable = new Hashtable()
-                {
-                    {"EnvVariable:KeyInEnv", "ValueInEnv"}
-                };
-            var envConfigSrc = new EnvironmentVariablesConfigurationSource();
-            envConfigSrc.Load(hashTable);
-
-            var ini = @"
-            [IniFile]
-            KeyInIni=ValueInIni ";
-            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
-            iniConfigSrc.Load(StringToStream(ini));
+            var memConfigSrc1 = new MemoryConfigurationSource(dic);
+            var memConfigSrc2 = new MemoryConfigurationSource(dic);
+            var memConfigSrc3 = new MemoryConfigurationSource(dic);
 
             var srcSet = new HashSet<IConfigurationSource>()
                 {
-                    memConfigSrc,
-                    envConfigSrc,
-                    iniConfigSrc
+                    memConfigSrc1,
+                    memConfigSrc2,
+                    memConfigSrc3
                 };
 
             var config = new Configuration();
 
             // Act
-            config.AddLoadedSource(memConfigSrc);
-            config.AddLoadedSource(envConfigSrc);
-            config.AddLoadedSource(iniConfigSrc);
-
+            config.AddLoadedSource(memConfigSrc1);
+            config.AddLoadedSource(memConfigSrc2);
+            config.AddLoadedSource(memConfigSrc3);
 
             // Assert
             var enumerator = config.GetEnumerator();
@@ -290,37 +259,26 @@ namespace Microsoft.Framework.ConfigurationModel
         {
             // Arrange
             var dic = new Dictionary<string, string>()
-                { 
-                    {"Mem:KeyInMem", "ValueInMem"}
-                };
-            var memConfigSrc = new MemoryConfigurationSource(dic);
-
-            var hashTable = new Hashtable()
                 {
-                    {"EnvVariable:KeyInEnv", "ValueInEnv"}
+                    {"Mem:KeyInMem", "MemVal"}
                 };
-            var envConfigSrc = new EnvironmentVariablesConfigurationSource();
-            envConfigSrc.Load(hashTable);
-
-            var ini = @"
-            [IniFile]
-            KeyInIni=ValueInIni ";
-            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
-            iniConfigSrc.Load(StringToStream(ini));
+            var memConfigSrc1 = new MemoryConfigurationSource(dic);
+            var memConfigSrc2 = new MemoryConfigurationSource(dic);
+            var memConfigSrc3 = new MemoryConfigurationSource(dic);
 
             var srcSet = new HashSet<IConfigurationSource>()
                 {
-                    memConfigSrc,
-                    envConfigSrc,
-                    iniConfigSrc
+                    memConfigSrc1,
+                    memConfigSrc2,
+                    memConfigSrc3
                 };
 
             var config = new Configuration();
 
             // Act
-            config.AddLoadedSource(memConfigSrc);
-            config.AddLoadedSource(envConfigSrc);
-            config.AddLoadedSource(iniConfigSrc);
+            config.AddLoadedSource(memConfigSrc1);
+            config.AddLoadedSource(memConfigSrc2);
+            config.AddLoadedSource(memConfigSrc3);
 
             var enumerable = config as IEnumerable;
 
@@ -339,17 +297,6 @@ namespace Microsoft.Framework.ConfigurationModel
         private static int CountAllEntries(Configuration config)
         {
             return config.Aggregate(0, (acc, src) => acc + (src as BaseConfigurationSource).Data.Count);
-        }
-
-        private static Stream StringToStream(string str)
-        {
-            var memStream = new MemoryStream();
-            var textWriter = new StreamWriter(memStream);
-            textWriter.Write(str);
-            textWriter.Flush();
-            memStream.Seek(0, SeekOrigin.Begin);
-
-            return memStream;
         }
     }
 }
