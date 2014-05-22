@@ -11,7 +11,7 @@ using Resources = Microsoft.Framework.ConfigurationModel.Xml.Resources;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-    public class XmlConfigurationSource : BaseConfigurationSource
+    public class XmlConfigurationSource : BaseConfigurationSource, ICommitableConfigurationSource
     {
         private const string NameAttributeKey = "Name";
 
