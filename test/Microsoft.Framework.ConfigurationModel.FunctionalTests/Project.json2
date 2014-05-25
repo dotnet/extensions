@@ -1,0 +1,14 @@
+{
+  "version": "0.1-alpha-*",
+  "dependencies": {
+    "Microsoft.Framework.ConfigurationModel": "",
+    "Microsoft.Framework.ConfigurationModel.Json": "",
+    "Microsoft.Framework.ConfigurationModel.Xml": "",
+    "System.IO.FileSystem": "4.0.10.0",
+    "System.IO.FileSystem.Primitives": "4.0.20.0",
+    "Xunit.KRunner": "0.1-alpha-*"
+  },
+  "commands": {
+    "test": "Xunit.KRunner"
+  }
+}
