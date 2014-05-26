@@ -23,7 +23,7 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="Project.json" />
+    <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandLine.cs" />
@@ -47,3 +47,4 @@
   </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
+
