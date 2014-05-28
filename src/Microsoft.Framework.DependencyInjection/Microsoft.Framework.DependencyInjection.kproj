@@ -22,10 +22,6 @@
   <ItemGroup>
     <Compile Include="ActivatorUtilities.cs" />
     <Compile Include="NotNullAttribute.cs" />
-    <Compile Include="OptionsSetup.cs" />
-    <Compile Include="IOptionsSetup.cs" />
-    <Compile Include="IOptionsAccessor.cs" />
-    <Compile Include="OptionsAccessor.cs" />
     <Compile Include="ContextAccessor.cs" />
     <Compile Include="Fallback\ServiceCollectionExtensions.cs" />
     <Compile Include="IContextAccessor.cs" />

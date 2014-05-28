@@ -90,17 +90,5 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             Assert.Contains("FakeOneMultipleServiceAnotherMethod", multipleValues);
             Assert.Contains("FakeTwoMultipleServiceAnotherMethod", multipleValues);
         }
-
-        [Fact]
-        public void SetupCallsSortedInOrder()
-        {
-            var container = CreateContainer();
-            var service = container.GetService<IOptionsAccessor<FakeOptions>>();
-
-            Assert.NotNull(service);
-            var options = service.Options;
-            Assert.NotNull(options);
-            Assert.Equal("aABCz", options.Message);
-        }
     }
 }
