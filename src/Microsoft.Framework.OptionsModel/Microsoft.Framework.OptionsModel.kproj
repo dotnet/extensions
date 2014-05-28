@@ -26,9 +26,6 @@
     <Content Include="Project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="ConfigOptionsSetup.cs" />
     <Compile Include="IOptionsAccessor.cs" />
     <Compile Include="IOptionsSetup.cs" />
