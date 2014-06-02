@@ -123,11 +123,7 @@ namespace Microsoft.Framework.ConfigurationModel
                     value = currentArg.Substring(separator + 1);
                 }
 
-                if (data.ContainsKey(key))
-                {
-                    throw new FormatException(Resources.FormatError_KeyIsDuplicated(key));
-                }
-
+                // Override value when key is duplicated. So we always have the last argument win.
                 data[key] = value;
                 argIndex++;
             }

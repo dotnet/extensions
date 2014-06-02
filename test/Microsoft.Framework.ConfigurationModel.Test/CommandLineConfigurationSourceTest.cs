@@ -147,19 +147,19 @@ namespace Microsoft.Framework.ConfigurationModel
         }
 
         [Fact]
-        public void ThrowExceptionWhenKeyIsDuplicated()
+        public void OverrideValueWhenKeyIsDuplicated()
         {
             var args = new string[]
                 {
                     "/Key1=Value1",
                     "--Key1=Value2"
                 };
-            var expectedMsg = new FormatException(Resources.FormatError_KeyIsDuplicated("Key1")).Message;
             var cmdLineConfig = new CommandLineConfigurationSource(args);
 
-            var exception = Assert.Throws<FormatException>(() => cmdLineConfig.Load());
+            cmdLineConfig.Load();
 
-            Assert.Equal(expectedMsg, exception.Message);
+            Assert.Equal(1, cmdLineConfig.Data.Count());
+            Assert.Equal("Value2", cmdLineConfig.Data["Key1"]);
         }
 
         [Fact]
