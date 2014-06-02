@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<SourceAnalyzer Name="StyleCop.KRules.UsingOutsideNamespaceRule">
+  <Description>
+    Requires that using be placed outside the namespace.
+  </Description>
+  <Rules>
+    <Rule Name="UsingDirectivesMustBePlacedOutsideNamespace" CheckId="KR4001">
+      <Context>A using directive should always be placed outside the namespace.</Context>
+      <Description>Validates that the code does not put using directives inside of a namespace declaration.</Description>
+    </Rule>
+  </Rules>
+</SourceAnalyzer>

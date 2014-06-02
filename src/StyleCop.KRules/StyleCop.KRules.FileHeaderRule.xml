@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<SourceAnalyzer Name="StyleCop.KRules.FileHeaderRule">
+  <Description>
+    Checks for our required license header.
+  </Description>
+  <Properties>
+    <StringProperty Name="FileHeaderText" DefaultValue="" FriendlyName="File Header Text"
+                    Description="The file header text that must be provided for every file." />
+  </Properties>
+  <Rules>
+    <Rule Name="FileMustHaveHeader" CheckId="KR4000">
+      <Context>Make sure that the file has the required header.</Context>
+      <Description>Validates that the file has the configured header text.</Description>
+    </Rule>
+  </Rules>
+</SourceAnalyzer>
+

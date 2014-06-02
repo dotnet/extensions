@@ -3,6 +3,7 @@
     "dependencies": {
         "StyleCop":  "4.7.10.0"
     },
+    "resources": [ "*.xml" ],
     "configurations" : {
         "net45" : { 
             "dependencies": {
