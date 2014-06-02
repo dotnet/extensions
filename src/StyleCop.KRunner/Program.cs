@@ -12,31 +12,33 @@ namespace StyleCop.KRunner
     {
         private static readonly List<Violation> _violations = new List<Violation>();
 
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("StyleCop.KRunner - A StyleCop commandline runner");
+            Console.ResetColor();
 
             if (args.Length == 0)
             {
                 Console.WriteLine("Usage:");
                 Console.WriteLine("\tStyleCop.KRunner <path/to/project.json>");
                 Console.WriteLine();
-                return;
+                return -1;
             }
 
             var projectFile = args[0];
             if (!File.Exists(projectFile))
             {
                 Console.WriteLine("File '{0}' does not exist.", Path.GetFullPath(projectFile));
-                return;
+                return -2;
             }
 
             var runner = new StyleCopConsole(
-                settings: null, 
-                writeResultsCache: 
-                false, 
-                outputFile: null, 
-                addInPaths: null, 
+                settings: null,
+                writeResultsCache:
+                false,
+                outputFile: null,
+                addInPaths: null,
                 loadFromDefaultPath: true); // Loads rules next to StyleCop.dll in the file system.
 
             var projectDirectory = Path.GetDirectoryName(projectFile);
@@ -70,9 +72,23 @@ namespace StyleCop.KRunner
                 runner.ViolationEncountered -= Runner_ViolationEncountered;
             }
 
+            if (_violations.Count == 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+            }
+
             Console.WriteLine();
+            Console.WriteLine("Finished Processing: {0}", projectFile);
             Console.WriteLine("{0} errors found.", _violations.Count);
             Console.WriteLine();
+
+            Console.ResetColor();
+
+            return _violations.Count;
         }
 
         // Performs an ascending directory search starting at the project directory
