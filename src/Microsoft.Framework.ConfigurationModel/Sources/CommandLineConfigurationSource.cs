@@ -10,17 +10,6 @@ namespace Microsoft.Framework.ConfigurationModel
     {
         private readonly Dictionary<string, string> _switchMappings;
 
-#if NET45
-        public CommandLineConfigurationSource(IDictionary<string, string> switchMappings = null)
-            : this(Environment.GetCommandLineArgs())
-        {
-            if (switchMappings != null)
-            {
-                _switchMappings = GetValidatedSwitchMappingsCopy(switchMappings);
-            }
-        }
-#endif
-
         public CommandLineConfigurationSource(string[] args, IDictionary<string, string> switchMappings = null)
         {
             if (args == null)

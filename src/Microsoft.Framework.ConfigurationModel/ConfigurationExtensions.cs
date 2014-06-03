@@ -24,14 +24,6 @@ namespace Microsoft.Framework.ConfigurationModel
         }
 #endif
 
-#if NET45
-        public static IConfigurationSourceContainer AddCommandLine(this IConfigurationSourceContainer configuration)
-        {
-            configuration.Add(new CommandLineConfigurationSource());
-            return configuration;
-        }
-#endif
-
         public static IConfigurationSourceContainer AddCommandLine(this IConfigurationSourceContainer configuration, string[] args)
         {
             configuration.Add(new CommandLineConfigurationSource(args));
