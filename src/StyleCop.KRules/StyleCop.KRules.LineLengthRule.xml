@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<SourceAnalyzer Name="StyleCop.KRules.LineLengthRule">
+  <Description>
+    Checks for lines that are too long.
+  </Description>
+  <Properties>
+    <IntProperty Name="LineLength" DefaultValue="" FriendlyName="Max Line Length"
+                    Description="The maximum line length allowed." />
+  </Properties>
+  <Rules>
+    <Rule Name="LineMustNotBeTooLong" CheckId="KR4002">
+      <Context>Makes sure the lines aren't too long.</Context>
+      <Description>Makes sure the lines aren't too long.</Description>
+    </Rule>
+  </Rules>
+</SourceAnalyzer>
+
