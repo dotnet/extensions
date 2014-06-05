@@ -4,12 +4,12 @@
     Checks for lines that are too long.
   </Description>
   <Properties>
-    <IntProperty Name="LineLength" DefaultValue="" FriendlyName="Max Line Length"
+    <IntegerProperty Name="LineLength" DefaultValue="-1" FriendlyName="Max Line Length"
                     Description="The maximum line length allowed." />
   </Properties>
   <Rules>
     <Rule Name="LineMustNotBeTooLong" CheckId="KR4002">
-      <Context>Makes sure the lines aren't too long.</Context>
+      <Context>Line must not be longer than {0} characters.</Context>
       <Description>Makes sure the lines aren't too long.</Description>
     </Rule>
   </Rules>

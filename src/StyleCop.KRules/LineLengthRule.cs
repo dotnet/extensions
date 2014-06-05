@@ -40,7 +40,11 @@ namespace StyleCop.KRules
                     lineNumber++;
                     if (line.Length > lengthProperty.Value)
                     {
-                        AddViolation(csharpDocument.RootElement, lineNumber, RuleName);
+                        AddViolation(
+                            csharpDocument.RootElement, 
+                            lineNumber, 
+                            RuleName,
+                            lengthProperty.Value);
                     }
                 }
             }
