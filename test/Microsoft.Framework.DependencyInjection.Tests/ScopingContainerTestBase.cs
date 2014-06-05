@@ -243,5 +243,41 @@ namespace Microsoft.Framework.DependencyInjection.Tests
 
             Assert.Equal("FakeServiceSimpleMethod", service.SimpleMethod());
         }
+
+        [Fact]
+        public void AttemptingToResolveNonexistentServiceThrows()
+        {
+            var container = CreateContainer(fallbackProvider: null);
+
+            Assert.ThrowsAny<Exception>(() => container.GetService<INonexistentService>());
+        }
+
+        [Fact]
+        public void AttemptingToResolveNonexistentServiceIndirectlyThrows()
+        {
+            var container = CreateContainer(fallbackProvider: null);
+
+            Assert.ThrowsAny<Exception>(() => container.GetService<IDependOnNonexistentService>());
+        }
+
+        [Fact]
+        public void NonexistentServiceCanBeIEnumerableResolved()
+        {
+            var container = CreateContainer(fallbackProvider: null);
+
+            var services = container.GetService<IEnumerable<INonexistentService>>();
+
+            Assert.Empty(services);
+        }
+
+        [Fact]
+        public void AttemptingToIEnumerableResolveNonexistentServiceIndirectlyThrows()
+        {
+            var container = CreateContainer(fallbackProvider: null);
+
+            // The call to ToArray is necessary for Ninject to throw
+            Assert.ThrowsAny<Exception>(() =>
+                container.GetService<IEnumerable<IDependOnNonexistentService>>().ToArray());
+        }
     }
 }

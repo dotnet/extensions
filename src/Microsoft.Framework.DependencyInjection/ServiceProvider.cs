@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Threading;
 using Microsoft.Framework.DependencyInjection.ServiceLookup;
 
@@ -66,9 +67,21 @@ namespace Microsoft.Framework.DependencyInjection
         public object GetService(Type serviceType)
         {
             ServiceEntry entry;
-            return _table.TryGetEntry(serviceType, out entry) ?
-                ResolveService(entry.Last) :
-                GetFallbackService(serviceType);
+            if (_table.TryGetEntry(serviceType, out entry))
+            {
+                return ResolveService(entry.Last);
+            }
+
+            object service = GetFallbackService(serviceType) ??
+                             GetEmptyIEnumerableOrNull(serviceType);
+
+            if (service == null)
+            {
+                throw new Exception(
+                    string.Format("TODO: No service for type '{0}' has been registered.", serviceType));
+            }
+
+            return service;
         }
 
         internal object ResolveService(IService service)
@@ -137,6 +150,20 @@ namespace Microsoft.Framework.DependencyInjection
                 _disposables.Add(disposable);
             }
             return service;
+        }
+
+        private object GetEmptyIEnumerableOrNull(Type serviceType)
+        {
+            var typeInfo = serviceType.GetTypeInfo();
+
+            if (typeInfo.IsGenericType &&
+                serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+            {
+                var itemType = typeInfo.GenericTypeArguments[0];
+                return Array.CreateInstance(itemType, 0);
+            }
+
+            return null;
         }
     }
 }

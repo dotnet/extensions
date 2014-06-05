@@ -27,9 +27,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             }
             else
             {
-                var serviceFactory =
-                    ActivatorUtilities.CreateFactory(_descriptor.ImplementationType);
-                return serviceFactory(provider);
+                return ActivatorUtilities.CreateInstance(provider, _descriptor.ImplementationType);
             }
         }
     }

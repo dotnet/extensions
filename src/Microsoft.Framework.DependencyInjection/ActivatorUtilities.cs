@@ -64,6 +64,7 @@ namespace Microsoft.Framework.DependencyInjection
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "IServiceProvider may throw unknown exceptions")]
         public static Func<IServiceProvider, object> CreateFactory(Type type)
         {
             if (type == null)
@@ -84,7 +85,17 @@ namespace Microsoft.Framework.DependencyInjection
                     var args = new object[parameters.Length];
                     for (int index = 0; index != parameters.Length; ++index)
                     {
-                        args[index] = services.GetService(parameters[index].ParameterType);
+                        try
+                        {
+                            args[index] = services.GetService(parameters[index].ParameterType);
+                        }
+                        catch (Exception innerException)
+                        {
+                            throw new Exception(
+                                string.Format("TODO: Unable to resolve service for type '{0}' while attempting to activate '{1}'.",
+                                    parameters[index].ParameterType, type),
+                                innerException);
+                        }
                     }
                     return Activator.CreateInstance(type, args);
                 };

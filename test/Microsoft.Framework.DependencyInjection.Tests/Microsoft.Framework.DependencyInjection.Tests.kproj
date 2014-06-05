@@ -25,11 +25,13 @@
     <Compile Include="Fakes\AnotherClass.cs" />
     <Compile Include="Fakes\AnotherClassAcceptingData.cs" />
     <Compile Include="Fakes\ClassWithStaticCtor.cs" />
+    <Compile Include="Fakes\DependOnNonexistentService.cs" />
     <Compile Include="Fakes\FakeFallbackServiceProvider.cs" />
     <Compile Include="Fakes\FakeNonScopingFallbackServiceProvder.cs" />
     <Compile Include="Fakes\FakeOpenGenericService.cs" />
     <Compile Include="Fakes\FakeOuterService.cs" />
     <Compile Include="Fakes\FakeService.cs" />
+    <Compile Include="Fakes\IDependOnNonexistentService.cs" />
     <Compile Include="Fakes\IFakeEveryService.cs" />
     <Compile Include="Fakes\IFakeMultipleService.cs" />
     <Compile Include="Fakes\IFakeOpenGenericService.cs" />
@@ -38,6 +40,7 @@
     <Compile Include="Fakes\IFakeService.cs" />
     <Compile Include="Fakes\IFakeServiceInstance.cs" />
     <Compile Include="Fakes\IFakeSingletonService.cs" />
+    <Compile Include="Fakes\INonexistentService.cs" />
     <Compile Include="Fakes\IReplaceFallbackService.cs" />
     <Compile Include="Fakes\TestServices.cs" />
     <Compile Include="NinjectContainerTests.cs" />
