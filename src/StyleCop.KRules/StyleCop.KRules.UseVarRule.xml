@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<SourceAnalyzer Name="StyleCop.KRules.UseVarRule">
+  <Description>
+    Requires that var be used when possible.
+  </Description>
+  <Rules>
+    <Rule Name="UseVarWhenPossible" CheckId="KR4003">
+      <Context>Expression should use var '{0}'</Context>
+      <Description>Validates that declarations use var when possible.</Description>
+    </Rule>
+  </Rules>
+</SourceAnalyzer>

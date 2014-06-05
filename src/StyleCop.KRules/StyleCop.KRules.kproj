@@ -26,10 +26,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="project.json" />
+    <Content Include="StyleCop.KRules.UseVarRule.xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FileHeaderRule.cs" />
     <Compile Include="LineLengthRule.cs" />
+    <Compile Include="UseVarRule.cs" />
     <Compile Include="UsingOutsideNamespaceRule.cs" />
   </ItemGroup>
   <ItemGroup>
