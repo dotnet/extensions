@@ -17,6 +17,18 @@ namespace Microsoft.Framework.ConfigurationModel
         {
         }
 
+        public string this[string key]
+        {
+            get
+            {
+                return Get(key);
+            }
+            set
+            {
+                Set(key, value);
+            }
+        }
+
         public string Get(string key)
         {
             if (key == null) throw new ArgumentNullException("key");

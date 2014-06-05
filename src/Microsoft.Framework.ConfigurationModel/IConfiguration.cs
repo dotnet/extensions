@@ -9,6 +9,8 @@ namespace Microsoft.Framework.ConfigurationModel
     //[AssemblyNeutral]
     public interface IConfiguration
     {
+        string this[string key] { get; set; }
+
         /// <summary>
         /// 
         /// </summary>

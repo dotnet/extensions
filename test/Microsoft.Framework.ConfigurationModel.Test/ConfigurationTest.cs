@@ -65,6 +65,11 @@ namespace Microsoft.Framework.ConfigurationModel
             Assert.Equal("ValueInMem2", config.Get("Mem2:KeyInMem2"));
             Assert.Equal("ValueInMem3", config.Get("MEM3:KEYINMEM3"));
             Assert.Null(config.Get("NotExist"));
+
+            Assert.Equal("ValueInMem1", config["mem1:keyinmem1"]);
+            Assert.Equal("ValueInMem2", config["Mem2:KeyInMem2"]);
+            Assert.Equal("ValueInMem3", config["MEM3:KEYINMEM3"]);
+            Assert.Null(config["NotExist"]);
         }
 
         [Fact]
@@ -99,7 +104,8 @@ namespace Microsoft.Framework.ConfigurationModel
             // Arrange
             var dic = new Dictionary<string, string>()
                 { 
-                    {"Key", "Value"}
+                    {"Key1", "Value1"},
+                    {"Key2", "Value2"}
                 };
             var memConfigSrc1 = new MemoryConfigurationSource(dic);
             var memConfigSrc2 = new MemoryConfigurationSource(dic);
@@ -111,14 +117,19 @@ namespace Microsoft.Framework.ConfigurationModel
             config.AddLoadedSource(memConfigSrc3);
 
             // Act
-            config.Set("Key", "NewValue");
+            config.Set("Key1", "NewValue1");
+            config["Key2"] = "NewValue2";
 
             // Assert
-            Assert.Equal(3, CountAllEntries(config));
-            Assert.Equal("NewValue", config.Get("Key"));
-            Assert.Equal("NewValue", memConfigSrc1.Data["Key"]);
-            Assert.Equal("NewValue", memConfigSrc2.Data["Key"]);
-            Assert.Equal("NewValue", memConfigSrc3.Data["Key"]);
+            Assert.Equal(6, CountAllEntries(config));
+            Assert.Equal("NewValue1", config.Get("Key1"));
+            Assert.Equal("NewValue1", memConfigSrc1.Data["Key1"]);
+            Assert.Equal("NewValue1", memConfigSrc2.Data["Key1"]);
+            Assert.Equal("NewValue1", memConfigSrc3.Data["Key1"]);
+            Assert.Equal("NewValue2", config["Key2"]);
+            Assert.Equal("NewValue2", memConfigSrc1.Data["Key2"]);
+            Assert.Equal("NewValue2", memConfigSrc2.Data["Key2"]);
+            Assert.Equal("NewValue2", memConfigSrc3.Data["Key2"]);
         }
 
         [Fact]
@@ -175,6 +186,12 @@ namespace Microsoft.Framework.ConfigurationModel
             Assert.Null(configFocus.Get("DB2:Connection"));
             Assert.Null(configFocus.Get("Source:DB2:Connection"));
             Assert.Equal("MemVal4", configFocus.Get(null));
+
+            Assert.Equal("MemVal1", configFocus["DB1:Connection1"]);
+            Assert.Equal("MemVal2", configFocus["DB1:Connection2"]);
+            Assert.Null(configFocus["DB2:Connection"]);
+            Assert.Null(configFocus["Source:DB2:Connection"]);
+            Assert.Equal("MemVal4", configFocus[null]);
         }
 
         [Fact]

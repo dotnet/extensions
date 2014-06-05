@@ -16,6 +16,18 @@ namespace Microsoft.Framework.ConfigurationModel
             _root = root;
         }
 
+        public string this[string key]
+        {
+            get
+            {
+                return Get(key);
+            }
+            set
+            {
+                Set(key, value);
+            }
+        }
+
         public string Get(string key)
         {
             // Null key indicates that the prefix passed to ctor should be used as a key

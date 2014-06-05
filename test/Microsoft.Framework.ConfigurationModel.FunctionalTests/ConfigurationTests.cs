@@ -109,13 +109,13 @@ CommonKey3:CommonKey4=IniValue6";
             Assert.Equal("XmlValue4", config.Get("XmlKey2:XmlKey5:XmlKey6"));
             Assert.Equal("XmlValue5", config.Get("CommonKey1:CommonKey2:XmlKey7"));
 
-            Assert.Equal("MemValue1", config.Get("MemKey1"));
-            Assert.Equal("MemValue2", config.Get("MemKey2:MemKey3"));
-            Assert.Equal("MemValue3", config.Get("MemKey2:MemKey4"));
-            Assert.Equal("MemValue4", config.Get("MemKey2:MemKey5:MemKey6"));
-            Assert.Equal("MemValue5", config.Get("CommonKey1:CommonKey2:MemKey7"));
+            Assert.Equal("MemValue1", config["MemKey1"]);
+            Assert.Equal("MemValue2", config["MemKey2:MemKey3"]);
+            Assert.Equal("MemValue3", config["MemKey2:MemKey4"]);
+            Assert.Equal("MemValue4", config["MemKey2:MemKey5:MemKey6"]);
+            Assert.Equal("MemValue5", config["CommonKey1:CommonKey2:MemKey7"]);
 
-            Assert.Equal("MemValue6", config.Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
+            Assert.Equal("MemValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
         }
 
         [Fact]
@@ -149,6 +149,7 @@ CommonKey3:CommonKey4=IniValue6";
             config.AddXmlFile(_xmlConfigFilePath);
 
             // Act & Assert
+            // Set value with Set() method
             config.Set("CommonKey1:CommonKey2:CommonKey3:CommonKey4", "NewValue");
 
             // All config sources must be updated
@@ -161,6 +162,20 @@ CommonKey3:CommonKey4=IniValue6";
             // Recover values by reloading
             config.Reload();
             Assert.Equal("XmlValue6", config.Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
+
+            // Set value with indexer
+            config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"] = "NewValue";
+
+            // All config sources must be updated
+            foreach (var src in config)
+            {
+                Assert.Equal("NewValue",
+                    (src as BaseConfigurationSource).Data["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
+            }
+
+            // Recover values by reloading
+            config.Reload();
+            Assert.Equal("XmlValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
         }
 
         [Fact]
