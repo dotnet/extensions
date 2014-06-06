@@ -29,50 +29,59 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
                 Func<Service, IEnumerable<IComponentRegistration>> registrationAcessor)
         {
             var serviceWithType = service as IServiceWithType;
+            if (serviceWithType == null)
+            {
+                yield break;
+            }
 
             // Only introduce services that are not already registered
-            if (serviceWithType != null && !registrationAcessor(service).Any())
+            if (registrationAcessor(service).Any())
             {
-                var serviceType = serviceWithType.ServiceType;
-                if (serviceType == typeof(FallbackScope))
+                yield break;
+            }
+
+            var serviceType = serviceWithType.ServiceType;
+            if (serviceType == typeof(FallbackScope))
+            {
+                // This is where we rescope the _fallbackServiceProvider for use in inner scopes
+                // When we actually resolve fallback services, we first access the scoped fallback
+                // service provider by resolving FallbackScope and using its ServiceProvider property.
+                yield return RegistrationBuilder.ForDelegate(serviceType, (context, p) =>
                 {
-                    yield return RegistrationBuilder.ForDelegate(serviceType, (context, p) =>
+                    var lifetime = context.Resolve<ILifetimeScope>() as ISharingLifetimeScope;
+
+                    if (lifetime != null)
                     {
-                        var lifetime = context.Resolve<ILifetimeScope>() as ISharingLifetimeScope;
+                        var parentLifetime = lifetime.ParentLifetimeScope;
 
-                        if (lifetime != null)
+                        FallbackScope parentFallback;
+                        if (parentLifetime != null &&
+                            parentLifetime.TryResolve<FallbackScope>(out parentFallback))
                         {
-                            var parentLifetime = lifetime.ParentLifetimeScope;
+                            var scopeFactory = parentFallback.ServiceProvider
+                                .GetServiceOrDefault<IServiceScopeFactory>();
 
-                            FallbackScope parentFallback;
-                            if (parentLifetime != null &&
-                                parentLifetime.TryResolve<FallbackScope>(out parentFallback))
+                            if (scopeFactory != null)
                             {
-                                var scopeFactory = parentFallback.ServiceProvider
-                                    .GetServiceOrDefault<IServiceScopeFactory>();
-
-                                if (scopeFactory != null)
-                                {
-                                    return new FallbackScope(scopeFactory.CreateScope());
-                                }
+                                return new FallbackScope(scopeFactory.CreateScope());
                             }
                         }
+                    }
 
-                        return new FallbackScope(_fallbackServiceProvider);
-                    })
-                    .InstancePerLifetimeScope()
-                    .CreateRegistration();
-                }
-                else if (_fallbackServiceProvider.HasService(serviceType))
+                    return new FallbackScope(_fallbackServiceProvider);
+                })
+                .InstancePerLifetimeScope()
+                .CreateRegistration();
+            }
+            else if (_fallbackServiceProvider.GetServiceOrNull(serviceType) != null)
+            {
+                yield return RegistrationBuilder.ForDelegate(serviceType, (context, p) =>
                 {
-                    yield return RegistrationBuilder.ForDelegate(serviceType, (context, p) =>
-                    {
-                        var fallbackScope = context.Resolve<FallbackScope>();
-                        return fallbackScope.ServiceProvider.GetService(serviceType);
-                    })
-                    .PreserveExistingDefaults()
-                    .CreateRegistration();
-                }
+                    var fallbackScope = context.Resolve<FallbackScope>();
+                    return fallbackScope.ServiceProvider.GetService(serviceType);
+                })
+                .PreserveExistingDefaults()
+                .CreateRegistration();
             }
         }
 

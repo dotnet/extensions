@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Ninject.Activation;
 using Ninject.Components;
 using Ninject.Infrastructure;
@@ -16,19 +19,51 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
     {
         public IEnumerable<IBinding> Resolve(Multimap<Type, IBinding> bindings, IRequest request)
         {
-            var fallbackProvider = GetFallbackProvider(request.Parameters);
-            if (fallbackProvider != null && fallbackProvider.HasService(request.Service))
+            IServiceProvider fallbackProvider = GetFallbackProvider(request.Parameters);
+            if (fallbackProvider == null)
             {
-                yield return new Binding(request.Service)
-                {
-                    ProviderCallback = context =>
-                    {
-                        return new ChainedProvider(
-                            context.Request.Service,
-                            GetFallbackProvider(context.Request.Parameters));
-                    }
-                };
+                yield break;
             }
+
+            object fallbackService = fallbackProvider.GetServiceOrNull(request.Service);
+            if (fallbackService == null)
+            {
+                yield break;
+            }
+
+            // The fallback provider shouldn't be responsible for resolving the service
+            // if all it provides is an empty IEnumerable
+            var fallbackEnumerable = fallbackService as IEnumerable;
+            if (fallbackEnumerable != null && !fallbackEnumerable.GetEnumerator().MoveNext())
+            {
+                yield break;
+            }
+
+            // The fallback provider shouldn't be responsible for resolving an IEnumerable<T> service
+            // if Ninject already has any services registered for T
+            if (fallbackEnumerable != null)
+            {
+                var collectionTypeInfo = request.Service.GetTypeInfo();
+                if (collectionTypeInfo.IsGenericType &&
+                    collectionTypeInfo.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                {
+                    var itemType = collectionTypeInfo.GenericTypeArguments.Single();
+                    if (bindings.ContainsKey(itemType))
+                    {
+                        yield break;
+                    }
+                }
+            }
+
+            yield return new Binding(request.Service)
+            {
+                ProviderCallback = context =>
+                {
+                    return new ChainedProvider(
+                        context.Request.Service,
+                        GetFallbackProvider(context.Request.Parameters));
+                }
+            };
         }
 
         private static IServiceProvider GetFallbackProvider(IEnumerable<IParameter> parameters)

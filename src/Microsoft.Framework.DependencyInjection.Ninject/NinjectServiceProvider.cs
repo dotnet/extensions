@@ -53,7 +53,7 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
             if (collectionTypeInfo.IsGenericType &&
                 collectionTypeInfo.GetGenericTypeDefinition() == typeof(IEnumerable<>))
             {
-                var serviceType = collectionType.GetTypeInfo().GenericTypeArguments.Single();
+                var serviceType = collectionTypeInfo.GenericTypeArguments.Single();
                 return GetAll(serviceType);
             }
 

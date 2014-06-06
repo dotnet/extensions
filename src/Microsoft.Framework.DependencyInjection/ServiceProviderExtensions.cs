@@ -3,7 +3,8 @@
 
 using System;
 using System.Collections;
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -13,16 +14,16 @@ namespace Microsoft.Framework.DependencyInjection
         /// Retrieve a service of type T from the IServiceProvider.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="services"></param>
+        /// <param name="provider"></param>
         /// <returns></returns>
-        public static T GetService<T>(this IServiceProvider services)
+        public static T GetService<T>(this IServiceProvider provider)
         {
-            if (services == null)
+            if (provider == null)
             {
-                throw new ArgumentNullException("services");
+                throw new ArgumentNullException("provider");
             }
 
-            return (T)services.GetService(typeof(T));
+            return (T)provider.GetService(typeof(T));
         }
 
         /// <summary>
@@ -30,45 +31,51 @@ namespace Microsoft.Framework.DependencyInjection
         /// Return T's default value if no service of type T is available.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="services"></param>
+        /// <param name="provider"></param>
         /// <returns></returns>
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "IServiceProvider may throw unknown exceptions")]
-        public static T GetServiceOrDefault<T>(this IServiceProvider services)
+        public static T GetServiceOrDefault<T>(this IServiceProvider provider)
         {
-            try
+            if (provider == null)
             {
-                return services.GetService<T>();
+                throw new ArgumentNullException("provider");
             }
-            catch (Exception)
-            {
-                return default(T);
-            }
+
+            IEnumerable<T> serviceList = provider.GetAllServices<T>();
+            return serviceList.FirstOrDefault();
         }
 
-        public static bool HasService<TService>(this IServiceProvider provider)
+        /// <summary>
+        /// Retrieve a service of type serviceType from the IServiceProvider.
+        /// Return null if no service of type serviceType is available.
+        /// </summary>
+        /// <param name="provider"></param>
+        /// <param name="serviceType"></param>
+        /// <returns></returns>
+        public static object GetServiceOrNull(this IServiceProvider provider, Type serviceType)
         {
-            return provider.HasService(typeof(TService));
+            if (provider == null)
+            {
+                throw new ArgumentNullException("provider");
+            }
+
+            if (provider == null)
+            {
+                throw new ArgumentNullException("serviceType");
+            }
+
+            var serviceList = (IEnumerable<object>)provider.GetAllServices(serviceType);
+            return serviceList.FirstOrDefault();
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "IServiceProvider may throw unknown exceptions")]
-        public static bool HasService(this IServiceProvider provider, Type serviceType)
+        private static IEnumerable<T> GetAllServices<T>(this IServiceProvider provider)
         {
-            try
-            {
-                var obj = provider.GetService(serviceType);
+            return (IEnumerable<T>)provider.GetAllServices(typeof(T));
+        }
 
-                // Return false for empty enumerables
-                if (obj is IEnumerable)
-                {
-                    return ((IEnumerable)obj).GetEnumerator().MoveNext();
-                }
-
-                return obj != null;
-            }
-            catch
-            {
-                return false;
-            }
+        private static IEnumerable GetAllServices(this IServiceProvider provider, Type serviceType)
+        {
+            Type ienumerableType = typeof(IEnumerable<>).MakeGenericType(serviceType);
+            return (IEnumerable)provider.GetService(ienumerableType);
         }
     }
 }

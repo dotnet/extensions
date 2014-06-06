@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
 {
@@ -29,6 +31,28 @@ namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
         {
             _timesGetServiceHasBeenInvoked++;
 
+            var typeInfo = serviceType.GetTypeInfo();
+            if (typeInfo.IsGenericType &&
+                typeInfo.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+            {
+                var innerType = typeInfo.GenericTypeArguments.Single();
+
+                object singleService = null;
+                try
+                {
+                    singleService = GetService(innerType);
+                }
+                catch (Exception)
+                {
+                    return Array.CreateInstance(innerType, 0);
+                }
+
+                var serviceArray = Array.CreateInstance(innerType, 1);
+                serviceArray.SetValue(singleService, 0);
+
+                return serviceArray;
+            }
+
             if (serviceType == typeof(int))
             {
                 return _timesGetServiceHasBeenInvoked;
@@ -36,10 +60,6 @@ namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
             else if (serviceType == typeof(string))
             {
                 return _prefix + "FakeFallbackServiceProvider";
-            }
-            else if (serviceType == typeof(IEnumerable<string>))
-            {
-                return new[] { _prefix + "FakeFallbackServiceProvider" };
             }
             else if (serviceType == typeof(IFakeFallbackService))
             {
