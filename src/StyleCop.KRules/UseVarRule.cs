@@ -83,6 +83,17 @@ namespace StyleCop.KRules
                     return true;
                 }
 
+                // Variables initialized with a lambda can't use var.
+                //
+                // Ex: 
+                //      Func<bool> f = () => true;
+                if (declarationExpression.Declarators.Count == 1 &&
+                    declarationExpression.Declarators.First().Initializer != null &&
+                    declarationExpression.Declarators.First().Initializer.ExpressionType == ExpressionType.Lambda)
+                {
+                    return true;
+                }
+
                 if (declarationExpression.Type.Text == "var")
                 {
                     return true;
