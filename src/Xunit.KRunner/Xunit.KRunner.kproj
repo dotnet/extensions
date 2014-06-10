@@ -35,9 +35,6 @@
     <Compile Include="Frameworks\v2\XunitExecutionOptions.cs" />
     <Compile Include="ParallelismOption.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Services\AssemblyNeutralAttribute.cs" />
-    <Compile Include="Services\IApplicationEnvironment.cs" />
-    <Compile Include="Services\IFileMonitor.cs" />
     <Compile Include="Utility\ExceptionUtility.cs" />
     <Compile Include="Utility\ExecutionSummary.cs" />
     <Compile Include="Visitors\StandardOutputVisitor.cs" />
