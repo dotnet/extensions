@@ -8,6 +8,7 @@ using System.Reflection;
 using Microsoft.Framework.Runtime;
 using Xunit.ConsoleClient;
 using Xunit.Sdk;
+using Xunit.Abstractions;
 #if !NET45
 using System.Diagnostics;
 #endif
@@ -154,7 +155,7 @@ namespace Xunit.KRunner
             {
                 var name = new AssemblyName(assemblyName);
                 var assembly = Reflector.Wrap(Assembly.Load(name));
-                var framework = new XunitTestFramework();
+                var framework = GetFramework(assembly);
                 var discoverer = framework.GetDiscoverer(assembly);
                 var executor = framework.GetExecutor(name);
                 var discoveryVisitor = new TestDiscoveryVisitor();
@@ -174,6 +175,19 @@ namespace Xunit.KRunner
 
                 failed = true;
             }
+        }
+
+        ITestFramework GetFramework(IAssemblyInfo assemblyInfo)
+        {
+            var frameworkAttribute = assemblyInfo.GetCustomAttributes(typeof(TestFrameworkAttribute)).FirstOrDefault();
+            if (frameworkAttribute == null)
+            {
+                return new XunitTestFramework();
+            }
+            var ctorArgs = frameworkAttribute.GetConstructorArguments().Cast<string>().ToArray();
+            var testFrameworkType = Reflector.GetType(ctorArgs[1], ctorArgs[0]);
+            var framework = Activator.CreateInstance(testFrameworkType) as ITestFramework;
+            return framework ?? new XunitTestFramework();
         }
     }
 }
