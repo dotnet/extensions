@@ -1,14 +1,9 @@
 {
-  "version": "0.1-alpha-*",
   "dependencies": {
     "Microsoft.Framework.ConfigurationModel": "",
     "Microsoft.Framework.ConfigurationModel.Json": "",
     "Newtonsoft.Json": "5.0.8",
-    "xunit.abstractions": "2.0.0-aspnet-*",
-    "xunit.assert": "2.0.0-aspnet-*",
-    "xunit.core": "2.0.0-aspnet-*",
-    "xunit.execution": "2.0.0-aspnet-*",
-    "Xunit.KRunner": "0.1-alpha-*"
+    "Xunit.KRunner": "1.0.0-*"
   },
   "configurations": {
     "net45": {
