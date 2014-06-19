@@ -1,7 +1,7 @@
 {
-  "version": "0.1-alpha-*",
+  "version": "1.0.0-*",
   "dependencies": {
-    "Microsoft.Framework.Runtime.Interfaces": "0.1-alpha-*",
+    "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
     "xunit.assert": "2.0.0-aspnet-*",
     "xunit.execution": "2.0.0-aspnet-*"
   },
