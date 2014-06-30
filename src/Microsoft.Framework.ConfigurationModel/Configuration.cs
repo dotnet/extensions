@@ -80,7 +80,7 @@ namespace Microsoft.Framework.ConfigurationModel
             var final = _committableSources.LastOrDefault();
             if (final == null)
             {
-                throw new Exception(Resources.Error_NoCommitableSource);
+                throw new InvalidOperationException(Resources.Error_NoCommitableSource);
             }
             final.Commit();
         }

@@ -12,7 +12,7 @@ namespace Microsoft.Framework.ConfigurationModel
         [Fact]
         public void LoadKeyValuePairsFromEnvironmentDictionary()
         {
-            var dic = new Hashtable()
+            var dict = new Hashtable()
                 {
                     {"DefaultConnection:ConnectionString", "TestConnectionString"},
                     {"DefaultConnection:Provider", "SqlClient"},
@@ -21,7 +21,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 };
             var envConfigSrc = new EnvironmentVariablesConfigurationSource();
 
-            envConfigSrc.Load(dic);
+            envConfigSrc.Load(dict);
 
             Assert.Equal(4, envConfigSrc.Data.Count);
             Assert.Equal("TestConnectionString", envConfigSrc.Data["defaultconnection:ConnectionString"]);
@@ -33,7 +33,7 @@ namespace Microsoft.Framework.ConfigurationModel
         [Fact]
         public void LoadKeyValuePairsFromEnvironmentDictionaryWithPrefix()
         {
-            var dic = new Hashtable()
+            var dict = new Hashtable()
                 {
                     {"DefaultConnection:ConnectionString", "TestConnectionString"},
                     {"DefaultConnection:Provider", "SqlClient"},
@@ -42,7 +42,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 };
             var envConfigSrc = new EnvironmentVariablesConfigurationSource("DefaultConnection:");
 
-            envConfigSrc.Load(dic);
+            envConfigSrc.Load(dict);
 
             Assert.Equal(2, envConfigSrc.Data.Count);
             Assert.Equal("TestConnectionString", envConfigSrc.Data["ConnectionString"]);
@@ -52,7 +52,7 @@ namespace Microsoft.Framework.ConfigurationModel
         [Fact]
         public void LoadKeyValuePairsFromAzureEnvironment()
         {
-            var dic = new Hashtable()
+            var dict = new Hashtable()
                 {
                     {"APPSETTING_AppName", "TestAppName"},
                     {"CUSTOMCONNSTR_db1", "CustomConnStr"},
@@ -63,7 +63,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 };
             var envConfigSrc = new EnvironmentVariablesConfigurationSource();
 
-            envConfigSrc.Load(dic);
+            envConfigSrc.Load(dict);
 
             Assert.Equal(9, envConfigSrc.Data.Count);
             Assert.Equal("TestAppName", envConfigSrc.Data["APPSETTING_AppName"]);
@@ -81,7 +81,7 @@ namespace Microsoft.Framework.ConfigurationModel
         [Fact]
         public void LoadKeyValuePairsFromAzureEnvironmentWithPrefix()
         {
-            var dic = new Hashtable()
+            var dict = new Hashtable()
                 {
                     {"CUSTOMCONNSTR_db1", "CustomConnStr"},
                     {"SQLCONNSTR_db2", "SQLConnStr"},
@@ -91,7 +91,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 };
             var envConfigSrc = new EnvironmentVariablesConfigurationSource("Data:");
 
-            envConfigSrc.Load(dic);
+            envConfigSrc.Load(dict);
 
             Assert.Equal(7, envConfigSrc.Data.Count);
             Assert.Equal("CustomConnStr", envConfigSrc.Data["db1:ConnectionString"]);
@@ -106,7 +106,7 @@ namespace Microsoft.Framework.ConfigurationModel
         [Fact]
         public void ThrowExceptionWhenKeyIsDuplicatedInAzureEnvironment()
         {
-            var dic = new Hashtable()
+            var dict = new Hashtable()
                 {
                     {"Data:db2:ConnectionString", "CommonEnvValue"},
                     {"SQLCONNSTR_db2", "SQLConnStr"},
@@ -114,7 +114,7 @@ namespace Microsoft.Framework.ConfigurationModel
             var envConfigSrc = new EnvironmentVariablesConfigurationSource();
             var expectedMsg = "An item with the same key has already been added.";
 
-            var exception = Assert.Throws<ArgumentException>(() => envConfigSrc.Load(dic));
+            var exception = Assert.Throws<ArgumentException>(() => envConfigSrc.Load(dict));
 
             Assert.Equal(expectedMsg, exception.Message);
         }
@@ -122,10 +122,10 @@ namespace Microsoft.Framework.ConfigurationModel
         [Fact]
         public void HandleEmptyEnvironmentDictionaryProperly()
         {
-            var dic = new Hashtable();
+            var dict = new Hashtable();
             var envConfigSrc = new EnvironmentVariablesConfigurationSource();
 
-            envConfigSrc.Load(dic);
+            envConfigSrc.Load(dict);
 
             Assert.Equal(0, envConfigSrc.Data.Count);
         }

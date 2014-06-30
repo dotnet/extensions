@@ -102,14 +102,14 @@ namespace Microsoft.Framework.ConfigurationModel
         public void SettingValueUpdatesAllConfigurationSources()
         {
             // Arrange
-            var dic = new Dictionary<string, string>()
+            var dict = new Dictionary<string, string>()
                 { 
                     {"Key1", "Value1"},
                     {"Key2", "Value2"}
                 };
-            var memConfigSrc1 = new MemoryConfigurationSource(dic);
-            var memConfigSrc2 = new MemoryConfigurationSource(dic);
-            var memConfigSrc3 = new MemoryConfigurationSource(dic);
+            var memConfigSrc1 = new MemoryConfigurationSource(dict);
+            var memConfigSrc2 = new MemoryConfigurationSource(dict);
+            var memConfigSrc3 = new MemoryConfigurationSource(dict);
 
             var config = new Configuration();
             config.AddLoadedSource(memConfigSrc1);
@@ -237,13 +237,13 @@ namespace Microsoft.Framework.ConfigurationModel
         public void CanIterateWithGenericEnumerator()
         {
             // Arrange
-            var dic = new Dictionary<string, string>()
+            var dict = new Dictionary<string, string>()
                 { 
                     {"Mem:KeyInMem", "MemVal"}
                 };
-            var memConfigSrc1 = new MemoryConfigurationSource(dic);
-            var memConfigSrc2 = new MemoryConfigurationSource(dic);
-            var memConfigSrc3 = new MemoryConfigurationSource(dic);
+            var memConfigSrc1 = new MemoryConfigurationSource(dict);
+            var memConfigSrc2 = new MemoryConfigurationSource(dict);
+            var memConfigSrc3 = new MemoryConfigurationSource(dict);
 
             var srcSet = new HashSet<IConfigurationSource>()
                 {
@@ -275,13 +275,13 @@ namespace Microsoft.Framework.ConfigurationModel
         public void CanIterateAfterCastedToIEnumerable()
         {
             // Arrange
-            var dic = new Dictionary<string, string>()
+            var dict = new Dictionary<string, string>()
                 {
                     {"Mem:KeyInMem", "MemVal"}
                 };
-            var memConfigSrc1 = new MemoryConfigurationSource(dic);
-            var memConfigSrc2 = new MemoryConfigurationSource(dic);
-            var memConfigSrc3 = new MemoryConfigurationSource(dic);
+            var memConfigSrc1 = new MemoryConfigurationSource(dict);
+            var memConfigSrc2 = new MemoryConfigurationSource(dict);
+            var memConfigSrc3 = new MemoryConfigurationSource(dict);
 
             var srcSet = new HashSet<IConfigurationSource>()
                 {
@@ -309,6 +309,32 @@ namespace Microsoft.Framework.ConfigurationModel
             }
 
             Assert.Equal(3, srcCount);
+        }
+
+        [Fact]
+        public void CommitOnEmptyConfigurationThrows()
+        {
+            var config = new Configuration();
+
+            var exception = Assert.Throws<InvalidOperationException>(() => config.Commit());
+            Assert.Equal(0, CountAllEntries(config));
+            Assert.Equal(Resources.Error_NoCommitableSource, exception.Message);
+        }
+
+        [Fact]
+        public void CommitOnConfigurationWithZeroCommitableSourceThrows()
+        {
+            var dict = new Dictionary<string, string>()
+                {
+                    {"Mem:KeyInMem", "MemVal"}
+                };
+            var memConfigSrc = new MemoryConfigurationSource(dict);
+            var config = new Configuration();
+            config.Add(memConfigSrc);
+
+            var exception = Assert.Throws<InvalidOperationException>(() => config.Commit());
+            Assert.Equal(1, CountAllEntries(config));
+            Assert.Equal(Resources.Error_NoCommitableSource, exception.Message);
         }
 
         private static int CountAllEntries(Configuration config)
