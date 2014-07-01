@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET45
+#if NET45 || K10
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -14,7 +14,6 @@ namespace Microsoft.Framework.Logging
     public class DiagnosticsLoggerFactory : ILoggerFactory
     {
         private const string RootTraceName = "Microsoft.AspNet";
-
         private readonly SourceSwitch _rootSourceSwitch;
         private readonly TraceListener _rootTraceListener;
 

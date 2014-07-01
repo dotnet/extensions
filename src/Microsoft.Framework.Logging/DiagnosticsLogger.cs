@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET45
+#if NET45 || K10
 using System;
 using System.Diagnostics;
 
@@ -29,6 +29,11 @@ namespace Microsoft.Framework.Logging
                 _traceSource.TraceEvent(eventType, eventId, formatter(state, exception));
             }
             return true;
+        }
+
+        public IDisposable BeginScope(object state)
+        {
+            return new DiagnosticsScope(state);
         }
     }
 }

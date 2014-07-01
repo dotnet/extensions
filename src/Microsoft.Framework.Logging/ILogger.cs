@@ -23,5 +23,12 @@ namespace Microsoft.Framework.Logging
         /// <param name="formatter"></param>
         /// <returns></returns>
         bool WriteCore(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter);
+
+        /// <summary>
+        /// Begins a logical operation scope.
+        /// </summary>
+        /// <param name="state">The identifier for the scope.</param>
+        /// <returns>An IDisposable that ends the logical operation scope on dispose.</returns>
+        IDisposable BeginScope(object state);
     }
 }

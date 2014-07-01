@@ -20,6 +20,7 @@
     <Content Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DiagnosticsScope.cs" />
     <Compile Include="DiagnosticsLogger.cs" />
     <Compile Include="DiagnosticsLoggerFactory.cs" />
     <Compile Include="ILogger.cs" />

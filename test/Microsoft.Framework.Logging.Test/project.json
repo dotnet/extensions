@@ -1,0 +1,19 @@
+﻿{
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
+    "dependencies": {
+        "Microsoft.Framework.Logging": "",
+        "Xunit.KRunner": "1.0.0-*"
+    },
+    "commands": {
+        "test": "Xunit.KRunner"
+    },
+    "configurations": {
+        "net45": { 
+            "dependencies": {
+                "Moq": "4.2.1312.1622"
+            }
+        }
+    }
+}
