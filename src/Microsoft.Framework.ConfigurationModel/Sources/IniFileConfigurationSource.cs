@@ -221,7 +221,14 @@ namespace Microsoft.Framework.ConfigurationModel
                         throw new InvalidOperationException(Resources.FormatError_CommitWhenNewKeyFound(key));
                     }
 
-                    outValueStr = outValueStr.Replace(value, Data[key]);
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        outValueStr = Data[key];
+                    }
+                    else
+                    {
+                        outValueStr = outValueStr.Replace(value, Data[key]);
+                    }
 
                     outputWriter.Write(string.Format("{0}={1}{2}", outKeyStr, outValueStr, lineEnd));
 

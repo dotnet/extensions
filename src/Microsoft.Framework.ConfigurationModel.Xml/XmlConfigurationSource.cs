@@ -109,6 +109,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 ProcessAttributes(reader, prefixStack, data, AddNamePrefix);
                 ProcessAttributes(reader, prefixStack, data, AddAttributePair);
 
+                var preNodeType = reader.NodeType;
                 while (reader.Read())
                 {
                     switch (reader.NodeType)
@@ -128,23 +129,32 @@ namespace Microsoft.Framework.ConfigurationModel
                         case XmlNodeType.EndElement:
                             if (prefixStack.Any())
                             {
+                                // If this EndElement node comes right after an Element node,
+                                // it means there is no text/CDATA node in current element
+                                if (preNodeType == XmlNodeType.Element)
+                                {
+                                    var key = string.Join(Constants.KeyDelimiter, prefixStack.Reverse());
+                                    data[key] = string.Empty;
+                                }
+
                                 prefixStack.Pop();
                             }
                             break;
 
                         case XmlNodeType.CDATA:
                         case XmlNodeType.Text:
-                            var key = string.Join(Constants.KeyDelimiter, prefixStack.Reverse<string>());
-
-                            if (data.ContainsKey(key))
                             {
-                                throw new FormatException(Resources.FormatError_KeyIsDuplicated(key,
-                                    GetLineInfo(reader)));
+                                var key = string.Join(Constants.KeyDelimiter, prefixStack.Reverse());
+
+                                if (data.ContainsKey(key))
+                                {
+                                    throw new FormatException(Resources.FormatError_KeyIsDuplicated(key,
+                                        GetLineInfo(reader)));
+                                }
+
+                                data[key] = reader.Value;
+                                break;
                             }
-
-                            data[key] = reader.Value;
-                            break;
-
                         case XmlNodeType.XmlDeclaration:
                         case XmlNodeType.ProcessingInstruction:
                         case XmlNodeType.Comment:
@@ -155,6 +165,15 @@ namespace Microsoft.Framework.ConfigurationModel
                         default:
                             throw new FormatException(Resources.FormatError_UnsupportedNodeType( reader.NodeType,
                                 GetLineInfo(reader)));
+                    }
+                    preNodeType = reader.NodeType;
+                    // If this element is a self-closing element,
+                    // we pretend that we just processed an EndElement node
+                    // because a self-closing element contains an end within itself
+                    if (preNodeType == XmlNodeType.Element &&
+                        reader.IsEmptyElement)
+                    {
+                        preNodeType = XmlNodeType.EndElement;
                     }
                 }
             }
@@ -195,6 +214,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 ProcessAttributes(inputReader, prefixStack, dataCopy, AddNamePrefix);
                 ProcessAttributes(inputReader, prefixStack, dataCopy, CommitAttributePair, outputWriter);
 
+                var preNodeType = inputReader.NodeType;
                 while (inputReader.Read())
                 {
                     switch (inputReader.NodeType)
@@ -217,6 +237,18 @@ namespace Microsoft.Framework.ConfigurationModel
                         case XmlNodeType.EndElement:
                             if (prefixStack.Any())
                             {
+                                // If this EndElement node comes right after an Element node,
+                                // it means there is no text/CDATA node in current element
+                                if (preNodeType == XmlNodeType.Element)
+                                {
+                                    var key = string.Join(Constants.KeyDelimiter, prefixStack.Reverse());
+                                    if (!dataCopy.ContainsKey(key))
+                                    {
+                                        throw new InvalidOperationException(Resources.FormatError_CommitWhenNewKeyFound(key));
+                                    }
+                                    outputWriter.WriteValue(dataCopy[key]);
+                                    dataCopy.Remove(key);
+                                }
                                 outputWriter.WriteFullEndElement();
                                 prefixStack.Pop();
                             }
@@ -224,24 +256,25 @@ namespace Microsoft.Framework.ConfigurationModel
 
                         case XmlNodeType.CDATA:
                         case XmlNodeType.Text:
-                            var key = string.Join(Constants.KeyDelimiter, prefixStack.Reverse<string>());
-
-                            if (!dataCopy.ContainsKey(key))
                             {
-                                throw new InvalidOperationException(Resources.FormatError_CommitWhenNewKeyFound(key));
-                            }
+                                var key = string.Join(Constants.KeyDelimiter, prefixStack.Reverse());
 
-                            if (inputReader.NodeType == XmlNodeType.CDATA)
-                            {
-                                outputWriter.WriteCData(dataCopy[key]);
-                            }
-                            else
-                            {
-                                outputWriter.WriteValue(dataCopy[key]);
-                            }
-                            dataCopy.Remove(key);
-                            break;
+                                if (!dataCopy.ContainsKey(key))
+                                {
+                                    throw new InvalidOperationException(Resources.FormatError_CommitWhenNewKeyFound(key));
+                                }
 
+                                if (inputReader.NodeType == XmlNodeType.CDATA)
+                                {
+                                    outputWriter.WriteCData(dataCopy[key]);
+                                }
+                                else
+                                {
+                                    outputWriter.WriteValue(dataCopy[key]);
+                                }
+                                dataCopy.Remove(key);
+                                break;
+                            }
                         case XmlNodeType.ProcessingInstruction:
                             outputWriter.WriteProcessingInstruction(inputReader.LocalName, inputReader.Value);
                             break;
@@ -257,6 +290,15 @@ namespace Microsoft.Framework.ConfigurationModel
                         default:
                             throw new FormatException(Resources.FormatError_UnsupportedNodeType(inputReader.NodeType,
                                 GetLineInfo(inputReader)));
+                    }
+                    preNodeType = inputReader.NodeType;
+                    // If this element is a self-closing element,
+                    // we pretend that we just processed an EndElement node
+                    // because a self-closing element contains an end within itself
+                    if (preNodeType == XmlNodeType.Element &&
+                        inputReader.IsEmptyElement)
+                    {
+                        preNodeType = XmlNodeType.EndElement;
                     }
                 }
 

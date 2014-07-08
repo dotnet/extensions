@@ -41,6 +41,25 @@ namespace Microsoft.Framework.ConfigurationModel
         }
 
         [Fact]
+        public void LoadMethodCanHandleEmptyValue()
+        {
+            var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
+<settings>
+    <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
+    <Key1></Key1>
+    <Key2 Key3="""" />
+</settings>";
+            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+
+            xmlConfigSrc.Load(StringToStream(xml));
+
+            Assert.Equal(2, xmlConfigSrc.Data.Count);
+            Assert.Equal(string.Empty, xmlConfigSrc.Data["Key1"]);
+            Assert.Equal(string.Empty, xmlConfigSrc.Data["Key2:Key3"]);
+        }
+
+        [Fact]
         public void CommonAttributesContributeToKeyValuePairs()
         {
             var xml =
@@ -424,6 +443,35 @@ namespace Microsoft.Framework.ConfigurationModel
 
             var newContents = StreamToString(outputCacheStream);
             Assert.Equal(xml.Replace("SqlClient", "NewSqlClient").Replace("MySql", "NewMySql"), newContents);
+        }
+
+        [Fact]
+        public void CommitMethodCanHandleEmptyValue()
+        {
+            var xml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
+<settings>
+    <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
+    <Key1></Key1>
+    <Key2 Key3="""" />
+</settings>";
+            var expectedXml = @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<?xml-stylesheet type=""text/xsl"" href=""style1.xsl""?>
+<settings>
+    <?xml-stylesheet type=""text/xsl"" href=""style2.xsl""?>
+    <Key1>Value1</Key1>
+    <Key2 Key3=""Value2"" />
+</settings>";
+            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var outputCacheStream = new MemoryStream();
+            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Set("Key1", "Value1");
+            xmlConfigSrc.Set("Key2:Key3", "Value2");
+
+            xmlConfigSrc.Commit(StringToStream(xml), outputCacheStream);
+
+            var newContents = StreamToString(outputCacheStream);
+            Assert.Equal(expectedXml, newContents);
         }
 
         [Fact]

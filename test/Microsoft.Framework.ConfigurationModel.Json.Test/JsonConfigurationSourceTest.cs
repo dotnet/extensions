@@ -35,6 +35,21 @@ namespace Microsoft.Framework.ConfigurationModel
         }
 
         [Fact]
+        public void LoadMethodCanHandleEmptyValue()
+        {
+            var json = @"
+{
+    'name': ''
+}";
+            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
+
+            jsonConfigSrc.Load(StringToStream(json));
+
+            Assert.Equal(1, jsonConfigSrc.Data.Count);
+            Assert.Equal(string.Empty, jsonConfigSrc.Data["name"]);
+        }
+
+        [Fact]
         public void NonObjectRootIsInvalid()
         {
             var json = @"'test'";
@@ -178,6 +193,33 @@ namespace Microsoft.Framework.ConfigurationModel
 
             var newContents = StreamToString(outputCacheStream);
             Assert.Equal(json.Replace("test", "new_name").Replace("12345", "67890"), newContents);
+        }
+
+        [Fact]
+        public void CommitMethodCanHandleEmptyValue()
+        {
+            var json = @"{
+  ""key1"": """",
+  ""key2"": {
+    ""key3"": """"
+  }
+}";
+            var expectedJson = @"{
+  ""key1"": ""value1"",
+  ""key2"": {
+    ""key3"": ""value2""
+  }
+}";
+            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
+            var outputCacheStream = new MemoryStream();
+            jsonConfigSrc.Load(StringToStream(json));
+            jsonConfigSrc.Set("key1", "value1");
+            jsonConfigSrc.Set("key2:key3", "value2");
+
+            jsonConfigSrc.Commit(StringToStream(json), outputCacheStream);
+
+            var newContents = StreamToString(outputCacheStream);
+            Assert.Equal(expectedJson, newContents);
         }
 
         [Fact]

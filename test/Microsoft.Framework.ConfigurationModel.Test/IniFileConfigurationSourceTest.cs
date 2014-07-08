@@ -32,6 +32,18 @@ SubHeader:Provider=MySql";
         }
 
         [Fact]
+        public void LoadMethodCanHandleEmptyValue()
+        {
+            var ini = @"DefaultKey=";
+            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+
+            iniConfigSrc.Load(StringToStream(ini));
+
+            Assert.Equal(1, iniConfigSrc.Data.Count);
+            Assert.Equal(string.Empty, iniConfigSrc.Data["DefaultKey"]);
+        }
+
+        [Fact]
         public void LoadKeyValuePairsFromValidIniFileWithQuotedValues()
         {
             var ini = "[DefaultConnection]\n" + 
@@ -232,6 +244,21 @@ Provider=SqlClient";
 
             var newContents = StreamToString(outputCacheStream);
             Assert.Equal(ini.Replace("TestConnectionString", "NewTestConnectionString"), newContents);
+        }
+
+        [Fact]
+        public void CommitMethodCanHandleEmptyValue()
+        {
+            var ini = @"DefaultKey=";
+            var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
+            var outputCacheStream = new MemoryStream();
+            iniConfigSrc.Load(StringToStream(ini));
+            iniConfigSrc.Set("DefaultKey", "Value");
+
+            iniConfigSrc.Commit(StringToStream(ini), outputCacheStream);
+
+            var newContents = StreamToString(outputCacheStream);
+            Assert.Equal("DefaultKey=Value", newContents);
         }
 
         [Fact]
