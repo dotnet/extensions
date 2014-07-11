@@ -2,13 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 
 namespace Microsoft.Framework.Logging
 {
     /// <summary>
     /// A generic interface for logging.
     /// </summary>
+#if NET45 || K10
+    [Runtime.AssemblyNeutral]
+#endif
     public interface ILogger
     {
         /// <summary>
@@ -23,6 +25,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="formatter"></param>
         /// <returns></returns>
         bool WriteCore(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter);
+
 
         /// <summary>
         /// Begins a logical operation scope.

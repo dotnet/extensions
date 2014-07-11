@@ -6,7 +6,10 @@ namespace Microsoft.Framework.Logging
     /// <summary>
     /// Used to create logger instances of the given name.
     /// </summary>
-    public interface ILoggerFactory
+#if NET45 || K10
+    [Runtime.AssemblyNeutral]
+#endif
+    public interface ILoggerProvider
     {
         /// <summary>
         /// Creates a new ILogger instance of the given name.

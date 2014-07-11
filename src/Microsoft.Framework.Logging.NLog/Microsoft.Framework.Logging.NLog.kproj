@@ -10,8 +10,9 @@
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>96b1d6a8-7e40-43c7-813f-898dc8192dde</ProjectGuid>
-    <OutputType>Console</OutputType>
+    <ProjectGuid>718cbc9d-1e65-447d-a64a-7ac467fb5d6a</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Microsoft.Framework.Logging.NLog</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition="$(OutputType) == 'Console'">
     <DebuggerFlavor>ConsoleDebugger</DebuggerFlavor>
@@ -24,9 +25,12 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DevelopmentServerPort>58658</DevelopmentServerPort>
-    <CommandLineArguments>test</CommandLineArguments>
-  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="NLogLoggerFactoryExtensions.cs" />
+    <Compile Include="NLogLoggerProvider.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="project.json" />
+  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

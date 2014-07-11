@@ -11,7 +11,7 @@ namespace Microsoft.Framework.Logging
     /// <summary>
     /// Provides an ILoggerFactory based on System.Diagnostics.TraceSource.
     /// </summary>
-    public class DiagnosticsLoggerFactory : ILoggerFactory
+    public class DiagnosticsLoggerProvider : ILoggerProvider
     {
         private const string RootTraceName = "Microsoft.AspNet";
         private readonly SourceSwitch _rootSourceSwitch;
@@ -20,23 +20,23 @@ namespace Microsoft.Framework.Logging
         private readonly ConcurrentDictionary<string, TraceSource> _sources = new ConcurrentDictionary<string, TraceSource>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DiagnosticsLoggerFactory"/> class. 
+        /// Initializes a new instance of the <see cref="DiagnosticsLoggerProvider"/> class. 
         /// </summary>
         /// <summary>
         /// Creates a factory named "Microsoft.Owin".
         /// </summary>
-        public DiagnosticsLoggerFactory()
+        public DiagnosticsLoggerProvider()
         {
             _rootSourceSwitch = new SourceSwitch(RootTraceName);
             _rootTraceListener = null;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DiagnosticsLoggerFactory"/> class.
+        /// Initializes a new instance of the <see cref="DiagnosticsLoggerProvider"/> class.
         /// </summary>
         /// <param name="rootSourceSwitch"></param>
         /// <param name="rootTraceListener"></param>
-        public DiagnosticsLoggerFactory(SourceSwitch rootSourceSwitch, TraceListener rootTraceListener)
+        public DiagnosticsLoggerProvider(SourceSwitch rootSourceSwitch, TraceListener rootTraceListener)
         {
             _rootSourceSwitch = rootSourceSwitch ?? new SourceSwitch(RootTraceName);
             _rootTraceListener = rootTraceListener;

@@ -3,10 +3,11 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-        "Microsoft.Framework.Logging": "",
+        "Microsoft.Framework.Logging": "1.0.0-*",
         "Xunit.KRunner": "1.0.0-*"
     },
     "commands": {
+        "run": "Xunit.KRunner",
         "test": "Xunit.KRunner"
     },
     "frameworks": {

@@ -1,25 +1,35 @@
-﻿{
+{
   "version": "1.0.0-*",
   "compilationOptions": {
-      "define": ["TRACE"]
+    "define": ["TRACE"]
+  },
+  "dependencies": {
+    "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
   },
   "frameworks": {
-    "net45": {},
+    "net45": { },
     "k10": {
       "dependencies": {
         "System.Collections.Concurrent": "4.0.0.0",
         "System.Diagnostics.TraceSource": "4.0.0.0",
+        "System.Collections": "4.0.0.0",
         "System.Globalization": "4.0.10.0",
         "System.Runtime": "4.0.20.0",
         "System.Runtime.Extensions": "4.0.10.0",
-        "System.Runtime.InteropServices": "4.0.20.0"
+        "System.Runtime.InteropServices": "4.0.20.0",
+        "System.Linq": "4.0.0.0",
+        "System.Threading": "4.0.0.0"
       }
     },
     ".NETPortable,Version=v4.6,Profile=Profile151": {
       "dependencies": {
         "System.Globalization": "",
         "System.Runtime": "",
-        "System.Runtime.InteropServices": ""
+        "System.Runtime.Extensions": "",
+        "System.Runtime.InteropServices": "",
+        "System.Linq": "",
+        "System.Collections": "",
+        "System.Threading": ""
       }
     }
   }

@@ -3,6 +3,9 @@
 
 namespace Microsoft.Framework.Logging
 {
+#if NET45 || K10
+    [Runtime.AssemblyNeutral]
+#endif
     public enum TraceType
     {
         Critical = 1,
