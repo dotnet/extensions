@@ -30,6 +30,8 @@
     <Compile Include="Common\Guard.cs" />
     <Compile Include="Common\TestDiscoveryVisitor.cs" />
     <Compile Include="Common\TestOptionsNames.cs" />
+    <Compile Include="DesignTime\DesignTimeExecutionVisitor.cs" />
+    <Compile Include="DesignTime\TestCaseExtensions.cs" />
     <Compile Include="Frameworks\TestFrameworkOptions.cs" />
     <Compile Include="Frameworks\v2\XunitDiscoveryOptions.cs" />
     <Compile Include="Frameworks\v2\XunitExecutionOptions.cs" />
@@ -44,4 +46,3 @@
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
-

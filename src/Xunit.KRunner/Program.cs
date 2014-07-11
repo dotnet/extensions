@@ -9,6 +9,7 @@ using Microsoft.Framework.Runtime;
 using Xunit.ConsoleClient;
 using Xunit.Sdk;
 using Xunit.Abstractions;
+using Microsoft.Framework.TestAdapter;
 #if !NET45
 using System.Diagnostics;
 #endif
@@ -22,9 +23,11 @@ namespace Xunit.KRunner
         readonly ConcurrentDictionary<string, ExecutionSummary> completionMessages = new ConcurrentDictionary<string, ExecutionSummary>();
         private readonly IApplicationEnvironment _environment;
         private readonly IFileMonitor _fileMonitor;
+        private readonly IServiceProvider _services;
 
-        public Program(IApplicationEnvironment environment, IFileMonitor fileMonitor)
+        public Program(IServiceProvider services, IApplicationEnvironment environment, IFileMonitor fileMonitor)
         {
+            _services = services;
             _environment = environment;
             _fileMonitor = fileMonitor;
         }
@@ -62,7 +65,7 @@ namespace Xunit.KRunner
             {
                 var commandLine = CommandLine.Parse(args);
 
-                int failCount = RunProject(commandLine.TeamCity, commandLine.ParallelizeTestCollections, commandLine.MaxParallelThreads);
+                int failCount = RunProject(commandLine);
 
                 return failCount;
             }
@@ -110,11 +113,11 @@ namespace Xunit.KRunner
             Console.WriteLine("  -teamcity              : forces TeamCity mode (normally auto-detected)");
         }
 
-        int RunProject(bool teamcity, bool parallelizeTestCollections, int maxThreadCount)
+        int RunProject(CommandLine options)
         {
             var consoleLock = new object();
 
-            ExecuteAssembly(consoleLock, _environment.ApplicationName, teamcity, parallelizeTestCollections, maxThreadCount);
+            ExecuteAssembly(consoleLock, _environment.ApplicationName, options);
 
             if (completionMessages.Count > 0)
             {
@@ -138,15 +141,26 @@ namespace Xunit.KRunner
             return failed ? 1 : completionMessages.Values.Sum(summary => summary.Failed);
         }
 
-        XmlTestExecutionVisitor CreateVisitor(object consoleLock, bool teamCity)
+        TestMessageVisitor<ITestAssemblyFinished> CreateVisitor(object consoleLock, CommandLine options)
         {
-            if (teamCity)
+            if (options.TeamCity)
+            {
                 return new TeamCityVisitor(() => cancel);
+            }
+
+            if (options.DesignTime)
+            {
+                var executionSink = (ITestExecutionSink)_services.GetService(typeof(ITestExecutionSink));
+                if (executionSink != null)
+                {
+                    return new DesignTimeExecutionVisitor(executionSink);
+                }
+            }
 
             return new StandardOutputVisitor(consoleLock, () => cancel, completionMessages);
         }
 
-        void ExecuteAssembly(object consoleLock, string assemblyName, bool teamCity, bool parallelizeTestCollections, int maxThreadCount)
+        void ExecuteAssembly(object consoleLock, string assemblyName, CommandLine options)
         {
             if (cancel)
                 return;
@@ -160,12 +174,43 @@ namespace Xunit.KRunner
                 var executor = framework.GetExecutor(name);
                 var discoveryVisitor = new TestDiscoveryVisitor();
 
-                discoverer.Find(includeSourceInformation: false, messageSink: discoveryVisitor, options: new TestFrameworkOptions());
+                discoverer.Find(includeSourceInformation: true, messageSink: discoveryVisitor, options: new TestFrameworkOptions());
                 discoveryVisitor.Finished.WaitOne();
 
-                var executionOptions = new XunitExecutionOptions { DisableParallelization = !parallelizeTestCollections, MaxParallelThreads = maxThreadCount };
-                var resultsVisitor = CreateVisitor(consoleLock, teamCity);
-                executor.RunTests(discoveryVisitor.TestCases, resultsVisitor, executionOptions);
+                if (options.List)
+                {
+                    ITestDiscoverySink discoverySink = null;
+                    if (options.DesignTime)
+                    {
+                        discoverySink = (ITestDiscoverySink)_services.GetService(typeof(ITestDiscoverySink));
+                    }
+
+                    lock (consoleLock)
+                    {
+                        foreach (var test in discoveryVisitor.TestCases)
+                        {
+                            if (discoverySink != null)
+                            {
+                                discoverySink.SendTest(test.ToDesignTimeTest());
+                            }
+
+                            Console.WriteLine(test.DisplayName);
+                        }
+                    }
+
+                    return;
+                }
+
+                var executionOptions = new XunitExecutionOptions { DisableParallelization = !options.ParallelizeTestCollections, MaxParallelThreads = options.MaxParallelThreads };
+                var resultsVisitor = CreateVisitor(consoleLock, options);
+
+                var tests = discoveryVisitor.TestCases;
+                if (options.Tests != null && options.Tests.Length > 0)
+                {
+                    tests = tests.Where(t => options.Tests.Contains(t.DisplayName)).ToList();
+                }
+
+                executor.RunTests(tests, resultsVisitor, executionOptions);
                 resultsVisitor.Finished.WaitOne();
             }
             catch (Exception ex)

@@ -20,11 +20,17 @@ namespace Xunit.ConsoleClient
             Parse();
         }
 
+        public bool DesignTime { get; set; }
+
+        public bool List { get; set; }
+
         public int MaxParallelThreads { get; set; }
 
         public bool ParallelizeTestCollections { get; set; }
 
         public bool TeamCity { get; protected set; }
+
+        public string[] Tests { get; set; }
 
         static void GuardNoOptionValue(KeyValuePair<string, string> option)
         {
@@ -80,10 +86,29 @@ namespace Xunit.ConsoleClient
                             break;
                     }
                 }
+                else if (optionName == "--test")
+                {
+                    if (option.Value == null)
+                    {
+                        throw new ArgumentException("missing argument for --test");
+                    }
+
+                    Tests = option.Value.Split(new char[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                }
                 else if (optionName == "-teamcity")
                 {
                     GuardNoOptionValue(option);
                     TeamCity = true;
+                }
+                else if (optionName == "--list")
+                {
+                    GuardNoOptionValue(option);
+                    List = true;
+                }
+                else if (optionName == "--designtime")
+                {
+                    GuardNoOptionValue(option);
+                    DesignTime = true;
                 }
             }
         }
