@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using NLog;
 
 namespace Microsoft.Framework.Logging.NLog
@@ -7,7 +10,7 @@ namespace Microsoft.Framework.Logging.NLog
     {
         private readonly LogFactory _logFactory;
 
-        public NLogLoggerProvider(global::NLog.LogFactory logFactory)
+        public NLogLoggerProvider(LogFactory logFactory)
         {
             _logFactory = logFactory;
         }
@@ -17,7 +20,7 @@ namespace Microsoft.Framework.Logging.NLog
             return new Logger(_logFactory.GetLogger(name));
         }
 
-        class Logger : ILogger
+        private class Logger : ILogger
         {
             private readonly global::NLog.Logger _logger;
 

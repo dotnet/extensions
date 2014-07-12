@@ -1,5 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Linq;
 
 namespace Microsoft.Framework.Logging
@@ -51,11 +53,10 @@ namespace Microsoft.Framework.Logging
             _loggers = _loggers.Concat(new[] { logger }).ToArray();
         }
 
-        class Scope : IDisposable
+        private class Scope : IDisposable
         {
-            private bool disposedValue = false; // To detect redundant calls
+            private bool disposedValue = false; 
 
-            // first 
             private IDisposable _disposable0;
             private IDisposable _disposable1;
             private readonly IDisposable[] _disposable;
@@ -111,18 +112,9 @@ namespace Microsoft.Framework.Logging
                         }
                     }
 
-                    // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                    // TODO: set large fields to null.
-
                     disposedValue = true;
                 }
             }
-
-            // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources. 
-            // ~Scope() {
-            //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            //   Dispose(false);
-            // }
 
             // This code added to correctly implement the disposable pattern.
             public void Dispose()
