@@ -1,11 +1,11 @@
-{
+﻿{
   "dependencies": {
     "Microsoft.Framework.ConfigurationModel": "",
     "Microsoft.Framework.ConfigurationModel.Json": "",
     "Newtonsoft.Json": "5.0.8",
     "Xunit.KRunner": "1.0.0-*"
   },
-  "configurations": {
+  "frameworks": {
     "net45": {
         "dependencies": {
             "System.Runtime":  ""

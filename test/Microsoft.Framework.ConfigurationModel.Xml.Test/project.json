@@ -1,10 +1,10 @@
-{
+﻿{
   "dependencies": {
     "Microsoft.Framework.ConfigurationModel": "",
     "Microsoft.Framework.ConfigurationModel.Xml": "",
     "Xunit.KRunner": "1.0.0-*"
   },
-  "configurations": {
+  "frameworks": {
     "net45": {
         "dependencies": {
             "System.Runtime":  ""

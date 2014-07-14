@@ -1,10 +1,10 @@
-{
+﻿{
   "version": "1.0.0-*",
   "dependencies": {
     "Newtonsoft.Json": "5.0.8",
     "Microsoft.Framework.ConfigurationModel": ""
   },
-  "configurations": {
+  "frameworks": {
     "net45": {},
     "k10": {
       "dependencies": {

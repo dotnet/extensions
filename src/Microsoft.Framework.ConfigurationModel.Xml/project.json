@@ -1,9 +1,9 @@
-{
+﻿{
     "version": "1.0.0-*",
     "dependencies": {
         "Microsoft.Framework.ConfigurationModel": ""
     },
-    "configurations" : {
+    "frameworks" : {
         "net45" : {
             "dependencies": {
                 "System.Xml" : ""
