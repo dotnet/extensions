@@ -1,10 +1,10 @@
-{
+﻿{
   "version": "1.0.0-*",
   "dependencies": {
     "xunit.assert": "2.0.0-aspnet-*",
     "xunit.core": "2.0.0-aspnet-*"
   },
-  "configurations": {
+  "frameworks": {
     "net45": {
       "dependencies": {
         "System.Runtime": "",

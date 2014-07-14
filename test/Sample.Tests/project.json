@@ -1,11 +1,11 @@
-{
+﻿{
   "dependencies": {
     "Xunit.KRunner": ""
   },
   "commands": {
     "test": "Xunit.KRunner"
   },
-  "configurations": {
+  "frameworks": {
     "net45": {},
     "k10": {}
   }

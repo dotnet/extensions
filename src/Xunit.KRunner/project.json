@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "1.0.0-*",
   "dependencies": {
     "Microsoft.Framework.TestAdapter": "1.0.0-*",
@@ -7,7 +7,7 @@
     "xunit.assert": "2.0.0-aspnet-*",
     "xunit.execution": "2.0.0-aspnet-*"
   },
-  "configurations": {
+  "frameworks": {
     "net45": {},
     "k10": {
       "dependencies": {
