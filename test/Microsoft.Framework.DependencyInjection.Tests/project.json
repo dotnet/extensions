@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "0.1-alpha-*",
   "dependencies": {
     "Autofac": "3.3.0",
@@ -9,7 +9,7 @@
     "structuremap": "2.6.4.1",
     "Xunit.KRunner": "1.0.0-*"
   },
-  "configurations": {
+  "frameworks": {
     "net45": {
         "dependencies": {
             "System.Runtime" : ""
