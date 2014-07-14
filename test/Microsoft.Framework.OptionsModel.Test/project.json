@@ -1,11 +1,11 @@
-{
+﻿{
   "dependencies": {
     "Microsoft.Framework.DependencyInjection" : "1.0.0-*",
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
     "Microsoft.Framework.OptionsModel": "",
     "Xunit.KRunner": "1.0.0-*"
   },
-  "configurations": {
+  "frameworks": {
     "net45": {}
   },
   "commands": {
