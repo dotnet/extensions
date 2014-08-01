@@ -40,7 +40,8 @@ namespace Microsoft.AspNet.FileSystems
             {
                 throw new ArgumentNullException("assembly");
             }
-            _baseNamespace = string.IsNullOrEmpty(baseNamespace) ? string.Empty : baseNamespace + ".";
+            // Note: For ProjectK resources don't have a namespace anymore, just a directory path. Use '/' instead of '.'.
+            _baseNamespace = string.IsNullOrEmpty(baseNamespace) ? string.Empty : baseNamespace + "/";
             _assembly = assembly;
             // REVIEW: Does this even make sense?
             _lastModified = DateTime.MaxValue;
