@@ -1,0 +1,8 @@
+{
+    "dependencies": { 
+        "Microsoft.AspNet.MemoryCache": ""
+    },
+    "frameworks": {
+        "net45": { }
+    }
+}

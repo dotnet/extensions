@@ -5,6 +5,12 @@ VisualStudioVersion = 14.0.21916.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.MemoryCache", "src\Microsoft.AspNet.MemoryCache\Microsoft.AspNet.MemoryCache.kproj", "{966D16D8-5D4E-4433-9DA7-F53EE44B7EE7}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5A04042D-438D-407B-B239-0CAD6A2BD8C2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{459E1593-2C11-42CB-AD17-F7597E69E5D2}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MemoryCacheSample", "samples\MemoryCacheSample\MemoryCacheSample.kproj", "{10B3C418-184A-4A68-8C48-34ED1A02757C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,8 +21,16 @@ Global
 		{966D16D8-5D4E-4433-9DA7-F53EE44B7EE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{966D16D8-5D4E-4433-9DA7-F53EE44B7EE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{966D16D8-5D4E-4433-9DA7-F53EE44B7EE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10B3C418-184A-4A68-8C48-34ED1A02757C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10B3C418-184A-4A68-8C48-34ED1A02757C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10B3C418-184A-4A68-8C48-34ED1A02757C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10B3C418-184A-4A68-8C48-34ED1A02757C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{966D16D8-5D4E-4433-9DA7-F53EE44B7EE7} = {5A04042D-438D-407B-B239-0CAD6A2BD8C2}
+		{10B3C418-184A-4A68-8C48-34ED1A02757C} = {459E1593-2C11-42CB-AD17-F7597E69E5D2}
 	EndGlobalSection
 EndGlobal
