@@ -212,6 +212,14 @@ namespace Xunit.KRunner
 
                 executor.RunTests(tests, resultsVisitor, executionOptions);
                 resultsVisitor.Finished.WaitOne();
+
+                // When executing under TeamCity, we record the results in a format TeamCity understands, but do not return an error code.
+                // This causes TeamCity to treat the step as completed, but the build as failed. We'll work around this by special casing the TeamCityVisitor
+                var teamCityVisitor = resultsVisitor as TeamCityVisitor;
+                if (teamCityVisitor != null)
+                {
+                    failed = teamCityVisitor.Failed > 0;
+                }
             }
             catch (Exception ex)
             {
