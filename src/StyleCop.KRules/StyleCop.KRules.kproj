@@ -25,16 +25,6 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="project.json" />
-    <Content Include="StyleCop.KRules.UseVarRule.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="FileHeaderRule.cs" />
-    <Compile Include="LineLengthRule.cs" />
-    <Compile Include="UseVarRule.cs" />
-    <Compile Include="UsingOutsideNamespaceRule.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="StyleCop.KRules.LineLengthRule.xml" />
     <EmbeddedResource Include="StyleCop.KRules.FileHeaderRule.xml" />
     <EmbeddedResource Include="StyleCop.KRules.UsingOutsideNamespaceRule.xml" />
