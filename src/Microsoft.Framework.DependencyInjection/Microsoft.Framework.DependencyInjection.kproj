@@ -16,48 +16,5 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="project.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ActivatorUtilities.cs" />
-    <Compile Include="NotNullAttribute.cs" />
-    <Compile Include="ContextAccessor.cs" />
-    <Compile Include="Fallback\ServiceCollectionExtensions.cs" />
-    <Compile Include="IContextAccessor.cs" />
-    <Compile Include="IServiceDescriptor.cs" />
-    <Compile Include="IServiceScope.cs" />
-    <Compile Include="IServiceScopeFactory.cs" />
-    <Compile Include="ITypeActivator.cs" />
-    <Compile Include="LifecycleKind.cs" />
-    <Compile Include="MultiServiceHelpers.cs" />
-    <Compile Include="NestedProviders\INestedProvider.cs" />
-    <Compile Include="NestedProviders\INestedProviderAsync.cs" />
-    <Compile Include="NestedProviders\INestedProviderManager.cs" />
-    <Compile Include="NestedProviders\INestedProviderManagerAsync.cs" />
-    <Compile Include="NestedProviders\NestedProviderManager.cs" />
-    <Compile Include="NestedProviders\NestedProviderManagerAsync.cs" />
-    <Compile Include="IServiceCollection.cs" />
-    <Compile Include="ServiceCollection.cs" />
-    <Compile Include="ServiceDescriber.cs" />
-    <Compile Include="ServiceDescriptor.cs" />
-    <Compile Include="ServiceLookup\ClosedIEnumerableService.cs" />
-    <Compile Include="ServiceLookup\GenericService.cs" />
-    <Compile Include="ServiceLookup\IGenericService.cs" />
-    <Compile Include="ServiceLookup\IService.cs" />
-    <Compile Include="ServiceLookup\OpenIEnumerableService.cs" />
-    <Compile Include="ServiceLookup\Service.cs" />
-    <Compile Include="ServiceLookup\ServiceEntry.cs" />
-    <Compile Include="ServiceLookup\ServiceProviderService.cs" />
-    <Compile Include="ServiceLookup\ServiceScope.cs" />
-    <Compile Include="ServiceLookup\ServiceScopeFactory.cs" />
-    <Compile Include="ServiceLookup\ServiceScopeService.cs" />
-    <Compile Include="ServiceLookup\ServiceTable.cs" />
-    <Compile Include="ServiceProvider.cs" />
-    <Compile Include="ServiceCollectionExtensions.cs" />
-    <Compile Include="ServiceProviderExtensions.cs" />
-    <Compile Include="TypeActivator.cs" />
-    <Compile Include="TypeActivatorExtensions.cs" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
