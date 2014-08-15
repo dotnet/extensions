@@ -16,17 +16,5 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="project.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="DiagnosticsScope.cs" />
-    <Compile Include="DiagnosticsLogger.cs" />
-    <Compile Include="DiagnosticsLoggerFactory.cs" />
-    <Compile Include="ILogger.cs" />
-    <Compile Include="ILoggerFactory.cs" />
-    <Compile Include="LoggerExtensions.cs" />
-    <Compile Include="TraceType.cs" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
