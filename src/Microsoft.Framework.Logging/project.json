@@ -11,8 +11,8 @@
     "k10": {
       "dependencies": {
         "System.Collections.Concurrent": "4.0.0.0",
+        "System.Collections": "4.0.10.0",
         "System.Diagnostics.TraceSource": "4.0.0.0",
-        "System.Collections": "4.0.0.0",
         "System.Globalization": "4.0.10.0",
         "System.Runtime": "4.0.20.0",
         "System.Runtime.Extensions": "4.0.10.0",
