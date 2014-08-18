@@ -1,9 +1,9 @@
-﻿{
+{
   "dependencies": {
     "Microsoft.Framework.ConfigurationModel": "",
     "Microsoft.Framework.ConfigurationModel.Json": "",
     "Microsoft.Framework.ConfigurationModel.Xml": "",
-    "System.IO.FileSystem": "4.0.10.0",
+    "System.IO.FileSystem": "4.0.0.0",
     "Xunit.KRunner": "1.0.0-*"
   },
   "commands": {
