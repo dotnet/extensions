@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
   "frameworks": {
     "net45": {},
@@ -7,7 +7,7 @@
         "System.ApplicationContext": "4.0.0.0",
         "System.Collections": "4.0.10.0",
         "System.IO": "4.0.0.0",
-        "System.IO.FileSystem": "4.0.10.0",
+        "System.IO.FileSystem": "4.0.0.0",
         "System.Reflection": "4.0.10.0",
         "System.Reflection.Extensions": "4.0.0.0",
         "System.Runtime": "4.0.20.0",
