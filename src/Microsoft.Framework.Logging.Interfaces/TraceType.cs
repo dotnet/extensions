@@ -3,7 +3,7 @@
 
 namespace Microsoft.Framework.Logging
 {
-#if NET45 || K10
+#if K10
     [Runtime.AssemblyNeutral]
 #endif
     public enum TraceType

@@ -8,7 +8,7 @@ namespace Microsoft.Framework.Logging
     /// <summary>
     /// A generic interface for logging.
     /// </summary>
-#if NET45 || K10
+#if K10
     [Runtime.AssemblyNeutral]
 #endif
     public interface ILogger

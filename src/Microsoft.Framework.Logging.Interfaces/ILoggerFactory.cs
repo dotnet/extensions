@@ -6,7 +6,7 @@ namespace Microsoft.Framework.Logging
     /// <summary>
     /// Used to create logger instances of the given name.
     /// </summary>
-#if NET45 || K10
+#if K10
     [Runtime.AssemblyNeutral]
 #endif
     public interface ILoggerFactory
