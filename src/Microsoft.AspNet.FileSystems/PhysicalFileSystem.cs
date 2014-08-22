@@ -80,11 +80,16 @@ namespace Microsoft.AspNet.FileSystems
         private string GetFullPath(string path)
         {
             var fullPath = Path.GetFullPath(Path.Combine(Root, path));
-            if (!fullPath.StartsWith(Root, StringComparison.OrdinalIgnoreCase))
+            if (!IsRooted(fullPath))
             {
                 return null;
             }
             return fullPath;
+        }
+
+        private bool IsRooted(string fullPath)
+        {
+            return fullPath.StartsWith(Root, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -97,7 +102,11 @@ namespace Microsoft.AspNet.FileSystems
         {
             try
             {
-                if (subpath.StartsWith("/", StringComparison.Ordinal))
+                // For *nix systems, absolute paths would start with '/'. Trimming the slash in
+                // such scenarios would result in incorrect interpretation of path. We'll do a check
+                // to verify that the path doesn't already look like it's rooted before trimming the
+                // '/' token indicating rooted relative to this FileSystem's Root.
+                if (!IsRooted(subpath) && subpath.StartsWith("/", StringComparison.Ordinal))
                 {
                     subpath = subpath.Substring(1);
                 }

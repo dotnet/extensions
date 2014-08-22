@@ -3,6 +3,8 @@
 
 using System;
 using System.IO;
+using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Infrastructure;
 using Shouldly;
 using Xunit;
 
@@ -40,6 +42,9 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public void RelativeOrAbsolutePastRootNotAllowed()
         {
+            var serviceProvider = CallContextServiceLocator.Locator.ServiceProvider;
+            var appEnvironment = (IApplicationEnvironment)serviceProvider.GetService(typeof(IApplicationEnvironment));
+
             var provider = new PhysicalFileSystem("sub");
             IFileInfo info;
             
@@ -49,13 +54,17 @@ namespace Microsoft.AspNet.FileSystems
             provider.TryGetFileInfo(".\\..\\File.txt", out info).ShouldBe(false);
             info.ShouldBe(null);
 
-            var applicationBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+            var applicationBase = appEnvironment.ApplicationBasePath;
             var file1 = Path.Combine(applicationBase, "File.txt");
             var file2 = Path.Combine(applicationBase, "sub", "File2.txt");
             provider.TryGetFileInfo(file1, out info).ShouldBe(false);
             info.ShouldBe(null);
 
             provider.TryGetFileInfo(file2, out info).ShouldBe(true);
+            info.ShouldNotBe(null);
+            info.PhysicalPath.ShouldBe(file2);
+
+            provider.TryGetFileInfo("/File2.txt", out info).ShouldBe(true);
             info.ShouldNotBe(null);
             info.PhysicalPath.ShouldBe(file2);
         }
