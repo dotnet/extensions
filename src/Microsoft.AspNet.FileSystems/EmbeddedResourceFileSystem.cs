@@ -109,6 +109,22 @@ namespace Microsoft.AspNet.FileSystems
             return true;
         }
 
+        /// <inheritdoc />
+        public bool TryGetParentPath(string subpath, out string parentPath)
+        {
+            if (string.IsNullOrEmpty(subpath) || 
+                subpath[0] != '/' || 
+                subpath.Equals("/", StringComparison.Ordinal))
+            {
+                // If the path does not start with the root, or are already at the root, return false.
+                parentPath = null;
+                return false;
+            }
+
+            parentPath = "/";
+            return true;
+        }
+
         private class EmbeddedResourceFileInfo : IFileInfo
         {
             private readonly Assembly _assembly;

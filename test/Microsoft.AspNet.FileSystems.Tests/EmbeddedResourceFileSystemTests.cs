@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.FileSystems
             fileInfo.PhysicalPath.ShouldBe(null);
             fileInfo.Name.ShouldBe("File.txt");
         }
-        
+
         [Fact]
         public void When_TryGetFileInfo_and_resource_exists_in_subdirectory_then_should_get_file_info()
         {
@@ -105,6 +105,42 @@ namespace Microsoft.AspNet.FileSystems
             provider.TryGetDirectoryContents(string.Empty, out files).ShouldBe(false);
             provider.TryGetDirectoryContents("/", out files).ShouldBe(true);
             files.Count().ShouldBe(0);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("path-without-slash")]
+        public void TryGetParentPath_ReturnsFalseIfPathDoesNotStartWithSlash(string subpath)
+        {
+            // Arrange
+            var provider = new EmbeddedResourceFileSystem(GetType().Assembly, "BaseNamespace");
+
+            // Act and Assert
+            provider.TryGetParentPath(subpath, out var parentPath).ShouldBe(false);
+        }
+
+        [Fact]
+        public void TryGetParentPath_ReturnsFalseForPathThatIsSlash()
+        {
+            // Arrange
+            var provider = new EmbeddedResourceFileSystem(GetType().Assembly, "BaseNamespace");
+
+            // Act and Assert
+            provider.TryGetParentPath("/", out var parentPath).ShouldBe(false);
+        }
+
+        [Theory]
+        [InlineData("/foo")]
+        [InlineData("/bar.resx")]
+        public void TryGetParentPath_ReturnsSlashForAllPathsThatStartWithSlash(string subpath)
+        {
+            // Arrange
+            var provider = new EmbeddedResourceFileSystem(GetType().Assembly, "BaseNamespace");
+
+            // Act and Assert
+            provider.TryGetParentPath(subpath, out var parentPath).ShouldBe(true);
+            parentPath.ShouldBe("/");
         }
     }
 }

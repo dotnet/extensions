@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 
 namespace Microsoft.AspNet.FileSystems
 {
@@ -69,11 +68,8 @@ namespace Microsoft.AspNet.FileSystems
             var applicationBase = ApplicationContext.BaseDirectory; 
 #endif
             var fullRoot = Path.GetFullPath(Path.Combine(applicationBase, root));
-            if (!fullRoot.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
-            {
-                // When we do matches in GetFullPath, we want to only match full directory names.
-                fullRoot += Path.DirectorySeparatorChar;
-            }
+            // When we do matches in GetFullPath, we want to only match full directory names.
+            fullRoot = EnsureTrailingSlash(fullRoot);
             return fullRoot;
         }
 
@@ -90,6 +86,17 @@ namespace Microsoft.AspNet.FileSystems
         private bool IsRooted(string fullPath)
         {
             return fullPath.StartsWith(Root, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string EnsureTrailingSlash(string path)
+        {
+            if (!string.IsNullOrEmpty(path) &&
+                path[path.Length - 1] != Path.DirectorySeparatorChar)
+            {
+                return path + Path.DirectorySeparatorChar;
+            }
+
+            return path;
         }
 
         /// <summary>
@@ -138,7 +145,7 @@ namespace Microsoft.AspNet.FileSystems
         {
             try
             {
-                if (subpath.StartsWith("/", StringComparison.Ordinal))
+                if (!IsRooted(subpath) && subpath.StartsWith("/", StringComparison.Ordinal))
                 {
                     subpath = subpath.Substring(1);
                 }
@@ -180,6 +187,53 @@ namespace Microsoft.AspNet.FileSystems
             {
             }
             contents = null;
+            return false;
+        }
+
+        /// <inheritdoc />
+        public bool TryGetParentPath(string subpath, out string parentPath)
+        {
+
+            if (string.IsNullOrEmpty(subpath))
+            {
+                parentPath = null;
+                return false;
+            }
+
+            if (!IsRooted(subpath) && subpath[0] == '/')
+            {
+                subpath = subpath.Substring(1);
+            }
+
+            if ((var fullPath = GetFullPath(subpath)) != null)
+            {
+                DirectoryInfo parentDirectory = null;
+                if (Directory.Exists(fullPath))
+                {
+                    parentDirectory = new DirectoryInfo(fullPath).Parent;
+                }
+                else if (File.Exists(fullPath))
+                {
+                    parentDirectory = new FileInfo(fullPath).Directory;
+                }
+
+                if (parentDirectory != null)
+                {
+                    // If the parent directory is set, verify it's is rooted under this FileSystem's root.
+                    // The appRoot itself needs to be special cased since we add a trailing slash when 
+                    // generating it.
+                    var pathWithTrailingSlash = EnsureTrailingSlash(parentDirectory.FullName);
+                    if (IsRooted(pathWithTrailingSlash))
+                    {
+                        parentPath = Root.Length == pathWithTrailingSlash.Length ?
+                                        string.Empty :
+                                        pathWithTrailingSlash.Substring(Root.Length, pathWithTrailingSlash.Length - Root.Length - 1);
+                        return true;
+                    }
+                }
+            }
+
+            parentPath = null;
             return false;
         }
 

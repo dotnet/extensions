@@ -25,5 +25,13 @@ namespace Microsoft.AspNet.FileSystems
         /// <param name="contents">The contents if any</param>
         /// <returns>True if a directory was located at the given path</returns>
         bool TryGetDirectoryContents(string subpath, out IEnumerable<IFileInfo> contents);
+
+        /// <summary>
+        /// Gets the parent directory for the specified <paramref name="subpath"/>.
+        /// </summary>
+        /// <param name="subpath">A path under the application root that identifies either a file or a directory.</param>
+        /// <param name="parentPath">The path to the parent directory.</param>
+        /// <returns>True if the parent directory is rooted inside this instance of <see cref="IFileSystem"/>, false otherwise.</returns>
+        bool TryGetParentPath(string subpath, out string parentPath);
     }
 }
