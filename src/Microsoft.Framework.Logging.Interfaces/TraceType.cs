@@ -3,7 +3,7 @@
 
 namespace Microsoft.Framework.Logging
 {
-#if ASPNETCORE50
+#if ASPNET50 || ASPNETCORE50
     [Runtime.AssemblyNeutral]
 #endif
     public enum TraceType
