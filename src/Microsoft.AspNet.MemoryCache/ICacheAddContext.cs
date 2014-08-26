@@ -10,7 +10,12 @@ namespace Microsoft.AspNet.MemoryCache
     public interface ICacheAddContext
     {
         /// <summary>
-        /// The state passed into GetOrAdd.
+        /// The key identifying this entry.
+        /// </summary>
+        string Key { get; }
+
+        /// <summary>
+        /// The state passed into Set. This can be used to avoid closures.
         /// </summary>
         object State { get; }
 
