@@ -17,6 +17,12 @@ namespace Microsoft.AspNet.MemoryCache
 
         public object State { get; internal set; }
 
+        internal DateTime CreationTime { get; set; }
+
+        internal DateTime? AbsoluteExpiration { get; private set; }
+
+        internal TimeSpan? SlidingExpiration { get; private set; }
+
         internal IList<IExpirationTrigger> Triggers { get; set; }
 
         public void SetPriority(CachePreservationPriority priority)
@@ -35,17 +41,25 @@ namespace Microsoft.AspNet.MemoryCache
 
         public void SetAbsoluteExpiration(TimeSpan relative)
         {
-            throw new NotImplementedException();
+            if (relative <= TimeSpan.Zero)
+            {
+                throw new ArgumentOutOfRangeException("relative", relative, "The relative expriation value must be positive.");
+            }
+            AbsoluteExpiration = CreationTime + relative;
         }
 
         public void SetAbsoluteExpiration(DateTime absoulte)
         {
-            throw new NotImplementedException();
+            AbsoluteExpiration = absoulte;
         }
 
         public void SetSlidingExpiraiton(TimeSpan offset)
         {
-            throw new NotImplementedException();
+            if (offset <= TimeSpan.Zero)
+            {
+                throw new ArgumentOutOfRangeException("offset", offset, "The sliding expriation value must be positive.");
+            }
+            SlidingExpiration = offset;
         }
 
         public void RegisterPostEvictionCallback(Action<string, object, EvictionReason, object> callback, object state)

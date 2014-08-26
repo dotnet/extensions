@@ -4,22 +4,30 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.AspNet.MemoryCache.Infrastructure;
 
 namespace Microsoft.AspNet.MemoryCache
 {
     public class MemoryCache : IMemoryCache
     {
-        private IDictionary<string, CacheEntry> _entries;
-        private ReaderWriterLockSlim _entryLock;
+        private readonly IDictionary<string, CacheEntry> _entries;
+        private readonly ReaderWriterLockSlim _entryLock;
         private bool _disposed = false;
 
-        private Action<CacheEntry> _entryExpirationNotification;
-        
+        private readonly Action<CacheEntry> _entryExpirationNotification;
+        private readonly ISystemClock _clock;
+
         public MemoryCache()
+            : this(new SystemClock())
+        {
+        }
+
+        public MemoryCache(ISystemClock clock)
         {
             _entries = new Dictionary<string, CacheEntry>(StringComparer.Ordinal);
             _entryLock = new ReaderWriterLockSlim();
             _entryExpirationNotification = EntryExpired;
+            _clock = clock;
             // TODO: Set up memory preassure notification
             // TODO: Set up expiration management
         }
@@ -28,7 +36,7 @@ namespace Microsoft.AspNet.MemoryCache
         {
             CheckDisposed();
             CacheEntry priorEntry = null;
-            var context = new CacheAddContext(key) { State = state };
+            var context = new CacheAddContext(key) { State = state, CreationTime = _clock.UtcNow };
             object value = create(context);
             var entry = new CacheEntry(context, value, _entryExpirationNotification);
             bool added = false;
@@ -39,15 +47,11 @@ namespace Microsoft.AspNet.MemoryCache
                 if (_entries.TryGetValue(key, out priorEntry))
                 {
                     _entries.Remove(key);
-                    priorEntry.IsExpired = true;
-                    if (priorEntry.EvictionReason == EvictionReason.None)
-                    {
-                        priorEntry.EvictionReason = EvictionReason.Removed; // TODO: Reason: replaced?
-                    }
+                    priorEntry.SetExpired(EvictionReason.Removed); // TODO: Reason: replaced?
                     priorEntry.DetatchTriggers();
                 }
 
-                if (!entry.IsExpired)
+                if (!entry.CheckExpired(_clock.UtcNow))
                 {
                     _entries[key] = entry;
                     // TODO: Add to timer queue
@@ -83,13 +87,14 @@ namespace Microsoft.AspNet.MemoryCache
                 if (_entries.TryGetValue(key, out entry))
                 {
                     // Check if expired due to triggers, timers, etc. and if so, remove it.
-                    if (entry.IsExpired)
+                    if (entry.CheckExpired(_clock.UtcNow))
                     {
                         expiredEntry = entry;
                     }
                     else
                     {
-                        // TODO: Refresh sliding expiration, etc.
+                        // Refresh sliding expiration, etc.
+                        entry.LastAccessed = _clock.UtcNow;
                         value = entry.Value;
                         found = true;
                     }

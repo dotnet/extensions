@@ -10,35 +10,59 @@ namespace Microsoft.AspNet.MemoryCache
     {
         private static readonly Action<object> ExpirationCallback = TriggerExpired;
 
-        private Action<CacheEntry> _notifyCacheOfExpiration;
-        private bool _isExpired;
+        private readonly Action<CacheEntry> _notifyCacheOfExpiration;
         
         internal CacheEntry(CacheAddContext context, object value, Action<CacheEntry> notifyCacheOfExpiration)
         {
             Context = context;
             Value = value;
             _notifyCacheOfExpiration = notifyCacheOfExpiration;
+            LastAccessed = context.CreationTime;
         }
 
         internal CacheAddContext Context { get; private set; }
 
-        internal bool IsExpired
-        {
-            get
-            {
-                return _isExpired || CheckForExpiredTriggers();
-            }
-            set
-            {
-                _isExpired = value;
-            }
-        }
+        private bool IsExpired { get; set; }
 
-        internal EvictionReason EvictionReason { get; set; }
+        internal EvictionReason EvictionReason { get; private set; }
 
         internal object Value { get; private set; }
 
         internal IList<IDisposable> TriggerRegistrations { get; set; }
+
+        internal DateTime LastAccessed { get; set; }
+
+        internal bool CheckExpired(DateTime now)
+        {
+            return IsExpired || CheckForExpiredTime(now) || CheckForExpiredTriggers();
+        }
+
+        internal void SetExpired(EvictionReason reason)
+        {
+            IsExpired = true;
+            if (EvictionReason == EvictionReason.None)
+            {
+                EvictionReason = reason;
+            }
+        }
+
+        private bool CheckForExpiredTime(DateTime now)
+        {
+            if (Context.AbsoluteExpiration.HasValue && Context.AbsoluteExpiration.Value <= now)
+            {
+                SetExpired(EvictionReason.Expired);
+                return true;
+            }
+
+            if (Context.SlidingExpiration.HasValue
+                && (now - LastAccessed) >= Context.SlidingExpiration)
+            {
+                SetExpired(EvictionReason.Expired);
+                return true;
+            }
+
+            return false;
+        }
 
         internal bool CheckForExpiredTriggers()
         {
@@ -50,11 +74,7 @@ namespace Microsoft.AspNet.MemoryCache
                     var trigger = triggers[i];
                     if (trigger.IsExpired)
                     {
-                        IsExpired = true;
-                        if (EvictionReason == EvictionReason.None)
-                        {
-                            EvictionReason = EvictionReason.Triggered;
-                        }
+                        SetExpired(EvictionReason.Triggered);
                         return true;
                     }
                 }
@@ -88,11 +108,7 @@ namespace Microsoft.AspNet.MemoryCache
         private static void TriggerExpired(object obj)
         {
             var entry = (CacheEntry)obj;
-            entry.IsExpired = true;
-            if (entry.EvictionReason == EvictionReason.None)
-            {
-                entry.EvictionReason = EvictionReason.Triggered;
-            }
+            entry.SetExpired(EvictionReason.Triggered);
             entry._notifyCacheOfExpiration(entry);
         }
 
