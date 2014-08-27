@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using Xunit;
 
 namespace Microsoft.AspNet.MemoryCache.Tests
@@ -53,10 +54,17 @@ namespace Microsoft.AspNet.MemoryCache.Tests
             var cache = new MemoryCache();
             string key = "myKey";
             var obj = new object();
+            var callbackInvoked = new ManualResetEvent(false);
             var trigger = new TestTrigger() { ActiveExpirationCallbacks = true };
             cache.Set(key, context =>
             {
                 context.AddExpirationTrigger(trigger);
+                context.RegisterPostEvictionCallback((subkey, value, reason, state) =>
+                {
+                    // TODO: Verify params
+                    var localCallbackInvoked = (ManualResetEvent)state;
+                    localCallbackInvoked.Set();
+                }, state: callbackInvoked);
                 return obj;
             });
 
@@ -64,6 +72,8 @@ namespace Microsoft.AspNet.MemoryCache.Tests
 
             var found = cache.TryGetValue(key, out obj);
             Assert.False(found);
+
+            Assert.True(callbackInvoked.WaitOne(100), "Callback");
         }
 
         [Fact]
@@ -72,10 +82,17 @@ namespace Microsoft.AspNet.MemoryCache.Tests
             var cache = new MemoryCache();
             string key = "myKey";
             var obj = new object();
+            var callbackInvoked = new ManualResetEvent(false);
             var trigger = new TestTrigger() { ActiveExpirationCallbacks = false };
             cache.Set(key, context =>
             {
                 context.AddExpirationTrigger(trigger);
+                context.RegisterPostEvictionCallback((subkey, value, reason, state) =>
+                {
+                    // TODO: Verify params
+                    var localCallbackInvoked = (ManualResetEvent)state;
+                    localCallbackInvoked.Set();
+                }, state: callbackInvoked);
                 return obj;
             });
             var found = cache.TryGetValue(key, out obj);
@@ -85,6 +102,8 @@ namespace Microsoft.AspNet.MemoryCache.Tests
 
             found = cache.TryGetValue(key, out obj);
             Assert.False(found);
+
+            Assert.True(callbackInvoked.WaitOne(100), "Callback");
         }
 
         [Fact]
@@ -93,16 +112,24 @@ namespace Microsoft.AspNet.MemoryCache.Tests
             var cache = new MemoryCache();
             string key = "myKey";
             var obj = new object();
+            var callbackInvoked = new ManualResetEvent(false);
             var trigger = new TestTrigger() { ActiveExpirationCallbacks = true };
             cache.Set(key, context =>
             {
                 context.AddExpirationTrigger(trigger);
+                context.RegisterPostEvictionCallback((subkey, value, reason, state) =>
+                {
+                    // TODO: Verify params
+                    var localCallbackInvoked = (ManualResetEvent)state;
+                    localCallbackInvoked.Set();
+                }, state: callbackInvoked);
                 return obj;
             });
             cache.Remove(key);
 
             Assert.NotNull(trigger.Registration);
             Assert.True(trigger.Registration.Disposed);
+            Assert.True(callbackInvoked.WaitOne(100), "Callback");
         }
 
         [Fact]
@@ -111,10 +138,17 @@ namespace Microsoft.AspNet.MemoryCache.Tests
             var cache = new MemoryCache();
             string key = "myKey";
             var obj = new object();
+            var callbackInvoked = new ManualResetEvent(false);
             var trigger = new TestTrigger() { IsExpired = true };
             var result = cache.Set(key, context =>
             {
                 context.AddExpirationTrigger(trigger);
+                context.RegisterPostEvictionCallback((subkey, value, reason, state) =>
+                {
+                    // TODO: Verify params
+                    var localCallbackInvoked = (ManualResetEvent)state;
+                    localCallbackInvoked.Set();
+                }, state: callbackInvoked);
                 return obj;
             });
             Assert.Same(obj, result); // The created item should be returned, but not cached.
@@ -122,6 +156,7 @@ namespace Microsoft.AspNet.MemoryCache.Tests
             Assert.True(trigger.IsExpiredWasCalled);
             Assert.False(trigger.ActiveExpirationCallbacksWasCalled);
             Assert.Null(trigger.Registration);
+            Assert.True(callbackInvoked.WaitOne(100), "Callback");
 
             result = cache.Get(key);
             Assert.Null(result); // It wasn't cached

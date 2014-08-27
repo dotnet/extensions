@@ -6,6 +6,8 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.MemoryCache
 {
+    using EvictionCallback = Action<string, object, EvictionReason, object>;
+
     internal class CacheAddContext : ICacheAddContext
     {
         internal CacheAddContext(string key)
@@ -24,6 +26,8 @@ namespace Microsoft.AspNet.MemoryCache
         internal TimeSpan? SlidingExpiration { get; private set; }
 
         internal IList<IExpirationTrigger> Triggers { get; set; }
+
+        internal IList<Tuple<EvictionCallback, object>> PostEvictionCallbacks { get; set; }
 
         public void SetPriority(CachePreservationPriority priority)
         {
@@ -62,9 +66,13 @@ namespace Microsoft.AspNet.MemoryCache
             SlidingExpiration = offset;
         }
 
-        public void RegisterPostEvictionCallback(Action<string, object, EvictionReason, object> callback, object state)
+        public void RegisterPostEvictionCallback(EvictionCallback callback, object state)
         {
-            throw new NotImplementedException();
+            if (PostEvictionCallbacks == null)
+            {
+                PostEvictionCallbacks = new List<Tuple<EvictionCallback, object>>(1);
+            }
+            PostEvictionCallbacks.Add(new Tuple<EvictionCallback, object>(callback, state));
         }
     }
 }

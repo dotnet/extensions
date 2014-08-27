@@ -65,11 +65,11 @@ namespace Microsoft.AspNet.MemoryCache
             }
             if (priorEntry != null)
             {
-                // TODO: Invoke exiction callback for prior entry
+                priorEntry.InvokeEvictionCallbacks();
             }
             if (!added)
             {
-                // TODO: Invoke eviction callback for already expired entry
+                entry.InvokeEvictionCallbacks();
             }
             return value;
         }
@@ -108,8 +108,7 @@ namespace Microsoft.AspNet.MemoryCache
             if (expiredEntry != null)
             {
                 // TODO: For efficency queue this up for batch removal
-                Remove(key, expiredEntry, expiredEntry.EvictionReason);
-                // TODO: Invoke eviction callbacks
+                RemoveEntry(expiredEntry);
             }
 
             return found;
@@ -119,48 +118,51 @@ namespace Microsoft.AspNet.MemoryCache
         {
             CheckDisposed();
             CacheEntry entry;
-            _entryLock.EnterUpgradeableReadLock();
+            _entryLock.EnterReadLock();
             try
             {
                 if (_entries.TryGetValue(key, out entry))
                 {
-                    Remove(key, entry, EvictionReason.Removed);
+                    entry.SetExpired(EvictionReason.Removed);
                 }
             }
             finally
             {
-                _entryLock.ExitUpgradeableReadLock();
+                _entryLock.ExitReadLock();
             }
-            // TODO: Invoke eviction callbacks
+
+            if (entry != null)
+            {
+                // TODO: For efficency consider processing these removals in batches.
+                RemoveEntry(entry);
+            }
         }
 
-        private void Remove(string key, CacheEntry entry, EvictionReason reason)
+        private void RemoveEntry(CacheEntry entry)
         {
-            CheckDisposed();
             _entryLock.EnterWriteLock();
             try
             {
                 // Only remove it if someone hasn't modified it since our lookup
-                _entries.Remove(new KeyValuePair<string, CacheEntry>(key, entry));
+                CacheEntry currentEntry;
+                if (_entries.TryGetValue(entry.Context.Key, out currentEntry)
+                    && object.ReferenceEquals(currentEntry, entry))
+                {
+                    _entries.Remove(entry.Context.Key);
+                }
                 entry.DetatchTriggers();
             }
             finally
             {
                 _entryLock.ExitWriteLock();
             }
+            entry.InvokeEvictionCallbacks();
         }
 
-        // TODO: For efficency consider processing these expirations in batches.
         private void EntryExpired(CacheEntry entry)
         {
-            try
-            {
-                Remove(entry.Context.Key, entry, entry.EvictionReason);
-                // TODO: Invoke eviction callbacks
-            }
-            catch (ObjectDisposedException)
-            {
-            }
+            // TODO: For efficency consider processing these expirations in batches.
+            RemoveEntry(entry);
         }
 
         public void Dispose()

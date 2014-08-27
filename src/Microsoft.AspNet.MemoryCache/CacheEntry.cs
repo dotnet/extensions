@@ -125,5 +125,31 @@ namespace Microsoft.AspNet.MemoryCache
                 }
             }
         }
+
+        // TODO: Ensure a thread safe way to prevent these from being invoked more than once;
+        internal void InvokeEvictionCallbacks()
+        {
+            var callbacks = Context.PostEvictionCallbacks;
+            Context.PostEvictionCallbacks = null;
+            if (callbacks != null)
+            {
+                for (int i = 0; i < callbacks.Count; i++)
+                {
+                    var callbackPair = callbacks[i];
+                    var callback = callbackPair.Item1;
+                    var state = callbackPair.Item2;
+
+                    try
+                    {
+                        callback(Context.Key, Value, EvictionReason, state);
+                    }
+                    catch (Exception)
+                    {
+                        // This will often be invoked on a background thread, don't let throw.
+                        // TODO: LOG
+                    }
+                }
+            }
+        }
     }
 }

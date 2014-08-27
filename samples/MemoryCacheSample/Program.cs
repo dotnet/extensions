@@ -8,7 +8,7 @@ namespace MemoryCacheSample
     {
         public void Main()
         {
-            IMemoryCache cache = null;
+            IMemoryCache cache = new MemoryCache();
             object result;
             string key = "Key";
             object newObject = new object();
