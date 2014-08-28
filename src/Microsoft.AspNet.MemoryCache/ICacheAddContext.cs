@@ -19,12 +19,29 @@ namespace Microsoft.AspNet.MemoryCache
         /// </summary>
         object State { get; }
 
+        /// <summary>
+        /// Sets the priority for keeping this entry in the cache during a memory pressure triggered cleanup.
+        /// </summary>
+        /// <param name="priority"></param>
         void SetPriority(CachePreservationPriority priority);
 
+        /// <summary>
+        /// Sets an absolute expiration date for this entry.
+        /// </summary>
+        /// <param name="absoulte"></param>
         void SetAbsoluteExpiration(DateTime absoulte);
 
+        /// <summary>
+        /// Sets an absolute expiration time, relative to now.
+        /// </summary>
+        /// <param name="relative"></param>
         void SetAbsoluteExpiration(TimeSpan relative);
 
+        /// <summary>
+        /// Sets how long this entry can be inactive (e.g. not accessed) before it will be removed.
+        /// This will not extend the entry lifetime beyond the absolute expiration (if set).
+        /// </summary>
+        /// <param name="offset"></param>
         void SetSlidingExpiraiton(TimeSpan offset);
 
         /// <summary>

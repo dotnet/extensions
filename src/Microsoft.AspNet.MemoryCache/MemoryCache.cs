@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.MemoryCache
                 if (_entries.TryGetValue(key, out priorEntry))
                 {
                     _entries.Remove(key);
-                    priorEntry.SetExpired(EvictionReason.Removed); // TODO: Reason: replaced?
+                    priorEntry.SetExpired(EvictionReason.Replaced);
                     priorEntry.DetatchTriggers();
                 }
 

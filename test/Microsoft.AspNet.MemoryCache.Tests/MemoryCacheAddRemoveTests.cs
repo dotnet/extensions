@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.MemoryCache
                 {
                     Assert.Equal(key, subkey);
                     Assert.Same(value, obj);
-                    Assert.Equal(EvictionReason.Removed, reason);
+                    Assert.Equal(EvictionReason.Replaced, reason);
                     var localCallbackInvoked = (ManualResetEvent)state;
                     localCallbackInvoked.Set();
                 }, state: callback1Invoked);

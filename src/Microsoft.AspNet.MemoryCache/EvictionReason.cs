@@ -16,6 +16,11 @@ namespace Microsoft.AspNet.MemoryCache
         Removed,
 
         /// <summary>
+        /// Overwritten
+        /// </summary>
+        Replaced,
+
+        /// <summary>
         /// Timed out
         /// </summary>
         Expired,
