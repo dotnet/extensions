@@ -36,7 +36,8 @@ namespace Microsoft.AspNet.MemoryCache
         {
             CheckDisposed();
             CacheEntry priorEntry = null;
-            var context = new CacheAddContext(key) { State = state, CreationTime = _clock.UtcNow };
+            var now = _clock.UtcNow;
+            var context = new CacheAddContext(key) { State = state, CreationTime = now };
             object value = create(context);
             var entry = new CacheEntry(context, value, _entryExpirationNotification);
             bool added = false;
@@ -48,10 +49,9 @@ namespace Microsoft.AspNet.MemoryCache
                 {
                     _entries.Remove(key);
                     priorEntry.SetExpired(EvictionReason.Replaced);
-                    priorEntry.DetatchTriggers();
                 }
 
-                if (!entry.CheckExpired(_clock.UtcNow))
+                if (!entry.CheckExpired(now))
                 {
                     _entries[key] = entry;
                     // TODO: Add to timer queue
@@ -65,10 +65,12 @@ namespace Microsoft.AspNet.MemoryCache
             }
             if (priorEntry != null)
             {
+                // TODO: Execute on a threadpool thread.
                 priorEntry.InvokeEvictionCallbacks();
             }
             if (!added)
             {
+                // TODO: Execute on a threadpool thread.
                 entry.InvokeEvictionCallbacks();
             }
             return value;
@@ -150,12 +152,12 @@ namespace Microsoft.AspNet.MemoryCache
                 {
                     _entries.Remove(entry.Context.Key);
                 }
-                entry.DetatchTriggers();
             }
             finally
             {
                 _entryLock.ExitWriteLock();
             }
+            // TODO: Execute on a threadpool thread.
             entry.InvokeEvictionCallbacks();
         }
 

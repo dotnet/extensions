@@ -44,6 +44,7 @@ namespace Microsoft.AspNet.MemoryCache
             {
                 EvictionReason = reason;
             }
+            DetatchTriggers();
         }
 
         private bool CheckForExpiredTime(DateTime now)
@@ -112,7 +113,8 @@ namespace Microsoft.AspNet.MemoryCache
             entry._notifyCacheOfExpiration(entry);
         }
 
-        internal void DetatchTriggers()
+        // TODO: Thread safey
+        private void DetatchTriggers()
         {
             var registrations = TriggerRegistrations;
             if (registrations != null)
