@@ -1,4 +1,4 @@
-﻿{
+{
     "version": "1.0.0-*",
     "dependencies": {
         "StyleCop":  "4.7.10.0"

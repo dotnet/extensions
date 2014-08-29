@@ -1,4 +1,4 @@
-﻿{
+{
   "dependencies": {
     "Xunit.KRunner": ""
   },
@@ -7,6 +7,6 @@
   },
   "frameworks": {
     "net45": {},
-    "k10": {}
+    "aspnetcore50": {}
   }
 }

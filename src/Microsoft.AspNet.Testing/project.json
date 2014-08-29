@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
   "dependencies": {
     "xunit.assert": "2.0.0-aspnet-*",
@@ -12,7 +12,7 @@
         "System.Threading.Tasks": ""
       }
     },
-    "k10": {
+    "aspnetcore50": {
       "dependencies": {
         "System.Runtime": "4.0.20.0",
         "System.Globalization": "4.0.10.0",
