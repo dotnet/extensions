@@ -8,7 +8,6 @@
   },
   "frameworks": {
     "net45": { },
-    "aspnet50": { },
     "aspnetcore50": {
       "dependencies": {
         "System.Collections.Concurrent": "4.0.0.0",
@@ -22,7 +21,7 @@
         "System.Threading": "4.0.0.0"
       }
     },
-    ".NETPortable,Version=v4.5,Profile=Profile111": {
+    ".NETPortable,Version=v4.6,Profile=Profile151": {
       "dependencies": {
         "System.Globalization": "",
         "System.Runtime": "",
