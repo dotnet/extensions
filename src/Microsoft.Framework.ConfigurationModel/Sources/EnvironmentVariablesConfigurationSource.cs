@@ -30,7 +30,7 @@ namespace Microsoft.Framework.ConfigurationModel
             _prefix = string.Empty;
         }
 
-#if NET45 || K10
+#if NET45 || ASPNETCORE50
         public override void Load()
         {
             Load(Environment.GetEnvironmentVariables());

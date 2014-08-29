@@ -8,7 +8,7 @@ namespace Microsoft.Framework.ConfigurationModel
 {
     public static class ConfigurationExtensions
     {
-#if NET45 || K10
+#if NET45 || ASPNETCORE50
         public static T Get<T>(this IConfiguration configuration, string key)
         {
             return (T)Convert.ChangeType(configuration.Get(key), typeof(T));
@@ -16,7 +16,7 @@ namespace Microsoft.Framework.ConfigurationModel
 #endif
 
 
-#if NET45 || K10
+#if NET45 || ASPNETCORE50
         public static IConfigurationSourceContainer AddIniFile(this IConfigurationSourceContainer configuration, string path)
         {
             configuration.Add(new IniFileConfigurationSource(path));
