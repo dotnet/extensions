@@ -144,7 +144,7 @@ namespace Microsoft.Framework.DependencyInjection
 
         private object CaptureDisposable(object service)
         {
-            if (!Object.ReferenceEquals(this, service))
+            if (!object.ReferenceEquals(this, service))
             {
                 var disposable = service as IDisposable;
                 if (disposable != null)
