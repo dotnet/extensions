@@ -9,7 +9,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 
         public LifecycleKind Lifecycle
         {
-            get { return LifecycleKind.Transient;  }
+            get { return LifecycleKind.Scoped;  }
         }
 
         public object Create(ServiceProvider provider)
