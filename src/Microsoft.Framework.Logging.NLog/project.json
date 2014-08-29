@@ -1,4 +1,4 @@
-﻿{
+{
     "dependencies": {
         "Microsoft.Framework.Logging.Interfaces": "1.0.0-*",
         "NLog": "3.1.0"
