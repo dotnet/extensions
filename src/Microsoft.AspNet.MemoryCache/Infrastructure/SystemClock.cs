@@ -18,9 +18,7 @@ namespace Microsoft.AspNet.MemoryCache.Infrastructure
         {
             get
             {
-                // the clock measures whole seconds only
-                var utcNow = DateTime.UtcNow;
-                return utcNow.AddMilliseconds(-utcNow.Millisecond);
+                return DateTime.UtcNow;
             }
         }
     }

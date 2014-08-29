@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Microsoft.AspNet.MemoryCache.Infrastructure;
 
@@ -18,18 +19,42 @@ namespace Microsoft.AspNet.MemoryCache
         private readonly ISystemClock _clock;
 
         public MemoryCache()
-            : this(new SystemClock())
+            : this(new SystemClock(), listenForMemoryPreasure: true)
         {
         }
 
-        public MemoryCache(ISystemClock clock)
+        /// <summary>
+        /// Creates a new MemoryCache instance. This overload is inteded for testing purposes.
+        /// </summary>
+        /// <param name="clock"></param>
+        /// <param name="listenForMemoryPreasure"></param>
+        public MemoryCache(ISystemClock clock, bool listenForMemoryPreasure)
         {
             _entries = new Dictionary<string, CacheEntry>(StringComparer.Ordinal);
             _entryLock = new ReaderWriterLockSlim();
             _entryExpirationNotification = EntryExpired;
             _clock = clock;
-            // TODO: Set up memory preassure notification
-            // TODO: Set up expiration management
+            if (listenForMemoryPreasure)
+            {
+                GcNotification.Register(DoMemoryPreassureCollection, state: null);
+            }
+            // TODO: Set up expiration monitoring
+        }
+
+        /// <summary>
+        /// Cleans up the background collection events.
+        /// </summary>
+        ~MemoryCache()
+        {
+            Dispose(false);
+        }
+
+        /// <summary>
+        /// Gets the count of the current entries for diagnostic purposes.
+        /// </summary>
+        public int Count
+        {
+            get { return _entries.Count; }
         }
 
         public object Set(string key, object state, Func<ICacheAddContext, object> create)
@@ -161,10 +186,154 @@ namespace Microsoft.AspNet.MemoryCache
             entry.InvokeEvictionCallbacks();
         }
 
+        private void RemoveEntries(IEnumerable<CacheEntry> entries)
+        {
+            _entryLock.EnterWriteLock();
+            try
+            {
+                foreach (var entry in entries)
+                {
+                    // Only remove it if someone hasn't modified it since our lookup
+                    CacheEntry currentEntry;
+                    if (_entries.TryGetValue(entry.Context.Key, out currentEntry)
+                        && object.ReferenceEquals(currentEntry, entry))
+                    {
+                        _entries.Remove(entry.Context.Key);
+                    }
+                }
+            }
+            finally
+            {
+                _entryLock.ExitWriteLock();
+            }
+
+            foreach (var entry in entries)
+            {
+                // TODO: Execute on a threadpool thread.
+                entry.InvokeEvictionCallbacks();
+            }
+        }
+
         private void EntryExpired(CacheEntry entry)
         {
             // TODO: For efficency consider processing these expirations in batches.
             RemoveEntry(entry);
+        }
+
+        /// This is called after a Gen2 garbage collection. We assume this means there was memory preassure.
+        /// Remove at least 10% of the total entries (or estimated memory?).
+        private bool DoMemoryPreassureCollection(object state)
+        {
+            if (_disposed)
+            {
+                return false;
+            }
+
+            Compact(0.10);
+
+            return true;
+        }
+
+        /// Remove at least the given percentage (0.10 for 10%) of the total entries (or estimated memory?), according to the following policy:
+        /// 1. Remove all expired items.
+        /// 2. Bucket by CachePreservationPriority.
+        /// ?. Least recently used objects.
+        /// ?. Items with the soonest absolute expiration.
+        /// ?. Items with the soonest sliding expiration.
+        /// ?. Larger objects - estimated by object graph size, inaccurate.
+        public void Compact(double percentage)
+        {
+            List<CacheEntry> expiredEntries = new List<CacheEntry>();
+            List<CacheEntry> lowPriEntries = new List<CacheEntry>();
+            List<CacheEntry> normalPriEntries = new List<CacheEntry>();
+            List<CacheEntry> highPriEntries = new List<CacheEntry>();
+            List<CacheEntry> neverRemovePriEntries = new List<CacheEntry>();
+
+            _entryLock.EnterReadLock();
+            try
+            {
+                // Sort items by expired & priority status
+                var now = _clock.UtcNow;
+                foreach (var entry in _entries.Values)
+                {
+                    if (entry.CheckExpired(now))
+                    {
+                        expiredEntries.Add(entry);
+                    }
+                    else
+                    {
+                        switch (entry.Context.Priority)
+                        {
+                            case CachePreservationPriority.Low:
+                                lowPriEntries.Add(entry);
+                                break;
+                            case CachePreservationPriority.Normal:
+                                normalPriEntries.Add(entry);
+                                break;
+                            case CachePreservationPriority.High:
+                                highPriEntries.Add(entry);
+                                break;
+                            case CachePreservationPriority.NeverRemove:
+                                neverRemovePriEntries.Add(entry);
+                                break;
+                            default:
+                                throw new NotImplementedException(entry.Context.Priority.ToString());
+                        }
+                    }
+                }
+
+                int totalEntries = expiredEntries.Count + lowPriEntries.Count + normalPriEntries.Count + highPriEntries.Count + neverRemovePriEntries.Count;
+                int removalCountTarget = (int)(totalEntries * percentage);
+
+                ExpirePriorityBucket(removalCountTarget, expiredEntries, lowPriEntries);
+                ExpirePriorityBucket(removalCountTarget, expiredEntries, normalPriEntries);
+                ExpirePriorityBucket(removalCountTarget, expiredEntries, highPriEntries);
+            }
+            finally
+            {
+                _entryLock.ExitReadLock();
+            }
+
+            RemoveEntries(expiredEntries);
+        }
+
+        /// Policy:
+        /// ?. Least recently used objects.
+        /// ?. Items with the soonest absolute expiration.
+        /// ?. Items with the soonest sliding expiration.
+        /// ?. Larger objects - estimated by object graph size, inaccurate.
+        private void ExpirePriorityBucket(int removalCountTarget, List<CacheEntry> expiredEntries, List<CacheEntry> priorityEntries)
+        {
+            // Do we meet our quota by just removing expired entries?
+            if (removalCountTarget <= expiredEntries.Count)
+            {
+                // No-op, we've met quota
+                return;
+            }
+            if (expiredEntries.Count + priorityEntries.Count <= removalCountTarget)
+            {
+                // Expire all of the entries in this bucket
+                foreach (var entry in priorityEntries)
+                {
+                    entry.SetExpired(EvictionReason.Capacity);
+                }
+                expiredEntries.AddRange(priorityEntries);
+                return;
+            }
+
+            // Expire enough entries to reach our goal
+            // TODO: Refine policy
+
+            // LRU
+            foreach (var entry in priorityEntries.OrderBy(entry => entry.LastAccessed))
+            {
+                entry.SetExpired(EvictionReason.Capacity);
+                expiredEntries.Add(entry);
+                if (removalCountTarget <= expiredEntries.Count)
+                {
+                    break;
+                }
+            }
         }
 
         public void Dispose()
@@ -177,7 +346,8 @@ namespace Microsoft.AspNet.MemoryCache
             if (!_disposed)
             {
                 if (disposing)
-                {       
+                {
+                    GC.SuppressFinalize(this);
                 }
 
                 _disposed = true;

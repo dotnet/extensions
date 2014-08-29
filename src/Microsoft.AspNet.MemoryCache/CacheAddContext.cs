@@ -13,6 +13,7 @@ namespace Microsoft.AspNet.MemoryCache
         internal CacheAddContext(string key)
         {
             Key = key;
+            Priority = CachePreservationPriority.Normal;
         }
 
         public string Key { get; private set; }
@@ -29,9 +30,11 @@ namespace Microsoft.AspNet.MemoryCache
 
         internal IList<Tuple<EvictionCallback, object>> PostEvictionCallbacks { get; set; }
 
+        internal CachePreservationPriority Priority { get; private set; }
+
         public void SetPriority(CachePreservationPriority priority)
         {
-            throw new NotImplementedException();
+            Priority = priority;
         }
 
         public void AddExpirationTrigger(IExpirationTrigger trigger)
