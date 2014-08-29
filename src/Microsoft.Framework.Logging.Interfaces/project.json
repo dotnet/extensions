@@ -1,7 +1,8 @@
 {
     "version": "1.0.0-*",
     "frameworks": {
-        "net45": {
+        "net45": { },
+        "aspnet50": {
             "dependencies": {
                 "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
             }

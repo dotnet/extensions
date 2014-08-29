@@ -8,6 +8,7 @@
   },
   "frameworks": {
     "net45": { },
+    "aspnet50": { },
     "aspnetcore50": {
       "dependencies": {
         "System.Collections.Concurrent": "4.0.0.0",

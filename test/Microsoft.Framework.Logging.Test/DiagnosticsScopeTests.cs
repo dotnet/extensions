@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 using Xunit;
-#if NET45
+#if ASPNET50
 using Moq;
 #endif
 
@@ -11,7 +11,7 @@ namespace Microsoft.Framework.Logging.Test
 {
     public class DiagnosticsScopeTests
     {
-#if NET45
+#if ASPNET50
         [Fact]
         public static void DiagnosticsScope_PushesAndPops_LogicalOperationStack()
         {
