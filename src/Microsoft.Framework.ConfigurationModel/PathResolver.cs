@@ -25,11 +25,6 @@ namespace Microsoft.Framework.ConfigurationModel
                 }
 
 #if NET45
-                if (PlatformHelper.IsMono)
-                {
-                    return Directory.GetCurrentDirectory();
-                }
-
                 return AppDomain.CurrentDomain.BaseDirectory;
 #else
                 return ApplicationContext.BaseDirectory;
