@@ -23,13 +23,32 @@ namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
             yield return describer.Describe(
                 typeof(IFakeOpenGenericService<string>),
                 typeof(FakeService),
-                implementationInstance: null,
                 lifecycle: LifecycleKind.Transient);
             yield return describer.Describe(
                 typeof(IFakeOpenGenericService<>),
                 typeof(FakeOpenGenericService<>),
-                implementationInstance: null,
                 lifecycle: LifecycleKind.Transient);
+
+            yield return describer.Transient<IFactoryService>(provider =>
+            {
+                var fakeService = provider.GetService<IFakeService>();
+                return new TransientFactoryService
+                {
+                    FakeService = fakeService,
+                    Value = 42
+                };
+            });
+
+            yield return describer.Scoped<ScopedFactoryService>(provider =>
+            {
+                var fakeService = provider.GetService<IFakeService>();
+                return new ScopedFactoryService
+                {
+                    FakeService = fakeService,
+                };
+            });
+
+            yield return describer.Transient<ServiceAcceptingFactoryService, ServiceAcceptingFactoryService>();
         }
     }
 }

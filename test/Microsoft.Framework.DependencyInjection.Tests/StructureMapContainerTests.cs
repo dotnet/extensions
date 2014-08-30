@@ -19,6 +19,15 @@ namespace Microsoft.Framework.DependencyInjection.Tests
                     {
                         builder.For(descriptor.ServiceType).Use(descriptor.ImplementationType);
                     }
+                    else if (descriptor.ImplementationFactory != null)
+                    {
+                        builder.For(descriptor.ServiceType)
+                               .Use(context =>
+                               {
+                                   var provider = context.GetInstance<IServiceProvider>();
+                                   return descriptor.ImplementationFactory(provider);
+                               });
+                    }
                     else
                     {
                         builder.For(descriptor.ServiceType).Use(descriptor.ImplementationInstance);

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
-using System.Reflection;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -24,6 +22,12 @@ namespace Microsoft.Framework.DependencyInjection
             return services.AddTransient(typeof(TService));
         }
 
+        public static IServiceCollection AddTransient<TService>([NotNull] this IServiceCollection services,
+                                                                [NotNull] Func<IServiceProvider, object> implementationFactory)
+        {
+            return services.AddTransient(typeof(TService), implementationFactory);
+        }
+
         public static IServiceCollection AddScoped<TService, TImplementation>([NotNull]this IServiceCollection services)
         {
             return services.AddScoped(typeof(TService), typeof(TImplementation));
@@ -32,6 +36,12 @@ namespace Microsoft.Framework.DependencyInjection
         public static IServiceCollection AddScoped([NotNull]this IServiceCollection services, Type serviceType)
         {
             return services.AddScoped(serviceType, serviceType);
+        }
+
+        public static IServiceCollection AddScoped<TService>([NotNull] this IServiceCollection services,
+                                                             [NotNull] Func<IServiceProvider, object> implementationFactory)
+        {
+            return services.AddScoped(typeof(TService), implementationFactory);
         }
 
         public static IServiceCollection AddScoped<TService>([NotNull]this IServiceCollection services)
@@ -52,6 +62,12 @@ namespace Microsoft.Framework.DependencyInjection
         public static IServiceCollection AddSingleton<TService>([NotNull]this IServiceCollection services)
         {
             return services.AddSingleton(typeof(TService));
+        }
+
+        public static IServiceCollection AddSingleton<TService>([NotNull] this IServiceCollection services,
+                                                                [NotNull] Func<IServiceProvider, object> implementationFactory)
+        {
+            return services.AddSingleton(typeof(TService), implementationFactory);
         }
 
         public static IServiceCollection AddInstance<TService>([NotNull]this IServiceCollection services, TService implementationInstance)

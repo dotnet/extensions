@@ -25,6 +25,10 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             {
                 return _descriptor.ImplementationInstance;
             }
+            else if (_descriptor.ImplementationFactory != null)
+            {
+                return _descriptor.ImplementationFactory(provider);
+            }
             else
             {
                 return ActivatorUtilities.CreateInstance(provider, _descriptor.ImplementationType);

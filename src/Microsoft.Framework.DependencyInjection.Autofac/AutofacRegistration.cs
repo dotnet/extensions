@@ -59,6 +59,18 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
                             .ConfigureLifecycle(descriptor.Lifecycle);
                     }
                 }
+                else if (descriptor.ImplementationFactory != null)
+                {
+                    var registration = RegistrationBuilder.ForDelegate(descriptor.ServiceType, (context, parameters) =>
+                    {
+                        var serviceProvider = context.Resolve<IServiceProvider>();
+                        return descriptor.ImplementationFactory(serviceProvider);
+                    })
+                    .ConfigureLifecycle(descriptor.Lifecycle)
+                    .CreateRegistration();
+
+                    builder.RegisterComponent(registration);
+                }
                 else
                 {
                     builder

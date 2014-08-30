@@ -17,9 +17,15 @@ namespace Microsoft.Framework.DependencyInjection
 
         IServiceCollection AddTransient(Type service, Type implementationType);
 
+        IServiceCollection AddTransient(Type service, Func<IServiceProvider, object> implementationFactory);
+
         IServiceCollection AddScoped(Type service, Type implementationType);
 
+        IServiceCollection AddScoped(Type service, Func<IServiceProvider, object> implementationFactory);
+
         IServiceCollection AddSingleton(Type service, Type implementationType);
+
+        IServiceCollection AddSingleton(Type service, Func<IServiceProvider, object> implementationFactory);
 
         IServiceCollection AddInstance(Type service, object implementationInstance);
     }

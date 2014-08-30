@@ -42,10 +42,20 @@ namespace Microsoft.Framework.DependencyInjection
             return this;
         }
 
+        public IServiceCollection AddTransient(Type service, Func<IServiceProvider, object> implementationFactory)
+        {
+            return Add(_describe.Transient(service, implementationFactory));
+        }
+
         public IServiceCollection AddScoped(Type service, Type implementationType)
         {
             Add(_describe.Scoped(service, implementationType));
             return this;
+        }
+
+        public IServiceCollection AddScoped(Type service, Func<IServiceProvider, object> implementationFactory)
+        {
+            return Add(_describe.Scoped(service, implementationFactory));
         }
 
         public IServiceCollection AddSingleton(Type service, Type implementationType)
@@ -58,6 +68,11 @@ namespace Microsoft.Framework.DependencyInjection
         {
             Add(_describe.Instance(service, implementationInstance));
             return this;
+        }
+
+        public IServiceCollection AddSingleton(Type service, Func<IServiceProvider, object> implementationFactory)
+        {
+            return Add(_describe.Singleton(service, implementationFactory));
         }
 
         public IEnumerator<IServiceDescriptor> GetEnumerator()

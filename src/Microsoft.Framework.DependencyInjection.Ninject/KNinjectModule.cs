@@ -34,6 +34,14 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
                 {
                     binding = Bind(descriptor.ServiceType).To(descriptor.ImplementationType);
                 }
+                else if (descriptor.ImplementationFactory != null)
+                {
+                    binding = Bind(descriptor.ServiceType).ToMethod(context =>
+                    {
+                        var serviceProvider = context.Kernel.Get<IServiceProvider>();
+                        return descriptor.ImplementationFactory(serviceProvider);
+                    });
+                }
                 else
                 {
                     binding = Bind(descriptor.ServiceType).ToConstant(descriptor.ImplementationInstance);
