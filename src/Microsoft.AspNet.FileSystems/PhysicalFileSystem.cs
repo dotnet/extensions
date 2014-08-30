@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Infrastructure;
 
 namespace Microsoft.AspNet.FileSystems
 {
@@ -60,13 +62,23 @@ namespace Microsoft.AspNet.FileSystems
 
         private static string GetFullRoot(string root)
         {
+            var locator = CallContextServiceLocator.Locator;
+            string applicationBase = null;
+
+            if (locator != null)
+            {
+                var appEnv = (IApplicationEnvironment)locator.ServiceProvider.GetService(typeof(IApplicationEnvironment));
+                applicationBase = appEnv.ApplicationBasePath;
+            }
+            else
+            {
 #if NET45
-            // Need to figure out how to tweak mono's AppBase
-            var applicationBase = PlatformHelper.IsMono ? Directory.GetCurrentDirectory() :
-                                                          AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+                applicationBase = AppDomain.CurrentDomain.BaseDirectory;
 #else
-            var applicationBase = ApplicationContext.BaseDirectory; 
+                applicationBase = ApplicationContext.BaseDirectory;
 #endif
+            }
+
             var fullRoot = Path.GetFullPath(Path.Combine(applicationBase, root));
             // When we do matches in GetFullPath, we want to only match full directory names.
             fullRoot = EnsureTrailingSlash(fullRoot);
