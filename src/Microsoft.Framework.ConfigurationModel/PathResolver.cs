@@ -4,6 +4,8 @@
 #if ASPNETCORE50 || NET45
 using System;
 using System.IO;
+using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Infrastructure;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
@@ -14,6 +16,14 @@ namespace Microsoft.Framework.ConfigurationModel
         {
             get
             {
+                var locator = CallContextServiceLocator.Locator;
+
+                if (locator != null)
+                {
+                    var appEnv = (IApplicationEnvironment)locator.ServiceProvider.GetService(typeof(IApplicationEnvironment));
+                    return appEnv.ApplicationBasePath;
+                }
+
 #if NET45
                 if (PlatformHelper.IsMono)
                 {
