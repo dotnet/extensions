@@ -1,7 +1,8 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
-        "Microsoft.Framework.ConfigurationModel": ""
+        "Microsoft.Framework.ConfigurationModel": "",
+        "Microsoft.Framework.ConfigurationModel.Shared": ""
     },
     "frameworks" : {
         "net45" : {

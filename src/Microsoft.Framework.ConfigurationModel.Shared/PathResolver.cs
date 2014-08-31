@@ -9,8 +9,7 @@ using Microsoft.Framework.Runtime.Infrastructure;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-    // REVIEW: Should this be public or should it just be shared code?
-    public static class PathResolver
+    internal static class PathResolver
     {
         private static string ApplicationBaseDirectory
         {

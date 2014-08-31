@@ -1,0 +1,11 @@
+﻿{
+    "shared": "*.cs",
+    "frameworks": {
+        "net45": { },
+        "aspnetcore50": {
+            "dependencies": { 
+                "System.Runtime": "4.0.20.0"
+            }
+        }
+    }
+}
