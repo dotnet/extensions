@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.MemoryCache
         }
 
         [Fact]
-        public void CompactPrioratizesLRU()
+        public void CompactPrioritizesLRU()
         {
             var cache = new MemoryCache(new TestClock(), listenForMemoryPressure: false);
             cache.Set("key1", "value1");

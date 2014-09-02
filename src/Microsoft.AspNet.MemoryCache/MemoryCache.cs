@@ -277,7 +277,8 @@ namespace Microsoft.AspNet.MemoryCache
                                 neverRemovePriEntries.Add(entry);
                                 break;
                             default:
-                                throw new NotImplementedException(entry.Context.Priority.ToString());
+                                System.Diagnostics.Debug.Assert(false, "Not implemented: " + entry.Context.Priority);
+                                break;
                         }
                     }
                 }
