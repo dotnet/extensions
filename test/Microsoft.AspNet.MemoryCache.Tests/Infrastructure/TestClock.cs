@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.MemoryCache.Infrastructure;
 
-namespace Microsoft.AspNet.MemoryCache
+namespace Microsoft.AspNet.MemoryCache.Infrastructure
 {
     public class TestClock : ISystemClock
     {

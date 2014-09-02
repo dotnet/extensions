@@ -2,23 +2,24 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.MemoryCache.Infrastructure;
 using Xunit;
 
-namespace Microsoft.AspNet.MemoryCache.Tests
+namespace Microsoft.AspNet.MemoryCache
 {
     public class CompactTests
     {
         [Fact]
-        public void CompactEmpty()
+        public void CompactEmptyNoOps()
         {
-            var cache = new MemoryCache(new TestClock(), listenForMemoryPreasure: false);
+            var cache = new MemoryCache(new TestClock(), listenForMemoryPressure: false);
             cache.Compact(0.10);
         }
 
         [Fact]
-        public void CompactEverything()
+        public void Compact100PercentClearsAll()
         {
-            var cache = new MemoryCache(new TestClock(), listenForMemoryPreasure: false);
+            var cache = new MemoryCache(new TestClock(), listenForMemoryPressure: false);
             cache.Set("key1", "value1");
             cache.Set("key2", "value2");
             Assert.Equal(2, cache.Count);
@@ -27,9 +28,9 @@ namespace Microsoft.AspNet.MemoryCache.Tests
         }
 
         [Fact]
-        public void CompactEverythingButNeverRemoves()
+        public void Compact100PercentClearsAllButNeverRemoveItems()
         {
-            var cache = new MemoryCache(new TestClock(), listenForMemoryPreasure: false);
+            var cache = new MemoryCache(new TestClock(), listenForMemoryPressure: false);
             cache.Set("key1", context =>
             {
                 context.SetPriority(CachePreservationPriority.NeverRemove);
@@ -50,9 +51,9 @@ namespace Microsoft.AspNet.MemoryCache.Tests
         }
 
         [Fact]
-        public void CompactAllLowPriortyItems()
+        public void CompactPrioritizesLowPriortyItems()
         {
-            var cache = new MemoryCache(new TestClock(), listenForMemoryPreasure: false);
+            var cache = new MemoryCache(new TestClock(), listenForMemoryPressure: false);
             cache.Set("key1", context =>
             {
                 context.SetPriority(CachePreservationPriority.Low);
@@ -73,9 +74,9 @@ namespace Microsoft.AspNet.MemoryCache.Tests
         }
 
         [Fact]
-        public void CompactSomeItemsRoundingDown()
+        public void CompactPrioratizesLRU()
         {
-            var cache = new MemoryCache(new TestClock(), listenForMemoryPreasure: false);
+            var cache = new MemoryCache(new TestClock(), listenForMemoryPressure: false);
             cache.Set("key1", "value1");
             cache.Set("key2", "value2");
             cache.Set("key3", "value3");

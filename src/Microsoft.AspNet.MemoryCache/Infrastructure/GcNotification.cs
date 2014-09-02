@@ -6,9 +6,9 @@ using System;
 namespace Microsoft.AspNet.MemoryCache.Infrastructure
 {
     /// <summary>
-    /// Registeres a callback that fires each time a Gen2 garbage collection occures,
-    /// presumably due to memory preasure.
-    /// For this to work nobody can have a reference to the instance.
+    /// Registers a callback that fires each time a Gen2 garbage collection occurs,
+    /// presumably due to memory pressure.
+    /// For this to work no components can have a reference to the instance.
     /// </summary>
     public class GcNotification
     {
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.MemoryCache.Infrastructure
         private readonly int _initialCollectionCount;
 
         private GcNotification(Func<object, bool> callback, object state)
-	    {
+        {
             _callback = callback;
             _state = state;
             _initialCollectionCount = GC.CollectionCount(2);

@@ -55,9 +55,9 @@ namespace Microsoft.AspNet.MemoryCache
             AbsoluteExpiration = CreationTime + relative;
         }
 
-        public void SetAbsoluteExpiration(DateTime absoulte)
+        public void SetAbsoluteExpiration(DateTime absolute)
         {
-            AbsoluteExpiration = absoulte;
+            AbsoluteExpiration = absolute;
         }
 
         public void SetSlidingExpiraiton(TimeSpan offset)

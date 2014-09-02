@@ -28,8 +28,8 @@ namespace Microsoft.AspNet.MemoryCache
         /// <summary>
         /// Sets an absolute expiration date for this entry.
         /// </summary>
-        /// <param name="absoulte"></param>
-        void SetAbsoluteExpiration(DateTime absoulte);
+        /// <param name="absolute"></param>
+        void SetAbsoluteExpiration(DateTime absolute);
 
         /// <summary>
         /// Sets an absolute expiration time, relative to now.
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.MemoryCache
         void SetSlidingExpiraiton(TimeSpan offset);
 
         /// <summary>
-        /// Expire this entry if the given event occures.
+        /// Expire this entry if the given event occurs.
         /// </summary>
         void AddExpirationTrigger(IExpirationTrigger trigger);
 

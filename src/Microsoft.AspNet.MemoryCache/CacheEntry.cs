@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.MemoryCache
             {
                 EvictionReason = reason;
             }
-            DetatchTriggers();
+            DetachTriggers();
         }
 
         private bool CheckForExpiredTime(DateTime now)
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.MemoryCache
             return false;
         }
 
-        // TODO: There's a possible race between AttachTriggers and DetachTriggers if a trigger fires almost immidiately.
+        // TODO: There's a possible race between AttachTriggers and DetachTriggers if a trigger fires almost immediately.
         // This may result in some registrations not getting disposed.
         internal void AttachTriggers()
         {
@@ -113,8 +113,8 @@ namespace Microsoft.AspNet.MemoryCache
             entry._notifyCacheOfExpiration(entry);
         }
 
-        // TODO: Thread safey
-        private void DetatchTriggers()
+        // TODO: Thread safety
+        private void DetachTriggers()
         {
             var registrations = TriggerRegistrations;
             if (registrations != null)

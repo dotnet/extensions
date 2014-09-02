@@ -3,9 +3,9 @@
 
 using System;
 
-namespace Microsoft.AspNet.MemoryCache
+namespace Microsoft.AspNet.MemoryCache.Infrastructure
 {
-    internal class TestTrigger() : IExpirationTrigger
+    internal class TestTrigger : IExpirationTrigger
     {
         private bool _isExpired;
         private bool _activeExpirationCallbacks;
@@ -59,20 +59,6 @@ namespace Microsoft.AspNet.MemoryCache
             {
                 Registration.RegisteredCallback(Registration.RegisteredState);
             }
-        }
-    }
-
-    public class TriggerCallbackRegistration : IDisposable
-    {
-        public Action<object> RegisteredCallback { get; set; }
-
-        public object RegisteredState { get; set; }
-
-        public bool Disposed { get; set; }
-
-        public void Dispose()
-        {
-            Disposed = true;
         }
     }
 }

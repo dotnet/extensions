@@ -13,28 +13,28 @@ namespace Microsoft.AspNet.MemoryCache
     {
         private readonly IDictionary<string, CacheEntry> _entries;
         private readonly ReaderWriterLockSlim _entryLock;
-        private bool _disposed = false;
+        private bool _disposed;
 
         private readonly Action<CacheEntry> _entryExpirationNotification;
         private readonly ISystemClock _clock;
 
         public MemoryCache()
-            : this(new SystemClock(), listenForMemoryPreasure: true)
+            : this(new SystemClock(), listenForMemoryPressure: true)
         {
         }
 
         /// <summary>
-        /// Creates a new MemoryCache instance. This overload is inteded for testing purposes.
+        /// Creates a new MemoryCache instance. This overload is intended for testing purposes.
         /// </summary>
         /// <param name="clock"></param>
-        /// <param name="listenForMemoryPreasure"></param>
-        public MemoryCache(ISystemClock clock, bool listenForMemoryPreasure)
+        /// <param name="listenForMemoryPressure"></param>
+        public MemoryCache(ISystemClock clock, bool listenForMemoryPressure)
         {
             _entries = new Dictionary<string, CacheEntry>(StringComparer.Ordinal);
             _entryLock = new ReaderWriterLockSlim();
             _entryExpirationNotification = EntryExpired;
             _clock = clock;
-            if (listenForMemoryPreasure)
+            if (listenForMemoryPressure)
             {
                 GcNotification.Register(DoMemoryPreassureCollection, state: null);
             }

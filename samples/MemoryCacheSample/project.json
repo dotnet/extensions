@@ -1,8 +1,16 @@
 {
-    "dependencies": { 
+    "dependencies": {
         "Microsoft.AspNet.MemoryCache": ""
     },
     "frameworks": {
-        "net45": { }
+        "net45": { },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Console": "4.0.0.0",
+                "System.Runtime": "4.0.20.0",
+                "System.Runtime.Extensions": "4.0.10.0",
+                "System.Runtime.InteropServices": "4.0.20.0"
+            }
+        }
     }
 }

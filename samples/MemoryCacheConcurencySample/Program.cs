@@ -22,7 +22,7 @@ namespace MemoryCacheSample
 
             PeriodciallySetKey(cache, TimeSpan.FromSeconds(13));
 
-            Console.ReadKey();
+            Console.ReadLine();
             Console.WriteLine("Shutting down");
         }
 

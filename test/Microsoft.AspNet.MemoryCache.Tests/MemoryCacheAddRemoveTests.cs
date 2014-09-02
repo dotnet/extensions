@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.MemoryCache
     public class MemoryCacheAddRemoveTests
     {
         [Fact]
-        public void NotFound()
+        public void GetMissingKeyReturnsFalseOrNull()
         {
             var cache = new MemoryCache();
             var obj = new object();
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.MemoryCache
         }
 
         [Fact]
-        public void SetAndGet()
+        public void SetAndGetReturnsObject()
         {
             var cache = new MemoryCache();
             var obj = new object();
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.MemoryCache
         }
 
         [Fact]
-        public void CaseSensitive()
+        public void SetAndGetWorksWithCaseSensitiveKeys()
         {
             var cache = new MemoryCache();
             var obj = new object();
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.MemoryCache
         }
 
         [Fact]
-        public void GetOrAdd()
+        public void GetOrAddDoesNotOverwrite()
         {
             var cache = new MemoryCache();
             var obj = new object();
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.MemoryCache
         }
 
         [Fact]
-        public void Overwrite()
+        public void SetAlwaysOverwrites()
         {
             var cache = new MemoryCache();
             var obj = new object();
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.MemoryCache
         }
 
         [Fact]
-        public void OverwriteWithCallbacks()
+        public void SetOverwritesAndInvokesCallbacks()
         {
             var cache = new MemoryCache();
             var obj = new object();
@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.MemoryCache
         }
 
         [Fact]
-        public void Remove()
+        public void RemoveRemoves()
         {
             var cache = new MemoryCache();
             var obj = new object();
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.MemoryCache
         }
 
         [Fact]
-        public void RemoveWithCallback()
+        public void RemoveRemovesAndInvokesCallback()
         {
             var cache = new MemoryCache();
             var obj = new object();
@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.MemoryCache
         }
 
         [Fact]
-        public void RemoveAndReAddWithCallback()
+        public void RemoveAndReAddFromCallbackWorks()
         {
             var cache = new MemoryCache();
             var obj = new object();

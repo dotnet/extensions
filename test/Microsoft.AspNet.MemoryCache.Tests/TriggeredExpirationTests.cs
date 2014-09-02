@@ -3,14 +3,15 @@
 
 using System;
 using System.Threading;
+using Microsoft.AspNet.MemoryCache.Infrastructure;
 using Xunit;
 
-namespace Microsoft.AspNet.MemoryCache.Tests
+namespace Microsoft.AspNet.MemoryCache
 {
     public class TriggeredExpirationTests
     {
         [Fact]
-        public void AddTriggerRegisters()
+        public void SetWithTriggerRegistersForNotificaiton()
         {
             var cache = new MemoryCache();
             string key = "myKey";
@@ -31,7 +32,7 @@ namespace Microsoft.AspNet.MemoryCache.Tests
         }
 
         [Fact]
-        public void AddLazyTriggerDoesntRegister()
+        public void SetWithLazyTriggerDoesntRegisterForNotification()
         {
             var cache = new MemoryCache();
             string key = "myKey";
@@ -77,7 +78,7 @@ namespace Microsoft.AspNet.MemoryCache.Tests
         }
 
         [Fact]
-        public void ExpireLazyTriggerRemovesItemOnNextAccess()
+        public void ExpiredLazyTriggerRemovesItemOnNextAccess()
         {
             var cache = new MemoryCache();
             string key = "myKey";
@@ -107,7 +108,7 @@ namespace Microsoft.AspNet.MemoryCache.Tests
         }
 
         [Fact]
-        public void RemoveItemDisposesRegistration()
+        public void RemoveItemDisposesTriggerRegistration()
         {
             var cache = new MemoryCache();
             string key = "myKey";
@@ -133,7 +134,7 @@ namespace Microsoft.AspNet.MemoryCache.Tests
         }
 
         [Fact]
-        public void AddExpiredTriggerNeverCaches()
+        public void AddExpiredTriggerPreventsCaching()
         {
             var cache = new MemoryCache();
             string key = "myKey";

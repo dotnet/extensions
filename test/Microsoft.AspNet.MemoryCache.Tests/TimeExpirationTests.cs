@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.MemoryCache.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNet.MemoryCache
@@ -9,10 +10,10 @@ namespace Microsoft.AspNet.MemoryCache
     public class TimeExpirationTests
     {
         [Fact]
-        public void AbsouluteExpirationInThePastNotAdded()
+        public void AbsoluteExpirationInThePastNotAdded()
         {
             var clock = new TestClock();
-            var cache = new MemoryCache(clock, listenForMemoryPreasure: false);
+            var cache = new MemoryCache(clock, listenForMemoryPressure: false);
             var key = "myKey";
             var obj = new object();
 
@@ -29,10 +30,10 @@ namespace Microsoft.AspNet.MemoryCache
         }
 
         [Fact]
-        public void AbsouluteExpiration()
+        public void AbsoluteExpirationExpires()
         {
             var clock = new TestClock();
-            var cache = new MemoryCache(clock, listenForMemoryPreasure: false);
+            var cache = new MemoryCache(clock, listenForMemoryPressure: false);
             var key = "myKey";
             var obj = new object();
 
@@ -58,7 +59,7 @@ namespace Microsoft.AspNet.MemoryCache
         public void NegativeRelativeExpirationThrows()
         {
             var clock = new TestClock();
-            var cache = new MemoryCache(clock, listenForMemoryPreasure: false);
+            var cache = new MemoryCache(clock, listenForMemoryPressure: false);
             var key = "myKey";
             var obj = new object();
 
@@ -76,7 +77,7 @@ namespace Microsoft.AspNet.MemoryCache
         public void ZeroRelativeExpirationThrows()
         {
             var clock = new TestClock();
-            var cache = new MemoryCache(clock, listenForMemoryPreasure: false);
+            var cache = new MemoryCache(clock, listenForMemoryPressure: false);
             var key = "myKey";
             var obj = new object();
 
@@ -91,10 +92,10 @@ namespace Microsoft.AspNet.MemoryCache
         }
 
         [Fact]
-        public void RelativeExpiration()
+        public void RelativeExpirationExpires()
         {
             var clock = new TestClock();
-            var cache = new MemoryCache(clock, listenForMemoryPreasure: false);
+            var cache = new MemoryCache(clock, listenForMemoryPressure: false);
             var key = "myKey";
             var obj = new object();
 
@@ -120,7 +121,7 @@ namespace Microsoft.AspNet.MemoryCache
         public void NegativeSlidingExpirationThrows()
         {
             var clock = new TestClock();
-            var cache = new MemoryCache(clock, listenForMemoryPreasure: false);
+            var cache = new MemoryCache(clock, listenForMemoryPressure: false);
             var key = "myKey";
             var obj = new object();
 
@@ -138,7 +139,7 @@ namespace Microsoft.AspNet.MemoryCache
         public void ZeroSlidingExpirationThrows()
         {
             var clock = new TestClock();
-            var cache = new MemoryCache(clock, listenForMemoryPreasure: false);
+            var cache = new MemoryCache(clock, listenForMemoryPressure: false);
             var key = "myKey";
             var obj = new object();
 
@@ -156,7 +157,7 @@ namespace Microsoft.AspNet.MemoryCache
         public void SlidingExpirationExpiresIfNotAccessed()
         {
             var clock = new TestClock();
-            var cache = new MemoryCache(clock, listenForMemoryPreasure: false);
+            var cache = new MemoryCache(clock, listenForMemoryPressure: false);
             var key = "myKey";
             var obj = new object();
 
@@ -182,7 +183,7 @@ namespace Microsoft.AspNet.MemoryCache
         public void SlidingExpirationRenewedByAccess()
         {
             var clock = new TestClock();
-            var cache = new MemoryCache(clock, listenForMemoryPreasure: false);
+            var cache = new MemoryCache(clock, listenForMemoryPressure: false);
             var key = "myKey";
             var obj = new object();
 
@@ -211,7 +212,7 @@ namespace Microsoft.AspNet.MemoryCache
         public void SlidingExpirationRenewedByAccessUntilAbsoluteExpiration()
         {
             var clock = new TestClock();
-            var cache = new MemoryCache(clock, listenForMemoryPreasure: false);
+            var cache = new MemoryCache(clock, listenForMemoryPressure: false);
             var key = "myKey";
             var obj = new object();
 

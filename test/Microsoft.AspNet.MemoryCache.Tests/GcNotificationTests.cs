@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.MemoryCache.Infrastructure
     public class GcNotificationTests
     {
         [Fact]
-        public void RegisterAndInvoked()
+        public void CallbackRegisteredAndInvoked()
         {
             var callbackInvoked = new ManualResetEvent(false);
             GcNotification.Register(state =>
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.MemoryCache.Infrastructure
         }
 
         [Fact]
-        public void InvokedMultipleTimes()
+        public void CallbackInvokedMultipleTimes()
         {
             int callbackCount = 0;
             var callbackInvoked = new ManualResetEvent(false);

@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.MemoryCache
 {
     // TODO: Granularity?
     /// <summary>
-    /// Specifies how items are prioritized for presurvation during a memory pressure triggered cleanup.
+    /// Specifies how items are prioritized for preservation during a memory pressure triggered cleanup.
     /// </summary>
     [AssemblyNeutral]
     public enum CachePreservationPriority
