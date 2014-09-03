@@ -83,7 +83,6 @@ namespace Microsoft.AspNet.MemoryCache
                 if (!entry.CheckExpired(now))
                 {
                     _entries[key] = entry;
-                    // TODO: Add to timer queue
                     entry.AttachTriggers();
                     added = true;
                 }
@@ -94,12 +93,10 @@ namespace Microsoft.AspNet.MemoryCache
             }
             if (priorEntry != null)
             {
-                // TODO: Execute on a threadpool thread.
                 priorEntry.InvokeEvictionCallbacks();
             }
             if (!added)
             {
-                // TODO: Execute on a threadpool thread.
                 entry.InvokeEvictionCallbacks();
             }
 
@@ -193,7 +190,6 @@ namespace Microsoft.AspNet.MemoryCache
             {
                 _entryLock.ExitWriteLock();
             }
-            // TODO: Execute on a threadpool thread.
             entry.InvokeEvictionCallbacks();
         }
 
@@ -220,7 +216,6 @@ namespace Microsoft.AspNet.MemoryCache
 
             foreach (var entry in entries)
             {
-                // TODO: Execute on a threadpool thread.
                 entry.InvokeEvictionCallbacks();
             }
         }

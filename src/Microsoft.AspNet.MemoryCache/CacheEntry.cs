@@ -3,9 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Microsoft.AspNet.MemoryCache
 {
+    using EvictionCallback = Action<string, object, EvictionReason, object>;
+
     internal class CacheEntry
     {
         private static readonly Action<object> ExpirationCallback = TriggerExpired;
@@ -135,21 +138,27 @@ namespace Microsoft.AspNet.MemoryCache
             Context.PostEvictionCallbacks = null;
             if (callbacks != null)
             {
-                for (int i = 0; i < callbacks.Count; i++)
-                {
-                    var callbackPair = callbacks[i];
-                    var callback = callbackPair.Item1;
-                    var state = callbackPair.Item2;
+                ThreadPool.QueueUserWorkItem(InvokeCallbacks, callbacks);
+            }
+        }
 
-                    try
-                    {
-                        callback(Context.Key, Value, EvictionReason, state);
-                    }
-                    catch (Exception)
-                    {
-                        // This will often be invoked on a background thread, don't let throw.
-                        // TODO: LOG
-                    }
+        private void InvokeCallbacks(object state)
+        {
+            var callbacks = (IList<Tuple<EvictionCallback, object>>)state;
+            for (int i = 0; i < callbacks.Count; i++)
+            {
+                var callbackPair = callbacks[i];
+                var callback = callbackPair.Item1;
+                var callbackState = callbackPair.Item2;
+
+                try
+                {
+                    callback(Context.Key, Value, EvictionReason, callbackState);
+                }
+                catch (Exception)
+                {
+                    // This will be invoked on a background thread, don't let it throw.
+                    // TODO: LOG
                 }
             }
         }
