@@ -13,7 +13,7 @@ namespace Xunit.KRunner
             var test = new Test()
             {
                 DisplayName = testCase.DisplayName,
-                FullyQualifiedName = testCase.DisplayName,
+                FullyQualifiedName = testCase.UniqueID,
             };
 
             if (testCase.SourceInformation != null)

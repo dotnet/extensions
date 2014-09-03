@@ -3,13 +3,14 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Framework.Runtime;
+using Microsoft.Framework.TestAdapter;
+using Xunit.Abstractions;
 using Xunit.ConsoleClient;
 using Xunit.Sdk;
-using Xunit.Abstractions;
-using Microsoft.Framework.TestAdapter;
 #if !NET45
 using System.Diagnostics;
 #endif
@@ -205,9 +206,9 @@ namespace Xunit.KRunner
                 var resultsVisitor = CreateVisitor(consoleLock, options);
 
                 var tests = discoveryVisitor.TestCases;
-                if (options.Tests != null && options.Tests.Length > 0)
+                if (options.Tests != null && options.Tests.Count > 0)
                 {
-                    tests = tests.Where(t => options.Tests.Contains(t.DisplayName)).ToList();
+                    tests = tests.Where(t => IsTestNameMatch(t, options.Tests)).ToList();
                 }
 
                 executor.RunTests(tests, resultsVisitor, executionOptions);
@@ -241,6 +242,37 @@ namespace Xunit.KRunner
             var testFrameworkType = Reflector.GetType(ctorArgs[1], ctorArgs[0]);
             var framework = Activator.CreateInstance(testFrameworkType) as ITestFramework;
             return framework ?? new XunitTestFramework();
+        }
+
+        // Performs fuzzy matching for test names specified at the commandline.
+        // - test name specified at the command line might be a test uniqueId (guid) OR
+        // - test name might be a full test display name (including parameters)
+        // - test name might be the test class + method name
+        private bool IsTestNameMatch(ITestCase test, IList<string> testNames)
+        {
+            foreach (var testName in testNames)
+            {
+                if (string.Equals(testName, test.UniqueID, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+                else if (string.Equals(testName, test.DisplayName, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+                else if (!testName.Contains('(') && test.DisplayName.Contains('('))
+                {
+                    // No parameters in testName, and parameters in the displayname, it might be
+                    // the 'short' display name (without parameters).
+                    var shortName = test.DisplayName.Substring(0, test.DisplayName.IndexOf('('));
+                    if (string.Equals(testName, shortName, StringComparison.Ordinal))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }

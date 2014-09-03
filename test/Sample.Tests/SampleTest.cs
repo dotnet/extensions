@@ -12,5 +12,21 @@ namespace Sample.Tests
         {
             Assert.True(true);
         }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        public void TheoryTest1(int x)
+        {
+        }
+
+        [Theory]
+        [InlineData(1, "Hi")]
+        [InlineData(2, "Hi")]
+        [InlineData(3, "Hi")]
+        public void TheoryTest2(int x, string s)
+        {
+        }
     }
 }
