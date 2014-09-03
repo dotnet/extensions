@@ -108,6 +108,38 @@ namespace Microsoft.AspNet.MemoryCache
         }
 
         [Fact]
+        public void ExpiredLazyTriggerRemovesItemInBackground()
+        {
+            var clock = new TestClock();
+            var cache = new MemoryCache(clock, listenForMemoryPressure: false);
+            string key = "myKey";
+            var obj = new object();
+            var callbackInvoked = new ManualResetEvent(false);
+            var trigger = new TestTrigger() { ActiveExpirationCallbacks = false };
+            cache.Set(key, context =>
+            {
+                context.AddExpirationTrigger(trigger);
+                context.RegisterPostEvictionCallback((subkey, value, reason, state) =>
+                {
+                    // TODO: Verify params
+                    var localCallbackInvoked = (ManualResetEvent)state;
+                    localCallbackInvoked.Set();
+                }, state: callbackInvoked);
+                return obj;
+            });
+            var found = cache.TryGetValue(key, out obj);
+            Assert.True(found);
+
+            clock.Add(TimeSpan.FromMinutes(2));
+            trigger.IsExpired = true;
+            var ignored = cache.Get("otherKey"); // Background expiration checks are triggered by misc cache activity.
+            Assert.True(callbackInvoked.WaitOne(100), "Callback");
+
+            found = cache.TryGetValue(key, out obj);
+            Assert.False(found);
+        }
+
+        [Fact]
         public void RemoveItemDisposesTriggerRegistration()
         {
             var cache = new MemoryCache();

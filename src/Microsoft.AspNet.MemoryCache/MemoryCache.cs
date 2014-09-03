@@ -18,6 +18,9 @@ namespace Microsoft.AspNet.MemoryCache
         private readonly Action<CacheEntry> _entryExpirationNotification;
         private readonly ISystemClock _clock;
 
+        private TimeSpan _expirationScanFrequency;
+        private DateTime _lastExpirationScan;
+
         public MemoryCache()
             : this(new SystemClock(), listenForMemoryPressure: true)
         {
@@ -38,7 +41,8 @@ namespace Microsoft.AspNet.MemoryCache
             {
                 GcNotification.Register(DoMemoryPreassureCollection, state: null);
             }
-            // TODO: Set up expiration monitoring
+            _expirationScanFrequency = TimeSpan.FromMinutes(1); // TODO: Variable
+            _lastExpirationScan = _clock.UtcNow;
         }
 
         /// <summary>
@@ -98,6 +102,9 @@ namespace Microsoft.AspNet.MemoryCache
                 // TODO: Execute on a threadpool thread.
                 entry.InvokeEvictionCallbacks();
             }
+
+            StartScanForExpiredItems();
+
             return value;
         }
 
@@ -138,6 +145,8 @@ namespace Microsoft.AspNet.MemoryCache
                 RemoveEntry(expiredEntry);
             }
 
+            StartScanForExpiredItems();
+
             return found;
         }
 
@@ -163,6 +172,8 @@ namespace Microsoft.AspNet.MemoryCache
                 // TODO: For efficency consider processing these removals in batches.
                 RemoveEntry(entry);
             }
+
+            StartScanForExpiredItems();
         }
 
         private void RemoveEntry(CacheEntry entry)
@@ -218,6 +229,43 @@ namespace Microsoft.AspNet.MemoryCache
         {
             // TODO: For efficency consider processing these expirations in batches.
             RemoveEntry(entry);
+            StartScanForExpiredItems();
+        }
+
+        // Called by multiple actions to see how long it's been since we last checked for expired items.
+        // If sufficent time has elapsed then a scan is initiated on a background task.
+        private void StartScanForExpiredItems()
+        {
+            var now = _clock.UtcNow;
+            if (_expirationScanFrequency < now - _lastExpirationScan)
+            {
+                _lastExpirationScan = now;
+                ThreadPool.QueueUserWorkItem(ScanForExpiredItems);
+            }
+        }
+
+        private void ScanForExpiredItems(object state)
+        {
+            List<CacheEntry> expiredEntries = new List<CacheEntry>();
+
+            _entryLock.EnterReadLock();
+            try
+            {
+                var now = _clock.UtcNow;
+                foreach (var entry in _entries.Values)
+                {
+                    if (entry.CheckExpired(now))
+                    {
+                        expiredEntries.Add(entry);
+                    }
+                }
+            }
+            finally
+            {
+                _entryLock.ExitReadLock();
+            }
+
+            RemoveEntries(expiredEntries);
         }
 
         /// This is called after a Gen2 garbage collection. We assume this means there was memory preassure.

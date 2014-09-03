@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using Microsoft.AspNet.MemoryCache.Infrastructure;
 using Xunit;
 
@@ -49,6 +50,42 @@ namespace Microsoft.AspNet.MemoryCache
             Assert.Same(obj, result);
 
             clock.Add(TimeSpan.FromMinutes(2));
+
+            found = cache.TryGetValue(key, out result);
+            Assert.False(found);
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void AbsoluteExpirationExpiresInBackground()
+        {
+            var clock = new TestClock();
+            var cache = new MemoryCache(clock, listenForMemoryPressure: false);
+            var key = "myKey";
+            var obj = new object();
+            var callbackInvoked = new ManualResetEvent(false);
+
+            var result = cache.Set(key, context =>
+            {
+                context.SetAbsoluteExpiration(clock.UtcNow + TimeSpan.FromMinutes(1));
+                context.RegisterPostEvictionCallback((subkey, value, reason, state) =>
+                {
+                    // TODO: Verify params
+                    var localCallbackInvoked = (ManualResetEvent)state;
+                    localCallbackInvoked.Set();
+                }, state: callbackInvoked);
+                return obj;
+            });
+            Assert.Same(obj, result);
+
+            var found = cache.TryGetValue(key, out result);
+            Assert.True(found);
+            Assert.Same(obj, result);
+
+            clock.Add(TimeSpan.FromMinutes(2));
+            var ignored = cache.Get("otherKey"); // Background expiration checks are triggered by misc cache activity.
+
+            Assert.True(callbackInvoked.WaitOne(100), "Callback");
 
             found = cache.TryGetValue(key, out result);
             Assert.False(found);
