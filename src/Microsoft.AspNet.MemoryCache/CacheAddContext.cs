@@ -20,9 +20,9 @@ namespace Microsoft.AspNet.MemoryCache
 
         public object State { get; internal set; }
 
-        internal DateTime CreationTime { get; set; }
+        internal DateTimeOffset CreationTime { get; set; }
 
-        internal DateTime? AbsoluteExpiration { get; private set; }
+        internal DateTimeOffset? AbsoluteExpiration { get; private set; }
 
         internal TimeSpan? SlidingExpiration { get; private set; }
 
@@ -50,12 +50,12 @@ namespace Microsoft.AspNet.MemoryCache
         {
             if (relative <= TimeSpan.Zero)
             {
-                throw new ArgumentOutOfRangeException("relative", relative, "The relative expriation value must be positive.");
+                throw new ArgumentOutOfRangeException("relative", relative, "The relative expiration value must be positive.");
             }
             AbsoluteExpiration = CreationTime + relative;
         }
 
-        public void SetAbsoluteExpiration(DateTime absolute)
+        public void SetAbsoluteExpiration(DateTimeOffset absolute)
         {
             AbsoluteExpiration = absolute;
         }
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.MemoryCache
         {
             if (offset <= TimeSpan.Zero)
             {
-                throw new ArgumentOutOfRangeException("offset", offset, "The sliding expriation value must be positive.");
+                throw new ArgumentOutOfRangeException("offset", offset, "The sliding expiration value must be positive.");
             }
             SlidingExpiration = offset;
         }

@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.MemoryCache.Infrastructure
             UtcNow = new DateTime(2013, 6, 11, 12, 34, 56, 789);
         }
 
-        public DateTime UtcNow { get; set; }
+        public DateTimeOffset UtcNow { get; set; }
 
         public void Add(TimeSpan timeSpan)
         {

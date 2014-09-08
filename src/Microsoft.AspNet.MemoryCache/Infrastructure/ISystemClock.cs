@@ -11,10 +11,9 @@ namespace Microsoft.AspNet.MemoryCache.Infrastructure
     /// </summary>
     public interface ISystemClock
     {
-        // TODO: DateTime or DateTimeOffset? Security uses DTO.
         /// <summary>
         /// Retrieves the current system time in UTC.
         /// </summary>
-        DateTime UtcNow { get; }
+        DateTimeOffset UtcNow { get; }
     }
 }

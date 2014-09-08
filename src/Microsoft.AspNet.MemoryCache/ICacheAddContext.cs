@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.MemoryCache
         /// Sets an absolute expiration date for this entry.
         /// </summary>
         /// <param name="absolute"></param>
-        void SetAbsoluteExpiration(DateTime absolute);
+        void SetAbsoluteExpiration(DateTimeOffset absolute);
 
         /// <summary>
         /// Sets an absolute expiration time, relative to now.

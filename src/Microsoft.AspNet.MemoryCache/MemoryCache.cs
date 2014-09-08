@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.MemoryCache
         private readonly ISystemClock _clock;
 
         private TimeSpan _expirationScanFrequency;
-        private DateTime _lastExpirationScan;
+        private DateTimeOffset _lastExpirationScan;
 
         public MemoryCache()
             : this(new SystemClock(), listenForMemoryPressure: true)
@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.MemoryCache
 
             if (expiredEntry != null)
             {
-                // TODO: For efficency queue this up for batch removal
+                // TODO: For efficiency queue this up for batch removal
                 RemoveEntry(expiredEntry);
             }
 
@@ -166,7 +166,7 @@ namespace Microsoft.AspNet.MemoryCache
 
             if (entry != null)
             {
-                // TODO: For efficency consider processing these removals in batches.
+                // TODO: For efficiency consider processing these removals in batches.
                 RemoveEntry(entry);
             }
 
@@ -222,13 +222,13 @@ namespace Microsoft.AspNet.MemoryCache
 
         private void EntryExpired(CacheEntry entry)
         {
-            // TODO: For efficency consider processing these expirations in batches.
+            // TODO: For efficiency consider processing these expirations in batches.
             RemoveEntry(entry);
             StartScanForExpiredItems();
         }
 
         // Called by multiple actions to see how long it's been since we last checked for expired items.
-        // If sufficent time has elapsed then a scan is initiated on a background task.
+        // If sufficient time has elapsed then a scan is initiated on a background task.
         private void StartScanForExpiredItems()
         {
             var now = _clock.UtcNow;
@@ -263,7 +263,7 @@ namespace Microsoft.AspNet.MemoryCache
             RemoveEntries(expiredEntries);
         }
 
-        /// This is called after a Gen2 garbage collection. We assume this means there was memory preassure.
+        /// This is called after a Gen2 garbage collection. We assume this means there was memory pressure.
         /// Remove at least 10% of the total entries (or estimated memory?).
         private bool DoMemoryPreassureCollection(object state)
         {

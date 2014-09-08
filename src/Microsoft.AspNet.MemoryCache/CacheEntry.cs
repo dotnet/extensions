@@ -33,9 +33,9 @@ namespace Microsoft.AspNet.MemoryCache
 
         internal IList<IDisposable> TriggerRegistrations { get; set; }
 
-        internal DateTime LastAccessed { get; set; }
+        internal DateTimeOffset LastAccessed { get; set; }
 
-        internal bool CheckExpired(DateTime now)
+        internal bool CheckExpired(DateTimeOffset now)
         {
             return IsExpired || CheckForExpiredTime(now) || CheckForExpiredTriggers();
         }
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.MemoryCache
             DetachTriggers();
         }
 
-        private bool CheckForExpiredTime(DateTime now)
+        private bool CheckForExpiredTime(DateTimeOffset now)
         {
             if (Context.AbsoluteExpiration.HasValue && Context.AbsoluteExpiration.Value <= now)
             {
