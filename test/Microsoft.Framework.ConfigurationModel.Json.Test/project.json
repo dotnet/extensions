@@ -2,7 +2,7 @@
   "dependencies": {
     "Microsoft.Framework.ConfigurationModel": "",
     "Microsoft.Framework.ConfigurationModel.Json": "",
-    "Newtonsoft.Json": "5.0.8",
+    "Newtonsoft.Json": "6.0.4",
     "Xunit.KRunner": "1.0.0-*"
   },
   "frameworks": {
