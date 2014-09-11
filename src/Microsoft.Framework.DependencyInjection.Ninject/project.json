@@ -5,6 +5,7 @@
     "Ninject": "3.0.1.10"
   },
   "frameworks": {
-    "net45": {}
+    "net45": { },
+    "aspnet50": { }
   }
 }
