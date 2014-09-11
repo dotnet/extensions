@@ -35,7 +35,7 @@ namespace Xunit.KRunner
 
         public int Main(string[] args)
         {
-            Console.WriteLine("xUnit.net Project K test runner ({0}-bit {1})", IntPtr.Size * 8, _environment.RuntimeFramework);
+            Console.WriteLine("xUnit.net Project K test runner ({0}-bit {1})", IntPtr.Size * 8, _environment.TargetFramework);
             Console.WriteLine("Copyright (C) 2014 Outercurve Foundation, Microsoft Open Technologies, Inc.");
             Console.WriteLine();
 
