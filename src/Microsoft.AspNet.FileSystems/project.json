@@ -12,7 +12,6 @@
     },
     "aspnetcore50": {
       "dependencies": {
-        "System.AppContext": "4.0.0.0",
         "System.Collections": "4.0.10.0",
         "System.IO": "4.0.10.0",
         "System.IO.FileSystem": "4.0.0.0",
