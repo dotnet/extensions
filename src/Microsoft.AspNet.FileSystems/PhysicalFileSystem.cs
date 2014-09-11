@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+#if ASPNET50 || ASPNETCORE50
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
+#endif
 
 namespace Microsoft.AspNet.FileSystems
 {
@@ -62,23 +64,15 @@ namespace Microsoft.AspNet.FileSystems
 
         private static string GetFullRoot(string root)
         {
-            var locator = CallContextServiceLocator.Locator;
             string applicationBase = null;
 
-            if (locator != null)
-            {
-                var appEnv = (IApplicationEnvironment)locator.ServiceProvider.GetService(typeof(IApplicationEnvironment));
-                applicationBase = appEnv.ApplicationBasePath;
-            }
-            else
-            {
-#if NET45
-                applicationBase = AppDomain.CurrentDomain.BaseDirectory;
-#else
-                applicationBase = AppContext.BaseDirectory;
+#if ASPNET50 || ASPNETCORE50
+            var locator = CallContextServiceLocator.Locator;
+            var appEnv = (IApplicationEnvironment)locator.ServiceProvider.GetService(typeof(IApplicationEnvironment));
+            applicationBase = appEnv.ApplicationBasePath;
+#elif NET45
+            applicationBase = AppDomain.CurrentDomain.BaseDirectory;
 #endif
-            }
-
             var fullRoot = Path.GetFullPath(Path.Combine(applicationBase, root));
             // When we do matches in GetFullPath, we want to only match full directory names.
             fullRoot = EnsureTrailingSlash(fullRoot);
