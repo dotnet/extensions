@@ -4,13 +4,18 @@
         "Microsoft.Framework.ConfigurationModel": "",
         "Microsoft.Framework.ConfigurationModel.Shared": ""
     },
-    "frameworks" : {
-        "net45" : {
+    "frameworks": {
+        "net45": {
             "dependencies": {
-                "System.Xml" : ""
+                "System.Xml": ""
             }
         },
-        "aspnetcore50" : { 
+        "aspnet50": { 
+            "dependencies": {
+                "System.Xml": ""
+            }
+        },
+        "aspnetcore50": {
             "dependencies": {
                 "System.Diagnostics.Debug": "4.0.10.0",
                 "System.Diagnostics.Tools": "4.0.0.0",

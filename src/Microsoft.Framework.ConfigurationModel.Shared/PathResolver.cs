@@ -1,11 +1,14 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if ASPNETCORE50 || NET45
+#if ASPNET50 || ASPNETCORE50 || NET45
 using System;
 using System.IO;
+
+#if ASPNET50 || ASPNETCORE50
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
+#endif
 
 namespace Microsoft.Framework.ConfigurationModel
 {
@@ -15,18 +18,14 @@ namespace Microsoft.Framework.ConfigurationModel
         {
             get
             {
+#if ASPNET50 || ASPNETCORE50
                 var locator = CallContextServiceLocator.Locator;
 
-                if (locator != null)
-                {
-                    var appEnv = (IApplicationEnvironment)locator.ServiceProvider.GetService(typeof(IApplicationEnvironment));
-                    return appEnv.ApplicationBasePath;
-                }
+                var appEnv = (IApplicationEnvironment)locator.ServiceProvider.GetService(typeof(IApplicationEnvironment));
+                return appEnv.ApplicationBasePath;
 
-#if NET45
+#elif NET45
                 return AppDomain.CurrentDomain.BaseDirectory;
-#else
-                return ApplicationContext.BaseDirectory;
 #endif
             }
         }

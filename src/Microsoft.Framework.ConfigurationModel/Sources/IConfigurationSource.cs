@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.Net.Runtime;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-    //[AssemblyNeutral]
+#if ASPNET50 || ASPNETCORE50
+    [Microsoft.Framework.Runtime.AssemblyNeutral]
+#endif
     public interface IConfigurationSource
     {
         bool TryGet(string key, out string value);
