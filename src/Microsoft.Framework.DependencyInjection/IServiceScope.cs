@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-//using Microsoft.Net.Runtime;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -12,7 +11,9 @@ namespace Microsoft.Framework.DependencyInjection
     /// <see cref="Microsoft.Framework.DependencyInjection.IServiceScope.ServiceProvider"/> will be
     /// disposed.
     /// </summary>
-    //[AssemblyNeutral]
+#if ASPNET50 || ASPNETCORE50
+    [Microsoft.Framework.Runtime.AssemblyNeutral]
+#endif
     public interface IServiceScope : IDisposable
     {
         /// <summary>

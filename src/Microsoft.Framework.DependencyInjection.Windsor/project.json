@@ -4,6 +4,7 @@
     "Castle.Windsor": "3.2.1"
   },
   "frameworks": {
-    "net45": {}
+    "net45": { },
+    "aspnet50": { }
   }
 }

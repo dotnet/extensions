@@ -5,6 +5,7 @@
     "Microsoft.Framework.DependencyInjection": ""
   },
   "frameworks": {
-    "net45": {}
+    "net45": { },
+    "aspnet50": { }
   }
 }

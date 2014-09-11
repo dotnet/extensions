@@ -3,11 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-//using Microsoft.Net.Runtime;
 
 namespace Microsoft.Framework.DependencyInjection
 {
-    //[AssemblyNeutral]
+#if ASPNET50 || ASPNETCORE50
+    [Microsoft.Framework.Runtime.AssemblyNeutral]
+#endif
     public interface IServiceCollection : IEnumerable<IServiceDescriptor>
     {
         IServiceCollection Add(IServiceDescriptor descriptor);

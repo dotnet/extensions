@@ -4,6 +4,7 @@
     "structuremap": "2.6.4.1"
   },
   "frameworks": {
-    "net45": {}
+    "net45": { },
+    "aspnet50": { }
   }
 }

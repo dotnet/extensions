@@ -4,6 +4,7 @@
     "Unity": "3.0.1304.1"
   },
   "frameworks": {
-    "net45": {}
+    "net45": { },
+    "aspnet50": { }
   }
 }

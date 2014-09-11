@@ -4,7 +4,12 @@
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*"
   },
   "frameworks": {
-    "net45": {},
+    "net45": { },
+    "aspnet50": {
+      "dependencies": {
+        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
+      }
+    },
     "aspnetcore50": {
       "dependencies": {
         "System.Collections": "4.0.10.0",
@@ -17,7 +22,8 @@
         "System.Runtime": "4.0.20.0",
         "System.Runtime.InteropServices": "4.0.20.0",
         "System.Threading": "4.0.0.0",
-        "System.Threading.Tasks": "4.0.10.0"
+        "System.Threading.Tasks": "4.0.10.0",
+        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
       }
     },
     ".NETPortable,Version=v4.6,Profile=Profile151": {
