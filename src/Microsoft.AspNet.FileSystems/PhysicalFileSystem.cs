@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.FileSystems
 #if NET45
                 applicationBase = AppDomain.CurrentDomain.BaseDirectory;
 #else
-                applicationBase = ApplicationContext.BaseDirectory;
+                applicationBase = AppContext.BaseDirectory;
 #endif
             }
 

@@ -7,7 +7,7 @@
         "net45": { },
         "aspnetcore50": {
             "dependencies": {
-                "System.ApplicationContext": "4.0.0.0",
+                "System.AppContext": "4.0.0.0",
                 "System.Collections": "4.0.10.0",
                 "System.IO": "4.0.10.0",
                 "System.IO.FileSystem": "4.0.0.0",
