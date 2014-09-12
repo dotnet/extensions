@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using Xunit;
 
-namespace Microsoft.AspNet.MemoryCache.Infrastructure
+namespace Microsoft.Framework.Cache.Memory.Infrastructure
 {
     public class GcNotificationTests
     {

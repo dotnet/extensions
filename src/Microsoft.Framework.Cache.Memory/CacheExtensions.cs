@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.MemoryCache
+namespace Microsoft.Framework.Cache.Memory
 {
     public static class CacheExtensions
     {

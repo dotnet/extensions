@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.MemoryCache.Infrastructure
+namespace Microsoft.Framework.Cache.Memory.Infrastructure
 {
     /// <summary>
     /// Registers a callback that fires each time a Gen2 garbage collection occurs,

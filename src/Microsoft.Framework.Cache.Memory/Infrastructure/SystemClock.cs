@@ -4,16 +4,22 @@
 
 using System;
 
-namespace Microsoft.AspNet.MemoryCache.Infrastructure
+namespace Microsoft.Framework.Cache.Memory.Infrastructure
 {
     /// <summary>
-    /// Abstracts the system clock to facilitate testing.
+    /// Provides access to the normal system clock.
     /// </summary>
-    public interface ISystemClock
+    public class SystemClock : ISystemClock
     {
         /// <summary>
         /// Retrieves the current system time in UTC.
         /// </summary>
-        DateTimeOffset UtcNow { get; }
+        public DateTimeOffset UtcNow
+        {
+            get
+            {
+                return DateTimeOffset.UtcNow;
+            }
+        }
     }
 }

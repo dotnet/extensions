@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Framework.Runtime;
 
-namespace Microsoft.AspNet.MemoryCache
+namespace Microsoft.Framework.Cache.Memory
 {
     [AssemblyNeutral]
     public interface IMemoryCache : IDisposable

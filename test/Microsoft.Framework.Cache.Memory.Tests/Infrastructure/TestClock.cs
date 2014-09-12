@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.MemoryCache.Infrastructure
+namespace Microsoft.Framework.Cache.Memory.Infrastructure
 {
     public class TestClock : ISystemClock
     {

@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.MemoryCache
+namespace Microsoft.Framework.Cache.Memory
 {
     using EvictionCallback = Action<string, object, EvictionReason, object>;
 

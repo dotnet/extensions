@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.22013.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.MemoryCache", "src\Microsoft.AspNet.MemoryCache\Microsoft.AspNet.MemoryCache.kproj", "{966D16D8-5D4E-4433-9DA7-F53EE44B7EE7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Cache.Memory", "src\Microsoft.Framework.Cache.Memory\Microsoft.Framework.Cache.Memory.kproj", "{966D16D8-5D4E-4433-9DA7-F53EE44B7EE7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5A04042D-438D-407B-B239-0CAD6A2BD8C2}"
 EndProject
@@ -13,7 +13,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MemoryCacheSample", "sample
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2E14F082-1A04-4E7C-9162-1675119F9A9E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.MemoryCache.Tests", "test\Microsoft.AspNet.MemoryCache.Tests\Microsoft.AspNet.MemoryCache.Tests.kproj", "{1C24C0CE-84B6-4D6C-B484-32741D704FD8}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Cache.Memory.Tests", "test\Microsoft.Framework.Cache.Memory.Tests\Microsoft.Framework.Cache.Memory.Tests.kproj", "{1C24C0CE-84B6-4D6C-B484-32741D704FD8}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MemoryCacheConcurencySample", "samples\MemoryCacheConcurencySample\MemoryCacheConcurencySample.kproj", "{FF7C7587-BBCA-4574-95AE-101A6FF63B8F}"
 EndProject

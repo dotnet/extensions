@@ -1,6 +1,6 @@
 using System;
 using System.Threading;
-using Microsoft.AspNet.MemoryCache;
+using Microsoft.Framework.Cache.Memory;
 
 namespace MemoryCacheSample
 {

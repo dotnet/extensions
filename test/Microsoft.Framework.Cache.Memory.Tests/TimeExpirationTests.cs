@@ -3,10 +3,10 @@
 
 using System;
 using System.Threading;
-using Microsoft.AspNet.MemoryCache.Infrastructure;
+using Microsoft.Framework.Cache.Memory.Infrastructure;
 using Xunit;
 
-namespace Microsoft.AspNet.MemoryCache
+namespace Microsoft.Framework.Cache.Memory
 {
     public class TimeExpirationTests
     {

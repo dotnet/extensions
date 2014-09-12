@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Microsoft.AspNet.MemoryCache.Infrastructure;
+using Microsoft.Framework.Cache.Memory.Infrastructure;
 
-namespace Microsoft.AspNet.MemoryCache
+namespace Microsoft.Framework.Cache.Memory
 {
     public class MemoryCache : IMemoryCache
     {
