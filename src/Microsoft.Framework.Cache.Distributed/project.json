@@ -1,0 +1,29 @@
+﻿{
+  "version": "1.0.0-*",
+  "dependencies": {
+    "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
+  },
+  "frameworks": {
+    "net45": {},
+    "aspnetcore50": {
+      "dependencies": {
+        "System.Collections": "4.0.10.0",
+        "System.ComponentModel": "4.0.0.0",
+        "System.Diagnostics.Debug": "4.0.10.0",
+        "System.Diagnostics.Tools": "4.0.0.0",
+        "System.Globalization": "4.0.10.0",
+        "System.Globalization.Extensions": "4.0.0.0",
+        "System.IO": "4.0.10.0",
+        "System.Linq": "4.0.0.0",
+        "System.Runtime": "4.0.20.0",
+        "System.Runtime.Extensions": "4.0.10.0",
+        "System.Runtime.InteropServices": "4.0.20.0",
+        "System.Security.Principal" : "4.0.0.0",
+        "System.Threading": "4.0.0.0",
+        "System.Threading.Tasks": "4.0.10.0",
+        "System.Threading.ThreadPool": "4.0.10.0",
+        "System.Threading.Timer": "4.0.0.0"
+      }
+    }
+  }
+}
