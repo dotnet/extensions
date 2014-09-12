@@ -50,7 +50,13 @@ namespace Microsoft.AspNet.FileSystems
         /// <param name="root">The root directory. This should be an absolute path.</param>
         public PhysicalFileSystem(string root)
         {
-            Root = GetFullRoot(root);
+            if (!Path.IsPathRooted(root))
+            {
+                throw new ArgumentException("The path must be absolute.", "root");
+            }
+            var fullRoot = Path.GetFullPath(root);
+            // When we do matches in GetFullPath, we want to only match full directory names.
+            Root = EnsureTrailingSlash(fullRoot);
             if (!Directory.Exists(Root))
             {
                 throw new DirectoryNotFoundException(Root);
@@ -61,14 +67,6 @@ namespace Microsoft.AspNet.FileSystems
         /// The root directory for this instance.
         /// </summary>
         public string Root { get; private set; }
-
-        private static string GetFullRoot(string root)
-        {
-            var fullRoot = Path.GetFullPath(root);
-            // When we do matches in GetFullPath, we want to only match full directory names.
-            fullRoot = EnsureTrailingSlash(fullRoot);
-            return fullRoot;
-        }
 
         private string GetFullPath(string path)
         {

@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public void ExistingFilesReturnTrue()
         {
-            var provider = new PhysicalFileSystem(".");
+            var provider = new PhysicalFileSystem(Environment.CurrentDirectory);
             IFileInfo info;
             provider.TryGetFileInfo("File.txt", out info).ShouldBe(true);
             info.ShouldNotBe(null);
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public void MissingFilesReturnFalse()
         {
-            var provider = new PhysicalFileSystem(".");
+            var provider = new PhysicalFileSystem(Environment.CurrentDirectory);
             IFileInfo info;
             provider.TryGetFileInfo("File5.txt", out info).ShouldBe(false);
             info.ShouldBe(null);
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public void SubPathActsAsRoot()
         {
-            var provider = new PhysicalFileSystem("sub");
+            var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, "sub"));
             IFileInfo info;
             provider.TryGetFileInfo("File2.txt", out info).ShouldBe(true);
             info.ShouldNotBe(null);
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.FileSystems
             var serviceProvider = CallContextServiceLocator.Locator.ServiceProvider;
             var appEnvironment = (IApplicationEnvironment)serviceProvider.GetService(typeof(IApplicationEnvironment));
 
-            var provider = new PhysicalFileSystem("sub");
+            var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, "sub"));
             IFileInfo info;
 
             provider.TryGetFileInfo("..\\File.txt", out info).ShouldBe(false);
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.FileSystems
         public void TryGetParentPath_ReturnsFalseIfPathIsNullOrEmpty(string subpath)
         {
             // Arrange
-            var provider = new PhysicalFileSystem("sub");
+            var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, "sub"));
 
             // Act and Assert
             provider.TryGetParentPath(subpath, out var parentPath).ShouldBe(false);
@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.FileSystems
         public void TryGetParentPath_ReturnsFalseIfPathIsNotSubDirectoryOfRoot(string subpath)
         {
             // Arrange
-            var provider = new PhysicalFileSystem("sub");
+            var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, "sub"));
 
             // Act and Assert
             provider.TryGetParentPath(subpath, out var parentPath).ShouldBe(false);
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.FileSystems
         public void TryGetParentPath_ReturnsParentPath(string root, string subpath, string expected)
         {
             // Arrange
-            var provider = new PhysicalFileSystem(root);
+            var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, root));
 
             // Act and Assert
             provider.TryGetParentPath(subpath, out var parentPath).ShouldBe(true);
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.FileSystems
         public void TryGetParentPath_AllowsTraversingToTheRoot(string input)
         {
             // Arrange
-            var provider = new PhysicalFileSystem("");
+            var provider = new PhysicalFileSystem(Environment.CurrentDirectory);
 
             // Act and Assert - 1
             provider.TryGetParentPath(input, out var path1).ShouldBe(true);
