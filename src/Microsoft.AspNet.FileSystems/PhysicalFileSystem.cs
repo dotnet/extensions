@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.FileSystems
         /// <summary>
         /// Creates a new instance of a PhysicalFileSystem at the given root directory.
         /// </summary>
-        /// <param name="root">The root directory</param>
+        /// <param name="root">The root directory. This should be an absolute path.</param>
         public PhysicalFileSystem(string root)
         {
             Root = GetFullRoot(root);
@@ -64,16 +64,7 @@ namespace Microsoft.AspNet.FileSystems
 
         private static string GetFullRoot(string root)
         {
-            string applicationBase = null;
-
-#if ASPNET50 || ASPNETCORE50
-            var locator = CallContextServiceLocator.Locator;
-            var appEnv = (IApplicationEnvironment)locator.ServiceProvider.GetService(typeof(IApplicationEnvironment));
-            applicationBase = appEnv.ApplicationBasePath;
-#elif NET45
-            applicationBase = AppDomain.CurrentDomain.BaseDirectory;
-#endif
-            var fullRoot = Path.GetFullPath(Path.Combine(applicationBase, root));
+            var fullRoot = Path.GetFullPath(root);
             // When we do matches in GetFullPath, we want to only match full directory names.
             fullRoot = EnsureTrailingSlash(fullRoot);
             return fullRoot;
