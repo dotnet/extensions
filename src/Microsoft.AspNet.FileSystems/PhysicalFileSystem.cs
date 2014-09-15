@@ -4,10 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-#if ASPNET50 || ASPNETCORE50
-using Microsoft.Framework.Runtime;
-using Microsoft.Framework.Runtime.Infrastructure;
-#endif
 
 namespace Microsoft.AspNet.FileSystems
 {
@@ -52,7 +48,7 @@ namespace Microsoft.AspNet.FileSystems
         {
             if (!Path.IsPathRooted(root))
             {
-                throw new ArgumentException("The path must be absolute.", "root");
+                throw new ArgumentException("The path must be absolute.", nameof(root));
             }
             var fullRoot = Path.GetFullPath(root);
             // When we do matches in GetFullPath, we want to only match full directory names.
