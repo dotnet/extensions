@@ -60,7 +60,7 @@ namespace Microsoft.Framework.Cache.Memory
             AbsoluteExpiration = absolute;
         }
 
-        public void SetSlidingExpiraiton(TimeSpan offset)
+        public void SetSlidingExpiration(TimeSpan offset)
         {
             if (offset <= TimeSpan.Zero)
             {

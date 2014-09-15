@@ -42,7 +42,7 @@ namespace Microsoft.Framework.Cache.Memory
         /// This will not extend the entry lifetime beyond the absolute expiration (if set).
         /// </summary>
         /// <param name="offset"></param>
-        void SetSlidingExpiraiton(TimeSpan offset);
+        void SetSlidingExpiration(TimeSpan offset);
 
         /// <summary>
         /// Expire this entry if the given event occurs.

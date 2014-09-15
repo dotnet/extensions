@@ -36,7 +36,7 @@ namespace MemoryCacheSample
         {
             var value = (string)context.State;
             context.SetAbsoluteExpiration(TimeSpan.FromSeconds(7));
-            context.SetSlidingExpiraiton(TimeSpan.FromSeconds(3));
+            context.SetSlidingExpiration(TimeSpan.FromSeconds(3));
             context.RegisterPostEvictionCallback(AfterEvicted, null);
             return value;
         }

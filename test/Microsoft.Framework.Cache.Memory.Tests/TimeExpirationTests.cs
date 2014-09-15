@@ -166,7 +166,7 @@ namespace Microsoft.Framework.Cache.Memory
             {
                 var result = cache.Set(key, context =>
                 {
-                    context.SetSlidingExpiraiton(TimeSpan.FromMinutes(-1));
+                    context.SetSlidingExpiration(TimeSpan.FromMinutes(-1));
                     return obj;
                 });
             });
@@ -184,7 +184,7 @@ namespace Microsoft.Framework.Cache.Memory
             {
                 var result = cache.Set(key, context =>
                 {
-                    context.SetSlidingExpiraiton(TimeSpan.Zero);
+                    context.SetSlidingExpiration(TimeSpan.Zero);
                     return obj;
                 });
             });
@@ -200,7 +200,7 @@ namespace Microsoft.Framework.Cache.Memory
 
             var result = cache.Set(key, context =>
             {
-                context.SetSlidingExpiraiton(TimeSpan.FromMinutes(1));
+                context.SetSlidingExpiration(TimeSpan.FromMinutes(1));
                 return obj;
             });
             Assert.Same(obj, result);
@@ -226,7 +226,7 @@ namespace Microsoft.Framework.Cache.Memory
 
             var result = cache.Set(key, context =>
             {
-                context.SetSlidingExpiraiton(TimeSpan.FromMinutes(1));
+                context.SetSlidingExpiration(TimeSpan.FromMinutes(1));
                 return obj;
             });
             Assert.Same(obj, result);
@@ -255,7 +255,7 @@ namespace Microsoft.Framework.Cache.Memory
 
             var result = cache.Set(key, context =>
             {
-                context.SetSlidingExpiraiton(TimeSpan.FromMinutes(1));
+                context.SetSlidingExpiration(TimeSpan.FromMinutes(1));
                 context.SetAbsoluteExpiration(TimeSpan.FromMinutes(2));
                 return obj;
             });

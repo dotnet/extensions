@@ -50,7 +50,7 @@ namespace MemoryCacheSample
             // Automatically remove if not accessed in the given time
             result = cache.GetOrAdd(key, state, context =>
             {
-                context.SetSlidingExpiraiton(TimeSpan.FromMinutes(5));
+                context.SetSlidingExpiration(TimeSpan.FromMinutes(5));
                 return new object();
             });
 
@@ -67,7 +67,7 @@ namespace MemoryCacheSample
             // Automatically remove at a certain time (if it lives that long)
             result = cache.GetOrAdd(key, state, context =>
             {
-                context.SetSlidingExpiraiton(TimeSpan.FromMinutes(5));
+                context.SetSlidingExpiration(TimeSpan.FromMinutes(5));
 
                 context.SetAbsoluteExpiration(new DateTime(2014, 12, 31));
                 // or relative:
