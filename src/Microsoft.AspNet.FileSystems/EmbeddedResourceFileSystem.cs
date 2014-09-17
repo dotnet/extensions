@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Microsoft.Framework.Expiration.Interfaces;
 
 namespace Microsoft.AspNet.FileSystems
 {
@@ -48,47 +49,56 @@ namespace Microsoft.AspNet.FileSystems
         }
 
         /// <summary>
-        /// Locate a file at the given path
+        /// Locates a file at the given path.
         /// </summary>
-        /// <param name="subpath">The path that identifies the file</param>
-        /// <param name="fileInfo">The discovered file if any</param>
-        /// <returns>True if a file was located at the given path</returns>
-        public bool TryGetFileInfo(string subpath, out IFileInfo fileInfo)
+        /// <param name="subpath">The path that identifies the file. </param>
+        /// <returns>The file information. Caller must check Exists property.</returns>
+        public IFileInfo GetFileInfo(string subpath)
         {
-            // "/file.txt" expected.
-            if (string.IsNullOrEmpty(subpath) || subpath[0] != '/')
+            if (string.IsNullOrEmpty(subpath))
             {
-                fileInfo = null;
-                return false;
+                return new NotFoundFileInfo(subpath);
             }
 
-            string fileName = subpath.Substring(1);  // Drop the leading '/'
-            string resourcePath = _baseNamespace + fileName;
+            // Relative paths starting with a leading slash okay
+            if (subpath.StartsWith("/", StringComparison.Ordinal))
+            {
+                subpath = subpath.Substring(1);
+            }
+
+            string resourcePath = _baseNamespace + subpath;
+            string name = Path.GetFileName(subpath);
             if (_assembly.GetManifestResourceInfo(resourcePath) == null)
             {
-                fileInfo = null;
-                return false;
+                return new NotFoundFileInfo(name);
             }
-            fileInfo = new EmbeddedResourceFileInfo(_assembly, resourcePath, fileName, _lastModified);
-            return true;
+            return new EmbeddedResourceFileInfo(_assembly, resourcePath, name, _lastModified);
         }
 
         /// <summary>
-        /// Enumerate a directory at the given path, if any.
-        /// This file system uses a flat directory structure. Everything under the base namespace is considered to be one directory.
-        /// </summary>
-        /// <param name="subpath">The path that identifies the directory</param>
-        /// <param name="contents">The contents if any</param>
-        /// <returns>True if a directory was located at the given path</returns>
-        public bool TryGetDirectoryContents(string subpath, out IEnumerable<IFileInfo> contents)
+        /// Enumerate a directory at the given path, if any.		
+        /// This file system uses a flat directory structure. Everything under the base namespace is considered to be one directory.		
+        /// </summary>		
+        /// <param name="subpath">The path that identifies the directory</param>		
+        /// <returns>Contents of the directory. Caller must check Exists property.</returns>
+        public IDirectoryContents GetDirectoryContents(string subpath)
         {
             // The file name is assumed to be the remainder of the resource name.
+            if (subpath == null)
+            {
+                return new NotFoundDirectoryContents();
+            }
+
+            // Relative paths starting with a leading slash okay
+            if (subpath.StartsWith("/", StringComparison.Ordinal))
+            {
+                subpath = subpath.Substring(1);
+            }
 
             // Non-hierarchal.
-            if (!subpath.Equals("/"))
+            if (!subpath.Equals(string.Empty))
             {
-                contents = null;
-                return false;
+                return new NotFoundDirectoryContents();
             }
 
             IList<IFileInfo> entries = new List<IFileInfo>();
@@ -105,24 +115,7 @@ namespace Microsoft.AspNet.FileSystems
                 }
             }
 
-            contents = entries;
-            return true;
-        }
-
-        /// <inheritdoc />
-        public bool TryGetParentPath(string subpath, out string parentPath)
-        {
-            if (string.IsNullOrEmpty(subpath) || 
-                subpath[0] != '/' || 
-                subpath.Equals("/", StringComparison.Ordinal))
-            {
-                // If the path does not start with the root, or are already at the root, return false.
-                parentPath = null;
-                return false;
-            }
-
-            parentPath = "/";
-            return true;
+            return new EnumerableDirectoryContents(entries);
         }
 
         private class EmbeddedResourceFileInfo : IFileInfo
@@ -130,16 +123,21 @@ namespace Microsoft.AspNet.FileSystems
             private readonly Assembly _assembly;
             private readonly DateTime _lastModified;
             private readonly string _resourcePath;
-            private readonly string _fileName;
+            private readonly string _name;
 
             private long? _length;
 
-            public EmbeddedResourceFileInfo(Assembly assembly, string resourcePath, string fileName, DateTime lastModified)
+            public EmbeddedResourceFileInfo(Assembly assembly, string resourcePath, string name, DateTime lastModified)
             {
                 _assembly = assembly;
                 _lastModified = lastModified;
                 _resourcePath = resourcePath;
-                _fileName = fileName;
+                _name = name;
+            }
+
+            public bool Exists
+            {
+                get { return true; }
             }
 
             public long Length
@@ -165,7 +163,7 @@ namespace Microsoft.AspNet.FileSystems
 
             public string Name
             {
-                get { return _fileName; }
+                get { return _name; }
             }
 
             public DateTime LastModified
@@ -178,6 +176,11 @@ namespace Microsoft.AspNet.FileSystems
                 get { return false; }
             }
 
+            public bool IsReadOnly
+            {
+                get { return true; }
+            }
+
             public Stream CreateReadStream()
             {
                 Stream stream = _assembly.GetManifestResourceStream(_resourcePath);
@@ -186,6 +189,21 @@ namespace Microsoft.AspNet.FileSystems
                     _length = stream.Length;
                 }
                 return stream;
+            }
+
+            public void WriteContent(byte[] content)
+            {
+                throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(EmbeddedResourceFileSystem), nameof(WriteContent)));
+            }
+
+            public void Delete()
+            {
+                throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(EmbeddedResourceFileSystem), nameof(Delete)));
+            }
+
+            public IExpirationTrigger CreateFileChangeTrigger()
+            {
+                throw new NotSupportedException(string.Format("{0} does not support {1}.", nameof(EmbeddedResourceFileSystem), nameof(CreateFileChangeTrigger)));
             }
         }
     }

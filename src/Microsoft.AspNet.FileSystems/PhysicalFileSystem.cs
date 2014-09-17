@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Framework.Expiration.Interfaces;
 
 namespace Microsoft.AspNet.FileSystems
 {
@@ -94,60 +95,74 @@ namespace Microsoft.AspNet.FileSystems
         /// Locate a file at the given path by directly mapping path segments to physical directories.
         /// </summary>
         /// <param name="subpath">A path under the root directory</param>
-        /// <param name="fileInfo">The discovered file, if any</param>
-        /// <returns>True if a file was discovered at the given path</returns>
-        public bool TryGetFileInfo(string subpath, out IFileInfo fileInfo)
+        /// <returns>The file information. Caller must check Exists property. </returns>
+        public IFileInfo GetFileInfo(string subpath)
         {
-            try
+            if (string.IsNullOrEmpty(subpath))
             {
-                // For *nix systems, absolute paths would start with '/'. Trimming the slash in
-                // such scenarios would result in incorrect interpretation of path. We'll do a check
-                // to verify that the path doesn't already look like it's rooted before trimming the
-                // '/' token indicating rooted relative to this FileSystem's Root.
-                if (!IsRooted(subpath) && subpath.StartsWith("/", StringComparison.Ordinal))
-                {
-                    subpath = subpath.Substring(1);
-                }
-                var fullPath = GetFullPath(subpath);
-                if (fullPath != null)
-                {
-                    var info = new FileInfo(fullPath);
-                    if (info.Exists && !IsRestricted(info))
-                    {
-                        fileInfo = new PhysicalFileInfo(info);
-                        return true;
-                    }
-                }
+                return new NotFoundFileInfo(subpath);
             }
-            catch (ArgumentException)
+
+            // Relative paths starting with a leading slash okay
+            if (subpath.StartsWith("/", StringComparison.Ordinal))
             {
+                subpath = subpath.Substring(1);
             }
-            fileInfo = null;
-            return false;
+
+            // Absolute paths not permitted.
+            if (Path.IsPathRooted(subpath))
+            {
+                return new NotFoundFileInfo(subpath);
+            }
+
+            var fullPath = GetFullPath(subpath);
+            if (fullPath == null || IsRestricted(subpath))
+            {
+                return new NotFoundFileInfo(subpath);
+            }
+
+            var fileInfo = new FileInfo(fullPath);
+            if (fileInfo.Exists)
+            {
+                return new PhysicalFileInfo(fileInfo);
+            }
+
+            return new NotFoundFileInfo(subpath);
         }
 
         /// <summary>
         /// Enumerate a directory at the given path, if any.
         /// </summary>
         /// <param name="subpath">A path under the root directory</param>
-        /// <param name="contents">The discovered directories, if any</param>
-        /// <returns>True if a directory was discovered at the given path</returns>
-        public bool TryGetDirectoryContents(string subpath, out IEnumerable<IFileInfo> contents)
+        /// <returns>Contents of the directory. Caller must check Exists property.</returns>
+        public IDirectoryContents GetDirectoryContents(string subpath)
         {
             try
             {
-                if (!IsRooted(subpath) && subpath.StartsWith("/", StringComparison.Ordinal))
+                if (subpath == null)
+                {
+                    return new NotFoundDirectoryContents();
+                }
+
+                // Relative paths starting with a leading slash okay
+                if (subpath.StartsWith("/", StringComparison.Ordinal))
                 {
                     subpath = subpath.Substring(1);
                 }
+
+                // Absolute paths not permitted.
+                if (Path.IsPathRooted(subpath))
+                {
+                    return new NotFoundDirectoryContents();
+                }
+
                 var fullPath = GetFullPath(subpath);
                 if (fullPath != null)
                 {
                     var directoryInfo = new DirectoryInfo(fullPath);
                     if (!directoryInfo.Exists)
                     {
-                        contents = null;
-                        return false;
+                        return new NotFoundDirectoryContents();
                     }
 
                     IEnumerable<FileSystemInfo> physicalInfos = directoryInfo.EnumerateFileSystemInfos();
@@ -164,12 +179,9 @@ namespace Microsoft.AspNet.FileSystems
                             virtualInfos.Add(new PhysicalDirectoryInfo((DirectoryInfo)fileSystemInfo));
                         }
                     }
-                    contents = virtualInfos;
-                    return true;
+
+                    return new EnumerableDirectoryContents(virtualInfos);
                 }
-            }
-            catch (ArgumentException)
-            {
             }
             catch (DirectoryNotFoundException)
             {
@@ -177,60 +189,12 @@ namespace Microsoft.AspNet.FileSystems
             catch (IOException)
             {
             }
-            contents = null;
-            return false;
+            return new NotFoundDirectoryContents();
         }
 
-        /// <inheritdoc />
-        public bool TryGetParentPath(string subpath, out string parentPath)
+        private bool IsRestricted(string name)
         {
-            if (string.IsNullOrEmpty(subpath))
-            {
-                parentPath = null;
-                return false;
-            }
-
-            if (!IsRooted(subpath) && subpath[0] == '/')
-            {
-                subpath = subpath.Substring(1);
-            }
-
-            var fullPath = GetFullPath(subpath);
-            if (fullPath != null)
-            {
-                DirectoryInfo parentDirectory = null;
-                if (Directory.Exists(fullPath))
-                {
-                    parentDirectory = new DirectoryInfo(fullPath).Parent;
-                }
-                else if (File.Exists(fullPath))
-                {
-                    parentDirectory = new FileInfo(fullPath).Directory;
-                }
-
-                if (parentDirectory != null)
-                {
-                    // If the parent directory is set, verify it's is rooted under this FileSystem's root.
-                    // The appRoot itself needs to be special cased since we add a trailing slash when 
-                    // generating it.
-                    var pathWithTrailingSlash = EnsureTrailingSlash(parentDirectory.FullName);
-                    if (IsRooted(pathWithTrailingSlash))
-                    {
-                        parentPath = Root.Length == pathWithTrailingSlash.Length ?
-                                        string.Empty :
-                                        pathWithTrailingSlash.Substring(Root.Length, pathWithTrailingSlash.Length - Root.Length - 1);
-                        return true;
-                    }
-                }
-            }
-
-            parentPath = null;
-            return false;
-        }
-
-        private bool IsRestricted(FileInfo fileInfo)
-        {
-            string fileName = Path.GetFileNameWithoutExtension(fileInfo.Name);
+            string fileName = Path.GetFileNameWithoutExtension(name);
             return RestrictedFileNames.ContainsKey(fileName);
         }
 
@@ -241,6 +205,11 @@ namespace Microsoft.AspNet.FileSystems
             public PhysicalFileInfo(FileInfo info)
             {
                 _info = info;
+            }
+
+            public bool Exists
+            {
+                get { return _info.Exists; }
             }
 
             public long Length
@@ -268,16 +237,41 @@ namespace Microsoft.AspNet.FileSystems
                 get { return false; }
             }
 
+            public bool IsReadOnly
+            {
+                get
+                {
+#if ASPNET50
+                    return _info.IsReadOnly;
+#else
+                    // TODO: Why property not available on CoreCLR
+                    return false;
+#endif
+                }
+            }
+
             public Stream CreateReadStream()
             {
-#if NET45
                 // Note: Buffer size must be greater than zero, even if the file size is zero.
                 return new FileStream(PhysicalPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1024 * 64,
                     FileOptions.Asynchronous | FileOptions.SequentialScan);
-#else
-                // Note: Buffer size must be greater than zero, even if the file size is zero.
-                return new FileStream(PhysicalPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1024 * 64);
-#endif
+            }
+
+            public void WriteContent(byte[] content)
+            {
+                File.WriteAllBytes(PhysicalPath, content);
+                _info.Refresh();
+            }
+
+            public void Delete()
+            {
+                File.Delete(PhysicalPath);
+                _info.Refresh();
+            }
+
+            public IExpirationTrigger CreateFileChangeTrigger()
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -288,6 +282,11 @@ namespace Microsoft.AspNet.FileSystems
             public PhysicalDirectoryInfo(DirectoryInfo info)
             {
                 _info = info;
+            }
+
+            public bool Exists
+            {
+                get { return _info.Exists; }
             }
 
             public long Length
@@ -315,9 +314,29 @@ namespace Microsoft.AspNet.FileSystems
                 get { return true; }
             }
 
+            public bool IsReadOnly
+            {
+                get { return true; }
+            }
+
             public Stream CreateReadStream()
             {
-                return null;
+                throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(PhysicalDirectoryInfo), nameof(CreateReadStream)));
+            }
+
+            public void WriteContent(byte[] content)
+            {
+                throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(PhysicalDirectoryInfo), nameof(WriteContent)));
+            }
+
+            public void Delete()
+            {
+                Directory.Delete(PhysicalPath, recursive: true);
+            }
+
+            public IExpirationTrigger CreateFileChangeTrigger()
+            {
+                throw new NotSupportedException(string.Format("{0} does not support {1}.", nameof(PhysicalDirectoryInfo), nameof(CreateFileChangeTrigger)));
             }
         }
     }

@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
 using Shouldly;
@@ -18,147 +18,136 @@ namespace Microsoft.AspNet.FileSystems
         public void ExistingFilesReturnTrue()
         {
             var provider = new PhysicalFileSystem(Environment.CurrentDirectory);
-            IFileInfo info;
-            provider.TryGetFileInfo("File.txt", out info).ShouldBe(true);
+            var info = provider.GetFileInfo("File.txt");
             info.ShouldNotBe(null);
+            info.Exists.ShouldBe(true);
+            info.IsReadOnly.ShouldBe(false);
+
+            info = provider.GetFileInfo("/File.txt");
+            info.ShouldNotBe(null);
+            info.Exists.ShouldBe(true);
+            info.IsReadOnly.ShouldBe(false);
+        }
+
+        [Fact]
+        public void ModifyContent_And_Delete_File_Succeeds()
+        {
+            var fileName = Guid.NewGuid().ToString();
+            var fileLocation = Path.Combine(Path.GetTempPath(), fileName);
+            File.WriteAllText(fileLocation, "OldContent");
+            var provider = new PhysicalFileSystem(Path.GetTempPath());
+            var fileInfo = provider.GetFileInfo(fileName);
+            fileInfo.Length.ShouldBe(new FileInfo(fileInfo.PhysicalPath).Length);
+            fileInfo.Exists.ShouldBe(true);
+
+            // Write new content.
+            var newData = Encoding.UTF8.GetBytes("OldContent + NewContent");
+            fileInfo.WriteContent(newData);
+            fileInfo.Exists.ShouldBe(true);
+            fileInfo.Length.ShouldBe(newData.Length);
+
+            // Delete the file and verify file info is updated.
+            fileInfo.Delete();
+            fileInfo.Exists.ShouldBe(false);
+            new FileInfo(fileLocation).Exists.ShouldBe(false);
         }
 
         [Fact]
         public void MissingFilesReturnFalse()
         {
             var provider = new PhysicalFileSystem(Environment.CurrentDirectory);
-            IFileInfo info;
-            provider.TryGetFileInfo("File5.txt", out info).ShouldBe(false);
-            info.ShouldBe(null);
+            var info = provider.GetFileInfo("File5.txt");
+            info.ShouldNotBe(null);
+            info.Exists.ShouldBe(false);
         }
 
         [Fact]
         public void SubPathActsAsRoot()
         {
             var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, "sub"));
-            IFileInfo info;
-            provider.TryGetFileInfo("File2.txt", out info).ShouldBe(true);
+            var info = provider.GetFileInfo("File2.txt");
             info.ShouldNotBe(null);
+            info.Exists.ShouldBe(true);
         }
 
         [Fact]
-        public void RelativeOrAbsolutePastRootNotAllowed()
+        public void GetDirectoryContents_FromRootPath_ForEmptyDirectoryName()
+        {
+            var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, "sub"));
+            var info = provider.GetDirectoryContents(string.Empty);
+            info.ShouldNotBe(null);
+            info.Exists.ShouldBe(true);
+            var firstDirectory = info.Where(f => f.IsDirectory).Where(f => f.Exists).FirstOrDefault();
+            Should.Throw<InvalidOperationException>(() => firstDirectory.CreateReadStream());
+            Should.Throw<InvalidOperationException>(() => firstDirectory.WriteContent(new byte[10]));
+            Should.Throw<NotSupportedException>(() => firstDirectory.CreateFileChangeTrigger());
+
+            var fileInfo = info.Where(f => f.Name == "File2.txt").FirstOrDefault();
+            fileInfo.ShouldNotBe(null);
+            fileInfo.Exists.ShouldBe(true);
+        }
+
+        [Fact]
+        public void NotFoundFileInfo_BasicTests()
+        {
+            var info = new NotFoundFileInfo("NotFoundFile.txt");
+            Should.Throw<InvalidOperationException>(() => info.CreateReadStream());
+            Should.Throw<InvalidOperationException>(() => info.WriteContent(new byte[10]));
+            Should.Throw<InvalidOperationException>(() => info.Delete());
+            Should.Throw<InvalidOperationException>(() => info.CreateFileChangeTrigger());
+        }
+
+        [Fact]
+        public void RelativePathPastRootNotAllowed()
         {
             var serviceProvider = CallContextServiceLocator.Locator.ServiceProvider;
             var appEnvironment = (IApplicationEnvironment)serviceProvider.GetService(typeof(IApplicationEnvironment));
 
             var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, "sub"));
-            IFileInfo info;
 
-            provider.TryGetFileInfo("..\\File.txt", out info).ShouldBe(false);
-            info.ShouldBe(null);
+            var info = provider.GetFileInfo("..\\File.txt");
+            info.ShouldNotBe(null);
+            info.Exists.ShouldBe(false);
 
-            provider.TryGetFileInfo(".\\..\\File.txt", out info).ShouldBe(false);
-            info.ShouldBe(null);
+            info = provider.GetFileInfo(".\\..\\File.txt");
+            info.ShouldNotBe(null);
+            info.Exists.ShouldBe(false);
+
+            info = provider.GetFileInfo("File2.txt");
+            info.ShouldNotBe(null);
+            info.Exists.ShouldBe(true);
+            info.PhysicalPath.ShouldBe(Path.Combine(appEnvironment.ApplicationBasePath, "sub", "File2.txt"));
+        }
+
+        [Fact]
+        public void AbsolutePathNotAllowed()
+        {
+            var serviceProvider = CallContextServiceLocator.Locator.ServiceProvider;
+            var appEnvironment = (IApplicationEnvironment)serviceProvider.GetService(typeof(IApplicationEnvironment));
+
+            var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, "sub"));
 
             var applicationBase = appEnvironment.ApplicationBasePath;
             var file1 = Path.Combine(applicationBase, "File.txt");
+            
+            var info = provider.GetFileInfo(file1);
+            info.ShouldNotBe(null);
+            info.Exists.ShouldBe(false);
+
             var file2 = Path.Combine(applicationBase, "sub", "File2.txt");
-            provider.TryGetFileInfo(file1, out info).ShouldBe(false);
-            info.ShouldBe(null);
-
-            provider.TryGetFileInfo(file2, out info).ShouldBe(true);
+            info = provider.GetFileInfo(file2);
             info.ShouldNotBe(null);
-            info.PhysicalPath.ShouldBe(file2);
+            info.Exists.ShouldBe(false);
 
-            provider.TryGetFileInfo("/File2.txt", out info).ShouldBe(true);
+            var directory1 = Path.Combine(applicationBase, "sub");
+            var directoryContents = provider.GetDirectoryContents(directory1);
             info.ShouldNotBe(null);
-            info.PhysicalPath.ShouldBe(file2);
-        }
+            info.Exists.ShouldBe(false);
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void TryGetParentPath_ReturnsFalseIfPathIsNullOrEmpty(string subpath)
-        {
-            // Arrange
-            var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, "sub"));
-
-            // Act and Assert
-            string parentPath;
-            provider.TryGetParentPath(subpath, out parentPath).ShouldBe(false);
-        }
-
-
-        public static IEnumerable<object[]> TryGetParentPath_ReturnsFalseIfPathIsNotSubDirectoryOfRootData
-        {
-            get
-            {
-                yield return new[] { Directory.GetCurrentDirectory() };
-                yield return new[] { @"x:\fake\test" };
-            }
-        }
-
-        [Theory]
-        [MemberData("TryGetParentPath_ReturnsFalseIfPathIsNotSubDirectoryOfRootData")]
-        public void TryGetParentPath_ReturnsFalseIfPathIsNotSubDirectoryOfRoot(string subpath)
-        {
-            // Arrange
-            var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, "sub"));
-
-            // Act and Assert
-            string parentPath;
-            provider.TryGetParentPath(subpath, out parentPath).ShouldBe(false);
-        }
-
-        [Theory]
-        [InlineData("", "sub", "")]
-        [InlineData("", "/sub", "")]
-        [InlineData("", @"sub/File2.txt", @"sub")]
-        [InlineData("", @"/sub/dir/File3.txt", @"sub/dir")]
-        [InlineData("sub", @"File2.txt", "")]
-        public void TryGetParentPath_ReturnsParentPath(string root, string subpath, string expected)
-        {
-            // Arrange
-            var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, root));
-
-            // Act and Assert
-            string parentPath;
-            provider.TryGetParentPath(subpath, out parentPath).ShouldBe(true);
-            // Convert backslash paths to forward slash so we can test with the same test data on Windows and *nix.
-            expected.ShouldBe(parentPath.Replace('\\', '/'));
-        }
-
-        [Theory]
-        [InlineData("sub/File2.txt")]
-        [InlineData(@"/sub/File2.txt")]
-        [InlineData(@"sub/dir")]
-        public void TryGetParentPath_AllowsTraversingToTheRoot(string input)
-        {
-            // Arrange
-            var provider = new PhysicalFileSystem(Environment.CurrentDirectory);
-
-            // Act and Assert - 1
-            string path1;
-            provider.TryGetParentPath(input, out path1).ShouldBe(true);
-            path1.ShouldBe(@"sub");
-
-            // Act and Assert - 2
-            IEnumerable<IFileInfo> contents;
-            provider.TryGetDirectoryContents(path1, out contents).ShouldBe(true);
-            contents.Count().ShouldBe(2);
-            contents = contents.OrderBy(f => f.Name);
-            contents.First().Name.ShouldBe("dir");
-            string subPathParent;
-            provider.TryGetParentPath(Path.Combine(path1, "dir"), out subPathParent).ShouldBe(true);
-            subPathParent.ShouldBe(path1);
-            contents.Last().Name.ShouldBe("File2.txt");
-            provider.TryGetParentPath(Path.Combine(path1, "dir"), out subPathParent).ShouldBe(true);
-            subPathParent.ShouldBe(path1);
-
-            // Act and Assert - 3
-            string path2;
-            provider.TryGetParentPath(path1, out path2).ShouldBe(true);
-            path2.ShouldBe("");
-
-            // Act and Assert - 4
-            string path3;
-            provider.TryGetParentPath(path2, out path3).ShouldBe(false);
+            var directory2 = Path.Combine(applicationBase, "Does_Not_Exists");
+            directoryContents = provider.GetDirectoryContents(directory2);
+            info.ShouldNotBe(null);
+            info.Exists.ShouldBe(false);
         }
     }
 }
