@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Testing
         /// <exception>Thrown when an exception was not thrown, or when an exception of the incorrect type is thrown</exception>
         public static ArgumentException ThrowsArgumentNullOrEmpty(Action testCode, string paramName)
         {
-            return Throws<ArgumentException>(testCode, "Value cannot be null or empty.\r\nParameter name: " + paramName);
+            return Throws<ArgumentException>(testCode, "Value cannot be null or empty." + Environment.NewLine + "Parameter name: " + paramName);
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Testing
         /// <exception>Thrown when an exception was not thrown, or when an exception of the incorrect type is thrown</exception>
         public static Task<ArgumentException> ThrowsArgumentNullOrEmptyAsync(Func<Task> testCode, string paramName)
         {
-            return ThrowsAsync<ArgumentException>(testCode, "Value cannot be null or empty.\r\nParameter name: " + paramName);
+            return ThrowsAsync<ArgumentException>(testCode, "Value cannot be null or empty." + Environment.NewLine + "Parameter name: " + paramName);
         }
 
         /// <summary>
@@ -165,6 +165,44 @@ namespace Microsoft.AspNet.Testing
         public static Task<ArgumentException> ThrowsArgumentNullOrEmptyStringAsync(Func<Task> testCode, string paramName)
         {
             return ThrowsArgumentAsync(testCode, paramName, "Value cannot be null or an empty string.");
+        }
+
+        /// <summary>
+        /// Verifies that the code throws an ArgumentOutOfRangeException (or optionally any exception which derives from it).
+        /// </summary>
+        /// <param name="testCode">A delegate to the code to be tested</param>
+        /// <param name="paramName">The name of the parameter that should throw the exception</param>
+        /// <param name="exceptionMessage">The exception message to verify</param>
+        /// <param name="actualValue">The actual value provided</param>
+        /// <returns>The exception that was thrown, when successful</returns>
+        /// <exception cref="ThrowsException">Thrown when an exception was not thrown, or when an exception of the incorrect type is thrown</exception>
+        public static ArgumentOutOfRangeException ThrowsArgumentOutOfRange(Action testCode, string paramName, string exceptionMessage, object actualValue = null)
+        {
+            if (exceptionMessage != null)
+            {
+                exceptionMessage = exceptionMessage + Environment.NewLine + "Parameter name: " + paramName;
+                if (actualValue != null)
+                {
+                    exceptionMessage += Environment.NewLine;
+                    if (PlatformHelper.IsMono)
+                    {
+                        exceptionMessage += actualValue;
+                    }
+                    else
+                    {
+                        exceptionMessage += String.Format(CultureReplacer.DefaultCulture, "Actual value was {0}.", actualValue);
+                    }
+                }
+            }
+
+            var ex = Throws<ArgumentOutOfRangeException>(testCode, exceptionMessage);
+
+            if (paramName != null)
+            {
+                Assert.Equal(paramName, ex.ParamName);
+            }
+
+            return ex;
         }
 
         // We've re-implemented all the xUnit.net Throws code so that we can get this 
