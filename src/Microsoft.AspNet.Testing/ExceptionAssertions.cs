@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Testing
                 if (actualValue != null)
                 {
                     exceptionMessage += Environment.NewLine;
-                    if (PlatformHelper.IsMono)
+                    if (TestPlatformHelper.IsMono)
                     {
                         exceptionMessage += actualValue;
                     }

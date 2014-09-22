@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNet.Testing
 {
-    internal static class PlatformHelper
+    public static class TestPlatformHelper
     {
         private static Lazy<bool> _isMono = new Lazy<bool>(() => Type.GetType("Mono.Runtime") != null);
 
