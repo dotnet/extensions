@@ -61,12 +61,12 @@ namespace Microsoft.Framework.Cache.Memory
             get { return _entries.Count; }
         }
 
-        public object Set(string key, object state, Func<ICacheAddContext, object> create)
+        public object Set(string key, object state, Func<ICacheSetContext, object> create)
         {
             CheckDisposed();
             CacheEntry priorEntry = null;
             var now = _clock.UtcNow;
-            var context = new CacheAddContext(key) { State = state, CreationTime = now };
+            var context = new CacheSetContext(key) { State = state, CreationTime = now };
             object value = create(context);
             var entry = new CacheEntry(context, value, _entryExpirationNotification);
             bool added = false;

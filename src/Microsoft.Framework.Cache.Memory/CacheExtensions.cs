@@ -17,21 +17,21 @@ namespace Microsoft.Framework.Cache.Memory
             return (T)cache.Set(key, (object)obj);
         }
 
-        public static object Set(this IMemoryCache cache, string key, Func<ICacheAddContext, object> create)
+        public static object Set(this IMemoryCache cache, string key, Func<ICacheSetContext, object> create)
         {
             return cache.Set(key, state: null, create: create);
         }
 
-        public static T Set<T>(this IMemoryCache cache, string key, Func<ICacheAddContext, T> create)
+        public static T Set<T>(this IMemoryCache cache, string key, Func<ICacheSetContext, T> create)
         {
             return (T)cache.Set(key, create, context =>
             {
-                var myCreate = (Func<ICacheAddContext, T>)context.State;
+                var myCreate = (Func<ICacheSetContext, T>)context.State;
                 return (object)myCreate(context);
             });
         }
 
-        public static T Set<T>(this IMemoryCache cache, string key, object state, Func<ICacheAddContext, T> create)
+        public static T Set<T>(this IMemoryCache cache, string key, object state, Func<ICacheSetContext, T> create)
         {
             return (T)cache.Set(key, state, context =>
             {
@@ -65,7 +65,7 @@ namespace Microsoft.Framework.Cache.Memory
             return false;
         }
 
-        public static object GetOrAdd(this IMemoryCache cache, string key, object state, Func<ICacheAddContext, object> create)
+        public static object GetOrSet(this IMemoryCache cache, string key, object state, Func<ICacheSetContext, object> create)
         {
             object obj;
             if (cache.TryGetValue(key, out obj))
@@ -75,7 +75,7 @@ namespace Microsoft.Framework.Cache.Memory
             return cache.Set(key, state, create);
         }
 
-        public static T GetOrAdd<T>(this IMemoryCache cache, string key, Func<ICacheAddContext, T> create)
+        public static T GetOrSet<T>(this IMemoryCache cache, string key, Func<ICacheSetContext, T> create)
         {
             T obj;
             if (cache.TryGetValue(key, out obj))
@@ -85,7 +85,7 @@ namespace Microsoft.Framework.Cache.Memory
             return cache.Set(key, create);
         }
 
-        public static T GetOrAdd<T>(this IMemoryCache cache, string key, object state, Func<ICacheAddContext, T> create)
+        public static T GetOrSet<T>(this IMemoryCache cache, string key, object state, Func<ICacheSetContext, T> create)
         {
             T obj;
             if (cache.TryGetValue(key, out obj))

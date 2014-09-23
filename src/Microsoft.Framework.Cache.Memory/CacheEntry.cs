@@ -15,7 +15,7 @@ namespace Microsoft.Framework.Cache.Memory
 
         private readonly Action<CacheEntry> _notifyCacheOfExpiration;
         
-        internal CacheEntry(CacheAddContext context, object value, Action<CacheEntry> notifyCacheOfExpiration)
+        internal CacheEntry(CacheSetContext context, object value, Action<CacheEntry> notifyCacheOfExpiration)
         {
             Context = context;
             Value = value;
@@ -23,7 +23,7 @@ namespace Microsoft.Framework.Cache.Memory
             LastAccessed = context.CreationTime;
         }
 
-        internal CacheAddContext Context { get; private set; }
+        internal CacheSetContext Context { get; private set; }
 
         private bool IsExpired { get; set; }
 

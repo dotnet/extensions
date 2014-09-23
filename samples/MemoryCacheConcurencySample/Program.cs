@@ -32,7 +32,7 @@ namespace MemoryCacheSample
             cache.Set(Key, value, ConfigureEntry);
         }
 
-        private object ConfigureEntry(ICacheAddContext context)
+        private object ConfigureEntry(ICacheSetContext context)
         {
             var value = (string)context.State;
             context.SetAbsoluteExpiration(TimeSpan.FromSeconds(7));
@@ -75,7 +75,7 @@ namespace MemoryCacheSample
                     else
                     {
                         Console.Write("Reading...");
-                        var result = cache.GetOrAdd(Key, "B", ConfigureEntry);
+                        var result = cache.GetOrSet(Key, "B", ConfigureEntry);
                         Console.WriteLine("Read: " + (result ?? "(null)"));
                     }
                 }

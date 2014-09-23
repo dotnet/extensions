@@ -7,7 +7,7 @@ using Microsoft.Framework.Runtime;
 namespace Microsoft.Framework.Cache.Memory
 {
     [AssemblyNeutral]
-    public interface ICacheAddContext
+    public interface ICacheSetContext
     {
         /// <summary>
         /// The key identifying this entry.

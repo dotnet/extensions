@@ -8,9 +8,9 @@ namespace Microsoft.Framework.Cache.Memory
 {
     using EvictionCallback = Action<string, object, EvictionReason, object>;
 
-    internal class CacheAddContext : ICacheAddContext
+    internal class CacheSetContext : ICacheSetContext
     {
-        internal CacheAddContext(string key)
+        internal CacheSetContext(string key)
         {
             Key = key;
             Priority = CachePreservationPriority.Normal;

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.Framework.Cache.Memory
 {
-    public class MemoryCacheAddRemoveTests
+    public class MemoryCacheSetAndRemoveTests
     {
         [Fact]
         public void GetMissingKeyReturnsFalseOrNull()
@@ -55,7 +55,7 @@ namespace Microsoft.Framework.Cache.Memory
         }
 
         [Fact]
-        public void GetOrAddDoesNotOverwrite()
+        public void GetOrSetDoesNotOverwrite()
         {
             var cache = new MemoryCache();
             var obj = new object();
@@ -63,11 +63,11 @@ namespace Microsoft.Framework.Cache.Memory
             string key = "myKey";
 
             // Assigned
-            var result = cache.GetOrAdd(key, context => obj);
+            var result = cache.GetOrSet(key, context => obj);
             Assert.Same(obj, result);
 
             // Retrieved
-            result = cache.GetOrAdd(key, context => obj2);
+            result = cache.GetOrSet(key, context => obj2);
             Assert.Same(obj, result);
         }
 

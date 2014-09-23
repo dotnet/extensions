@@ -16,7 +16,7 @@ namespace Microsoft.Framework.Cache.Memory
         /// <param name="state">Application state that will be passed to the creation factory.</param>
         /// <param name="create">A factory that will create and configure the entry.</param>
         /// <returns>The object that was created.</returns>
-        object Set(string key, object state, Func<ICacheAddContext, object> create);
+        object Set(string key, object state, Func<ICacheSetContext, object> create);
 
         /// <summary>
         /// Gets the item associated with this key if present.

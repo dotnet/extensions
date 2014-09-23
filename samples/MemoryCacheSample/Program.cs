@@ -33,29 +33,29 @@ namespace MemoryCacheSample
             // Conditional operations:
 
             // Retrieve / Create when we want to lazily create the object.
-            result = cache.GetOrAdd(key, context => new object());
+            result = cache.GetOrSet(key, context => new object());
 
             // Retrieve / Create when we want to lazily create the object.
-            result = cache.GetOrAdd(key, state, context => new object());
+            result = cache.GetOrSet(key, state, context => new object());
 
             // Cache entry configuration:
 
             // Stays in the cache as long as possible
-            result = cache.GetOrAdd(key, state, context =>
+            result = cache.GetOrSet(key, state, context =>
             {
                 context.SetPriority(CachePreservationPriority.NeverRemove);
                 return new object();
             });
 
             // Automatically remove if not accessed in the given time
-            result = cache.GetOrAdd(key, state, context =>
+            result = cache.GetOrSet(key, state, context =>
             {
                 context.SetSlidingExpiration(TimeSpan.FromMinutes(5));
                 return new object();
             });
 
             // Automatically remove at a certain time
-            result = cache.GetOrAdd(key, state, context =>
+            result = cache.GetOrSet(key, state, context =>
             {
                 context.SetAbsoluteExpiration(new DateTime(2014, 12, 31));
                 // or relative:
@@ -65,7 +65,7 @@ namespace MemoryCacheSample
 
             // Automatically remove if not accessed in the given time
             // Automatically remove at a certain time (if it lives that long)
-            result = cache.GetOrAdd(key, state, context =>
+            result = cache.GetOrSet(key, state, context =>
             {
                 context.SetSlidingExpiration(TimeSpan.FromMinutes(5));
 
@@ -76,7 +76,7 @@ namespace MemoryCacheSample
             });
 
             // Callback when evicted
-            result = cache.GetOrAdd(key, state, context =>
+            result = cache.GetOrSet(key, state, context =>
             {
                 context.RegisterPostEvictionCallback((echoKey, value, reason, substate) =>
                     Console.WriteLine(echoKey + ": '" + value + "' was evicted due to " + reason), state: null);
@@ -85,7 +85,7 @@ namespace MemoryCacheSample
 
             // Remove on trigger
             var cts = new CancellationTokenSource();
-            result = cache.GetOrAdd(key, state, context =>
+            result = cache.GetOrSet(key, state, context =>
             {
                 context.AddExpirationTrigger(new CancellationTokenTrigger(cts.Token));
                 return new object();
