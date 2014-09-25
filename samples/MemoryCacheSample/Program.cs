@@ -90,6 +90,29 @@ namespace MemoryCacheSample
                 context.AddExpirationTrigger(new CancellationTokenTrigger(cts.Token));
                 return new object();
             });
+
+            result = cache.GetOrSet(key, context =>
+            {
+                var link = new EntryLink();
+
+                var inner1 = cache.GetOrSet("subkey1", link, subContext =>
+                {
+                    return "SubValue1";
+                });
+
+                string inner2;
+                using (link.FlowContext())
+                {
+                    inner2 = cache.GetOrSet("subkey2", subContext =>
+                    {
+                        return "SubValue2";
+                    });
+                }
+
+                context.AddEntryLink(link);
+
+                return inner1 + inner2;
+            });
         }
     }
 }

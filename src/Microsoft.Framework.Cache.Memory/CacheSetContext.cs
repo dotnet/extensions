@@ -52,12 +52,19 @@ namespace Microsoft.Framework.Cache.Memory
             {
                 throw new ArgumentOutOfRangeException("relative", relative, "The relative expiration value must be positive.");
             }
-            AbsoluteExpiration = CreationTime + relative;
+            SetAbsoluteExpiration(CreationTime + relative);
         }
 
         public void SetAbsoluteExpiration(DateTimeOffset absolute)
         {
-            AbsoluteExpiration = absolute;
+            if (!AbsoluteExpiration.HasValue)
+            {
+                AbsoluteExpiration = absolute;
+            }
+            else if (absolute < AbsoluteExpiration.Value)
+            {
+                AbsoluteExpiration = absolute;
+            }
         }
 
         public void SetSlidingExpiration(TimeSpan offset)

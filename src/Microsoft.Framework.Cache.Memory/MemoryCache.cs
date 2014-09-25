@@ -61,7 +61,7 @@ namespace Microsoft.Framework.Cache.Memory
             get { return _entries.Count; }
         }
 
-        public object Set(string key, object state, Func<ICacheSetContext, object> create)
+        public object Set(string key, IEntryLink link, object state, Func<ICacheSetContext, object> create)
         {
             CheckDisposed();
             CacheEntry priorEntry = null;
@@ -70,6 +70,20 @@ namespace Microsoft.Framework.Cache.Memory
             object value = create(context);
             var entry = new CacheEntry(context, value, _entryExpirationNotification);
             bool added = false;
+
+            if (link != null)
+            {
+                // Copy triggers and AbsoluteExpiration to the link.
+                // We do this regardless of it gets cached because the triggers are associated with the value we'll return.
+                if (entry.Context.Triggers != null)
+                {
+                    link.AddExpirationTriggers(entry.Context.Triggers);
+                }
+                if (entry.Context.AbsoluteExpiration.HasValue)
+                {
+                    link.SetAbsoluteExpiration(entry.Context.AbsoluteExpiration.Value);
+                }
+            }
 
             _entryLock.EnterWriteLock();
             try
@@ -105,7 +119,7 @@ namespace Microsoft.Framework.Cache.Memory
             return value;
         }
 
-        public bool TryGetValue(string key, out object value)
+        public bool TryGetValue(string key, IEntryLink link, out object value)
         {
             value = null;
             CacheEntry expiredEntry = null;
@@ -128,6 +142,19 @@ namespace Microsoft.Framework.Cache.Memory
                         entry.LastAccessed = _clock.UtcNow;
                         value = entry.Value;
                         found = true;
+
+                        if (link != null)
+                        {
+                            // Copy triggers and AbsoluteExpiration to the link
+                            if (entry.Context.Triggers != null)
+                            {
+                                link.AddExpirationTriggers(entry.Context.Triggers);
+                            }
+                            if (entry.Context.AbsoluteExpiration.HasValue)
+                            {
+                                link.SetAbsoluteExpiration(entry.Context.AbsoluteExpiration.Value);
+                            }
+                        }
                     }
                 }
             }
