@@ -12,13 +12,13 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
 {
     public static class NinjectRegistration
     {
-        public static void Populate(IKernel kernel, IEnumerable<IServiceDescriptor> descriptors)
+        public static void Populate(this IKernel kernel, IEnumerable<IServiceDescriptor> descriptors)
         {
-            Populate(kernel, descriptors, fallbackServiceProvider: null);
+            kernel.Populate(descriptors, fallbackServiceProvider: null);
         }
 
         public static void Populate(
-                IKernel kernel,
+                this IKernel kernel,
                 IEnumerable<IServiceDescriptor> descriptors,
                 IServiceProvider fallbackServiceProvider)
         {
