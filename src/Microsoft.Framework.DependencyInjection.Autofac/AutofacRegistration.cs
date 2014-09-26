@@ -12,14 +12,14 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
     public static class AutofacRegistration
     {
         public static void Populate(
-                ContainerBuilder builder,
+                this ContainerBuilder builder,
                 IEnumerable<IServiceDescriptor> descriptors)
         {
-            Populate(builder, descriptors, fallbackServiceProvider: null);
+            builder.Populate(descriptors, fallbackServiceProvider: null);
         }
 
         public static void Populate(
-                ContainerBuilder builder,
+                this ContainerBuilder builder,
                 IEnumerable<IServiceDescriptor> descriptors,
                 IServiceProvider fallbackServiceProvider)
         {

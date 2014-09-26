@@ -19,7 +19,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         {
             IKernel kernel = new StandardKernel();
 
-            NinjectRegistration.Populate(kernel, TestServices.DefaultServices(), fallbackProvider);
+            kernel.Populate(TestServices.DefaultServices(), fallbackProvider);
 
             return kernel.Get<IServiceProvider>();
         }

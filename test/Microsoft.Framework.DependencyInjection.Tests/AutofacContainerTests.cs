@@ -19,8 +19,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         {
             var builder = new ContainerBuilder();
 
-            AutofacRegistration.Populate(
-                builder,
+            builder.Populate(
                 TestServices.DefaultServices(),
                 fallbackProvider);
 
