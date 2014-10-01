@@ -13,7 +13,7 @@ namespace Microsoft.Framework.Logging
     public class DiagnosticsScope : IDisposable
     {
         // To detect redundant calls
-        private bool _disposedValue;
+        private bool _isDisposed;
 
         /// <summary>
         /// Pushes state onto the LogicalOperationStack by calling 
@@ -34,12 +34,12 @@ namespace Microsoft.Framework.Logging
         /// <param name="state">The state.</param>
         public void Dispose()
         {
-            if (!_disposedValue)
+            if (!_isDisposed)
             {
 #if NET45 || ASPNET50
                 Trace.CorrelationManager.StopLogicalOperation();
 #endif
-                _disposedValue = true;
+                _isDisposed = true;
             }
         }
     }

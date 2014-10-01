@@ -9,7 +9,7 @@ using Moq;
 
 namespace Microsoft.Framework.Logging.Test
 {
-    public class DiagnosticsScopeTests
+    public class DiagnosticsScopeTest
     {
 #if ASPNET50
         [Fact]

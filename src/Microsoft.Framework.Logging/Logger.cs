@@ -8,8 +8,8 @@ namespace Microsoft.Framework.Logging
 {
     internal class Logger : ILogger
     {
-        private LoggerFactory _loggerFactory;
-        private string _name;
+        private readonly LoggerFactory _loggerFactory;
+        private readonly string _name;
         private ILogger[] _loggers = new ILogger[0];
 
         public Logger(LoggerFactory loggerFactory, string name)
@@ -19,7 +19,7 @@ namespace Microsoft.Framework.Logging
 
             var providers = loggerFactory.GetProviders();
             _loggers = new ILogger[providers.Length];
-            for (var index = 0; index != providers.Length; ++index)
+            for (var index = 0; index != providers.Length; index++)
             {
                 _loggers[index] = providers[index].Create(name);
             }
@@ -29,7 +29,7 @@ namespace Microsoft.Framework.Logging
         {
             var result = false;
             var count = _loggers.Length;
-            for (var index = 0; index != count; ++index)
+            for (var index = 0; index != count; index++)
             {
                 result |= _loggers[index].WriteCore(eventType, eventId, state, exception, formatter);
             }
@@ -40,7 +40,7 @@ namespace Microsoft.Framework.Logging
         {
             var count = _loggers.Length;
             var scope = new Scope(count);
-            for (var index = 0; index != count; ++index)
+            for (var index = 0; index != count; index++)
             {
                 scope.SetDisposable(index, _loggers[index].BeginScope(state));
             }
@@ -55,7 +55,7 @@ namespace Microsoft.Framework.Logging
 
         private class Scope : IDisposable
         {
-            private bool disposedValue = false; 
+            private bool _isDisposed; 
 
             private IDisposable _disposable0;
             private IDisposable _disposable1;
@@ -87,7 +87,7 @@ namespace Microsoft.Framework.Logging
 
             protected virtual void Dispose(bool disposing)
             {
-                if (!disposedValue)
+                if (!_isDisposed)
                 {
                     if (disposing)
                     {
@@ -112,7 +112,7 @@ namespace Microsoft.Framework.Logging
                         }
                     }
 
-                    disposedValue = true;
+                    _isDisposed = true;
                 }
             }
 

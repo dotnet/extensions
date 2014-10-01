@@ -12,9 +12,9 @@ namespace Microsoft.Framework.Logging
     /// </summary>
     public class LoggerFactory : ILoggerFactory
     {
-        Dictionary<string, Logger> _loggers = new Dictionary<string, Logger>(StringComparer.Ordinal);
-        ILoggerProvider[] _providers = new ILoggerProvider[0];
-        object _sync = new object();
+        private readonly Dictionary<string, Logger> _loggers = new Dictionary<string, Logger>(StringComparer.Ordinal);
+        private ILoggerProvider[] _providers = new ILoggerProvider[0];
+        private readonly object _sync = new object();
 
         public ILogger Create(string name)
         {
@@ -47,6 +47,4 @@ namespace Microsoft.Framework.Logging
             return _providers;
         }
     }
-
-
 }
