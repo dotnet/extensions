@@ -117,7 +117,8 @@ namespace Microsoft.AspNet.FileSystems
             var provider = new EmbeddedResourceFileSystem(GetType().Assembly, "BaseNamespace");
 
             // Act and Assert
-            provider.TryGetParentPath(subpath, out var parentPath).ShouldBe(false);
+            string parentPath;
+            provider.TryGetParentPath(subpath, out parentPath).ShouldBe(false);
         }
 
         [Fact]
@@ -127,7 +128,8 @@ namespace Microsoft.AspNet.FileSystems
             var provider = new EmbeddedResourceFileSystem(GetType().Assembly, "BaseNamespace");
 
             // Act and Assert
-            provider.TryGetParentPath("/", out var parentPath).ShouldBe(false);
+            string parentPath;
+            provider.TryGetParentPath("/", out parentPath).ShouldBe(false);
         }
 
         [Theory]
@@ -139,7 +141,8 @@ namespace Microsoft.AspNet.FileSystems
             var provider = new EmbeddedResourceFileSystem(GetType().Assembly, "BaseNamespace");
 
             // Act and Assert
-            provider.TryGetParentPath(subpath, out var parentPath).ShouldBe(true);
+            string parentPath;
+            provider.TryGetParentPath(subpath, out parentPath).ShouldBe(true);
             parentPath.ShouldBe("/");
         }
     }
