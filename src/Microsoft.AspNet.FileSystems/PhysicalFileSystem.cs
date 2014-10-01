@@ -184,7 +184,6 @@ namespace Microsoft.AspNet.FileSystems
         /// <inheritdoc />
         public bool TryGetParentPath(string subpath, out string parentPath)
         {
-
             if (string.IsNullOrEmpty(subpath))
             {
                 parentPath = null;
@@ -196,7 +195,8 @@ namespace Microsoft.AspNet.FileSystems
                 subpath = subpath.Substring(1);
             }
 
-            if ((var fullPath = GetFullPath(subpath)) != null)
+            var fullPath = GetFullPath(subpath);
+            if (fullPath != null)
             {
                 DirectoryInfo parentDirectory = null;
                 if (Directory.Exists(fullPath))
