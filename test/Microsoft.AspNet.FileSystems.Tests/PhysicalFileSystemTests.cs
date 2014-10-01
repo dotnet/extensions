@@ -80,7 +80,8 @@ namespace Microsoft.AspNet.FileSystems
             var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, "sub"));
 
             // Act and Assert
-            provider.TryGetParentPath(subpath, out var parentPath).ShouldBe(false);
+            string parentPath;
+            provider.TryGetParentPath(subpath, out parentPath).ShouldBe(false);
         }
 
 
@@ -101,7 +102,8 @@ namespace Microsoft.AspNet.FileSystems
             var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, "sub"));
 
             // Act and Assert
-            provider.TryGetParentPath(subpath, out var parentPath).ShouldBe(false);
+            string parentPath;
+            provider.TryGetParentPath(subpath, out parentPath).ShouldBe(false);
         }
 
         [Theory]
@@ -116,7 +118,8 @@ namespace Microsoft.AspNet.FileSystems
             var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, root));
 
             // Act and Assert
-            provider.TryGetParentPath(subpath, out var parentPath).ShouldBe(true);
+            string parentPath;
+            provider.TryGetParentPath(subpath, out parentPath).ShouldBe(true);
             // Convert backslash paths to forward slash so we can test with the same test data on Windows and *nix.
             expected.ShouldBe(parentPath.Replace('\\', '/'));
         }
@@ -131,26 +134,31 @@ namespace Microsoft.AspNet.FileSystems
             var provider = new PhysicalFileSystem(Environment.CurrentDirectory);
 
             // Act and Assert - 1
-            provider.TryGetParentPath(input, out var path1).ShouldBe(true);
+            string path1;
+            provider.TryGetParentPath(input, out path1).ShouldBe(true);
             path1.ShouldBe(@"sub");
 
             // Act and Assert - 2
-            provider.TryGetDirectoryContents(path1, out var contents).ShouldBe(true);
+            IEnumerable<IFileInfo> contents;
+            provider.TryGetDirectoryContents(path1, out contents).ShouldBe(true);
             contents.Count().ShouldBe(2);
             contents = contents.OrderBy(f => f.Name);
             contents.First().Name.ShouldBe("dir");
-            provider.TryGetParentPath(Path.Combine(path1, "dir"), out var subPathParent).ShouldBe(true);
+            string subPathParent;
+            provider.TryGetParentPath(Path.Combine(path1, "dir"), out subPathParent).ShouldBe(true);
             subPathParent.ShouldBe(path1);
             contents.Last().Name.ShouldBe("File2.txt");
             provider.TryGetParentPath(Path.Combine(path1, "dir"), out subPathParent).ShouldBe(true);
             subPathParent.ShouldBe(path1);
 
             // Act and Assert - 3
-            provider.TryGetParentPath(path1, out var path2).ShouldBe(true);
+            string path2;
+            provider.TryGetParentPath(path1, out path2).ShouldBe(true);
             path2.ShouldBe("");
 
             // Act and Assert - 4
-            provider.TryGetParentPath(path2, out var path3).ShouldBe(false);
+            string path3;
+            provider.TryGetParentPath(path2, out path3).ShouldBe(false);
         }
     }
 }
