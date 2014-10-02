@@ -10,8 +10,8 @@ namespace Microsoft.Framework.Logging
     {
         Critical = 1,
         Error = 2,
-        Warning = 4,
-        Information = 8,
-        Verbose = 16,
+        Warning = 3,
+        Information = 4,
+        Verbose = 5,
     }
 }

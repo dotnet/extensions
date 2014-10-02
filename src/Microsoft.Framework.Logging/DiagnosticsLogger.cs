@@ -18,7 +18,7 @@ namespace Microsoft.Framework.Logging
 
         public bool WriteCore(TraceType traceType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
-            var eventType = (TraceEventType)traceType;
+            var eventType = GetEventType(traceType);
 
             if (!_traceSource.Switch.ShouldTrace(eventType))
             {
@@ -29,6 +29,19 @@ namespace Microsoft.Framework.Logging
                 _traceSource.TraceEvent(eventType, eventId, formatter(state, exception));
             }
             return true;
+        }
+
+        private static TraceEventType GetEventType(TraceType traceType)
+        {
+            switch (traceType)
+            {
+                case TraceType.Critical: return TraceEventType.Critical;
+                case TraceType.Error: return TraceEventType.Error;
+                case TraceType.Warning: return TraceEventType.Warning;
+                case TraceType.Information: return TraceEventType.Information;
+                case TraceType.Verbose:
+                default: return TraceEventType.Verbose;
+            }
         }
 
         public IDisposable BeginScope(object state)
