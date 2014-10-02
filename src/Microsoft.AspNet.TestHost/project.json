@@ -1,0 +1,25 @@
+{
+    "version": "1.0.0-*",
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
+    "dependencies": {
+        "Microsoft.Framework.TestAdapter": "1.0.0-*",
+        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
+        "Microsoft.Framework.ApplicationHost": "1.0.0-*",
+        "Microsoft.Framework.CommandLineUtils": "1.0.0-*",
+        "Microsoft.Framework.Runtime": "1.0.0-*",
+        "Microsoft.Framework.Runtime.Common": "1.0.0-*",
+        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
+        "Newtonsoft.Json": "6.0.4"
+    },
+    "frameworks": {
+        "net45": { },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Console": "4.0.0.0",
+                "System.Diagnostics.Process": "4.0.0.0"
+            }
+        }
+    }
+}
