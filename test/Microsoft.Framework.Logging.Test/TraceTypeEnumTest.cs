@@ -13,7 +13,7 @@ namespace Microsoft.Framework.Logging.Test
         [Fact]
         public static void EnumStartsAtOne()
         {
-            Assert.Equal(GetEnumValues().Min(), 1);
+            Assert.Equal(1, GetEnumValues().Min());
         }
 
         [Fact]
