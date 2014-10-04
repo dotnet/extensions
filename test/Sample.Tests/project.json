@@ -3,10 +3,11 @@
     "Xunit.KRunner": ""
   },
   "commands": {
-    "test": "Xunit.KRunner"
+    "test": "Xunit.KRunner",
+    "run": "Microsoft.Framework.TestHost --port 1234 list"
   },
   "frameworks": {
-    "net45": {},
-    "aspnetcore50": {}
+    "aspnet50": { },
+    "aspnetcore50": { }
   }
 }

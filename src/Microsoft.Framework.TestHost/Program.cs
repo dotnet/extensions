@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Common.CommandLine;
@@ -26,37 +27,49 @@ namespace Microsoft.AspNet.TestHost
             var application = new CommandLineApplication();
             application.HelpOption("-?|-h|--help");
 
-            var port = application.Argument("port", "Port number to listen for a connection.");
-            var project = application.Argument("project", "Path to a project file.");
+            var env = (IApplicationEnvironment)_services.GetService(typeof(IApplicationEnvironment));
+
+            var portOption = application.Option("--port", "Port number to listen for a connection.", CommandOptionType.SingleValue);
+            var projectOption = application.Option("--project", "Path to a project file.", CommandOptionType.SingleValue);
+
+            var projectPath = projectOption.Value() ?? env.ApplicationBasePath;
 
             application.Command("list", command =>
             {
-                command.Name = "list tests";
+                command.Name = "list";
                 command.Description = "Lists all available tests.";
 
                 command.OnExecute(async () =>
                 {
-                    await DiscoverTests(int.Parse(port.Value), project.Value);
+                    await DiscoverTests(int.Parse(portOption.Value()), projectPath);
                     return 0;
                 });
             });
 
             application.Command("run", command =>
             {
-                command.Name = "run tests";
+                command.Name = "run";
                 command.Description = "Runs specified tests.";
 
                 var tests = command.Option("--test <test>", "test to run", CommandOptionType.MultipleValue);
 
                 command.OnExecute(async () =>
                 {
-                    await ExecuteTests(int.Parse(port.Value), project.Value, tests.Values);
+                    await ExecuteTests(int.Parse(portOption.Value()), projectPath, tests.Values);
                     return 0;
                 });
 
             });
 
-            return application.Execute(args);
+
+            var result = application.Execute(args);
+
+            if (!application.IsShowingInformation && !application.RemainingArguments.Any())
+            {
+                application.ShowHelp();
+            }
+
+            return result;
         }
 
         private async Task ExecuteTests(int port, string projectPath, IList<string> tests)
