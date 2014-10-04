@@ -32,7 +32,12 @@ namespace Microsoft.AspNet.TestHost
             var portOption = application.Option("--port", "Port number to listen for a connection.", CommandOptionType.SingleValue);
             var projectOption = application.Option("--project", "Path to a project file.", CommandOptionType.SingleValue);
 
-            var projectPath = projectOption.Value() ?? env.ApplicationBasePath;
+            // Show help information if no subcommand was specified
+            application.OnExecute(() =>
+            {
+                application.ShowHelp();
+                return 0;
+            });
 
             application.Command("list", command =>
             {
@@ -41,7 +46,10 @@ namespace Microsoft.AspNet.TestHost
 
                 command.OnExecute(async () =>
                 {
-                    await DiscoverTests(int.Parse(portOption.Value()), projectPath);
+                    var projectPath = projectOption.Value() ?? env.ApplicationBasePath;
+                    var port = int.Parse(portOption.Value());
+
+                    await DiscoverTests(port, projectPath);
                     return 0;
                 });
             });
@@ -55,21 +63,17 @@ namespace Microsoft.AspNet.TestHost
 
                 command.OnExecute(async () =>
                 {
-                    await ExecuteTests(int.Parse(portOption.Value()), projectPath, tests.Values);
+                    var projectPath = projectOption.Value() ?? env.ApplicationBasePath;
+                    var port = int.Parse(portOption.Value());
+
+                    await ExecuteTests(port, projectPath, tests.Values);
                     return 0;
                 });
 
             });
 
 
-            var result = application.Execute(args);
-
-            if (!application.IsShowingInformation && !application.RemainingArguments.Any())
-            {
-                application.ShowHelp();
-            }
-
-            return result;
+            return application.Execute(args);
         }
 
         private async Task ExecuteTests(int port, string projectPath, IList<string> tests)
