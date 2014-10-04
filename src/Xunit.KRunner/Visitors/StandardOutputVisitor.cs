@@ -56,11 +56,11 @@ namespace Xunit.ConsoleClient
         {
             lock (consoleLock)
             {
-#if NET45
+#if ASPNET50
                 Console.ForegroundColor = ConsoleColor.Red;
 #endif
                 Console.Error.WriteLine("   {0} [FATAL]", Escape(error.ExceptionTypes[0]));
-#if NET45
+#if ASPNET50
                 Console.ForegroundColor = ConsoleColor.Gray;
 #endif
                 Console.Error.WriteLine("      {0}", Escape(ExceptionUtility.CombineMessages(error)));
@@ -76,11 +76,11 @@ namespace Xunit.ConsoleClient
             lock (consoleLock)
             {
                 // TODO: Thread-safe way to figure out the default foreground color
-#if NET45
+#if ASPNET50
                 Console.ForegroundColor = ConsoleColor.Red;
 #endif
                 Console.Error.WriteLine("   {0} [FAIL]", Escape(testFailed.TestDisplayName));
-#if NET45
+#if ASPNET50
                 Console.ForegroundColor = ConsoleColor.Gray;
 #endif
                 Console.Error.WriteLine("      {0}", Escape(ExceptionUtility.CombineMessages(testFailed)));
@@ -101,11 +101,11 @@ namespace Xunit.ConsoleClient
             lock (consoleLock)
             {
                 // TODO: Thread-safe way to figure out the default foreground color
-#if NET45
+#if ASPNET50
                 Console.ForegroundColor = ConsoleColor.Yellow;
 #endif
                 Console.Error.WriteLine("   {0} [SKIP]", Escape(testSkipped.TestDisplayName));
-#if NET45
+#if ASPNET50
                 Console.ForegroundColor = ConsoleColor.Gray;
 #endif
                 Console.Error.WriteLine("      {0}", Escape(testSkipped.Reason));
@@ -124,12 +124,12 @@ namespace Xunit.ConsoleClient
             if (String.IsNullOrWhiteSpace(stackTrace))
                 return;
 
-#if NET45
+#if ASPNET50
             Console.ForegroundColor = ConsoleColor.DarkGray;
 #endif
             Console.Error.WriteLine("      Stack Trace:");
 
-#if NET45
+#if ASPNET50
             Console.ForegroundColor = ConsoleColor.Gray;
 #endif
             foreach (var stackFrame in stackTrace.Split(new[] { Environment.NewLine }, StringSplitOptions.None))

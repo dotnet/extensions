@@ -11,7 +11,7 @@ using Microsoft.Framework.TestAdapter;
 using Xunit.Abstractions;
 using Xunit.ConsoleClient;
 using Xunit.Sdk;
-#if !NET45
+#if !ASPNET50
 using System.Diagnostics;
 #endif
 
@@ -45,7 +45,7 @@ namespace Xunit.KRunner
                 return 1;
             }
 
-#if NET45
+#if ASPNET50
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
             Console.CancelKeyPress += (sender, e) =>
@@ -84,7 +84,7 @@ namespace Xunit.KRunner
             }
         }
 
-#if NET45
+#if ASPNET50
         static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var ex = e.ExceptionObject as Exception;
