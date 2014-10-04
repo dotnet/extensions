@@ -19,6 +19,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "StyleCop.KRules", "src\Styl
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.TestHost", "src\Microsoft.Framework.TestHost\Microsoft.Framework.TestHost.kproj", "{F003F228-2AE2-4E9D-877B-93EB773B5061}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.TestAdapter", "src\Microsoft.Framework.TestAdapter\Microsoft.Framework.TestAdapter.kproj", "{71C2F8AA-05E6-47DB-9A1A-D2760CEF7DC1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{F003F228-2AE2-4E9D-877B-93EB773B5061}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F003F228-2AE2-4E9D-877B-93EB773B5061}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F003F228-2AE2-4E9D-877B-93EB773B5061}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71C2F8AA-05E6-47DB-9A1A-D2760CEF7DC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71C2F8AA-05E6-47DB-9A1A-D2760CEF7DC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71C2F8AA-05E6-47DB-9A1A-D2760CEF7DC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71C2F8AA-05E6-47DB-9A1A-D2760CEF7DC1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,5 +66,6 @@ Global
 		{62BE2FA4-6B9D-4296-9178-5FC2F66372AB} = {5525B6EA-8BBB-4437-BD09-419AE380BBA8}
 		{657EB507-EE7A-451F-90A4-196F6FCD66E5} = {5525B6EA-8BBB-4437-BD09-419AE380BBA8}
 		{F003F228-2AE2-4E9D-877B-93EB773B5061} = {5525B6EA-8BBB-4437-BD09-419AE380BBA8}
+		{71C2F8AA-05E6-47DB-9A1A-D2760CEF7DC1} = {5525B6EA-8BBB-4437-BD09-419AE380BBA8}
 	EndGlobalSection
 EndGlobal
