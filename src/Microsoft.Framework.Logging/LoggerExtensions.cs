@@ -13,23 +13,8 @@ namespace Microsoft.Framework.Logging
     public static class LoggerExtensions
     {
         private static readonly Func<object, Exception, string> TheMessage = (message, error) => (string)message;
-        private static readonly Func<object, Exception, string> TheMessageAndError = (message, error) => string.Format(CultureInfo.CurrentCulture, "{0}\r\n{1}", message, error);
-
-        /// <summary>
-        /// Checks if the given TraceEventType is enabled.
-        /// </summary>
-        /// <param name="logger"></param>
-        /// <param name="eventType"></param>
-        /// <returns></returns>
-        public static bool IsEnabled(this ILogger logger, TraceType eventType)
-        {
-            if (logger == null)
-            {
-                throw new ArgumentNullException("logger");
-            }
-
-            return logger.WriteCore(eventType, 0, null, null, null);
-        }
+        private static readonly Func<object, Exception, string> TheMessageAndError = (message, error) 
+            => string.Format(CultureInfo.CurrentCulture, "{0}{1}{2}", message, Environment.NewLine, error);
 
         /// <summary>
         /// Writes a verbose log message.
@@ -44,7 +29,7 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.WriteCore(TraceType.Verbose, 0, data, null, TheMessage);
+            logger.Write(TraceType.Verbose, 0, data, null, TheMessage);
         }
 
         /// <summary>
@@ -59,7 +44,7 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.WriteCore(TraceType.Information, 0, message, null, TheMessage);
+            logger.Write(TraceType.Information, 0, message, null, TheMessage);
         }
 
         /// <summary>
@@ -75,7 +60,7 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.WriteCore(TraceType.Warning, 0,
+            logger.Write(TraceType.Warning, 0,
                 string.Format(CultureInfo.InvariantCulture, message, args), null, TheMessage);
         }
 
@@ -92,7 +77,7 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.WriteCore(TraceType.Warning, 0, message, error, TheMessageAndError);
+            logger.Write(TraceType.Warning, 0, message, error, TheMessageAndError);
         }
 
         /// <summary>
@@ -107,7 +92,7 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.WriteCore(TraceType.Error, 0, message, null, TheMessage);
+            logger.Write(TraceType.Error, 0, message, null, TheMessage);
         }
 
         /// <summary>
@@ -123,7 +108,7 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.WriteCore(TraceType.Error, 0, message, error, TheMessageAndError);
+            logger.Write(TraceType.Error, 0, message, error, TheMessageAndError);
         }
 
         /// <summary>
@@ -138,7 +123,7 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.WriteCore(TraceType.Critical, 0, message, null, TheMessage);
+            logger.Write(TraceType.Critical, 0, message, null, TheMessage);
         }
 
         /// <summary>
@@ -154,7 +139,7 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.WriteCore(TraceType.Critical, 0, message, error, TheMessageAndError);
+            logger.Write(TraceType.Critical, 0, message, error, TheMessageAndError);
         }
     }
 }

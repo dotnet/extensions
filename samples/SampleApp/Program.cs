@@ -30,6 +30,8 @@ namespace SampleApp
             catch (Exception ex)
             {
                 _logger.WriteError("Unexpected error starting application", ex);
+                _logger.Write(TraceType.Critical, 0, "unexpected error", ex, null);
+                _logger.Write(TraceType.Critical, 0, null, null, null);
             }
 
             using (_logger.BeginScope("Main"))

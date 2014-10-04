@@ -16,19 +16,38 @@ namespace Microsoft.Framework.Logging
             _traceSource = traceSource;
         }
 
-        public bool WriteCore(TraceType traceType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public void Write(TraceType traceType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        {
+            if (!IsEnabled(traceType))
+            {
+                return;
+            }
+            var message = string.Empty;
+            if (formatter != null)
+            {
+                message = formatter(state, exception);
+            }
+            else
+            {
+                if (state != null)
+                {
+                    message += state;
+                }
+                if (exception != null)
+                {
+                    message += Environment.NewLine + exception;
+                }
+            }
+            if (!string.IsNullOrEmpty(message))
+            {
+                _traceSource.TraceEvent(GetEventType(traceType), eventId, message);
+            }
+        }
+
+        public bool IsEnabled(TraceType traceType)
         {
             var eventType = GetEventType(traceType);
-
-            if (!_traceSource.Switch.ShouldTrace(eventType))
-            {
-                return false;
-            }
-            else if (formatter != null)
-            {
-                _traceSource.TraceEvent(eventType, eventId, formatter(state, exception));
-            }
-            return true;
+            return _traceSource.Switch.ShouldTrace(eventType);
         }
 
         private static TraceEventType GetEventType(TraceType traceType)

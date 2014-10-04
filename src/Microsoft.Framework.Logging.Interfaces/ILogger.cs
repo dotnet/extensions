@@ -15,8 +15,6 @@ namespace Microsoft.Framework.Logging
     {
         /// <summary>
         /// Aggregates most logging patterns to a single method.  This must be compatible with the Func representation in the OWIN environment.
-        /// 
-        /// To check IsEnabled call WriteCore with only TraceEventType and check the return value, no event will be written.
         /// </summary>
         /// <param name="eventType"></param>
         /// <param name="eventId"></param>
@@ -24,8 +22,14 @@ namespace Microsoft.Framework.Logging
         /// <param name="exception"></param>
         /// <param name="formatter"></param>
         /// <returns></returns>
-        bool WriteCore(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter);
+        void Write(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter);
 
+        /// <summary>
+        /// Checks if the given TraceEventType is enabled.
+        /// </summary>
+        /// <param name="eventType"></param>
+        /// <returns></returns>
+        bool IsEnabled(TraceType eventType);
 
         /// <summary>
         /// Begins a logical operation scope.
