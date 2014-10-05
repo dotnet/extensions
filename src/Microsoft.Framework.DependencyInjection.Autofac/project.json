@@ -2,7 +2,7 @@
   "version": "1.0.0-*",
   "dependencies": {
     "Autofac": "3.3.0",
-    "Microsoft.Framework.DependencyInjection": ""
+    "Microsoft.Framework.DependencyInjection": "1.0.0-*"
   },
   "frameworks": {
     "net45": { },
