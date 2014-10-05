@@ -1,37 +1,46 @@
 {
-  "version": "1.0.0-*",
-  "compilationOptions": {
-    "define": ["TRACE"]
-  },
-  "dependencies": {
-    "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
-  },
-  "frameworks": {
-    "net45": { },
-    "aspnet50": { },
-    "aspnetcore50": {
-      "dependencies": {
-        "System.Collections.Concurrent": "4.0.0.0",
-        "System.Collections": "4.0.10.0",
-        "System.Diagnostics.TraceSource": "4.0.0.0",
-        "System.Globalization": "4.0.10.0",
-        "System.Runtime": "4.0.20.0",
-        "System.Runtime.Extensions": "4.0.10.0",
-        "System.Runtime.InteropServices": "4.0.20.0",
-        "System.Linq": "4.0.0.0",
-        "System.Threading": "4.0.0.0"
-      }
+    "version": "1.0.0-*",
+    "compilationOptions": {
+        "define": [ "TRACE" ]
     },
-    ".NETPortable,Version=v4.6,Profile=Profile151": {
-      "dependencies": {
-        "System.Globalization": "",
-        "System.Runtime": "",
-        "System.Runtime.Extensions": "",
-        "System.Runtime.InteropServices": "",
-        "System.Linq": "",
-        "System.Collections": "",
-        "System.Threading": ""
-      }
+    "frameworks": {
+        "net45": {
+            "dependencies": {
+                "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
+            }
+        },
+        "aspnet50": {
+            "dependencies": {
+                "Microsoft.Framework.Logging.Interfaces": { "version": "1.0.0-*", "type": "build" }
+            }
+        },
+        "aspnetcore50": {
+            "dependencies": {
+                "System.Collections.Concurrent": "4.0.0.0",
+                "System.Collections": "4.0.10.0",
+                "System.Diagnostics.TraceSource": "4.0.0.0",
+                "System.Globalization": "4.0.10.0",
+                "System.Runtime": "4.0.20.0",
+                "System.Runtime.Extensions": "4.0.10.0",
+                "System.Runtime.InteropServices": "4.0.20.0",
+                "System.Linq": "4.0.0.0",
+                "System.Threading": "4.0.0.0",
+                "Microsoft.Framework.Logging.Interfaces": { "version": "1.0.0-*", "type": "build" }
+            }
+        },
+        ".NETPortable,Version=v4.6,Profile=Profile151": {
+            "dependencies": {
+                "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
+            },
+            "frameworkAssemblies": {
+                "System.Globalization": "4.0.0.0",
+                "System.Runtime": "4.0.10.0",
+                "System.Runtime.Extensions": "4.0.0.0",
+                "System.Runtime.InteropServices": "4.0.10.0",
+                "System.Linq": "4.0.0.0",
+                "System.Collections": "4.0.0.0",
+                "System.Threading": "4.0.0.0"
+            }
+        }
     }
-  }
 }
