@@ -11,7 +11,7 @@ using Microsoft.Framework.Runtime.Common.CommandLine;
 using Microsoft.Framework.Runtime.Common.DependencyInjection;
 using Microsoft.Framework.TestAdapter;
 
-namespace Microsoft.AspNet.TestHost
+namespace Microsoft.Framework.TestHost
 {
     public class Program
     {

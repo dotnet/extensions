@@ -5,7 +5,7 @@ using System.Diagnostics;
 using Microsoft.Framework.TestAdapter;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNet.TestHost
+namespace Microsoft.Framework.TestHost
 {
     public class TestDiscoverySink : ITestDiscoverySink
     {

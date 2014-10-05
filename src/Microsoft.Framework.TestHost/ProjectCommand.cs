@@ -5,7 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Framework.Runtime;
 
-namespace Microsoft.AspNet.TestHost
+namespace Microsoft.Framework.TestHost
 {
     public class ProjectCommand
     {
