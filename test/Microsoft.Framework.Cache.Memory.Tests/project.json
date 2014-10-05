@@ -7,10 +7,6 @@
     "test": "Xunit.KRunner"
   },
   "frameworks": {
-    "aspnet50": {
-        "dependencies": {
-            "System.Runtime": "4.0.20.0"
-        }
-    }
+    "aspnet50": { }
   }
 }
