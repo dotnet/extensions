@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "Xunit.KRunner": ""
+    "Xunit.KRunner": "1.0.0-*"
   },
   "commands": {
     "test": "Xunit.KRunner"
