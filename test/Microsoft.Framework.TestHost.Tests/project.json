@@ -1,6 +1,8 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
+        "Microsoft.Framework.TestHost": "1.0.0-*",
+        "Sample.Tests": "1.0.0-*",
         "Xunit.KRunner": "1.0.0-*"
     },
     "commands": {
