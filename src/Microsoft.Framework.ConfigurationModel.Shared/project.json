@@ -10,8 +10,8 @@
             }
         },
         ".NETPortable,Version=v4.6,Profile=Profile151": {
-            "dependencies": { 
-                "System.Runtime": ""
+            "frameworkAssemblies": { 
+                "System.Runtime": "4.0.10.0"
             }
         }
     }

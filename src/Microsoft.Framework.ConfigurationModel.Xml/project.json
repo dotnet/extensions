@@ -1,18 +1,18 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
-        "Microsoft.Framework.ConfigurationModel": "",
-        "Microsoft.Framework.ConfigurationModel.Shared": ""
+        "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
+        "Microsoft.Framework.ConfigurationModel.Shared": { "version": "1.0.0-*", "type": "build" },
     },
     "frameworks": {
         "net45": {
-            "dependencies": {
-                "System.Xml": ""
+            "frameworkAssemblies": {
+                "System.Xml": "4.0.0.0"
             }
         },
         "aspnet50": { 
-            "dependencies": {
-                "System.Xml": ""
+            "frameworkAssemblies": {
+                "System.Xml": "4.0.0.0"
             }
         },
         "aspnetcore50": {

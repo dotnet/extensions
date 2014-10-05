@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "Microsoft.Framework.ConfigurationModel": "",
-    "Microsoft.Framework.ConfigurationModel.Json": "",
-    "Microsoft.Framework.ConfigurationModel.Xml": "",
+    "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
+    "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
+    "Microsoft.Framework.ConfigurationModel.Xml": "1.0.0-*",
     "System.IO.FileSystem": "4.0.0.0",
     "Xunit.KRunner": "1.0.0-*"
   },
