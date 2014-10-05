@@ -1,18 +1,14 @@
 {
-  "dependencies": {
-    "Microsoft.AspNet.FileSystems": "1.0.0-*",
-    "Shouldly": "1.1.1.1",
-    "Xunit.KRunner": "1.0.0-*"
-  },
-  "commands": {
-    "test": "Xunit.KRunner"
-  },
-  "resources": "File.txt;sub/**;Resources/**",
-  "frameworks": {
-    "aspnet50": { 
-        "dependencies": {
-            "System.Runtime": ""
-        }
+    "dependencies": {
+        "Microsoft.AspNet.FileSystems": "1.0.0-*",
+        "Shouldly": "1.1.1.1",
+        "Xunit.KRunner": "1.0.0-*"
+    },
+    "commands": {
+        "test": "Xunit.KRunner"
+    },
+    "resources": "File.txt;sub/**;Resources/**",
+    "frameworks": {
+        "aspnet50": { }
     }
-  }
 }
