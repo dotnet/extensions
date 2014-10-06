@@ -102,7 +102,7 @@ namespace Microsoft.Framework.TestHost
                     {
                         while (true)
                         {
-                            var message =JsonConvert.DeserializeObject<Message>(reader.ReadString());
+                            var message = JsonConvert.DeserializeObject<Message>(reader.ReadString());
                             Output.Add(message);
                         }
                     }

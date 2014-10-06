@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Framework.Runtime;
-using System.ComponentModel.Design;
+using Microsoft.Framework.Runtime.Common.DependencyInjection;
 
 namespace Microsoft.Framework.TestHost
 {
@@ -22,8 +22,8 @@ namespace Microsoft.Framework.TestHost
                 oldEnvironment.RuntimeFramework, 
                 oldEnvironment.Configuration);
 
-            var newServices = new ServiceContainer(services);
-            newServices.AddService(typeof(IApplicationEnvironment), environment);
+            var newServices = new ServiceProvider(services);
+            newServices.Add(typeof(IApplicationEnvironment), environment);
 
             var applicationHost = new Microsoft.Framework.ApplicationHost.Program(
                 (IAssemblyLoaderContainer)services.GetService(typeof(IAssemblyLoaderContainer)),
