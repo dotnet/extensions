@@ -28,17 +28,17 @@
         },
         ".NETPortable,Version=v4.6,Profile=Profile151": {
             "frameworkAssemblies": {
-                "System.Collections": "4.0.0.0",
-                "System.Collections.Concurrent": "4.0.0.0",
-                "System.ComponentModel": "4.0.0.0",
-                "System.Diagnostics.Debug": "4.0.0.0",
-                "System.Diagnostics.Tools": "4.0.0.0",
-                "System.Linq": "4.0.0.0",
-                "System.Reflection": "4.0.0.0",
-                "System.Runtime": "4.0.10.0",
-                "System.Runtime.InteropServices": "4.0.10.0",
-                "System.Threading": "4.0.0.0",
-                "System.Threading.Tasks": "4.0.0.0"
+                "System.Collections": "",
+                "System.Collections.Concurrent": "",
+                "System.ComponentModel": "",
+                "System.Diagnostics.Debug": "",
+                "System.Diagnostics.Tools": "",
+                "System.Linq": "",
+                "System.Reflection": "",
+                "System.Runtime": "",
+                "System.Runtime.InteropServices": "",
+                "System.Threading": "",
+                "System.Threading.Tasks": ""
             }
         }
     }
