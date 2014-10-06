@@ -7,12 +7,12 @@
     "frameworks": {
         "net45": {
             "frameworkAssemblies": {
-                "System.Xml": "4.0.0.0"
+                "System.Xml": ""
             }
         },
         "aspnet50": { 
             "frameworkAssemblies": {
-                "System.Xml": "4.0.0.0"
+                "System.Xml": ""
             }
         },
         "aspnetcore50": {
