@@ -8,10 +8,18 @@ namespace Microsoft.Framework.Cache.Memory
 {
     public class MemoryCacheSetAndRemoveTests
     {
+        private IMemoryCache CreateCache()
+        {
+            return new MemoryCache(new MemoryCacheOptions()
+            {
+                ListenForMemoryPressure = false,
+            });
+        }
+
         [Fact]
         public void GetMissingKeyReturnsFalseOrNull()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             var obj = new object();
             string key = "myKey";
 
@@ -25,7 +33,7 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void SetAndGetReturnsObject()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             var obj = new object();
             string key = "myKey";
 
@@ -39,7 +47,7 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void SetAndGetWorksWithCaseSensitiveKeys()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             var obj = new object();
             string key1 = "myKey";
             string key2 = "Mykey";
@@ -57,7 +65,7 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void GetOrSetDoesNotOverwrite()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             var obj = new object();
             var obj2 = new object();
             string key = "myKey";
@@ -74,7 +82,7 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void SetAlwaysOverwrites()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             var obj = new object();
             string key = "myKey";
 
@@ -92,7 +100,7 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void SetOverwritesAndInvokesCallbacks()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             var obj = new object();
             string key = "myKey";
             var callback1Invoked = new ManualResetEvent(false);
@@ -136,7 +144,7 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void RemoveRemoves()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             var obj = new object();
             string key = "myKey";
 
@@ -151,7 +159,7 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void RemoveRemovesAndInvokesCallback()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             var obj = new object();
             string key = "myKey";
             var callbackInvoked = new ManualResetEvent(false);
@@ -180,7 +188,7 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void RemoveAndReAddFromCallbackWorks()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             var obj = new object();
             var obj2 = new object();
             string key = "myKey";

@@ -10,10 +10,24 @@ namespace Microsoft.Framework.Cache.Memory.Tests
 {
     public class EntryLinkExpirationTests
     {
+        private IMemoryCache CreateCache()
+        {
+            return CreateCache(new SystemClock());
+        }
+
+        private IMemoryCache CreateCache(ISystemClock clock)
+        {
+            return new MemoryCache(new MemoryCacheOptions()
+            {
+                Clock = clock,
+                ListenForMemoryPressure = false,
+            });
+        }
+
         [Fact]
         public void GetWithLinkPopulatesTriggers()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             var obj = new object();
             string key = "myKey";
             string key1 = "myKey1";
@@ -40,7 +54,7 @@ namespace Microsoft.Framework.Cache.Memory.Tests
         [Fact]
         public void GetWithLinkPopulatesAbsoluteExpiration()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             var obj = new object();
             string key = "myKey";
             string key1 = "myKey1";
@@ -69,7 +83,7 @@ namespace Microsoft.Framework.Cache.Memory.Tests
         [Fact]
         public void TriggerExpiresLinkedEntry()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             var obj = new object();
             string key = "myKey";
             string key1 = "myKey1";
@@ -103,7 +117,7 @@ namespace Microsoft.Framework.Cache.Memory.Tests
         public void AbsoluteExpirationWorksAcrossLink()
         {
             var clock = new TestClock();
-            var cache = new MemoryCache(clock, listenForMemoryPressure: false);
+            var cache = CreateCache(clock);
             var obj = new object();
             string key = "myKey";
             string key1 = "myKey1";
@@ -136,7 +150,7 @@ namespace Microsoft.Framework.Cache.Memory.Tests
         [Fact]
         public void GetWithImplicitLinkPopulatesTriggers()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             var obj = new object();
             string key = "myKey";
             string key1 = "myKey1";
@@ -171,7 +185,7 @@ namespace Microsoft.Framework.Cache.Memory.Tests
         [Fact]
         public void LinkContextsCanNest()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             var obj = new object();
             string key = "myKey";
             string key1 = "myKey1";
@@ -218,7 +232,7 @@ namespace Microsoft.Framework.Cache.Memory.Tests
         public void NestedLinkContextsCanAggregate()
         {
             var clock = new TestClock();
-            var cache = new MemoryCache(clock, listenForMemoryPressure: false);
+            var cache = CreateCache(clock);
             var obj = new object();
             string key1 = "myKey1";
             string key2 = "myKey2";

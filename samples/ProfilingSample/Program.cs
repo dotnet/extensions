@@ -10,7 +10,7 @@ namespace ProfilingSample
         public static void Main(string[] args)
         {
             // Runs several concurrent threads that access an item that periodically expires and is re-created.
-            MemoryCache cache = new MemoryCache();
+            MemoryCache cache = new MemoryCache(new MemoryCacheOptions());
             string key = "MyKey";
 
             var tasks = new List<Task>();

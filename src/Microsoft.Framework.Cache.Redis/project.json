@@ -1,0 +1,11 @@
+﻿{
+  "dependencies": {
+    "Microsoft.Framework.Cache.Distributed": "1.0.0-*",
+    "StackExchange.Redis": "1.0.333"
+  },
+  "frameworks": {
+    "aspnet50": {
+      "dependencies": {}
+    }
+  }
+}

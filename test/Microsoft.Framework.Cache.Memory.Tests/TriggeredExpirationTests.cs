@@ -4,16 +4,31 @@
 using System;
 using System.Threading;
 using Microsoft.Framework.Cache.Memory.Infrastructure;
+using Microsoft.Framework.OptionsModel;
 using Xunit;
 
 namespace Microsoft.Framework.Cache.Memory
 {
     public class TriggeredExpirationTests
     {
+        private IMemoryCache CreateCache()
+        {
+            return CreateCache(new SystemClock());
+        }
+
+        private IMemoryCache CreateCache(ISystemClock clock)
+        {
+            return new MemoryCache(new MemoryCacheOptions()
+            {
+                Clock = clock,
+                ListenForMemoryPressure = false,
+            });
+        }
+
         [Fact]
         public void SetWithTriggerRegistersForNotificaiton()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             string key = "myKey";
             var obj = new object();
             var trigger = new TestTrigger() { ActiveExpirationCallbacks = true };
@@ -34,7 +49,7 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void SetWithLazyTriggerDoesntRegisterForNotification()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             string key = "myKey";
             var obj = new object();
             var trigger = new TestTrigger() { ActiveExpirationCallbacks = false };
@@ -52,7 +67,7 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void FireTriggerRemovesItem()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             string key = "myKey";
             var obj = new object();
             var callbackInvoked = new ManualResetEvent(false);
@@ -80,7 +95,7 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void ExpiredLazyTriggerRemovesItemOnNextAccess()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             string key = "myKey";
             var obj = new object();
             var callbackInvoked = new ManualResetEvent(false);
@@ -111,7 +126,7 @@ namespace Microsoft.Framework.Cache.Memory
         public void ExpiredLazyTriggerRemovesItemInBackground()
         {
             var clock = new TestClock();
-            var cache = new MemoryCache(clock, listenForMemoryPressure: false);
+            var cache = CreateCache(clock);
             string key = "myKey";
             var obj = new object();
             var callbackInvoked = new ManualResetEvent(false);
@@ -142,7 +157,7 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void RemoveItemDisposesTriggerRegistration()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             string key = "myKey";
             var obj = new object();
             var callbackInvoked = new ManualResetEvent(false);
@@ -168,7 +183,7 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void AddExpiredTriggerPreventsCaching()
         {
-            var cache = new MemoryCache();
+            var cache = CreateCache();
             string key = "myKey";
             var obj = new object();
             var callbackInvoked = new ManualResetEvent(false);

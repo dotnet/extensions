@@ -9,7 +9,7 @@ namespace Microsoft.Framework.Cache.Memory.Infrastructure
     {
         public TestClock()
         {
-            UtcNow = new DateTime(2013, 6, 11, 12, 34, 56, 789);
+            UtcNow = new DateTime(2013, 6, 15, 12, 34, 56, 789);
         }
 
         public DateTimeOffset UtcNow { get; set; }

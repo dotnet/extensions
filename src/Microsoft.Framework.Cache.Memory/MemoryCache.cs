@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.Framework.Cache.Memory.Infrastructure;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.Cache.Memory
 {
@@ -21,27 +22,23 @@ namespace Microsoft.Framework.Cache.Memory
         private TimeSpan _expirationScanFrequency;
         private DateTimeOffset _lastExpirationScan;
 
-        public MemoryCache()
-            : this(new SystemClock(), listenForMemoryPressure: true)
-        {
-        }
-
         /// <summary>
         /// Creates a new MemoryCache instance. This overload is intended for testing purposes.
         /// </summary>
         /// <param name="clock"></param>
         /// <param name="listenForMemoryPressure"></param>
-        public MemoryCache(ISystemClock clock, bool listenForMemoryPressure)
+        public MemoryCache([NotNull] IOptionsAccessor<MemoryCacheOptions> accessor)
         {
+            var options = accessor.Options;
             _entries = new Dictionary<string, CacheEntry>(StringComparer.Ordinal);
             _entryLock = new ReaderWriterLockSlim();
             _entryExpirationNotification = EntryExpired;
-            _clock = clock;
-            if (listenForMemoryPressure)
+            _clock = options.Clock ?? new SystemClock();
+            if (options.ListenForMemoryPressure)
             {
                 GcNotification.Register(DoMemoryPreassureCollection, state: null);
             }
-            _expirationScanFrequency = TimeSpan.FromMinutes(1); // TODO: Variable
+            _expirationScanFrequency = options.ExpirationScanFrequency;
             _lastExpirationScan = _clock.UtcNow;
         }
 
@@ -61,7 +58,7 @@ namespace Microsoft.Framework.Cache.Memory
             get { return _entries.Count; }
         }
 
-        public object Set(string key, IEntryLink link, object state, Func<ICacheSetContext, object> create)
+        public object Set([NotNull] string key, IEntryLink link, object state, [NotNull] Func<ICacheSetContext, object> create)
         {
             CheckDisposed();
             CacheEntry priorEntry = null;
@@ -119,7 +116,7 @@ namespace Microsoft.Framework.Cache.Memory
             return value;
         }
 
-        public bool TryGetValue(string key, IEntryLink link, out object value)
+        public bool TryGetValue([NotNull] string key, IEntryLink link, out object value)
         {
             value = null;
             CacheEntry expiredEntry = null;
@@ -174,7 +171,7 @@ namespace Microsoft.Framework.Cache.Memory
             return found;
         }
 
-        public void Remove(string key)
+        public void Remove([NotNull] string key)
         {
             CheckDisposed();
             CacheEntry entry;

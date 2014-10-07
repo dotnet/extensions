@@ -5,37 +5,27 @@ using System;
 using System.Globalization;
 using System.Threading;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.Cache.Memory.Infrastructure;
+using Microsoft.Framework.Cache.Distributed;
 using Xunit;
 
-namespace Microsoft.Framework.Cache.Memory
+namespace Microsoft.Framework.Cache.Redis
 {
     public class TimeExpirationTests
     {
-        private IMemoryCache CreateCache(ISystemClock clock)
-        {
-            return new MemoryCache(new MemoryCacheOptions()
-            {
-                Clock = clock,
-                ListenForMemoryPressure = false,
-            });
-        }
-
         [Fact]
         public void AbsoluteExpirationInThePastThrows()
         {
-            var clock = new TestClock();
-            var cache = CreateCache(clock);
+            var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
             var key = "myKey";
-            var obj = new object();
+            var value = new byte[1];
 
-            var expected = clock.UtcNow - TimeSpan.FromMinutes(1);
+            var expected = DateTimeOffset.Now - TimeSpan.FromMinutes(1);
             ExceptionAssert.ThrowsArgumentOutOfRange(() =>
             {
                 var result = cache.Set(key, context =>
                 {
                     context.SetAbsoluteExpiration(expected);
-                    return obj;
+                    return value;
                 });
             }, "absolute", "The absolute expiration value must be in the future.", expected.ToString(CultureInfo.CurrentCulture));
         }
@@ -43,61 +33,46 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void AbsoluteExpirationExpires()
         {
-            var clock = new TestClock();
-            var cache = CreateCache(clock);
+            var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
             var key = "myKey";
-            var obj = new object();
+            var value = new byte[1];
 
             var result = cache.Set(key, context =>
             {
-                context.SetAbsoluteExpiration(clock.UtcNow + TimeSpan.FromMinutes(1));
-                return obj;
+                context.SetAbsoluteExpiration(DateTimeOffset.UtcNow + TimeSpan.FromSeconds(1));
+                return value;
             });
-            Assert.Same(obj, result);
+            Assert.Equal(value, result);
 
             var found = cache.TryGetValue(key, out result);
             Assert.True(found);
-            Assert.Same(obj, result);
+            Assert.Equal(value, result);
 
-            clock.Add(TimeSpan.FromMinutes(2));
+            for (int i = 0; i < 4 && found; i++)
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(0.5));
+                found = cache.TryGetValue(key, out result);
+            }
 
-            found = cache.TryGetValue(key, out result);
             Assert.False(found);
             Assert.Null(result);
         }
 
         [Fact]
-        public void AbsoluteExpirationExpiresInBackground()
+        public void AbsoluteSubSecondExpirationExpiresImmidately()
         {
-            var clock = new TestClock();
-            var cache = CreateCache(clock);
+            var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
             var key = "myKey";
-            var obj = new object();
-            var callbackInvoked = new ManualResetEvent(false);
+            var value = new byte[1];
 
             var result = cache.Set(key, context =>
             {
-                context.SetAbsoluteExpiration(clock.UtcNow + TimeSpan.FromMinutes(1));
-                context.RegisterPostEvictionCallback((subkey, value, reason, state) =>
-                {
-                    // TODO: Verify params
-                    var localCallbackInvoked = (ManualResetEvent)state;
-                    localCallbackInvoked.Set();
-                }, state: callbackInvoked);
-                return obj;
+                context.SetAbsoluteExpiration(DateTimeOffset.UtcNow + TimeSpan.FromSeconds(0.25));
+                return value;
             });
-            Assert.Same(obj, result);
+            Assert.Equal(value, result);
 
             var found = cache.TryGetValue(key, out result);
-            Assert.True(found);
-            Assert.Same(obj, result);
-
-            clock.Add(TimeSpan.FromMinutes(2));
-            var ignored = cache.Get("otherKey"); // Background expiration checks are triggered by misc cache activity.
-
-            Assert.True(callbackInvoked.WaitOne(100), "Callback");
-
-            found = cache.TryGetValue(key, out result);
             Assert.False(found);
             Assert.Null(result);
         }
@@ -105,17 +80,16 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void NegativeRelativeExpirationThrows()
         {
-            var clock = new TestClock();
-            var cache = CreateCache(clock);
+            var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
             var key = "myKey";
-            var obj = new object();
+            var value = new byte[1];
 
             ExceptionAssert.ThrowsArgumentOutOfRange(() =>
             {
                 var result = cache.Set(key, context =>
                 {
                     context.SetAbsoluteExpiration(TimeSpan.FromMinutes(-1));
-                    return obj;
+                    return value;
                 });
             }, "relative", "The relative expiration value must be positive.", TimeSpan.FromMinutes(-1));
         }
@@ -123,17 +97,16 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void ZeroRelativeExpirationThrows()
         {
-            var clock = new TestClock();
-            var cache = CreateCache(clock);
+            var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
             var key = "myKey";
-            var obj = new object();
+            var value = new byte[1];
 
             ExceptionAssert.ThrowsArgumentOutOfRange(() =>
             {
                 var result = cache.Set(key, context =>
                 {
                     context.SetAbsoluteExpiration(TimeSpan.Zero);
-                    return obj;
+                    return value;
                 });
             }, "relative", "The relative expiration value must be positive.", TimeSpan.Zero);
         }
@@ -141,25 +114,44 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void RelativeExpirationExpires()
         {
-            var clock = new TestClock();
-            var cache = CreateCache(clock);
+            var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
             var key = "myKey";
-            var obj = new object();
+            var value = new byte[1];
 
             var result = cache.Set(key, context =>
             {
-                context.SetAbsoluteExpiration(TimeSpan.FromMinutes(1));
-                return obj;
+                context.SetAbsoluteExpiration(TimeSpan.FromSeconds(1));
+                return value;
             });
-            Assert.Same(obj, result);
+            Assert.Equal(value, result);
 
             var found = cache.TryGetValue(key, out result);
             Assert.True(found);
-            Assert.Same(obj, result);
+            Assert.Equal(value, result);
+          
+            for (int i = 0; i < 4 && found; i++)
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(0.5));
+                found = cache.TryGetValue(key, out result);
+            }
+            Assert.False(found);
+        }
 
-            clock.Add(TimeSpan.FromMinutes(2));
+        [Fact]
+        public void RelativeSubSecondExpirationExpiresImmediately()
+        {
+            var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
+            var key = "myKey";
+            var value = new byte[1];
 
-            found = cache.TryGetValue(key, out result);
+            var result = cache.Set(key, context =>
+            {
+                context.SetAbsoluteExpiration(TimeSpan.FromSeconds(0.25));
+                return value;
+            });
+            Assert.Equal(value, result);
+
+            var found = cache.TryGetValue(key, out result);
             Assert.False(found);
             Assert.Null(result);
         }
@@ -167,17 +159,16 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void NegativeSlidingExpirationThrows()
         {
-            var clock = new TestClock();
-            var cache = CreateCache(clock);
+            var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
             var key = "myKey";
-            var obj = new object();
+            var value = new byte[1];
 
             ExceptionAssert.ThrowsArgumentOutOfRange(() =>
             {
                 var result = cache.Set(key, context =>
                 {
                     context.SetSlidingExpiration(TimeSpan.FromMinutes(-1));
-                    return obj;
+                    return value;
                 });
             }, "offset", "The sliding expiration value must be positive.", TimeSpan.FromMinutes(-1));
         }
@@ -185,17 +176,16 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void ZeroSlidingExpirationThrows()
         {
-            var clock = new TestClock();
-            var cache = CreateCache(clock);
+            var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
             var key = "myKey";
-            var obj = new object();
+            var value = new byte[1];
 
             ExceptionAssert.ThrowsArgumentOutOfRange(() =>
             {
                 var result = cache.Set(key, context =>
                 {
                     context.SetSlidingExpiration(TimeSpan.Zero);
-                    return obj;
+                    return value;
                 });
             }, "offset", "The sliding expiration value must be positive.", TimeSpan.Zero);
         }
@@ -203,23 +193,22 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void SlidingExpirationExpiresIfNotAccessed()
         {
-            var clock = new TestClock();
-            var cache = CreateCache(clock);
+            var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
             var key = "myKey";
-            var obj = new object();
+            var value = new byte[1];
 
             var result = cache.Set(key, context =>
             {
-                context.SetSlidingExpiration(TimeSpan.FromMinutes(1));
-                return obj;
+                context.SetSlidingExpiration(TimeSpan.FromSeconds(1));
+                return value;
             });
-            Assert.Same(obj, result);
+            Assert.Equal(value, result);
 
             var found = cache.TryGetValue(key, out result);
             Assert.True(found);
-            Assert.Same(obj, result);
+            Assert.Equal(value, result);
 
-            clock.Add(TimeSpan.FromMinutes(2));
+            Thread.Sleep(TimeSpan.FromSeconds(3));
 
             found = cache.TryGetValue(key, out result);
             Assert.False(found);
@@ -227,64 +216,87 @@ namespace Microsoft.Framework.Cache.Memory
         }
 
         [Fact]
-        public void SlidingExpirationRenewedByAccess()
+        public void SlidingSubSecondExpirationExpiresImmediately()
         {
-            var clock = new TestClock();
-            var cache = CreateCache(clock);
+            var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
             var key = "myKey";
-            var obj = new object();
+            var value = new byte[1];
 
             var result = cache.Set(key, context =>
             {
-                context.SetSlidingExpiration(TimeSpan.FromMinutes(1));
-                return obj;
+                context.SetSlidingExpiration(TimeSpan.FromSeconds(0.25));
+                return value;
             });
-            Assert.Same(obj, result);
+            Assert.Equal(value, result);
+
+            var found = cache.TryGetValue(key, out result);
+            Assert.False(found);
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void SlidingExpirationRenewedByAccess()
+        {
+            var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
+            var key = "myKey";
+            var value = new byte[1];
+
+            var result = cache.Set(key, context =>
+            {
+                context.SetSlidingExpiration(TimeSpan.FromSeconds(1));
+                return value;
+            });
+            Assert.Equal(value, result);
 
             var found = cache.TryGetValue(key, out result);
             Assert.True(found);
-            Assert.Same(obj, result);
-
-            for (int i = 0; i < 10; i++)
+            Assert.Equal(value, result);
+            
+            for (int i = 0; i < 5; i++)
             {
-                clock.Add(TimeSpan.FromSeconds(15));
+                Thread.Sleep(TimeSpan.FromSeconds(0.5));
 
                 found = cache.TryGetValue(key, out result);
                 Assert.True(found);
-                Assert.Same(obj, result);
+                Assert.Equal(value, result);
             }
+
+            Thread.Sleep(TimeSpan.FromSeconds(3));
+            found = cache.TryGetValue(key, out result);
+
+            Assert.False(found);
+            Assert.Null(result);
         }
 
         [Fact]
         public void SlidingExpirationRenewedByAccessUntilAbsoluteExpiration()
         {
-            var clock = new TestClock();
-            var cache = CreateCache(clock);
+            var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
             var key = "myKey";
-            var obj = new object();
+            var value = new byte[1];
 
             var result = cache.Set(key, context =>
             {
-                context.SetSlidingExpiration(TimeSpan.FromMinutes(1));
-                context.SetAbsoluteExpiration(TimeSpan.FromMinutes(2));
-                return obj;
+                context.SetSlidingExpiration(TimeSpan.FromSeconds(1));
+                context.SetAbsoluteExpiration(TimeSpan.FromSeconds(3));
+                return value;
             });
-            Assert.Same(obj, result);
+            Assert.Equal(value, result);
 
             var found = cache.TryGetValue(key, out result);
             Assert.True(found);
-            Assert.Same(obj, result);
+            Assert.Equal(value, result);
 
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i < 5; i++)
             {
-                clock.Add(TimeSpan.FromSeconds(15));
+                Thread.Sleep(TimeSpan.FromSeconds(0.5));
 
                 found = cache.TryGetValue(key, out result);
                 Assert.True(found);
-                Assert.Same(obj, result);
+                Assert.Equal(value, result);
             }
 
-            clock.Add(TimeSpan.FromSeconds(15));
+            Thread.Sleep(TimeSpan.FromSeconds(1));
 
             found = cache.TryGetValue(key, out result);
             Assert.False(found);

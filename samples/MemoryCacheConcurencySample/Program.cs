@@ -12,7 +12,7 @@ namespace MemoryCacheSample
 
         public void Main()
         {
-            IMemoryCache cache = new MemoryCache();
+            IMemoryCache cache = new MemoryCache(new MemoryCacheOptions());
 
             SetKey(cache, "0");
 

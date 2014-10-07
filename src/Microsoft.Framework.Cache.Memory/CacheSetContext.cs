@@ -57,6 +57,10 @@ namespace Microsoft.Framework.Cache.Memory
 
         public void SetAbsoluteExpiration(DateTimeOffset absolute)
         {
+            if (absolute <= CreationTime)
+            {
+                throw new ArgumentOutOfRangeException("absolute", absolute, "The absolute expiration value must be in the future.");
+            }
             if (!AbsoluteExpiration.HasValue)
             {
                 AbsoluteExpiration = absolute;

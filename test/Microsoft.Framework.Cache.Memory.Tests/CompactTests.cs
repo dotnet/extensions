@@ -9,17 +9,25 @@ namespace Microsoft.Framework.Cache.Memory
 {
     public class CompactTests
     {
+        private MemoryCache CreateCache()
+        {
+            return new MemoryCache(new MemoryCacheOptions()
+            {
+                ListenForMemoryPressure = false,
+            });
+        }
+
         [Fact]
         public void CompactEmptyNoOps()
         {
-            var cache = new MemoryCache(new TestClock(), listenForMemoryPressure: false);
+            var cache = CreateCache();
             cache.Compact(0.10);
         }
 
         [Fact]
         public void Compact100PercentClearsAll()
         {
-            var cache = new MemoryCache(new TestClock(), listenForMemoryPressure: false);
+            var cache = CreateCache();
             cache.Set("key1", "value1");
             cache.Set("key2", "value2");
             Assert.Equal(2, cache.Count);
@@ -30,7 +38,7 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void Compact100PercentClearsAllButNeverRemoveItems()
         {
-            var cache = new MemoryCache(new TestClock(), listenForMemoryPressure: false);
+            var cache = CreateCache();
             cache.Set("key1", context =>
             {
                 context.SetPriority(CachePreservationPriority.NeverRemove);
@@ -53,7 +61,7 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void CompactPrioritizesLowPriortyItems()
         {
-            var cache = new MemoryCache(new TestClock(), listenForMemoryPressure: false);
+            var cache = CreateCache();
             cache.Set("key1", context =>
             {
                 context.SetPriority(CachePreservationPriority.Low);
@@ -76,7 +84,7 @@ namespace Microsoft.Framework.Cache.Memory
         [Fact]
         public void CompactPrioritizesLRU()
         {
-            var cache = new MemoryCache(new TestClock(), listenForMemoryPressure: false);
+            var cache = CreateCache();
             cache.Set("key1", "value1");
             cache.Set("key2", "value2");
             cache.Set("key3", "value3");
