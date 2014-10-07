@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Framework.Runtime;
@@ -13,24 +14,21 @@ namespace Microsoft.Framework.TestHost
 {
     public class TestHostTest
     {
-        private readonly IServiceProvider _services;
-        private readonly IApplicationEnvironment _environment;
         private readonly string _testProject;
 
         public TestHostTest()
         {
-            _services = CallContextServiceLocator.Locator.ServiceProvider;
-            _environment = (IApplicationEnvironment)_services.GetService(typeof(IApplicationEnvironment));
+            var services = CallContextServiceLocator.Locator.ServiceProvider;
 
-            var libraryManager = (ILibraryManager)_services.GetService(typeof(ILibraryManager));
-            _testProject = libraryManager.GetLibraryInformation("Sample.Tests").Path;
+            var libraryManager = (ILibraryManager)services.GetService(typeof(ILibraryManager));
+            _testProject = Path.GetDirectoryName(libraryManager.GetLibraryInformation("Sample.Tests").Path);
         }
 
         [Fact]
         public async Task ListTest()
         {
             // Arrange
-            var host = new TestHostWrapper(_services);
+            var host = new TestHostWrapper();
 
             // Act
             var result = await host.RunListAsync(_testProject);
@@ -53,7 +51,7 @@ namespace Microsoft.Framework.TestHost
         public async Task RunTest_All()
         {
             // Arrange
-            var host = new TestHostWrapper(_services);
+            var host = new TestHostWrapper();
 
             // Act
             var result = await host.RunTestsAsync(_testProject);
@@ -83,7 +81,7 @@ namespace Microsoft.Framework.TestHost
         public async Task RunTest_ByDisplayName()
         {
             // Arrange
-            var host = new TestHostWrapper(_services);
+            var host = new TestHostWrapper();
 
             // Act
             var result = await host.RunTestsAsync(
@@ -106,7 +104,7 @@ namespace Microsoft.Framework.TestHost
         public async Task RunTest_ByDisplayName_Short()
         {
             // Arrange
-            var host = new TestHostWrapper(_services);
+            var host = new TestHostWrapper();
 
             // Act
             var result = await host.RunTestsAsync(_testProject, "Sample.Tests.SampleTest.TheoryTest1");
@@ -128,7 +126,7 @@ namespace Microsoft.Framework.TestHost
         public async Task RunTest_ByUniqueName()
         {
             // Arrange
-            var host = new TestHostWrapper(_services);
+            var host = new TestHostWrapper();
 
             await host.RunListAsync(_testProject);
 

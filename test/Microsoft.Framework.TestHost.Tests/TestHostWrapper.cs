@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -14,13 +16,6 @@ namespace Microsoft.Framework.TestHost
 {
     public class TestHostWrapper
     {
-        private readonly IServiceProvider _services;
-
-        public TestHostWrapper(IServiceProvider services)
-        {
-            _services = services;
-        }
-
         public List<Message> Output { get; } = new List<Message>();
 
         public async Task<int> RunListAsync(string project)
@@ -40,12 +35,12 @@ namespace Microsoft.Framework.TestHost
             // This will block until the test host opens the port
             var listener = Task.Run(() => GetMessage(port, "TestDiscovery.Response"));
 
-            var program = new Program(_services);
-            var result = program.Main(arguments.ToArray());
+            var process = RunKRE(project, arguments);
+            process.WaitForExit();
 
             await listener;
 
-            return result;
+            return process.ExitCode;
         }
 
         public async Task<int> RunTestsAsync(string project, params string[] tests)
@@ -71,12 +66,31 @@ namespace Microsoft.Framework.TestHost
             // This will block until the test host opens the port
             var listener = Task.Run(() => GetMessage(port, "TestExecution.Response"));
 
-            var program = new Program(_services);
-            var result = program.Main(arguments.ToArray());
+            var process = RunKRE(project, arguments);
+            process.WaitForExit();
 
             await listener;
 
-            return result;
+            return process.ExitCode;
+        }
+
+        private static Process RunKRE(string projectDirectory, IEnumerable<string> args)
+        {
+            // TODO: Mono?
+
+            var allArgs = "/c k Microsoft.Framework.TestHost " + string.Join(" ", args.Select(Quote));
+            return Process.Start(new ProcessStartInfo
+            {
+                FileName = "cmd",
+                WorkingDirectory = projectDirectory,
+                Arguments = allArgs,
+                UseShellExecute = false
+            });
+        }
+
+        private static string Quote(string arg)
+        {
+            return "\"" + arg + "\"";
         }
 
         private void GetMessage(int port, string terminalMessageType)
