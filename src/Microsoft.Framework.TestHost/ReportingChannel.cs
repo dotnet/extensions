@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -29,6 +30,8 @@ namespace Microsoft.Framework.TestHost
         }
 
         private readonly BinaryWriter _writer;
+        private readonly BinaryReader _reader;
+        private readonly ManualResetEventSlim _ackWaitHandle;
 
         private ReportingChannel(Socket socket)
         {
@@ -36,6 +39,11 @@ namespace Microsoft.Framework.TestHost
 
             var stream = new NetworkStream(Socket);
             _writer = new BinaryWriter(stream);
+            _reader = new BinaryReader(stream);
+            _ackWaitHandle = new ManualResetEventSlim();
+
+            // Waiting for the ack message on a background thread
+            new Thread(WaitForAck) { IsBackground = true }.Start();
         }
 
         public Socket Socket { get; private set; }
@@ -69,8 +77,36 @@ namespace Microsoft.Framework.TestHost
             });
         }
 
+
+        private void WaitForAck()
+        {
+            try
+            {
+                var message = JsonConvert.DeserializeObject<Message>(_reader.ReadString());
+
+                if (string.Equals(message.MessageType, "TestHost.Acknowledge"))
+                {
+                    _ackWaitHandle.Set();
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceInformation("[ReportingChannel]: Waiting for ack failed {0}", ex);
+            }
+        }
+
         public void Dispose()
         {
+            // Wait for a graceful disconnect
+            if (_ackWaitHandle.Wait(TimeSpan.FromSeconds(10)))
+            {
+                Trace.TraceInformation("[ReportingChannel]: Received for ack from test host");
+            }
+            else
+            {
+                Trace.TraceInformation("[ReportingChannel]: Timed out waiting for ack from test host");
+            }
+
             Socket.Dispose();
         }
 

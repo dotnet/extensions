@@ -38,7 +38,7 @@ namespace Microsoft.Framework.TestHost
             arguments.Add("list");
 
             // This will block until the test host opens the port
-            var listener = Task.Run(() => GetMessage(port));
+            var listener = Task.Run(() => GetMessage(port, "TestDiscovery.Response"));
 
             var program = new Program(_services);
             var result = program.Main(arguments.ToArray());
@@ -69,7 +69,7 @@ namespace Microsoft.Framework.TestHost
             }
 
             // This will block until the test host opens the port
-            var listener = Task.Run(() => GetMessage(port));
+            var listener = Task.Run(() => GetMessage(port, "TestExecution.Response"));
 
             var program = new Program(_services);
             var result = program.Main(arguments.ToArray());
@@ -79,7 +79,7 @@ namespace Microsoft.Framework.TestHost
             return result;
         }
 
-        private void GetMessage(int port)
+        private void GetMessage(int port, string terminalMessageType)
         {
             try
             {
@@ -98,12 +98,22 @@ namespace Microsoft.Framework.TestHost
                         }
                     }
 
-                    using (var reader = new BinaryReader(client.GetStream()))
+                    var stream = client.GetStream();
+                    using (var reader = new BinaryReader(stream))
                     {
                         while (true)
                         {
                             var message = JsonConvert.DeserializeObject<Message>(reader.ReadString());
                             Output.Add(message);
+
+                            if (string.Equals(message.MessageType, terminalMessageType))
+                            {
+                                var writer = new BinaryWriter(stream);
+                                writer.Write(JsonConvert.SerializeObject(new Message
+                                {
+                                    MessageType = "TestHost.Acknowledge"
+                                }));
+                            }
                         }
                     }
                 }
