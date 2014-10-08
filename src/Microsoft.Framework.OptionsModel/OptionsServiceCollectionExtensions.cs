@@ -11,70 +11,90 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class OptionsServiceCollectionExtensions
     {
-        public static IServiceCollection AddSetup([NotNull]this IServiceCollection services, Type setupType)
+        public static IServiceCollection AddOptionsAction([NotNull]this IServiceCollection services, Type configureType)
         {
-            var serviceTypes = setupType.GetTypeInfo().ImplementedInterfaces
-                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsSetup<>));
+            var serviceTypes = configureType.GetTypeInfo().ImplementedInterfaces
+                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsAction<>));
             foreach (var serviceType in serviceTypes)
             {
                 services.Add(new ServiceDescriptor
                 {
                     ServiceType = serviceType,
-                    ImplementationType = setupType,
+                    ImplementationType = configureType,
                     Lifecycle = LifecycleKind.Transient
                 });
             }
+            // TODO: consider throwing if we add no services?
             return services;
         }
 
-        public static IServiceCollection AddSetup<TSetup>([NotNull]this IServiceCollection services)
+        public static IServiceCollection AddOptionsAction<TSetup>([NotNull]this IServiceCollection services)
         {
-            return services.AddSetup(typeof(TSetup));
+            return services.AddOptionsAction(typeof(TSetup));
         }
 
-        public static IServiceCollection AddSetup([NotNull]this IServiceCollection services, [NotNull]object setupInstance)
+        public static IServiceCollection AddOptionsAction([NotNull]this IServiceCollection services, [NotNull]object configureInstance)
         {
-            var setupType = setupInstance.GetType();
+            var setupType = configureInstance.GetType();
             var serviceTypes = setupType.GetTypeInfo().ImplementedInterfaces
-                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsSetup<>));
+                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsAction<>));
             foreach (var serviceType in serviceTypes)
             {
                 services.Add(new ServiceDescriptor
                 {
                     ServiceType = serviceType,
-                    ImplementationInstance = setupInstance,
+                    ImplementationInstance = configureInstance,
                     Lifecycle = LifecycleKind.Singleton
                 });
             }
+            // TODO: consider throwing if we add no services?
             return services;
         }
 
-        public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
-            Action<TOptions> setupAction,
-            int order)
-        {
-            services.AddSetup(new OptionsSetup<TOptions>(setupAction) { Order = order });
-            return services;
-        }
-
+        [Obsolete("Use ConfigureOptions instead")]
         public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
             Action<TOptions> setupAction)
         {
-            return services.SetupOptions(setupAction, order: OptionsConstants.DefaultOrder);
+            return services.ConfigureOptions(setupAction);
         }
 
-        public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
-            IConfiguration config,
-            int order)
+        public static IServiceCollection ConfigureOptions<TOptions>([NotNull]this IServiceCollection services,
+            Action<TOptions> setupAction,
+            string optionsName)
         {
-            services.AddSetup(new ConfigOptionsSetup<TOptions>(config, order));
+            return services.ConfigureOptions(setupAction, OptionsConstants.DefaultOrder, optionsName);
+        }
+
+        public static IServiceCollection ConfigureOptions<TOptions>([NotNull]this IServiceCollection services,
+            [NotNull] Action<TOptions> setupAction,
+            int order = OptionsConstants.DefaultOrder,
+            string optionsName = "")
+        {
+            services.AddOptionsAction(new OptionsAction<TOptions>(setupAction)
+            {
+                Name = optionsName,
+                Order = order
+            });
+        return services;
+        }
+
+        public static IServiceCollection ConfigureOptions<TOptions>([NotNull]this IServiceCollection services,
+            [NotNull] IConfiguration config, string optionsName)
+        {
+            return services.ConfigureOptions<TOptions>(config, OptionsConstants.ConfigurationOrder, optionsName);
+        }
+
+        public static IServiceCollection ConfigureOptions<TOptions>([NotNull]this IServiceCollection services,
+            [NotNull] IConfiguration config,
+            int order = OptionsConstants.ConfigurationOrder, 
+            string optionsName = "")
+        {
+            services.AddOptionsAction(new ConfigurationAction<TOptions>(config)
+            {
+                Name = optionsName,
+                Order = order
+            });
             return services;
-        }
-
-        public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
-            IConfiguration config)
-        {
-            return services.SetupOptions<TOptions>(config, OptionsConstants.ConfigurationOrder);
         }
     }
 }

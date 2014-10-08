@@ -3,9 +3,10 @@
 
 namespace Microsoft.Framework.OptionsModel
 {
-    public interface IOptionsAccessor<out TOptions> where TOptions : class,new()
+    public interface IOptionsAction<in TOptions>
     {
-        TOptions Options { get; }
-        TOptions GetNamedOptions(string name);
+        int Order { get; }
+        string Name { get; }
+        void Invoke(TOptions options);
     }
 }
