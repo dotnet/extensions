@@ -22,13 +22,17 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             foreach (var descriptor in descriptors)
             {
                 var serviceTypeInfo = descriptor.ServiceType.GetTypeInfo();
-                if (!serviceTypeInfo.IsGenericTypeDefinition)
+                if (serviceTypeInfo.IsGenericTypeDefinition)
                 {
-                    Add(descriptor.ServiceType, new Service(descriptor));
+                    Add(descriptor.ServiceType, new GenericService(descriptor));
+                }
+                else if (descriptor.ImplementationInstance != null)
+                {
+                    Add(descriptor.ServiceType, new InstanceService(descriptor));
                 }
                 else
                 {
-                    Add(descriptor.ServiceType, new GenericService(descriptor));
+                    Add(descriptor.ServiceType, new Service(descriptor));
                 }
             }
         }

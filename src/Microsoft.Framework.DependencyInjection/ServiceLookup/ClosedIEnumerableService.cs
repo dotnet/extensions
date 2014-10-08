@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 {
@@ -26,14 +27,44 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 
         public object Create(ServiceProvider provider)
         {
-            var list = new List<object>();
+            return CreateCallSite(provider).Invoke(provider);
+        }
+
+        public IServiceCallSite CreateCallSite(ServiceProvider provider)
+        {
+            var list = new List<IServiceCallSite>();
             for (var service = _serviceEntry.First; service != null; service = service.Next)
             {
-                list.Add(provider.ResolveService(service));
+                list.Add(service.CreateCallSite(provider));
             }
-            var array = Array.CreateInstance(_itemType, list.Count);
-            Array.Copy(list.ToArray(), array, list.Count);
-            return array;
+            return new CallSite(_itemType, list.ToArray());
+        }
+
+        private class CallSite : IServiceCallSite
+        {
+            private readonly Type _itemType;
+            private readonly IServiceCallSite[] _serviceCallSites;
+
+            public CallSite(Type itemType, IServiceCallSite[] serviceCallSites)
+            {
+                _itemType = itemType;
+                _serviceCallSites = serviceCallSites;
+            }
+
+            public object Invoke(ServiceProvider provider)
+            {
+                var array = Array.CreateInstance(_itemType, _serviceCallSites.Length);
+                for (var index = 0; index != _serviceCallSites.Length; ++index)
+                {
+                    array.SetValue(_serviceCallSites[index].Invoke(provider), index);
+                }
+                return array;
+            }
+
+            public Expression Build(Expression provider)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
