@@ -9,8 +9,6 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 
         LifecycleKind Lifecycle { get; }
 
-        object Create(ServiceProvider provider);
-
         IServiceCallSite CreateCallSite(ServiceProvider provider);
     }
 }

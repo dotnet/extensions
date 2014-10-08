@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -13,6 +14,12 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 
         private readonly Dictionary<Type, ServiceEntry> _services;
         private readonly Dictionary<Type, List<IGenericService>> _genericServices;
+        private readonly ConcurrentDictionary<Type, Func<ServiceProvider, object>> _realizedServices = new ConcurrentDictionary<Type, Func<ServiceProvider, object>>();
+
+        public ConcurrentDictionary<Type, Func<ServiceProvider, object>> RealizedServices
+        {
+            get { return _realizedServices; }
+        }
 
         public ServiceTable(IEnumerable<IServiceDescriptor> descriptors)
         {
@@ -36,6 +43,8 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
                 }
             }
         }
+
+
 
         public bool TryGetEntry(Type serviceType, out ServiceEntry entry)
         {

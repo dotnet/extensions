@@ -17,11 +17,6 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             get { return LifecycleKind.Scoped; }
         }
 
-        public object Create(ServiceProvider provider)
-        {
-            return new ServiceScopeFactory(provider);
-        }
-
         public IServiceCallSite CreateCallSite(ServiceProvider provider)
         {
             return new CallSite();

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace Microsoft.Framework.DependencyInjection.ServiceLookup
@@ -23,11 +24,6 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
         public LifecycleKind Lifecycle
         {
             get { return LifecycleKind.Transient; }
-        }
-
-        public object Create(ServiceProvider provider)
-        {
-            return CreateCallSite(provider).Invoke(provider);
         }
 
         public IServiceCallSite CreateCallSite(ServiceProvider provider)
@@ -63,7 +59,9 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 
             public Expression Build(Expression provider)
             {
-                throw new NotImplementedException();
+                return Expression.NewArrayInit(
+                    _itemType,
+                    _serviceCallSites.Select(callSite => callSite.Build(provider)));
             }
         }
     }

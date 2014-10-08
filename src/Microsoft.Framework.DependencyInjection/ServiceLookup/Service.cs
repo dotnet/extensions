@@ -24,11 +24,6 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             get { return _descriptor.Lifecycle; }
         }
 
-        public object Create(ServiceProvider provider)
-        {
-            var callSite = CreateCallSite(provider);
-            return callSite.Invoke(provider);
-        }
 
         public IServiceCallSite CreateCallSite(ServiceProvider provider)
         {
@@ -42,7 +37,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             {
                 ParameterInfo[] parameters = constructors[0].GetParameters();
                 IServiceCallSite[] parameterCallSites = new IServiceCallSite[parameters.Length];
-                for(var index = 0; index != parameters.Length; ++index)
+                for (var index = 0; index != parameters.Length; ++index)
                 {
                     parameterCallSites[index] = provider.GetServiceCallSite(parameters[index].ParameterType);
                     if (parameterCallSites[index] == null && parameters[index].HasDefaultValue)
@@ -101,7 +96,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             public object Invoke(ServiceProvider provider)
             {
                 object[] parameterValues = new object[_parameterCallSites.Length];
-                for(var index = 0; index != parameterValues.Length; ++index)
+                for (var index = 0; index != parameterValues.Length; ++index)
                 {
                     parameterValues[index] = _parameterCallSites[index].Invoke(provider);
                 }
@@ -110,7 +105,13 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 
             public Expression Build(Expression provider)
             {
-                throw new NotImplementedException("TODO: background jit");
+                var parameters = _constructorInfo.GetParameters();
+                return Expression.New(
+                    _constructorInfo,
+                    _parameterCallSites.Select((callSite, index) =>
+                        Expression.Convert(
+                            callSite.Build(provider), 
+                            parameters[index].ParameterType)));
             }
         }
 

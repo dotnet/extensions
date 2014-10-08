@@ -75,23 +75,40 @@ namespace Microsoft.Framework.DependencyInjection
         /// <returns></returns>
         public object GetService(Type serviceType)
         {
-            var callSite = GetServiceCallSite(serviceType);
-            if (callSite != null)
+            var realizedService = _table.RealizedServices.GetOrAdd(serviceType, key =>
             {
-                var providerExpression = Expression.Parameter(typeof(ServiceProvider), "provider");
-                var serviceExpression = callSite.Build(providerExpression);
-                var lambdaExpression = Expression.Lambda(
-                    typeof(Func<ServiceProvider, object>),
-                    serviceExpression,
-                    providerExpression);
+                var callSite = GetServiceCallSite(key);
+                if (callSite != null)
+                {
+                    return RealizeService(_table, key, callSite);
+                }
+                return _ => null;
+            });
 
-                var lambda = (Func<ServiceProvider, object>)lambdaExpression.Compile();
-                return lambda(this);
+            return realizedService.Invoke(this);
+        }
 
-//                return callSite.Invoke(this);
-            }
+        public static Func<ServiceProvider, object> RealizeService(ServiceTable table, Type serviceType, IServiceCallSite callSite)
+        {
+            var callCount = 0;
+            return provider =>
+            {
+                if (Interlocked.Increment(ref callCount) == 2)
+                {
+                    ThreadPool.QueueUserWorkItem(_ =>
+                    {
+                        var providerExpression = Expression.Parameter(typeof(ServiceProvider), "provider");
 
-            return null;
+                        var lambdaExpression = Expression.Lambda<Func<ServiceProvider, object>>(
+                            callSite.Build(providerExpression),
+                            providerExpression);
+
+                        table.RealizedServices[serviceType] = lambdaExpression.Compile();
+                    });
+                }
+
+                return callSite.Invoke(provider);
+            };
         }
 
         internal IServiceCallSite GetServiceCallSite(Type serviceType)
@@ -130,7 +147,7 @@ namespace Microsoft.Framework.DependencyInjection
             }
             else
             {
-                return new ScopedCallSite(service, serviceCallSite);
+                return new SingletonCallSite(service, serviceCallSite);
             }
         }
 
@@ -208,7 +225,10 @@ namespace Microsoft.Framework.DependencyInjection
 
             public Expression Build(Expression provider)
             {
-                throw new NotImplementedException("FIX: make fast-path");
+                return Expression.Call(
+                    provider,
+                    GetFallbackServiceMethodInfo,
+                    Expression.Constant(_serviceType, typeof(Type)));
             }
         }
 
@@ -250,14 +270,22 @@ namespace Microsoft.Framework.DependencyInjection
 
             public Expression Build(Expression provider)
             {
-                Expression<Func<object, object>> expr = _ => default(ServiceProvider).CaptureDisposable(_);
-                var mc = (MethodCallExpression)expr.Body;
-                var methodInfo = typeof(ServiceProvider).GetTypeInfo().GetMethod("CaptureDisposable");
                 return Expression.Call(
                     provider,
-                    mc.Method,
+                    CaptureDisposableMethodInfo,
                     _service.Build(provider));
             }
+        }
+
+        static MethodInfo CaptureDisposableMethodInfo = GetMethodInfo<Func<ServiceProvider, object, object>>((a, b) => a.CaptureDisposable(b));
+        static MethodInfo GetFallbackServiceMethodInfo = GetMethodInfo<Func<ServiceProvider, Type, object>>((a, b) => a.GetFallbackService(b));
+        static MethodInfo TryGetValueMethodInfo = GetMethodInfo<Func<IDictionary<IService, object>, IService, object, bool>>((a, b, c) => a.TryGetValue(b, out c));
+        static MethodInfo AddMethodInfo = GetMethodInfo<Action<IDictionary<IService, object>, IService, object>>((a, b, c) => a.Add(b, c));
+
+        static MethodInfo GetMethodInfo<T>(Expression<T> expr)
+        {
+            var mc = (MethodCallExpression)expr.Body;
+            return mc.Method;
         }
 
         private class ScopedCallSite : IServiceCallSite
@@ -273,21 +301,72 @@ namespace Microsoft.Framework.DependencyInjection
 
             public virtual object Invoke(ServiceProvider provider)
             {
+                object resolved;
                 lock (provider._sync)
                 {
-                    object resolved;
                     if (!provider._resolvedServices.TryGetValue(_key, out resolved))
                     {
                         resolved = provider.CaptureDisposable(_serviceCallSite.Invoke(provider));
-                        provider._resolvedServices[_key] = resolved;
+                        provider._resolvedServices.Add(_key, resolved);
                     }
-                    return resolved;
                 }
+                return resolved;
             }
 
-            public virtual Expression Build(Expression provider)
+            public virtual Expression Build(Expression providerExpression)
             {
-                throw new NotImplementedException();
+                //Expression<Func<ServiceProvider, object>> expr = provider =>
+                //{
+                //    object resolved;
+                //    lock (provider._sync)
+                //    {
+                //        if (!provider._resolvedServices.TryGetValue(_key, out resolved))
+                //        {
+                //            resolved = provider.CaptureDisposable(_serviceCallSite.Invoke(provider));
+                //            provider._resolvedServices.Add(_key, resolved);
+                //        }
+                //    }
+                //    return resolved;
+                //};
+                var keyExpression = Expression.Constant(
+                    _key,
+                    typeof(IService));
+
+                var resolvedExpression = Expression.Variable(typeof(object), "resolved");
+
+                var resolvedServicesExpression = Expression.Field(
+                    providerExpression,
+                    "_resolvedServices");
+
+                var tryGetValueExpression = Expression.Call(
+                    resolvedServicesExpression,
+                    TryGetValueMethodInfo,
+                    keyExpression,
+                    resolvedExpression);
+
+                var captureDisposableExpression = Expression.Assign(
+                    resolvedExpression,
+                    Expression.Call(
+                        providerExpression,
+                        CaptureDisposableMethodInfo,
+                        _serviceCallSite.Build(providerExpression)));
+
+                var addValueExpression = Expression.Call(
+                    resolvedServicesExpression,
+                    AddMethodInfo,
+                    keyExpression,
+                    resolvedExpression);
+
+                // FIX: lock expression
+                var blockExpression = Expression.Block(
+                    typeof(object),
+                    new[] { resolvedExpression },
+                    Expression.IfThen(
+                        Expression.Not(tryGetValueExpression),
+                        Expression.Block(captureDisposableExpression, addValueExpression)),
+                    resolvedExpression);
+
+                return blockExpression;
             }
         }
 
@@ -297,14 +376,14 @@ namespace Microsoft.Framework.DependencyInjection
             {
             }
 
-            public object Invoke(ServiceProvider provider)
+            public override object Invoke(ServiceProvider provider)
             {
                 return base.Invoke(provider.Root);
             }
 
-            public Expression Build(Expression provider)
+            public override Expression Build(Expression provider)
             {
-                throw new NotImplementedException();
+                return base.Build(Expression.Property(provider, "Root"));
             }
         }
     }

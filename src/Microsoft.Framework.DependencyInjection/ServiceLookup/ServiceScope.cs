@@ -16,7 +16,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 
         public IServiceProvider ServiceProvider
         {
-            get { return _scopedProvider.GetService<IServiceProvider>(); }
+            get { return _scopedProvider; }
         }
 
         public void Dispose()

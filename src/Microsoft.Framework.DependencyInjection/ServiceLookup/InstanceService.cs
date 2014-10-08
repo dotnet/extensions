@@ -20,12 +20,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
         public IService Next { get; set; }
 
         public LifecycleKind Lifecycle { get; private set; }
-
-        public object Create(ServiceProvider provider)
-        {
-            return _descriptor.ImplementationInstance;
-        }
-
+   
         public IServiceCallSite CreateCallSite(ServiceProvider provider)
         {
             return new CallSite(_descriptor);

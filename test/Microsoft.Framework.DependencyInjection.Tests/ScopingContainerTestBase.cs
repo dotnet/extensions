@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Framework.DependencyInjection.Tests.Fakes;
 using Xunit;
+using System.Threading;
 
 namespace Microsoft.Framework.DependencyInjection.Tests
 {
@@ -45,6 +46,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             {
                 var containerScopedService = container.GetService<IFakeScopedService>();
                 var scopedService1 = scope.ServiceProvider.GetService<IFakeScopedService>();
+                Thread.Sleep(200);
                 var scopedService2 = scope.ServiceProvider.GetService<IFakeScopedService>();
 
                 Assert.NotEqual(containerScopedService, scopedService1);
@@ -86,6 +88,33 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             }
 
             Assert.True(disposableService.Disposed);
+        }
+
+        [Fact]
+        public void SingletonServicesComeFromRootContainer()
+        {
+            var container = CreateContainer();
+            FakeService disposableService1;
+            FakeService disposableService2;
+
+            var scopeFactory = container.GetService<IServiceScopeFactory>();
+            using (var scope = scopeFactory.CreateScope())
+            {
+                disposableService1 = (FakeService)scope.ServiceProvider.GetService<IFakeSingletonService>();
+
+                Assert.False(disposableService1.Disposed);
+            }
+            Assert.False(disposableService1.Disposed);
+
+            using (var scope = scopeFactory.CreateScope())
+            {
+                disposableService2 = (FakeService)scope.ServiceProvider.GetService<IFakeSingletonService>();
+
+                Assert.False(disposableService2.Disposed);
+            }
+            Assert.False(disposableService2.Disposed);
+
+            Assert.Same(disposableService1, disposableService2);
         }
 
         [Fact]
