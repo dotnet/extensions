@@ -17,12 +17,7 @@ namespace Microsoft.Framework.DependencyInjection
                 .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsAction<>));
             foreach (var serviceType in serviceTypes)
             {
-                services.Add(new ServiceDescriptor
-                {
-                    ServiceType = serviceType,
-                    ImplementationType = configureType,
-                    Lifecycle = LifecycleKind.Transient
-                });
+                services.AddTransient(serviceType, configureType);
             }
             // TODO: consider throwing if we add no services?
             return services;
@@ -40,12 +35,7 @@ namespace Microsoft.Framework.DependencyInjection
                 .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsAction<>));
             foreach (var serviceType in serviceTypes)
             {
-                services.Add(new ServiceDescriptor
-                {
-                    ServiceType = serviceType,
-                    ImplementationInstance = configureInstance,
-                    Lifecycle = LifecycleKind.Singleton
-                });
+                services.AddInstance(serviceType, configureInstance);
             }
             // TODO: consider throwing if we add no services?
             return services;

@@ -20,11 +20,7 @@ namespace Microsoft.Framework.OptionsModel
         {
             var describe = new ServiceDescriber(configuration);
 
-            yield return describe.Describe(
-                typeof(IOptionsAccessor<>),
-                typeof(OptionsAccessor<>),
-                null,
-                LifecycleKind.Singleton);
+            yield return describe.Singleton(typeof(IOptionsAccessor<>), typeof(OptionsAccessor<>));
         }
 
         public static void ReadProperties(object obj, IConfiguration config)
