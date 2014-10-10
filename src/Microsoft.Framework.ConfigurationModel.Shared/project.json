@@ -1,4 +1,4 @@
-﻿{
+{
     "version": "1.0.0-*",
     "shared": "*.cs",
     "frameworks": {
@@ -6,7 +6,7 @@
         "aspnet50": { },
         "aspnetcore50": {
             "dependencies": { 
-                "System.Runtime": "4.0.20.0"
+                "System.Runtime": "4.0.20-beta-*"
             }
         },
         ".NETPortable,Version=v4.6,Profile=Profile151": {

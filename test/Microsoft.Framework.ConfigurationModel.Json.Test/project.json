@@ -9,10 +9,10 @@
     "aspnet50": { },
     "aspnetcore50": {
       "dependencies": {
-        "System.IO": "4.0.10.0",
-        "System.Runtime": "4.0.20.0",
-        "System.Text.Encoding": "4.0.10.0",
-        "System.Threading.Tasks": "4.0.10.0"
+        "System.IO": "4.0.10-beta-*",
+        "System.Runtime": "4.0.20-beta-*",
+        "System.Text.Encoding": "4.0.10-beta-*",
+        "System.Threading.Tasks": "4.0.10-beta-*"
       }
     }
   },
