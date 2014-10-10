@@ -5,9 +5,9 @@
         "aspnet50": { },
         "aspnetcore50": {
             "dependencies": {
-                "System.Collections": "4.0.10.0",
-                "System.Runtime": "4.0.20.0",
-                "System.Runtime.Extensions": "4.0.10.0"
+                "System.Collections": "4.0.10-beta-*",
+                "System.Runtime": "4.0.20-beta-*",
+                "System.Runtime.Extensions": "4.0.10-beta-*"
             }
         }
     }
