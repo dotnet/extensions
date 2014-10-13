@@ -37,6 +37,10 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
                 {
                     Add(descriptor.ServiceType, new InstanceService(descriptor));
                 }
+                else if (descriptor.ImplementationFactory != null)
+                {
+                    Add(descriptor.ServiceType, new FactoryService(descriptor));
+                }
                 else
                 {
                     Add(descriptor.ServiceType, new Service(descriptor));
