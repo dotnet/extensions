@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Framework.DependencyInjection.ServiceLookup;
 
 namespace Microsoft.Framework.DependencyInjection
@@ -95,7 +96,7 @@ namespace Microsoft.Framework.DependencyInjection
             {
                 if (Interlocked.Increment(ref callCount) == 2)
                 {
-                    ThreadPool.QueueUserWorkItem(_ =>
+                    Task.Run(() =>
                     {
                         var providerExpression = Expression.Parameter(typeof(ServiceProvider), "provider");
 
