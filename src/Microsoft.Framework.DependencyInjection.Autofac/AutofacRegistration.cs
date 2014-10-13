@@ -112,7 +112,7 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
 
             public object GetService(Type serviceType)
             {
-                return _componentContext.Resolve(serviceType);
+                return _componentContext.ResolveOptional(serviceType);
             }
         }
 

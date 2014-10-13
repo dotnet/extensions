@@ -58,8 +58,7 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
                         if (parentLifetime != null &&
                             parentLifetime.TryResolve<FallbackScope>(out parentFallback))
                         {
-                            var scopeFactory = parentFallback.ServiceProvider
-                                .GetServiceOrDefault<IServiceScopeFactory>();
+                            var scopeFactory = parentFallback.ServiceProvider.GetService<IServiceScopeFactory>();
 
                             if (scopeFactory != null)
                             {
@@ -73,7 +72,7 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
                 .InstancePerLifetimeScope()
                 .CreateRegistration();
             }
-            else if (_fallbackServiceProvider.GetServiceOrNull(serviceType) != null)
+            else if (_fallbackServiceProvider.GetService(serviceType) != null)
             {
                 yield return RegistrationBuilder.ForDelegate(serviceType, (context, p) =>
                 {

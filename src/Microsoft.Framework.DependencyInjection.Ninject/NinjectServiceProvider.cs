@@ -38,8 +38,7 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
         {
             return GetSingleService(type) ??
                 GetLast(GetAll(type)) ??
-                GetMultiService(type) ??
-                _resolver.Get(type);
+                GetMultiService(type);
         }
 
         private object GetSingleService(Type type)

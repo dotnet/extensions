@@ -11,71 +11,33 @@ namespace Microsoft.Framework.DependencyInjection
     public static class ServiceProviderExtensions
     {
         /// <summary>
-        /// Retrieve a service of type T from the IServiceProvider.
+        /// Get service of type <typeparamref name="T"/> from the IServiceProvider.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public static T GetService<T>(this IServiceProvider provider)
+        /// <typeparam name="T">The type of service object to get.</typeparam>
+        /// <param name="provider">The <see cref="IServiceProvider"/> to retrieve the service object from.</param>
+        /// <returns>A service object of type <typeparamref name="T"/> or null if there is no such service.</returns>
+        public static T GetService<T>([NotNull] this IServiceProvider provider)
         {
-            if (provider == null)
-            {
-                throw new ArgumentNullException("provider");
-            }
-
             return (T)provider.GetService(typeof(T));
         }
 
         /// <summary>
-        /// Retrieve a service of type T from the IServiceProvider.
-        /// Return T's default value if no service of type T is available.
+        /// Get service of type <paramref name="serviceType"/> from the IServiceProvider.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="provider"></param>
-        /// <returns></returns>
-        public static T GetServiceOrDefault<T>(this IServiceProvider provider)
+        /// <param name="provider">The <see cref="IServiceProvider"/> to retrieve the service object from.</param>
+        /// <param name="serviceType">An object that specifies the type of service object to get.</param>
+        /// <returns>A service object of type <paramref name="serviceType"/>.</returns>
+        /// <exception cref="System.Exception">There is no service of type <paramref name="serviceType"/>.</exception>
+        public static object GetRequiredService([NotNull] this IServiceProvider provider, [NotNull] Type serviceType)
         {
-            if (provider == null)
+            var service = provider.GetService(serviceType);
+
+            if (service == null)
             {
-                throw new ArgumentNullException("provider");
+                throw new Exception(string.Format("TODO: No service for type '{0}' has been registered.", serviceType));
             }
 
-            IEnumerable<T> serviceList = provider.GetAllServices<T>();
-            return serviceList.FirstOrDefault();
-        }
-
-        /// <summary>
-        /// Retrieve a service of type serviceType from the IServiceProvider.
-        /// Return null if no service of type serviceType is available.
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <param name="serviceType"></param>
-        /// <returns></returns>
-        public static object GetServiceOrNull(this IServiceProvider provider, Type serviceType)
-        {
-            if (provider == null)
-            {
-                throw new ArgumentNullException("provider");
-            }
-
-            if (provider == null)
-            {
-                throw new ArgumentNullException("serviceType");
-            }
-
-            var serviceList = (IEnumerable<object>)provider.GetAllServices(serviceType);
-            return serviceList.FirstOrDefault();
-        }
-
-        private static IEnumerable<T> GetAllServices<T>(this IServiceProvider provider)
-        {
-            return (IEnumerable<T>)provider.GetAllServices(typeof(T));
-        }
-
-        private static IEnumerable GetAllServices(this IServiceProvider provider, Type serviceType)
-        {
-            Type ienumerableType = typeof(IEnumerable<>).MakeGenericType(serviceType);
-            return (IEnumerable)provider.GetService(ienumerableType);
+            return service;
         }
     }
 }

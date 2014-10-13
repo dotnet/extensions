@@ -18,11 +18,11 @@ namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
             {
                 return "FakeNonScopingFallbackServiceProvder";
             }
-            if (serviceType == typeof(IEnumerable<string>))
+            else if (serviceType == typeof(IEnumerable<string>))
             {
                 return new[] { "FakeNonScopingFallbackServiceProvder" };
             }
-            if (typeInfo.IsGenericType &&
+            else if (typeInfo.IsGenericType &&
                 typeInfo.GetGenericTypeDefinition() == typeof(IEnumerable<>))
             {
                 var innerType = typeInfo.GenericTypeArguments.Single();
@@ -30,7 +30,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
             }
             else
             {
-                throw new Exception();
+                return null;
             }
         }
     }

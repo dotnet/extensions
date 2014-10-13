@@ -47,7 +47,7 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
             {
                 if (parentFallbackProvider != null)
                 {
-                    var scopeFactory = parentFallbackProvider.GetServiceOrDefault<IServiceScopeFactory>();
+                    var scopeFactory = parentFallbackProvider.GetService<IServiceScopeFactory>();
                     if (scopeFactory != null)
                     {
                         _fallbackScope = scopeFactory.CreateScope();

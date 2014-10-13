@@ -274,11 +274,11 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         }
 
         [Fact]
-        public void AttemptingToResolveNonexistentServiceThrows()
+        public void AttemptingToResolveNonexistentServiceReturnsNull()
         {
             var container = CreateContainer(fallbackProvider: null);
 
-            Assert.ThrowsAny<Exception>(() => container.GetService<INonexistentService>());
+            Assert.Null(container.GetService<INonexistentService>());
         }
 
         [Fact]
@@ -307,24 +307,6 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             // The call to ToArray is necessary for Ninject to throw
             Assert.ThrowsAny<Exception>(() =>
                 container.GetService<IEnumerable<IDependOnNonexistentService>>().ToArray());
-        }
-
-        [Fact]
-        public void AttemptingToResolveNonexistentServiceUsingGetServiceOrDefaultReturnsNull()
-        {
-            var container = CreateContainer(fallbackProvider: null);
-
-            var service = container.GetServiceOrDefault<INonexistentService>();
-
-            Assert.Null(service);
-        }
-
-        [Fact]
-        public void AttemptingToResolveNonexistentServiceIndirectlyUsingGetServiceOrDefaultThrows()
-        {
-            var container = CreateContainer(fallbackProvider: null);
-
-            Assert.ThrowsAny<Exception>(() => container.GetServiceOrDefault<IDependOnNonexistentService>());
         }
     }
 }

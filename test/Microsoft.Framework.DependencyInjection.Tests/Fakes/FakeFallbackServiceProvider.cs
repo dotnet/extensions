@@ -36,24 +36,20 @@ namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
                 typeInfo.GetGenericTypeDefinition() == typeof(IEnumerable<>))
             {
                 var innerType = typeInfo.GenericTypeArguments.Single();
+                var singleService = GetService(innerType);
 
-                object singleService = null;
-                try
-                {
-                    singleService = GetService(innerType);
-                }
-                catch (Exception)
+                if (singleService == null)
                 {
                     return Array.CreateInstance(innerType, 0);
                 }
-
-                var serviceArray = Array.CreateInstance(innerType, 1);
-                serviceArray.SetValue(singleService, 0);
-
-                return serviceArray;
+                else
+                {
+                    var serviceArray = Array.CreateInstance(innerType, 1);
+                    serviceArray.SetValue(singleService, 0);
+                    return serviceArray;
+                }
             }
-
-            if (serviceType == typeof(int))
+            else if (serviceType == typeof(int))
             {
                 return _timesGetServiceHasBeenInvoked;
             }
@@ -78,7 +74,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
             }
             else
             {
-                throw new Exception();
+                return null;
             }
         }
 

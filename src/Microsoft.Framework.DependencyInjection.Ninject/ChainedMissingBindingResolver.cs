@@ -25,7 +25,7 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
                 yield break;
             }
 
-            object fallbackService = fallbackProvider.GetServiceOrNull(request.Service);
+            object fallbackService = fallbackProvider.GetService(request.Service);
             if (fallbackService == null)
             {
                 yield break;
