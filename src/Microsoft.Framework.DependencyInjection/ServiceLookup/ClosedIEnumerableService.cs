@@ -31,7 +31,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             var list = new List<IServiceCallSite>();
             for (var service = _serviceEntry.First; service != null; service = service.Next)
             {
-                list.Add(service.CreateCallSite(provider));
+                list.Add(provider.GetResolveCallSite(service));
             }
             return new CallSite(_itemType, list.ToArray());
         }
@@ -61,7 +61,10 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             {
                 return Expression.NewArrayInit(
                     _itemType,
-                    _serviceCallSites.Select(callSite => callSite.Build(provider)));
+                    _serviceCallSites.Select(callSite =>
+                        Expression.Convert(
+                            callSite.Build(provider),
+                            _itemType)));
             }
         }
     }
