@@ -16,7 +16,9 @@ namespace SampleApp
             _logger = factory.Create(typeof(Program).FullName);
 
             // providers may be added to an ILoggerFactory at any time, existing ILoggers are updated
+#if !ASPNETCORE50
             factory.AddNLog(new global::NLog.LogFactory());
+#endif
         }
 
         public void Main(string[] args)

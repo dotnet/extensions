@@ -3,7 +3,7 @@
         "Microsoft.Framework.Logging.Interfaces": { "version": "1.0.0-*", "type": "build" },
         "NLog": "3.1.0"
     },
-    "configurations" : {
+    "frameworks" : {
         "aspnet50" : { 
             "dependencies": {
             }

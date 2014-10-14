@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22115.0
+VisualStudioVersion = 14.0.22213.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging", "src\Microsoft.Framework.Logging\Microsoft.Framework.Logging.kproj", "{19D1B6C5-8A62-4387-8816-C54874D1DF5F}"
 EndProject
@@ -17,16 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8C1F
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SampleApp", "samples\SampleApp\SampleApp.kproj", "{550E0247-0BDD-4016-A29B-250F075686FD}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Console", "src\Microsoft.Framework.Logging.Console\Microsoft.Framework.Logging.Console.kproj", "{75A4DE6D-BBAA-4D59-829D-94009E759A18}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		aspnet50|Any CPU = aspnet50|Any CPU
-		aspnet50|Mixed Platforms = aspnet50|Mixed Platforms
-		aspnet50|x86 = aspnet50|x86
-		aspnetcore50|Any CPU = aspnetcore50|Any CPU
-		aspnetcore50|Mixed Platforms = aspnetcore50|Mixed Platforms
-		aspnetcore50|x86 = aspnetcore50|x86
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
 		Debug|x86 = Debug|x86
@@ -35,16 +27,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.aspnet50|Any CPU.ActiveCfg = Release|Any CPU
-		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.aspnet50|Any CPU.Build.0 = Release|Any CPU
-		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.aspnet50|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.aspnet50|Mixed Platforms.Build.0 = Release|Any CPU
-		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.aspnet50|x86.ActiveCfg = Release|Any CPU
-		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.aspnetcore50|Any CPU.ActiveCfg = Release|Any CPU
-		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.aspnetcore50|Any CPU.Build.0 = Release|Any CPU
-		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.aspnetcore50|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.aspnetcore50|Mixed Platforms.Build.0 = Release|Any CPU
-		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.aspnetcore50|x86.ActiveCfg = Release|Any CPU
 		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -55,16 +37,6 @@ Global
 		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{19D1B6C5-8A62-4387-8816-C54874D1DF5F}.Release|x86.ActiveCfg = Release|Any CPU
-		{96B1D6A8-7E40-43C7-813F-898DC8192DDE}.aspnet50|Any CPU.ActiveCfg = Release|Any CPU
-		{96B1D6A8-7E40-43C7-813F-898DC8192DDE}.aspnet50|Any CPU.Build.0 = Release|Any CPU
-		{96B1D6A8-7E40-43C7-813F-898DC8192DDE}.aspnet50|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{96B1D6A8-7E40-43C7-813F-898DC8192DDE}.aspnet50|Mixed Platforms.Build.0 = Release|Any CPU
-		{96B1D6A8-7E40-43C7-813F-898DC8192DDE}.aspnet50|x86.ActiveCfg = Release|Any CPU
-		{96B1D6A8-7E40-43C7-813F-898DC8192DDE}.aspnetcore50|Any CPU.ActiveCfg = Release|Any CPU
-		{96B1D6A8-7E40-43C7-813F-898DC8192DDE}.aspnetcore50|Any CPU.Build.0 = Release|Any CPU
-		{96B1D6A8-7E40-43C7-813F-898DC8192DDE}.aspnetcore50|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{96B1D6A8-7E40-43C7-813F-898DC8192DDE}.aspnetcore50|Mixed Platforms.Build.0 = Release|Any CPU
-		{96B1D6A8-7E40-43C7-813F-898DC8192DDE}.aspnetcore50|x86.ActiveCfg = Release|Any CPU
 		{96B1D6A8-7E40-43C7-813F-898DC8192DDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{96B1D6A8-7E40-43C7-813F-898DC8192DDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96B1D6A8-7E40-43C7-813F-898DC8192DDE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -75,16 +47,6 @@ Global
 		{96B1D6A8-7E40-43C7-813F-898DC8192DDE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{96B1D6A8-7E40-43C7-813F-898DC8192DDE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{96B1D6A8-7E40-43C7-813F-898DC8192DDE}.Release|x86.ActiveCfg = Release|Any CPU
-		{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}.aspnet50|Any CPU.ActiveCfg = Release|Any CPU
-		{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}.aspnet50|Any CPU.Build.0 = Release|Any CPU
-		{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}.aspnet50|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}.aspnet50|Mixed Platforms.Build.0 = Release|Any CPU
-		{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}.aspnet50|x86.ActiveCfg = Release|Any CPU
-		{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}.aspnetcore50|Any CPU.ActiveCfg = Release|Any CPU
-		{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}.aspnetcore50|Any CPU.Build.0 = Release|Any CPU
-		{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}.aspnetcore50|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}.aspnetcore50|Mixed Platforms.Build.0 = Release|Any CPU
-		{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}.aspnetcore50|x86.ActiveCfg = Release|Any CPU
 		{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -95,16 +57,6 @@ Global
 		{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}.Release|x86.ActiveCfg = Release|Any CPU
-		{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}.aspnet50|Any CPU.ActiveCfg = aspnet50|Any CPU
-		{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}.aspnet50|Any CPU.Build.0 = aspnet50|Any CPU
-		{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}.aspnet50|Mixed Platforms.ActiveCfg = aspnet50|Any CPU
-		{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}.aspnet50|Mixed Platforms.Build.0 = aspnet50|Any CPU
-		{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}.aspnet50|x86.ActiveCfg = aspnet50|Any CPU
-		{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}.aspnetcore50|Any CPU.ActiveCfg = aspnet50|Any CPU
-		{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}.aspnetcore50|Any CPU.Build.0 = aspnet50|Any CPU
-		{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}.aspnetcore50|Mixed Platforms.ActiveCfg = aspnet50|Any CPU
-		{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}.aspnetcore50|Mixed Platforms.Build.0 = aspnet50|Any CPU
-		{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}.aspnetcore50|x86.ActiveCfg = aspnet50|Any CPU
 		{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -115,16 +67,6 @@ Global
 		{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}.Release|x86.ActiveCfg = Release|Any CPU
-		{550E0247-0BDD-4016-A29B-250F075686FD}.aspnet50|Any CPU.ActiveCfg = aspnetcore50|Any CPU
-		{550E0247-0BDD-4016-A29B-250F075686FD}.aspnet50|Any CPU.Build.0 = aspnetcore50|Any CPU
-		{550E0247-0BDD-4016-A29B-250F075686FD}.aspnet50|Mixed Platforms.ActiveCfg = aspnetcore50|Any CPU
-		{550E0247-0BDD-4016-A29B-250F075686FD}.aspnet50|Mixed Platforms.Build.0 = aspnetcore50|Any CPU
-		{550E0247-0BDD-4016-A29B-250F075686FD}.aspnet50|x86.ActiveCfg = aspnetcore50|Any CPU
-		{550E0247-0BDD-4016-A29B-250F075686FD}.aspnetcore50|Any CPU.ActiveCfg = aspnetcore50|Any CPU
-		{550E0247-0BDD-4016-A29B-250F075686FD}.aspnetcore50|Any CPU.Build.0 = aspnetcore50|Any CPU
-		{550E0247-0BDD-4016-A29B-250F075686FD}.aspnetcore50|Mixed Platforms.ActiveCfg = aspnetcore50|Any CPU
-		{550E0247-0BDD-4016-A29B-250F075686FD}.aspnetcore50|Mixed Platforms.Build.0 = aspnetcore50|Any CPU
-		{550E0247-0BDD-4016-A29B-250F075686FD}.aspnetcore50|x86.ActiveCfg = aspnetcore50|Any CPU
 		{550E0247-0BDD-4016-A29B-250F075686FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{550E0247-0BDD-4016-A29B-250F075686FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{550E0247-0BDD-4016-A29B-250F075686FD}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -135,26 +77,6 @@ Global
 		{550E0247-0BDD-4016-A29B-250F075686FD}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{550E0247-0BDD-4016-A29B-250F075686FD}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{550E0247-0BDD-4016-A29B-250F075686FD}.Release|x86.ActiveCfg = Release|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.aspnet50|Any CPU.ActiveCfg = aspnet50|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.aspnet50|Any CPU.Build.0 = aspnet50|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.aspnet50|Mixed Platforms.ActiveCfg = aspnet50|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.aspnet50|Mixed Platforms.Build.0 = aspnet50|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.aspnet50|x86.ActiveCfg = aspnet50|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.aspnetcore50|Any CPU.ActiveCfg = aspnetcore50|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.aspnetcore50|Any CPU.Build.0 = aspnetcore50|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.aspnetcore50|Mixed Platforms.ActiveCfg = aspnetcore50|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.aspnetcore50|Mixed Platforms.Build.0 = aspnetcore50|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.aspnetcore50|x86.ActiveCfg = aspnetcore50|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.Release|Any CPU.Build.0 = Release|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{75A4DE6D-BBAA-4D59-829D-94009E759A18}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

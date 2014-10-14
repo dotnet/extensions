@@ -1,10 +1,13 @@
 {
     "dependencies": {
-        "Microsoft.Framework.Logging": "1.0.0-*",
-        "Microsoft.Framework.Logging.NLog": "1.0.0-*"
+        "Microsoft.Framework.Logging": "1.0.0-*"
     },
-    "configurations": {
-        "net45": { },
+    "frameworks": {
+        "aspnet50": {
+            "dependencies": {
+                "Microsoft.Framework.Logging.NLog": "1.0.0-*"
+            }
+        },
         "aspnetcore50": {
             "dependencies": {
                 "System.Console": "4.0.0-beta-*"
