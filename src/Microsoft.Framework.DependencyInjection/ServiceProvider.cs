@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
@@ -283,6 +284,16 @@ namespace Microsoft.Framework.DependencyInjection
         static MethodInfo TryGetValueMethodInfo = GetMethodInfo<Func<IDictionary<IService, object>, IService, object, bool>>((a, b, c) => a.TryGetValue(b, out c));
         static MethodInfo AddMethodInfo = GetMethodInfo<Action<IDictionary<IService, object>, IService, object>>((a, b, c) => a.Add(b, c));
 
+        private static MethodInfo MonitorEnterMethodInfo = typeof(Monitor).GetTypeInfo().GetDeclaredMethods("Enter").Where(m =>
+        {
+            var parameters = m.GetParameters();
+
+            return parameters.Length == 2 &&
+                parameters[0].ParameterType == typeof(object) &&
+                parameters[1].ParameterType == typeof(bool).MakeByRefType();
+        }).Single();
+        private static MethodInfo MonitorExitMethodInfo = GetMethodInfo<Action<object>>(lockObj => Monitor.Exit(lockObj));
+
         static MethodInfo GetMethodInfo<T>(Expression<T> expr)
         {
             var mc = (MethodCallExpression)expr.Body;
@@ -316,19 +327,6 @@ namespace Microsoft.Framework.DependencyInjection
 
             public virtual Expression Build(Expression providerExpression)
             {
-                //Expression<Func<ServiceProvider, object>> expr = provider =>
-                //{
-                //    object resolved;
-                //    lock (provider._sync)
-                //    {
-                //        if (!provider._resolvedServices.TryGetValue(_key, out resolved))
-                //        {
-                //            resolved = provider.CaptureDisposable(_serviceCallSite.Invoke(provider));
-                //            provider._resolvedServices.Add(_key, resolved);
-                //        }
-                //    }
-                //    return resolved;
-                //};
                 var keyExpression = Expression.Constant(
                     _key,
                     typeof(IService));
@@ -358,7 +356,6 @@ namespace Microsoft.Framework.DependencyInjection
                     keyExpression,
                     resolvedExpression);
 
-                // FIX: lock expression
                 var blockExpression = Expression.Block(
                     typeof(object),
                     new[] { resolvedExpression },
@@ -367,7 +364,26 @@ namespace Microsoft.Framework.DependencyInjection
                         Expression.Block(captureDisposableExpression, addValueExpression)),
                     resolvedExpression);
 
-                return blockExpression;
+                return Lock(providerExpression, blockExpression);
+            }
+
+            private static Expression Lock(Expression providerExpression, Expression body)
+            {
+                // The C# compiler would copy the lock object to guard against mutation.
+                // We don't, since we know the lock object is readonly.
+                var syncField = Expression.Field(providerExpression, "_sync");
+                var lockWasTaken = Expression.Variable(typeof(bool), "lockWasTaken");
+
+                var monitorEnter = Expression.Call(MonitorEnterMethodInfo, syncField, lockWasTaken);
+                var monitorExit = Expression.Call(MonitorExitMethodInfo, syncField);
+
+                var tryBody = Expression.Block(monitorEnter, body);
+                var finallyBody = Expression.IfThen(lockWasTaken, monitorExit);
+
+                return Expression.Block(
+                    typeof(object),
+                    new[] { lockWasTaken },
+                    Expression.TryFinally(tryBody, finallyBody));
             }
         }
 
