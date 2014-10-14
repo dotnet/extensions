@@ -12,7 +12,7 @@
     "frameworks": {
         "aspnet50": { }
     },
-  "commands": {
-    "test": "Xunit.KRunner"
-  }
+    "commands": {
+        "test": "Xunit.KRunner"
+    }
 }
