@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 {
-    internal class ServiceProviderService : IService
+    internal class ServiceProviderService : IService, IServiceCallSite
     {
         public IService Next { get; set; }
 
@@ -17,20 +17,17 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 
         public IServiceCallSite CreateCallSite(ServiceProvider provider)
         {
-            return new CallSite();
+            return this;
         }
 
-        private class CallSite : IServiceCallSite
+        public object Invoke(ServiceProvider provider)
         {
-            public object Invoke(ServiceProvider provider)
-            {
-                return provider;
-            }
+            return provider;
+        }
 
-            public Expression Build(Expression provider)
-            {
-                return provider;
-            }
+        public Expression Build(Expression provider)
+        {
+            return provider;
         }
     }
 }

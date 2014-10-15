@@ -7,7 +7,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
     /// <summary>
     /// Summary description for InstanceService
     /// </summary>
-    internal class InstanceService : IService
+    internal class InstanceService : IService, IServiceCallSite
     {
         private readonly IServiceDescriptor _descriptor;
 
@@ -20,30 +20,20 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
         public IService Next { get; set; }
 
         public LifecycleKind Lifecycle { get; private set; }
-   
+
         public IServiceCallSite CreateCallSite(ServiceProvider provider)
         {
-            return new CallSite(_descriptor);
+            return this;
         }
 
-        private class CallSite : IServiceCallSite
+        public object Invoke(ServiceProvider provider)
         {
-            private readonly IServiceDescriptor _descriptor;
+            return _descriptor.ImplementationInstance;
+        }
 
-            public CallSite(IServiceDescriptor descriptor)
-            {
-                _descriptor = descriptor;
-            }
-
-            public object Invoke(ServiceProvider provider)
-            {
-                return _descriptor.ImplementationInstance;
-            }
-
-            public Expression Build(Expression provider)
-            {
-                return Expression.Constant(_descriptor.ImplementationInstance, _descriptor.ServiceType);
-            }
+        public Expression Build(Expression provider)
+        {
+            return Expression.Constant(_descriptor.ImplementationInstance, _descriptor.ServiceType);
         }
     }
 }

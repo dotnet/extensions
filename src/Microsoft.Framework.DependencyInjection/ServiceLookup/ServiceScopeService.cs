@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 {
-    internal class ServiceScopeService : IService
+    internal class ServiceScopeService : IService, IServiceCallSite
     {
         public IService Next { get; set; }
 
@@ -19,24 +19,21 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 
         public IServiceCallSite CreateCallSite(ServiceProvider provider)
         {
-            return new CallSite();
+            return this;
         }
 
-        private class CallSite : IServiceCallSite
+        public object Invoke(ServiceProvider provider)
         {
-            public object Invoke(ServiceProvider provider)
-            {
-                return new ServiceScopeFactory(provider);
-            }
+            return new ServiceScopeFactory(provider);
+        }
 
-            public Expression Build(Expression provider)
-            {
-                return Expression.New(
-                    typeof(ServiceScopeFactory).GetTypeInfo()
-                        .DeclaredConstructors
-                        .Single(),
-                    provider);
-            }
+        public Expression Build(Expression provider)
+        {
+            return Expression.New(
+                typeof(ServiceScopeFactory).GetTypeInfo()
+                    .DeclaredConstructors
+                    .Single(),
+                provider);
         }
     }
 }
