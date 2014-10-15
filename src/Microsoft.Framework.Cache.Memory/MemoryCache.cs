@@ -27,7 +27,7 @@ namespace Microsoft.Framework.Cache.Memory
         /// </summary>
         /// <param name="clock"></param>
         /// <param name="listenForMemoryPressure"></param>
-        public MemoryCache([NotNull] IOptionsAccessor<MemoryCacheOptions> accessor)
+        public MemoryCache([NotNull] IOptions<MemoryCacheOptions> accessor)
         {
             var options = accessor.Options;
             _entries = new Dictionary<string, CacheEntry>(StringComparer.Ordinal);

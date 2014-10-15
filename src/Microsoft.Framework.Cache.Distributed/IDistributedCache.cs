@@ -9,6 +9,8 @@ namespace Microsoft.Framework.Cache.Distributed
     [AssemblyNeutral]
     public interface IDistributedCache
     {
+        void Connect();
+
         byte[] Set(string key, object state, Func<ICacheContext, byte[]> create);
 
         bool TryGetValue(string key, out byte[] value);

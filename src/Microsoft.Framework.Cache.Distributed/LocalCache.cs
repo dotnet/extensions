@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Framework.Cache.Memory;
-using Microsoft.Framework.Cache.Memory.Infrastructure;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.Cache.Distributed
@@ -12,9 +11,13 @@ namespace Microsoft.Framework.Cache.Distributed
     {
         private readonly MemoryCache _memCache;
 
-        public LocalCache(IOptionsAccessor<MemoryCacheOptions> accessor)
+        public LocalCache(IOptions<MemoryCacheOptions> accessor)
         {
             _memCache = new MemoryCache(accessor);
+        }
+
+        public void Connect()
+        {
         }
 
         public byte[] Set(string key, object state, Func<ICacheContext, byte[]> create)

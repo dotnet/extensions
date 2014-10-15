@@ -7,7 +7,7 @@ using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.Cache.Memory
 {
-    public class MemoryCacheOptions : IOptionsAccessor<MemoryCacheOptions>
+    public class MemoryCacheOptions : IOptions<MemoryCacheOptions>
     {
         public ISystemClock Clock { get; set; }
 
@@ -15,12 +15,12 @@ namespace Microsoft.Framework.Cache.Memory
 
         public TimeSpan ExpirationScanFrequency { get; set; } = TimeSpan.FromMinutes(1);
 
-        MemoryCacheOptions IOptionsAccessor<MemoryCacheOptions>.Options
+        MemoryCacheOptions IOptions<MemoryCacheOptions>.Options
         {
             get { return this; }
         }
 
-        MemoryCacheOptions IOptionsAccessor<MemoryCacheOptions>.GetNamedOptions(string name)
+        MemoryCacheOptions IOptions<MemoryCacheOptions>.GetNamedOptions(string name)
         {
             return this;
         }

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using Microsoft.Framework.Cache.Distributed;
 using Microsoft.Framework.OptionsModel;
 using StackExchange.Redis;
@@ -28,23 +27,32 @@ namespace Microsoft.Framework.Cache.Redis
         private const string DataKey = "data";
         private const long NotPresent = -1;
 
-        private readonly ConnectionMultiplexer _connection;
-        private readonly IDatabase _cache;
+        private ConnectionMultiplexer _connection;
+        private IDatabase _cache;
 
+        private readonly RedisCacheOptions _options;
         private readonly string _instance;
 
-        public RedisCache([NotNull] IOptionsAccessor<RedisCacheOptions> accessor)
+        public RedisCache([NotNull] IOptions<RedisCacheOptions> accessor)
         {
-            var options = accessor.Options;
-            // TODO: This may be slow and error prone, should we do it in the constructor?
-            _connection = ConnectionMultiplexer.Connect(options.Configuration);
-            _cache = _connection.GetDatabase();
+            _options = accessor.Options;
             // This allows partitioning a single backend cache for use with multiple apps/services.
-            _instance = options.InstanceName ?? string.Empty;
+            _instance = _options.InstanceName ?? string.Empty;
+        }
+
+        public void Connect()
+        {
+            if (_connection == null)
+            {
+                _connection = ConnectionMultiplexer.Connect(_options.Configuration);
+                _cache = _connection.GetDatabase();
+            }
         }
 
         public byte[] Set([NotNull] string key, object state, [NotNull] Func<ICacheContext, byte[]> create)
         {
+            Connect();
+
             var context = new CacheContext(key) { State = state };
             var value = create(context);
             var result = _cache.ScriptEvaluate(SetScript, new RedisKey[] { _instance + key },
@@ -72,6 +80,8 @@ namespace Microsoft.Framework.Cache.Redis
 
         private byte[] GetAndRefresh(string key, bool getData)
         {
+            Connect();
+
             // This also resets the LRU status as desired.
             // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
             RedisValue[] results;
@@ -138,6 +148,8 @@ namespace Microsoft.Framework.Cache.Redis
 
         public void Remove([NotNull] string key)
         {
+            Connect();
+
             _cache.KeyDelete(_instance + key);
             // TODO: Error handling
         }

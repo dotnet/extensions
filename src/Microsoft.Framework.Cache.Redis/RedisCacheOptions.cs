@@ -6,18 +6,18 @@ using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.Cache.Redis
 {
-    public class RedisCacheOptions : IOptionsAccessor<RedisCacheOptions>
+    public class RedisCacheOptions : IOptions<RedisCacheOptions>
     {
         public string Configuration { get; set; }
         
         public string InstanceName { get; set; }
 
-        RedisCacheOptions IOptionsAccessor<RedisCacheOptions>.Options
+        RedisCacheOptions IOptions<RedisCacheOptions>.Options
         {
             get { return this; }
         }
 
-        RedisCacheOptions IOptionsAccessor<RedisCacheOptions>.GetNamedOptions(string name)
+        RedisCacheOptions IOptions<RedisCacheOptions>.GetNamedOptions(string name)
         {
             return this;
         }
