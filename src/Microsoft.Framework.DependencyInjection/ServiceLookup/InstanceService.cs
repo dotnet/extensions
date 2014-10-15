@@ -1,5 +1,6 @@
-﻿using Microsoft.Framework.DependencyInjection.ServiceLookup;
-using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Linq.Expressions;
 
 namespace Microsoft.Framework.DependencyInjection.ServiceLookup
@@ -13,13 +14,15 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 
         public InstanceService(IServiceDescriptor descriptor)
         {
-            Lifecycle = descriptor.Lifecycle;
             _descriptor = descriptor;
         }
 
         public IService Next { get; set; }
 
-        public LifecycleKind Lifecycle { get; private set; }
+        public LifecycleKind Lifecycle
+        {
+            get { return _descriptor.Lifecycle; }
+        }
 
         public IServiceCallSite CreateCallSite(ServiceProvider provider)
         {

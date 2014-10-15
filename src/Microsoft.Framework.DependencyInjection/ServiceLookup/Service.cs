@@ -24,7 +24,6 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             get { return _descriptor.Lifecycle; }
         }
 
-
         public IServiceCallSite CreateCallSite(ServiceProvider provider)
         {
             ConstructorInfo[] constructors = _descriptor.ImplementationType.GetTypeInfo()
@@ -84,8 +83,8 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 
         private class ConstructorCallSite : IServiceCallSite
         {
-            private ConstructorInfo _constructorInfo;
-            private IServiceCallSite[] _parameterCallSites;
+            private readonly ConstructorInfo _constructorInfo;
+            private readonly IServiceCallSite[] _parameterCallSites;
 
             public ConstructorCallSite(ConstructorInfo constructorInfo, IServiceCallSite[] parameterCallSites)
             {
@@ -110,14 +109,14 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
                     _constructorInfo,
                     _parameterCallSites.Select((callSite, index) =>
                         Expression.Convert(
-                            callSite.Build(provider), 
+                            callSite.Build(provider),
                             parameters[index].ParameterType)));
             }
         }
 
         private class CreateInstanceCallSite : IServiceCallSite
         {
-            private IServiceDescriptor _descriptor;
+            private readonly IServiceDescriptor _descriptor;
 
             public CreateInstanceCallSite(IServiceDescriptor descriptor)
             {
