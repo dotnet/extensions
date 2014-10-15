@@ -42,6 +42,13 @@ namespace Microsoft.AspNet.Cache.Session
             return Encoding.UTF8.GetString(data);
         }
 
+        public static byte[] Get(this ISessionCollection collection, string key)
+        {
+            byte[] value = null;
+            collection.TryGetValue(key, out value);
+            return value;
+        }
+
         public static void Set(this ISessionCollection collection, string key, byte[] value)
         {
             collection.Set(key, new ArraySegment<byte>(value));

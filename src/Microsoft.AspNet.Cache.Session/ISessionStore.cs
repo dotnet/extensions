@@ -6,6 +6,6 @@ namespace Microsoft.AspNet.Cache.Session
     {
         bool IsAvailable { get; }
         void Connect();
-        ISession Create(string sessionId, TimeSpan idleTimeout);
+        ISession Create(string sessionId, TimeSpan idleTimeout, Func<bool> tryEstablishSession);
     }
 }

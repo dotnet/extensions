@@ -1,10 +1,6 @@
-﻿using System;
-using Microsoft.AspNet.Builder;
+﻿using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Cache.Session;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Cache.Distributed;
-using Microsoft.Framework.Cache.Memory;
-using Microsoft.Framework.Cache.Redis;
 
 namespace SessionSample
 {
@@ -15,12 +11,23 @@ namespace SessionSample
             app.UseInMemorySession();
             // app.UseDistributedSession(new RedisCache(new RedisCacheOptions() { Configuration = "localhost" }));
 
+            app.Map("/session", subApp =>
+            {
+                subApp.Run(async context =>
+                {
+                    int visits = 0;
+                    visits = context.GetSession().GetInt("visits") ?? 0;
+                    context.GetSession().SetInt("visits", ++visits);
+                    await context.Response.WriteAsync("Counting: You have visited our page this many times: " + visits);
+                });
+            });
+
             app.Run(async context =>
             {
                 int visits = 0;
                 visits = context.GetSession().GetInt("visits") ?? 0;
-                context.GetSession().SetInt("visits", ++visits);
-                await context.Response.WriteAsync("You have visited our page this many times: " + visits);
+                // context.GetSession().SetInt("visits", ++visits);
+                await context.Response.WriteAsync("Home: You have visited our page this many times: " + visits);
             });
         }
     }

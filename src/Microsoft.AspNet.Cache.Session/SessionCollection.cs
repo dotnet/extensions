@@ -6,7 +6,13 @@ namespace Microsoft.AspNet.Cache.Session
 {
     public class SessionCollection : ISessionCollection
     {
+        private readonly Func<bool> _tryEstablishSession;
         private IDictionary<string, byte[]> _store = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+
+        public SessionCollection([NotNull] Func<bool> tryEstablishSession)
+        {
+            _tryEstablishSession = tryEstablishSession;
+        }
 
         public bool IsModified { get; set; }
 
@@ -14,23 +20,51 @@ namespace Microsoft.AspNet.Cache.Session
 
         public byte[] this[string key]
         {
-            get { return Get(key); }
-            set { Set(key, new ArraySegment<byte>(value)); }
+            get
+            {
+                byte[] value;
+                TryGetValue(key, out value);
+                return value;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    Remove(key);
+                }
+                else
+                {
+                    Set(key, new ArraySegment<byte>(value));
+                }
+            }
         }
 
-        public byte[] Get(string key)
+        public bool TryGetValue(string key, out byte[] value)
         {
-            byte[] value = null;
-            _store.TryGetValue(key, out value);
-            return value;
+            return _store.TryGetValue(key, out value);
         }
 
         public void Set(string key, ArraySegment<byte> value)
         {
+            // TODO: Validate arguments. Non-null array.
+            if (!_tryEstablishSession())
+            {
+                throw new InvalidOperationException("The session cannot be established after the response has started.");
+            }
             IsModified = true;
             byte[] copy = new byte[value.Count];
             Buffer.BlockCopy(value.Array, value.Offset, copy, 0, value.Count);
             _store[key] = copy;
+        }
+
+        public void SetInternal(string key, byte[] value)
+        {
+            _store[key] = value;
+        }
+
+        public void Remove(string key)
+        {
+            IsModified |= _store.Remove(key);
         }
 
         public void Clear()

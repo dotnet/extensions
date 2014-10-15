@@ -25,9 +25,9 @@ namespace Microsoft.AspNet.Cache.Session
             _cache.Connect();
         }
 
-        public ISession Create(string sessionId, TimeSpan idleTimeout)
+        public ISession Create([NotNull] string sessionId, TimeSpan idleTimeout, [NotNull] Func<bool> tryEstablishSession)
         {
-            return new DistributedSession(_cache, sessionId, idleTimeout);
+            return new DistributedSession(_cache, sessionId, idleTimeout, tryEstablishSession);
         }
     }
 }

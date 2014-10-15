@@ -15,12 +15,12 @@ namespace Microsoft.AspNet.Cache.Session
         private readonly TimeSpan _idleTimeout;
         private bool _loaded;
 
-        public DistributedSession(IDistributedCache cache, string key, TimeSpan idleTimeout)
+        public DistributedSession([NotNull] IDistributedCache cache, [NotNull] string key, TimeSpan idleTimeout, [NotNull] Func<bool> tryEstablishSession)
         {
             _cache = cache;
             _key = key;
             _idleTimeout = idleTimeout;
-            _collection = new SessionCollection();
+            _collection = new SessionCollection(tryEstablishSession);
         }
 
         public ISessionCollection Collection
@@ -109,12 +109,10 @@ namespace Microsoft.AspNet.Cache.Session
                 byte[] data = new byte[dataLength];
                 Buffer.BlockCopy(content, offset, data, 0, dataLength);
                 offset += dataLength;
-                _collection[key] = data;
+                _collection.SetInternal(key, data);
             }
 
             Debug.Assert(offset == content.Length, "De-serialization length mismatch");
-
-            _collection.IsModified = false;
         }
 
         private byte[] SerializeNumAs2Bytes(int num)

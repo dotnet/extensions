@@ -9,6 +9,7 @@ namespace Microsoft.AspNet.Cache.Session
 {
     public class SessionMiddleware
     {
+        private static readonly Func<bool> ReturnTrue = () => true;
         private readonly RequestDelegate _next;
         private readonly SessionOptions _options;
         private readonly ILogger _logger;
@@ -37,11 +38,20 @@ namespace Microsoft.AspNet.Cache.Session
 
         public async Task Invoke(HttpContext context)
         {
-            // TODO: Create a new cookie only in OnSendingHeaders if session has been modified?
-            var sessionKey = GetOrSetCookie(context);
+            // TODO: bool isNewSession = false;
+            Func<bool> tryEstablishSession = ReturnTrue;
+            var sessionKey = context.Request.Cookies.Get(_options.CookieName);
+            if (string.IsNullOrEmpty(sessionKey))
+            {
+                // No cookie, new session.
+                // TODO: isNewSession = true;
+                sessionKey = Guid.NewGuid().ToString(); // TODO: Crypto-random GUID
+                var establisher = new SessionEstablisher(context, sessionKey, _options);
+                tryEstablishSession = establisher.TryEstablishSession;
+            }
 
             var feature = new SessionFeature();
-            feature.Factory = new SessionFactory(sessionKey, _options.Store, _options.IdleTimeout);
+            feature.Factory = new SessionFactory(sessionKey, _options.Store, _options.IdleTimeout, tryEstablishSession);
             feature.Session = feature.Factory.Create();
             context.SetFeature<ISessionFeature>(feature);
 
@@ -51,7 +61,7 @@ namespace Microsoft.AspNet.Cache.Session
             }
             finally
             {
-                context.SetFeature<ISessionFeature>(null);
+                // context.SetFeature<ISessionFeature>(null); // TODO: Not supported yet
 
                 if (feature.Session != null)
                 {
@@ -68,14 +78,34 @@ namespace Microsoft.AspNet.Cache.Session
             }
         }
 
-        private string GetOrSetCookie(HttpContext context)
+        private class SessionEstablisher
         {
-            var sessionKey = context.Request.Cookies.Get(_options.CookieName);
+            private HttpContext _context;
+            private string _sessionKey;
+            private SessionOptions _options;
+            private bool _responseSent;
+            private bool _shouldEstablishSession;
 
-            if (string.IsNullOrEmpty(sessionKey))
+            public SessionEstablisher(HttpContext context, string sessionKey, SessionOptions options)
             {
-                sessionKey = Guid.NewGuid().ToString(); // TODO: Crypto-random GUID
+                _context = context;
+                _sessionKey = sessionKey;
+                _options = options;
+                context.Response.OnSendingHeaders(OnSendingHeadersCallback, state: this);
+            }
 
+            private static void OnSendingHeadersCallback(object state)
+            {
+                var establisher = (SessionEstablisher)state;
+                establisher._responseSent = true;
+                if (establisher._shouldEstablishSession)
+                {
+                    establisher.SetCookie();
+                }
+            }
+
+            private void SetCookie()
+            {
                 var cookieOptions = new CookieOptions
                 {
                     Domain = _options.CookieDomain,
@@ -83,21 +113,26 @@ namespace Microsoft.AspNet.Cache.Session
                     Path = _options.CookiePath ?? "/",
                 };
 
-                context.Response.Cookies.Append(_options.CookieName, sessionKey, cookieOptions);
+                _context.Response.Cookies.Append(_options.CookieName, _sessionKey, cookieOptions);
 
-                context.Response.Headers.Set(
+                _context.Response.Headers.Set(
                     "Cache-Control",
                     "no-cache");
 
-                context.Response.Headers.Set(
+                _context.Response.Headers.Set(
                     "Pragma",
                     "no-cache");
 
-                context.Response.Headers.Set(
+                _context.Response.Headers.Set(
                     "Expires",
                     "-1");
             }
-            return sessionKey;
+
+            // Returns true if the session has already been established, or if it still can be because the reponse has not been sent.
+            internal bool TryEstablishSession()
+            {
+                return (_shouldEstablishSession |= !_responseSent);
+            }
         }
     }
 }
