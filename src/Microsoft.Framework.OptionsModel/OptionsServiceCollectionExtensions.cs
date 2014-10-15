@@ -6,80 +6,91 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.OptionsModel;
+using System.Collections.Generic;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class OptionsServiceCollectionExtensions
     {
-        public static IServiceCollection AddOptionsAction([NotNull]this IServiceCollection services, Type configureType)
+        private static bool IsAction(Type type)
         {
-            var serviceTypes = configureType.GetTypeInfo().ImplementedInterfaces
-                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsAction<>));
+            return (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Action<>));
+        }
+
+        private static IEnumerable<Type> FindIConfigureOptions(Type type)
+        {
+            var serviceTypes = type.GetTypeInfo().ImplementedInterfaces
+                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IConfigureOptions<>));
+            if (!serviceTypes.Any())
+            {
+                string error = "TODO: No IConfigureOptions<> found.";
+                if (IsAction(type))
+                {
+                    error += " did you mean Configure(Action<T>)";
+                }
+                throw new InvalidOperationException(error);
+            }
+            return serviceTypes;
+        }
+
+
+        public static IServiceCollection ConfigureOptions([NotNull]this IServiceCollection services, Type configureType)
+        {
+            var serviceTypes = FindIConfigureOptions(configureType);
             foreach (var serviceType in serviceTypes)
             {
                 services.AddTransient(serviceType, configureType);
             }
-            // TODO: consider throwing if we add no services?
             return services;
         }
 
-        public static IServiceCollection AddOptionsAction<TSetup>([NotNull]this IServiceCollection services)
+        public static IServiceCollection ConfigureOptions<TSetup>([NotNull]this IServiceCollection services)
         {
-            return services.AddOptionsAction(typeof(TSetup));
+            return services.ConfigureOptions(typeof(TSetup));
         }
 
-        public static IServiceCollection AddOptionsAction([NotNull]this IServiceCollection services, [NotNull]object configureInstance)
+        public static IServiceCollection ConfigureOptions([NotNull]this IServiceCollection services, [NotNull]object configureInstance)
         {
-            var setupType = configureInstance.GetType();
-            var serviceTypes = setupType.GetTypeInfo().ImplementedInterfaces
-                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IOptionsAction<>));
+            var serviceTypes = FindIConfigureOptions(configureInstance.GetType());
             foreach (var serviceType in serviceTypes)
             {
                 services.AddInstance(serviceType, configureInstance);
             }
-            // TODO: consider throwing if we add no services?
             return services;
         }
 
-        [Obsolete("Use ConfigureOptions instead")]
-        public static IServiceCollection SetupOptions<TOptions>([NotNull]this IServiceCollection services,
-            Action<TOptions> setupAction)
-        {
-            return services.ConfigureOptions(setupAction);
-        }
-
-        public static IServiceCollection ConfigureOptions<TOptions>([NotNull]this IServiceCollection services,
-            Action<TOptions> setupAction,
+        public static IServiceCollection Configure<TOptions>([NotNull]this IServiceCollection services,
+            [NotNull] Action<TOptions> setupAction,
             string optionsName)
         {
-            return services.ConfigureOptions(setupAction, OptionsConstants.DefaultOrder, optionsName);
+            return services.Configure(setupAction, OptionsConstants.DefaultOrder, optionsName);
         }
 
-        public static IServiceCollection ConfigureOptions<TOptions>([NotNull]this IServiceCollection services,
+        public static IServiceCollection Configure<TOptions>([NotNull]this IServiceCollection services,
             [NotNull] Action<TOptions> setupAction,
             int order = OptionsConstants.DefaultOrder,
             string optionsName = "")
         {
-            services.AddOptionsAction(new OptionsAction<TOptions>(setupAction)
+            services.ConfigureOptions(new ConfigureOptions<TOptions>(setupAction)
             {
                 Name = optionsName,
                 Order = order
             });
-        return services;
+            return services;
         }
 
-        public static IServiceCollection ConfigureOptions<TOptions>([NotNull]this IServiceCollection services,
+        public static IServiceCollection Configure<TOptions>([NotNull]this IServiceCollection services,
             [NotNull] IConfiguration config, string optionsName)
         {
-            return services.ConfigureOptions<TOptions>(config, OptionsConstants.ConfigurationOrder, optionsName);
+            return services.Configure<TOptions>(config, OptionsConstants.ConfigurationOrder, optionsName);
         }
 
-        public static IServiceCollection ConfigureOptions<TOptions>([NotNull]this IServiceCollection services,
+        public static IServiceCollection Configure<TOptions>([NotNull]this IServiceCollection services,
             [NotNull] IConfiguration config,
             int order = OptionsConstants.ConfigurationOrder, 
             string optionsName = "")
         {
-            services.AddOptionsAction(new ConfigurationAction<TOptions>(config)
+            services.ConfigureOptions(new ConfigureFromConfigurationOptions<TOptions>(config)
             {
                 Name = optionsName,
                 Order = order

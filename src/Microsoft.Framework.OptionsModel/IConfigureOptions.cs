@@ -3,10 +3,9 @@
 
 namespace Microsoft.Framework.OptionsModel
 {
-    public interface IOptionsAction<in TOptions>
+    public interface IConfigureOptions<in TOptions>
     {
         int Order { get; }
-        string Name { get; }
-        void Invoke(TOptions options);
+        void Configure(TOptions options, string name = "");
     }
 }
