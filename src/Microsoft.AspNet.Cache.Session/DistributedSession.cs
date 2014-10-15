@@ -1,6 +1,11 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using Microsoft.AspNet.HttpFeature;
 using Microsoft.Framework.Cache.Distributed;
 
 namespace Microsoft.AspNet.Cache.Session
@@ -11,8 +16,10 @@ namespace Microsoft.AspNet.Cache.Session
 
         private readonly IDistributedCache _cache;
         private readonly string _key;
-        private readonly SessionCollection _collection;
         private readonly TimeSpan _idleTimeout;
+        private readonly Func<bool> _tryEstablishSession;
+        private readonly IDictionary<string, byte[]> _store;
+        private bool _isModified;
         private bool _loaded;
 
         public DistributedSession([NotNull] IDistributedCache cache, [NotNull] string key, TimeSpan idleTimeout, [NotNull] Func<bool> tryEstablishSession)
@@ -20,18 +27,53 @@ namespace Microsoft.AspNet.Cache.Session
             _cache = cache;
             _key = key;
             _idleTimeout = idleTimeout;
-            _collection = new SessionCollection(tryEstablishSession);
+            _tryEstablishSession = tryEstablishSession;
+            _store = new Dictionary<string, byte[]>(StringComparer.Ordinal);
         }
 
-        public ISessionCollection Collection
+        public IEnumerable<string> Keys
         {
             get
             {
-                Load();
-                return _collection;
+                Load(); // TODO: Silent failure
+                return _store.Keys;
             }
         }
 
+        public bool TryGetValue(string key, out byte[] value)
+        {
+            Load(); // TODO: Silent failure
+            return _store.TryGetValue(key, out value);
+        }
+
+        public void Set(string key, ArraySegment<byte> value)
+        {
+            Load();
+            // TODO: Validate arguments. Non-null array.
+            if (!_tryEstablishSession())
+            {
+                throw new InvalidOperationException("The session cannot be established after the response has started.");
+            }
+            _isModified = true;
+            byte[] copy = new byte[value.Count];
+            Buffer.BlockCopy(value.Array, value.Offset, copy, 0, value.Count);
+            _store[key] = copy;
+        }
+
+        public void Remove(string key)
+        {
+            Load();
+            _isModified |= _store.Remove(key);
+        }
+
+        public void Clear()
+        {
+            Load();
+            _isModified |= _store.Count > 0;
+            _store.Clear();
+        }
+
+        // TODO: This should throw if called directly, but most other places it should fail silently (e.g. TryGetValue should just return null).
         public void Load()
         {
             if (!_loaded)
@@ -47,19 +89,14 @@ namespace Microsoft.AspNet.Cache.Session
 
         public void Commit()
         {
-            if (_collection.IsModified)
+            if (_isModified)
             {
-                _collection.IsModified = false;
+                _isModified = false;
                 _cache.Set(_key, context => {
                     context.SetSlidingExpiration(_idleTimeout);
                     return Serialize();
                 });
             }
-        }
-
-        public bool TryCommitIfNotModifiedElsewhere()
-        {
-            throw new NotImplementedException();
         }
 
         // Format:
@@ -74,9 +111,9 @@ namespace Microsoft.AspNet.Cache.Session
         {
             var builder = new BufferBuilder();
             builder.Add(SerializationRevision);
-            builder.Add(SerializeNumAs3Bytes(_collection.Count));
+            builder.Add(SerializeNumAs3Bytes(_store.Count));
 
-            foreach (var entry in _collection)
+            foreach (var entry in _store)
             {
                 var serializedKey = Encoding.UTF8.GetBytes(entry.Key);
                 builder.Add(SerializeNumAs2Bytes(serializedKey.Length));
@@ -94,7 +131,7 @@ namespace Microsoft.AspNet.Cache.Session
             {
                 // TODO: Throw?
                 // Replace the un-readable format.
-                _collection.IsModified = true;
+                _isModified = true;
                 return;
             }
 
@@ -109,7 +146,7 @@ namespace Microsoft.AspNet.Cache.Session
                 byte[] data = new byte[dataLength];
                 Buffer.BlockCopy(content, offset, data, 0, dataLength);
                 offset += dataLength;
-                _collection.SetInternal(key, data);
+                _store[key] = data;
             }
 
             Debug.Assert(offset == content.Length, "De-serialization length mismatch");

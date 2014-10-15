@@ -2,7 +2,8 @@
   "version": "1.0.0-*",
   "dependencies": {
     "Microsoft.AspNet.Http": "1.0.0-*",
-    "Microsoft.AspNet.RequestContainer": "1.0.0-*",
+    "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
+    "Microsoft.AspNet.HttpFeature": "1.0.0-*",
     "Microsoft.Framework.Cache.Distributed": "1.0.0-*",
     "Microsoft.Framework.OptionsModel": "1.0.0-*",
     "Microsoft.Framework.Logging": "1.0.0-*",
@@ -13,21 +14,10 @@
     "aspnetcore50": {
       "dependencies": {
         "System.Collections": "4.0.10-beta-*",
-        "System.ComponentModel": "4.0.0-beta-*",
         "System.Diagnostics.Debug": "4.0.10-beta-*",
-        "System.Diagnostics.Tools": "4.0.0-beta-*",
-        "System.Globalization": "4.0.10-beta-*",
-        "System.Globalization.Extensions": "4.0.0-beta-*",
-        "System.IO": "4.0.10-beta-*",
-        "System.Linq": "4.0.0-beta-*",
         "System.Runtime": "4.0.20-beta-*",
-        "System.Runtime.Extensions": "4.0.10-beta-*",
-        "System.Runtime.InteropServices": "4.0.20-beta-*",
-        "System.Security.Principal" : "4.0.0-beta-*",
-        "System.Threading": "4.0.0-beta-*",
-        "System.Threading.Tasks": "4.0.10-beta-*",
-        "System.Threading.ThreadPool": "4.0.10-beta-*",
-        "System.Threading.Timer": "4.0.0-beta-*"
+        "System.Security.Cryptography.RandomNumberGenerator": "4.0.0-beta-*",
+        "System.Threading.Tasks": "4.0.10-beta-*"
       }
     }
   }

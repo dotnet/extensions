@@ -1,16 +1,18 @@
 {
-  "dependencies": {
-    "Microsoft.AspNet.Cache.Session": "1.0.0-*",
-    "Xunit.KRunner": "1.0.0-*"
-  },
-  "commands": {
-    "test": "Xunit.KRunner"
-  },
-  "frameworks": {
-    "aspnet50": {
-        "dependencies": {
-            "System.Runtime": "4.0.20-beta-*"
+    "dependencies": {
+        "Microsoft.AspNet.Cache.Session": "1.0.0-*",
+        "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
+        "Microsoft.AspNet.TestHost": "1.0.0-*",
+        "Xunit.KRunner": "1.0.0-*"
+    },
+    "commands": {
+        "test": "Xunit.KRunner"
+    },
+    "frameworks": {
+        "aspnet50": {
+            "dependencies": {
+
+            }
         }
     }
-  }
 }

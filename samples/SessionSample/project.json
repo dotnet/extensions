@@ -2,6 +2,7 @@
     "webroot": "wwwroot",
     "exclude": "wwwroot/**/*.*",
     "dependencies": {
+        "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
         "Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Microsoft.AspNet.Cache.Session": "1.0.0-*",
         "Microsoft.Framework.Cache.Redis": "1.0.0-*"

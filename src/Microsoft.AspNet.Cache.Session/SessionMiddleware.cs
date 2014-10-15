@@ -1,7 +1,11 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.HttpFeature;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 
@@ -61,7 +65,7 @@ namespace Microsoft.AspNet.Cache.Session
             }
             finally
             {
-                // context.SetFeature<ISessionFeature>(null); // TODO: Not supported yet
+                context.SetFeature<ISessionFeature>(null);
 
                 if (feature.Session != null)
                 {
