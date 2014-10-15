@@ -13,7 +13,7 @@ namespace Microsoft.Framework.Logging
     public static class LoggerExtensions
     {
         private static readonly Func<object, Exception, string> TheMessage = (message, error) => (string)message;
-        private static readonly Func<object, Exception, string> TheMessageAndError = (message, error) 
+        private static readonly Func<object, Exception, string> TheMessageAndError = (message, error)
             => string.Format(CultureInfo.CurrentCulture, "{0}{1}{2}", message, Environment.NewLine, error);
 
         /// <summary>

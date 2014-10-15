@@ -5,12 +5,7 @@ namespace Microsoft.Framework.Logging.Test.Console
 {
     public class ConsoleSink
     {
-        public ConsoleSink()
-        {
-            Writes = new List<ConsoleContext>();
-        }
-
-        public List<ConsoleContext> Writes { get; set; }
+        public List<ConsoleContext> Writes { get; set; } = new List<ConsoleContext>();
 
         public void Write(ConsoleContext context)
         {
