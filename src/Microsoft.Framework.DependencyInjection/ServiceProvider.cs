@@ -21,20 +21,12 @@ namespace Microsoft.Framework.DependencyInjection
     {
         private readonly object _sync = new object();
 
-        private readonly ServiceProvider _parent;
+        private readonly ServiceProvider _root;
         private readonly ServiceTable _table;
         private readonly IServiceProvider _fallback;
 
         private readonly Dictionary<IService, object> _resolvedServices = new Dictionary<IService, object>();
         private ConcurrentBag<IDisposable> _disposables = new ConcurrentBag<IDisposable>();
-
-        public ServiceProvider Root
-        {
-            get
-            {
-                return _parent?.Root ?? this;
-            }
-        }
 
         public ServiceProvider(IEnumerable<IServiceDescriptor> serviceDescriptors)
             : this(serviceDescriptors, fallbackServiceProvider: null)
@@ -45,6 +37,7 @@ namespace Microsoft.Framework.DependencyInjection
                 IEnumerable<IServiceDescriptor> serviceDescriptors,
                 IServiceProvider fallbackServiceProvider)
         {
+            _root = this;
             _table = new ServiceTable(serviceDescriptors);
             _fallback = fallbackServiceProvider;
 
@@ -56,7 +49,7 @@ namespace Microsoft.Framework.DependencyInjection
         // This constructor is called exclusively to create a child scope from the parent
         internal ServiceProvider(ServiceProvider parent)
         {
-            _parent = parent;
+            _root = parent._root;
             _table = parent._table;
             _fallback = parent._fallback;
 
@@ -395,12 +388,12 @@ namespace Microsoft.Framework.DependencyInjection
 
             public override object Invoke(ServiceProvider provider)
             {
-                return base.Invoke(provider.Root);
+                return base.Invoke(provider._root);
             }
 
             public override Expression Build(Expression provider)
             {
-                return base.Build(Expression.Property(provider, "Root"));
+                return base.Build(Expression.Field(provider, "_root"));
             }
         }
     }
