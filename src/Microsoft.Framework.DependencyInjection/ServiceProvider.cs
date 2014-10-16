@@ -204,6 +204,27 @@ namespace Microsoft.Framework.DependencyInjection
             return null;
         }
 
+        private static MethodInfo CaptureDisposableMethodInfo = GetMethodInfo<Func<ServiceProvider, object, object>>((a, b) => a.CaptureDisposable(b));
+        private static MethodInfo GetFallbackServiceMethodInfo = GetMethodInfo<Func<ServiceProvider, Type, object>>((a, b) => a.GetFallbackService(b));
+        private static MethodInfo TryGetValueMethodInfo = GetMethodInfo<Func<IDictionary<IService, object>, IService, object, bool>>((a, b, c) => a.TryGetValue(b, out c));
+        private static MethodInfo AddMethodInfo = GetMethodInfo<Action<IDictionary<IService, object>, IService, object>>((a, b, c) => a.Add(b, c));
+
+        private static MethodInfo MonitorEnterMethodInfo = typeof(Monitor).GetTypeInfo().GetDeclaredMethods("Enter").Where(m =>
+        {
+            var parameters = m.GetParameters();
+
+            return parameters.Length == 2 &&
+                parameters[0].ParameterType == typeof(object) &&
+                parameters[1].ParameterType == typeof(bool).MakeByRefType();
+        }).Single();
+        private static MethodInfo MonitorExitMethodInfo = GetMethodInfo<Action<object>>(lockObj => Monitor.Exit(lockObj));
+
+        private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
+        {
+            var mc = (MethodCallExpression)expr.Body;
+            return mc.Method;
+        }
+
         private class FallbackCallSite : IServiceCallSite
         {
             private readonly Type _serviceType;
@@ -270,27 +291,6 @@ namespace Microsoft.Framework.DependencyInjection
                     CaptureDisposableMethodInfo,
                     _service.Build(provider));
             }
-        }
-
-        private static MethodInfo CaptureDisposableMethodInfo = GetMethodInfo<Func<ServiceProvider, object, object>>((a, b) => a.CaptureDisposable(b));
-        private static MethodInfo GetFallbackServiceMethodInfo = GetMethodInfo<Func<ServiceProvider, Type, object>>((a, b) => a.GetFallbackService(b));
-        private static MethodInfo TryGetValueMethodInfo = GetMethodInfo<Func<IDictionary<IService, object>, IService, object, bool>>((a, b, c) => a.TryGetValue(b, out c));
-        private static MethodInfo AddMethodInfo = GetMethodInfo<Action<IDictionary<IService, object>, IService, object>>((a, b, c) => a.Add(b, c));
-
-        private static MethodInfo MonitorEnterMethodInfo = typeof(Monitor).GetTypeInfo().GetDeclaredMethods("Enter").Where(m =>
-        {
-            var parameters = m.GetParameters();
-
-            return parameters.Length == 2 &&
-                parameters[0].ParameterType == typeof(object) &&
-                parameters[1].ParameterType == typeof(bool).MakeByRefType();
-        }).Single();
-        private static MethodInfo MonitorExitMethodInfo = GetMethodInfo<Action<object>>(lockObj => Monitor.Exit(lockObj));
-
-        private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
-        {
-            var mc = (MethodCallExpression)expr.Body;
-            return mc.Method;
         }
 
         private class ScopedCallSite : IServiceCallSite
