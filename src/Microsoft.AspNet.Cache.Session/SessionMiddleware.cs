@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
@@ -21,7 +23,12 @@ namespace Microsoft.AspNet.Cache.Session
         private readonly SessionOptions _options;
         private readonly ILogger _logger;
 
-        public SessionMiddleware([NotNull] RequestDelegate next, [NotNull] ILoggerFactory loggerFactory, [NotNull] IOptions<SessionOptions> options, [NotNull] ConfigureOptions<SessionOptions> configureOptions)
+        public SessionMiddleware(
+            [NotNull] RequestDelegate next,
+            [NotNull] ILoggerFactory loggerFactory,
+            [NotNull] IEnumerable<ISessionStore> sessionStore,
+            [NotNull] IOptions<SessionOptions> options,
+            [NotNull] ConfigureOptions<SessionOptions> configureOptions)
         {
             _next = next;
             _logger = loggerFactory.Create<SessionMiddleware>();
@@ -37,7 +44,11 @@ namespace Microsoft.AspNet.Cache.Session
 
             if (_options.Store == null)
             {
-                throw new ArgumentException("ISessionStore must be specified");
+                _options.Store = sessionStore.FirstOrDefault();
+                if (_options.Store == null)
+                {
+                    throw new ArgumentException("ISessionStore must be specified.");
+                }
             }
 
             _options.Store.Connect();
@@ -86,9 +97,9 @@ namespace Microsoft.AspNet.Cache.Session
 
         private class SessionEstablisher
         {
-            private HttpContext _context;
-            private string _sessionKey;
-            private SessionOptions _options;
+            private readonly HttpContext _context;
+            private readonly string _sessionKey;
+            private readonly SessionOptions _options;
             private bool _responseSent;
             private bool _shouldEstablishSession;
 

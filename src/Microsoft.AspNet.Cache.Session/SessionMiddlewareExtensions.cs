@@ -17,30 +17,21 @@ namespace Microsoft.AspNet.Builder
             return services.ConfigureOptions(configure);
         }
 
-        public static IApplicationBuilder UseInMemorySession([NotNull] this IApplicationBuilder app, Action<SessionOptions> configure = null)
+        public static IApplicationBuilder UseInMemorySession([NotNull] this IApplicationBuilder app, IMemoryCache cache = null, Action<SessionOptions> configure = null)
         {
-            return app.UseMiddleware<SessionMiddleware>(
-                new ConfigureOptions<SessionOptions>(options =>
-                {
-                    options.Store = new DistributedSessionStore(new LocalCache(new MemoryCacheOptions()));
-                    if (configure != null)
-                    {
-                        configure(options);
-                    }
-                }));
+            return app.UseDistributedSession(new LocalCache(cache ?? new MemoryCache(new MemoryCacheOptions())), configure);
         }
 
         public static IApplicationBuilder UseDistributedSession([NotNull] this IApplicationBuilder app, IDistributedCache cache, Action<SessionOptions> configure = null)
         {
-            return app.UseMiddleware<SessionMiddleware>(
-                new ConfigureOptions<SessionOptions>(options =>
+            return app.UseSession(options =>
+            {
+                options.Store = new DistributedSessionStore(cache);
+                if (configure != null)
                 {
-                    options.Store = new DistributedSessionStore(cache);
-                    if (configure != null)
-                    {
-                        configure(options);
-                    }
-                }));
+                    configure(options);
+                }
+            });
         }
 
         public static IApplicationBuilder UseSession([NotNull] this IApplicationBuilder app, Action<SessionOptions> configure = null)

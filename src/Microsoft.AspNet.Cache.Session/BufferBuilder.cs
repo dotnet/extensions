@@ -6,11 +6,11 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Cache.Session
 {
-    public class BufferBuilder
+    internal class BufferBuilder
     {
         private IList<byte[]> _segments = new List<byte[]>();
 
-        private int _length = 0;
+        private int _length;
 
         public void Add(byte value)
         {
@@ -19,8 +19,8 @@ namespace Microsoft.AspNet.Cache.Session
 
         public void Add(byte[] segment)
         {
+            checked { _length += segment.Length; }
             _segments.Add(segment);
-            _length += segment.Length;
         }
 
         public byte[] Build()

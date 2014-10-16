@@ -1,14 +1,22 @@
 ﻿using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.DependencyInjection;
 
 namespace SessionSample
 {
     public class Startup
     {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddCachingServices();
+            services.AddSessionServices();
+        }
+
         public void Configure(IApplicationBuilder app)
         {
-            app.UseInMemorySession();
+            app.UseSession();
+            // app.UseInMemorySession();
             // app.UseDistributedSession(new RedisCache(new RedisCacheOptions() { Configuration = "localhost" }));
 
             app.Map("/session", subApp =>

@@ -3,24 +3,23 @@
 
 using System;
 using Microsoft.Framework.Cache.Memory;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.Cache.Distributed
 {
     public class LocalCache : IDistributedCache
     {
-        private readonly MemoryCache _memCache;
+        private readonly IMemoryCache _memCache;
 
-        public LocalCache(IOptions<MemoryCacheOptions> accessor)
+        public LocalCache([NotNull] IMemoryCache memoryCache)
         {
-            _memCache = new MemoryCache(accessor);
+            _memCache = memoryCache;
         }
 
         public void Connect()
         {
         }
 
-        public byte[] Set(string key, object state, Func<ICacheContext, byte[]> create)
+        public byte[] Set([NotNull] string key, object state, [NotNull] Func<ICacheContext, byte[]> create)
         {
 
             return _memCache.Set<byte[]>(key, state, context =>
@@ -30,18 +29,18 @@ namespace Microsoft.Framework.Cache.Distributed
             });
         }
 
-        public bool TryGetValue(string key, out byte[] value)
+        public bool TryGetValue([NotNull] string key, out byte[] value)
         {
             return _memCache.TryGetValue(key, out value);
         }
 
-        public void Refresh(string key)
+        public void Refresh([NotNull] string key)
         {
             object value;
             _memCache.TryGetValue(key, out value);
         }
 
-        public void Remove(string key)
+        public void Remove([NotNull] string key)
         {
             _memCache.Remove(key);
         }

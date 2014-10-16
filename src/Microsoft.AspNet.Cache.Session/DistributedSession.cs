@@ -100,13 +100,13 @@ namespace Microsoft.AspNet.Cache.Session
         }
 
         // Format:
-        // byte (1, 0-255): Serialization revision
-        // umed (3, 0-16m): entry count
+        // Serialization revision: 1 byte, range 0-255
+        // Entry count: 3 bytes, range 0-16,777,215
         // foreach entry:
-        //  ushort (2, 0-64k): key name byte length
-        //  byte[]: utf-8 encoded key name
-        //  uint (4, 0-4b): data byte length
-        //  byte[]: data
+        //   key name byte length: 2 bytes, range 0-65,535
+        //   UTF-8 encoded key name byte[]
+        //   data byte length: 4 bytes, range 0-2,147,483,647
+        //   data byte[]
         private byte[] Serialize()
         {
             var builder = new BufferBuilder();
