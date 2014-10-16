@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
@@ -13,6 +14,8 @@ namespace Microsoft.AspNet.Cache.Session
 {
     public class SessionMiddleware
     {
+        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
+        private const int SessionKeyLength = 36; // "382c74c3-721d-4f34-80e5-57657b6cbc27"
         private static readonly Func<bool> ReturnTrue = () => true;
         private readonly RequestDelegate _next;
         private readonly SessionOptions _options;
@@ -42,14 +45,14 @@ namespace Microsoft.AspNet.Cache.Session
 
         public async Task Invoke(HttpContext context)
         {
-            // TODO: bool isNewSession = false;
             Func<bool> tryEstablishSession = ReturnTrue;
             var sessionKey = context.Request.Cookies.Get(_options.CookieName);
-            if (string.IsNullOrEmpty(sessionKey))
+            if (string.IsNullOrWhiteSpace(sessionKey) || sessionKey.Length != SessionKeyLength)
             {
-                // No cookie, new session.
-                // TODO: isNewSession = true;
-                sessionKey = Guid.NewGuid().ToString(); // TODO: Crypto-random GUID
+                // No valid cookie, new session.
+                var guidBytes = new byte[16];
+                CryptoRandom.GetBytes(guidBytes);
+                sessionKey = new Guid(guidBytes).ToString();
                 var establisher = new SessionEstablisher(context, sessionKey, _options);
                 tryEstablishSession = establisher.TryEstablishSession;
             }
@@ -71,7 +74,6 @@ namespace Microsoft.AspNet.Cache.Session
                 {
                     try
                     {
-                        // TODO: try/catch log?
                         feature.Session.Commit();
                     }
                     catch (Exception ex)
