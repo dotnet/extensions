@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using Microsoft.Framework.Runtime;
 
 namespace Microsoft.Framework.Cache.Distributed
@@ -11,9 +12,9 @@ namespace Microsoft.Framework.Cache.Distributed
     {
         void Connect();
 
-        byte[] Set(string key, object state, Func<ICacheContext, byte[]> create);
+        Stream Set(string key, object state, Action<ICacheContext> create);
 
-        bool TryGetValue(string key, out byte[] value);
+        bool TryGetValue(string key, out Stream value);
 
         void Refresh(string key);
 

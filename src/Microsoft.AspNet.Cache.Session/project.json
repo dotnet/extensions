@@ -9,6 +9,9 @@
     "Microsoft.Framework.Logging": "1.0.0-*",
     "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
   },
+  "compilationOptions": {
+    "allowUnsafe": true
+  },
   "frameworks": {
     "aspnet50": {},
     "aspnetcore50": {

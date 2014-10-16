@@ -3,7 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.Framework.Cache.Distributed;
@@ -13,22 +14,23 @@ namespace Microsoft.AspNet.Cache.Session
     public class DistributedSession : ISession
     {
         private const byte SerializationRevision = 1;
+        private const int KeyLengthLimit = ushort.MaxValue;
 
         private readonly IDistributedCache _cache;
-        private readonly string _key;
+        private readonly string _sessionId;
         private readonly TimeSpan _idleTimeout;
         private readonly Func<bool> _tryEstablishSession;
-        private readonly IDictionary<string, byte[]> _store;
+        private readonly IDictionary<EncodedKey, byte[]> _store;
         private bool _isModified;
         private bool _loaded;
 
-        public DistributedSession([NotNull] IDistributedCache cache, [NotNull] string key, TimeSpan idleTimeout, [NotNull] Func<bool> tryEstablishSession)
+        public DistributedSession([NotNull] IDistributedCache cache, [NotNull] string sessionId, TimeSpan idleTimeout, [NotNull] Func<bool> tryEstablishSession)
         {
             _cache = cache;
-            _key = key;
+            _sessionId = sessionId;
             _idleTimeout = idleTimeout;
             _tryEstablishSession = tryEstablishSession;
-            _store = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+            _store = new Dictionary<EncodedKey, byte[]>();
         }
 
         public IEnumerable<string> Keys
@@ -36,20 +38,30 @@ namespace Microsoft.AspNet.Cache.Session
             get
             {
                 Load(); // TODO: Silent failure
-                return _store.Keys;
+                return _store.Keys.Select(key => key.KeyString);
             }
         }
 
         public bool TryGetValue(string key, out byte[] value)
         {
             Load(); // TODO: Silent failure
-            return _store.TryGetValue(key, out value);
+            return _store.TryGetValue(new EncodedKey(key), out value);
         }
 
         public void Set(string key, ArraySegment<byte> value)
         {
+            var encodedKey = new EncodedKey(key);
+            if (encodedKey.KeyBytes.Length > KeyLengthLimit)
+            {
+                throw new ArgumentOutOfRangeException("key", key,
+                    string.Format("The key cannot be longer than '{0}' when encoded with UTF-8.", KeyLengthLimit));
+            }
+            if (value.Array == null)
+            {
+                throw new ArgumentException("The ArraySegment<byte>.Array cannot be null.", "value");
+            }
+
             Load();
-            // TODO: Validate arguments. Non-null array.
             if (!_tryEstablishSession())
             {
                 throw new InvalidOperationException("The session cannot be established after the response has started.");
@@ -57,13 +69,13 @@ namespace Microsoft.AspNet.Cache.Session
             _isModified = true;
             byte[] copy = new byte[value.Count];
             Buffer.BlockCopy(value.Array, value.Offset, copy, 0, value.Count);
-            _store[key] = copy;
+            _store[encodedKey] = copy;
         }
 
         public void Remove(string key)
         {
             Load();
-            _isModified |= _store.Remove(key);
+            _isModified |= _store.Remove(new EncodedKey(key));
         }
 
         public void Clear()
@@ -78,8 +90,8 @@ namespace Microsoft.AspNet.Cache.Session
         {
             if (!_loaded)
             {
-                byte[] data;
-                if (_cache.TryGetValue(_key, out data))
+                Stream data;
+                if (_cache.TryGetValue(_sessionId, out data))
                 {
                     Deserialize(data);
                 }
@@ -92,9 +104,9 @@ namespace Microsoft.AspNet.Cache.Session
             if (_isModified)
             {
                 _isModified = false;
-                _cache.Set(_key, context => {
+                _cache.Set(_sessionId, context => {
                     context.SetSlidingExpiration(_idleTimeout);
-                    return Serialize();
+                    Serialize(context.Data);
                 });
             }
         }
@@ -107,27 +119,24 @@ namespace Microsoft.AspNet.Cache.Session
         //   UTF-8 encoded key name byte[]
         //   data byte length: 4 bytes, range 0-2,147,483,647
         //   data byte[]
-        private byte[] Serialize()
+        private void Serialize(Stream output)
         {
-            var builder = new BufferBuilder();
-            builder.Add(SerializationRevision);
-            builder.Add(SerializeNumAs3Bytes(_store.Count));
+            output.WriteByte(SerializationRevision);
+            SerializeNumAs3Bytes(output, _store.Count);
 
             foreach (var entry in _store)
             {
-                var serializedKey = Encoding.UTF8.GetBytes(entry.Key);
-                builder.Add(SerializeNumAs2Bytes(serializedKey.Length));
-                builder.Add(serializedKey);
-                builder.Add(SerializeNumAs4Bytes(entry.Value.Length));
-                builder.Add(entry.Value);
+                var keyBytes = entry.Key.KeyBytes;
+                SerializeNumAs2Bytes(output, keyBytes.Length);
+                output.Write(keyBytes, 0, keyBytes.Length);
+                SerializeNumAs4Bytes(output, entry.Value.Length);
+                output.Write(entry.Value, 0, entry.Value.Length);
             }
-
-            return builder.Build();
         }
 
-        private void Deserialize(byte[] content)
+        private void Deserialize(Stream content)
         {
-            if (content == null || content.Length < 4 || content[0] != SerializationRevision)
+            if (content == null || content.ReadByte() != SerializationRevision)
             {
                 // TODO: Throw?
                 // Replace the un-readable format.
@@ -135,90 +144,135 @@ namespace Microsoft.AspNet.Cache.Session
                 return;
             }
 
-            int offset = 1;
-            int expectedEntries = DeserializeNumFrom3Bytes(content, offset: ref offset);
+            int expectedEntries = DeserializeNumFrom3Bytes(content);
             for (int i = 0; i < expectedEntries; i++)
             {
-                int keyLength = DeserializeNumFrom2Bytes(content, offset: ref offset);
-                var key = Encoding.UTF8.GetString(content, offset, keyLength);
-                offset += keyLength;
-                int dataLength = DeserializeNumFrom4Bytes(content, offset: ref offset);
-                byte[] data = new byte[dataLength];
-                Buffer.BlockCopy(content, offset, data, 0, dataLength);
-                offset += dataLength;
-                _store[key] = data;
+                int keyLength = DeserializeNumFrom2Bytes(content);
+                var key = new EncodedKey(content.ReadBytes(keyLength));
+                int dataLength = DeserializeNumFrom4Bytes(content);
+                _store[key] = content.ReadBytes(dataLength);
             }
-
-            Debug.Assert(offset == content.Length, "De-serialization length mismatch");
         }
 
-        private byte[] SerializeNumAs2Bytes(int num)
+        private void SerializeNumAs2Bytes(Stream output, int num)
         {
             if (num < 0 || ushort.MaxValue < num)
             {
                 throw new ArgumentOutOfRangeException("num", num, "The value cannot be serialized in two bytes.");
             }
-            return new byte[]
-            {
-                (byte)(num >> 8),
-                (byte)(0xFF & num)
-            };
+            output.WriteByte((byte)(num >> 8));
+            output.WriteByte((byte)(0xFF & num));
         }
 
-        private int DeserializeNumFrom2Bytes(byte[] content, ref int offset)
+        private int DeserializeNumFrom2Bytes(Stream content)
         {
-            if (content.Length - offset < 2)
-            {
-                throw new ArgumentException("Insufficient data remaining", "content");
-            }
-            return content[offset++] << 8 | content[offset++];
+            return content.ReadByte() << 8 | content.ReadByte();
         }
 
-        private byte[] SerializeNumAs3Bytes(int num)
+        private void SerializeNumAs3Bytes(Stream output, int num)
         {
             if (num < 0 || 0xFFFFFF < num)
             {
                 throw new ArgumentOutOfRangeException("num", num, "The value cannot be serialized in three bytes.");
             }
-            return new byte[]
-            {
-                (byte)(num >> 16),
-                (byte)(0xFF & (num >> 8)),
-                (byte)(0xFF & num)
-            };
+            output.WriteByte((byte)(num >> 16));
+            output.WriteByte((byte)(0xFF & (num >> 8)));
+            output.WriteByte((byte)(0xFF & num));
         }
 
-        private int DeserializeNumFrom3Bytes(byte[] content, ref int offset)
+        private int DeserializeNumFrom3Bytes(Stream content)
         {
-            if (content.Length - offset < 3)
-            {
-                throw new ArgumentException("Insufficient data remaining", "content");
-            }
-            return content[offset++] << 16 | content[offset++] << 8 | content[offset++];
+            return content.ReadByte() << 16 | content.ReadByte() << 8 | content.ReadByte();
         }
 
-        private byte[] SerializeNumAs4Bytes(int num)
+        private void SerializeNumAs4Bytes(Stream output, int num)
         {
             if (num < 0)
             {
                 throw new ArgumentOutOfRangeException("num", num, "The value cannot be negative.");
             }
-            return new byte[]
-            {
-                (byte)(num >> 24),
-                (byte)(0xFF & (num >> 16)),
-                (byte)(0xFF & (num >> 8)),
-                (byte)(0xFF & num)
-            };
+            output.WriteByte((byte)(num >> 24));
+            output.WriteByte((byte)(0xFF & (num >> 16)));
+            output.WriteByte((byte)(0xFF & (num >> 8)));
+            output.WriteByte((byte)(0xFF & num));
         }
 
-        private int DeserializeNumFrom4Bytes(byte[] content, ref int offset)
+        private int DeserializeNumFrom4Bytes(Stream content)
         {
-            if (content.Length - offset < 4)
+            return content.ReadByte() << 24 | content.ReadByte() << 16 | content.ReadByte() << 8 | content.ReadByte();
+        }
+
+        // Keys are stored in their utf-8 encoded state.
+        // This saves us from de-serializing and re-serializing every key on every request.
+        private class EncodedKey
+        {
+            private string _keyString;
+            private int? _hashCode;
+
+            internal EncodedKey(string key)
             {
-                throw new ArgumentException("Insufficient data remaining", "content");
+                _keyString = key;
+                KeyBytes = Encoding.UTF8.GetBytes(key);
             }
-            return content[offset++] << 24 | content[offset++] << 16 | content[offset++] << 8 | content[offset++];
+
+            public EncodedKey(byte[] key)
+            {
+                KeyBytes = key;
+            }
+
+            internal string KeyString
+            {
+                get
+                {
+                    if (_keyString == null)
+                    {
+                        _keyString = Encoding.UTF8.GetString(KeyBytes, 0, KeyBytes.Length);
+                    }
+                    return _keyString;
+                }
+            }
+
+            internal byte[] KeyBytes { get; private set; }
+
+            public override bool Equals(object obj)
+            {
+                var otherKey = obj as EncodedKey;
+                if (otherKey == null)
+                {
+                    return false;
+                }
+                if (KeyBytes.Length != otherKey.KeyBytes.Length)
+                {
+                    return false;
+                }
+                if (_hashCode.HasValue && otherKey._hashCode.HasValue
+                    && _hashCode.Value != otherKey._hashCode.Value)
+                {
+                    return false;
+                }
+                for (int i = 0; i < KeyBytes.Length; i++)
+                {
+                    if (KeyBytes[i] != otherKey.KeyBytes[i])
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            public override int GetHashCode()
+            {
+                if (!_hashCode.HasValue)
+                {
+                    _hashCode = SipHash.GetHashCode(KeyBytes);
+                }
+                return _hashCode.Value;
+            }
+
+            public override string ToString()
+            {
+                return KeyString;
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Microsoft.Framework.Cache.Redis;
 
 namespace RedisCacheSample
@@ -16,6 +17,7 @@ namespace RedisCacheSample
             string key = "myKey";
             object state = null;
             byte[] value = new byte[10];
+            Stream valueStream;
 
             Console.WriteLine("Connecting to cache");
             var cache = new RedisCache(new RedisCacheOptions
@@ -26,16 +28,16 @@ namespace RedisCacheSample
             Console.WriteLine("Connected");
 
             Console.WriteLine("Setting");
-            value = cache.Set(key, state, context =>
+            valueStream = cache.Set(key, state, context =>
             {
-                return value;
+                context.Data.Write(value, 0, value.Length);
             });
             Console.WriteLine("Set");
 
             Console.WriteLine("Getting");
-            if (cache.TryGetValue(key, out value))
+            if (cache.TryGetValue(key, out valueStream))
             {
-                Console.WriteLine("Retrieved: " + value);
+                Console.WriteLine("Retrieved: " + valueStream);
             }
             else
             {
@@ -51,9 +53,9 @@ namespace RedisCacheSample
             Console.WriteLine("Removed");
 
             Console.WriteLine("Getting");
-            if (cache.TryGetValue(key, out value))
+            if (cache.TryGetValue(key, out valueStream))
             {
-                Console.WriteLine("Retrieved: " + value);
+                Console.WriteLine("Retrieved: " + valueStream);
             }
             else
             {

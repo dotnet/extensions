@@ -25,7 +25,7 @@ namespace Microsoft.Framework.Cache.Redis
                 var result = cache.Set(key, context =>
                 {
                     context.SetAbsoluteExpiration(expected);
-                    return value;
+                    context.Data.Write(value, 0, value.Length);
                 });
             }, "absolute", "The absolute expiration value must be in the future.", expected.ToString(CultureInfo.CurrentCulture));
         }
@@ -40,13 +40,13 @@ namespace Microsoft.Framework.Cache.Redis
             var result = cache.Set(key, context =>
             {
                 context.SetAbsoluteExpiration(DateTimeOffset.UtcNow + TimeSpan.FromSeconds(1));
-                return value;
+                context.Data.Write(value, 0, value.Length);
             });
-            Assert.Equal(value, result);
+            Assert.Equal(value, result.ReadAllBytes());
 
             var found = cache.TryGetValue(key, out result);
             Assert.True(found);
-            Assert.Equal(value, result);
+            Assert.Equal(value, result.ReadAllBytes());
 
             for (int i = 0; i < 4 && found; i++)
             {
@@ -68,9 +68,9 @@ namespace Microsoft.Framework.Cache.Redis
             var result = cache.Set(key, context =>
             {
                 context.SetAbsoluteExpiration(DateTimeOffset.UtcNow + TimeSpan.FromSeconds(0.25));
-                return value;
+                context.Data.Write(value, 0, value.Length);
             });
-            Assert.Equal(value, result);
+            Assert.Equal(value, result.ReadAllBytes());
 
             var found = cache.TryGetValue(key, out result);
             Assert.False(found);
@@ -89,7 +89,7 @@ namespace Microsoft.Framework.Cache.Redis
                 var result = cache.Set(key, context =>
                 {
                     context.SetAbsoluteExpiration(TimeSpan.FromMinutes(-1));
-                    return value;
+                    context.Data.Write(value, 0, value.Length);
                 });
             }, "relative", "The relative expiration value must be positive.", TimeSpan.FromMinutes(-1));
         }
@@ -106,7 +106,7 @@ namespace Microsoft.Framework.Cache.Redis
                 var result = cache.Set(key, context =>
                 {
                     context.SetAbsoluteExpiration(TimeSpan.Zero);
-                    return value;
+                    context.Data.Write(value, 0, value.Length);
                 });
             }, "relative", "The relative expiration value must be positive.", TimeSpan.Zero);
         }
@@ -121,13 +121,13 @@ namespace Microsoft.Framework.Cache.Redis
             var result = cache.Set(key, context =>
             {
                 context.SetAbsoluteExpiration(TimeSpan.FromSeconds(1));
-                return value;
+                context.Data.Write(value, 0, value.Length);
             });
-            Assert.Equal(value, result);
+            Assert.Equal(value, result.ReadAllBytes());
 
             var found = cache.TryGetValue(key, out result);
             Assert.True(found);
-            Assert.Equal(value, result);
+            Assert.Equal(value, result.ReadAllBytes());
           
             for (int i = 0; i < 4 && found; i++)
             {
@@ -147,9 +147,9 @@ namespace Microsoft.Framework.Cache.Redis
             var result = cache.Set(key, context =>
             {
                 context.SetAbsoluteExpiration(TimeSpan.FromSeconds(0.25));
-                return value;
+                context.Data.Write(value, 0, value.Length);
             });
-            Assert.Equal(value, result);
+            Assert.Equal(value, result.ReadAllBytes());
 
             var found = cache.TryGetValue(key, out result);
             Assert.False(found);
@@ -168,7 +168,7 @@ namespace Microsoft.Framework.Cache.Redis
                 var result = cache.Set(key, context =>
                 {
                     context.SetSlidingExpiration(TimeSpan.FromMinutes(-1));
-                    return value;
+                    context.Data.Write(value, 0, value.Length);
                 });
             }, "offset", "The sliding expiration value must be positive.", TimeSpan.FromMinutes(-1));
         }
@@ -185,7 +185,7 @@ namespace Microsoft.Framework.Cache.Redis
                 var result = cache.Set(key, context =>
                 {
                     context.SetSlidingExpiration(TimeSpan.Zero);
-                    return value;
+                    context.Data.Write(value, 0, value.Length);
                 });
             }, "offset", "The sliding expiration value must be positive.", TimeSpan.Zero);
         }
@@ -200,13 +200,13 @@ namespace Microsoft.Framework.Cache.Redis
             var result = cache.Set(key, context =>
             {
                 context.SetSlidingExpiration(TimeSpan.FromSeconds(1));
-                return value;
+                context.Data.Write(value, 0, value.Length);
             });
-            Assert.Equal(value, result);
+            Assert.Equal(value, result.ReadAllBytes());
 
             var found = cache.TryGetValue(key, out result);
             Assert.True(found);
-            Assert.Equal(value, result);
+            Assert.Equal(value, result.ReadAllBytes());
 
             Thread.Sleep(TimeSpan.FromSeconds(3));
 
@@ -225,9 +225,9 @@ namespace Microsoft.Framework.Cache.Redis
             var result = cache.Set(key, context =>
             {
                 context.SetSlidingExpiration(TimeSpan.FromSeconds(0.25));
-                return value;
+                context.Data.Write(value, 0, value.Length);
             });
-            Assert.Equal(value, result);
+            Assert.Equal(value, result.ReadAllBytes());
 
             var found = cache.TryGetValue(key, out result);
             Assert.False(found);
@@ -244,13 +244,13 @@ namespace Microsoft.Framework.Cache.Redis
             var result = cache.Set(key, context =>
             {
                 context.SetSlidingExpiration(TimeSpan.FromSeconds(1));
-                return value;
+                context.Data.Write(value, 0, value.Length);
             });
-            Assert.Equal(value, result);
+            Assert.Equal(value, result.ReadAllBytes());
 
             var found = cache.TryGetValue(key, out result);
             Assert.True(found);
-            Assert.Equal(value, result);
+            Assert.Equal(value, result.ReadAllBytes());
             
             for (int i = 0; i < 5; i++)
             {
@@ -258,7 +258,7 @@ namespace Microsoft.Framework.Cache.Redis
 
                 found = cache.TryGetValue(key, out result);
                 Assert.True(found);
-                Assert.Equal(value, result);
+                Assert.Equal(value, result.ReadAllBytes());
             }
 
             Thread.Sleep(TimeSpan.FromSeconds(3));
@@ -279,13 +279,13 @@ namespace Microsoft.Framework.Cache.Redis
             {
                 context.SetSlidingExpiration(TimeSpan.FromSeconds(1));
                 context.SetAbsoluteExpiration(TimeSpan.FromSeconds(3));
-                return value;
+                context.Data.Write(value, 0, value.Length);
             });
-            Assert.Equal(value, result);
+            Assert.Equal(value, result.ReadAllBytes());
 
             var found = cache.TryGetValue(key, out result);
             Assert.True(found);
-            Assert.Equal(value, result);
+            Assert.Equal(value, result.ReadAllBytes());
 
             for (int i = 0; i < 5; i++)
             {
@@ -293,7 +293,7 @@ namespace Microsoft.Framework.Cache.Redis
 
                 found = cache.TryGetValue(key, out result);
                 Assert.True(found);
-                Assert.Equal(value, result);
+                Assert.Equal(value, result.ReadAllBytes());
             }
 
             Thread.Sleep(TimeSpan.FromSeconds(1));

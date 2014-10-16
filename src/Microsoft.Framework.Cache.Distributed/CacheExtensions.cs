@@ -2,41 +2,74 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 
 namespace Microsoft.Framework.Cache.Distributed
 {
     public static class CacheExtensions
     {
-        public static byte[] Set(this IDistributedCache cache, string key, byte[] value)
+        public static byte[] ReadAllBytes([NotNull] this Stream stream)
         {
-            return cache.Set(key, state: value, create: context => (byte[])context.State);
+            var memStream = stream as MemoryStream;
+            if (memStream == null)
+            {
+                memStream = new MemoryStream();
+                stream.CopyTo(memStream);
+            }
+            return memStream.ToArray();
         }
 
-        public static byte[] Set(this IDistributedCache cache, string key, Func<ICacheContext, byte[]> create)
+        public static byte[] ReadBytes([NotNull] this Stream stream, int count)
+        {
+            var output = new byte[count];
+            int total = 0;
+            while (total < count)
+            {
+                var read = stream.Read(output, total, count - total);
+                if (read == 0)
+                {
+                    throw new EndOfStreamException();
+                }
+                total += read;
+            }
+            return output;
+        }
+
+        public static Stream Set(this IDistributedCache cache, string key, byte[] value)
+        {
+            return cache.Set(key, state: value, create: context =>
+            {
+                var data = (byte[])context.State;
+                context.Data.Write(data, 0, data.Length);
+            });
+        }
+
+        public static Stream Set(this IDistributedCache cache, string key, Action<ICacheContext> create)
         {
             return cache.Set(key, state: null, create: create);
         }
 
-        public static byte[] Get(this IDistributedCache cache, string key)
+        public static Stream Get(this IDistributedCache cache, string key)
         {
-            byte[] value = null;
+            Stream value = null;
             cache.TryGetValue(key, out value);
             return value;
         }
 
-        public static byte[] GetOrSet(this IDistributedCache cache, string key, byte[] value)
+        public static Stream GetOrSet(this IDistributedCache cache, string key, byte[] value)
         {
-            byte[] value1;
+            Stream value1;
             if (cache.TryGetValue(key, out value1))
             {
                 return value1;
             }
-            return cache.Set(key, value);
+            cache.Set(key, value);
+            return new MemoryStream(value, writable: false);
         }
 
-        public static byte[] GetOrSet(this IDistributedCache cache, string key, Func<ICacheContext, byte[]> create)
+        public static Stream GetOrSet(this IDistributedCache cache, string key, Action<ICacheContext> create)
         {
-            byte[] value;
+            Stream value;
             if (cache.TryGetValue(key, out value))
             {
                 return value;
@@ -44,9 +77,9 @@ namespace Microsoft.Framework.Cache.Distributed
             return cache.Set(key, create);
         }
 
-        public static byte[] GetOrSet(this IDistributedCache cache, string key, object state, Func<ICacheContext, byte[]> create)
+        public static Stream GetOrSet(this IDistributedCache cache, string key, object state, Action<ICacheContext> create)
         {
-            byte[] value;
+            Stream value;
             if (cache.TryGetValue(key, out value))
             {
                 return value;

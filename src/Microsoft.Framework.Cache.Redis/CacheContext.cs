@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using Microsoft.Framework.Cache.Distributed;
 using StackExchange.Redis;
 
@@ -9,6 +10,8 @@ namespace Microsoft.Framework.Cache.Redis
 {
     internal class CacheContext : ICacheContext
     {
+        private readonly MemoryStream _data = new MemoryStream();
+
         internal CacheContext(string key)
         {
             Key = key;
@@ -24,6 +27,8 @@ namespace Microsoft.Framework.Cache.Redis
         /// The state passed into Set. This can be used to avoid closures.
         /// </summary>
         public object State { get; internal set; }
+
+        public Stream Data { get { return _data; } }
 
         internal DateTimeOffset CreationTime { get; set; }
 
@@ -73,6 +78,11 @@ namespace Microsoft.Framework.Cache.Redis
                 return (long)SlidingExpiration.Value.TotalSeconds;
             }
             return null;
+        }
+
+        internal byte[] GetBytes()
+        {
+            return _data.ToArray();
         }
     }
 }

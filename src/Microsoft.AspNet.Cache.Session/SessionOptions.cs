@@ -35,6 +35,9 @@ namespace Microsoft.AspNet.Cache.Session
         /// </summary>
         public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(20);
 
+        /// <summary>
+        /// Gets or sets the session storage manager. This overrides any session store passed into the middleware constructor.
+        /// </summary>
         public ISessionStore Store { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using Microsoft.Framework.Cache.Memory;
 
 namespace Microsoft.Framework.Cache.Distributed
@@ -19,19 +20,27 @@ namespace Microsoft.Framework.Cache.Distributed
         {
         }
 
-        public byte[] Set([NotNull] string key, object state, [NotNull] Func<ICacheContext, byte[]> create)
+        public Stream Set([NotNull] string key, object state, [NotNull] Action<ICacheContext> create)
         {
-
-            return _memCache.Set<byte[]>(key, state, context =>
+            var data = _memCache.Set<byte[]>(key, state, context =>
             {
                 var subContext = new LocalContextWrapper(context);
-                return create(subContext);
+                create(subContext);
+                return subContext.GetBytes();
             });
+            return new MemoryStream(data, writable: false);
         }
 
-        public bool TryGetValue([NotNull] string key, out byte[] value)
+        public bool TryGetValue([NotNull] string key, out Stream value)
         {
-            return _memCache.TryGetValue(key, out value);
+            byte[] data;
+            if (_memCache.TryGetValue(key, out data))
+            {
+                value = new MemoryStream(data, writable: false);
+                return true;
+            }
+            value = null;
+            return false;
         }
 
         public void Refresh([NotNull] string key)

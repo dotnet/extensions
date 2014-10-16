@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using Microsoft.Framework.Cache.Distributed;
 using Microsoft.Framework.OptionsModel;
 using StackExchange.Redis;
@@ -49,12 +50,13 @@ namespace Microsoft.Framework.Cache.Redis
             }
         }
 
-        public byte[] Set([NotNull] string key, object state, [NotNull] Func<ICacheContext, byte[]> create)
+        public Stream Set([NotNull] string key, object state, [NotNull] Action<ICacheContext> create)
         {
             Connect();
 
             var context = new CacheContext(key) { State = state };
-            var value = create(context);
+            create(context);
+            var value = context.GetBytes();
             var result = _cache.ScriptEvaluate(SetScript, new RedisKey[] { _instance + key },
                 new RedisValue[]
                 {
@@ -64,10 +66,10 @@ namespace Microsoft.Framework.Cache.Redis
                     value
                 });
             // TODO: Error handling
-            return value;
+            return new MemoryStream(value, writable: false);
         }
 
-        public bool TryGetValue([NotNull] string key, out byte[] value)
+        public bool TryGetValue([NotNull] string key, out Stream value)
         {
             value = GetAndRefresh(key, getData: true);
             return value != null;
@@ -78,7 +80,7 @@ namespace Microsoft.Framework.Cache.Redis
             var ignored = GetAndRefresh(key, getData: false);
         }
 
-        private byte[] GetAndRefresh(string key, bool getData)
+        private Stream GetAndRefresh(string key, bool getData)
         {
             Connect();
 
@@ -103,9 +105,9 @@ namespace Microsoft.Framework.Cache.Redis
                 MapMetadata(results, out absExpr, out sldExpr);
                 Refresh(key, absExpr, sldExpr);
             }
-            if (results.Length >= 3)
+            if (results.Length >= 3 && results[2].HasValue)
             {
-                return results[2];
+                return new MemoryStream(results[2], writable: false);
             }
             return null;
         }
