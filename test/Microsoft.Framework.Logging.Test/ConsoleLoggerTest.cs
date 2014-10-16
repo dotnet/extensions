@@ -42,7 +42,7 @@ namespace Microsoft.Framework.Logging.Test
         public void CriticalFilter_LogsWhenAppropriate()
         {
             // Arrange
-            var t = SetUp((category, traceType) => traceType <= TraceType.Critical);
+            var t = SetUp((category, traceType) => traceType >= TraceType.Critical);
             var logger = t.Item1;
             var sink = t.Item2;
 
@@ -63,7 +63,7 @@ namespace Microsoft.Framework.Logging.Test
         public void ErrorFilter_LogsWhenAppropriate()
         {
             // Arrange
-            var t = SetUp((category, traceType) => traceType <= TraceType.Error);
+            var t = SetUp((category, traceType) => traceType >= TraceType.Error);
             var logger = t.Item1;
             var sink = t.Item2;
 
@@ -84,7 +84,7 @@ namespace Microsoft.Framework.Logging.Test
         public void WarningFilter_LogsWhenAppropriate()
         {
             // Arrange
-            var t = SetUp((category, traceType) => traceType <= TraceType.Warning);
+            var t = SetUp((category, traceType) => traceType >= TraceType.Warning);
             var logger = t.Item1;
             var sink = t.Item2;
 
@@ -105,7 +105,7 @@ namespace Microsoft.Framework.Logging.Test
         public void InformationFilter_LogsWhenAppropriate()
         {
             // Arrange
-            var t = SetUp((category, traceType) => traceType <= TraceType.Information);
+            var t = SetUp((category, traceType) => traceType >= TraceType.Information);
             var logger = t.Item1;
             var sink = t.Item2;
 
@@ -126,7 +126,7 @@ namespace Microsoft.Framework.Logging.Test
         public void VerboseFilter_LogsWhenAppropriate()
         {
             // Arrange
-            var t = SetUp((category, traceType) => traceType <= TraceType.Verbose);
+            var t = SetUp((category, traceType) => traceType >= TraceType.Verbose);
             var logger = t.Item1;
             var sink = t.Item2;
 

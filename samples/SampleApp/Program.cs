@@ -21,7 +21,7 @@ namespace SampleApp
             factory.AddNLog(new global::NLog.LogFactory());
 #endif
             factory.AddConsole();
-            factory.AddConsole((category, traceType) => traceType <= TraceType.Critical && category.Equals(typeof(Program).FullName));
+            factory.AddConsole((category, traceType) => traceType >= TraceType.Critical && category.Equals(typeof(Program).FullName));
         }
 
         public void Main(string[] args)
