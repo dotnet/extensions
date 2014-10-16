@@ -36,5 +36,17 @@ namespace Microsoft.Framework.DependencyInjection
 
             return service;
         }
+
+        /// <summary>
+        /// Get service of type <typeparamref name="T"/> from the IServiceProvider.
+        /// </summary>
+        /// <typeparam name="T">The type of service object to get.</typeparam>
+        /// <param name="provider">The <see cref="IServiceProvider"/> to retrieve the service object from.</param>
+        /// <returns>A service object of type <typeparamref name="T"/>.</returns>
+        /// <exception cref="System.Exception">There is no service of type <typeparamref name="T"/>.</exception>
+        public static T GetRequiredService<T>([NotNull] this IServiceProvider provider)
+        {
+            return (T)provider.GetRequiredService(typeof(T));
+        }
     }
 }
