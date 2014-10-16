@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Logging;
 
 namespace Microsoft.Framework.Logging.Console
 {
@@ -10,6 +9,7 @@ namespace Microsoft.Framework.Logging.Console
     {
         private readonly string _name;
         private Func<string, TraceType, bool> _filter;
+        private readonly object _lock = new object();
 
         public ConsoleLogger(string name, Func<string, TraceType, bool> filter)
         {
@@ -46,18 +46,21 @@ namespace Microsoft.Framework.Logging.Console
             {
                 return;
             }
-            var foregroundColor = Console.ForegroundColor;  // save current colors
-            var backgroundColor = Console.BackgroundColor;
-            var severity = traceType.ToString().ToUpperInvariant();
-            SetConsoleColor(traceType);
-            try
+            lock (_lock)
             {
-                Console.WriteLine("[{0}:{1}] {2}", severity, _name, message);
-            }
-            finally
-            {
-                Console.ForegroundColor = foregroundColor;  // reset initial colors
-                Console.BackgroundColor = backgroundColor;
+                var originalForegroundColor = Console.ForegroundColor;  // save current colors
+                var originalBackgroundColor = Console.BackgroundColor;
+                var severity = traceType.ToString().ToUpperInvariant();
+                SetConsoleColor(traceType);
+                try
+                {
+                    Console.WriteLine("[{0}:{1}] {2}", severity, _name, message);
+                }
+                finally
+                {
+                    Console.ForegroundColor = originalForegroundColor;  // reset initial colors
+                    Console.BackgroundColor = originalBackgroundColor;
+                }
             }
         }
 
