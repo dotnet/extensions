@@ -26,21 +26,17 @@
     },
     ".NETPortable,Version=v4.6,Profile=Profile151": {
       "frameworkAssemblies": {
-        "System.Collections": { "version": "", "type": "build" },
-        "System.Collections.Concurrent": { "version": "", "type": "build" },
-        "System.ComponentModel": { "version": "", "type": "build" },
-        "System.Diagnostics.Debug": { "version": "", "type": "build" },
-        "System.Diagnostics.Tools": { "version": "", "type": "build" },
-        "System.Globalization": { "version": "", "type": "build" },
-        "System.Linq": { "version": "", "type": "build" },
-        "System.Linq.Expressions": { "version": "", "type": "build" },
-        "System.Reflection": { "version": "", "type": "build" },
-        "System.Resources.ResourceManager": { "version": "", "type": "build" },
-        "System.Runtime": { "version": "", "type": "build" },
-        "System.Runtime.Extensions": { "version": "", "type": "build" },
-        "System.Runtime.InteropServices": { "version": "", "type": "build" },
-        "System.Threading": { "version": "", "type": "build" },
-        "System.Threading.Tasks": { "version": "", "type": "build" }
+        "System.Collections": "",
+        "System.Collections.Concurrent": "",
+        "System.ComponentModel": "",
+        "System.Diagnostics.Debug": "",
+        "System.Diagnostics.Tools": "",
+        "System.Linq": "",
+        "System.Reflection": "",
+        "System.Runtime": "",
+        "System.Runtime.InteropServices": "",
+        "System.Threading": "",
+        "System.Threading.Tasks": ""
       }
     }
   }
