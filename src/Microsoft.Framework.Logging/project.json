@@ -33,13 +33,13 @@
                 "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
             },
             "frameworkAssemblies": {
-                "System.Collections": { "version": "", "type": "build" },
-                "System.Globalization": { "version": "", "type": "build" },
-                "System.Linq": { "version": "", "type": "build" },
-                "System.Runtime": { "version": "", "type": "build" },
-                "System.Runtime.Extensions": { "version": "", "type": "build" },
-                "System.Runtime.InteropServices": { "version": "", "type": "build" },
-                "System.Threading": { "version": "", "type": "build" }
+                "System.Globalization": "",
+                "System.Runtime": "",
+                "System.Runtime.Extensions": "",
+                "System.Runtime.InteropServices": "",
+                "System.Linq": "",
+                "System.Collections": "",
+                "System.Threading": ""
             }
         }
     }

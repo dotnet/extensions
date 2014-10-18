@@ -17,9 +17,9 @@
         },
         ".NETPortable,Version=v4.6,Profile=Profile151": {
             "frameworkAssemblies": {
-                "System.Globalization": { "version": "", "type": "build" },
-                "System.Runtime": { "version": "", "type": "build" },
-                "System.Runtime.InteropServices": { "version": "", "type": "build" }
+                "System.Globalization": "",
+                "System.Runtime": "",
+                "System.Runtime.InteropServices": ""
             }
         }
     }
