@@ -7,11 +7,12 @@
         "net45": { },
         "aspnet50": {
             "dependencies": {
-                "Microsoft.Framework.Runtime.Interfaces": { version: "1.0.0-*", "type": "build" }
+                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
             }
         },
         "aspnetcore50": {
             "dependencies": {
+                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" },
                 "System.Collections": "4.0.10-beta-*",
                 "System.Collections.Concurrent": "4.0.0-beta-*",
                 "System.ComponentModel": "4.0.0-beta-*",
@@ -23,24 +24,23 @@
                 "System.Runtime": "4.0.20-beta-*",
                 "System.Runtime.InteropServices": "4.0.20-beta-*",
                 "System.Threading": "4.0.0-beta-*",
-                "System.Threading.Tasks": "4.0.10-beta-*",
-                "Microsoft.Framework.Runtime.Interfaces": { version: "1.0.0-*", "type": "build" }
+                "System.Threading.Tasks": "4.0.10-beta-*"
             }
         },
         ".NETPortable,Version=v4.6,Profile=Profile151": {
             "frameworkAssemblies": {
-                "System.Collections": "",
-                "System.Collections.Concurrent": "",
-                "System.ComponentModel": "",
-                "System.Diagnostics.Debug": "",
-                "System.Diagnostics.Tools": "",
-                "System.Linq": "",
-                "System.Linq.Expressions": "",
-                "System.Reflection": "",
-                "System.Runtime": "",
-                "System.Runtime.InteropServices": "",
-                "System.Threading": "",
-                "System.Threading.Tasks": ""
+                "System.Collections": { "version": "", "type": "build" },
+                "System.Collections.Concurrent": { "version": "", "type": "build" },
+                "System.ComponentModel": { "version": "", "type": "build" },
+                "System.Diagnostics.Debug": { "version": "", "type": "build" },
+                "System.Diagnostics.Tools": { "version": "", "type": "build" },
+                "System.Linq": { "version": "", "type": "build" },
+                "System.Linq.Expressions": { "version": "", "type": "build" },
+                "System.Reflection": { "version": "", "type": "build" },
+                "System.Runtime": { "version": "", "type": "build" },
+                "System.Runtime.InteropServices": { "version": "", "type": "build" },
+                "System.Threading": { "version": "", "type": "build" },
+                "System.Threading.Tasks": { "version": "", "type": "build" }
             }
         }
     }
