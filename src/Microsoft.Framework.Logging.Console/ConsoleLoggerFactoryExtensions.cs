@@ -12,7 +12,7 @@ namespace Microsoft.Framework.Logging.Console
         /// </summary>
         public static ILoggerFactory AddConsole(this ILoggerFactory factory)
         {
-            factory.AddProvider(new ConsoleLoggerProvider((category, traceType) => traceType >= TraceType.Warning));
+            factory.AddProvider(new ConsoleLoggerProvider((category, traceType) => traceType >= TraceType.Information));
             return factory;
         }
 
