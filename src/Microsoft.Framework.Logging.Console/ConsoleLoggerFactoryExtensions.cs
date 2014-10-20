@@ -8,7 +8,7 @@ namespace Microsoft.Framework.Logging.Console
     public static class ConsoleLoggerExtensions
     {
         /// <summary>
-        /// Adds a console logger that is enabled for severity levels of warning or higher.
+        /// Adds a console logger that is enabled for severity levels of information or higher.
         /// </summary>
         public static ILoggerFactory AddConsole(this ILoggerFactory factory)
         {
