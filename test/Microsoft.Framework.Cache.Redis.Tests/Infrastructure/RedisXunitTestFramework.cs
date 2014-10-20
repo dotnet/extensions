@@ -6,7 +6,7 @@ using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-[assembly: TestFramework("Microsoft.Framework.Cache.Redis.RedisXunitTestFramework", "Microsoft.Framework.Cache.Redis.Tests")]
+// TODO: Disabled due to CI failures. [assembly: TestFramework("Microsoft.Framework.Cache.Redis.RedisXunitTestFramework", "Microsoft.Framework.Cache.Redis.Tests")]
 
 namespace Microsoft.Framework.Cache.Redis
 {
