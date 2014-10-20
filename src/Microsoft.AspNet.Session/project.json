@@ -23,5 +23,6 @@
         "System.Threading.Tasks": "4.0.10-beta-*"
       }
     }
-  }
+  },
+  "webroot": null
 }

@@ -9,7 +9,7 @@ using System.Text;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.Framework.Cache.Distributed;
 
-namespace Microsoft.AspNet.Cache.Session
+namespace Microsoft.AspNet.Session
 {
     public class DistributedSession : ISession
     {

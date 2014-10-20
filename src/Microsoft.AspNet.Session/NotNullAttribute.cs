@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Cache.Session
+namespace Microsoft.AspNet.Session
 {
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
     internal sealed class NotNullAttribute : Attribute

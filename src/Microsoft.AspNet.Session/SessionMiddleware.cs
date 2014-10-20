@@ -12,7 +12,7 @@ using Microsoft.AspNet.HttpFeature;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 
-namespace Microsoft.AspNet.Cache.Session
+namespace Microsoft.AspNet.Session
 {
     public class SessionMiddleware
     {

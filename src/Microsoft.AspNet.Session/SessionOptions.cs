@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Cache.Session
+namespace Microsoft.AspNet.Session
 {
     public class SessionOptions
     {

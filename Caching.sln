@@ -21,9 +21,9 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Cache.D
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Cache.Distributed.Tests", "test\Microsoft.Framework.Cache.Distributed.Tests\Microsoft.Framework.Cache.Distributed.Tests.kproj", "{C5A8A2C1-588D-4A1A-BB1D-B33B6DD89797}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cache.Session", "src\Microsoft.AspNet.Cache.Session\Microsoft.AspNet.Cache.Session.kproj", "{71802736-F640-4733-9671-02D267EDD76A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Session", "src\Microsoft.AspNet.Session\Microsoft.AspNet.Session.kproj", "{71802736-F640-4733-9671-02D267EDD76A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cache.Session.Tests", "test\Microsoft.AspNet.Cache.Session.Tests\Microsoft.AspNet.Cache.Session.Tests.kproj", "{8C131A0A-BC1A-4CF3-8B77-8813FBFE5639}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Session.Tests", "test\Microsoft.AspNet.Session.Tests\Microsoft.AspNet.Session.Tests.kproj", "{8C131A0A-BC1A-4CF3-8B77-8813FBFE5639}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ProfilingSample", "samples\ProfilingSample\ProfilingSample.kproj", "{FD9FD44E-50D7-4121-9DAB-87A88191CE9F}"
 EndProject
@@ -34,6 +34,11 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Cache.Redis.Tests", "test\Microsoft.Framework.Cache.Redis.Tests\Microsoft.Framework.Cache.Redis.Tests.kproj", "{D1DCC5A4-3EC1-403B-B069-1F3FCB50E3A5}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SessionSample", "samples\SessionSample\SessionSample.kproj", "{FE0B9969-3BDE-4A7D-BE1B-47EAE8DBF365}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FB1086CF-F5C8-4B81-A685-C355F1BA9B97}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

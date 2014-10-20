@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Cache.Session;
+using Microsoft.AspNet.Session;
 using Microsoft.Framework.Cache.Distributed;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.DependencyInjection;

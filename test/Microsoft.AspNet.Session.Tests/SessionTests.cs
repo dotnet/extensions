@@ -9,7 +9,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Xunit;
 
-namespace Microsoft.AspNet.Cache.Session
+namespace Microsoft.AspNet.Session
 {
     public class SessionTests
     {

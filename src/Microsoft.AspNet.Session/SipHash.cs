@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Cache.Session
+namespace Microsoft.AspNet.Session
 {
     // A byte[] equality comparer based on the SipHash-2-4 algorithm. Key differences:
     // (a) we output 32-bit hashes instead of 64-bit hashes, and

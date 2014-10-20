@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.HttpFeature;
 
-namespace Microsoft.AspNet.Cache.Session
+namespace Microsoft.AspNet.Session
 {
     public class SessionFactory : ISessionFactory
     {

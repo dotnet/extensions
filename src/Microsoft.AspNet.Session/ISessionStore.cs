@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNet.HttpFeature;
 
-namespace Microsoft.AspNet.Cache.Session
+namespace Microsoft.AspNet.Session
 {
-    public class SessionFeature : ISessionFeature
+    public interface ISessionStore
     {
-        public ISessionFactory Factory { get; set; }
-
-        public ISession Session { get; set; }
+        bool IsAvailable { get; }
+        void Connect();
+        ISession Create(string sessionId, TimeSpan idleTimeout, Func<bool> tryEstablishSession);
     }
 }
