@@ -13,7 +13,9 @@ namespace Microsoft.Framework.DependencyInjection
         /// <param name="serviceType">The <see cref="Type"/> of the service.</param>
         /// <param name="implementationType">The <see cref="Type"/> implementing the service.</param>
         /// <param name="lifecycle">The <see cref="LifecycleKind"/> of the service.</param>
-        public ServiceDescriptor(Type serviceType, Type implementationType, LifecycleKind lifecycle)
+        public ServiceDescriptor([NotNull] Type serviceType, 
+                                 [NotNull] Type implementationType, 
+                                 LifecycleKind lifecycle)
             : this(serviceType, lifecycle)
         {
             ImplementationType = implementationType;
@@ -25,7 +27,8 @@ namespace Microsoft.Framework.DependencyInjection
         /// </summary>
         /// <param name="serviceType">The <see cref="Type"/> of the service.</param>
         /// <param name="instance">The instance implementing the service.</param>
-        public ServiceDescriptor(Type serviceType, object instance)
+        public ServiceDescriptor([NotNull] Type serviceType,
+                                 [NotNull] object instance)
             : this(serviceType, LifecycleKind.Singleton)
         {
             ImplementationInstance = instance;
@@ -37,7 +40,9 @@ namespace Microsoft.Framework.DependencyInjection
         /// <param name="serviceType">The <see cref="Type"/> of the service.</param>
         /// <param name="factory">A factory used for creating service instances.</param>
         /// <param name="lifecycle">The <see cref="LifecycleKind"/> of the service.</param>
-        public ServiceDescriptor(Type serviceType, Func<IServiceProvider, object> factory, LifecycleKind lifecycle)
+        public ServiceDescriptor([NotNull] Type serviceType,
+                                 [NotNull] Func<IServiceProvider, object> factory, 
+                                 LifecycleKind lifecycle)
             : this(serviceType, lifecycle)
         {
             ImplementationFactory = factory;
