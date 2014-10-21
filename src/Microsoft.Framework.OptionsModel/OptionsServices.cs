@@ -25,8 +25,8 @@ namespace Microsoft.Framework.OptionsModel
 
         public static void ReadProperties(object obj, IConfiguration config)
         {
-            // No convert on portable
-#if NET45 || ASPNET50|| ASPNETCORE50
+            // No convert on portable or core
+#if NET45 || ASPNET50
             if (obj == null || config == null)
             {
                 return;
@@ -46,7 +46,14 @@ namespace Microsoft.Framework.OptionsModel
                     ReadProperties(prop.GetValue(obj), config.GetSubKey(prop.Name));
                     continue;
                 }
-                prop.SetValue(obj, Convert.ChangeType(configValue, prop.PropertyType));
+                try
+                {
+                    prop.SetValue(obj, Convert.ChangeType(configValue, prop.PropertyType));
+                }
+                catch
+                {
+                    // Ignore errors
+                }
             }
 #endif
         }

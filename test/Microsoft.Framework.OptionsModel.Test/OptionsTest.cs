@@ -92,6 +92,23 @@ namespace Microsoft.Framework.OptionsModel.Tests
         }
 
         [Fact]
+        public void InvalidConfigIsIgnored()
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {"Nested", ""},
+                {"Boolean", "TRUe"},
+                {"Virtual","Sup"}
+            };
+            var config = new Configuration { new MemoryConfigurationSource(dic) };
+            var options = new DerivedOptions();
+            OptionsServices.ReadProperties(options, config);
+            Assert.Equal(0, options.Nested.Integer);
+            Assert.True(options.Boolean);
+            Assert.Equal("Derived:Sup", options.Virtual);
+        }
+
+        [Fact]
         public void CanReadStaticProperty()
         {
             var dic = new Dictionary<string, string>
