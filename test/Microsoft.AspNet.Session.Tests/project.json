@@ -12,6 +12,5 @@
     "aspnet50": {
       "dependencies": {}
     }
-  },
-  "webroot": null
+  }
 }
