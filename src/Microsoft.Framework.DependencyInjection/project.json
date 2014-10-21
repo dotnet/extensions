@@ -7,7 +7,7 @@
         "net45": { },
         "aspnet50": {
             "dependencies": {
-                "Microsoft.Framework.Runtime.Interfaces": { version: "1.0.0-*", "type": "build" }
+                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
             }
         },
         "aspnetcore50": {
@@ -24,7 +24,7 @@
                 "System.Runtime.InteropServices": "4.0.20-beta-*",
                 "System.Threading": "4.0.0-beta-*",
                 "System.Threading.Tasks": "4.0.10-beta-*",
-                "Microsoft.Framework.Runtime.Interfaces": { version: "1.0.0-*", "type": "build" }
+                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
             }
         },
         ".NETPortable,Version=v4.6,Profile=Profile151": {
