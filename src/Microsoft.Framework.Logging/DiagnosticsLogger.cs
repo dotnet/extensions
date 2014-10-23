@@ -16,9 +16,9 @@ namespace Microsoft.Framework.Logging
             _traceSource = traceSource;
         }
 
-        public void Write(TraceType traceType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public void Write(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
-            if (!IsEnabled(traceType))
+            if (!IsEnabled(logLevel))
             {
                 return;
             }
@@ -40,25 +40,25 @@ namespace Microsoft.Framework.Logging
             }
             if (!string.IsNullOrEmpty(message))
             {
-                _traceSource.TraceEvent(GetEventType(traceType), eventId, message);
+                _traceSource.TraceEvent(GetEventType(logLevel), eventId, message);
             }
         }
 
-        public bool IsEnabled(TraceType traceType)
+        public bool IsEnabled(LogLevel logLevel)
         {
-            var eventType = GetEventType(traceType);
-            return _traceSource.Switch.ShouldTrace(eventType);
+            var traceEventType = GetEventType(logLevel);
+            return _traceSource.Switch.ShouldTrace(traceEventType);
         }
 
-        private static TraceEventType GetEventType(TraceType traceType)
+        private static TraceEventType GetEventType(LogLevel logLevel)
         {
-            switch (traceType)
+            switch (logLevel)
             {
-                case TraceType.Critical: return TraceEventType.Critical;
-                case TraceType.Error: return TraceEventType.Error;
-                case TraceType.Warning: return TraceEventType.Warning;
-                case TraceType.Information: return TraceEventType.Information;
-                case TraceType.Verbose:
+                case LogLevel.Critical: return TraceEventType.Critical;
+                case LogLevel.Error: return TraceEventType.Error;
+                case LogLevel.Warning: return TraceEventType.Warning;
+                case LogLevel.Information: return TraceEventType.Information;
+                case LogLevel.Verbose:
                 default: return TraceEventType.Verbose;
             }
         }

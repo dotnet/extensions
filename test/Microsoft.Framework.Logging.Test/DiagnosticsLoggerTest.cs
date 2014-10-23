@@ -23,11 +23,11 @@ namespace Microsoft.Framework.Logging.Test
             factory.AddProvider(new DiagnosticsLoggerProvider(testSwitch, new ConsoleTraceListener()));
 
             // Assert
-            Assert.True(logger.IsEnabled(TraceType.Critical));
-            Assert.True(logger.IsEnabled(TraceType.Error));
-            Assert.True(logger.IsEnabled(TraceType.Warning));
-            Assert.False(logger.IsEnabled(TraceType.Information));
-            Assert.False(logger.IsEnabled(TraceType.Verbose));
+            Assert.True(logger.IsEnabled(LogLevel.Critical));
+            Assert.True(logger.IsEnabled(LogLevel.Error));
+            Assert.True(logger.IsEnabled(LogLevel.Warning));
+            Assert.False(logger.IsEnabled(LogLevel.Information));
+            Assert.False(logger.IsEnabled(LogLevel.Verbose));
         }
 
         [Theory]
@@ -52,7 +52,7 @@ namespace Microsoft.Framework.Logging.Test
             factory.AddProvider(new DiagnosticsLoggerProvider(secondSwitch, new ConsoleTraceListener()));
 
             // Assert
-            Assert.Equal(expected, logger.IsEnabled(TraceType.Information));
+            Assert.Equal(expected, logger.IsEnabled(LogLevel.Information));
         }
     }
 }

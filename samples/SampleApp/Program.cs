@@ -21,7 +21,7 @@ namespace SampleApp
             factory.AddNLog(new global::NLog.LogFactory());
 #endif
             factory.AddConsole();
-            factory.AddConsole((category, traceType) => traceType >= TraceType.Critical && category.Equals(typeof(Program).FullName));
+            factory.AddConsole((category, logLevel) => logLevel >= LogLevel.Critical && category.Equals(typeof(Program).FullName));
         }
 
         public void Main(string[] args)
@@ -35,9 +35,9 @@ namespace SampleApp
             catch (Exception ex)
             {
                 _logger.WriteCritical("Unexpected critical error starting application", ex);
-                _logger.Write(TraceType.Critical, 0, "Unexpected critical error", ex, null);
+                _logger.Write(LogLevel.Critical, 0, "Unexpected critical error", ex, null);
                 // This write should not log anything
-                _logger.Write(TraceType.Critical, 0, null, null, null);
+                _logger.Write(LogLevel.Critical, 0, null, null, null);
                 _logger.WriteError("Unexpected error", ex);
                 _logger.WriteWarning("Unexpected warning", ex);
             }

@@ -7,9 +7,9 @@ namespace Microsoft.Framework.Logging.Console
 {
     public class ConsoleLoggerProvider : ILoggerProvider
     {
-        private readonly Func<string, TraceType, bool> _filter;
+        private readonly Func<string, LogLevel, bool> _filter;
 
-        public ConsoleLoggerProvider(Func<string, TraceType, bool> filter)
+        public ConsoleLoggerProvider(Func<string, LogLevel, bool> filter)
         {
             _filter = filter;
         }

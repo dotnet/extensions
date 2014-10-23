@@ -8,21 +8,21 @@ namespace Microsoft.Framework.Logging.Console
     public class ConsoleLogger : ILogger
     {
         private readonly string _name;
-        private Func<string, TraceType, bool> _filter;
+        private Func<string, LogLevel, bool> _filter;
         private readonly object _lock = new object();
 
-        public ConsoleLogger(string name, Func<string, TraceType, bool> filter)
+        public ConsoleLogger(string name, Func<string, LogLevel, bool> filter)
         {
             _name = name;
-            _filter = filter ?? ((category, traceType) => true);
+            _filter = filter ?? ((category, logLevel) => true);
             Console = new LogConsole();
         }
 
         public IConsole Console { get; set; }
 
-        public void Write(TraceType traceType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public void Write(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
-            if (!IsEnabled(traceType))
+            if (!IsEnabled(logLevel))
             {
                 return;
             }
@@ -50,8 +50,8 @@ namespace Microsoft.Framework.Logging.Console
             {
                 var originalForegroundColor = Console.ForegroundColor;  // save current colors
                 var originalBackgroundColor = Console.BackgroundColor;
-                var severity = traceType.ToString().ToUpperInvariant();
-                SetConsoleColor(traceType);
+                var severity = logLevel.ToString().ToUpperInvariant();
+                SetConsoleColor(logLevel);
                 try
                 {
                     Console.WriteLine("[{0}:{1}] {2}", severity, _name, message);
@@ -64,30 +64,30 @@ namespace Microsoft.Framework.Logging.Console
             }
         }
 
-        public bool IsEnabled(TraceType traceType)
+        public bool IsEnabled(LogLevel logLevel)
         {
-            return _filter(_name, traceType);
+            return _filter(_name, logLevel);
         }
 
-        // sets the console text color to reflect the given TraceType
-        private void SetConsoleColor(TraceType traceType)
+        // sets the console text color to reflect the given LogLevel
+        private void SetConsoleColor(LogLevel logLevel)
         {
-            switch (traceType)
+            switch (logLevel)
             {
-                case TraceType.Critical:
+                case LogLevel.Critical:
                     Console.BackgroundColor = ConsoleColor.Red;
                     Console.ForegroundColor = ConsoleColor.White;
                     break;
-                case TraceType.Error:
+                case LogLevel.Error:
                     Console.ForegroundColor = ConsoleColor.Red;
                     break;
-                case TraceType.Warning:
+                case LogLevel.Warning:
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     break;
-                case TraceType.Information:
+                case LogLevel.Information:
                     Console.ForegroundColor = ConsoleColor.White;
                     break;
-                case TraceType.Verbose:
+                case LogLevel.Verbose:
                 default:
                     Console.ForegroundColor = ConsoleColor.Gray;
                     break;

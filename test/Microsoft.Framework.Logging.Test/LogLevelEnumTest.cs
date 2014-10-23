@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Framework.Logging.Test
 {
-    public class TraceTypeEnumTest
+    public class LogLevelEnumTest
     {
         [Fact]
         public static void EnumStartsAtOne()
@@ -26,7 +26,7 @@ namespace Microsoft.Framework.Logging.Test
 
         private static List<int> GetEnumValues()
         {
-            return Enum.GetValues(typeof(TraceType)).Cast<int>().ToList();
+            return Enum.GetValues(typeof(LogLevel)).Cast<int>().ToList();
         }
     }
 }

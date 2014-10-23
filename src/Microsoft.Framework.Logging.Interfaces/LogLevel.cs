@@ -6,7 +6,7 @@ namespace Microsoft.Framework.Logging
 #if ASPNET50 || ASPNETCORE50
     [Runtime.AssemblyNeutral]
 #endif
-    public enum TraceType
+    public enum LogLevel
     {
         Verbose = 1,
         Information = 2,

@@ -13,7 +13,7 @@ namespace Microsoft.Framework.Logging.Test
         private const string _state = "This is a test";
         private static readonly Func<object, Exception, string> TheMessageAndError = (message, error) => string.Format(CultureInfo.CurrentCulture, "{0}\r\n{1}", message, error);
 
-        private Tuple<ConsoleLogger, ConsoleSink> SetUp(Func<string, TraceType, bool> filter)
+        private Tuple<ConsoleLogger, ConsoleSink> SetUp(Func<string, LogLevel, bool> filter)
         {
             // Arrange
             var sink = new ConsoleSink();
@@ -32,7 +32,7 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(TraceType.Information, 0, _state, null, null);
+            logger.Write(LogLevel.Information, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -42,18 +42,18 @@ namespace Microsoft.Framework.Logging.Test
         public void CriticalFilter_LogsWhenAppropriate()
         {
             // Arrange
-            var t = SetUp((category, traceType) => traceType >= TraceType.Critical);
+            var t = SetUp((category, logLevel) => logLevel >= LogLevel.Critical);
             var logger = t.Item1;
             var sink = t.Item2;
 
             // Act
-            logger.Write(TraceType.Warning, 0, _state, null, null);
+            logger.Write(LogLevel.Warning, 0, _state, null, null);
 
             // Assert
             Assert.Equal(0, sink.Writes.Count);
 
             // Act
-            logger.Write(TraceType.Critical, 0, _state, null, null);
+            logger.Write(LogLevel.Critical, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -63,18 +63,18 @@ namespace Microsoft.Framework.Logging.Test
         public void ErrorFilter_LogsWhenAppropriate()
         {
             // Arrange
-            var t = SetUp((category, traceType) => traceType >= TraceType.Error);
+            var t = SetUp((category, logLevel) => logLevel >= LogLevel.Error);
             var logger = t.Item1;
             var sink = t.Item2;
 
             // Act
-            logger.Write(TraceType.Warning, 0, _state, null, null);
+            logger.Write(LogLevel.Warning, 0, _state, null, null);
 
             // Assert
             Assert.Equal(0, sink.Writes.Count);
 
             // Act
-            logger.Write(TraceType.Error, 0, _state, null, null);
+            logger.Write(LogLevel.Error, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -84,18 +84,18 @@ namespace Microsoft.Framework.Logging.Test
         public void WarningFilter_LogsWhenAppropriate()
         {
             // Arrange
-            var t = SetUp((category, traceType) => traceType >= TraceType.Warning);
+            var t = SetUp((category, logLevel) => logLevel >= LogLevel.Warning);
             var logger = t.Item1;
             var sink = t.Item2;
 
             // Act
-            logger.Write(TraceType.Information, 0, _state, null, null);
+            logger.Write(LogLevel.Information, 0, _state, null, null);
 
             // Assert
             Assert.Equal(0, sink.Writes.Count);
 
             // Act
-            logger.Write(TraceType.Warning, 0, _state, null, null);
+            logger.Write(LogLevel.Warning, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -105,18 +105,18 @@ namespace Microsoft.Framework.Logging.Test
         public void InformationFilter_LogsWhenAppropriate()
         {
             // Arrange
-            var t = SetUp((category, traceType) => traceType >= TraceType.Information);
+            var t = SetUp((category, logLevel) => logLevel >= LogLevel.Information);
             var logger = t.Item1;
             var sink = t.Item2;
 
             // Act
-            logger.Write(TraceType.Verbose, 0, _state, null, null);
+            logger.Write(LogLevel.Verbose, 0, _state, null, null);
 
             // Assert
             Assert.Equal(0, sink.Writes.Count);
 
             // Act
-            logger.Write(TraceType.Information, 0, _state, null, null);
+            logger.Write(LogLevel.Information, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -126,16 +126,16 @@ namespace Microsoft.Framework.Logging.Test
         public void VerboseFilter_LogsWhenAppropriate()
         {
             // Arrange
-            var t = SetUp((category, traceType) => traceType >= TraceType.Verbose);
+            var t = SetUp((category, logLevel) => logLevel >= LogLevel.Verbose);
             var logger = t.Item1;
             var sink = t.Item2;
 
             // Act
-            logger.Write(TraceType.Critical, 0, _state, null, null);
-            logger.Write(TraceType.Error, 0, _state, null, null);
-            logger.Write(TraceType.Warning, 0, _state, null, null);
-            logger.Write(TraceType.Information, 0, _state, null, null);
-            logger.Write(TraceType.Verbose, 0, _state, null, null);
+            logger.Write(LogLevel.Critical, 0, _state, null, null);
+            logger.Write(LogLevel.Error, 0, _state, null, null);
+            logger.Write(LogLevel.Warning, 0, _state, null, null);
+            logger.Write(LogLevel.Information, 0, _state, null, null);
+            logger.Write(LogLevel.Verbose, 0, _state, null, null);
 
             // Assert
             Assert.Equal(5, sink.Writes.Count);
@@ -150,7 +150,7 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(TraceType.Critical, 0, _state, null, null);
+            logger.Write(LogLevel.Critical, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -168,7 +168,7 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(TraceType.Error, 0, _state, null, null);
+            logger.Write(LogLevel.Error, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -186,7 +186,7 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(TraceType.Warning, 0, _state, null, null);
+            logger.Write(LogLevel.Warning, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -204,7 +204,7 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(TraceType.Information, 0, _state, null, null);
+            logger.Write(LogLevel.Information, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -222,7 +222,7 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(TraceType.Verbose, 0, _state, null, null);
+            logger.Write(LogLevel.Verbose, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -241,24 +241,24 @@ namespace Microsoft.Framework.Logging.Test
             var ex = new Exception();
 
             // Act
-            logger.Write(TraceType.Critical, 0, _state, ex, TheMessageAndError);
-            logger.Write(TraceType.Error, 0, _state, ex, TheMessageAndError);
-            logger.Write(TraceType.Warning, 0, _state, ex, TheMessageAndError);
-            logger.Write(TraceType.Information, 0, _state, ex, TheMessageAndError);
-            logger.Write(TraceType.Verbose, 0, _state, ex, TheMessageAndError);
+            logger.Write(LogLevel.Critical, 0, _state, ex, TheMessageAndError);
+            logger.Write(LogLevel.Error, 0, _state, ex, TheMessageAndError);
+            logger.Write(LogLevel.Warning, 0, _state, ex, TheMessageAndError);
+            logger.Write(LogLevel.Information, 0, _state, ex, TheMessageAndError);
+            logger.Write(LogLevel.Verbose, 0, _state, ex, TheMessageAndError);
 
             // Assert
             Assert.Equal(5, sink.Writes.Count);
-            Assert.Equal(getMessage(TraceType.Critical, ex), sink.Writes[0].Message);
-            Assert.Equal(getMessage(TraceType.Error, ex), sink.Writes[1].Message);
-            Assert.Equal(getMessage(TraceType.Warning, ex), sink.Writes[2].Message);
-            Assert.Equal(getMessage(TraceType.Information, ex), sink.Writes[3].Message);
-            Assert.Equal(getMessage(TraceType.Verbose, ex), sink.Writes[4].Message);
+            Assert.Equal(getMessage(LogLevel.Critical, ex), sink.Writes[0].Message);
+            Assert.Equal(getMessage(LogLevel.Error, ex), sink.Writes[1].Message);
+            Assert.Equal(getMessage(LogLevel.Warning, ex), sink.Writes[2].Message);
+            Assert.Equal(getMessage(LogLevel.Information, ex), sink.Writes[3].Message);
+            Assert.Equal(getMessage(LogLevel.Verbose, ex), sink.Writes[4].Message);
         }
 
-        private string getMessage(TraceType traceType, Exception exception)
+        private string getMessage(LogLevel logLevel, Exception exception)
         {
-            return string.Format("[{0}:{1}] {2}", traceType.ToString().ToUpperInvariant(), _name, TheMessageAndError(_state, exception));
+            return string.Format("[{0}:{1}] {2}", logLevel.ToString().ToUpperInvariant(), _name, TheMessageAndError(_state, exception));
         }
     }
 }

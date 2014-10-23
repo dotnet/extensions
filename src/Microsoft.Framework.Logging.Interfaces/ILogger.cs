@@ -16,20 +16,20 @@ namespace Microsoft.Framework.Logging
         /// <summary>
         /// Aggregates most logging patterns to a single method.  This must be compatible with the Func representation in the OWIN environment.
         /// </summary>
-        /// <param name="eventType"></param>
+        /// <param name="logLevel"></param>
         /// <param name="eventId"></param>
         /// <param name="state"></param>
         /// <param name="exception"></param>
         /// <param name="formatter"></param>
         /// <returns></returns>
-        void Write(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter);
+        void Write(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter);
 
         /// <summary>
         /// Checks if the given TraceEventType is enabled.
         /// </summary>
-        /// <param name="eventType"></param>
+        /// <param name="logLevel"></param>
         /// <returns></returns>
-        bool IsEnabled(TraceType eventType);
+        bool IsEnabled(LogLevel logLevel);
 
         /// <summary>
         /// Begins a logical operation scope.

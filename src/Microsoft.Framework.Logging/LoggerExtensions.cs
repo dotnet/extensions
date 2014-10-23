@@ -29,7 +29,7 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.Write(TraceType.Verbose, 0, data, null, TheMessage);
+            logger.Write(LogLevel.Verbose, 0, data, null, TheMessage);
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.Write(TraceType.Information, 0, message, null, TheMessage);
+            logger.Write(LogLevel.Information, 0, message, null, TheMessage);
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.Write(TraceType.Warning, 0,
+            logger.Write(LogLevel.Warning, 0,
                 string.Format(CultureInfo.InvariantCulture, message, args), null, TheMessage);
         }
 
@@ -77,7 +77,7 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.Write(TraceType.Warning, 0, message, error, TheMessageAndError);
+            logger.Write(LogLevel.Warning, 0, message, error, TheMessageAndError);
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.Write(TraceType.Error, 0, message, null, TheMessage);
+            logger.Write(LogLevel.Error, 0, message, null, TheMessage);
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.Write(TraceType.Error, 0, message, error, TheMessageAndError);
+            logger.Write(LogLevel.Error, 0, message, error, TheMessageAndError);
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.Write(TraceType.Critical, 0, message, null, TheMessage);
+            logger.Write(LogLevel.Critical, 0, message, null, TheMessage);
         }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("logger");
             }
 
-            logger.Write(TraceType.Critical, 0, message, error, TheMessageAndError);
+            logger.Write(LogLevel.Critical, 0, message, error, TheMessageAndError);
         }
     }
 }

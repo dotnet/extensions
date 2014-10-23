@@ -30,13 +30,13 @@ namespace Microsoft.Framework.Logging.NLog
             }
 
             public void Write(
-                TraceType eventType,
+                LogLevel logLevel,
                 int eventId,
                 object state,
                 Exception exception,
                 Func<object, Exception, string> formatter)
             {
-                var logLevel = GetLogLevel(eventType);
+                var nLogLogLevel = GetLogLevel(logLevel);
                 var message = string.Empty;
                 if (formatter != null)
                 {
@@ -55,28 +55,28 @@ namespace Microsoft.Framework.Logging.NLog
                 }
                 if (!string.IsNullOrEmpty(message))
                 {
-                    var eventInfo = LogEventInfo.Create(logLevel, _logger.Name, message, exception);
+                    var eventInfo = LogEventInfo.Create(nLogLogLevel, _logger.Name, message, exception);
                     eventInfo.Properties["EventId"] = eventId;
                     _logger.Log(eventInfo);
                 }
             }
 
-            public bool IsEnabled(TraceType eventType)
+            public bool IsEnabled(LogLevel logLevel)
             {
-                return _logger.IsEnabled(GetLogLevel(eventType));
+                return _logger.IsEnabled(GetLogLevel(logLevel));
             }
 
-            private LogLevel GetLogLevel(TraceType eventType)
+            private global::NLog.LogLevel GetLogLevel(LogLevel logLevel)
             {
-                switch (eventType)
+                switch (logLevel)
                 {
-                    case TraceType.Verbose: return LogLevel.Debug;
-                    case TraceType.Information: return LogLevel.Info;
-                    case TraceType.Warning: return LogLevel.Warn;
-                    case TraceType.Error: return LogLevel.Error;
-                    case TraceType.Critical: return LogLevel.Fatal;
+                    case LogLevel.Verbose: return global::NLog.LogLevel.Debug;
+                    case LogLevel.Information: return global::NLog.LogLevel.Info;
+                    case LogLevel.Warning: return global::NLog.LogLevel.Warn;
+                    case LogLevel.Error: return global::NLog.LogLevel.Error;
+                    case LogLevel.Critical: return global::NLog.LogLevel.Fatal;
                 }
-                return LogLevel.Debug;
+                return global::NLog.LogLevel.Debug;
             }
 
             public IDisposable BeginScope(object state)
