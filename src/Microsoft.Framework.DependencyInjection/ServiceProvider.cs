@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -164,7 +163,6 @@ namespace Microsoft.Framework.DependencyInjection
             return _fallback != null ? _fallback.GetService(serviceType) : null;
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "IServiceProvider may throw unknown exceptions")]
         private T GetFallbackServiceOrNull<T>() where T : class
         {
             try

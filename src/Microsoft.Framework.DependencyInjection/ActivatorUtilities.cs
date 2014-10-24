@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -24,7 +23,6 @@ namespace Microsoft.Framework.DependencyInjection
             return GetServiceNoExceptions(services, type) ?? CreateInstance(services, type);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "IServiceProvider may throw unknown exceptions")]
         private static object GetServiceNoExceptions(IServiceProvider services, Type type)
         {
             try
@@ -64,7 +62,6 @@ namespace Microsoft.Framework.DependencyInjection
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "IServiceProvider may throw unknown exceptions")]
         public static Func<IServiceProvider, object> CreateFactory(Type type)
         {
             if (type == null)
