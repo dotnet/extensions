@@ -9,35 +9,10 @@
     "aspnet50": { },
     "aspnetcore50": {
       "dependencies": {
-        "System.Collections": "4.0.10-beta-*",
-        "System.Collections.Concurrent": "4.0.0-beta-*",
-        "System.ComponentModel": "4.0.0-beta-*",
-        "System.Diagnostics.Debug": "4.0.10-beta-*",
-        "System.Diagnostics.Tools": "4.0.0-beta-*",
-        "System.Linq": "4.0.0-beta-*",
-        "System.Reflection": "4.0.10-beta-*",
-        "System.Reflection.Extensions": "4.0.0-beta-*",
-        "System.Reflection.TypeExtensions": "4.0.0-beta-*",
-        "System.Runtime": "4.0.20-beta-*",
-        "System.Runtime.InteropServices": "4.0.20-beta-*",
-        "System.Threading": "4.0.0-beta-*",
-        "System.Threading.Tasks": "4.0.10-beta-*"
+        "System.Reflection.TypeExtensions": "4.0.0-beta-*"
       }
     },
     ".NETPortable,Version=v4.6,Profile=Profile151": {
-      "frameworkAssemblies": {
-        "System.Collections": "",
-        "System.Collections.Concurrent": "",
-        "System.ComponentModel": "",
-        "System.Diagnostics.Debug": "",
-        "System.Diagnostics.Tools": "",
-        "System.Linq": "",
-        "System.Reflection": "",
-        "System.Runtime": "",
-        "System.Runtime.InteropServices": "",
-        "System.Threading": "",
-        "System.Threading.Tasks": ""
-      }
     }
   }
 }
