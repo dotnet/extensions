@@ -9,10 +9,12 @@
     "aspnet50": { },
     "aspnetcore50": {
       "dependencies": {
+        "System.ComponentModel": "4.0.0-beta-*",
         "System.Reflection.TypeExtensions": "4.0.0-beta-*"
       }
     },
     ".NETPortable,Version=v4.6,Profile=Profile151": {
+        "System.ComponentModel": "",
     }
   }
 }
