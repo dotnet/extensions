@@ -1,13 +1,10 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
-    "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
     "Microsoft.AspNet.HttpFeature": "1.0.0-*",
     "Microsoft.Framework.Cache.Distributed": "1.0.0-*",
-    "Microsoft.Framework.OptionsModel": "1.0.0-*",
-    "Microsoft.Framework.Logging": "1.0.0-*",
-    "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
+    "Microsoft.Framework.Logging": "1.0.0-*"
   },
   "compilationOptions": {
     "allowUnsafe": true
@@ -16,11 +13,7 @@
     "aspnet50": {},
     "aspnetcore50": {
       "dependencies": {
-        "System.Collections": "4.0.10-beta-*",
-        "System.Diagnostics.Debug": "4.0.10-beta-*",
-        "System.Runtime": "4.0.20-beta-*",
         "System.Security.Cryptography.RandomNumberGenerator": "4.0.0-beta-*",
-        "System.Threading.Tasks": "4.0.10-beta-*"
       }
     }
   }
