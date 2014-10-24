@@ -4,9 +4,7 @@
     "Microsoft.Framework.ConfigurationModel.Shared": { "version": "1.0.0-*", "type": "build" },
   },
   "frameworks": {
-    "net45": {
-      "dependencies": { }
-    },
+    "net45": {},
     "aspnet50": {
       "dependencies": {
         "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" },
@@ -16,11 +14,9 @@
       "dependencies": {
         "System.Collections": "4.0.10-beta-*",
         "System.Diagnostics.Debug": "4.0.10-beta-*",
-        "System.Diagnostics.Tools": "4.0.0-beta-*",
         "System.IO.FileSystem": "4.0.0-beta-*",
         "System.Linq": "4.0.0-beta-*",
         "System.Resources.ResourceManager": "4.0.0-beta-*",
-        "System.Runtime": "4.0.20-beta-*",
         "System.Runtime.Extensions": "4.0.10-beta-*",
         "System.Runtime.InteropServices": "4.0.20-beta-*",
         "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" },
@@ -30,7 +26,6 @@
       "frameworkAssemblies": {
         "System.Collections": "",
         "System.Diagnostics.Debug": "",
-        "System.Diagnostics.Tools": "",
         "System.Globalization": "",
         "System.Linq": "",
         "System.Reflection": "",

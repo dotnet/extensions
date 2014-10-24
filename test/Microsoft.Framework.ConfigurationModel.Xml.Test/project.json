@@ -1,18 +1,11 @@
 {
   "dependencies": {
-    "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
     "Microsoft.Framework.ConfigurationModel.Xml": "1.0.0-*",
     "Xunit.KRunner": "1.0.0-*"
   },
   "frameworks": {
     "aspnet50": { },
-    "aspnetcore50": {
-      "dependencies": {
-        "System.IO": "4.0.10-beta-*",
-        "System.Runtime": "4.0.20-beta-*",
-        "System.Threading.Tasks": "4.0.10-beta-*"
-      }
-    }
+    "aspnetcore50": { }
   },
   "commands": {
     "test": "Xunit.KRunner"
