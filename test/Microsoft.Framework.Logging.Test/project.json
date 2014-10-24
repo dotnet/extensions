@@ -1,6 +1,5 @@
 {
     "dependencies": {
-        "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Framework.Logging.Console": "1.0.0-*",
         "Xunit.KRunner": "1.0.0-*"
     },
