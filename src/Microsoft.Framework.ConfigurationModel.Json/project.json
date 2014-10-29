@@ -1,7 +1,7 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
-    "Newtonsoft.Json": "6.0.4",
+    "Newtonsoft.Json": "6.0.6",
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
     "Microsoft.Framework.ConfigurationModel.Shared": { "version": "1.0.0-*", "type": "build" },
   },
