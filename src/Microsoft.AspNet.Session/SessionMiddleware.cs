@@ -100,7 +100,6 @@ namespace Microsoft.AspNet.Session
             private readonly HttpContext _context;
             private readonly string _sessionKey;
             private readonly SessionOptions _options;
-            private bool _responseSent;
             private bool _shouldEstablishSession;
 
             public SessionEstablisher(HttpContext context, string sessionKey, SessionOptions options)
@@ -114,7 +113,6 @@ namespace Microsoft.AspNet.Session
             private static void OnSendingHeadersCallback(object state)
             {
                 var establisher = (SessionEstablisher)state;
-                establisher._responseSent = true;
                 if (establisher._shouldEstablishSession)
                 {
                     establisher.SetCookie();
@@ -145,10 +143,10 @@ namespace Microsoft.AspNet.Session
                     "-1");
             }
 
-            // Returns true if the session has already been established, or if it still can be because the reponse has not been sent.
+            // Returns true if the session has already been established, or if it still can be because the response has not been sent.
             internal bool TryEstablishSession()
             {
-                return (_shouldEstablishSession |= !_responseSent);
+                return (_shouldEstablishSession |= !_context.Response.HeadersSent);
             }
         }
     }
