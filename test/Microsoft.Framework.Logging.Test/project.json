@@ -1,6 +1,7 @@
 {
     "dependencies": {
         "Microsoft.Framework.Logging.Console": "1.0.0-*",
+        "Microsoft.Framework.Logging.Serilog": "1.0.0-*",
         "Xunit.KRunner": "1.0.0-*"
     },
     "commands": {

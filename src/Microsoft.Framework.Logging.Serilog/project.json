@@ -1,0 +1,12 @@
+﻿{
+    "version": "1.0.0-*",
+    "dependencies": {
+        "Microsoft.AspNet.Diagnostics.Entity": "7.0.0-*",
+        "Microsoft.Framework.Logging": "1.0.0-*",
+        "Serilog": "1.4.14"
+    },
+    "frameworks": {
+        "aspnet50": {},
+        "aspnetcore50": {}
+    }
+}
