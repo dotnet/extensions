@@ -1,19 +1,18 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 File System abstractions.",
   "frameworks": {
     "net45": { },
     "aspnet50": { },
     "aspnetcore50": {
       "dependencies": {
-        "System.Collections": "4.0.10.0",
-        "System.IO": "4.0.10.0",
-        "System.IO.FileSystem": "4.0.0.0",
-        "System.Reflection": "4.0.10.0",
-        "System.Reflection.Extensions": "4.0.0.0",
-        "System.Runtime": "4.0.20.0",
-        "System.Runtime.Extensions": "4.0.10.0",
-        "System.Runtime.InteropServices": "4.0.20.0"
+        "System.Collections": "4.0.10-beta-*",
+        "System.IO": "4.0.10-beta-*",
+        "System.IO.FileSystem": "4.0.0-beta-*",
+        "System.Reflection": "4.0.10-beta-*",
+        "System.Reflection.Extensions": "4.0.0-beta-*",
+        "System.Runtime": "4.0.20-beta-*",
+        "System.Runtime.Extensions": "4.0.10-beta-*",
+        "System.Runtime.InteropServices": "4.0.20-beta-*"
       }
     }
   }
