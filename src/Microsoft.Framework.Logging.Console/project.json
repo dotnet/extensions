@@ -1,5 +1,6 @@
 ﻿{
     "version": "1.0.0-*",
+    "description": "Console logger implementation.",
     "dependencies": {
         "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
