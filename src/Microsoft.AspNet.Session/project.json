@@ -1,5 +1,6 @@
 {
   "version": "1.0.0-*",
+  "description": "ASP.NET 5 session state middleware.",
   "dependencies": {
     "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
