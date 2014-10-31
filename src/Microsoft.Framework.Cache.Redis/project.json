@@ -1,5 +1,6 @@
 ﻿{
   "version": "1.0.0-*",
+  "description": "ASP.NET 5 distributed cache implementation on Redis.",
   "dependencies": {
     "Microsoft.Framework.Cache.Distributed": "1.0.0-*",
     "StackExchange.Redis": "1.0.333"
