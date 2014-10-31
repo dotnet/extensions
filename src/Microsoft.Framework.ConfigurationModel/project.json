@@ -1,5 +1,6 @@
 {
   "version": "1.0.0-*",
+  "description": "Abstractions and implementation of key-value pair based configuration. Includes configuration sources for INI, command line, and environment variables.",
   "dependencies": {
     "Microsoft.Framework.ConfigurationModel.Shared": { "version": "1.0.0-*", "type": "build" },
   },
