@@ -1,5 +1,6 @@
 {
   "version": "1.0.0-*",
+  "description": "JSON configuration source for the ConfigurationModel package.",
   "dependencies": {
     "Newtonsoft.Json": "6.0.6",
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*",

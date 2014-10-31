@@ -1,5 +1,6 @@
 {
     "version": "1.0.0-*",
+    "description": "XML configuration source for the ConfigurationModel package.",
     "dependencies": {
         "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
         "Microsoft.Framework.ConfigurationModel.Shared": { "version": "1.0.0-*", "type": "build" },
