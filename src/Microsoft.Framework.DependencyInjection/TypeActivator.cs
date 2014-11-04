@@ -105,9 +105,19 @@ namespace Microsoft.Framework.DependencyInjection
                         var value = _services.GetService(_parameters[index].ParameterType);
                         if (value == null)
                         {
-                            throw new Exception(string.Format("TODO: unable to resolve service {1} to create {0}", _constructor.DeclaringType, _parameters[index].ParameterType));
+                            if (!_parameters[index].HasDefaultValue)
+                            {
+                                throw new Exception(string.Format("TODO: unable to resolve service {1} to create {0}", _constructor.DeclaringType, _parameters[index].ParameterType));
+                            }
+                            else
+                            {
+                                _parameterValues[index] = _parameters[index].DefaultValue;
+                            }
                         }
-                        _parameterValues[index] = value;
+                        else
+                        {
+                            _parameterValues[index] = value;
+                        }
                     }
                 }
                 return _constructor.Invoke(_parameterValues);

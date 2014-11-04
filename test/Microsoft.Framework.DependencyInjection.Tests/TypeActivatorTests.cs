@@ -56,5 +56,21 @@ namespace Microsoft.Framework.DependencyInjection.Tests
 
             Assert.NotNull(anotherClass);
         }
+
+        [Fact]
+        public void TypeActivatorWorksWithCtorWithOptionalArgs()
+        {
+            var serviceProvider = new ServiceCollection()
+                .AddTransient<ITypeActivator, TypeActivator>()
+                .BuildServiceProvider();
+
+            var typeActivator = serviceProvider.GetService<ITypeActivator>();
+
+            var anotherClass = typeActivator.CreateInstance<ClassWithOptionalArgsCtor>(serviceProvider);
+
+            Assert.NotNull(anotherClass);
+            Assert.Equal("BLARGH", anotherClass.Whatever);
+        }
+
     }
 }
