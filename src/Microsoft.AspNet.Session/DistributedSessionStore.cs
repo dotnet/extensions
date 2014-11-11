@@ -4,16 +4,19 @@
 using System;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.Framework.Cache.Distributed;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Session
 {
     public class DistributedSessionStore : ISessionStore
     {
         private readonly IDistributedCache _cache;
+        private readonly ILoggerFactory _loggerFactory;
 
-        public DistributedSessionStore([NotNull] IDistributedCache cache)
+        public DistributedSessionStore([NotNull] IDistributedCache cache, [NotNull] ILoggerFactory loggerFactory)
         {
             _cache = cache;
+            _loggerFactory = loggerFactory;
         }
 
         public bool IsAvailable
@@ -29,9 +32,9 @@ namespace Microsoft.AspNet.Session
             _cache.Connect();
         }
 
-        public ISession Create([NotNull] string sessionId, TimeSpan idleTimeout, [NotNull] Func<bool> tryEstablishSession)
+        public ISession Create([NotNull] string sessionId, TimeSpan idleTimeout, [NotNull] Func<bool> tryEstablishSession, bool isNewSessionKey)
         {
-            return new DistributedSession(_cache, sessionId, idleTimeout, tryEstablishSession);
+            return new DistributedSession(_cache, sessionId, idleTimeout, tryEstablishSession, _loggerFactory, isNewSessionKey);
         }
     }
 }

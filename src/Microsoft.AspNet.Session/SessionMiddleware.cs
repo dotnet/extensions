@@ -56,6 +56,7 @@ namespace Microsoft.AspNet.Session
 
         public async Task Invoke(HttpContext context)
         {
+            var isNewSessionKey = false;
             Func<bool> tryEstablishSession = ReturnTrue;
             var sessionKey = context.Request.Cookies.Get(_options.CookieName);
             if (string.IsNullOrWhiteSpace(sessionKey) || sessionKey.Length != SessionKeyLength)
@@ -66,10 +67,11 @@ namespace Microsoft.AspNet.Session
                 sessionKey = new Guid(guidBytes).ToString();
                 var establisher = new SessionEstablisher(context, sessionKey, _options);
                 tryEstablishSession = establisher.TryEstablishSession;
+                isNewSessionKey = true;
             }
 
             var feature = new SessionFeature();
-            feature.Factory = new SessionFactory(sessionKey, _options.Store, _options.IdleTimeout, tryEstablishSession);
+            feature.Factory = new SessionFactory(sessionKey, _options.Store, _options.IdleTimeout, tryEstablishSession, isNewSessionKey);
             feature.Session = feature.Factory.Create();
             context.SetFeature<ISessionFeature>(feature);
 

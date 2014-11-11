@@ -2,11 +2,18 @@
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
+using Microsoft.Framework.Logging.Console;
 
 namespace SessionSample
 {
     public class Startup
     {
+        public Startup(ILoggerFactory loggerFactory)
+        {
+            loggerFactory.AddConsole(LogLevel.Verbose);
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCachingServices();
@@ -15,7 +22,8 @@ namespace SessionSample
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseSession();
+            app.UseSession(o => {
+                o.IdleTimeout = TimeSpan.FromSeconds(30); });
             // app.UseInMemorySession();
             // app.UseDistributedSession(new RedisCache(new RedisCacheOptions() { Configuration = "localhost" }));
 
@@ -44,7 +52,7 @@ namespace SessionSample
                 else
                 {
                     context.Session.SetInt("visits", ++visits);
-                    await context.Response.WriteAsync("Your session has was located, you've visited the site this many times: " + visits);
+                    await context.Response.WriteAsync("Your session was located, you've visited the site this many times: " + visits);
                 }
                 await context.Response.WriteAsync("</body></html>");
             });

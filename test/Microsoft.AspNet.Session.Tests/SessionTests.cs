@@ -1,13 +1,16 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 using Xunit;
 
 namespace Microsoft.AspNet.Session
@@ -179,6 +182,84 @@ namespace Microsoft.AspNet.Session
                 client.DefaultRequestHeaders.Add("Cookie", response.Headers.GetValues("Set-Cookie"));
                 Assert.Equal("1", await client.GetStringAsync("/second"));
                 Assert.Equal("2", await client.GetStringAsync("/third"));
+            }
+        }
+
+        [Fact]
+        public async Task SessionStart_LogsInformation()
+        {
+            var sink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+            using (var server = TestServer.Create(app =>
+            {
+                app.UseServices(services => 
+                {
+                    services.AddOptions();
+                    services.AddInstance(typeof(ILoggerFactory), loggerFactory);
+                });
+                app.UseInMemorySession();
+                app.Run(context =>
+                {
+                    context.Session.SetString("Key", "Value");
+                    return Task.FromResult(0);
+                });
+            }))
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync("/");
+                response.EnsureSuccessStatusCode();
+                Assert.Single(sink.Writes);
+                Assert.True(sink.Writes[0].State.ToString().Contains("started"));
+                Assert.Equal(LogLevel.Information, sink.Writes[0].LogLevel);
+            }
+        }
+
+        [Fact]
+        public async Task ExpiredSession_LogsWarning()
+        {
+            var sink = new TestSink();
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+            using (var server = TestServer.Create(app =>
+            {
+                app.UseServices(services =>
+                {
+                    services.AddOptions();
+                    services.AddInstance(typeof(ILoggerFactory), loggerFactory);
+                });
+                app.UseInMemorySession(configure: o => {
+                    o.IdleTimeout = TimeSpan.FromMilliseconds(30);
+                });
+                app.Run(context =>
+                {
+                    int? value = context.Session.GetInt("Key");
+                    if (context.Request.Path == new PathString("/first"))
+                    {
+                        Assert.False(value.HasValue);
+                        value = 1;
+                        context.Session.SetInt("Key", 1);
+                    }
+                    else if (context.Request.Path == new PathString("/second"))
+                    {
+                        Assert.False(value.HasValue);
+                        value = 2;
+                    }
+                    return context.Response.WriteAsync(value.Value.ToString());
+                });
+            }))
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync("/first");
+                response.EnsureSuccessStatusCode();
+
+                client = server.CreateClient();
+                client.DefaultRequestHeaders.Add("Cookie", response.Headers.GetValues("Set-Cookie"));
+                Thread.Sleep(50);
+                Assert.Equal("2", await client.GetStringAsync("/second"));
+                Assert.Equal(2, sink.Writes.Count);
+                Assert.True(sink.Writes[0].State.ToString().Contains("started"));
+                Assert.True(sink.Writes[1].State.ToString().Contains("expired"));
+                Assert.Equal(LogLevel.Information, sink.Writes[0].LogLevel);
+                Assert.Equal(LogLevel.Warning, sink.Writes[1].LogLevel);
             }
         }
     }

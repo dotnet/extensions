@@ -10,6 +10,6 @@ namespace Microsoft.AspNet.Session
     {
         bool IsAvailable { get; }
         void Connect();
-        ISession Create(string sessionId, TimeSpan idleTimeout, Func<bool> tryEstablishSession);
+        ISession Create(string sessionId, TimeSpan idleTimeout, Func<bool> tryEstablishSession, bool isNewSessionKey);
     }
 }

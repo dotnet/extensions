@@ -6,6 +6,7 @@ using Microsoft.AspNet.Session;
 using Microsoft.Framework.Cache.Distributed;
 using Microsoft.Framework.Cache.Memory;
 using Microsoft.Framework.DependencyInjection;
+using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Builder
@@ -22,11 +23,13 @@ namespace Microsoft.AspNet.Builder
             return app.UseDistributedSession(new LocalCache(cache ?? new MemoryCache(new MemoryCacheOptions())), configure);
         }
 
-        public static IApplicationBuilder UseDistributedSession([NotNull] this IApplicationBuilder app, IDistributedCache cache, Action<SessionOptions> configure = null)
+        public static IApplicationBuilder UseDistributedSession([NotNull] this IApplicationBuilder app, 
+            IDistributedCache cache, Action<SessionOptions> configure = null)
         {
+            var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
             return app.UseSession(options =>
             {
-                options.Store = new DistributedSessionStore(cache);
+                options.Store = new DistributedSessionStore(cache, loggerFactory);
                 if (configure != null)
                 {
                     configure(options);

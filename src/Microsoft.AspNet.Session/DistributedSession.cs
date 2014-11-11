@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNet.HttpFeature;
 using Microsoft.Framework.Cache.Distributed;
+using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Session
 {
@@ -21,16 +22,21 @@ namespace Microsoft.AspNet.Session
         private readonly TimeSpan _idleTimeout;
         private readonly Func<bool> _tryEstablishSession;
         private readonly IDictionary<EncodedKey, byte[]> _store;
+        private readonly ILogger _logger;
         private bool _isModified;
         private bool _loaded;
+        private bool _isNewSessionKey;
 
-        public DistributedSession([NotNull] IDistributedCache cache, [NotNull] string sessionId, TimeSpan idleTimeout, [NotNull] Func<bool> tryEstablishSession)
+        public DistributedSession([NotNull] IDistributedCache cache, [NotNull] string sessionId, TimeSpan idleTimeout,
+            [NotNull] Func<bool> tryEstablishSession, [NotNull] ILoggerFactory loggerFactory, bool isNewSessionKey)
         {
             _cache = cache;
             _sessionId = sessionId;
             _idleTimeout = idleTimeout;
             _tryEstablishSession = tryEstablishSession;
             _store = new Dictionary<EncodedKey, byte[]>();
+            _logger = loggerFactory.Create<DistributedSession>();
+            _isNewSessionKey = isNewSessionKey;
         }
 
         public IEnumerable<string> Keys
@@ -95,6 +101,10 @@ namespace Microsoft.AspNet.Session
                 {
                     Deserialize(data);
                 }
+                else if (!_isNewSessionKey)
+                {
+                    _logger.WriteWarning("Accessing expired session {0}", _sessionId);
+                }
                 _loaded = true;
             }
         }
@@ -103,6 +113,11 @@ namespace Microsoft.AspNet.Session
         {
             if (_isModified)
             {
+                Stream data;
+                if (_logger.IsEnabled(LogLevel.Information) && !_cache.TryGetValue(_sessionId, out data))
+                {
+                    _logger.WriteInformation("Session {0} started", _sessionId);
+                }
                 _isModified = false;
                 _cache.Set(_sessionId, context => {
                     context.SetSlidingExpiration(_idleTimeout);
