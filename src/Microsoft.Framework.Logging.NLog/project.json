@@ -1,12 +1,17 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
-        "Microsoft.Framework.Logging.Interfaces": { "version": "1.0.0-*", "type": "build" },
         "NLog": "3.1.0"
     },
-    "frameworks" : {
-        "aspnet50" : { 
+    "frameworks": {
+        "net45": { 
             "dependencies": {
+                "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
+            }
+        },
+        "aspnet50": {
+            "dependencies": {
+                "Microsoft.Framework.Logging.Interfaces": { "version": "1.0.0-*", "type": "build" }
             }
         }
     }
