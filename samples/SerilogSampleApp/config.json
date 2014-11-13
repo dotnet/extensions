@@ -1,5 +1,0 @@
-﻿{
-    "Logging": {
-        "ElasticSearch": { "Server": "http://logstash1.cloudapp.net:9200" }
-    }
-}
