@@ -8,7 +8,7 @@ namespace Microsoft.Framework.Logging.Console
     public static class ConsoleLoggerExtensions
     {
         /// <summary>
-        /// Adds a console logger that is enabled for severity levels of information or higher.
+        /// Adds a console logger that is enabled for <see cref="LogLevel"/>.Information or higher.
         /// </summary>
         public static ILoggerFactory AddConsole(this ILoggerFactory factory)
         {
@@ -22,6 +22,16 @@ namespace Microsoft.Framework.Logging.Console
         public static ILoggerFactory AddConsole(this ILoggerFactory factory, Func<string, LogLevel, bool> filter)
         {
             factory.AddProvider(new ConsoleLoggerProvider(filter));
+            return factory;
+        }
+
+        /// <summary>
+        /// Adds a console logger that is enabled for <see cref="LogLevel"/>s of minLevel or higher.
+        /// </summary>
+        /// <param name="minLevel">The minimum <see cref="LogLevel"/> to be logged</param>
+        public static ILoggerFactory AddConsole(this ILoggerFactory factory, LogLevel minLevel)
+        {
+            factory.AddProvider(new ConsoleLoggerProvider((category, logLevel) => logLevel >= minLevel));
             return factory;
         }
     }
