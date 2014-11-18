@@ -9,7 +9,7 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public class ServiceCollectionExtensionTest
     {
-        private static readonly Func<IServiceProvider, object> _factory = _ => new object();
+        private static readonly Func<IServiceProvider, IFakeService> _factory = _ => new FakeService();
         private static readonly FakeService _instance = new FakeService();
 
         public static TheoryData AddImplementationTypeData

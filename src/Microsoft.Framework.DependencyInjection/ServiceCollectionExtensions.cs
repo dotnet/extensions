@@ -8,15 +8,15 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddTransient([NotNull] this IServiceCollection collection, 
-                                                      [NotNull] Type service, 
+        public static IServiceCollection AddTransient([NotNull] this IServiceCollection collection,
+                                                      [NotNull] Type service,
                                                       [NotNull] Type implementationType)
         {
             return Add(collection, service, implementationType, LifecycleKind.Transient);
         }
 
         public static IServiceCollection AddTransient([NotNull] this IServiceCollection collection,
-                                                      [NotNull] Type service, 
+                                                      [NotNull] Type service,
                                                       [NotNull] Func<IServiceProvider, object> implementationFactory)
         {
             return Add(collection, service, implementationFactory, LifecycleKind.Transient);
@@ -59,6 +59,7 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         public static IServiceCollection AddTransient<TService, TImplementation>([NotNull] this IServiceCollection services)
+            where TImplementation : TService
         {
             return services.AddTransient(typeof(TService), typeof(TImplementation));
         }
@@ -75,12 +76,14 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         public static IServiceCollection AddTransient<TService>([NotNull] this IServiceCollection services,
-                                                                [NotNull] Func<IServiceProvider, object> implementationFactory)
+                                                                [NotNull] Func<IServiceProvider, TService> implementationFactory)
+            where TService : class
         {
             return services.AddTransient(typeof(TService), implementationFactory);
         }
 
         public static IServiceCollection AddScoped<TService, TImplementation>([NotNull] this IServiceCollection services)
+            where TImplementation : TService
         {
             return services.AddScoped(typeof(TService), typeof(TImplementation));
         }
@@ -92,7 +95,8 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         public static IServiceCollection AddScoped<TService>([NotNull] this IServiceCollection services,
-                                                             [NotNull] Func<IServiceProvider, object> implementationFactory)
+                                                             [NotNull] Func<IServiceProvider, TService> implementationFactory)
+            where TService : class
         {
             return services.AddScoped(typeof(TService), implementationFactory);
         }
@@ -107,7 +111,7 @@ namespace Microsoft.Framework.DependencyInjection
             return services.AddSingleton(typeof(TService), typeof(TImplementation));
         }
 
-        public static IServiceCollection AddSingleton([NotNull] this IServiceCollection services, 
+        public static IServiceCollection AddSingleton([NotNull] this IServiceCollection services,
                                                       [NotNull] Type serviceType)
         {
             return services.AddSingleton(serviceType, serviceType);
@@ -119,12 +123,13 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         public static IServiceCollection AddSingleton<TService>([NotNull] this IServiceCollection services,
-                                                                [NotNull] Func<IServiceProvider, object> implementationFactory)
+                                                                [NotNull] Func<IServiceProvider, TService> implementationFactory)
+            where TService : class
         {
             return services.AddSingleton(typeof(TService), implementationFactory);
         }
 
-        public static IServiceCollection AddInstance<TService>([NotNull] this IServiceCollection services, 
+        public static IServiceCollection AddInstance<TService>([NotNull] this IServiceCollection services,
                                                                [NotNull] TService implementationInstance)
             where TService : class
         {
