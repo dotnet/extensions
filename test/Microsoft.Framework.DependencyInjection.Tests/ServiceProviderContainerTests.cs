@@ -11,12 +11,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
     {
         protected override IServiceProvider CreateContainer()
         {
-            return CreateContainer(new FakeFallbackServiceProvider());
-        }
-
-        protected override IServiceProvider CreateContainer(IServiceProvider fallbackProvider)
-        {
-            return TestServices.DefaultServices().BuildServiceProvider(fallbackProvider);
+            return TestServices.DefaultServices().BuildServiceProvider();
         }
     }
 }

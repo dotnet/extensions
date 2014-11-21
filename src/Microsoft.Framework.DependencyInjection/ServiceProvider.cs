@@ -22,23 +22,14 @@ namespace Microsoft.Framework.DependencyInjection
 
         private readonly ServiceProvider _root;
         private readonly ServiceTable _table;
-        private readonly IServiceProvider _fallback;
 
         private readonly Dictionary<IService, object> _resolvedServices = new Dictionary<IService, object>();
         private ConcurrentBag<IDisposable> _disposables = new ConcurrentBag<IDisposable>();
 
         public ServiceProvider(IEnumerable<IServiceDescriptor> serviceDescriptors)
-            : this(serviceDescriptors, fallbackServiceProvider: null)
-        {
-        }
-
-        public ServiceProvider(
-                IEnumerable<IServiceDescriptor> serviceDescriptors,
-                IServiceProvider fallbackServiceProvider)
         {
             _root = this;
             _table = new ServiceTable(serviceDescriptors);
-            _fallback = fallbackServiceProvider;
 
             _table.Add(typeof(IServiceProvider), new ServiceProviderService());
             _table.Add(typeof(IServiceScopeFactory), new ServiceScopeService());
@@ -50,16 +41,6 @@ namespace Microsoft.Framework.DependencyInjection
         {
             _root = parent._root;
             _table = parent._table;
-            _fallback = parent._fallback;
-
-            // Rescope the fallback service provider if it contains an IServiceScopeFactory
-            var scopeFactory = GetFallbackServiceOrNull<IServiceScopeFactory>();
-            if (scopeFactory != null)
-            {
-                var scope = scopeFactory.CreateScope();
-                _fallback = scope.ServiceProvider;
-                _disposables.Add(scope);
-            }
         }
 
         /// <summary>
@@ -113,12 +94,6 @@ namespace Microsoft.Framework.DependencyInjection
                 return GetResolveCallSite(entry.Last);
             }
 
-            object fallbackService = GetFallbackService(serviceType);
-            if (fallbackService != null)
-            {
-                return new FallbackCallSite(serviceType);
-            }
-
             object emptyIEnumerableOrNull = GetEmptyIEnumerableOrNull(serviceType);
             if (emptyIEnumerableOrNull != null)
             {
@@ -158,23 +133,6 @@ namespace Microsoft.Framework.DependencyInjection
             }
         }
 
-        private object GetFallbackService(Type serviceType)
-        {
-            return _fallback != null ? _fallback.GetService(serviceType) : null;
-        }
-
-        private T GetFallbackServiceOrNull<T>() where T : class
-        {
-            try
-            {
-                return (T)GetFallbackService(typeof(T));
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
         private object CaptureDisposable(object service)
         {
             if (!object.ReferenceEquals(this, service))
@@ -203,7 +161,6 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         private static MethodInfo CaptureDisposableMethodInfo = GetMethodInfo<Func<ServiceProvider, object, object>>((a, b) => a.CaptureDisposable(b));
-        private static MethodInfo GetFallbackServiceMethodInfo = GetMethodInfo<Func<ServiceProvider, Type, object>>((a, b) => a.GetFallbackService(b));
         private static MethodInfo TryGetValueMethodInfo = GetMethodInfo<Func<IDictionary<IService, object>, IService, object, bool>>((a, b, c) => a.TryGetValue(b, out c));
         private static MethodInfo AddMethodInfo = GetMethodInfo<Action<IDictionary<IService, object>, IService, object>>((a, b, c) => a.Add(b, c));
 
@@ -221,29 +178,6 @@ namespace Microsoft.Framework.DependencyInjection
         {
             var mc = (MethodCallExpression)expr.Body;
             return mc.Method;
-        }
-
-        private class FallbackCallSite : IServiceCallSite
-        {
-            private readonly Type _serviceType;
-
-            public FallbackCallSite(Type serviceType)
-            {
-                _serviceType = serviceType;
-            }
-
-            public object Invoke(ServiceProvider provider)
-            {
-                return provider.GetFallbackService(_serviceType);
-            }
-
-            public Expression Build(Expression provider)
-            {
-                return Expression.Call(
-                    provider,
-                    GetFallbackServiceMethodInfo,
-                    Expression.Constant(_serviceType, typeof(Type)));
-            }
         }
 
         private class EmptyIEnumerableCallSite : IServiceCallSite

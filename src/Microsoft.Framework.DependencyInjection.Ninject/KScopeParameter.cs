@@ -11,11 +11,6 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
 {
     internal class KScopeParameter : IParameter, IDisposable, IDisposableObject, INotifyWhenDisposed
     {
-        public KScopeParameter(IServiceProvider fallbackProvder)
-        {
-            FallbackProvider = fallbackProvder;
-        }
-
         public string Name
         {
             get { return typeof(KScopeParameter).FullName; }
@@ -25,8 +20,6 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
         {
             get { return true; }
         }
-
-        public IServiceProvider FallbackProvider { get; private set; }
 
         public object GetValue(IContext context, ITarget target)
         {

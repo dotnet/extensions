@@ -12,8 +12,6 @@ namespace Microsoft.Framework.DependencyInjection.Tests
 {
     public abstract class ScopingContainerTestBase : AllContainerTestsBase
     {
-        protected abstract IServiceProvider CreateContainer(IServiceProvider fallbackProvider);
-
         [Fact]
         public void LastServiceReplacesPreviousServices()
         {
@@ -118,92 +116,9 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         }
 
         [Fact]
-        public void ServicesCanBeResolvedFromFallbackServiceProvider()
-        {
-            var container = CreateContainer();
-
-            var service = container.GetService<string>();
-
-            Assert.Equal("FakeFallbackServiceProvider", service);
-        }
-
-        [Fact]
-        public void IEnumerableServicesCanBeResolvedFromFallbackServiceProvider()
-        {
-            var container = CreateContainer();
-
-            var service = container.GetService<IEnumerable<string>>();
-
-            Assert.Equal(1, service.Count());
-            Assert.Equal("FakeFallbackServiceProvider", service.First());
-        }
-
-        [Fact]
-        public void ServicesFromFallbackServiceProviderCanBeReplaced()
-        {
-            var container = CreateContainer();
-
-            var service = container.GetService<IFakeFallbackService>();
-
-            Assert.Equal("FakeServiceSimpleMethod", service.SimpleMethod());
-        }
-
-        [Fact]
-        public void ServicesFromFallbackServiceProviderCanBeReplacedAndIEnumerableResolved()
-        {
-            var container = CreateContainer();
-
-            var services = container.GetService<IEnumerable<IFakeFallbackService>>();
-            var messages = services.Select(service => service.SimpleMethod());
-
-            Assert.Equal(1, services.Count());
-            Assert.Contains("FakeServiceSimpleMethod", messages);
-        }
-
-        [Fact]
-        public void NestedScopedServiceCanBeResolvedFromFallbackProvider()
-        {
-            var container = CreateContainer();
-
-            var outerScopeFactory = container.GetService<IServiceScopeFactory>();
-            using (var outerScope = outerScopeFactory.CreateScope())
-            {
-                var innerScopeFactory = outerScope.ServiceProvider.GetService<IServiceScopeFactory>();
-                using (var innerScope = innerScopeFactory.CreateScope())
-                {
-                    var outerScopedService = outerScope.ServiceProvider.GetService<string>();
-                    var innerScopedService = innerScope.ServiceProvider.GetService<string>();
-
-                    Assert.Equal("scope-FakeFallbackServiceProvider", outerScopedService);
-                    Assert.Equal("scope-scope-FakeFallbackServiceProvider", innerScopedService);
-                }
-            }
-        }
-
-        [Fact]
-        public void FallbackScopeGetsDisposedAlongWithChainedScope()
-        {
-            var container = CreateContainer();
-
-            var scopeFactory = container.GetService<IServiceScopeFactory>();
-            IServiceProvider fallbackProvider;
-            using (var scope = scopeFactory.CreateScope())
-            {
-                fallbackProvider = scope.ServiceProvider.GetService<IFakeFallbackServiceProvider>();
-                var scopedService = fallbackProvider.GetService<string>();
-
-                Assert.Equal("scope-FakeFallbackServiceProvider", scopedService);
-            }
-
-            var disposedScopedService = fallbackProvider.GetService<string>();
-
-            Assert.Equal("disposed-FakeFallbackServiceProvider", disposedScopedService);
-        }
-
-        [Fact]
         public void NestedScopedServiceCanBeResolvedWithNoFallbackProvider()
         {
-            var container = CreateContainer(fallbackProvider: null);
+            var container = CreateContainer();
 
             var outerScopeFactory = container.GetService<IServiceScopeFactory>();
             using (var outerScope = outerScopeFactory.CreateScope())
@@ -222,7 +137,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         [Fact]
         public void NestedScopedServiceCanBeResolvedWithNonScopingFallbackProvider()
         {
-            var container = CreateContainer(new FakeNonScopingFallbackServiceProvder());
+            var container = CreateContainer();
 
             var outerScopeFactory = container.GetService<IServiceScopeFactory>();
             using (var outerScope = outerScopeFactory.CreateScope())
@@ -235,20 +150,6 @@ namespace Microsoft.Framework.DependencyInjection.Tests
 
                     Assert.NotEqual(outerScopedService, innerScopedService);
                 }
-            }
-        }
-
-        [Fact]
-        public void FallbackServiceCanBeResolvedInScopeWithNonScopingFallbackProvider()
-        {
-            var container = CreateContainer(new FakeNonScopingFallbackServiceProvder());
-
-            var scopeFactory = container.GetService<IServiceScopeFactory>();
-            using (var scope = scopeFactory.CreateScope())
-            {
-                var fallbackService = scope.ServiceProvider.GetService<string>();
-
-                Assert.Equal("FakeNonScopingFallbackServiceProvder", fallbackService);
             }
         }
 
@@ -276,7 +177,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         [Fact]
         public void AttemptingToResolveNonexistentServiceReturnsNull()
         {
-            var container = CreateContainer(fallbackProvider: null);
+            var container = CreateContainer();
 
             Assert.Null(container.GetService<INonexistentService>());
         }
@@ -284,7 +185,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         [Fact]
         public void AttemptingToResolveNonexistentServiceIndirectlyThrows()
         {
-            var container = CreateContainer(fallbackProvider: null);
+            var container = CreateContainer();
 
             Assert.ThrowsAny<Exception>(() => container.GetService<IDependOnNonexistentService>());
         }
@@ -292,7 +193,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         [Fact]
         public void NonexistentServiceCanBeIEnumerableResolved()
         {
-            var container = CreateContainer(fallbackProvider: null);
+            var container = CreateContainer();
 
             var services = container.GetService<IEnumerable<INonexistentService>>();
 
@@ -302,7 +203,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         [Fact]
         public void AttemptingToIEnumerableResolveNonexistentServiceIndirectlyThrows()
         {
-            var container = CreateContainer(fallbackProvider: null);
+            var container = CreateContainer();
 
             // The call to ToArray is necessary for Ninject to throw
             Assert.ThrowsAny<Exception>(() =>

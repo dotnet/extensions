@@ -14,15 +14,7 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
     {
         public static void Populate(this IKernel kernel, IEnumerable<IServiceDescriptor> descriptors)
         {
-            kernel.Populate(descriptors, fallbackServiceProvider: null);
-        }
-
-        public static void Populate(
-                this IKernel kernel,
-                IEnumerable<IServiceDescriptor> descriptors,
-                IServiceProvider fallbackServiceProvider)
-        {
-            kernel.Load(new KNinjectModule(descriptors, fallbackServiceProvider));
+            kernel.Load(new KNinjectModule(descriptors));
         }
 
         public static IBindingNamedWithOrOnSyntax<T> InKScope<T>(

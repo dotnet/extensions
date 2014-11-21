@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Ninject;
 using Ninject.Modules;
-using Ninject.Planning.Bindings.Resolvers;
 using Ninject.Syntax;
 
 namespace Microsoft.Framework.DependencyInjection.Ninject
@@ -14,14 +13,11 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
     internal class KNinjectModule : NinjectModule
     {
         private readonly IEnumerable<IServiceDescriptor> _serviceDescriptors;
-        private readonly IServiceProvider _fallbackProvider;
 
         public KNinjectModule(
-                IEnumerable<IServiceDescriptor> serviceDescriptors,
-                IServiceProvider fallbackProvider)
+                IEnumerable<IServiceDescriptor> serviceDescriptors)
         {
             _serviceDescriptors = serviceDescriptors;
-            _fallbackProvider = fallbackProvider;
         }
 
         public override void Load()
@@ -66,7 +62,7 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
                 var resolver = context.Kernel.Get<IResolutionRoot>();
                 var inheritedParams = context.Parameters.Where(p => p.ShouldInherit);
 
-                var scopeParam = new KScopeParameter(_fallbackProvider);
+                var scopeParam = new KScopeParameter();
                 inheritedParams = inheritedParams.AddOrReplaceScopeParameter(scopeParam);
 
                 return new NinjectServiceProvider(resolver, inheritedParams.ToArray());
@@ -76,11 +72,6 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
             {
                 return new NinjectServiceScopeFactory(context);
             }).InKScope();
-
-            if (_fallbackProvider != null)
-            {
-                Kernel.Components.Add<IMissingBindingResolver, ChainedMissingBindingResolver>();
-            }
         }
     }
 }

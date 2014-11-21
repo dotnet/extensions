@@ -15,19 +15,6 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
                 this ContainerBuilder builder,
                 IEnumerable<IServiceDescriptor> descriptors)
         {
-            builder.Populate(descriptors, fallbackServiceProvider: null);
-        }
-
-        public static void Populate(
-                this ContainerBuilder builder,
-                IEnumerable<IServiceDescriptor> descriptors,
-                IServiceProvider fallbackServiceProvider)
-        {
-            if (fallbackServiceProvider != null)
-            {
-                builder.RegisterSource(new ChainedRegistrationSource(fallbackServiceProvider));
-            }
-
             builder.RegisterType<AutofacServiceProvider>().As<IServiceProvider>();
             builder.RegisterType<AutofacServiceScopeFactory>().As<IServiceScopeFactory>();
 

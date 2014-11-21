@@ -12,16 +12,9 @@ namespace Microsoft.Framework.DependencyInjection.Tests
     {
         protected override IServiceProvider CreateContainer()
         {
-            return CreateContainer(new FakeFallbackServiceProvider());
-        }
-
-        protected override IServiceProvider CreateContainer(IServiceProvider fallbackProvider)
-        {
             var builder = new ContainerBuilder();
 
-            builder.Populate(
-                TestServices.DefaultServices(),
-                fallbackProvider);
+            builder.Populate(TestServices.DefaultServices());
 
             IContainer container = builder.Build();
             return container.Resolve<IServiceProvider>();

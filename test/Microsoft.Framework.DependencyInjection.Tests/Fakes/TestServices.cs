@@ -18,7 +18,6 @@ namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
             yield return describer.Instance<IFakeServiceInstance>(new FakeService() { Message = "Instance" });
             yield return describer.Scoped<IFakeScopedService, FakeService>();
             yield return describer.Singleton<IFakeSingletonService, FakeService>();
-            yield return describer.Transient<IFakeFallbackService, FakeService>();
             yield return describer.Transient<IDependOnNonexistentService, DependOnNonexistentService>();
             yield return describer.Describe(
                 typeof(IFakeOpenGenericService<string>),
