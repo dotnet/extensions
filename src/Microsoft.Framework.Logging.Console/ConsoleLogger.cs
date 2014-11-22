@@ -2,11 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
+using System.Globalization;
+using System.Text;
 
 namespace Microsoft.Framework.Logging.Console
 {
     public class ConsoleLogger : ILogger
     {
+        private const int _indentation = 2;
         private readonly string _name;
         private Func<string, LogLevel, bool> _filter;
         private readonly object _lock = new object();
@@ -27,7 +31,17 @@ namespace Microsoft.Framework.Logging.Console
                 return;
             }
             var message = string.Empty;
-            if (formatter != null)
+            if (state is ILoggerStructure)
+            {
+                var builder = new StringBuilder();
+                FormatLoggerStructure(
+                    builder,
+                    (ILoggerStructure)state,
+                    level: 1,
+                    bullet: false);
+                message = Convert.ToString(builder.ToString(), CultureInfo.InvariantCulture);
+            }
+            else if (formatter != null)
             {
                 message = formatter(state, exception);
             }
@@ -97,6 +111,64 @@ namespace Microsoft.Framework.Logging.Console
         public IDisposable BeginScope(object state)
         {
             return null;
+        }
+
+        private void FormatLoggerStructure(StringBuilder builder, ILoggerStructure structure, int level, bool bullet)
+        {
+            var values = structure.GetValues();
+            if (values == null)
+            {
+                return;
+            }
+            var isFirst = true;
+            foreach (var kvp in values)
+            {
+                builder.AppendLine();
+                if (bullet && isFirst)
+                {
+                    builder.Append(' ', level * _indentation - 1)
+                           .Append('-');
+                }
+                else
+                {
+                    builder.Append(' ', level * _indentation);
+                }
+                builder.Append(kvp.Key)
+                       .Append(": ");
+                if (kvp.Value is IEnumerable && !(kvp.Value is string))
+                {
+                    foreach (var value in (IEnumerable)kvp.Value)
+                    {
+                        if (value is ILoggerStructure)
+                        {
+                            FormatLoggerStructure(
+                                builder,
+                                (ILoggerStructure)value,
+                                level + 1,
+                                bullet: true);
+                        }
+                        else
+                        {
+                            builder.AppendLine()
+                                   .Append(' ', (level + 1) * _indentation)
+                                   .Append(value);
+                        }
+                    }
+                }
+                else if (kvp.Value is ILoggerStructure)
+                {
+                    FormatLoggerStructure(
+                        builder,
+                        (ILoggerStructure)kvp.Value,
+                        level + 1,
+                        bullet: false);
+                }
+                else
+                {
+                    builder.Append(kvp.Value);
+                }
+                isFirst = false;
+            }
         }
     }
 }
