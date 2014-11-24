@@ -5,6 +5,8 @@ namespace Microsoft.Framework.Logging
 {
     public abstract class LoggerStructureBase : ILoggerStructure
     {
+        public string Message { get; set; }
+
         public virtual IEnumerable<KeyValuePair<string, object>> GetValues()
         {
             var values = new List<KeyValuePair<string, object>>();

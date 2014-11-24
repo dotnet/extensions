@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Microsoft.Framework.Logging
 {
@@ -8,6 +7,14 @@ namespace Microsoft.Framework.Logging
 #endif
     public interface ILoggerStructure
     {
+        /// <summary>
+        /// A brief message to give context for the structure being logged
+        /// </summary>
+        string Message { get; }
+
+        /// <summary>
+        /// Returns an enumerable of key value pairs mapping the name of the structured data to the data.
+        /// </summary>
         IEnumerable<KeyValuePair<string, object>> GetValues();
 
         /// <summary>

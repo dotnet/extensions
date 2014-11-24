@@ -31,12 +31,13 @@ namespace Microsoft.Framework.Logging.Console
                 return;
             }
             var message = string.Empty;
-            if (state is ILoggerStructure)
+            var structure = state as ILoggerStructure;
+            if (structure != null)
             {
                 var builder = new StringBuilder();
                 FormatLoggerStructure(
                     builder,
-                    (ILoggerStructure)state,
+                    structure,
                     level: 1,
                     bullet: false);
                 message = Convert.ToString(builder.ToString(), CultureInfo.InvariantCulture);
@@ -115,6 +116,10 @@ namespace Microsoft.Framework.Logging.Console
 
         private void FormatLoggerStructure(StringBuilder builder, ILoggerStructure structure, int level, bool bullet)
         {
+            if (structure.Message != null)
+            {
+                builder.Append(structure.Message);
+            }
             var values = structure.GetValues();
             if (values == null)
             {
