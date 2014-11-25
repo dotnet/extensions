@@ -70,5 +70,14 @@ namespace Microsoft.Framework.DependencyInjection
             var ex = Assert.Throws<InvalidOperationException>(() => action(serviceDescriber));
             Assert.Equal(expected, ex.Message);
         }
+
+        [Fact]
+        public void DescriberDoesNotBlowUpWithNullConfiguration()
+        {
+            var describer = new ServiceDescriber(null);
+
+            // Act
+            describer.Transient<IFakeService, FakeService>();
+        }
     }
 }

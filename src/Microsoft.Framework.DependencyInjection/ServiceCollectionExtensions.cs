@@ -2,14 +2,52 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.DependencyInjection.ServiceLookup;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddTransient([NotNull] this IServiceCollection collection,
-                                                      [NotNull] Type service,
+        public static bool TryAdd([NotNull] this IServiceCollection collection,
+                                  [NotNull] IServiceDescriptor descriptor)
+        {
+            if (!collection.Any(d => d.ServiceType == descriptor.ServiceType))
+            {
+                collection.Add(descriptor);
+                return true;
+            }
+            return false;
+        }
+
+        public static bool TryAdd([NotNull] this IServiceCollection collection,
+                                  [NotNull] IEnumerable<IServiceDescriptor> descriptors)
+        {
+            bool anyAdded = false;
+            foreach (var d in descriptors)
+            {
+                anyAdded = collection.TryAdd(d) || anyAdded;
+            }
+            return anyAdded;
+        }
+
+        public static IServiceCollection AddTypeActivator([NotNull]this IServiceCollection services, IConfiguration config = null)
+        {
+            var describe = new ServiceDescriber(config);
+            services.TryAdd(describe.Singleton<ITypeActivator, TypeActivator>());
+            return services;
+        }
+
+        public static IServiceCollection AddContextAccessor([NotNull]this IServiceCollection services, IConfiguration config = null)
+        {
+            var describe = new ServiceDescriber(config);
+            services.TryAdd(describe.Scoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>)));
+            return services;
+        }
+
+        public static IServiceCollection AddTransient([NotNull] this IServiceCollection collection, 
+                                                      [NotNull] Type service, 
                                                       [NotNull] Type implementationType)
         {
             return Add(collection, service, implementationType, LifecycleKind.Transient);

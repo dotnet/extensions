@@ -124,5 +124,116 @@ namespace Microsoft.Framework.DependencyInjection
             Assert.Same(_instance, descriptor.ImplementationInstance);
             Assert.Equal(LifecycleKind.Singleton, descriptor.Lifecycle);
         }
+
+        [Theory]
+        [MemberData(nameof(AddInstanceData))]
+        public void TryAddNoOpFailsIfExists(Action<IServiceCollection> addAction)
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            addAction(collection);
+
+            // Act
+            var d = new ServiceDescriber().Transient<IFakeService, FakeService>();
+
+            // Assert
+            Assert.False(collection.TryAdd(d));
+            var descriptor = Assert.Single(collection);
+            Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
+            Assert.Same(_instance, descriptor.ImplementationInstance);
+            Assert.Equal(LifecycleKind.Singleton, descriptor.Lifecycle);
+        }
+
+        [Fact]
+        public void TryAddIfMissingActuallyAdds()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+
+            // Act
+            var d = new ServiceDescriber().Transient<IFakeService, FakeService>();
+
+            // Assert
+            Assert.True(collection.TryAdd(d));
+            var descriptor = Assert.Single(collection);
+            Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
+            Assert.Null(descriptor.ImplementationInstance);
+            Assert.Equal(LifecycleKind.Transient, descriptor.Lifecycle);
+        }
+
+        [Fact]
+        public void TryAddWithEnumerableReturnsTrueIfAnyAdded()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+
+            // Act
+            var ds = new IServiceDescriptor[] {
+                new ServiceDescriber().Transient<IFakeService, FakeService>(),
+                new ServiceDescriber().Transient<IFakeService, FakeService>()
+            };
+
+            // Assert
+            Assert.True(collection.TryAdd(ds));
+            var descriptor = Assert.Single(collection);
+            Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
+            Assert.Null(descriptor.ImplementationInstance);
+            Assert.Equal(LifecycleKind.Transient, descriptor.Lifecycle);
+        }
+
+        [Fact]
+        public void TryAddWithEnumerableReturnsFalseIfNoneAdded()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            collection.AddSingleton<IFakeService, FakeService>();
+
+            // Act
+            var ds = new IServiceDescriptor[] {
+                new ServiceDescriber().Transient<IFakeService, FakeService>(),
+                new ServiceDescriber().Transient<IFakeService, FakeService>()
+            };
+
+            // Assert
+            Assert.False(collection.TryAdd(ds));
+            var descriptor = Assert.Single(collection);
+            Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
+            Assert.Null(descriptor.ImplementationInstance);
+            Assert.Equal(LifecycleKind.Singleton, descriptor.Lifecycle);
+        }
+
+        [Fact]
+        public void AddTypeDescriptorIsSingleton()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+
+            // Act
+            collection.AddTypeActivator();
+
+            // Assert
+            var descriptor = Assert.Single(collection);
+            Assert.Equal(typeof(ITypeActivator), descriptor.ServiceType);
+            Assert.Null(descriptor.ImplementationInstance);
+            Assert.Equal(LifecycleKind.Singleton, descriptor.Lifecycle);
+        }
+
+        [Fact]
+        public void AddContextAccessorIsScoped()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+
+            // Act
+            collection.AddContextAccessor();
+
+            // Assert
+            var descriptor = Assert.Single(collection);
+            Assert.Equal(typeof(IContextAccessor<>), descriptor.ServiceType);
+            Assert.Null(descriptor.ImplementationInstance);
+            Assert.Equal(LifecycleKind.Scoped, descriptor.Lifecycle);
+        }
+
+
     }
 }

@@ -10,14 +10,9 @@ namespace Microsoft.Framework.DependencyInjection
     {
         private IConfiguration _configuration;
 
-        public ServiceDescriber()
-            : this(new Configuration())
+        public ServiceDescriber(IConfiguration configuration = null)
         {
-        }
-
-        public ServiceDescriber([NotNull] IConfiguration configuration)
-        {
-            _configuration = configuration;
+            _configuration = configuration ?? new Configuration();
         }
 
         public ServiceDescriptor Transient<TService, TImplementation>()
