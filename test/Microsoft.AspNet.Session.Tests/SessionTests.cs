@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Session
@@ -18,6 +19,7 @@ namespace Microsoft.AspNet.Session
         {
             using (var server = TestServer.Create(app =>
             {
+                app.UseServices(services => services.AddOptions());
                 app.UseInMemorySession();
                 app.Run(context =>
                 {
@@ -39,6 +41,7 @@ namespace Microsoft.AspNet.Session
         {
             using (var server = TestServer.Create(app =>
             {
+                app.UseServices(services => services.AddOptions());
                 app.UseInMemorySession();
                 app.Run(context =>
                 {
@@ -64,6 +67,7 @@ namespace Microsoft.AspNet.Session
         {
             using (var server = TestServer.Create(app =>
             {
+                app.UseServices(services => services.AddOptions());
                 app.UseInMemorySession();
                 app.Run(context =>
                 {
@@ -97,6 +101,7 @@ namespace Microsoft.AspNet.Session
         {
             using (var server = TestServer.Create(app =>
             {
+                app.UseServices(services => services.AddOptions());
                 app.UseInMemorySession();
                 app.Run(context =>
                 {
@@ -139,6 +144,7 @@ namespace Microsoft.AspNet.Session
         {
             using (var server = TestServer.Create(app =>
             {
+                app.UseServices(services => services.AddOptions());
                 app.UseInMemorySession();
                 app.Run(context =>
                 {

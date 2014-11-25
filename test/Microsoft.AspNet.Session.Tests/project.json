@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "Microsoft.AspNet.Session": "1.0.0-*",
+    "Microsoft.AspNet.RequestContainer": "1.0.0-*",
     "Microsoft.AspNet.TestHost": "1.0.0-*",
     "Xunit.KRunner": "1.0.0-*"
   },
