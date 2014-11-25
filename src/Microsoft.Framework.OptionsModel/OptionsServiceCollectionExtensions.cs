@@ -2,16 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.OptionsModel;
-using System.Collections.Generic;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class OptionsServiceCollectionExtensions
     {
+        public static IServiceCollection AddOptions([NotNull]this IServiceCollection services, IConfiguration config = null)
+        {
+            var describe = new ServiceDescriber(config);
+            services.TryAdd(describe.Singleton(typeof(IOptions<>), typeof(OptionsManager<>)));
+            return services;
+        }
+
         private static bool IsAction(Type type)
         {
             return (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Action<>));
@@ -32,7 +39,6 @@ namespace Microsoft.Framework.DependencyInjection
             }
             return serviceTypes;
         }
-
 
         public static IServiceCollection ConfigureOptions([NotNull]this IServiceCollection services, Type configureType)
         {

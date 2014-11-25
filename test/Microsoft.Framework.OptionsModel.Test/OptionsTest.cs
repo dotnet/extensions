@@ -141,7 +141,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
         [Fact]
         public void SetupCallsSortedInOrder()
         {
-            var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
+            var services = new ServiceCollection().AddOptions();
             var dic = new Dictionary<string, string>
             {
                 {"Message", "!"},
@@ -166,7 +166,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
         public void NullNamesAreAlwaysApplied()
         {
             const string TargetOptionsName = "Name";
-            var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
+            var services = new ServiceCollection().AddOptions();
             services.Configure<FakeOptions>(o => o.Message += "a");
             services.Configure<FakeOptions>(o => o.Message += "N", TargetOptionsName);
 
@@ -183,7 +183,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
         [Fact]
         public void NamedSetupDoNotCollideWithEachOther()
         {
-            var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
+            var services = new ServiceCollection().AddOptions();
             var dic = new Dictionary<string, string>
             {
                 {"Message", "!"},
@@ -216,7 +216,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
         //[Fact(Skip="We no longer order by name for now")]
         //public void ConfigureOptionsAreStoredByOrderAndThenName()
         //{
-        //    var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
+        //    var services = new ServiceCollection().AddOptions();
         //    services.Configure<FakeOptions>(o => o.Message += "A", -1, "");
         //    services.Configure<FakeOptions>(o => o.Message += "C", 0, "me");
         //    services.Configure<FakeOptions>(o => o.Message += "B", 0, null);
@@ -230,7 +230,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
         [Fact]
         public void SetupTargetOptionsNameIsNotCaseSensitive()
         {
-            var services = new ServiceCollection { OptionsServices.GetDefaultServices() };
+            var services = new ServiceCollection().AddOptions();
             services.Configure<FakeOptions>(o => o.Message += "B", -100, "abc");
 
             var service = services.BuildServiceProvider().GetService<IOptions<FakeOptions>>();

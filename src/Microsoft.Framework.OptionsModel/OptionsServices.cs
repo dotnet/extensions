@@ -11,18 +11,6 @@ namespace Microsoft.Framework.OptionsModel
 {
     public class OptionsServices
     {
-        public static IEnumerable<IServiceDescriptor> GetDefaultServices()
-        {
-            return GetDefaultServices(new Configuration());
-        }
-
-        public static IEnumerable<IServiceDescriptor> GetDefaultServices(IConfiguration configuration)
-        {
-            var describe = new ServiceDescriber(configuration);
-
-            yield return describe.Singleton(typeof(IOptions<>), typeof(OptionsManager<>));
-        }
-
         public static void ReadProperties(object obj, IConfiguration config)
         {
             // No convert on portable or core
