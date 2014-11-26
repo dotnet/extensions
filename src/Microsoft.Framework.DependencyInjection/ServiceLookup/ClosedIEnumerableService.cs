@@ -26,12 +26,12 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             get { return LifecycleKind.Transient; }
         }
 
-        public IServiceCallSite CreateCallSite(ServiceProvider provider)
+        public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
         {
             var list = new List<IServiceCallSite>();
             for (var service = _serviceEntry.First; service != null; service = service.Next)
             {
-                list.Add(provider.GetResolveCallSite(service));
+                list.Add(provider.GetResolveCallSite(service, callSiteChain));
             }
             return new CallSite(_itemType, list.ToArray());
         }

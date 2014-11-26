@@ -82,8 +82,8 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         {
             var provider = new ServiceProvider(desciptors);
 
-            var callSite = provider.GetServiceCallSite(serviceType);
-            var collectionCallSite = provider.GetServiceCallSite(typeof(IEnumerable<>).MakeGenericType(serviceType));
+            var callSite = provider.GetServiceCallSite(serviceType, new HashSet<Type>());
+            var collectionCallSite = provider.GetServiceCallSite(typeof(IEnumerable<>).MakeGenericType(serviceType), new HashSet<Type>());
 
             var compiledCallSite = CompileCallSite(callSite);
             var compiledCollectionCallSite = CompileCallSite(collectionCallSite);
@@ -110,7 +110,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             descriptors.AddScoped<ServiceC>();
 
             var provider = new ServiceProvider(descriptors);
-            var callSite = provider.GetServiceCallSite(typeof(ServiceC));
+            var callSite = provider.GetServiceCallSite(typeof(ServiceC), new HashSet<Type>());
             var compiledCallSite = CompileCallSite(callSite);
 
             var serviceC = (ServiceC)compiledCallSite(provider);

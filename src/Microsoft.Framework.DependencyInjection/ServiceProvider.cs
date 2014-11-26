@@ -52,7 +52,7 @@ namespace Microsoft.Framework.DependencyInjection
         {
             var realizedService = _table.RealizedServices.GetOrAdd(serviceType, key =>
             {
-                var callSite = GetServiceCallSite(key);
+                var callSite = GetServiceCallSite(key, new HashSet<Type>());
                 if (callSite != null)
                 {
                     return RealizeService(_table, key, callSite);
@@ -86,26 +86,41 @@ namespace Microsoft.Framework.DependencyInjection
             };
         }
 
-        internal IServiceCallSite GetServiceCallSite(Type serviceType)
+        internal IServiceCallSite GetServiceCallSite(Type serviceType, ISet<Type> callSiteChain)
         {
-            ServiceEntry entry;
-            if (_table.TryGetEntry(serviceType, out entry))
+            try
             {
-                return GetResolveCallSite(entry.Last);
+                if (callSiteChain.Contains(serviceType))
+                {
+                    throw new InvalidOperationException(Resources.FormatCircularDependencyException(serviceType));
+                }
+
+                callSiteChain.Add(serviceType);
+
+                ServiceEntry entry;
+                if (_table.TryGetEntry(serviceType, out entry))
+                {
+                    return GetResolveCallSite(entry.Last, callSiteChain);
+                }
+
+                object emptyIEnumerableOrNull = GetEmptyIEnumerableOrNull(serviceType);
+                if (emptyIEnumerableOrNull != null)
+                {
+                    return new EmptyIEnumerableCallSite(serviceType, emptyIEnumerableOrNull);
+                }
+
+                return null;
+            }
+            finally
+            {
+                callSiteChain.Remove(serviceType);
             }
 
-            object emptyIEnumerableOrNull = GetEmptyIEnumerableOrNull(serviceType);
-            if (emptyIEnumerableOrNull != null)
-            {
-                return new EmptyIEnumerableCallSite(serviceType, emptyIEnumerableOrNull);
-            }
-
-            return null;
         }
 
-        internal IServiceCallSite GetResolveCallSite(IService service)
+        internal IServiceCallSite GetResolveCallSite(IService service, ISet<Type> callSiteChain)
         {
-            IServiceCallSite serviceCallSite = service.CreateCallSite(this);
+            IServiceCallSite serviceCallSite = service.CreateCallSite(this, callSiteChain);
             if (service.Lifecycle == LifecycleKind.Transient)
             {
                 return new TransientCallSite(serviceCallSite);

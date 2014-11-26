@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -24,7 +25,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             get { return _descriptor.Lifecycle; }
         }
 
-        public IServiceCallSite CreateCallSite(ServiceProvider provider)
+        public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
         {
             ConstructorInfo[] constructors = _descriptor.ImplementationType.GetTypeInfo()
                 .DeclaredConstructors
@@ -38,7 +39,8 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
                 IServiceCallSite[] parameterCallSites = new IServiceCallSite[parameters.Length];
                 for (var index = 0; index != parameters.Length; ++index)
                 {
-                    parameterCallSites[index] = provider.GetServiceCallSite(parameters[index].ParameterType);
+                    parameterCallSites[index] = provider.GetServiceCallSite(parameters[index].ParameterType, callSiteChain);
+                
                     if (parameterCallSites[index] == null && parameters[index].HasDefaultValue)
                     {
                         parameterCallSites[index] = new ConstantCallSite(parameters[index].DefaultValue);
