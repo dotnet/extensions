@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Framework.Runtime;
 
-namespace Microsoft.Framework.Cache.Memory
+namespace Microsoft.Framework.Expiration.Interfaces
 {
     [AssemblyNeutral]
     public interface IExpirationTrigger

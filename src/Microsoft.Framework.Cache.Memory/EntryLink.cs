@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Framework.Expiration.Interfaces;
 
 namespace Microsoft.Framework.Cache.Memory
 {

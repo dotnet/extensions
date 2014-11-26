@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Expiration.Interfaces;
 
 namespace Microsoft.Framework.Cache.Memory
 {
