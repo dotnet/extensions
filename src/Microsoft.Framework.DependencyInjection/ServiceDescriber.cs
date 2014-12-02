@@ -137,8 +137,9 @@ namespace Microsoft.Framework.DependencyInjection
                 var type = Type.GetType(implementationTypeName, throwOnError: false);
                 if (type == null)
                 {
-                    var message = string.Format("TODO: unable to locate implementation {0} for service {1}", implementationTypeName, serviceTypeName);
-                    throw new InvalidOperationException(message);
+                    throw new InvalidOperationException(Resources.FormatCannotLocateImplementation(
+                        implementationTypeName,
+                        serviceTypeName));
                 }
 
                 return type;

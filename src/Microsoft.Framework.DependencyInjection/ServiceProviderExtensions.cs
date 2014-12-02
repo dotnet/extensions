@@ -31,7 +31,7 @@ namespace Microsoft.Framework.DependencyInjection
 
             if (service == null)
             {
-                throw new Exception(string.Format("TODO: No service for type '{0}' has been registered.", serviceType));
+                throw new Exception(Resources.FormatNoServiceRegistered(serviceType));
             }
 
             return service;

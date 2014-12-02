@@ -47,9 +47,9 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
                     }
                     if (parameterCallSites[index] == null)
                     {
-                        throw new Exception(
-                            string.Format("TODO: Unable to resolve service for type '{0}' while attempting to activate '{1}'.",
-                                parameters[index].ParameterType, _descriptor.ImplementationType));
+                        throw new Exception(Resources.FormatCannotResolveService(
+                                parameters[index].ParameterType, 
+                                _descriptor.ImplementationType));
                     }
                 }
                 return new ConstructorCallSite(constructors[0], parameterCallSites);

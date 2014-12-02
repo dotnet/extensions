@@ -88,9 +88,8 @@ namespace Microsoft.Framework.DependencyInjection
                         }
                         catch (Exception innerException)
                         {
-                            throw new Exception(
-                                string.Format("TODO: Unable to resolve service for type '{0}' while attempting to activate '{1}'.",
-                                    parameters[index].ParameterType, type),
+                            throw new Exception(Resources.FormatCannotResolveService(
+                                parameters[index].ParameterType, type),
                                 innerException);
                         }
                     }

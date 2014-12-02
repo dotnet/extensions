@@ -60,7 +60,7 @@ namespace Microsoft.Framework.DependencyInjection
         public void Descriptor_ThrowsIfReplacedServiceCanotBeFound(DescribeAction action, LifecycleKind lifeCycle)
         {
             // Arrange
-            var expected = "TODO: unable to locate implementation Type-Does-NotExist for service " + typeof(IFakeService).FullName;
+            var expected = Resources.FormatCannotLocateImplementation("Type-Does-NotExist", typeof(IFakeService).FullName);
             var configuration = new Configuration();
             configuration.Add(new MemoryConfigurationSource());
             configuration.Set(typeof(IFakeService).FullName, "Type-Does-NotExist");

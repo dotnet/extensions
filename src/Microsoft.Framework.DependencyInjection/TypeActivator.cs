@@ -34,11 +34,7 @@ namespace Microsoft.Framework.DependencyInjection
 
             if (bestMatcher == null)
             {
-                throw new Exception(
-                    string.Format(
-                        "TODO: unable to locate suitable constructor for {0}. " + 
-                        "Ensure 'instanceType' is concrete and all parameters are accepted by a constructor.",
-                        instanceType));
+                throw new Exception(Resources.FormatNoConstructorMatch(instanceType));
             }
 
             return bestMatcher.CreateInstance(services);
@@ -107,7 +103,9 @@ namespace Microsoft.Framework.DependencyInjection
                         {
                             if (!_parameters[index].HasDefaultValue)
                             {
-                                throw new Exception(string.Format("TODO: unable to resolve service {1} to create {0}", _constructor.DeclaringType, _parameters[index].ParameterType));
+                                throw new Exception(Resources.FormatCannotResolveService(
+                                    _constructor.DeclaringType, 
+                                    _parameters[index].ParameterType));
                             }
                             else
                             {
