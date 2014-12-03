@@ -179,14 +179,7 @@ namespace Microsoft.Framework.DependencyInjection
         private static MethodInfo TryGetValueMethodInfo = GetMethodInfo<Func<IDictionary<IService, object>, IService, object, bool>>((a, b, c) => a.TryGetValue(b, out c));
         private static MethodInfo AddMethodInfo = GetMethodInfo<Action<IDictionary<IService, object>, IService, object>>((a, b, c) => a.Add(b, c));
 
-        private static MethodInfo MonitorEnterMethodInfo = typeof(Monitor).GetTypeInfo().GetDeclaredMethods("Enter").Where(m =>
-        {
-            var parameters = m.GetParameters();
-
-            return parameters.Length == 2 &&
-                parameters[0].ParameterType == typeof(object) &&
-                parameters[1].ParameterType == typeof(bool).MakeByRefType();
-        }).Single();
+        private static MethodInfo MonitorEnterMethodInfo = GetMethodInfo<Action<object, bool>>((lockObj, lockTaken) => Monitor.Enter(lockObj, ref lockTaken));
         private static MethodInfo MonitorExitMethodInfo = GetMethodInfo<Action<object>>(lockObj => Monitor.Exit(lockObj));
 
         private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
