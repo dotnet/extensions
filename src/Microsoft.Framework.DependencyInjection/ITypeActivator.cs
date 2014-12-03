@@ -8,5 +8,6 @@ namespace Microsoft.Framework.DependencyInjection
     public interface ITypeActivator
     {
         object CreateInstance(IServiceProvider services, Type instanceType, params object[] parameters);
+        Func<IServiceProvider, object[], object> CreateFactory(Type instanceType, Type[] parameterTypes);
     }
 }

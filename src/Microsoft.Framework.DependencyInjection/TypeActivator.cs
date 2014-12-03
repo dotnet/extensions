@@ -3,12 +3,15 @@
 
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public class TypeActivator : ITypeActivator
     {
+        private static readonly MethodInfo GetServiceInfo = GetMethodInfo<Func<IServiceProvider, Type, object>>((sp, t) => sp.GetService(t));
+
         public object CreateInstance(IServiceProvider services, Type instanceType, params object[] parameters)
         {
             int bestLength = -1;
@@ -17,7 +20,7 @@ namespace Microsoft.Framework.DependencyInjection
             foreach (var matcher in instanceType
                 .GetTypeInfo()
                 .DeclaredConstructors
-                .Where(c => !c.IsStatic)
+                .Where(c => !c.IsStatic && c.IsPublic)
                 .Select(constructor => new ConstructorMatcher(constructor)))
             {
                 var length = matcher.Match(parameters);
@@ -38,6 +41,138 @@ namespace Microsoft.Framework.DependencyInjection
             }
 
             return bestMatcher.CreateInstance(services);
+        }
+
+        public Func<IServiceProvider, object[], object> CreateFactory(Type instanceType, Type[] argumentTypes)
+        {
+            ConstructorInfo constructor;
+            int?[] parameterMap;
+
+            FindApplicableConstructor(instanceType, argumentTypes, out constructor, out parameterMap);
+
+            var serviceProvider = Expression.Parameter(typeof(IServiceProvider), "provider");
+            var argumentArray = Expression.Parameter(typeof(object[]), "argumentArray");
+            var factoryExpressionBody = BuildFactoryExpression(constructor, parameterMap, serviceProvider, argumentArray);
+
+            var factoryLamda = Expression.Lambda<Func<IServiceProvider, object[], object>>(
+                factoryExpressionBody,
+                serviceProvider, argumentArray);
+
+            return factoryLamda.Compile();
+        }
+
+        private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
+        {
+            var mc = (MethodCallExpression)expr.Body;
+            return mc.Method;
+        }
+
+        private static Expression BuildFactoryExpression(
+            ConstructorInfo constructor,
+            int?[] parameterMap,
+            Expression serviceProvider,
+            Expression factoryArgumentArray)
+        {
+            var constructorParameters = constructor.GetParameters();
+            var constructorArguments = new Expression[constructorParameters.Length];
+
+            for (var i = 0; i < constructorParameters.Length; i++)
+            {
+                var parameterType = constructorParameters[i].ParameterType;
+
+                if (parameterMap[i] != null)
+                {
+                    constructorArguments[i] = Expression.ArrayAccess(factoryArgumentArray, Expression.Constant(parameterMap[i]));
+                }
+                else
+                {
+                    var parameterTypeExpression = Expression.Constant(parameterType);
+                    constructorArguments[i] = Expression.Call(serviceProvider, GetServiceInfo, parameterTypeExpression);
+                }
+
+                // Support optional constructor arguments by passing in the default value
+                // when the argument would otherwise be null.
+                if (constructorParameters[i].HasDefaultValue)
+                {
+                    var defaultValueExpression = Expression.Constant(constructorParameters[i].DefaultValue);
+                    constructorArguments[i] = Expression.Coalesce(constructorArguments[i], defaultValueExpression);
+                }
+
+                constructorArguments[i] = Expression.Convert(constructorArguments[i], parameterType);
+            }
+
+            return Expression.New(constructor, constructorArguments);
+        }
+
+        private static void FindApplicableConstructor(
+            Type instanceType,
+            Type[] argumentTypes,
+            out ConstructorInfo matchingConstructor,
+            out int?[] parameterMap)
+        {
+            matchingConstructor = null;
+            parameterMap = null;
+
+            foreach (var constructor in instanceType.GetTypeInfo().DeclaredConstructors)
+            {
+                if (constructor.IsStatic || !constructor.IsPublic)
+                {
+                    continue;
+                }
+
+                int?[] tempParameterMap;
+                if (TryCreateParameterMap(constructor.GetParameters(), argumentTypes, out tempParameterMap))
+                {
+                    if (matchingConstructor != null)
+                    {
+                        throw new InvalidOperationException(Resources.FormatAmbiguousConstructorMatch(instanceType));
+                    }
+
+                    matchingConstructor = constructor;
+                    parameterMap = tempParameterMap;
+                }
+            }
+
+            if (matchingConstructor == null)
+            {
+                throw new InvalidOperationException(Resources.FormatNoConstructorMatch(instanceType));
+            }
+        }
+
+        // Creates an injective parameterMap from givenParameterTypes to assignable constructorParameters.
+        // Returns true if each given parameter type is assignable to a unique; otherwise, false.
+        private static bool TryCreateParameterMap(ParameterInfo[] constructorParameters, Type[] argumentTypes, out int?[] parameterMap)
+        {
+            parameterMap = new int?[constructorParameters.Length];
+
+            for (var i = 0; i < argumentTypes.Length; i++)
+            {
+                var foundMatch = false;
+                var givenParameter = argumentTypes[i].GetTypeInfo();
+
+                for (var j = 0; j < constructorParameters.Length; j++)
+                {
+                    if (parameterMap[j] != null)
+                    {
+                        // This ctor parameter has already been matched
+                        continue;
+                    }
+
+                    if (constructorParameters[j].ParameterType.GetTypeInfo().IsAssignableFrom(givenParameter))
+                    {
+                        foundMatch = true;
+                        parameterMap[j] = i;
+                        break;
+                    }
+                }
+
+                if (!foundMatch)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         class ConstructorMatcher
