@@ -34,7 +34,7 @@ namespace Microsoft.Framework.DependencyInjection
 
             if (bestMatcher == null)
             {
-                throw new Exception(Resources.FormatNoConstructorMatch(instanceType));
+                throw new InvalidOperationException(Resources.FormatNoConstructorMatch(instanceType));
             }
 
             return bestMatcher.CreateInstance(services);
@@ -103,7 +103,7 @@ namespace Microsoft.Framework.DependencyInjection
                         {
                             if (!_parameters[index].HasDefaultValue)
                             {
-                                throw new Exception(Resources.FormatCannotResolveService(
+                                throw new InvalidOperationException(Resources.FormatCannotResolveService(
                                     _constructor.DeclaringType, 
                                     _parameters[index].ParameterType));
                             }

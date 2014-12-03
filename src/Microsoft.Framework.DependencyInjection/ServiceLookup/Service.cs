@@ -47,7 +47,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
                     }
                     if (parameterCallSites[index] == null)
                     {
-                        throw new Exception(Resources.FormatCannotResolveService(
+                        throw new InvalidOperationException(Resources.FormatCannotResolveService(
                                 parameters[index].ParameterType, 
                                 _descriptor.ImplementationType));
                     }

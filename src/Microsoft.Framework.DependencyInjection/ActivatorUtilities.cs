@@ -88,7 +88,7 @@ namespace Microsoft.Framework.DependencyInjection
                         }
                         catch (Exception innerException)
                         {
-                            throw new Exception(Resources.FormatCannotResolveService(
+                            throw new InvalidOperationException(Resources.FormatCannotResolveService(
                                 parameters[index].ParameterType, type),
                                 innerException);
                         }

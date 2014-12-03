@@ -24,14 +24,14 @@ namespace Microsoft.Framework.DependencyInjection
         /// <param name="provider">The <see cref="IServiceProvider"/> to retrieve the service object from.</param>
         /// <param name="serviceType">An object that specifies the type of service object to get.</param>
         /// <returns>A service object of type <paramref name="serviceType"/>.</returns>
-        /// <exception cref="System.Exception">There is no service of type <paramref name="serviceType"/>.</exception>
+        /// <exception cref="System.InvalidOperationException">There is no service of type <paramref name="serviceType"/>.</exception>
         public static object GetRequiredService([NotNull] this IServiceProvider provider, [NotNull] Type serviceType)
         {
             var service = provider.GetService(serviceType);
 
             if (service == null)
             {
-                throw new Exception(Resources.FormatNoServiceRegistered(serviceType));
+                throw new InvalidOperationException(Resources.FormatNoServiceRegistered(serviceType));
             }
 
             return service;
@@ -43,7 +43,7 @@ namespace Microsoft.Framework.DependencyInjection
         /// <typeparam name="T">The type of service object to get.</typeparam>
         /// <param name="provider">The <see cref="IServiceProvider"/> to retrieve the service object from.</param>
         /// <returns>A service object of type <typeparamref name="T"/>.</returns>
-        /// <exception cref="System.Exception">There is no service of type <typeparamref name="T"/>.</exception>
+        /// <exception cref="System.InvalidOperationException">There is no service of type <typeparamref name="T"/>.</exception>
         public static T GetRequiredService<T>([NotNull] this IServiceProvider provider)
         {
             return (T)provider.GetRequiredService(typeof(T));
