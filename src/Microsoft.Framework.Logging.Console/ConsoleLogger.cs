@@ -41,6 +41,10 @@ namespace Microsoft.Framework.Logging.Console
                     level: 1,
                     bullet: false);
                 message = builder.ToString();
+                if (exception != null)
+                {
+                    message += Environment.NewLine + exception;
+                }
             }
             else if (formatter != null)
             {

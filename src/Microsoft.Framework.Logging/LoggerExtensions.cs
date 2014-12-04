@@ -486,7 +486,7 @@ namespace Microsoft.Framework.Logging
             ILoggerStructure state,
             Exception exception = null)
         {
-            logger.Write(logLevel, 0, state, null, _loggerStructureFormatter);
+            logger.Write(logLevel, 0, state, exception, _loggerStructureFormatter);
         }
 
         private static void WriteWithEvent(
@@ -496,12 +496,12 @@ namespace Microsoft.Framework.Logging
             ILoggerStructure state,
             Exception exception = null)
         {
-            logger.Write(logLevel, eventId, state, null, _loggerStructureFormatter);
+            logger.Write(logLevel, eventId, state, exception, _loggerStructureFormatter);
         }
 
         private static string LoggerStructureFormatter(ILoggerStructure state, Exception exception)
         {
-            return state.Format();
+            return state.Format() + Environment.NewLine + exception;
         }
     }
 }
