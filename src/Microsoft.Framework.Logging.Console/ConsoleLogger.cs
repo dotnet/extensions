@@ -40,7 +40,7 @@ namespace Microsoft.Framework.Logging.Console
                     structure,
                     level: 1,
                     bullet: false);
-                message = Convert.ToString(builder.ToString(), CultureInfo.InvariantCulture);
+                message = builder.ToString();
             }
             else if (formatter != null)
             {
