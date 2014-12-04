@@ -9,8 +9,11 @@
         "aspnet50": { },
         "aspnetcore50": {
             "dependencies": {
+                "System.Collections.Concurrent": "4.0.0-beta-*",
+                "System.IO.FileSystem.Watcher": "4.0.0-beta-*",
                 "System.IO.FileSystem": "4.0.0-beta-*",
-                "System.Linq": "4.0.0-beta-*"
+                "System.Linq": "4.0.0-beta-*",
+                "System.Text.RegularExpressions": "4.0.10-beta-*"
             }
         }
     }

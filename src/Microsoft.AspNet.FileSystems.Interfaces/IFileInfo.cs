@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using Microsoft.Framework.Expiration.Interfaces;
 
 namespace Microsoft.AspNet.FileSystems
 {
@@ -65,11 +64,5 @@ namespace Microsoft.AspNet.FileSystems
         /// Deletes the file.
         /// </summary>
         void Delete();
-
-        /// <summary>
-        /// Gets a trigger to monitor the file changes. 
-        /// </summary>
-        /// <returns></returns>
-        IExpirationTrigger CreateFileChangeTrigger();
     }
 }

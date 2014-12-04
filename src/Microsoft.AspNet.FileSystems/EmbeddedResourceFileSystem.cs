@@ -118,6 +118,11 @@ namespace Microsoft.AspNet.FileSystems
             return new EnumerableDirectoryContents(entries);
         }
 
+        public IExpirationTrigger Watch(string pattern)
+        {
+            return NoopTrigger.Singleton;
+        }
+
         private class EmbeddedResourceFileInfo : IFileInfo
         {
             private readonly Assembly _assembly;
@@ -199,11 +204,6 @@ namespace Microsoft.AspNet.FileSystems
             public void Delete()
             {
                 throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(EmbeddedResourceFileSystem), nameof(Delete)));
-            }
-
-            public IExpirationTrigger CreateFileChangeTrigger()
-            {
-                throw new NotSupportedException(string.Format("{0} does not support {1}.", nameof(EmbeddedResourceFileSystem), nameof(CreateFileChangeTrigger)));
             }
         }
     }

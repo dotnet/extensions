@@ -41,6 +41,8 @@ namespace Microsoft.AspNet.FileSystems
             { "clock$", string.Empty },
         };
 
+        private readonly PhysicalFileSystemWatcher _physicalFileSystemWatcher;
+
         /// <summary>
         /// Creates a new instance of a PhysicalFileSystem at the given root directory.
         /// </summary>
@@ -58,6 +60,9 @@ namespace Microsoft.AspNet.FileSystems
             {
                 throw new DirectoryNotFoundException(Root);
             }
+
+            // Monitor only the application's root folder.
+            _physicalFileSystemWatcher = new PhysicalFileSystemWatcher(Root);
         }
 
         /// <summary>
@@ -124,7 +129,7 @@ namespace Microsoft.AspNet.FileSystems
             var fileInfo = new FileInfo(fullPath);
             if (fileInfo.Exists)
             {
-                return new PhysicalFileInfo(fileInfo);
+                return new PhysicalFileInfo(_physicalFileSystemWatcher, fileInfo);
             }
 
             return new NotFoundFileInfo(subpath);
@@ -172,7 +177,7 @@ namespace Microsoft.AspNet.FileSystems
                         var fileInfo = fileSystemInfo as FileInfo;
                         if (fileInfo != null)
                         {
-                            virtualInfos.Add(new PhysicalFileInfo(fileInfo));
+                            virtualInfos.Add(new PhysicalFileInfo(_physicalFileSystemWatcher, fileInfo));
                         }
                         else
                         {
@@ -198,13 +203,38 @@ namespace Microsoft.AspNet.FileSystems
             return RestrictedFileNames.ContainsKey(fileName);
         }
 
+        public IExpirationTrigger Watch(string filter)
+        {
+            if (filter == null)
+            {
+                return NoopTrigger.Singleton;
+            }
+
+            // Relative paths starting with a leading slash okay
+            if (filter.StartsWith("/", StringComparison.Ordinal))
+            {
+                filter = filter.Substring(1);
+            }
+
+            // Absolute paths not permitted.
+            if (Path.IsPathRooted(filter))
+            {
+                return NoopTrigger.Singleton;
+            }
+
+            return _physicalFileSystemWatcher.CreateFileChangeTrigger(filter);
+        }
+
         private class PhysicalFileInfo : IFileInfo
         {
             private readonly FileInfo _info;
 
-            public PhysicalFileInfo(FileInfo info)
+            private readonly PhysicalFileSystemWatcher _physicalFileSystemWatcher;
+
+            public PhysicalFileInfo(PhysicalFileSystemWatcher physicalFileSystemWatcher, FileInfo info)
             {
                 _info = info;
+                _physicalFileSystemWatcher = physicalFileSystemWatcher;
             }
 
             public bool Exists
@@ -268,11 +298,6 @@ namespace Microsoft.AspNet.FileSystems
                 File.Delete(PhysicalPath);
                 _info.Refresh();
             }
-
-            public IExpirationTrigger CreateFileChangeTrigger()
-            {
-                throw new NotImplementedException();
-            }
         }
 
         private class PhysicalDirectoryInfo : IFileInfo
@@ -321,22 +346,17 @@ namespace Microsoft.AspNet.FileSystems
 
             public Stream CreateReadStream()
             {
-                throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(PhysicalDirectoryInfo), nameof(CreateReadStream)));
+                throw new InvalidOperationException("Cannot create a stream for a directory.");
             }
 
             public void WriteContent(byte[] content)
             {
-                throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(PhysicalDirectoryInfo), nameof(WriteContent)));
+                throw new InvalidOperationException("Cannot write content into a directory.");
             }
 
             public void Delete()
             {
                 Directory.Delete(PhysicalPath, recursive: true);
-            }
-
-            public IExpirationTrigger CreateFileChangeTrigger()
-            {
-                throw new NotSupportedException(string.Format("{0} does not support {1}.", nameof(PhysicalDirectoryInfo), nameof(CreateFileChangeTrigger)));
             }
         }
     }

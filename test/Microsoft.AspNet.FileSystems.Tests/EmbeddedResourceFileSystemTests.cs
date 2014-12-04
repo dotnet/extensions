@@ -100,5 +100,15 @@ namespace Microsoft.AspNet.FileSystems
             files.Exists.ShouldBe(true);
             files.Count().ShouldBe(0);
         }
+
+        [Fact]
+        public void Trigger_ShouldNot_Support_Registering_Callbacks()
+        {
+            var provider = new EmbeddedResourceFileSystem(this.GetType().Assembly, "");
+            var trigger = provider.Watch("Resources/File.txt");
+            trigger.ShouldNotBe(null);
+            trigger.ActiveExpirationCallbacks.ShouldBe(false);
+            trigger.IsExpired.ShouldBe(false);
+        }
     }
 }
