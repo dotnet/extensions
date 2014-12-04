@@ -8,7 +8,7 @@ namespace Microsoft.Framework.Logging
     public interface ILoggerStructure
     {
         /// <summary>
-        /// A brief message to give context for the structure being logged
+        /// A brief message to give context for the structure being logged.
         /// </summary>
         string Message { get; }
 
@@ -18,7 +18,7 @@ namespace Microsoft.Framework.Logging
         IEnumerable<KeyValuePair<string, object>> GetValues();
 
         /// <summary>
-        /// Returns a human-readable string of the structured data
+        /// Returns a human-readable string of the structured data.
         /// </summary>
         string Format();
     }
