@@ -259,7 +259,7 @@ namespace Microsoft.AspNet.FileSystems
 
             public DateTimeOffset LastModified
             {
-                get { return _info.LastWriteTime; }
+                get { return _info.LastWriteTime.ToUniversalTime(); }
             }
 
             public bool IsDirectory
@@ -331,7 +331,7 @@ namespace Microsoft.AspNet.FileSystems
 
             public DateTimeOffset LastModified
             {
-                get { return _info.LastWriteTime; }
+                get { return _info.LastWriteTime.ToUniversalTime(); }
             }
 
             public bool IsDirectory
