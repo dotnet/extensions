@@ -28,9 +28,9 @@ namespace Microsoft.AspNet.FileSystems
             get { return false; }
         }
 
-        public DateTime LastModified
+        public DateTimeOffset LastModified
         {
-            get { return DateTime.MinValue; }
+            get { return DateTimeOffset.MinValue; }
         }
 
         public long Length

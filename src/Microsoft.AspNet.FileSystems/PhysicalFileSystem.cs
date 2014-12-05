@@ -257,7 +257,7 @@ namespace Microsoft.AspNet.FileSystems
                 get { return _info.Name; }
             }
 
-            public DateTime LastModified
+            public DateTimeOffset LastModified
             {
                 get { return _info.LastWriteTime; }
             }
@@ -329,7 +329,7 @@ namespace Microsoft.AspNet.FileSystems
                 get { return _info.Name; }
             }
 
-            public DateTime LastModified
+            public DateTimeOffset LastModified
             {
                 get { return _info.LastWriteTime; }
             }

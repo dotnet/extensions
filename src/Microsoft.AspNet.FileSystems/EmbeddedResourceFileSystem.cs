@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.FileSystems
     {
         private readonly Assembly _assembly;
         private readonly string _baseNamespace;
-        private readonly DateTime _lastModified;
+        private readonly DateTimeOffset _lastModified;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EmbeddedResourceFileSystem" /> class using the specified
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.FileSystems
             _baseNamespace = string.IsNullOrEmpty(baseNamespace) ? string.Empty : baseNamespace + "/";
             _assembly = assembly;
             // REVIEW: Does this even make sense?
-            _lastModified = DateTime.MaxValue;
+            _lastModified = DateTimeOffset.MaxValue;
         }
 
         /// <summary>
@@ -126,13 +126,13 @@ namespace Microsoft.AspNet.FileSystems
         private class EmbeddedResourceFileInfo : IFileInfo
         {
             private readonly Assembly _assembly;
-            private readonly DateTime _lastModified;
+            private readonly DateTimeOffset _lastModified;
             private readonly string _resourcePath;
             private readonly string _name;
 
             private long? _length;
 
-            public EmbeddedResourceFileInfo(Assembly assembly, string resourcePath, string name, DateTime lastModified)
+            public EmbeddedResourceFileInfo(Assembly assembly, string resourcePath, string name, DateTimeOffset lastModified)
             {
                 _assembly = assembly;
                 _lastModified = lastModified;
@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.FileSystems
                 get { return _name; }
             }
 
-            public DateTime LastModified
+            public DateTimeOffset LastModified
             {
                 get { return _lastModified; }
             }

@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.FileSystems
             var fileInfo = provider.GetFileInfo("File.txt");
             fileInfo.ShouldNotBe(null);
             fileInfo.Exists.ShouldBe(true);
-            fileInfo.LastModified.ShouldNotBe(default(DateTime));
+            fileInfo.LastModified.ShouldNotBe(default(DateTimeOffset));
             fileInfo.Length.ShouldBe(expectedFileLength);
             fileInfo.IsDirectory.ShouldBe(false);
             fileInfo.PhysicalPath.ShouldBe(null);
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.FileSystems
             fileInfo = provider.GetFileInfo("/File.txt");
             fileInfo.ShouldNotBe(null);
             fileInfo.Exists.ShouldBe(true);
-            fileInfo.LastModified.ShouldNotBe(default(DateTime));
+            fileInfo.LastModified.ShouldNotBe(default(DateTimeOffset));
             fileInfo.Length.ShouldBe(expectedFileLength);
             fileInfo.IsDirectory.ShouldBe(false);
             fileInfo.PhysicalPath.ShouldBe(null);
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.FileSystems
             var fileInfo = provider.GetFileInfo("ResourcesInSubdirectory/File3.txt");
             fileInfo.ShouldNotBe(null);
             fileInfo.Exists.ShouldBe(true);
-            fileInfo.LastModified.ShouldNotBe(default(DateTime));
+            fileInfo.LastModified.ShouldNotBe(default(DateTimeOffset));
             fileInfo.Length.ShouldBeGreaterThan(0);
             fileInfo.IsDirectory.ShouldBe(false);
             fileInfo.PhysicalPath.ShouldBe(null);
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.FileSystems
             var fileInfo = provider.GetFileInfo("Resources/File.txt");
             fileInfo.ShouldNotBe(null);
             fileInfo.Exists.ShouldBe(true);
-            fileInfo.LastModified.ShouldNotBe(default(DateTime));
+            fileInfo.LastModified.ShouldNotBe(default(DateTimeOffset));
             fileInfo.Length.ShouldBeGreaterThan(0);
             fileInfo.IsDirectory.ShouldBe(false);
             fileInfo.PhysicalPath.ShouldBe(null);

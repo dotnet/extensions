@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.FileSystems
         /// <summary>
         /// When the file was last modified
         /// </summary>
-        DateTime LastModified { get; }
+        DateTimeOffset LastModified { get; }
 
         /// <summary>
         /// True for the case TryGetDirectoryContents has enumerated a sub-directory
