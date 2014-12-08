@@ -171,5 +171,79 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             Assert.Equal(Resources.FormatAmbiguousConstructorMatch(typeof(ClassWithAmbiguousCtors)), ex1.Message);
             Assert.Equal(Resources.FormatAmbiguousConstructorMatch(typeof(ClassWithAmbiguousCtors)), ex2.Message);
         }
+
+        [Fact]
+        public void GetServiceOrCreateInstanceRegisteredServiceTransient()
+        {
+            // Reset the count because test order is not guaranteed
+            CreationCountFakeService.InstanceCount = 0;
+
+            var serviceProvider = new ServiceCollection()
+                .AddTransient<IFakeService, FakeService>()
+                .AddTransient<CreationCountFakeService>()
+                .AddTransient<ITypeActivator, TypeActivator>()
+                .BuildServiceProvider();
+
+            var typeActivator = serviceProvider.GetService<ITypeActivator>();
+
+            var service = typeActivator.GetServiceOrCreateInstance<CreationCountFakeService>(serviceProvider);
+            Assert.NotNull(service);
+            Assert.Equal(1, service.InstanceId);
+            Assert.Equal(1, CreationCountFakeService.InstanceCount);
+
+            service = typeActivator.GetServiceOrCreateInstance<CreationCountFakeService>(serviceProvider);
+            Assert.NotNull(service);
+            Assert.Equal(2, service.InstanceId);
+            Assert.Equal(2, CreationCountFakeService.InstanceCount);
+        }
+
+        [Fact]
+        public void GetServiceOrCreateInstanceRegisteredServiceSingleton()
+        {
+            // Reset the count because test order is not guaranteed
+            CreationCountFakeService.InstanceCount = 0;
+
+            var serviceProvider = new ServiceCollection()
+                .AddTransient<IFakeService, FakeService>()
+                .AddSingleton<CreationCountFakeService>()
+                .AddTransient<ITypeActivator, TypeActivator>()
+                .BuildServiceProvider();
+
+            var typeActivator = serviceProvider.GetService<ITypeActivator>();
+
+            var service = typeActivator.GetServiceOrCreateInstance<CreationCountFakeService>(serviceProvider);
+            Assert.NotNull(service);
+            Assert.Equal(1, service.InstanceId);
+            Assert.Equal(1, CreationCountFakeService.InstanceCount);
+
+            service = typeActivator.GetServiceOrCreateInstance<CreationCountFakeService>(serviceProvider);
+            Assert.NotNull(service);
+            Assert.Equal(1, service.InstanceId);
+            Assert.Equal(1, CreationCountFakeService.InstanceCount);
+        }
+
+        [Fact]
+        public void GetServiceOrCreateInstanceUnregisteredService()
+        {
+            // Reset the count because test order is not guaranteed
+            CreationCountFakeService.InstanceCount = 0;
+
+            var serviceProvider = new ServiceCollection()
+                .AddTransient<IFakeService, FakeService>()
+                .AddTransient<ITypeActivator, TypeActivator>()
+                .BuildServiceProvider();
+
+            var typeActivator = serviceProvider.GetService<ITypeActivator>();
+
+            var service = (CreationCountFakeService)typeActivator.GetServiceOrCreateInstance(serviceProvider, typeof(CreationCountFakeService));
+            Assert.NotNull(service);
+            Assert.Equal(1, service.InstanceId);
+            Assert.Equal(1, CreationCountFakeService.InstanceCount);
+
+            service = typeActivator.GetServiceOrCreateInstance<CreationCountFakeService>(serviceProvider);
+            Assert.NotNull(service);
+            Assert.Equal(2, service.InstanceId);
+            Assert.Equal(2, CreationCountFakeService.InstanceCount);
+        }
     }
 }
