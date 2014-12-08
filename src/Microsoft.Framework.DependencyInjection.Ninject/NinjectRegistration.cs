@@ -14,28 +14,28 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
     {
         public static void Populate(this IKernel kernel, IEnumerable<IServiceDescriptor> descriptors)
         {
-            kernel.Load(new KNinjectModule(descriptors));
+            kernel.Load(new ServiceProviderNinjectModule(descriptors));
         }
 
-        public static IBindingNamedWithOrOnSyntax<T> InKScope<T>(
+        public static IBindingNamedWithOrOnSyntax<T> InRequestScope<T>(
                 this IBindingWhenInNamedWithOrOnSyntax<T> binding)
         {
             return binding.InScope(context => context.Parameters.GetScopeParameter());
         }
 
-        internal static KScopeParameter GetScopeParameter(this IEnumerable<IParameter> parameters)
+        internal static ScopeParameter GetScopeParameter(this IEnumerable<IParameter> parameters)
         {
-            return (KScopeParameter)(parameters
-                .Where(p => p.Name == typeof(KScopeParameter).FullName)
+            return (ScopeParameter)(parameters
+                .Where(p => p.Name == typeof(ScopeParameter).FullName)
                 .SingleOrDefault());
         }
 
         internal static IEnumerable<IParameter> AddOrReplaceScopeParameter(
                 this IEnumerable<IParameter> parameters,
-                KScopeParameter scopeParameter)
+                ScopeParameter scopeParameter)
         {
             return parameters
-                .Where(p => p.Name != typeof(KScopeParameter).FullName)
+                .Where(p => p.Name != typeof(ScopeParameter).FullName)
                 .Concat(new[] { scopeParameter });
         }
     }

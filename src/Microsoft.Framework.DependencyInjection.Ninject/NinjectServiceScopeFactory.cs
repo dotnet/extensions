@@ -29,14 +29,14 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
 
         private class NinjectServiceScope : IServiceScope
         {
-            private readonly KScopeParameter _scope;
+            private readonly ScopeParameter _scope;
             private readonly IServiceProvider _serviceProvider;
 
             public NinjectServiceScope(
                 IResolutionRoot resolver,
                 IEnumerable<IParameter> inheritedParameters)
             {
-                _scope = new KScopeParameter();
+                _scope = new ScopeParameter();
                 inheritedParameters = inheritedParameters.AddOrReplaceScopeParameter(_scope);
                 _serviceProvider = new NinjectServiceProvider(resolver, inheritedParameters.ToArray());
             }
