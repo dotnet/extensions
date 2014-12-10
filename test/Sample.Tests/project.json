@@ -1,11 +1,10 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
-        "xunit": "2.0.0-beta5-build2785",
-        "xunit.runner.kre": "1.0.0-*"
+        "Xunit.KRunner": "1.0.0-*"
     },
     "commands": {
-        "test": "xunit.runner.kre"
+        "test": "Xunit.KRunner"
     },
     "frameworks": {
         "aspnet50": { },
