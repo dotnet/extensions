@@ -158,6 +158,26 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             Assert.Equal(Resources.FormatNoConstructorMatch(typeof(AnotherClassAcceptingData)), ex2.Message);
         }
 
+        [Theory]
+        [MemberData(nameof(CreateInstanceFuncs))]
+        public void TypeActivatorRethrowsOriginalExceptionFromConstructor(CreateInstanceFunc createFunc)
+        {
+            var serviceProvider = new ServiceCollection()
+                .AddTransient<ITypeActivator, TypeActivator>()
+                .BuildServiceProvider();
+
+            var typeActivator = serviceProvider.GetService<ITypeActivator>();
+
+            var ex1 = Assert.Throws<Exception>(() =>
+                CreateInstance<ClassWithThrowingEmptyCtor>(createFunc, typeActivator, serviceProvider));
+
+            var ex2 = Assert.Throws<Exception>(() =>
+                CreateInstance<ClassWithThrowingCtor>(createFunc, typeActivator, serviceProvider, new FakeService()));
+
+            Assert.Equal(nameof(ClassWithThrowingEmptyCtor), ex1.Message);
+            Assert.Equal(nameof(ClassWithThrowingCtor), ex2.Message);
+        }
+
         [Fact]
         public void TypeActivatorCreateFactoryDoesNotAllowForAmbiguousConstructorMatches()
         {

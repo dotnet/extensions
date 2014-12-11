@@ -119,6 +119,29 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             Assert.Equal(serviceC, callSite.Invoke(provider));
         }
 
+        [Fact]
+        public void BuiltExpressionRethrowsOriginalExceptionFromConstructor()
+        {
+            var descriptors = new ServiceCollection();
+            descriptors.AddTransient<ClassWithThrowingEmptyCtor>();
+            descriptors.AddTransient<ClassWithThrowingCtor>();
+            descriptors.AddTransient<IFakeService, FakeService>();
+
+            var provider = new ServiceProvider(descriptors);
+
+            var callSite1 = provider.GetServiceCallSite(typeof(ClassWithThrowingEmptyCtor), new HashSet<Type>());
+            var compiledCallSite1 = CompileCallSite(callSite1);
+
+            var callSite2 = provider.GetServiceCallSite(typeof(ClassWithThrowingCtor), new HashSet<Type>());
+            var compiledCallSite2 = CompileCallSite(callSite2);
+
+            var ex1 = Assert.Throws<Exception>(() => compiledCallSite1(provider));
+            Assert.Equal(nameof(ClassWithThrowingEmptyCtor), ex1.Message);
+
+            var ex2 = Assert.Throws<Exception>(() => compiledCallSite2(provider));
+            Assert.Equal(nameof(ClassWithThrowingCtor), ex2.Message);
+        }
+
         private class ServiceA
         {
         }

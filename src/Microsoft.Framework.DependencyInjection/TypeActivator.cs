@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -253,7 +254,17 @@ namespace Microsoft.Framework.DependencyInjection
                         }
                     }
                 }
-                return _constructor.Invoke(_parameterValues);
+
+                try
+                {
+                    return _constructor.Invoke(_parameterValues);
+                }
+                catch (Exception ex)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    // The above line will always throw, but the compiler requires we throw explicitly.
+                    throw;
+                }
             }
         }
     }
