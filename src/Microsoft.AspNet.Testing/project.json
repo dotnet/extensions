@@ -1,7 +1,8 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
-        "xunit.runner.kre": "1.0.0-*"
+        "xunit.assert": "2.0.0-aspnet-*",
+        "xunit.core": "2.0.0-aspnet-*"
     },
     "frameworks": {
         "aspnet50": {
