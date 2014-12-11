@@ -6,7 +6,8 @@
     "frameworks": {
         "aspnet50": {
             "dependencies": {
-                "Microsoft.Framework.Logging.NLog": "1.0.0-*"
+                "Microsoft.Framework.Logging.NLog": "1.0.0-*",
+                "Microsoft.Framework.Logging.Serilog": "1.0.0-*"
             }
         },
         "aspnetcore50": {

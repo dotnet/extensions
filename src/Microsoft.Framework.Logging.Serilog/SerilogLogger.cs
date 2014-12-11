@@ -59,6 +59,10 @@ namespace Microsoft.Framework.Logging.Serilog
             {
                 return;
             }
+            if (eventId != 0)
+            {
+                logger = logger.ForContext("EventId", eventId, false);
+            }
             var structure = state as ILoggerStructure;
             if (structure != null)
             {

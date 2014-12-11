@@ -141,8 +141,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteInformation([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Write(LogLevel.Information, eventId,
-                string.Format(CultureInfo.InvariantCulture, format, args), null, TheMessage);
+            logger.Write(LogLevel.Information, eventId, new LoggerStructureFormat(format, args), null, _loggerStructureFormatter);
         }
 
         /// <summary>
@@ -501,6 +500,10 @@ namespace Microsoft.Framework.Logging
 
         private static string LoggerStructureFormatter(ILoggerStructure state, Exception exception)
         {
+            if (exception == null)
+            {
+                return state.Format();
+            }
             return state.Format() + Environment.NewLine + exception;
         }
     }
