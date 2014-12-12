@@ -2,7 +2,7 @@
     "version": "1.0.0-*",
     "description": "Implementation for ASP.NET 5 File System abstractions.",
     "dependencies": {
-        "Microsoft.AspNet.FileSystems.Interfaces": "1.0.0-*"
+        "Microsoft.AspNet.FileSystems.Interfaces": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
         "net45": { },

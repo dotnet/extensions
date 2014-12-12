@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using Microsoft.Framework.Expiration.Interfaces;
 
 namespace Microsoft.AspNet.FileSystems
 {
@@ -68,11 +67,6 @@ namespace Microsoft.AspNet.FileSystems
         }
 
         public void Delete()
-        {
-            throw new InvalidOperationException(string.Format("The file {0} does not exist.", Name));
-        }
-
-        public Stream CreateReadStream(out IExpirationTrigger expirationTrigger)
         {
             throw new InvalidOperationException(string.Format("The file {0} does not exist.", Name));
         }
