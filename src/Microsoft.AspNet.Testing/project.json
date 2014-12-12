@@ -2,7 +2,8 @@
     "version": "1.0.0-*",
     "dependencies": {
         "xunit.assert": "2.0.0-aspnet-*",
-        "xunit.core": "2.0.0-aspnet-*"
+        "xunit.core": "2.0.0-aspnet-*",
+        "xunit.execution": "2.0.0-aspnet-*",
     },
     "frameworks": {
         "aspnet50": {
@@ -15,6 +16,7 @@
         "aspnetcore50": {
             "dependencies": {
                 "System.Runtime": "4.0.20-beta-*",
+                "System.Runtime.InteropServices": "4.0.20-beta-",
                 "System.Globalization": "4.0.10-beta-*",
                 "System.Threading.Tasks": "4.0.10-beta-*",
                 "System.Reflection": "4.0.10-beta-*",
