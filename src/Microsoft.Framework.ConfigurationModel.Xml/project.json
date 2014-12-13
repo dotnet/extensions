@@ -18,7 +18,7 @@
         },
         "aspnetcore50": {
             "dependencies": {
-                "System.Xml.XmlSerializer": "4.0.0-beta-*"
+                "System.Xml.XmlSerializer": "4.0.10-beta-*"
             }
         }
     }
