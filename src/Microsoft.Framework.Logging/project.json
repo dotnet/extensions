@@ -21,7 +21,7 @@
                 "System.Diagnostics.TraceSource": "4.0.0-beta-*",
                 "System.Globalization": "4.0.10-beta-*",
                 "System.Linq": "4.0.0-beta-*",
-                "System.Threading": "4.0.0-beta-*",
+                "System.Threading": "4.0.10-beta-*",
                 "Microsoft.Framework.Logging.Interfaces": { "version": "1.0.0-*", "type": "build" }
             }
         },
