@@ -2,10 +2,10 @@
   "dependencies": {
     "Microsoft.AspNet.Testing": "1.0.0-*",
     "Microsoft.Framework.Cache.Redis": "1.0.0-*",
-    "Xunit.KRunner": "1.0.0-*"
+    "xunit.runner.kre": "1.0.0-*"
   },
   "commands": {
-    "test": "Xunit.KRunner"
+    "test": "xunit.runner.kre"
   },
   "frameworks": {
     "aspnet50": { }
