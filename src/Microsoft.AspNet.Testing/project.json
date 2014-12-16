@@ -16,7 +16,7 @@
         "aspnetcore50": {
             "dependencies": {
                 "System.Runtime": "4.0.20-beta-*",
-                "System.Runtime.InteropServices": "4.0.20-beta-",
+                "System.Runtime.InteropServices": "4.0.20-beta-*",
                 "System.Globalization": "4.0.10-beta-*",
                 "System.Threading.Tasks": "4.0.10-beta-*",
                 "System.Reflection": "4.0.10-beta-*",
