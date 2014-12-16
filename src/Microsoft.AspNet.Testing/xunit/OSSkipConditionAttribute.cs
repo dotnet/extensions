@@ -58,6 +58,12 @@ namespace Microsoft.AspNet.Testing.xunit
                         return false;
                     }
                     break;
+                case PlatformID.MacOSX:
+                    if (excludedOperatingSystems.HasFlag(OperatingSystems.MacOSX))
+                    {
+                        return false;
+                    }
+                    break;
             }
 #endif
 
