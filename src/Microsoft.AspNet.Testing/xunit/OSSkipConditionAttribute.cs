@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Testing.xunit
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class OSSkipConditionAttribute : Attribute, ITestCondition
     {
-        private OperatingSystems _excludedOS;
+        private readonly OperatingSystems _excludedOS;
 
         public OSSkipConditionAttribute(OperatingSystems excludedOperatingSystems)
         {
@@ -49,20 +49,23 @@ namespace Microsoft.AspNet.Testing.xunit
 
             switch (Environment.OSVersion.Platform)
             {
-            case PlatformID.Win32NT:
-                isWindows = true;
-                break;
-            case PlatformID.Unix:
-                if (excludedOperatingSystems.HasFlag(OperatingSystems.Unix))
-                {
-                    return false;
-                }
-                break;
+                case PlatformID.Win32NT:
+                    isWindows = true;
+                    break;
+                case PlatformID.Unix:
+                    if (excludedOperatingSystems.HasFlag(OperatingSystems.Unix))
+                    {
+                        return false;
+                    }
+                    break;
             }
 #endif
 
             if (isWindows)
             {
+                // The GetVersion API has a back compat feature: for apps that are not manifested 
+                // and run on Windows 8.1, it returns version 6.2 rather than 6.3. See this:
+                // http://msdn.microsoft.com/en-us/library/windows/desktop/ms724439(v=vs.85).aspx
                 if (osVersion.Major == 6)
                 {
                     if (osVersion.Minor == 1 &&

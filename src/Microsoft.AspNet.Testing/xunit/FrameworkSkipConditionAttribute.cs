@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Testing.xunit
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class FrameworkSkipConditionAttribute : Attribute, ITestCondition
     {
-        private RuntimeFrameworks _excludedFrameworks;
+        private readonly RuntimeFrameworks _excludedFrameworks;
 
         public FrameworkSkipConditionAttribute(RuntimeFrameworks excludedFrameworks)
         {

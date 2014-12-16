@@ -3,7 +3,7 @@
     "dependencies": {
         "xunit.assert": "2.0.0-aspnet-*",
         "xunit.core": "2.0.0-aspnet-*",
-        "xunit.execution": "2.0.0-aspnet-*",
+        "xunit.execution": "2.0.0-aspnet-*"
     },
     "frameworks": {
         "aspnet50": {

@@ -8,8 +8,8 @@ namespace Microsoft.AspNet.Testing.xunit
 {
     internal class SkipReasonAttributeInfo : IAttributeInfo
     {
-        private IAttributeInfo _wrappedAttribute;
-        private string _skipReason;
+        private readonly IAttributeInfo _wrappedAttribute;
+        private readonly string _skipReason;
 
         public SkipReasonAttributeInfo(string skipReason, IAttributeInfo wrappedAttribute)
         {
