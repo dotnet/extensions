@@ -11,13 +11,12 @@ namespace Microsoft.AspNet.Testing.xunit
 {
     internal class ConditionalAttributeDiscoverer : IXunitTestCaseDiscoverer
     {
-        public IEnumerable<IXunitTestCase> Discover(ITestCollection testCollection, IAssemblyInfo assembly, ITypeInfo testClass, IMethodInfo testMethod, IAttributeInfo factAttribute)
+        public IEnumerable<IXunitTestCase> Discover(ITestMethod testMethod, IAttributeInfo factAttribute)
         {
             var skipReason = EvaluateSkipConditions(testMethod);
-            var wrapperAttributeInfo = new SkipReasonAttributeInfo(skipReason, factAttribute);
 
             IXunitTestCaseDiscoverer innerDiscoverer;
-            if (testMethod.GetCustomAttributes(typeof(TheoryAttribute)).Any())
+            if (testMethod.Method.GetCustomAttributes(typeof(TheoryAttribute)).Any())
             {
                 innerDiscoverer = new TheoryDiscoverer();
             }
@@ -26,13 +25,13 @@ namespace Microsoft.AspNet.Testing.xunit
                 innerDiscoverer = new FactDiscoverer();
             }
 
-            var res = innerDiscoverer.Discover(testCollection, assembly, testClass, testMethod, wrapperAttributeInfo);
+            var res = innerDiscoverer.Discover(testMethod, factAttribute).Select(s => new SkipReasonTestCase(skipReason, s));
             return res;
         }
 
-        private string EvaluateSkipConditions(IMethodInfo testMethod)
+        private string EvaluateSkipConditions(ITestMethod testMethod)
         {
-            var conditionAttributes = testMethod
+            var conditionAttributes = testMethod.Method
                 .GetCustomAttributes(typeof(ITestCondition))
                 .OfType<ReflectionAttributeInfo>()
                 .Select(attributeInfo => attributeInfo.Attribute);
