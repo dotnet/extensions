@@ -624,5 +624,58 @@ namespace Microsoft.AspNet.FileSystems
             trigger2.IsExpired.ShouldBe(false);
             trigger3.IsExpired.ShouldBe(false);
         }
+
+        [Fact]
+        public async Task Trigger_Fired_On_Directory_Name_Change()
+        {
+            var provider = new PhysicalFileSystem(Path.GetTempPath());
+            var oldDirectoryName = Guid.NewGuid().ToString();
+            var newDirectoryName = Guid.NewGuid().ToString();
+            var oldDirectoryFullPath = Path.Combine(Path.GetTempPath(), oldDirectoryName);
+            var newDirectoryFullPath = Path.Combine(Path.GetTempPath(), newDirectoryName);
+
+            Directory.CreateDirectory(oldDirectoryFullPath);
+            var oldDirectoryTrigger = provider.Watch("**/" + oldDirectoryName);
+            var newDirectoryTrigger = provider.Watch("**/" + newDirectoryName);
+            var oldTriggers = new List<IExpirationTrigger>();
+            var newTriggers = new List<IExpirationTrigger>();
+
+            oldTriggers.Add(provider.Watch(Path.Combine("**", oldDirectoryName, "*.txt")));
+            newTriggers.Add(provider.Watch(Path.Combine("**", newDirectoryName, "*.txt")));
+
+            for (int i = 0; i < 5; i++)
+            {
+                var fileName = string.Format("test{0}.txt", i);
+                File.WriteAllText(Path.Combine(oldDirectoryFullPath, fileName), "test content");
+                oldTriggers.Add(provider.Watch(Path.Combine("**", oldDirectoryName, fileName)));
+                newTriggers.Add(provider.Watch(Path.Combine("**", newDirectoryName, fileName)));
+            }
+
+            Directory.Move(oldDirectoryFullPath, newDirectoryFullPath);
+
+            // Wait for triggers to fire.
+            await Task.Delay(2 * 1000);
+            oldDirectoryTrigger.IsExpired.ShouldBe(true);
+            newDirectoryTrigger.IsExpired.ShouldBe(true);
+            oldTriggers.All(t => t.IsExpired == true).ShouldBe(true);
+            newTriggers.All(t => t.IsExpired == true).ShouldBe(true);
+
+            newDirectoryTrigger = provider.Watch(newDirectoryName);
+            newTriggers = new List<IExpirationTrigger>();
+
+            newTriggers.Add(provider.Watch(Path.Combine("**", newDirectoryName, "*.txt")));
+            for (int i = 0; i < 5; i++)
+            {
+                var fileName = string.Format("test{0}.txt", i);
+                newTriggers.Add(provider.Watch(Path.Combine("**", newDirectoryName, fileName)));
+            }
+
+            Directory.Delete(newDirectoryFullPath, true);
+
+            // Wait for triggers to fire.
+            await Task.Delay(2 * 1000);
+            newDirectoryTrigger.IsExpired.ShouldBe(true);
+            newTriggers.All(t => t.IsExpired == true).ShouldBe(true);
+        }
     }
 }

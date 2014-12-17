@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.FileSystems
             _fileWatcher.IncludeSubdirectories = true;
             _fileWatcher.Created += OnChanged;
             _fileWatcher.Changed += OnChanged;
-            _fileWatcher.Renamed += OnChanged;
+            _fileWatcher.Renamed += OnRenamed;
             _fileWatcher.Deleted += OnChanged;
         }
 
@@ -54,9 +54,33 @@ namespace Microsoft.AspNet.FileSystems
             return expirationTrigger;
         }
 
+        private void OnRenamed(object sender, RenamedEventArgs e)
+        {
+            // For a file name change or a directory's name change raise a trigger.
+            OnFileSystemEntryChange(e.FullPath);
+            OnFileSystemEntryChange(e.OldFullPath);
+
+            if (Directory.Exists(e.FullPath))
+            {
+                // If the renamed entity is a directory then raise trigger for every sub item.
+                foreach (var newLocation in Directory.EnumerateFileSystemEntries(e.FullPath, "*", SearchOption.AllDirectories))
+                {
+                    // Calculated previous path of this moved item.
+                    var oldLocation = newLocation.Replace(e.FullPath, e.OldFullPath);
+                    OnFileSystemEntryChange(oldLocation);
+                    OnFileSystemEntryChange(newLocation);
+                }
+            }
+        }
+
         private void OnChanged(object sender, FileSystemEventArgs e)
         {
-            var relativePath = e.FullPath.Replace(_root, string.Empty);
+            OnFileSystemEntryChange(e.FullPath);
+        }
+
+        private void OnFileSystemEntryChange(string fullPath)
+        {
+            var relativePath = fullPath.Replace(_root, string.Empty);
             if (_triggerCache.ContainsKey(relativePath))
             {
                 ReportChangeForMatchedEntries(relativePath);
