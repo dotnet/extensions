@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Testing.xunit
                 return false;
             }
 
-            if (excludedFrameworks.HasFlag(RuntimeFrameworks.Dotnet) &&
+            if (excludedFrameworks.HasFlag(RuntimeFrameworks.DotNet) &&
                  !TestPlatformHelper.IsMono)
             {
                 return false;

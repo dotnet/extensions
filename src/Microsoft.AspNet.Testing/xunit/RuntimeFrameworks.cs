@@ -10,6 +10,6 @@ namespace Microsoft.AspNet.Testing.xunit
     {
         None = 0,
         Mono = 1 << 0,
-        Dotnet = 1 << 1
+        DotNet = 1 << 1
     }
 }
