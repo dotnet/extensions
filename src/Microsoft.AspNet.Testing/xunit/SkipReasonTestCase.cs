@@ -7,87 +7,90 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-internal class SkipReasonTestCase : IXunitTestCase
+namespace Microsoft.AspNet.Testing.xunit
 {
-    private readonly string _skipReason;
-    private readonly IXunitTestCase _wrappedTestCase;
-
-    public SkipReasonTestCase(string skipReason, IXunitTestCase wrappedTestCase)
+    internal class SkipReasonTestCase : IXunitTestCase
     {
-        _skipReason = wrappedTestCase.SkipReason ?? skipReason;
-        _wrappedTestCase = wrappedTestCase;
-    }
+        private readonly string _skipReason;
+        private readonly IXunitTestCase _wrappedTestCase;
 
-    public string DisplayName
-    {
-        get
+        public SkipReasonTestCase(string skipReason, IXunitTestCase wrappedTestCase)
         {
-            return _wrappedTestCase.DisplayName;
+            _skipReason = wrappedTestCase.SkipReason ?? skipReason;
+            _wrappedTestCase = wrappedTestCase;
         }
-    }
 
-    public IMethodInfo Method
-    {
-        get
+        public string DisplayName
         {
-            return _wrappedTestCase.Method;
+            get
+            {
+                return _wrappedTestCase.DisplayName;
+            }
         }
-    }
 
-    public string SkipReason
-    {
-        get
+        public IMethodInfo Method
         {
-            return _skipReason;
+            get
+            {
+                return _wrappedTestCase.Method;
+            }
         }
-    }
 
-    public ISourceInformation SourceInformation
-    {
-        get
+        public string SkipReason
         {
-            return _wrappedTestCase.SourceInformation;
+            get
+            {
+                return _skipReason;
+            }
         }
-        set
-        {
-            _wrappedTestCase.SourceInformation = value;
-        }
-    }
 
-    public ITestMethod TestMethod
-    {
-        get
+        public ISourceInformation SourceInformation
         {
-            return _wrappedTestCase.TestMethod;
+            get
+            {
+                return _wrappedTestCase.SourceInformation;
+            }
+            set
+            {
+                _wrappedTestCase.SourceInformation = value;
+            }
         }
-    }
 
-    public object[] TestMethodArguments
-    {
-        get
+        public ITestMethod TestMethod
         {
-            return _wrappedTestCase.TestMethodArguments;
+            get
+            {
+                return _wrappedTestCase.TestMethod;
+            }
         }
-    }
 
-    public Dictionary<string, List<string>> Traits
-    {
-        get
+        public object[] TestMethodArguments
         {
-            return _wrappedTestCase.Traits;
+            get
+            {
+                return _wrappedTestCase.TestMethodArguments;
+            }
         }
-    }
 
-    public string UniqueID
-    {
-        get
+        public Dictionary<string, List<string>> Traits
         {
-            return _wrappedTestCase.UniqueID;
+            get
+            {
+                return _wrappedTestCase.Traits;
+            }
         }
-    }
 
-    public Task<RunSummary> RunAsync(IMessageBus messageBus, object[] constructorArguments, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
-    {
-        return new XunitTestCaseRunner(this, DisplayName, _skipReason, constructorArguments, TestMethodArguments, messageBus, aggregator, cancellationTokenSource).RunAsync();
+        public string UniqueID
+        {
+            get
+            {
+                return _wrappedTestCase.UniqueID;
+            }
+        }
+
+        public Task<RunSummary> RunAsync(IMessageBus messageBus, object[] constructorArguments, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
+        {
+            return new XunitTestCaseRunner(this, DisplayName, _skipReason, constructorArguments, TestMethodArguments, messageBus, aggregator, cancellationTokenSource).RunAsync();
+        }
     }
 }

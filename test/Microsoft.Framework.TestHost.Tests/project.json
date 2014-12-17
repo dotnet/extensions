@@ -2,7 +2,7 @@
     "version": "1.0.0-*",
     "dependencies": {
         "Sample.Tests": "1.0.0-*",
-        "Microsoft.AspNet.Testing": ""
+        "Microsoft.AspNet.Testing": "1.0.0-*"
     },
     "commands": {
         "test": "xunit.runner.kre"
