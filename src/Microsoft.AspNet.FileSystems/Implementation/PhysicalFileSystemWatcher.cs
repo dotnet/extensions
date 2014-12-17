@@ -57,8 +57,8 @@ namespace Microsoft.AspNet.FileSystems
         private void OnRenamed(object sender, RenamedEventArgs e)
         {
             // For a file name change or a directory's name change raise a trigger.
-            OnFileSystemEntryChange(e.FullPath);
             OnFileSystemEntryChange(e.OldFullPath);
+            OnFileSystemEntryChange(e.FullPath);
 
             if (Directory.Exists(e.FullPath))
             {
