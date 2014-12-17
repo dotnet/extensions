@@ -25,7 +25,8 @@ namespace Microsoft.AspNet.Testing.xunit
                 innerDiscoverer = new FactDiscoverer();
             }
 
-            var res = innerDiscoverer.Discover(testMethod, factAttribute).Select(s => new SkipReasonTestCase(skipReason, s));
+            var res = innerDiscoverer.Discover(testMethod, factAttribute)
+                      .Select(testCase => new SkipReasonTestCase(skipReason, testCase));
             return res;
         }
 

@@ -9,6 +9,7 @@ using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
 using Microsoft.Framework.TestAdapter;
 using Xunit;
+using Microsoft.AspNet.Testing.xunit;
 
 namespace Microsoft.Framework.TestHost
 {
@@ -147,6 +148,19 @@ namespace Microsoft.Framework.TestHost
             Assert.Single(host.Output, m => TestStarted(m, test.DisplayName));
             Assert.Single(host.Output, m => TestPassed(m, test.DisplayName));
             Assert.Equal("TestExecution.Response", host.Output[host.Output.Count - 1].MessageType);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
+        public void RunTest_DoesNotRunOnWin7()
+        {
+            Version osVersion = Environment.OSVersion.Version;
+
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT
+                && osVersion.Major == 6 && osVersion.Minor == 1)
+            {
+                throw new SystemException("Test should not be running on Win7");
+            }
         }
 
         private static bool TestFound(Message message, string name)

@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
@@ -9,10 +12,10 @@ internal class SkipReasonTestCase : IXunitTestCase
     private readonly string _skipReason;
     private readonly IXunitTestCase _wrappedTestCase;
 
-    public SkipReasonTestCase(string skipReason, IXunitTestCase wrappedBase)
+    public SkipReasonTestCase(string skipReason, IXunitTestCase wrappedTestCase)
     {
-        _skipReason = wrappedBase.SkipReason ?? skipReason;
-        _wrappedTestCase = wrappedBase;
+        _skipReason = wrappedTestCase.SkipReason ?? skipReason;
+        _wrappedTestCase = wrappedTestCase;
     }
 
     public string DisplayName
@@ -45,7 +48,6 @@ internal class SkipReasonTestCase : IXunitTestCase
         {
             return _wrappedTestCase.SourceInformation;
         }
-
         set
         {
             _wrappedTestCase.SourceInformation = value;
