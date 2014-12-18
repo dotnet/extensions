@@ -10,24 +10,24 @@ using Xunit;
 
 namespace Microsoft.Framework.DependencyInjection.Tests
 {
-    public class TypeActivatorTests
+    public class ActivatorUtilitiesTests
     {
-        public delegate object CreateInstanceFunc(ITypeActivator activator, IServiceProvider provider, Type type, object[] args);
+        public delegate object CreateInstanceFunc(IServiceProvider provider, Type type, object[] args);
 
-        public static object CreateInstanceDirectly(ITypeActivator activator, IServiceProvider provider, Type type, object[] args)
+        public static object CreateInstanceDirectly(IServiceProvider provider, Type type, object[] args)
         {
-            return activator.CreateInstance(provider, type, args);
+            return ActivatorUtilities.CreateInstance(provider, type, args);
         }
 
-        public static object CreateInstanceFromFactory(ITypeActivator activator, IServiceProvider provider, Type type, object[] args)
+        public static object CreateInstanceFromFactory(IServiceProvider provider, Type type, object[] args)
         {
-            var factory = activator.CreateFactory(type, args.Select(a => a.GetType()).ToArray());
+            var factory = ActivatorUtilities.CreateFactory(type, args.Select(a => a.GetType()).ToArray());
             return factory(provider, args);
         }
 
-        public static T CreateInstance<T>(CreateInstanceFunc func, ITypeActivator activator, IServiceProvider provider, params object[] args)
+        public static T CreateInstance<T>(CreateInstanceFunc func, IServiceProvider provider, params object[] args)
         {
-            return (T)func(activator, provider, typeof(T), args);
+            return (T)func(provider, typeof(T), args);
         }
 
         public static IEnumerable<object[]> CreateInstanceFuncs
@@ -45,12 +45,9 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         {
             var serviceProvider = new ServiceCollection()
                 .AddTransient<IFakeService, FakeService>()
-                .AddTransient<ITypeActivator, TypeActivator>()
                 .BuildServiceProvider();
 
-            var typeActivator = serviceProvider.GetService<ITypeActivator>();
-
-            var anotherClass = CreateInstance<AnotherClass>(createFunc, typeActivator, serviceProvider);
+            var anotherClass = CreateInstance<AnotherClass>(createFunc, serviceProvider);
 
             var result = anotherClass.LessSimpleMethod();
 
@@ -63,12 +60,10 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         {
             var serviceProvider = new ServiceCollection()
                 .AddTransient<IFakeService, FakeService>()
-                .AddTransient<ITypeActivator, TypeActivator>()
                 .BuildServiceProvider();
 
-            var typeActivator = serviceProvider.GetService<ITypeActivator>();
 
-            var anotherClass = CreateInstance<AnotherClassAcceptingData>(createFunc, typeActivator, serviceProvider, "1", "2");
+            var anotherClass = CreateInstance<AnotherClassAcceptingData>(createFunc, serviceProvider, "1", "2");
 
             var result = anotherClass.LessSimpleMethod();
 
@@ -79,13 +74,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         [MemberData(nameof(CreateInstanceFuncs))]
         public void TypeActivatorWorksWithStaticCtor(CreateInstanceFunc createFunc)
         {
-            var serviceProvider = new ServiceCollection()
-                .AddTransient<ITypeActivator, TypeActivator>()
-                .BuildServiceProvider();
-
-            var typeActivator = serviceProvider.GetService<ITypeActivator>();
-
-            var anotherClass = CreateInstance<ClassWithStaticCtor>(createFunc, typeActivator, serviceProvider);
+            var anotherClass = CreateInstance<ClassWithStaticCtor>(createFunc, provider: null);
 
             Assert.NotNull(anotherClass);
         }
@@ -94,13 +83,8 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         [MemberData(nameof(CreateInstanceFuncs))]
         public void TypeActivatorWorksWithCtorWithOptionalArgs(CreateInstanceFunc createFunc)
         {
-            var serviceProvider = new ServiceCollection()
-                .AddTransient<ITypeActivator, TypeActivator>()
-                .BuildServiceProvider();
-
-            var typeActivator = serviceProvider.GetService<ITypeActivator>();
-
-            var anotherClass = CreateInstance<ClassWithOptionalArgsCtor>(createFunc, typeActivator, serviceProvider);
+            var provider = new ServiceCollection().BuildServiceProvider();
+            var anotherClass = CreateInstance<ClassWithOptionalArgsCtor>(createFunc, provider);
 
             Assert.NotNull(anotherClass);
             Assert.Equal("BLARGH", anotherClass.Whatever);
@@ -112,12 +96,9 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         {
             var serviceProvider = new ServiceCollection()
                 .AddTransient<IFakeService, FakeService>()
-                .AddTransient<ITypeActivator, TypeActivator>()
                 .BuildServiceProvider();
 
-            var typeActivator = serviceProvider.GetService<ITypeActivator>();
-
-            var instance = CreateInstance<ClassWithAmbiguousCtors>(createFunc, typeActivator, serviceProvider, "1", 2);
+            var instance = CreateInstance<ClassWithAmbiguousCtors>(createFunc, serviceProvider, "1", 2);
 
             Assert.NotNull(instance);
         }
@@ -126,14 +107,8 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         [MemberData(nameof(CreateInstanceFuncs))]
         public void TypeActivatorRequiresPublicConstructor(CreateInstanceFunc createFunc)
         {
-            var serviceProvider = new ServiceCollection()
-                .AddTransient<ITypeActivator, TypeActivator>()
-                .BuildServiceProvider();
-
-            var typeActivator = serviceProvider.GetService<ITypeActivator>();
-
             var ex = Assert.Throws<InvalidOperationException>(() =>
-                CreateInstance<ClassWithPrivateCtor>(createFunc, typeActivator, serviceProvider));
+                CreateInstance<ClassWithPrivateCtor>(createFunc, provider: null));
 
             Assert.Equal(Resources.FormatNoConstructorMatch(typeof(ClassWithPrivateCtor)), ex.Message);
         }
@@ -144,15 +119,12 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         {
             var serviceProvider = new ServiceCollection()
                 .AddTransient<IFakeService, FakeService>()
-                .AddTransient<ITypeActivator, TypeActivator>()
                 .BuildServiceProvider();
 
-            var typeActivator = serviceProvider.GetService<ITypeActivator>();
-
             var ex1 = Assert.Throws<InvalidOperationException>(() =>
-                CreateInstance<AnotherClassAcceptingData>(createFunc, typeActivator, serviceProvider, "1", "2", "3"));
+                CreateInstance<AnotherClassAcceptingData>(createFunc, serviceProvider, "1", "2", "3"));
             var ex2 = Assert.Throws<InvalidOperationException>(() =>
-                CreateInstance<AnotherClassAcceptingData>(createFunc, typeActivator, serviceProvider, 1, 2));
+                CreateInstance<AnotherClassAcceptingData>(createFunc, serviceProvider, 1, 2));
 
             Assert.Equal(Resources.FormatNoConstructorMatch(typeof(AnotherClassAcceptingData)), ex1.Message);
             Assert.Equal(Resources.FormatNoConstructorMatch(typeof(AnotherClassAcceptingData)), ex2.Message);
@@ -162,17 +134,11 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         [MemberData(nameof(CreateInstanceFuncs))]
         public void TypeActivatorRethrowsOriginalExceptionFromConstructor(CreateInstanceFunc createFunc)
         {
-            var serviceProvider = new ServiceCollection()
-                .AddTransient<ITypeActivator, TypeActivator>()
-                .BuildServiceProvider();
-
-            var typeActivator = serviceProvider.GetService<ITypeActivator>();
-
             var ex1 = Assert.Throws<Exception>(() =>
-                CreateInstance<ClassWithThrowingEmptyCtor>(createFunc, typeActivator, serviceProvider));
+                CreateInstance<ClassWithThrowingEmptyCtor>(createFunc, provider: null));
 
             var ex2 = Assert.Throws<Exception>(() =>
-                CreateInstance<ClassWithThrowingCtor>(createFunc, typeActivator, serviceProvider, new FakeService()));
+                CreateInstance<ClassWithThrowingCtor>(createFunc, provider: null, args: new[] { new FakeService() }));
 
             Assert.Equal(nameof(ClassWithThrowingEmptyCtor), ex1.Message);
             Assert.Equal(nameof(ClassWithThrowingCtor), ex2.Message);
@@ -181,12 +147,10 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         [Fact]
         public void TypeActivatorCreateFactoryDoesNotAllowForAmbiguousConstructorMatches()
         {
-            var typeActivator = new TypeActivator();
-
             var ex1 = Assert.Throws<InvalidOperationException>(() =>
-                typeActivator.CreateFactory(typeof(ClassWithAmbiguousCtors), new[] { typeof(string) }));
+                ActivatorUtilities.CreateFactory(typeof(ClassWithAmbiguousCtors), new[] { typeof(string) }));
             var ex2 = Assert.Throws<InvalidOperationException>(() =>
-                typeActivator.CreateFactory(typeof(ClassWithAmbiguousCtors), new[] { typeof(int) }));
+                ActivatorUtilities.CreateFactory(typeof(ClassWithAmbiguousCtors), new[] { typeof(int) }));
 
             Assert.Equal(Resources.FormatAmbiguousConstructorMatch(typeof(ClassWithAmbiguousCtors)), ex1.Message);
             Assert.Equal(Resources.FormatAmbiguousConstructorMatch(typeof(ClassWithAmbiguousCtors)), ex2.Message);
@@ -201,17 +165,14 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             var serviceProvider = new ServiceCollection()
                 .AddTransient<IFakeService, FakeService>()
                 .AddTransient<CreationCountFakeService>()
-                .AddTransient<ITypeActivator, TypeActivator>()
                 .BuildServiceProvider();
 
-            var typeActivator = serviceProvider.GetService<ITypeActivator>();
-
-            var service = typeActivator.GetServiceOrCreateInstance<CreationCountFakeService>(serviceProvider);
+            var service = ActivatorUtilities.GetServiceOrCreateInstance<CreationCountFakeService>(serviceProvider);
             Assert.NotNull(service);
             Assert.Equal(1, service.InstanceId);
             Assert.Equal(1, CreationCountFakeService.InstanceCount);
 
-            service = typeActivator.GetServiceOrCreateInstance<CreationCountFakeService>(serviceProvider);
+            service = ActivatorUtilities.GetServiceOrCreateInstance<CreationCountFakeService>(serviceProvider);
             Assert.NotNull(service);
             Assert.Equal(2, service.InstanceId);
             Assert.Equal(2, CreationCountFakeService.InstanceCount);
@@ -226,17 +187,14 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             var serviceProvider = new ServiceCollection()
                 .AddTransient<IFakeService, FakeService>()
                 .AddSingleton<CreationCountFakeService>()
-                .AddTransient<ITypeActivator, TypeActivator>()
                 .BuildServiceProvider();
 
-            var typeActivator = serviceProvider.GetService<ITypeActivator>();
-
-            var service = typeActivator.GetServiceOrCreateInstance<CreationCountFakeService>(serviceProvider);
+            var service = ActivatorUtilities.GetServiceOrCreateInstance<CreationCountFakeService>(serviceProvider);
             Assert.NotNull(service);
             Assert.Equal(1, service.InstanceId);
             Assert.Equal(1, CreationCountFakeService.InstanceCount);
 
-            service = typeActivator.GetServiceOrCreateInstance<CreationCountFakeService>(serviceProvider);
+            service = ActivatorUtilities.GetServiceOrCreateInstance<CreationCountFakeService>(serviceProvider);
             Assert.NotNull(service);
             Assert.Equal(1, service.InstanceId);
             Assert.Equal(1, CreationCountFakeService.InstanceCount);
@@ -250,17 +208,14 @@ namespace Microsoft.Framework.DependencyInjection.Tests
 
             var serviceProvider = new ServiceCollection()
                 .AddTransient<IFakeService, FakeService>()
-                .AddTransient<ITypeActivator, TypeActivator>()
                 .BuildServiceProvider();
 
-            var typeActivator = serviceProvider.GetService<ITypeActivator>();
-
-            var service = (CreationCountFakeService)typeActivator.GetServiceOrCreateInstance(serviceProvider, typeof(CreationCountFakeService));
+            var service = (CreationCountFakeService)ActivatorUtilities.GetServiceOrCreateInstance(serviceProvider, typeof(CreationCountFakeService));
             Assert.NotNull(service);
             Assert.Equal(1, service.InstanceId);
             Assert.Equal(1, CreationCountFakeService.InstanceCount);
 
-            service = typeActivator.GetServiceOrCreateInstance<CreationCountFakeService>(serviceProvider);
+            service = ActivatorUtilities.GetServiceOrCreateInstance<CreationCountFakeService>(serviceProvider);
             Assert.NotNull(service);
             Assert.Equal(2, service.InstanceId);
             Assert.Equal(2, CreationCountFakeService.InstanceCount);
