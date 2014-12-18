@@ -17,6 +17,8 @@ namespace Microsoft.AspNet.FileSystems
 {
     public class PhysicalFileSystemTests
     {
+        private const int WAIT_TIME_FOR_TRIGGER_TO_FIRE = 2 * 100;
+
         [Fact]
         public void ExistingFilesReturnTrue()
         {
@@ -84,7 +86,7 @@ namespace Microsoft.AspNet.FileSystems
             fileInfo.Exists.ShouldBe(true);
             fileInfo.Length.ShouldBe(newData.Length);
             // Wait for callbacks to be fired.
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             trigger1.IsExpired.ShouldBe(true);
             trigger2.IsExpired.ShouldBe(true);
 
@@ -99,7 +101,7 @@ namespace Microsoft.AspNet.FileSystems
             new FileInfo(fileLocation).Exists.ShouldBe(false);
 
             // Wait for callbacks to be fired.
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             trigger3.IsExpired.ShouldBe(true);
             trigger4.IsExpired.ShouldBe(true);
         }
@@ -231,7 +233,7 @@ namespace Microsoft.AspNet.FileSystems
             File.AppendAllText(fileLocation, "UpdatedContent");
 
             // Some warm up time for the callbacks to be fired.
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
 
             for (int index = 1; index < count; index++)
             {
@@ -262,7 +264,7 @@ namespace Microsoft.AspNet.FileSystems
             File.AppendAllText(fileLocation, "UpdatedContent2");
 
             // Wait for callbacks to be fired.
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
 
             invocationCount.ShouldBe(1);
 
@@ -315,7 +317,7 @@ namespace Microsoft.AspNet.FileSystems
             File.AppendAllText(fileLocation2, "Update2");
 
             // Wait for callbacks to be fired.
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
 
             invocationCount1.ShouldBe(1);
             invocationCount2.ShouldBe(1);
@@ -347,7 +349,7 @@ namespace Microsoft.AspNet.FileSystems
 
             File.AppendAllText(fileLocation, "UpdatedContent");
             // Wait for callback to be fired.
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             expirationTrigger.IsExpired.ShouldBe(true);
 
             // Verify file system watcher is stable.
@@ -357,7 +359,7 @@ namespace Microsoft.AspNet.FileSystems
             File.AppendAllText(fileLocation, "UpdatedContent");
 
             // Wait for callback to be fired.
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             expirationTrigger.IsExpired.ShouldBe(true);
             callbackCount.ShouldBe(1);
 
@@ -407,7 +409,7 @@ namespace Microsoft.AspNet.FileSystems
             Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), directoryName));
 
             // Wait for triggers to fire.
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
 
             triggerCount.ShouldBe(2);
 
@@ -423,7 +425,7 @@ namespace Microsoft.AspNet.FileSystems
             Directory.Delete(Path.Combine(Path.GetTempPath(), directoryName));
 
             // Wait for triggers to fire.
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             triggerCount.ShouldBe(4);
         }
 
@@ -442,21 +444,21 @@ namespace Microsoft.AspNet.FileSystems
             Directory.CreateDirectory(folderPath);
             File.WriteAllText(Path.Combine(folderPath, fileName), "Content");
 
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             triggerCount.ShouldBe(1);
 
             fileTrigger = provider.Watch("/" + folderName + "/");
             fileTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
 
             File.AppendAllText(Path.Combine(folderPath, fileName), "UpdatedContent");
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             triggerCount.ShouldBe(2);
 
             fileTrigger = provider.Watch("/" + folderName + "/");
             fileTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
 
             File.Delete(Path.Combine(folderPath, fileName));
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             triggerCount.ShouldBe(3);
         }
 
@@ -473,7 +475,7 @@ namespace Microsoft.AspNet.FileSystems
             fileTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
 
             Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), directoryName));
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             triggerCount.ShouldBe(1);
 
             // Matches file/directory with this name.
@@ -481,7 +483,7 @@ namespace Microsoft.AspNet.FileSystems
             fileTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
 
             File.WriteAllText(Path.Combine(Path.GetTempPath(), fileName), "Content");
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             triggerCount.ShouldBe(2);
         }
 
@@ -507,7 +509,7 @@ namespace Microsoft.AspNet.FileSystems
 
             File.WriteAllText(Path.Combine(root, fileName + ".cshtml"), "Content");
 
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             pattern1TriggerCount.ShouldBe(1);
             pattern2TriggerCount.ShouldBe(1);
 
@@ -517,7 +519,7 @@ namespace Microsoft.AspNet.FileSystems
             trigger2.RegisterExpirationCallback(callback2, null);
             File.WriteAllText(Path.Combine(subFolder, fileName + ".txt"), "Content");
 
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             pattern1TriggerCount.ShouldBe(2);
             pattern2TriggerCount.ShouldBe(1);
 
@@ -547,7 +549,7 @@ namespace Microsoft.AspNet.FileSystems
 
             File.WriteAllText(Path.Combine(root, fileName + ".cshtml"), "Content");
 
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             pattern1TriggerCount.ShouldBe(1);
             pattern2TriggerCount.ShouldBe(1);
 
@@ -557,7 +559,7 @@ namespace Microsoft.AspNet.FileSystems
             trigger2.RegisterExpirationCallback(callback2, null);
             File.WriteAllText(Path.Combine(subFolder, fileName + ".txt"), "Content");
 
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             pattern1TriggerCount.ShouldBe(2);
             pattern2TriggerCount.ShouldBe(1);
 
@@ -585,7 +587,7 @@ namespace Microsoft.AspNet.FileSystems
 
             File.WriteAllText(Path.Combine(root, fileName + ".cshtml"), "Content");
 
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             pattern1TriggerCount.ShouldBe(1);
             pattern2TriggerCount.ShouldBe(0);
 
@@ -597,7 +599,7 @@ namespace Microsoft.AspNet.FileSystems
             trigger3.ShouldBe(trigger2);
             File.WriteAllText(Path.Combine(subFolder, fileName + ".cshtml"), "Content");
 
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             pattern1TriggerCount.ShouldBe(2);
             pattern2TriggerCount.ShouldBe(2);
 
@@ -654,11 +656,11 @@ namespace Microsoft.AspNet.FileSystems
             Directory.Move(oldDirectoryFullPath, newDirectoryFullPath);
 
             // Wait for triggers to fire.
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             oldDirectoryTrigger.IsExpired.ShouldBe(true);
             newDirectoryTrigger.IsExpired.ShouldBe(true);
-            oldTriggers.All(t => t.IsExpired == true).ShouldBe(true);
-            newTriggers.All(t => t.IsExpired == true).ShouldBe(true);
+            oldTriggers.All(t => t.IsExpired).ShouldBe(true);
+            newTriggers.All(t => t.IsExpired).ShouldBe(true);
 
             newDirectoryTrigger = provider.Watch(newDirectoryName);
             newTriggers = new List<IExpirationTrigger>();
@@ -673,9 +675,9 @@ namespace Microsoft.AspNet.FileSystems
             Directory.Delete(newDirectoryFullPath, true);
 
             // Wait for triggers to fire.
-            await Task.Delay(2 * 1000);
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             newDirectoryTrigger.IsExpired.ShouldBe(true);
-            newTriggers.All(t => t.IsExpired == true).ShouldBe(true);
+            newTriggers.All(t => t.IsExpired).ShouldBe(true);
         }
     }
 }
