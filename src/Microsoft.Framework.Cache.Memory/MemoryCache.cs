@@ -23,13 +23,13 @@ namespace Microsoft.Framework.Cache.Memory
         private DateTimeOffset _lastExpirationScan;
 
         /// <summary>
-        /// Creates a new MemoryCache instance. This overload is intended for testing purposes.
+        /// Creates a new MemoryCache instance.
         /// </summary>
         /// <param name="clock"></param>
         /// <param name="listenForMemoryPressure"></param>
-        public MemoryCache([NotNull] IOptions<MemoryCacheOptions> accessor)
+        public MemoryCache([NotNull] IOptions<MemoryCacheOptions> optionsAccessor)
         {
-            var options = accessor.Options;
+            var options = optionsAccessor.Options;
             _entries = new Dictionary<string, CacheEntry>(StringComparer.Ordinal);
             _entryLock = new ReaderWriterLockSlim();
             _entryExpirationNotification = EntryExpired;
