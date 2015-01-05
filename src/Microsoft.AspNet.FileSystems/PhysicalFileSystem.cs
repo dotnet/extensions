@@ -261,11 +261,7 @@ namespace Microsoft.AspNet.FileSystems
             {
                 get
                 {
-#if ASPNET50
                     return _info.LastWriteTimeUtc;
-#else
-                    return _info.LastWriteTime.ToUniversalTime();
-#endif
                 }
             }
 
@@ -278,12 +274,7 @@ namespace Microsoft.AspNet.FileSystems
             {
                 get
                 {
-#if ASPNET50
                     return _info.IsReadOnly;
-#else
-                    // TODO: Why property not available on CoreCLR
-                    return false;
-#endif
                 }
             }
 
@@ -340,11 +331,7 @@ namespace Microsoft.AspNet.FileSystems
             {
                 get
                 {
-#if ASPNET50
                     return _info.LastWriteTimeUtc;
-#else
-                    return _info.LastWriteTime.ToUniversalTime();
-#endif
                 }
             }
 
