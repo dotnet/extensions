@@ -23,7 +23,7 @@ namespace Microsoft.Framework.Logging
         /// Initializes a new instance of the <see cref="DiagnosticsLoggerProvider"/> class. 
         /// </summary>
         /// <summary>
-        /// Creates a factory named "Microsoft.Owin".
+        /// Creates a factory named "Microsoft.AspNet".
         /// </summary>
         public DiagnosticsLoggerProvider()
         {
