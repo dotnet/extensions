@@ -48,7 +48,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="format">Format string of the log message.</param>
         /// <param name="args">An object array that contains zero or more objects to format.</param>
-        public static void WriteVerbose([NotNull] this ILogger logger, string format, params string[] args)
+        public static void WriteVerbose([NotNull] this ILogger logger, string format, params object[] args)
         {
             logger.Write(LogLevel.Verbose, 0,
                 string.Format(CultureInfo.InvariantCulture, format, args), null, TheMessage);
@@ -61,7 +61,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="eventId">The event id associated with the log.</param>
         /// <param name="format">Format string of the log message.</param>
         /// <param name="args">An object array that contains zero or more objects to format.</param>
-        public static void WriteVerbose([NotNull] this ILogger logger, int eventId, string format, params string[] args)
+        public static void WriteVerbose([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
             logger.Write(LogLevel.Verbose, eventId,
                 string.Format(CultureInfo.InvariantCulture, format, args), null, TheMessage);
@@ -126,7 +126,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="format">Format string of the log message.</param>
         /// <param name="args">An object array that contains zero or more objects to format.</param>
-        public static void WriteInformation([NotNull] this ILogger logger, string format, params string[] args)
+        public static void WriteInformation([NotNull] this ILogger logger, string format, params object[] args)
         {
             logger.Write(LogLevel.Information, 0,
                 string.Format(CultureInfo.InvariantCulture, format, args), null, TheMessage);
@@ -139,7 +139,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="eventId">The event id associated with the log.</param>
         /// <param name="format">Format string of the log message.</param>
         /// <param name="args">An object array that contains zero or more objects to format.</param>
-        public static void WriteInformation([NotNull] this ILogger logger, int eventId, string format, params string[] args)
+        public static void WriteInformation([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
             logger.Write(LogLevel.Information, eventId,
                 string.Format(CultureInfo.InvariantCulture, format, args), null, TheMessage);
@@ -204,7 +204,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="format">Format string of the log message.</param>
         /// <param name="args">An object array that contains zero or more objects to format.</param>
-        public static void WriteWarning([NotNull] this ILogger logger, string format, params string[] args)
+        public static void WriteWarning([NotNull] this ILogger logger, string format, params object[] args)
         {
             logger.Write(LogLevel.Warning, 0,
                 string.Format(CultureInfo.InvariantCulture, format, args), null, TheMessage);
@@ -217,7 +217,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="eventId">The event id associated with the log.</param>
         /// <param name="format">Format string of the log message.</param>
         /// <param name="args">An object array that contains zero or more objects to format.</param>
-        public static void WriteWarning([NotNull] this ILogger logger, int eventId, string format, params string[] args)
+        public static void WriteWarning([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
             logger.Write(LogLevel.Warning, eventId,
                 string.Format(CultureInfo.InvariantCulture, format, args), null, TheMessage);
@@ -305,7 +305,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="format">Format string of the log message.</param>
         /// <param name="args">An object array that contains zero or more objects to format.</param>
-        public static void WriteError([NotNull] this ILogger logger, string format, params string[] args)
+        public static void WriteError([NotNull] this ILogger logger, string format, params object[] args)
         {
             logger.Write(LogLevel.Error, 0,
                 string.Format(CultureInfo.InvariantCulture, format, args), null, TheMessage);
@@ -318,7 +318,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="eventId">The event id associated with the log.</param>
         /// <param name="format">Format string of the log message.</param>
         /// <param name="args">An object array that contains zero or more objects to format.</param>
-        public static void WriteError([NotNull] this ILogger logger, int eventId, string format, params string[] args)
+        public static void WriteError([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
             logger.Write(LogLevel.Error, eventId,
                 string.Format(CultureInfo.InvariantCulture, format, args), null, TheMessage);
@@ -406,7 +406,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="format">Format string of the log message.</param>
         /// <param name="args">An object array that contains zero or more objects to format.</param>
-        public static void WriteCritical([NotNull] this ILogger logger, string format, params string[] args)
+        public static void WriteCritical([NotNull] this ILogger logger, string format, params object[] args)
         {
             logger.Write(LogLevel.Critical, 0,
                 string.Format(CultureInfo.InvariantCulture, format, args), null, TheMessage);
@@ -419,7 +419,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="eventId">The event id associated with the log.</param>
         /// <param name="format">Format string of the log message.</param>
         /// <param name="args">An object array that contains zero or more objects to format.</param>
-        public static void WriteCritical([NotNull] this ILogger logger, int eventId, string format, params string[] args)
+        public static void WriteCritical([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
             logger.Write(LogLevel.Critical, eventId,
                 string.Format(CultureInfo.InvariantCulture, format, args), null, TheMessage);
