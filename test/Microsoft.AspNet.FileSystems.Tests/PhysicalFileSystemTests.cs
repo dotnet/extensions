@@ -491,7 +491,7 @@ namespace Microsoft.AspNet.FileSystems
         public async Task Triggers_With_Regular_Expressions()
         {
             var pattern1 = "**/*";
-            var pattern2 = "*";
+            var pattern2 = "*.cshtml";
             var root = Path.GetTempPath();
             var fileName = Guid.NewGuid().ToString();
             var subFolder = Path.Combine(root, Guid.NewGuid().ToString());
