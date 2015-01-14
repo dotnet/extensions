@@ -18,20 +18,22 @@ namespace Microsoft.Framework.ConfigurationModel
         {
             var json = @"
 {
-    'name': 'test',
-    'address': {
-        'street': 'Something street',
-        'zipcode': '12345'
-    }
+    'firstname': 'test',
+    'test.last.name': 'last.name',
+        'residential.address': {
+            'street.name': 'Something street',
+            'zipcode': '12345'
+        }
 }";
             var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
 
             jsonConfigSrc.Load(StringToStream(json));
 
-            Assert.Equal(3, jsonConfigSrc.Data.Count);
-            Assert.Equal("test", jsonConfigSrc.Data["NAME"]);
-            Assert.Equal("Something street", jsonConfigSrc.Data["address:STREET"]);
-            Assert.Equal("12345", jsonConfigSrc.Data["address:zipcode"]);
+            Assert.Equal(4, jsonConfigSrc.Data.Count);
+            Assert.Equal("test", jsonConfigSrc.Data["firstname"]);
+            Assert.Equal("last.name", jsonConfigSrc.Data["test.last.name"]);
+            Assert.Equal("Something street", jsonConfigSrc.Data["residential.address:STREET.name"]);
+            Assert.Equal("12345", jsonConfigSrc.Data["residential.address:zipcode"]);
         }
 
         [Fact]

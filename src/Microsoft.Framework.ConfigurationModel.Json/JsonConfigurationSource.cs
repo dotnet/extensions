@@ -134,7 +134,8 @@ namespace Microsoft.Framework.ConfigurationModel
                         case JsonToken.Bytes:
                         case JsonToken.Raw:
                         case JsonToken.Null:
-                            var key = reader.Path.Replace(".", Constants.KeyDelimiter);
+                            var key = GetKey(reader.Path);
+
                             if (data.ContainsKey(key))
                             {
                                 throw new FormatException(Resources.FormatError_KeyIsDuplicated(key));
@@ -220,7 +221,8 @@ namespace Microsoft.Framework.ConfigurationModel
                         case JsonToken.Bytes:
                         case JsonToken.Raw:
                         case JsonToken.Null:
-                            var key = inputReader.Path.Replace(".", Constants.KeyDelimiter);
+                            var key = GetKey(inputReader.Path);
+
                             if (!Data.ContainsKey(key))
                             {
                                 throw new InvalidOperationException(Resources.FormatError_CommitWhenNewKeyFound(key));
@@ -258,6 +260,45 @@ namespace Microsoft.Framework.ConfigurationModel
                 var missingKeys = string.Join(", ", Data.Keys.Except(processedKeys));
                 throw new InvalidOperationException(Resources.FormatError_CommitWhenKeyMissing(missingKeys));
             }
+        }
+
+        private string GetKey(string jsonPath)
+        {
+            var pathSegments = new List<string>();
+            var index = 0;
+
+            while (index < jsonPath.Length)
+            {
+                // If the JSON element contains '.' in its name, JSON.net escapes that element as ['element']
+                // while getting its Path. So before replacing '.' => ':' to represent JSON hierarchy, here 
+                // we skip a '.' => ':' conversion if the element is not enclosed with in ['..'].
+                var start = jsonPath.IndexOf("['", index);
+
+                if (start < 0)
+                {
+                    // No more ['. Skip till end of string.
+                    pathSegments.Add(jsonPath.
+                        Substring(index).
+                        Replace('.', ':'));
+                    break;
+                }
+                else
+                {
+                    if (start > index)
+                    {
+                        pathSegments.Add(
+                            jsonPath
+                            .Substring(index, start - index) // Anything between the previous [' and '].
+                            .Replace('.', ':'));
+                    }
+
+                    var endIndex = jsonPath.IndexOf("']", start);
+                    pathSegments.Add(jsonPath.Substring(start + 2, endIndex - start - 2));
+                    index = endIndex + 2;
+                }
+            }
+
+            return string.Join(string.Empty, pathSegments);
         }
 
         // Write the contents of newly created config file to given stream

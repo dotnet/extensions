@@ -42,9 +42,9 @@ CommonKey3:CommonKey4=IniValue6";
         private static readonly string _jsonConfigFileContent =
             @"{
   ""JsonKey1"": ""JsonValue1"",
-  ""JsonKey2"": {
+  ""Json.Key2"": {
     ""JsonKey3"": ""JsonValue2"",
-    ""JsonKey4"": ""JsonValue3"",
+    ""Json.Key4"": ""JsonValue3"",
     ""JsonKey5:JsonKey6"": ""JsonValue4""
   },
   ""CommonKey1"": {
@@ -98,9 +98,9 @@ CommonKey3:CommonKey4=IniValue6";
             Assert.Equal("IniValue5", config.Get("CommonKey1:CommonKey2:IniKey7"));
 
             Assert.Equal("JsonValue1", config.Get("JsonKey1"));
-            Assert.Equal("JsonValue2", config.Get("JsonKey2:JsonKey3"));
-            Assert.Equal("JsonValue3", config.Get("JsonKey2:JsonKey4"));
-            Assert.Equal("JsonValue4", config.Get("JsonKey2:JsonKey5:JsonKey6"));
+            Assert.Equal("JsonValue2", config.Get("Json.Key2:JsonKey3"));
+            Assert.Equal("JsonValue3", config.Get("Json.Key2:Json.Key4"));
+            Assert.Equal("JsonValue4", config.Get("Json.Key2:JsonKey5:JsonKey6"));
             Assert.Equal("JsonValue5", config.Get("CommonKey1:CommonKey2:JsonKey7"));
 
             Assert.Equal("XmlValue1", config.Get("XmlKey1"));

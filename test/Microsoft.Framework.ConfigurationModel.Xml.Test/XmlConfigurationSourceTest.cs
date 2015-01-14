@@ -18,26 +18,26 @@ namespace Microsoft.Framework.ConfigurationModel
         {
             var xml = @"
                 <settings>
-                    <Data>
+                    <Data.Setting>
                         <DefaultConnection>
-                            <ConnectionString>TestConnectionString</ConnectionString>
+                            <Connection.String>Test.Connection.String</Connection.String>
                             <Provider>SqlClient</Provider>
                         </DefaultConnection>
                         <Inventory>
                             <ConnectionString>AnotherTestConnectionString</ConnectionString>
                             <Provider>MySql</Provider>
                         </Inventory>
-                    </Data>
+                    </Data.Setting>
                 </settings>";
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
 
             xmlConfigSrc.Load(StringToStream(xml));
 
             Assert.Equal(4, xmlConfigSrc.Data.Count);
-            Assert.Equal("TestConnectionString", xmlConfigSrc.Data["DATA:DEFAULTCONNECTION:CONNECTIONSTRING"]);
-            Assert.Equal("SqlClient", xmlConfigSrc.Data["DATA:DefaultConnection:Provider"]);
-            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Data["data:inventory:connectionstring"]);
-            Assert.Equal("MySql", xmlConfigSrc.Data["Data:Inventory:Provider"]);
+            Assert.Equal("Test.Connection.String", xmlConfigSrc.Data["DATA.SETTING:DEFAULTCONNECTION:CONNECTION.STRING"]);
+            Assert.Equal("SqlClient", xmlConfigSrc.Data["DATA.SETTING:DefaultConnection:Provider"]);
+            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Data["data.setting:inventory:connectionstring"]);
+            Assert.Equal("MySql", xmlConfigSrc.Data["Data.setting:Inventory:Provider"]);
         }
 
         [Fact]
