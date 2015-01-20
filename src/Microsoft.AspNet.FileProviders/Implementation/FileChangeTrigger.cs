@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Microsoft.Framework.Expiration.Interfaces;
 
-namespace Microsoft.AspNet.FileSystems
+namespace Microsoft.AspNet.FileProviders
 {
     internal class FileChangeTrigger : IExpirationTrigger
     {

@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.AspNet.FileSystems
+namespace Microsoft.AspNet.FileProviders
 {
     /// <summary>
     /// Represents a non-existing file.

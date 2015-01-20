@@ -1,6 +1,6 @@
 {
     "dependencies": {
-        "Microsoft.AspNet.FileSystems": "1.0.0-*",
+        "Microsoft.AspNet.FileProviders": "1.0.0-*",
         "Shouldly": "1.1.1.1",
         "xunit.runner.kre": "1.0.0-*"
     },

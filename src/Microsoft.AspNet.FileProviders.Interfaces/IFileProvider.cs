@@ -3,15 +3,15 @@
 
 using Microsoft.Framework.Expiration.Interfaces;
 
-namespace Microsoft.AspNet.FileSystems
+namespace Microsoft.AspNet.FileProviders
 {
     /// <summary>
-    /// A file system abstraction.
+    /// A read-only file provider abstraction.
     /// </summary>
 #if ASPNET50 || ASPNETCORE50
     [Framework.Runtime.AssemblyNeutral]
 #endif
-    public interface IFileSystem
+    public interface IFileProvider
     {
         /// <summary>
         /// Locate a file at the given path.

@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Framework.Expiration.Interfaces;
 
-namespace Microsoft.AspNet.FileSystems
+namespace Microsoft.AspNet.FileProviders
 {
     /// <summary>
     /// Looks up files using the on-disk file system
     /// </summary>
-    public class PhysicalFileSystem : IFileSystem
+    public class PhysicalFileProvider : IFileProvider
     {
         // These are restricted file names on Windows, regardless of extension.
         private static readonly Dictionary<string, string> RestrictedFileNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -41,13 +41,13 @@ namespace Microsoft.AspNet.FileSystems
             { "clock$", string.Empty },
         };
 
-        private readonly PhysicalFileSystemWatcher _physicalFileSystemWatcher;
+        private readonly PhysicalFilesWatcher _filesWatcher;
 
         /// <summary>
-        /// Creates a new instance of a PhysicalFileSystem at the given root directory.
+        /// Creates a new instance of a PhysicalFileProvider at the given root directory.
         /// </summary>
         /// <param name="root">The root directory. This should be an absolute path.</param>
-        public PhysicalFileSystem(string root)
+        public PhysicalFileProvider(string root)
         {
             if (!Path.IsPathRooted(root))
             {
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.FileSystems
             }
 
             // Monitor only the application's root folder.
-            _physicalFileSystemWatcher = new PhysicalFileSystemWatcher(Root);
+            _filesWatcher = new PhysicalFilesWatcher(Root);
         }
 
         /// <summary>
@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.FileSystems
             var fileInfo = new FileInfo(fullPath);
             if (fileInfo.Exists)
             {
-                return new PhysicalFileInfo(_physicalFileSystemWatcher, fileInfo);
+                return new PhysicalFileInfo(_filesWatcher, fileInfo);
             }
 
             return new NotFoundFileInfo(subpath);
@@ -177,7 +177,7 @@ namespace Microsoft.AspNet.FileSystems
                         var fileInfo = fileSystemInfo as FileInfo;
                         if (fileInfo != null)
                         {
-                            virtualInfos.Add(new PhysicalFileInfo(_physicalFileSystemWatcher, fileInfo));
+                            virtualInfos.Add(new PhysicalFileInfo(_filesWatcher, fileInfo));
                         }
                         else
                         {
@@ -222,19 +222,19 @@ namespace Microsoft.AspNet.FileSystems
                 return NoopTrigger.Singleton;
             }
 
-            return _physicalFileSystemWatcher.CreateFileChangeTrigger(filter);
+            return _filesWatcher.CreateFileChangeTrigger(filter);
         }
 
         private class PhysicalFileInfo : IFileInfo
         {
             private readonly FileInfo _info;
 
-            private readonly PhysicalFileSystemWatcher _physicalFileSystemWatcher;
+            private readonly PhysicalFilesWatcher _filesWatcher;
 
-            public PhysicalFileInfo(PhysicalFileSystemWatcher physicalFileSystemWatcher, FileInfo info)
+            public PhysicalFileInfo(PhysicalFilesWatcher filesWatcher, FileInfo info)
             {
                 _info = info;
-                _physicalFileSystemWatcher = physicalFileSystemWatcher;
+                _filesWatcher = filesWatcher;
             }
 
             public bool Exists

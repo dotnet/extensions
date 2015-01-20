@@ -4,10 +4,10 @@
 using System;
 using System.IO;
 
-namespace Microsoft.AspNet.FileSystems
+namespace Microsoft.AspNet.FileProviders
 {
     /// <summary>
-    /// Represents a file in the given file system.
+    /// Represents a file in the given file provider.
     /// </summary>
 #if ASPNET50 || ASPNETCORE50
     [Framework.Runtime.AssemblyNeutral]

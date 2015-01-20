@@ -8,9 +8,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Framework.Expiration.Interfaces;
 
-namespace Microsoft.AspNet.FileSystems
+namespace Microsoft.AspNet.FileProviders
 {
-    internal class PhysicalFileSystemWatcher
+    internal class PhysicalFilesWatcher
     {
         private readonly ConcurrentDictionary<string, FileChangeTrigger> _triggerCache =
             new ConcurrentDictionary<string, FileChangeTrigger>(StringComparer.OrdinalIgnoreCase);
@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.FileSystems
 
         private readonly string _root;
 
-        internal PhysicalFileSystemWatcher(string root)
+        internal PhysicalFilesWatcher(string root)
         {
             _root = root;
             _fileWatcher = new FileSystemWatcher(root);

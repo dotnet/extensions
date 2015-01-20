@@ -1,8 +1,8 @@
 {
     "version": "1.0.0-*",
-    "description": "Implementation for ASP.NET 5 File System abstractions.",
+    "description": "Implementation of ASP.NET 5 file provider abstractions.",
     "dependencies": {
-        "Microsoft.AspNet.FileSystems.Interfaces": "1.0.0-*"
+        "Microsoft.AspNet.FileProviders.Interfaces": "1.0.0-*"
     },
     "frameworks": {
         "net45": { },

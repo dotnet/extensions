@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Framework.Expiration.Interfaces;
 
-namespace Microsoft.AspNet.FileSystems
+namespace Microsoft.AspNet.FileProviders
 {
     internal class NoopTrigger : IExpirationTrigger
     {

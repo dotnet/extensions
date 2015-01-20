@@ -13,16 +13,16 @@ using Microsoft.Framework.Runtime.Infrastructure;
 using Shouldly;
 using Xunit;
 
-namespace Microsoft.AspNet.FileSystems
+namespace Microsoft.AspNet.FileProviders
 {
-    public class PhysicalFileSystemTests
+    public class PhysicalFileProviderTests
     {
         private const int WAIT_TIME_FOR_TRIGGER_TO_FIRE = 2 * 100;
 
         [Fact]
         public void ExistingFilesReturnTrue()
         {
-            var provider = new PhysicalFileSystem(Environment.CurrentDirectory);
+            var provider = new PhysicalFileProvider(Environment.CurrentDirectory);
             var info = provider.GetFileInfo("File.txt");
             info.ShouldNotBe(null);
             info.Exists.ShouldBe(true);
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.FileSystems
             var fileName = Guid.NewGuid().ToString();
             var fileLocation = Path.Combine(Path.GetTempPath(), fileName);
             File.WriteAllText(fileLocation, "OldContent");
-            var provider = new PhysicalFileSystem(Path.GetTempPath());
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
             var fileInfo = provider.GetFileInfo(fileName);
             fileInfo.Length.ShouldBe(new FileInfo(fileInfo.PhysicalPath).Length);
             fileInfo.Exists.ShouldBe(true);
@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public void MissingFilesReturnFalse()
         {
-            var provider = new PhysicalFileSystem(Environment.CurrentDirectory);
+            var provider = new PhysicalFileProvider(Environment.CurrentDirectory);
             var info = provider.GetFileInfo("File5.txt");
             info.ShouldNotBe(null);
             info.Exists.ShouldBe(false);
@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public void SubPathActsAsRoot()
         {
-            var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, "sub"));
+            var provider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "sub"));
             var info = provider.GetFileInfo("File2.txt");
             info.ShouldNotBe(null);
             info.Exists.ShouldBe(true);
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public void GetDirectoryContents_FromRootPath_ForEmptyDirectoryName()
         {
-            var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, "sub"));
+            var provider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "sub"));
             var info = provider.GetDirectoryContents(string.Empty);
             info.ShouldNotBe(null);
             info.Exists.ShouldBe(true);
@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.FileSystems
             var serviceProvider = CallContextServiceLocator.Locator.ServiceProvider;
             var appEnvironment = (IApplicationEnvironment)serviceProvider.GetService(typeof(IApplicationEnvironment));
 
-            var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, "sub"));
+            var provider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "sub"));
 
             var info = provider.GetFileInfo("..\\File.txt");
             info.ShouldNotBe(null);
@@ -177,7 +177,7 @@ namespace Microsoft.AspNet.FileSystems
             var serviceProvider = CallContextServiceLocator.Locator.ServiceProvider;
             var appEnvironment = (IApplicationEnvironment)serviceProvider.GetService(typeof(IApplicationEnvironment));
 
-            var provider = new PhysicalFileSystem(Path.Combine(Environment.CurrentDirectory, "sub"));
+            var provider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "sub"));
 
             var applicationBase = appEnvironment.ApplicationBasePath;
             var file1 = Path.Combine(applicationBase, "File.txt");
@@ -208,7 +208,7 @@ namespace Microsoft.AspNet.FileSystems
             var fileName = Guid.NewGuid().ToString();
             var fileLocation = Path.Combine(Path.GetTempPath(), fileName);
             File.WriteAllText(fileLocation, "Content");
-            var provider = new PhysicalFileSystem(Path.GetTempPath());
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
 
             var count = 10;
             var tasks = new List<Task>(count);
@@ -251,7 +251,7 @@ namespace Microsoft.AspNet.FileSystems
             var fileName = Guid.NewGuid().ToString();
             var fileLocation = Path.Combine(Path.GetTempPath(), fileName);
             File.WriteAllText(fileLocation, "Content");
-            var provider = new PhysicalFileSystem(Path.GetTempPath());
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
 
             var expirationTrigger = provider.Watch(fileName);
             int invocationCount = 0;
@@ -277,7 +277,7 @@ namespace Microsoft.AspNet.FileSystems
             var fileName = Guid.NewGuid().ToString() + 'A';
             var fileLocation = Path.Combine(Path.GetTempPath(), fileName);
             File.WriteAllText(fileLocation, "Content");
-            var provider = new PhysicalFileSystem(Path.GetTempPath());
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
 
             var expirationTrigger = provider.Watch(fileName);
             var lowerCaseExpirationTrigger = provider.Watch(fileName.ToLowerInvariant());
@@ -295,7 +295,7 @@ namespace Microsoft.AspNet.FileSystems
             var fileLocation2 = Path.Combine(Path.GetTempPath(), fileName2);
             File.WriteAllText(fileLocation1, "Content1");
             File.WriteAllText(fileLocation2, "Content2");
-            var provider = new PhysicalFileSystem(Path.GetTempPath());
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
 
             int invocationCount1 = 0, invocationCount2 = 0;
             var trigger1 = provider.Watch(fileName1);
@@ -338,7 +338,7 @@ namespace Microsoft.AspNet.FileSystems
             var fileName = Guid.NewGuid().ToString();
             var fileLocation = Path.Combine(Path.GetTempPath(), fileName);
             File.WriteAllText(fileLocation, "Content");
-            var provider = new PhysicalFileSystem(Path.GetTempPath());
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
 
             var expirationTrigger = provider.Watch(fileName);
             expirationTrigger.RegisterExpirationCallback(async _ =>
@@ -369,7 +369,7 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public void Trigger_For_Null_Empty_Whitespace_Filters()
         {
-            var provider = new PhysicalFileSystem(Path.GetTempPath());
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
 
             var trigger = provider.Watch(null);
             trigger.IsExpired.ShouldBe(false);
@@ -393,7 +393,7 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public async Task Trigger_Fired_For_File_Or_Directory_Create_And_Delete()
         {
-            var provider = new PhysicalFileSystem(Path.GetTempPath());
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
             string fileName = Guid.NewGuid().ToString();
             string directoryName = Guid.NewGuid().ToString();
 
@@ -432,7 +432,7 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public async Task Triggers_With_Path_Ending_With_Slash()
         {
-            var provider = new PhysicalFileSystem(Path.GetTempPath());
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
             string fileName = Guid.NewGuid().ToString();
             string folderName = Guid.NewGuid().ToString();
 
@@ -465,7 +465,7 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public async Task Triggers_With_Path_Not_Ending_With_Slash()
         {
-            var provider = new PhysicalFileSystem(Path.GetTempPath());
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
             string directoryName = Guid.NewGuid().ToString();
             string fileName = Guid.NewGuid().ToString();
 
@@ -501,7 +501,7 @@ namespace Microsoft.AspNet.FileSystems
             Action<object> callback1 = _ => { pattern1TriggerCount++; };
             Action<object> callback2 = _ => { pattern2TriggerCount++; };
 
-            var provider = new PhysicalFileSystem(root);
+            var provider = new PhysicalFileProvider(root);
             var trigger1 = provider.Watch(pattern1);
             trigger1.RegisterExpirationCallback(callback1, null);
             var trigger2 = provider.Watch(pattern2);
@@ -541,7 +541,7 @@ namespace Microsoft.AspNet.FileSystems
             Action<object> callback1 = _ => { pattern1TriggerCount++; };
             Action<object> callback2 = _ => { pattern2TriggerCount++; };
 
-            var provider = new PhysicalFileSystem(root);
+            var provider = new PhysicalFileProvider(root);
             var trigger1 = provider.Watch(pattern1);
             trigger1.RegisterExpirationCallback(callback1, null);
             var trigger2 = provider.Watch(pattern2);
@@ -579,7 +579,7 @@ namespace Microsoft.AspNet.FileSystems
             Directory.CreateDirectory(subFolder);
 
             int pattern1TriggerCount = 0, pattern2TriggerCount = 0;
-            var provider = new PhysicalFileSystem(root);
+            var provider = new PhysicalFileProvider(root);
             var trigger1 = provider.Watch(pattern1);
             trigger1.RegisterExpirationCallback(_ => { pattern1TriggerCount++; }, null);
             var trigger2 = provider.Watch(pattern2);
@@ -610,7 +610,7 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public void Triggers_With_Forward_And_Backward_Slash()
         {
-            var provider = new PhysicalFileSystem(Path.GetTempPath());
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
             var trigger1 = provider.Watch("/a/b");
             var trigger2 = provider.Watch("a/b");
             var trigger3 = provider.Watch(@"a\b");
@@ -630,7 +630,7 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public async Task Trigger_Fired_On_Directory_Name_Change()
         {
-            var provider = new PhysicalFileSystem(Path.GetTempPath());
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
             var oldDirectoryName = Guid.NewGuid().ToString();
             var newDirectoryName = Guid.NewGuid().ToString();
             var oldDirectoryFullPath = Path.Combine(Path.GetTempPath(), oldDirectoryName);

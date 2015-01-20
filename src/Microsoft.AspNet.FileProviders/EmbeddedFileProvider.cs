@@ -7,35 +7,35 @@ using System.IO;
 using System.Reflection;
 using Microsoft.Framework.Expiration.Interfaces;
 
-namespace Microsoft.AspNet.FileSystems
+namespace Microsoft.AspNet.FileProviders
 {
     /// <summary>
     /// Looks up files using embedded resources in the specified assembly.
-    /// This file system is case sensitive.
+    /// This file provider is case sensitive.
     /// </summary>
-    public class EmbeddedResourceFileSystem : IFileSystem
+    public class EmbeddedFileProvider : IFileProvider
     {
         private readonly Assembly _assembly;
         private readonly string _baseNamespace;
         private readonly DateTimeOffset _lastModified;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EmbeddedResourceFileSystem" /> class using the specified
+        /// Initializes a new instance of the <see cref="EmbeddedFileProvider" /> class using the specified
         /// assembly and empty base namespace.
         /// </summary>
         /// <param name="assembly"></param>
-        public EmbeddedResourceFileSystem(Assembly assembly)
+        public EmbeddedFileProvider(Assembly assembly)
             : this(assembly, string.Empty)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EmbeddedResourceFileSystem" /> class using the specified
+        /// Initializes a new instance of the <see cref="EmbeddedFileProvider" /> class using the specified
         /// assembly and base namespace.
         /// </summary>
         /// <param name="assembly">The assembly that contains the embedded resources.</param>
         /// <param name="baseNamespace">The base namespace that contains the embedded resources.</param>
-        public EmbeddedResourceFileSystem(Assembly assembly, string baseNamespace)
+        public EmbeddedFileProvider(Assembly assembly, string baseNamespace)
         {
             if (assembly == null)
             {
@@ -76,10 +76,10 @@ namespace Microsoft.AspNet.FileSystems
         }
 
         /// <summary>
-        /// Enumerate a directory at the given path, if any.		
-        /// This file system uses a flat directory structure. Everything under the base namespace is considered to be one directory.		
-        /// </summary>		
-        /// <param name="subpath">The path that identifies the directory</param>		
+        /// Enumerate a directory at the given path, if any.
+        /// This file provider uses a flat directory structure. Everything under the base namespace is considered to be one directory.
+        /// </summary>
+        /// <param name="subpath">The path that identifies the directory</param>
         /// <returns>Contents of the directory. Caller must check Exists property.</returns>
         public IDirectoryContents GetDirectoryContents(string subpath)
         {
@@ -198,12 +198,12 @@ namespace Microsoft.AspNet.FileSystems
 
             public void WriteContent(byte[] content)
             {
-                throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(EmbeddedResourceFileSystem), nameof(WriteContent)));
+                throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(EmbeddedFileProvider), nameof(WriteContent)));
             }
 
             public void Delete()
             {
-                throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(EmbeddedResourceFileSystem), nameof(Delete)));
+                throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(EmbeddedFileProvider), nameof(Delete)));
             }
         }
     }
