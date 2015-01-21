@@ -13,7 +13,7 @@ namespace Microsoft.Framework.Cache.Redis
     {
         internal const string RedisServerExeName = "redis-server.exe";
         internal const string FunctionalTestsRedisServerExeName = "RedisFuncTests-redis-server";
-        internal const string UserProfileRedisNugetPackageServerPath = @".kpm\packages\Redis-64\2.8.9";
+        internal const string UserProfileRedisNugetPackageServerPath = @".dotnet\packages\Redis-64\2.8.9";
         internal const string CIMachineRedisNugetPackageServerPath = @"Redis-64\2.8.9";
 
         private static volatile Process _redisServerProcess; // null implies if server exists it was not started by this code
@@ -138,7 +138,7 @@ namespace Microsoft.Framework.Cache.Redis
 
         public static string GetCIMachineServerPath()
         {
-            var configFilePath = Environment.GetEnvironmentVariable("KRE_PACKAGES");
+            var configFilePath = Environment.GetEnvironmentVariable("DOTNET_PACKAGES");
             return Path.Combine(configFilePath, CIMachineRedisNugetPackageServerPath, RedisServerExeName);
         }
 
