@@ -25,7 +25,7 @@ namespace Microsoft.Framework.Logging
         void Write(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter);
 
         /// <summary>
-        /// Checks if the given TraceEventType is enabled.
+        /// Checks if the given LogLevel is enabled.
         /// </summary>
         /// <param name="logLevel"></param>
         /// <returns></returns>

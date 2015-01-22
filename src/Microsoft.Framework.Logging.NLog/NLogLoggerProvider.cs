@@ -44,7 +44,7 @@ namespace Microsoft.Framework.Logging.NLog
                 }
                 else
                 {
-                    LogFormatter.Formatter(state, exception);
+                    message = LogFormatter.Formatter(state, exception);
                 }
                 if (!string.IsNullOrEmpty(message))
                 {
