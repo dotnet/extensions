@@ -7,8 +7,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
 {
     public class Pattern
     {
-        private static char[] _slashes = new[] { '/', '\\' };
-        private static char[] _star = new[] { '*' };
+        private static readonly char[] _slashes = new[] { '/', '\\' };
+        private static readonly char[] _star = new[] { '*' };
 
         public Pattern(string pattern)
         {

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Framework.FileSystemGlobbing.Abstractions;
@@ -9,269 +10,179 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
 {
     public class MatcherContext
     {
+        private readonly DirectoryInfoBase _root;
+        private readonly IList<PatternContextBase> _includePatternContexts;
+        private readonly IList<PatternContextBase> _excludePatternContexts;
+        private readonly IList<string> _files;
+
         public MatcherContext(Matcher matcher, DirectoryInfoBase directoryInfo)
         {
-            Matcher = matcher;
-            DirectoryInfo = directoryInfo;
-            foreach (var pattern in matcher.IncludePatterns)
-            {
-                if (pattern.Contains == null)
-                {
-                    IncludePatternContexts.Add(new PatternContextLinearInclude(this, pattern));
-                }
-                else
-                {
-                    IncludePatternContexts.Add(new PatternContextRaggedInclude(this, pattern));
-                }
-            }
-            foreach (var pattern in matcher.ExcludePatterns)
-            {
-                if (pattern.Contains == null)
-                {
-                    ExcludePatternContexts.Add(new PatternContextLinearExclude(this, pattern));
-                }
-                else
-                {
-                    ExcludePatternContexts.Add(new PatternContextRaggedExclude(this, pattern));
-                }
-            }
+            _root = directoryInfo;
+            _files = new List<string>();
+
+            _includePatternContexts = GetIncludePatternContexts(matcher.IncludePatterns);
+            _excludePatternContexts = GetExcludePatternContexts(matcher.ExcludePatterns);
         }
-
-        public Matcher Matcher { get; }
-        public DirectoryInfoBase DirectoryInfo { get; }
-        public IList<PatternContextBase> IncludePatternContexts { get; } = new List<PatternContextBase>();
-        public IList<PatternContextBase> ExcludePatternContexts { get; } = new List<PatternContextBase>();
-        public List<string> Files { get; private set; }
-
-        public FrameData Frame;
-        public Stack<FrameData> FrameStack = new Stack<FrameData>();
 
         public PatternMatchingResult Execute()
         {
-            Files = new List<string>();
+            _files.Clear();
 
-            Frame.Stage = Stage.Complete;
-            PushFrame(Stage.Predicting, DirectoryInfo);
+            Match(_root, parentRelativePath: null);
 
-            while (Frame.Stage != Stage.Complete)
-            {
-                DoPredicting();
-                DoEnumerating();
-                DoRecursion();
-            }
-
-            return new PatternMatchingResult(Files);
+            return new PatternMatchingResult(_files);
         }
 
-        private void DoPredicting()
+        private void Match(DirectoryInfoBase directory, string parentRelativePath)
         {
-            if (Frame.Stage != Stage.Predicting)
-            {
-                return;
-            }
-            //foreach (var patternContext in IncludePatternContexts)
-            //{
-            //    patternContext.PredictInclude();
-            //}
-            //foreach (var patternContext in ExcludePatternContexts)
-            //{
-            //    //patternContext.PredictExclude();
-            //}
-            Frame.Stage = Stage.Enumerating;
-        }
+            // Request all the including and excluding patterns to push current directory onto their status stack.
+            PushFrame(directory);
 
-        private void DoEnumerating()
-        {
-            if (Frame.Stage != Stage.Enumerating)
+            // collect files and sub directories
+            var subDirectories = new List<DirectoryInfoBase>();
+            foreach (var entity in directory.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly))
             {
-                return;
-            }
-            foreach (var fileSystemInfo in Frame.DirectoryInfo.EnumerateFileSystemInfos(
-                "*",
-                SearchOption.TopDirectoryOnly))
-            {
-                var directoryInfo = fileSystemInfo as DirectoryInfoBase;
-                if (directoryInfo != null)
-                {
-                    var include = false;
-                    foreach (var pattern in IncludePatternContexts)
-                    {
-                        if (pattern.Test(directoryInfo))
-                        {
-                            include = true;
-                            break;
-                        }
-                    }
-                    if (include)
-                    {
-                        foreach (var pattern in ExcludePatternContexts)
-                        {
-                            if (pattern.Test(directoryInfo))
-                            {
-                                include = false;
-                                break;
-                            }
-                        }
-                    }
-                    if (include)
-                    {
-                        if (Frame.ActualDirectories == null)
-                        {
-                            Frame.ActualDirectories = new List<DirectoryInfoBase>();
-                        }
-                        Frame.ActualDirectories.Add(directoryInfo);
-                    }
-                    continue;
-                }
-                var fileInfo = fileSystemInfo as FileInfoBase;
+                var fileInfo = entity as FileInfoBase;
                 if (fileInfo != null)
                 {
-                    var include = false;
-                    foreach (var pattern in IncludePatternContexts)
+                    if (MatchPatternContexts(fileInfo, (pattern, file) => pattern.Test(file)))
                     {
-                        if (pattern.Test(fileInfo))
-                        {
-                            include = true;
-                            break;
-                        }
+                        _files.Add(CombinePath(parentRelativePath, fileInfo.Name));
                     }
-                    if (include)
+
+                    continue;
+                }
+
+                var directoryInfo = entity as DirectoryInfoBase;
+                if (directoryInfo != null)
+                {
+                    if (MatchPatternContexts(directoryInfo, (pattern, dir) => pattern.Test(dir)))
                     {
-                        foreach (var pattern in ExcludePatternContexts)
-                        {
-                            if (pattern.Test(fileInfo))
-                            {
-                                include = false;
-                                break;
-                            }
-                        }
+                        subDirectories.Add(directoryInfo);
                     }
-                    if (include)
-                    {
-                        if (Frame.RelativePath == null)
-                        {
-                            Files.Add(fileInfo.Name);
-                        }
-                        else
-                        {
-                            Files.Add(Frame.RelativePath + "/" + fileInfo.Name);
-                        }
-                    }
+
                     continue;
                 }
             }
-            Frame.Stage = Stage.Recursing;
+
+            // Matches the sub directories recursively
+            foreach (var subDir in subDirectories)
+            {
+                var relativePath = CombinePath(parentRelativePath, subDir.Name);
+
+                Match(subDir, relativePath);
+            }
+
+            // Request all the including and excluding patterns to pop their status stack.
+            PopFrame();
         }
 
-        private void DoRecursion()
+        private string CombinePath(string left, string right)
         {
-            if (Frame.Stage != Stage.Recursing)
+            if (string.IsNullOrEmpty(left))
             {
-                return;
+                return right;
             }
-
-            if (Frame.ActualDirectories == null)
+            else 
             {
-                PopFrame();
-                return;
-            }
-
-            if (Frame.ActualDirectoryEnumerating == false)
-            {
-                Frame.ActualDirectoryEnumerating = true;
-                Frame.ActualDirectoryEnumerator = Frame.ActualDirectories.GetEnumerator();
-            }
-
-            var moveNext = Frame.ActualDirectoryEnumerator.MoveNext();
-            if (moveNext == false)
-            {
-                PopFrame();
-                return;
-            }
-
-            PushFrame(Stage.Predicting, Frame.ActualDirectoryEnumerator.Current);
-        }
-
-
-        public void AddPredictIncludeLiteral(string value)
-        {
-            if (Frame.PredictLiteralIncludes == null)
-            {
-                Frame.PredictLiteralIncludes = new List<string>();
-            }
-            //TODO: string comparisons
-            if (!Frame.PredictLiteralIncludes.Contains(value))
-            {
-                Frame.PredictLiteralIncludes.Add(value);
+                return string.Format("{0}/{1}", left, right);
             }
         }
 
-        public void PushFrame(Stage stage, DirectoryInfoBase directoryInfo)
+        private bool MatchPatternContexts<TFileInfoBase>(TFileInfoBase fileinfo, Func<PatternContextBase, TFileInfoBase, bool> test)
         {
-            string relativePath;
-            if (FrameStack.Count == 0)
+            var found = false;
+
+            // If the given file/directory matches any including pattern, continues to next step.
+            foreach (var context in _includePatternContexts)
             {
-                relativePath = null;
-            }
-            else if (FrameStack.Count == 1)
-            {
-                relativePath = directoryInfo.Name;
-            }
-            else
-            {
-                relativePath = Frame.RelativePath + '/' + directoryInfo.Name;
+                if (test(context, fileinfo))
+                {
+                    found = true;
+                    break;
+                }
             }
 
-            FrameStack.Push(Frame);
-            Frame = new FrameData
+            // If the given file/directory doesn't match any of the including pattern, returns false.
+            if (!found)
             {
-                Stage = stage,
-                DirectoryInfo = directoryInfo,
-                RelativePath = relativePath,
-            };
-            foreach (var x in IncludePatternContexts)
-            {
-                x.PushFrame(directoryInfo);
+                return false;
             }
-            foreach (var x in ExcludePatternContexts)
+
+            // If the given file/directory matches any excluding pattern, returns false.
+            foreach (var context in _excludePatternContexts)
             {
-                x.PushFrame(directoryInfo);
+                if (test(context, fileinfo))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private void PopFrame()
+        {
+            foreach (var context in _excludePatternContexts)
+            {
+                context.PopFrame();
+            }
+
+            foreach (var context in _includePatternContexts)
+            {
+                context.PopFrame();
             }
         }
 
-        public void PopFrame()
+        private void PushFrame(DirectoryInfoBase directory)
         {
-            foreach (var x in ExcludePatternContexts)
+            foreach (var context in _includePatternContexts)
             {
-                x.PopFrame();
+                context.PushFrame(directory);
             }
-            foreach (var x in IncludePatternContexts)
+
+            foreach (var context in _excludePatternContexts)
             {
-                x.PopFrame();
+                context.PushFrame(directory);
             }
-            Frame = FrameStack.Pop();
         }
 
-        public enum Stage
+        private List<PatternContextBase> GetIncludePatternContexts(IEnumerable<Pattern> sourcePatterns)
         {
-            Initialized,
-            Predicting,
-            Enumerating,
-            Recursing,
-            Complete,
+            var result = new List<PatternContextBase>();
+
+            foreach (var pattern in sourcePatterns)
+            {
+                if (pattern.Contains == null)
+                {
+                    result.Add(new PatternContextLinearInclude(this, pattern));
+                }
+                else
+                {
+                    result.Add(new PatternContextRaggedInclude(this, pattern));
+                }
+            }
+
+            return result;
         }
 
-        public struct FrameData
+        private List<PatternContextBase> GetExcludePatternContexts(IEnumerable<Pattern> sourcePatterns)
         {
-            public Stage Stage;
-            public DirectoryInfoBase DirectoryInfo;
-            public string RelativePath;
+            var result = new List<PatternContextBase>();
 
-            public List<string> PredictLiteralIncludes;
+            foreach (var pattern in sourcePatterns)
+            {
+                if (pattern.Contains == null)
+                {
+                    result.Add(new PatternContextLinearExclude(this, pattern));
+                }
+                else
+                {
+                    result.Add(new PatternContextRaggedExclude(this, pattern));
+                }
+            }
 
-            public List<DirectoryInfoBase> ActualDirectories;
-            public bool ActualDirectoryEnumerating;
-            public List<DirectoryInfoBase>.Enumerator ActualDirectoryEnumerator;
+            return result;
         }
     }
 }

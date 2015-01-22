@@ -3,12 +3,12 @@
 
 using Microsoft.Framework.FileSystemGlobbing.Abstractions;
 
-namespace Microsoft.Framework.FileSystemGlobbing.Tests.Infrastructure
+namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
 {
-    internal class FileInfoStub : FileInfoBase
+    internal class MockFileInfo : FileInfoBase
     {
-        public FileInfoStub(
-            SystemIoRecorder recorder,
+        public MockFileInfo(
+            FileSystemOperationRecorder recorder,
             DirectoryInfoBase parentDirectory,
             string fullName,
             string name)
@@ -18,7 +18,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.Infrastructure
             Name = name;
         }
 
-        public SystemIoRecorder Recorder { get; }
+        public FileSystemOperationRecorder Recorder { get; }
 
         public override DirectoryInfoBase ParentDirectory { get; }
 

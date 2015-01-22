@@ -14,7 +14,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
         [Fact]
         public void TempFolderStartsInitiallyEmpty()
         {
-            using (var scenario = new Scenario())
+            using (var scenario = new DisposableFileSystem())
             {
                 var contents = scenario.DirectoryInfo.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
 
@@ -24,11 +24,10 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
             }
         }
 
-
         [Fact]
         public void FilesAreEnumerated()
         {
-            using (var scenario = new Scenario()
+            using (var scenario = new DisposableFileSystem()
                 .CreateFile("alpha.txt"))
             {
                 var contents = scenario.DirectoryInfo.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
@@ -42,7 +41,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
         [Fact]
         public void FoldersAreEnumerated()
         {
-            using (var scenario = new Scenario()
+            using (var scenario = new DisposableFileSystem()
                 .CreateFolder("beta"))
             {
                 var contents1 = scenario.DirectoryInfo.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
@@ -58,7 +57,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
         [Fact]
         public void SubFoldersAreEnumerated()
         {
-            using (var scenario = new Scenario()
+            using (var scenario = new DisposableFileSystem()
                 .CreateFolder("beta")
                 .CreateFile("beta\\alpha.txt"))
             {
@@ -74,9 +73,9 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
             }
         }
 
-        private class Scenario : IDisposable
+        private class DisposableFileSystem : IDisposable
         {
-            public Scenario()
+            public DisposableFileSystem()
             {
                 TempFolder = Path.GetTempFileName();
                 File.Delete(TempFolder);
@@ -88,13 +87,13 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
 
             public DirectoryInfoBase DirectoryInfo { get; }
 
-            public Scenario CreateFolder(string path)
+            public DisposableFileSystem CreateFolder(string path)
             {
                 Directory.CreateDirectory(Path.Combine(TempFolder, path));
                 return this;
             }
 
-            public Scenario CreateFile(string path)
+            public DisposableFileSystem CreateFile(string path)
             {
                 File.WriteAllText(Path.Combine(TempFolder, path), "temp");
                 return this;

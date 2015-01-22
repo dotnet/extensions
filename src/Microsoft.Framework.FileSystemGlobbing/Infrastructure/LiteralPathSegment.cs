@@ -16,12 +16,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
 
         public override bool TestMatchingSegment(string value, StringComparison comparisonType)
         {
-            if (!string.Equals(Value, value, comparisonType))
-            {
-                return false;
-            }
-
-            return true;
+            return string.Equals(Value, value, comparisonType);
         }
     }
 }

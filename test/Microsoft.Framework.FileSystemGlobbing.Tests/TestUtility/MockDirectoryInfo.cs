@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Framework.FileSystemGlobbing.Abstractions;
 
-namespace Microsoft.Framework.FileSystemGlobbing.Tests.Infrastructure
+namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
 {
-    internal class DirectoryInfoStub : DirectoryInfoBase
+    internal class MockDirectoryInfo : DirectoryInfoBase
     {
-        public DirectoryInfoStub(
-            SystemIoRecorder recorder,
+        public MockDirectoryInfo(
+            FileSystemOperationRecorder recorder,
             DirectoryInfoBase parentDirectory,
             string fullName,
             string name,
@@ -23,7 +23,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.Infrastructure
             Paths = paths;
         }
 
-        public SystemIoRecorder Recorder { get; }
+        public FileSystemOperationRecorder Recorder { get; }
 
         public override string FullName { get; }
 
@@ -53,7 +53,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.Infrastructure
 
                 if (endPath == endSegment)
                 {
-                    yield return new FileInfoStub(
+                    yield return new MockFileInfo(
                         recorder: Recorder,
                         parentDirectory: this,
                         fullName: path,
@@ -65,7 +65,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.Infrastructure
                     if (!names.Contains(name))
                     {
                         names.Add(name);
-                        yield return new DirectoryInfoStub(
+                        yield return new MockDirectoryInfo(
                             recorder: Recorder,
                             parentDirectory: this,
                             fullName: path.Substring(0, endSegment + 1),

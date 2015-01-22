@@ -7,26 +7,26 @@ namespace Microsoft.Framework.FileSystemGlobbing.Abstractions
 {
     public class FileInfoWrapper : FileInfoBase
     {
-        private FileInfo FileInfo;
+        private FileInfo _fileInfo;
 
         public FileInfoWrapper(FileInfo fileInfo)
         {
-            FileInfo = fileInfo;
+            _fileInfo = fileInfo;
         }
 
         public override string Name
         {
-            get { return FileInfo.Name; }
+            get { return _fileInfo.Name; }
         }
 
         public override string FullName
         {
-            get { return FileInfo.FullName; }
+            get { return _fileInfo.FullName; }
         }
 
         public override DirectoryInfoBase ParentDirectory
         {
-            get { return new DirectoryInfoWrapper(FileInfo.Directory); }
+            get { return new DirectoryInfoWrapper(_fileInfo.Directory); }
         }
     }
 }

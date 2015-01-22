@@ -3,7 +3,7 @@
 
 namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
 {
-    public class RecursiveWildcardSegment :PatternSegment
+    public class RecursiveWildcardSegment : PatternSegment
     {
     }
 }

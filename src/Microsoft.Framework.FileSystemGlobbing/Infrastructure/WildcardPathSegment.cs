@@ -29,10 +29,12 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
             {
                 return false;
             }
+
             if (!value.StartsWith(wildcard.BeginsWith, comparisonType))
             {
                 return false;
             }
+
             if (!value.EndsWith(wildcard.EndsWith, comparisonType))
             {
                 return false;
@@ -54,6 +56,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
                 }
                 beginRemaining = indexOf + containsValue.Length;
             }
+
             return true;
         }
     }

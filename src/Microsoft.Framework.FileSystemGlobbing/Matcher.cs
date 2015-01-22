@@ -8,8 +8,9 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
 {
     public class Matcher
     {
-        public IList<Pattern> IncludePatterns = new List<Pattern>();
-        public IList<Pattern> ExcludePatterns = new List<Pattern>();
+        public IList<Pattern> IncludePatterns { get; } = new List<Pattern>();
+
+        public IList<Pattern> ExcludePatterns { get; } = new List<Pattern>();
 
         public Matcher AddInclude(string pattern)
         {

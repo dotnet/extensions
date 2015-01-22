@@ -8,16 +8,16 @@ namespace Microsoft.Framework.FileSystemGlobbing.Abstractions
 {
     public class DirectoryInfoWrapper : DirectoryInfoBase
     {
-        private DirectoryInfo DirectoryInfo;
+        private readonly DirectoryInfo _directoryInfo;
 
         public DirectoryInfoWrapper(DirectoryInfo directoryInfo)
         {
-            DirectoryInfo = directoryInfo;
+            _directoryInfo = directoryInfo;
         }
 
         public override IEnumerable<FileSystemInfoBase> EnumerateFileSystemInfos(string searchPattern, SearchOption searchOption)
         {
-            foreach (var fileSystemInfo in DirectoryInfo.EnumerateFileSystemInfos(searchPattern, searchOption))
+            foreach (var fileSystemInfo in _directoryInfo.EnumerateFileSystemInfos(searchPattern, searchOption))
             {
                 var directoryInfo = fileSystemInfo as DirectoryInfo;
                 if (directoryInfo != null)
@@ -33,17 +33,17 @@ namespace Microsoft.Framework.FileSystemGlobbing.Abstractions
 
         public override string Name
         {
-            get { return DirectoryInfo.Name; }
+            get { return _directoryInfo.Name; }
         }
 
         public override string FullName
         {
-            get { return DirectoryInfo.FullName; }
+            get { return _directoryInfo.FullName; }
         }
 
         public override DirectoryInfoBase ParentDirectory
         {
-            get { return new DirectoryInfoWrapper(DirectoryInfo.Parent); }
+            get { return new DirectoryInfoWrapper(_directoryInfo.Parent); }
         }
     }
 }

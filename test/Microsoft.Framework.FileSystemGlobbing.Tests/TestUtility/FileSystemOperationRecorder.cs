@@ -4,9 +4,9 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Microsoft.Framework.FileSystemGlobbing.Tests.Infrastructure
+namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
 {
-    internal class SystemIoRecorder
+    internal class FileSystemOperationRecorder
     {
         public IList<IDictionary<string, object>> Records = new List<IDictionary<string, object>>();
 
@@ -17,10 +17,11 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.Infrastructure
                 {"action", action }
             };
 
-            foreach(var p in values.GetType().GetTypeInfo().DeclaredProperties)
+            foreach (var p in values.GetType().GetTypeInfo().DeclaredProperties)
             {
                 record[p.Name] = p.GetValue(values);
             }
+
             Records.Add(record);
         }
     }
