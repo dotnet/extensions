@@ -80,6 +80,12 @@ namespace Microsoft.AspNet.FileProviders
 
         private void OnFileSystemEntryChange(string fullPath)
         {
+            var fileSystemInfo = new FileInfo(fullPath);
+            if (FileSystemInfoHelper.IsHiddenFile(fileSystemInfo))
+            {
+                return;
+            }
+
             var relativePath = fullPath.Replace(_root, string.Empty);
             if (_triggerCache.ContainsKey(relativePath))
             {

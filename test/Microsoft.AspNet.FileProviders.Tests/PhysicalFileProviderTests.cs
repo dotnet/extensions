@@ -107,12 +107,21 @@ namespace Microsoft.AspNet.FileProviders
         }
 
         [Fact]
-        public void MissingFilesReturnFalse()
+        public void Missing_Hidden_And_FilesStartingWithPeriod_ReturnFalse()
         {
-            var provider = new PhysicalFileProvider(Environment.CurrentDirectory);
-            var info = provider.GetFileInfo("File5.txt");
-            info.ShouldNotBe(null);
-            info.Exists.ShouldBe(false);
+            var root = Path.GetTempPath();
+            var hiddenFileName = Path.Combine(root, Guid.NewGuid().ToString());
+            File.WriteAllText(hiddenFileName, "Content");
+            var fileNameStartingWithPeriod = Path.Combine(root, ".", Guid.NewGuid().ToString());
+            File.WriteAllText(fileNameStartingWithPeriod, "Content");
+            var fileInfo = new FileInfo(hiddenFileName);
+            File.SetAttributes(hiddenFileName, fileInfo.Attributes | FileAttributes.Hidden);
+
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
+
+            provider.GetFileInfo(Guid.NewGuid().ToString()).Exists.ShouldBe(false);
+            provider.GetFileInfo(hiddenFileName).Exists.ShouldBe(false);
+            provider.GetFileInfo(fileNameStartingWithPeriod).Exists.ShouldBe(false);
         }
 
         [Fact]
@@ -678,6 +687,42 @@ namespace Microsoft.AspNet.FileProviders
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             newDirectoryTrigger.IsExpired.ShouldBe(true);
             newTriggers.All(t => t.IsExpired).ShouldBe(true);
+        }
+
+        [Fact]
+        public async Task Triggers_NotFired_For_FileNames_Starting_With_Period_And_Hidden_Files()
+        {
+            var root = Path.GetTempPath();
+            var hiddenFileName = Path.Combine(root, Guid.NewGuid().ToString());
+            File.WriteAllText(hiddenFileName, "Content");
+            var systemFileName = Path.Combine(root, Guid.NewGuid().ToString());
+            File.WriteAllText(systemFileName, "Content");
+            var fileNameStartingWithPeriod = Path.Combine(root, "." + Guid.NewGuid().ToString());
+            File.WriteAllText(fileNameStartingWithPeriod, "Content");
+            var fileInfo = new FileInfo(hiddenFileName);
+            File.SetAttributes(hiddenFileName, fileInfo.Attributes | FileAttributes.Hidden);
+            fileInfo = new FileInfo(systemFileName);
+            File.SetAttributes(systemFileName, fileInfo.Attributes | FileAttributes.System);
+
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
+            var hiddenFileTrigger = provider.Watch(Path.GetFileName(hiddenFileName));
+            var triggerFileNameStartingPeriod = provider.Watch(Path.GetFileName(fileNameStartingWithPeriod));
+            var systemFileTrigger = provider.Watch(Path.GetFileName(systemFileName));
+
+            hiddenFileTrigger.IsExpired.ShouldBe(false);
+            triggerFileNameStartingPeriod.IsExpired.ShouldBe(false);
+            systemFileTrigger.IsExpired.ShouldBe(false);
+
+            File.AppendAllText(hiddenFileName, "Appending text");
+            File.WriteAllText(fileNameStartingWithPeriod, "Updated Contents");
+            File.AppendAllText(systemFileName, "Appending text");
+
+            // Wait for triggers to fire.
+            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
+
+            hiddenFileTrigger.IsExpired.ShouldBe(false);
+            triggerFileNameStartingPeriod.IsExpired.ShouldBe(false);
+            systemFileTrigger.IsExpired.ShouldBe(false);
         }
     }
 }

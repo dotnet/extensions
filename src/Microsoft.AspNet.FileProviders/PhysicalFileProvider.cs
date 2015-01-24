@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Framework.Expiration.Interfaces;
 
 namespace Microsoft.AspNet.FileProviders
@@ -127,6 +128,11 @@ namespace Microsoft.AspNet.FileProviders
             }
 
             var fileInfo = new FileInfo(fullPath);
+            if (FileSystemInfoHelper.IsHiddenFile(fileInfo))
+            {
+                return new NotFoundFileInfo(subpath);
+            }
+
             if (fileInfo.Exists)
             {
                 return new PhysicalFileInfo(_filesWatcher, fileInfo);
@@ -170,7 +176,9 @@ namespace Microsoft.AspNet.FileProviders
                         return new NotFoundDirectoryContents();
                     }
 
-                    IEnumerable<FileSystemInfo> physicalInfos = directoryInfo.EnumerateFileSystemInfos();
+                    var physicalInfos = directoryInfo
+                        .EnumerateFileSystemInfos()
+                        .Where(info => !FileSystemInfoHelper.IsHiddenFile(info));
                     var virtualInfos = new List<IFileInfo>();
                     foreach (var fileSystemInfo in physicalInfos)
                     {
