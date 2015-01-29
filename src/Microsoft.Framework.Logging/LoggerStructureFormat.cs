@@ -8,6 +8,10 @@ using System.Text;
 
 namespace Microsoft.Framework.Logging
 {
+    /// <summary>
+    /// LoggerStructure to enable formatting options supported by <see cref="string.Format"/>. 
+    /// This also enables using {NamedformatItem} in the format string.
+    /// </summary>
     public class LoggerStructureFormat : ILoggerStructure
     {
         private static ConcurrentDictionary<string, Formatter> _formatters = new ConcurrentDictionary<string, Formatter>();
