@@ -11,6 +11,22 @@ namespace Microsoft.Framework.DependencyInjection
             = new ResourceManager("Microsoft.Framework.DependencyInjection.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Multiple constructors accepting all given argument types have been found in type '{0}'. There should only be one applicable constructor.
+        /// </summary>
+        internal static string AmbiguousConstructorMatch
+        {
+            get { return GetString("AmbiguousConstructorMatch"); }
+        }
+
+        /// <summary>
+        /// Multiple constructors accepting all given argument types have been found in type '{0}'. There should only be one applicable constructor.
+        /// </summary>
+        internal static string FormatAmbiguousConstructorMatch(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AmbiguousConstructorMatch"), p0);
+        }
+
+        /// <summary>
         /// Unable to locate implementation '{0}' for service '{1}'.
         /// </summary>
         internal static string CannotLocateImplementation

@@ -9,11 +9,11 @@ using Ninject.Planning.Targets;
 
 namespace Microsoft.Framework.DependencyInjection.Ninject
 {
-    internal class KScopeParameter : IParameter, IDisposable, IDisposableObject, INotifyWhenDisposed
+    internal class ScopeParameter : IParameter, IDisposable, IDisposableObject, INotifyWhenDisposed
     {
         public string Name
         {
-            get { return typeof(KScopeParameter).FullName; }
+            get { return typeof(ScopeParameter).FullName; }
         }
 
         public bool ShouldInherit

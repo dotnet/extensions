@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 {
@@ -101,7 +102,17 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
                 {
                     parameterValues[index] = _parameterCallSites[index].Invoke(provider);
                 }
-                return _constructorInfo.Invoke(parameterValues);
+
+                try
+                {
+                    return _constructorInfo.Invoke(parameterValues);
+                }
+                catch (Exception ex)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    // The above line will always throw, but the compiler requires we throw explicitly.
+                    throw;
+                }
             }
 
             public Expression Build(Expression provider)
@@ -127,7 +138,16 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 
             public object Invoke(ServiceProvider provider)
             {
-                return Activator.CreateInstance(_descriptor.ImplementationType);
+                try
+                {
+                    return Activator.CreateInstance(_descriptor.ImplementationType);
+                }
+                catch (Exception ex)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    // The above line will always throw, but the compiler requires we throw explicitly.
+                    throw;
+                }
             }
 
             public Expression Build(Expression provider)

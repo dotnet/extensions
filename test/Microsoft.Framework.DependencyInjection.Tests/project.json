@@ -7,12 +7,12 @@
         "Microsoft.Framework.DependencyInjection.Ninject": "1.0.0-*",
         "Ninject": "3.0.1.10",
         "structuremap": "2.6.4.1",
-        "Xunit.KRunner": "1.0.0-*"
+        "xunit.runner.kre": "1.0.0-*"
     },
     "frameworks": {
         "aspnet50": { }
     },
     "commands": {
-        "test": "Xunit.KRunner"
+        "test": "xunit.runner.kre"
     }
 }

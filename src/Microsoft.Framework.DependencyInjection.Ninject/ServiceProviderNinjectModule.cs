@@ -10,11 +10,11 @@ using Ninject.Syntax;
 
 namespace Microsoft.Framework.DependencyInjection.Ninject
 {
-    internal class KNinjectModule : NinjectModule
+    internal class ServiceProviderNinjectModule : NinjectModule
     {
         private readonly IEnumerable<IServiceDescriptor> _serviceDescriptors;
 
-        public KNinjectModule(
+        public ServiceProviderNinjectModule(
                 IEnumerable<IServiceDescriptor> serviceDescriptors)
         {
             _serviceDescriptors = serviceDescriptors;
@@ -49,7 +49,7 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
                         binding.InSingletonScope();
                         break;
                     case LifecycleKind.Scoped:
-                        binding.InKScope();
+                        binding.InRequestScope();
                         break;
                     case LifecycleKind.Transient:
                         binding.InTransientScope();
@@ -62,16 +62,16 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
                 var resolver = context.Kernel.Get<IResolutionRoot>();
                 var inheritedParams = context.Parameters.Where(p => p.ShouldInherit);
 
-                var scopeParam = new KScopeParameter();
+                var scopeParam = new ScopeParameter();
                 inheritedParams = inheritedParams.AddOrReplaceScopeParameter(scopeParam);
 
                 return new NinjectServiceProvider(resolver, inheritedParams.ToArray());
-            }).InKScope();
+            }).InRequestScope();
 
             Bind<IServiceScopeFactory>().ToMethod(context =>
             {
                 return new NinjectServiceScopeFactory(context);
-            }).InKScope();
+            }).InRequestScope();
         }
     }
 }

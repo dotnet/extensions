@@ -5,12 +5,8 @@ using System;
 
 namespace Microsoft.Framework.DependencyInjection
 {
-    public interface IContextAccessor<TContext>
+    public interface IScopedInstance<T>
     {
-        TContext Value { get; }
-
-        TContext SetValue(TContext value);
-
-        IDisposable SetContextSource(Func<TContext> access, Func<TContext, TContext> exchange);
+        T Value { get; set; }
     }
 }
