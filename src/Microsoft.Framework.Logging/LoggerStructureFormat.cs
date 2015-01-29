@@ -14,13 +14,9 @@ namespace Microsoft.Framework.Logging
         private readonly Formatter _formatter;
         private readonly object[] _values;
 
-        public LoggerStructureFormat(string format, params object[] values)
+        public LoggerStructureFormat(string format, object[] values)
         {
-            if (!_formatters.TryGetValue(format, out _formatter))
-            {
-                _formatter = _formatters.GetOrAdd(format, ParseFormatter(format));
-            }
-
+            _formatter = _formatters.GetOrAdd(format, _ => new Formatter(format));
             _values = values;
         }
 
@@ -36,12 +32,7 @@ namespace Microsoft.Framework.Logging
             return _formatter.GetValues(_values);
         }
 
-        private Formatter ParseFormatter(string format)
-        {
-            return new Formatter(format);
-        }
-
-        class Formatter
+        private class Formatter
         {
             private readonly string _format;
             private readonly List<string> _valueNames = new List<string>();
@@ -49,8 +40,10 @@ namespace Microsoft.Framework.Logging
             public Formatter(string format)
             {
                 var sb = new StringBuilder();
+                var scanIndex = 0;
                 var endIndex = format.Length;
-                for (var scanIndex = 0; scanIndex != endIndex;)
+
+                while (scanIndex < endIndex)
                 {
                     var openBraceIndex = FindIndexOf(format, '{', scanIndex, endIndex);
                     var closeBraceIndex = FindIndexOf(format, '}', openBraceIndex, endIndex);
@@ -77,21 +70,22 @@ namespace Microsoft.Framework.Logging
                         scanIndex = closeBraceIndex + 1;
                     }
                 }
+
                 _format = sb.ToString();
             }
 
-            int FindIndexOf(string format, char ch, int startIndex, int endIndex)
+            private int FindIndexOf(string format, char ch, int startIndex, int endIndex)
             {
                 var findIndex = format.IndexOf(ch, startIndex, endIndex - startIndex);
                 return findIndex == -1 ? endIndex : findIndex;
             }
 
-            internal string Format(object[] values)
+            public string Format(object[] values)
             {
                 return string.Format(CultureInfo.InvariantCulture, _format, values);
             }
 
-            internal IEnumerable<KeyValuePair<string, object>> GetValues(object[] values)
+            public IEnumerable<KeyValuePair<string, object>> GetValues(object[] values)
             {
                 var valueArray = new KeyValuePair<string, object>[values.Length];
                 for (var index = 0; index != values.Length; ++index)

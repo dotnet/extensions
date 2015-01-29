@@ -2,24 +2,30 @@
     "version": "1.0.0-*",
     "description": "Logging infrastructure.",
     "compilationOptions": {
-        "define": [ "TRACE" ]
-    },
-    "dependencies": {
-        "System.Collections.Concurrent": "4.0.10-beta-*"
+        "define": [
+            "TRACE"
+        ]
     },
     "frameworks": {
         "net45": {
             "dependencies": {
                 "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
+            },
+            "frameworkAssemblies": {
+                "System.Collections.Concurrent": ""
             }
         },
         "aspnet50": {
             "dependencies": {
                 "Microsoft.Framework.Logging.Interfaces": { "version": "1.0.0-*", "type": "build" }
+            },
+            "frameworkAssemblies": {
+                "System.Collections.Concurrent": ""
             }
         },
         "aspnetcore50": {
             "dependencies": {
+                "System.Collections.Concurrent": "4.0.10-beta-*",
                 "System.Diagnostics.TraceSource": "4.0.0-beta-*",
                 "System.Globalization": "4.0.10-beta-*",
                 "System.Linq": "4.0.0-beta-*",
@@ -33,6 +39,7 @@
             },
             "frameworkAssemblies": {
                 "System.Collections": "",
+                "System.Collections.Concurrent": "",
                 "System.Reflection": "",
                 "System.Runtime.Extensions": "",
                 "System.Linq": "",
