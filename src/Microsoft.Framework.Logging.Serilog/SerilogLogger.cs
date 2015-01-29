@@ -53,14 +53,7 @@ namespace Microsoft.Framework.Logging.Serilog
             }
             else
             {
-                if (state != null)
-                {
-                    message += state;
-                }
-                if (exception != null)
-                {
-                    message += Environment.NewLine + exception;
-                }
+                message = LogFormatter.Formatter(state, exception);
             }
             if (string.IsNullOrEmpty(message))
             {

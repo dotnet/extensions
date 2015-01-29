@@ -14,7 +14,7 @@ namespace Microsoft.Framework.Logging
     public interface ILogger
     {
         /// <summary>
-        /// Aggregates most logging patterns to a single method.  This must be compatible with the Func representation in the OWIN environment.
+        /// Aggregates most logging patterns to a single method.
         /// </summary>
         /// <param name="logLevel"></param>
         /// <param name="eventId"></param>

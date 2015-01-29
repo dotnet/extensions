@@ -2,11 +2,11 @@
     "dependencies": {
         "Microsoft.Framework.Logging.Console": "1.0.0-*",
         "Microsoft.Framework.Logging.Serilog": "1.0.0-*",
-        "Xunit.KRunner": "1.0.0-*"
+        "xunit.runner.kre": "1.0.0-*"
     },
     "commands": {
-        "run": "Xunit.KRunner",
-        "test": "Xunit.KRunner"
+        "run": "xunit.runner.kre",
+        "test": "xunit.runner.kre"
     },
     "frameworks": {
         "aspnet50": { 
