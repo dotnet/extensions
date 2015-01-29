@@ -32,7 +32,11 @@ namespace Microsoft.Framework.Logging.Console
             }
             var message = string.Empty;
             var structure = state as ILoggerStructure;
-            if (structure != null)
+            if (formatter != null)
+            {
+                message = formatter(state, exception);
+            }
+            else if (structure != null)
             {
                 var builder = new StringBuilder();
                 FormatLoggerStructure(
@@ -45,10 +49,6 @@ namespace Microsoft.Framework.Logging.Console
                 {
                     message += Environment.NewLine + exception;
                 }
-            }
-            else if (formatter != null)
-            {
-                message = formatter(state, exception);
             }
             else
             {

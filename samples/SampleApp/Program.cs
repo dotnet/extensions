@@ -38,8 +38,8 @@ namespace SampleApp
                 .WriteTo.Sink(new RollingFileSink("file-{Date}.json", new JsonFormatter(), null, null))
                 .WriteTo.Sink(new FileSink("dump.txt", new RawFormatter(), null)));
 #endif
-            //factory.AddConsole();
-            //factory.AddConsole((category, logLevel) => logLevel >= LogLevel.Critical && category.Equals(typeof(Program).FullName));
+            factory.AddConsole();
+            factory.AddConsole((category, logLevel) => logLevel >= LogLevel.Critical && category.Equals(typeof(Program).FullName));
         }
 
         public void Main(string[] args)
@@ -77,8 +77,8 @@ namespace SampleApp
             _logger.WriteInformation("Stopping");
 
             _logger.WriteInformation(Environment.NewLine);
-            _logger.WriteInformation("{2,-10}{0,15}{1,15}{3,15}", "RESULT", "START TIME", "END TIME", "DURATION(ms)");
-            _logger.WriteInformation("{2,-10}{0,15}{1,15}{3,15}", "------", "----- ----", "--- ----", "------------");
+            _logger.WriteInformation("{Result,-10}{StartTime,15}{EndTime,15}{Duration,15}", "RESULT", "START TIME", "END TIME", "DURATION(ms)");
+            _logger.WriteInformation("{Result,-10}{StartTime,15}{EndTime,15}{Duration,15}", "------", "----- ----", "--- ----", "------------");
             _logger.WriteInformation("{Result,-10}{StartTime,15:mm:s tt}{EndTime,15:mm:s tt}{Duration,15}", "SUCCESS", startTime, endTime, (endTime - startTime).TotalMilliseconds);
         }
     }

@@ -16,7 +16,7 @@ namespace Microsoft.Framework.Logging
 
         public LoggerStructureFormat(string format, object[] values)
         {
-            _formatter = _formatters.GetOrAdd(format, _ => new Formatter(format));
+            _formatter = _formatters.GetOrAdd(format, f => new Formatter(f));
             _values = values;
         }
 
@@ -74,7 +74,7 @@ namespace Microsoft.Framework.Logging
                 _format = sb.ToString();
             }
 
-            private int FindIndexOf(string format, char ch, int startIndex, int endIndex)
+            private static int FindIndexOf(string format, char ch, int startIndex, int endIndex)
             {
                 var findIndex = format.IndexOf(ch, startIndex, endIndex - startIndex);
                 return findIndex == -1 ? endIndex : findIndex;
