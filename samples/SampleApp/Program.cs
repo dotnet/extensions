@@ -41,12 +41,13 @@ namespace SampleApp
             //factory.AddConsole();
             //factory.AddConsole((category, logLevel) => logLevel >= LogLevel.Critical && category.Equals(typeof(Program).FullName));
         }
-        
+
         public void Main(string[] args)
         {
             _logger.WriteInformation("Starting");
 
-            _logger.WriteInformation(1, "Started at '{StartTime}' and 0x{Hello:X} is hex of 42", DateTimeOffset.UtcNow, 42);
+            var startTime = DateTimeOffset.UtcNow;
+            _logger.WriteInformation(1, "Started at '{StartTime}' and 0x{Hello:X} is hex of 42", startTime, 42);
 
             try
             {
@@ -70,10 +71,15 @@ namespace SampleApp
                 Console.ReadLine();
             }
 
-            _logger.WriteInformation(2, "Stopping at '{StopTime}'", DateTimeOffset.UtcNow);
+            var endTime = DateTimeOffset.UtcNow;
+            _logger.WriteInformation(2, "Stopping at '{StopTime}'", endTime);
 
             _logger.WriteInformation("Stopping");
 
+            _logger.WriteInformation(Environment.NewLine);
+            _logger.WriteInformation("{2,-10}{0,15}{1,15}{3,15}", "RESULT", "START TIME", "END TIME", "DURATION(ms)");
+            _logger.WriteInformation("{2,-10}{0,15}{1,15}{3,15}", "------", "----- ----", "--- ----", "------------");
+            _logger.WriteInformation("{Result,-10}{StartTime,15:mm:s tt}{EndTime,15:mm:s tt}{Duration,15}", "SUCCESS", startTime, endTime, (endTime - startTime).TotalMilliseconds);
         }
     }
 }

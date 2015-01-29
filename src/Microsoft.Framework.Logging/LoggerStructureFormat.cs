@@ -53,11 +53,17 @@ namespace Microsoft.Framework.Logging
             {
                 var sb = new StringBuilder();
                 var endIndex = format.Length;
-                for (var scanIndex = 0; scanIndex != endIndex; )
+                for (var scanIndex = 0; scanIndex != endIndex;)
                 {
                     var openBraceIndex = FindIndexOf(format, '{', scanIndex, endIndex);
                     var closeBraceIndex = FindIndexOf(format, '}', openBraceIndex, endIndex);
-                    var formatDelimiterIndex = FindIndexOf(format, ':', openBraceIndex, closeBraceIndex);
+
+                    // Format item syntax : { index[,alignment][ :formatString] }.
+                    var formatDelimiterIndex = FindIndexOf(format, ',', openBraceIndex, closeBraceIndex);
+                    if (formatDelimiterIndex == closeBraceIndex)
+                    {
+                        formatDelimiterIndex = FindIndexOf(format, ':', openBraceIndex, closeBraceIndex);
+                    }
 
                     if (closeBraceIndex == endIndex)
                     {

@@ -87,31 +87,31 @@ namespace Microsoft.Framework.Logging.Test
 
             var verbose = sink.Writes[0];
             Assert.Equal(LogLevel.Verbose, verbose.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), verbose.State);
+            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILoggerStructure)verbose.State).Format());
             Assert.Equal(0, verbose.EventId);
             Assert.Equal(null, verbose.Exception);
 
             var information = sink.Writes[1];
             Assert.Equal(LogLevel.Information, information.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), information.State);
+            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILoggerStructure)information.State).Format());
             Assert.Equal(0, information.EventId);
             Assert.Equal(null, information.Exception);
 
             var warning = sink.Writes[2];
             Assert.Equal(LogLevel.Warning, warning.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), warning.State);
+            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILoggerStructure)warning.State).Format());
             Assert.Equal(0, warning.EventId);
             Assert.Equal(null, warning.Exception);
 
             var error = sink.Writes[3];
             Assert.Equal(LogLevel.Error, error.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), error.State);
+            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILoggerStructure)error.State).Format());
             Assert.Equal(0, error.EventId);
             Assert.Equal(null, error.Exception);
 
             var critical = sink.Writes[4];
             Assert.Equal(LogLevel.Critical, critical.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), critical.State);
+            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILoggerStructure)critical.State).Format());
             Assert.Equal(0, critical.EventId);
             Assert.Equal(null, critical.Exception);
         }
@@ -183,31 +183,31 @@ namespace Microsoft.Framework.Logging.Test
 
             var verbose = sink.Writes[0];
             Assert.Equal(LogLevel.Verbose, verbose.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), verbose.State);
+            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILoggerStructure)verbose.State).Format());
             Assert.Equal(1, verbose.EventId);
             Assert.Equal(null, verbose.Exception);
 
             var information = sink.Writes[1];
             Assert.Equal(LogLevel.Information, information.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), information.State);
+            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILoggerStructure)information.State).Format());
             Assert.Equal(2, information.EventId);
             Assert.Equal(null, information.Exception);
 
             var warning = sink.Writes[2];
             Assert.Equal(LogLevel.Warning, warning.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), warning.State);
+            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILoggerStructure)warning.State).Format());
             Assert.Equal(3, warning.EventId);
             Assert.Equal(null, warning.Exception);
 
             var error = sink.Writes[3];
             Assert.Equal(LogLevel.Error, error.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), error.State);
+            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILoggerStructure)error.State).Format());
             Assert.Equal(4, error.EventId);
             Assert.Equal(null, error.Exception);
 
             var critical = sink.Writes[4];
             Assert.Equal(LogLevel.Critical, critical.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), critical.State);
+            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILoggerStructure)critical.State).Format());
             Assert.Equal(5, critical.EventId);
             Assert.Equal(null, critical.Exception);
         }
@@ -307,35 +307,35 @@ namespace Microsoft.Framework.Logging.Test
             Assert.Equal(testStructure, verbose.State);
             Assert.Equal(0, verbose.EventId);
             Assert.Equal(null, verbose.Exception);
-            Assert.Equal("Test 1" + Environment.NewLine, verbose.Formatter(verbose.State, verbose.Exception));
+            Assert.Equal("Test 1", verbose.Formatter(verbose.State, verbose.Exception));
 
             var information = sink.Writes[1];
             Assert.Equal(LogLevel.Information, information.LogLevel);
             Assert.Equal(testStructure, information.State);
             Assert.Equal(0, information.EventId);
             Assert.Equal(null, information.Exception);
-            Assert.Equal("Test 1" + Environment.NewLine, information.Formatter(information.State, information.Exception));
+            Assert.Equal("Test 1", information.Formatter(information.State, information.Exception));
 
             var warning = sink.Writes[2];
             Assert.Equal(LogLevel.Warning, warning.LogLevel);
             Assert.Equal(testStructure, warning.State);
             Assert.Equal(0, warning.EventId);
             Assert.Equal(null, warning.Exception);
-            Assert.Equal("Test 1" + Environment.NewLine, warning.Formatter(warning.State, warning.Exception));
+            Assert.Equal("Test 1", warning.Formatter(warning.State, warning.Exception));
 
             var error = sink.Writes[3];
             Assert.Equal(LogLevel.Error, error.LogLevel);
             Assert.Equal(testStructure, error.State);
             Assert.Equal(0, error.EventId);
             Assert.Equal(null, error.Exception);
-            Assert.Equal("Test 1" + Environment.NewLine, error.Formatter(error.State, error.Exception));
+            Assert.Equal("Test 1", error.Formatter(error.State, error.Exception));
 
             var critical = sink.Writes[4];
             Assert.Equal(LogLevel.Critical, critical.LogLevel);
             Assert.Equal(testStructure, critical.State);
             Assert.Equal(0, critical.EventId);
             Assert.Equal(null, critical.Exception);
-            Assert.Equal("Test 1" + Environment.NewLine, critical.Formatter(critical.State, critical.Exception));
+            Assert.Equal("Test 1", critical.Formatter(critical.State, critical.Exception));
         }
 
         [Fact]
@@ -365,35 +365,35 @@ namespace Microsoft.Framework.Logging.Test
             Assert.Equal(testStructure, verbose.State);
             Assert.Equal(1, verbose.EventId);
             Assert.Equal(null, verbose.Exception);
-            Assert.Equal("Test 1" + Environment.NewLine, verbose.Formatter(verbose.State, verbose.Exception));
+            Assert.Equal("Test 1", verbose.Formatter(verbose.State, verbose.Exception));
 
             var information = sink.Writes[1];
             Assert.Equal(LogLevel.Information, information.LogLevel);
             Assert.Equal(testStructure, information.State);
             Assert.Equal(2, information.EventId);
             Assert.Equal(null, information.Exception);
-            Assert.Equal("Test 1" + Environment.NewLine, information.Formatter(information.State, information.Exception));
+            Assert.Equal("Test 1", information.Formatter(information.State, information.Exception));
 
             var warning = sink.Writes[2];
             Assert.Equal(LogLevel.Warning, warning.LogLevel);
             Assert.Equal(testStructure, warning.State);
             Assert.Equal(3, warning.EventId);
             Assert.Equal(null, warning.Exception);
-            Assert.Equal("Test 1" + Environment.NewLine, warning.Formatter(warning.State, warning.Exception));
+            Assert.Equal("Test 1", warning.Formatter(warning.State, warning.Exception));
 
             var error = sink.Writes[3];
             Assert.Equal(LogLevel.Error, error.LogLevel);
             Assert.Equal(testStructure, error.State);
             Assert.Equal(4, error.EventId);
             Assert.Equal(null, error.Exception);
-            Assert.Equal("Test 1" + Environment.NewLine, error.Formatter(error.State, error.Exception));
+            Assert.Equal("Test 1", error.Formatter(error.State, error.Exception));
 
             var critical = sink.Writes[4];
             Assert.Equal(LogLevel.Critical, critical.LogLevel);
             Assert.Equal(testStructure, critical.State);
             Assert.Equal(5, critical.EventId);
             Assert.Equal(null, critical.Exception);
-            Assert.Equal("Test 1" + Environment.NewLine, critical.Formatter(critical.State, critical.Exception));
+            Assert.Equal("Test 1", critical.Formatter(critical.State, critical.Exception));
         }
 
         [Fact]
@@ -424,7 +424,7 @@ namespace Microsoft.Framework.Logging.Test
             Assert.Equal(0, verbose.EventId);
             Assert.Equal(_exception, verbose.Exception);
             Assert.Equal(
-                "Test 1" + Environment.NewLine + _exception, 
+                "Test 1" + Environment.NewLine + _exception,
                 verbose.Formatter(verbose.State, verbose.Exception));
 
             var information = sink.Writes[1];
@@ -433,7 +433,7 @@ namespace Microsoft.Framework.Logging.Test
             Assert.Equal(0, information.EventId);
             Assert.Equal(_exception, information.Exception);
             Assert.Equal(
-                "Test 1" + Environment.NewLine + _exception, 
+                "Test 1" + Environment.NewLine + _exception,
                 information.Formatter(information.State, information.Exception));
 
             var warning = sink.Writes[2];
@@ -442,7 +442,7 @@ namespace Microsoft.Framework.Logging.Test
             Assert.Equal(0, warning.EventId);
             Assert.Equal(_exception, warning.Exception);
             Assert.Equal(
-                "Test 1" + Environment.NewLine + _exception, 
+                "Test 1" + Environment.NewLine + _exception,
                 warning.Formatter(warning.State, warning.Exception));
 
             var error = sink.Writes[3];
@@ -451,7 +451,7 @@ namespace Microsoft.Framework.Logging.Test
             Assert.Equal(0, error.EventId);
             Assert.Equal(_exception, error.Exception);
             Assert.Equal(
-                "Test 1" + Environment.NewLine + _exception, 
+                "Test 1" + Environment.NewLine + _exception,
                 error.Formatter(error.State, error.Exception));
 
             var critical = sink.Writes[4];
@@ -460,7 +460,7 @@ namespace Microsoft.Framework.Logging.Test
             Assert.Equal(0, critical.EventId);
             Assert.Equal(_exception, critical.Exception);
             Assert.Equal(
-                "Test 1" + Environment.NewLine + _exception, 
+                "Test 1" + Environment.NewLine + _exception,
                 critical.Formatter(critical.State, critical.Exception));
         }
 
