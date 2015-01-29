@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -7,23 +10,17 @@ namespace Microsoft.Framework.Logging
 {
     public class LoggerStructureFormat : ILoggerStructure
     {
-        static Dictionary<string, Formatter> _formatters = new Dictionary<string, Formatter>();
-        static object _formattersLock = new Object();
+        private static ConcurrentDictionary<string, Formatter> _formatters = new ConcurrentDictionary<string, Formatter>();
         private readonly Formatter _formatter;
         private readonly object[] _values;
 
         public LoggerStructureFormat(string format, params object[] values)
         {
-            lock (_formattersLock)
+            if (!_formatters.TryGetValue(format, out _formatter))
             {
-                // TODO: ConcurrentDictionary not available in portable profile?
-                // _formatter = _formatters.GetOrAdd(format, ParseFormatter);
-                if (!_formatters.TryGetValue(format, out _formatter))
-                {
-                    _formatter = ParseFormatter(format);
-                    _formatters[format] = _formatter;
-                }
+                _formatter = _formatters.GetOrAdd(format, ParseFormatter(format));
             }
+
             _values = values;
         }
 
