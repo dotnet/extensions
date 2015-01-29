@@ -3,10 +3,12 @@
 
 using System;
 using System.IO;
-using Microsoft.Framework.Expiration.Interfaces;
 
-namespace Microsoft.AspNet.FileSystems
+namespace Microsoft.AspNet.FileProviders
 {
+    /// <summary>
+    /// Represents a non-existing file.
+    /// </summary>
     public class NotFoundFileInfo : IFileInfo
     {
         private readonly string _name;
@@ -26,9 +28,9 @@ namespace Microsoft.AspNet.FileSystems
             get { return false; }
         }
 
-        public DateTime LastModified
+        public DateTimeOffset LastModified
         {
-            get { return DateTime.MinValue; }
+            get { return DateTimeOffset.MinValue; }
         }
 
         public long Length
@@ -50,28 +52,23 @@ namespace Microsoft.AspNet.FileSystems
         {
             get
             {
-                throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(NotFoundFileInfo), nameof(IsReadOnly)));
+                throw new InvalidOperationException(string.Format("The file {0} does not exist.", Name));
             }
         }
 
         public Stream CreateReadStream()
         {
-            throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(NotFoundFileInfo), nameof(CreateReadStream)));
+            throw new InvalidOperationException(string.Format("The file {0} does not exist.", Name));
         }
 
         public void WriteContent(byte[] content)
         {
-            throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(NotFoundFileInfo), nameof(WriteContent)));
+            throw new InvalidOperationException(string.Format("The file {0} does not exist.", Name));
         }
 
         public void Delete()
         {
-            throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(NotFoundFileInfo), nameof(Delete)));
-        }
-
-        public IExpirationTrigger CreateFileChangeTrigger()
-        {
-            throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(NotFoundFileInfo), nameof(CreateFileChangeTrigger)));
+            throw new InvalidOperationException(string.Format("The file {0} does not exist.", Name));
         }
     }
 }

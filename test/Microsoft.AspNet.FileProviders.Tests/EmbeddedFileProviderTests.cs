@@ -7,14 +7,14 @@ using System.Linq;
 using Shouldly;
 using Xunit;
 
-namespace Microsoft.AspNet.FileSystems
+namespace Microsoft.AspNet.FileProviders
 {
-    public class EmbeddedResourceFileSystemTests
+    public class EmbeddedFileProviderTests
     {
         [Fact]
         public void When_GetFileInfo_and_resource_does_not_exist_then_should_not_get_file_info()
         {
-            var provider = new EmbeddedResourceFileSystem(this.GetType().Assembly, "");
+            var provider = new EmbeddedFileProvider(this.GetType().Assembly, "");
 
             var fileInfo = provider.GetFileInfo("DoesNotExist.Txt");
             fileInfo.ShouldNotBe(null);
@@ -24,12 +24,12 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public void When_GetFileInfo_and_resource_exists_in_root_then_should_get_file_info()
         {
-            var provider = new EmbeddedResourceFileSystem(this.GetType().Assembly, "");
+            var provider = new EmbeddedFileProvider(this.GetType().Assembly, "");
             var expectedFileLength = new FileInfo("File.txt").Length;
             var fileInfo = provider.GetFileInfo("File.txt");
             fileInfo.ShouldNotBe(null);
             fileInfo.Exists.ShouldBe(true);
-            fileInfo.LastModified.ShouldNotBe(default(DateTime));
+            fileInfo.LastModified.ShouldNotBe(default(DateTimeOffset));
             fileInfo.Length.ShouldBe(expectedFileLength);
             fileInfo.IsDirectory.ShouldBe(false);
             fileInfo.PhysicalPath.ShouldBe(null);
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.FileSystems
             fileInfo = provider.GetFileInfo("/File.txt");
             fileInfo.ShouldNotBe(null);
             fileInfo.Exists.ShouldBe(true);
-            fileInfo.LastModified.ShouldNotBe(default(DateTime));
+            fileInfo.LastModified.ShouldNotBe(default(DateTimeOffset));
             fileInfo.Length.ShouldBe(expectedFileLength);
             fileInfo.IsDirectory.ShouldBe(false);
             fileInfo.PhysicalPath.ShouldBe(null);
@@ -49,12 +49,12 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public void When_GetFileInfo_and_resource_exists_in_subdirectory_then_should_get_file_info()
         {
-            var provider = new EmbeddedResourceFileSystem(this.GetType().Assembly, "Resources");
+            var provider = new EmbeddedFileProvider(this.GetType().Assembly, "Resources");
 
             var fileInfo = provider.GetFileInfo("ResourcesInSubdirectory/File3.txt");
             fileInfo.ShouldNotBe(null);
             fileInfo.Exists.ShouldBe(true);
-            fileInfo.LastModified.ShouldNotBe(default(DateTime));
+            fileInfo.LastModified.ShouldNotBe(default(DateTimeOffset));
             fileInfo.Length.ShouldBeGreaterThan(0);
             fileInfo.IsDirectory.ShouldBe(false);
             fileInfo.PhysicalPath.ShouldBe(null);
@@ -64,12 +64,12 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public void When_GetFileInfo_and_resources_in_path_then_should_get_file_infos()
         {
-            var provider = new EmbeddedResourceFileSystem(this.GetType().Assembly, "");
+            var provider = new EmbeddedFileProvider(this.GetType().Assembly, "");
 
             var fileInfo = provider.GetFileInfo("Resources/File.txt");
             fileInfo.ShouldNotBe(null);
             fileInfo.Exists.ShouldBe(true);
-            fileInfo.LastModified.ShouldNotBe(default(DateTime));
+            fileInfo.LastModified.ShouldNotBe(default(DateTimeOffset));
             fileInfo.Length.ShouldBeGreaterThan(0);
             fileInfo.IsDirectory.ShouldBe(false);
             fileInfo.PhysicalPath.ShouldBe(null);
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public void GetDirectoryContents()
         {
-            var provider = new EmbeddedResourceFileSystem(this.GetType().Assembly, "Resources");
+            var provider = new EmbeddedFileProvider(this.GetType().Assembly, "Resources");
 
             var files = provider.GetDirectoryContents("");
             files.ShouldNotBe(null);
@@ -93,12 +93,22 @@ namespace Microsoft.AspNet.FileSystems
         [Fact]
         public void GetDirInfo_with_no_matching_base_namespace()
         {
-            var provider = new EmbeddedResourceFileSystem(this.GetType().Assembly, "Unknown.Namespace");
+            var provider = new EmbeddedFileProvider(this.GetType().Assembly, "Unknown.Namespace");
 
             var files = provider.GetDirectoryContents(string.Empty);
             files.ShouldNotBe(null);
             files.Exists.ShouldBe(true);
             files.Count().ShouldBe(0);
+        }
+
+        [Fact]
+        public void Trigger_ShouldNot_Support_Registering_Callbacks()
+        {
+            var provider = new EmbeddedFileProvider(this.GetType().Assembly, "");
+            var trigger = provider.Watch("Resources/File.txt");
+            trigger.ShouldNotBe(null);
+            trigger.ActiveExpirationCallbacks.ShouldBe(false);
+            trigger.IsExpired.ShouldBe(false);
         }
     }
 }

@@ -3,12 +3,11 @@
 
 using System;
 using System.IO;
-using Microsoft.Framework.Expiration.Interfaces;
 
-namespace Microsoft.AspNet.FileSystems
+namespace Microsoft.AspNet.FileProviders
 {
     /// <summary>
-    /// Represents a file in the given file system.
+    /// Represents a file in the given file provider.
     /// </summary>
 #if ASPNET50 || ASPNETCORE50
     [Framework.Runtime.AssemblyNeutral]
@@ -38,7 +37,7 @@ namespace Microsoft.AspNet.FileSystems
         /// <summary>
         /// When the file was last modified
         /// </summary>
-        DateTime LastModified { get; }
+        DateTimeOffset LastModified { get; }
 
         /// <summary>
         /// True for the case TryGetDirectoryContents has enumerated a sub-directory
@@ -65,11 +64,5 @@ namespace Microsoft.AspNet.FileSystems
         /// Deletes the file.
         /// </summary>
         void Delete();
-
-        /// <summary>
-        /// Gets a trigger to monitor the file changes. 
-        /// </summary>
-        /// <returns></returns>
-        IExpirationTrigger CreateFileChangeTrigger();
     }
 }

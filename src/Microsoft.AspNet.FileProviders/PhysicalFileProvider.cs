@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Framework.Expiration.Interfaces;
 
-namespace Microsoft.AspNet.FileSystems
+namespace Microsoft.AspNet.FileProviders
 {
     /// <summary>
     /// Looks up files using the on-disk file system
     /// </summary>
-    public class PhysicalFileSystem : IFileSystem
+    public class PhysicalFileProvider : IFileProvider
     {
         // These are restricted file names on Windows, regardless of extension.
         private static readonly Dictionary<string, string> RestrictedFileNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -41,11 +41,13 @@ namespace Microsoft.AspNet.FileSystems
             { "clock$", string.Empty },
         };
 
+        private readonly PhysicalFilesWatcher _filesWatcher;
+
         /// <summary>
-        /// Creates a new instance of a PhysicalFileSystem at the given root directory.
+        /// Creates a new instance of a PhysicalFileProvider at the given root directory.
         /// </summary>
         /// <param name="root">The root directory. This should be an absolute path.</param>
-        public PhysicalFileSystem(string root)
+        public PhysicalFileProvider(string root)
         {
             if (!Path.IsPathRooted(root))
             {
@@ -58,6 +60,9 @@ namespace Microsoft.AspNet.FileSystems
             {
                 throw new DirectoryNotFoundException(Root);
             }
+
+            // Monitor only the application's root folder.
+            _filesWatcher = new PhysicalFilesWatcher(Root);
         }
 
         /// <summary>
@@ -124,7 +129,7 @@ namespace Microsoft.AspNet.FileSystems
             var fileInfo = new FileInfo(fullPath);
             if (fileInfo.Exists)
             {
-                return new PhysicalFileInfo(fileInfo);
+                return new PhysicalFileInfo(_filesWatcher, fileInfo);
             }
 
             return new NotFoundFileInfo(subpath);
@@ -172,7 +177,7 @@ namespace Microsoft.AspNet.FileSystems
                         var fileInfo = fileSystemInfo as FileInfo;
                         if (fileInfo != null)
                         {
-                            virtualInfos.Add(new PhysicalFileInfo(fileInfo));
+                            virtualInfos.Add(new PhysicalFileInfo(_filesWatcher, fileInfo));
                         }
                         else
                         {
@@ -198,13 +203,38 @@ namespace Microsoft.AspNet.FileSystems
             return RestrictedFileNames.ContainsKey(fileName);
         }
 
+        public IExpirationTrigger Watch(string filter)
+        {
+            if (filter == null)
+            {
+                return NoopTrigger.Singleton;
+            }
+
+            // Relative paths starting with a leading slash okay
+            if (filter.StartsWith("/", StringComparison.Ordinal))
+            {
+                filter = filter.Substring(1);
+            }
+
+            // Absolute paths not permitted.
+            if (Path.IsPathRooted(filter))
+            {
+                return NoopTrigger.Singleton;
+            }
+
+            return _filesWatcher.CreateFileChangeTrigger(filter);
+        }
+
         private class PhysicalFileInfo : IFileInfo
         {
             private readonly FileInfo _info;
 
-            public PhysicalFileInfo(FileInfo info)
+            private readonly PhysicalFilesWatcher _filesWatcher;
+
+            public PhysicalFileInfo(PhysicalFilesWatcher filesWatcher, FileInfo info)
             {
                 _info = info;
+                _filesWatcher = filesWatcher;
             }
 
             public bool Exists
@@ -227,9 +257,12 @@ namespace Microsoft.AspNet.FileSystems
                 get { return _info.Name; }
             }
 
-            public DateTime LastModified
+            public DateTimeOffset LastModified
             {
-                get { return _info.LastWriteTime; }
+                get
+                {
+                    return _info.LastWriteTimeUtc;
+                }
             }
 
             public bool IsDirectory
@@ -241,12 +274,7 @@ namespace Microsoft.AspNet.FileSystems
             {
                 get
                 {
-#if ASPNET50
                     return _info.IsReadOnly;
-#else
-                    // TODO: Why property not available on CoreCLR
-                    return false;
-#endif
                 }
             }
 
@@ -267,11 +295,6 @@ namespace Microsoft.AspNet.FileSystems
             {
                 File.Delete(PhysicalPath);
                 _info.Refresh();
-            }
-
-            public IExpirationTrigger CreateFileChangeTrigger()
-            {
-                throw new NotImplementedException();
             }
         }
 
@@ -304,9 +327,12 @@ namespace Microsoft.AspNet.FileSystems
                 get { return _info.Name; }
             }
 
-            public DateTime LastModified
+            public DateTimeOffset LastModified
             {
-                get { return _info.LastWriteTime; }
+                get
+                {
+                    return _info.LastWriteTimeUtc;
+                }
             }
 
             public bool IsDirectory
@@ -321,22 +347,17 @@ namespace Microsoft.AspNet.FileSystems
 
             public Stream CreateReadStream()
             {
-                throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(PhysicalDirectoryInfo), nameof(CreateReadStream)));
+                throw new InvalidOperationException("Cannot create a stream for a directory.");
             }
 
             public void WriteContent(byte[] content)
             {
-                throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(PhysicalDirectoryInfo), nameof(WriteContent)));
+                throw new InvalidOperationException("Cannot write content into a directory.");
             }
 
             public void Delete()
             {
                 Directory.Delete(PhysicalPath, recursive: true);
-            }
-
-            public IExpirationTrigger CreateFileChangeTrigger()
-            {
-                throw new NotSupportedException(string.Format("{0} does not support {1}.", nameof(PhysicalDirectoryInfo), nameof(CreateFileChangeTrigger)));
             }
         }
     }

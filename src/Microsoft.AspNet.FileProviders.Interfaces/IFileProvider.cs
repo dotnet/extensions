@@ -1,15 +1,17 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNet.FileSystems
+using Microsoft.Framework.Expiration.Interfaces;
+
+namespace Microsoft.AspNet.FileProviders
 {
     /// <summary>
-    /// A file system abstraction.
+    /// A read-only file provider abstraction.
     /// </summary>
 #if ASPNET50 || ASPNETCORE50
     [Framework.Runtime.AssemblyNeutral]
 #endif
-    public interface IFileSystem
+    public interface IFileProvider
     {
         /// <summary>
         /// Locate a file at the given path.
@@ -24,5 +26,12 @@ namespace Microsoft.AspNet.FileSystems
         /// <param name="subpath">Relative path that identifies the directory.</param>
         /// <returns>Returns the contents of the directory.</returns>
         IDirectoryContents GetDirectoryContents(string subpath);
+
+        /// <summary>
+        /// Creates a change trigger with the specified filter.
+        /// </summary>
+        /// <param name="filter">Filter string used to determine what files or folders to monitor. Example: **/*.cs, *.*, subFolder/**/*.cshtml.</param>
+        /// <returns>An <see cref="IExpirationTrigger"/> that is triggered when a file matching <paramref name="filter"/> is added, modified or deleted.</returns>
+        IExpirationTrigger Watch(string filter);
     }
 }

@@ -3,10 +3,10 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.FileSystems
+namespace Microsoft.AspNet.FileProviders
 {
     /// <summary>
-    /// Represents a directory's content in the file system.
+    /// Represents a directory's content in the file provider.
     /// </summary>
 #if ASPNET50 || ASPNETCORE50
     [Framework.Runtime.AssemblyNeutral]
