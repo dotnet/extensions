@@ -3,8 +3,9 @@
 
 using System.Collections.Generic;
 using Microsoft.Framework.FileSystemGlobbing.Abstractions;
+using Microsoft.Framework.FileSystemGlobbing.Infrastructure;
 
-namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
+namespace Microsoft.Framework.FileSystemGlobbing
 {
     public class Matcher
     {
