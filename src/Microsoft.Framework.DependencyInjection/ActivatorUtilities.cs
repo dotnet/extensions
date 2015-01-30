@@ -55,7 +55,7 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         /// <summary>
-        /// Create a function that will instantiate a type with constructor arguments provided directly
+        /// Create a delegate that will instantiate a type with constructor arguments provided directly
         /// and/or from an <see cref="IServiceProvider"/>.
         /// </summary>
         /// <param name="instanceType">The type to activate</param>
@@ -66,7 +66,7 @@ namespace Microsoft.Framework.DependencyInjection
         /// A factory that will instantiate instanceType using an <see cref="IServiceProvider"/>
         /// and an argument array containing objects matching the types defined in argumentTypes
         /// </returns>
-        public static Func<IServiceProvider, object[], object> CreateFactory(Type instanceType, Type[] argumentTypes)
+        public static ObjectFactory CreateFactory(Type instanceType, Type[] argumentTypes)
         {
             ConstructorInfo constructor;
             int?[] parameterMap;
@@ -80,7 +80,8 @@ namespace Microsoft.Framework.DependencyInjection
             var factoryLamda = Expression.Lambda<Func<IServiceProvider, object[], object>>(
                 factoryExpressionBody, provider, argumentArray);
 
-            return factoryLamda.Compile();
+            var result = factoryLamda.Compile();
+            return result.Invoke;
         }
 
         /// <summary>
