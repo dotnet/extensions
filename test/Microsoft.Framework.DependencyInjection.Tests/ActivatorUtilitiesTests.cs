@@ -220,5 +220,19 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             Assert.Equal(2, service.InstanceId);
             Assert.Equal(2, CreationCountFakeService.InstanceCount);
         }
+
+        [Theory]
+        [MemberData(nameof(CreateInstanceFuncs))]
+        public void UnRegisteredServiceAsConstructorParameterThrowsException(CreateInstanceFunc createFunc)
+        {
+            var serviceProvider = new ServiceCollection()
+                .AddSingleton<CreationCountFakeService>()
+                .BuildServiceProvider();
+
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            CreateInstance<CreationCountFakeService>(createFunc, serviceProvider));
+            Assert.Equal(Resources.FormatCannotResolveService(typeof(IFakeService), typeof(CreationCountFakeService)),
+                ex.Message);
+        }
     }
 }

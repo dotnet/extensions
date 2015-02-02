@@ -14,7 +14,8 @@ namespace Microsoft.Framework.DependencyInjection
     /// </summary>
     public static class ActivatorUtilities
     {
-        private static readonly MethodInfo GetServiceInfo = GetMethodInfo<Func<IServiceProvider, Type, object>>((sp, t) => sp.GetService(t));
+        private static readonly MethodInfo GetServiceInfo =
+            GetMethodInfo<Func<IServiceProvider, Type, Type, bool, object>>((sp, t, r, c) => GetService(sp, t, r, c));
 
         /// <summary>
         /// Instantiate a type with constructor arguments provided directly and/or from an <see cref="IServiceProvider"/>.
@@ -124,6 +125,17 @@ namespace Microsoft.Framework.DependencyInjection
             return mc.Method;
         }
 
+        private static object GetService(IServiceProvider sp, Type type, Type requiredBy, bool isDefaultParameterRequired)
+        {
+            var service = sp.GetService(type);
+            if (service == null && !isDefaultParameterRequired)
+            {
+                throw new InvalidOperationException(
+                Resources.FormatCannotResolveService(type, requiredBy));
+            }
+            return service;
+        }
+
         private static Expression BuildFactoryExpression(
             ConstructorInfo constructor,
             int?[] parameterMap,
@@ -143,8 +155,12 @@ namespace Microsoft.Framework.DependencyInjection
                 }
                 else
                 {
-                    var parameterTypeExpression = Expression.Constant(parameterType);
-                    constructorArguments[i] = Expression.Call(serviceProvider, GetServiceInfo, parameterTypeExpression);
+                    var constructorParameterHasDefault = constructorParameters[i].HasDefaultValue;
+                    var parameterTypeExpression = new Expression[] { serviceProvider,
+                        Expression.Constant(parameterType),
+                        Expression.Constant(constructor.DeclaringType),
+                        Expression.Constant(constructorParameterHasDefault) };
+                    constructorArguments[i] = Expression.Call(GetServiceInfo, parameterTypeExpression);
                 }
 
                 // Support optional constructor arguments by passing in the default value
@@ -296,8 +312,8 @@ namespace Microsoft.Framework.DependencyInjection
                             if (!_parameters[index].HasDefaultValue)
                             {
                                 throw new InvalidOperationException(Resources.FormatCannotResolveService(
-                                    _constructor.DeclaringType,
-                                    _parameters[index].ParameterType));
+                                    _parameters[index].ParameterType,
+                                    _constructor.DeclaringType));
                             }
                             else
                             {
