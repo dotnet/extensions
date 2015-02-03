@@ -13,12 +13,13 @@ namespace Microsoft.Framework.Logging
     public class LoggerStructureFormatter
     {
         private readonly string _format;
-        private readonly string _originalFormat;
         private readonly List<string> _valueNames = new List<string>();
+
+        public string OriginalFormat { get; private set; }
 
         public LoggerStructureFormatter(string format)
         {
-            _originalFormat = format;
+            OriginalFormat = format;
 
             var sb = new StringBuilder();
             var scanIndex = 0;
@@ -122,7 +123,7 @@ namespace Microsoft.Framework.Logging
                 valueArray[index] = new KeyValuePair<string, object>(_valueNames[index], values[index]);
             }
 
-            valueArray[valueArray.Length - 1] = new KeyValuePair<string, object>("__OriginalFormat", _originalFormat);
+            valueArray[valueArray.Length - 1] = new KeyValuePair<string, object>("__OriginalFormat", OriginalFormat);
             return valueArray;
         }
     }
