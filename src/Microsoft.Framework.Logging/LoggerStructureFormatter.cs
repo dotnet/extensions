@@ -26,8 +26,8 @@ namespace Microsoft.Framework.Logging
 
             while (scanIndex < endIndex)
             {
-                var openBraceIndex = FindBrace(format, '{', scanIndex, endIndex);
-                var closeBraceIndex = FindBrace(format, '}', openBraceIndex, endIndex);
+                var openBraceIndex = FindBraceIndex(format, '{', scanIndex, endIndex);
+                var closeBraceIndex = FindBraceIndex(format, '}', openBraceIndex, endIndex);
 
                 // Format item syntax : { index[,alignment][ :formatString] }.
                 var formatDelimiterIndex = FindIndexOf(format, ',', openBraceIndex, closeBraceIndex);
@@ -55,7 +55,7 @@ namespace Microsoft.Framework.Logging
             _format = sb.ToString();
         }
 
-        private static int FindBrace(string format, char braceCharacter, int startIndex, int endIndex)
+        private static int FindBraceIndex(string format, char brace, int startIndex, int endIndex)
         {
             // Example: {{prefix{{{Argument}}}suffix}}.
             var braceIndex = endIndex;
@@ -64,7 +64,7 @@ namespace Microsoft.Framework.Logging
 
             while (scanIndex < endIndex)
             {
-                if (braceOccurenceCount > 0 && format[scanIndex] != braceCharacter)
+                if (braceOccurenceCount > 0 && format[scanIndex] != brace)
                 {
                     if (braceOccurenceCount % 2 == 0)
                     {
@@ -78,9 +78,9 @@ namespace Microsoft.Framework.Logging
                         break;
                     }
                 }
-                else if (format[scanIndex] == braceCharacter)
+                else if (format[scanIndex] == brace)
                 {
-                    if (braceCharacter == '}')
+                    if (brace == '}')
                     {
                         if (braceOccurenceCount == 0)
                         {
