@@ -57,5 +57,18 @@ namespace Microsoft.Framework.Logging.Test
             // Original format is expected to be returned from GetValues.
             Assert.Equal(format, loggerStructure.GetValues().First(v => v.Key == "__OriginalFormat").Value);
         }
+
+        [Theory]
+        [InlineData("{foo")]
+        [InlineData("bar}")]
+        [InlineData("{foo bar}")]
+        public void LoggerStructure_With_UnbalancedBraces(string format)
+        {
+            Assert.Throws<FormatException>(() =>
+            {
+                var loggerStructure = new LoggerStructureFormat(format);
+                loggerStructure.Format();
+            });
+        }
     }
 }
