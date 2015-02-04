@@ -662,6 +662,7 @@ namespace Microsoft.AspNet.FileProviders
                 newTriggers.Add(provider.Watch(Path.Combine("**", newDirectoryName, fileName)));
             }
 
+            await Task.Delay(2 * 100); // Give it a while before trying rename.
             Directory.Move(oldDirectoryFullPath, newDirectoryFullPath);
 
             // Wait for triggers to fire.
