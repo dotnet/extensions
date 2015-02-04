@@ -123,7 +123,7 @@ namespace Microsoft.Framework.Logging
                 valueArray[index] = new KeyValuePair<string, object>(_valueNames[index], values[index]);
             }
 
-            valueArray[valueArray.Length - 1] = new KeyValuePair<string, object>("__OriginalFormat", OriginalFormat);
+            valueArray[valueArray.Length - 1] = new KeyValuePair<string, object>("{OriginalFormat}", OriginalFormat);
             return valueArray;
         }
     }

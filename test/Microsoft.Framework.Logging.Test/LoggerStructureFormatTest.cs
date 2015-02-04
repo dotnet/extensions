@@ -21,7 +21,7 @@ namespace Microsoft.Framework.Logging.Test
             Assert.Equal(expected, loggerStructure.Format());
 
             // Original format is expected to be returned from GetValues.
-            Assert.Equal(format, loggerStructure.GetValues().First(v => v.Key == "__OriginalFormat").Value);
+            Assert.Equal(format, loggerStructure.GetValues().First(v => v.Key == "{OriginalFormat}").Value);
         }
 
         [Theory]
@@ -35,7 +35,7 @@ namespace Microsoft.Framework.Logging.Test
             Assert.Equal(expected, loggerStructure.Format());
 
             // Original format is expected to be returned from GetValues.
-            Assert.Equal(format, loggerStructure.GetValues().First(v => v.Key == "__OriginalFormat").Value);
+            Assert.Equal(format, loggerStructure.GetValues().First(v => v.Key == "{OriginalFormat}").Value);
         }
 
         [Theory]
@@ -55,7 +55,7 @@ namespace Microsoft.Framework.Logging.Test
             Assert.Equal(expected, loggerStructure.Format());
 
             // Original format is expected to be returned from GetValues.
-            Assert.Equal(format, loggerStructure.GetValues().First(v => v.Key == "__OriginalFormat").Value);
+            Assert.Equal(format, loggerStructure.GetValues().First(v => v.Key == "{OriginalFormat}").Value);
         }
 
         [Theory]
