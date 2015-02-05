@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Expiration.Interfaces;
+#if ASPNET50 || ASPNETCORE50
+using Microsoft.Framework.Runtime;
+#endif
 
 namespace Microsoft.Framework.Cache.Memory
 {
@@ -13,7 +15,9 @@ namespace Microsoft.Framework.Cache.Memory
     /// be copied from the dependent entry to the parent entry. The parent entry will not expire if the
     /// dependent entry is removed manually, removed due to memory pressure, or expires due to sliding expiration.
     /// </summary>
+#if ASPNET50 || ASPNETCORE50
     [AssemblyNeutral]
+#endif
     public interface IEntryLink
     {
         /// <summary>

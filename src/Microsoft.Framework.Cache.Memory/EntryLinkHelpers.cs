@@ -2,18 +2,26 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-#if ASPNET50
+#if ASPNETCORE50
+using System.Threading;
+#else
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
-#else
-using System.Threading;
 #endif
 
 namespace Microsoft.Framework.Cache.Memory
 {
     public static class EntryLinkHelpers
     {
-#if ASPNET50
+#if ASPNETCORE50
+        private static readonly AsyncLocal<IEntryLink> _contextLink = new AsyncLocal<IEntryLink>();
+
+        public static IEntryLink ContextLink
+        {
+            get { return _contextLink.Value; }
+            set { _contextLink.Value = value; }
+        }
+#else
         private const string ContextLinkDataName = "klr.host.EntryLinkHelpers.ContextLink";
 
         public static IEntryLink ContextLink
@@ -33,14 +41,6 @@ namespace Microsoft.Framework.Cache.Memory
             {
                 CallContext.LogicalSetData(ContextLinkDataName, new ObjectHandle(value));
             }
-        }
-#else
-        private static readonly AsyncLocal<IEntryLink> _contextLink = new AsyncLocal<IEntryLink>();
-
-        public static IEntryLink ContextLink
-        {
-            get { return _contextLink.Value; }
-            set { _contextLink.Value = value; }
         }
 #endif
         public static IDisposable FlowContext(this IEntryLink link)
