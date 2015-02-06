@@ -124,6 +124,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
 
             Assert.NotNull(service1.ScopedService.FakeService);
 
+#if !ASPNETCORE50
             // Scoping does not currently work with StuctureMap
             if (GetType() != typeof(StructureMapContainerTests))
             {
@@ -131,6 +132,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
                 Assert.NotSame(service1.TransientService, service2.TransientService);
                 Assert.Same(service1.ScopedService, service2.ScopedService);
             }
+#endif
         }
     }
 }

@@ -157,8 +157,8 @@ namespace Microsoft.Framework.DependencyInjection
                 {
                     var constructorParameterHasDefault = constructorParameters[i].HasDefaultValue;
                     var parameterTypeExpression = new Expression[] { serviceProvider,
-                        Expression.Constant(parameterType),
-                        Expression.Constant(constructor.DeclaringType),
+                        Expression.Constant(parameterType, typeof(Type)),
+                        Expression.Constant(constructor.DeclaringType, typeof(Type)),
                         Expression.Constant(constructorParameterHasDefault) };
                     constructorArguments[i] = Expression.Call(GetServiceInfo, parameterTypeExpression);
                 }

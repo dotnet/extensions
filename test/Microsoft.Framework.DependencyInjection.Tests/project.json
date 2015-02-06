@@ -1,16 +1,18 @@
 {
     "version": "0.1-alpha-*",
     "dependencies": {
-        "Autofac": "3.3.0",
         "Microsoft.Framework.DependencyInjection": "1.0.0-*",
-        "Microsoft.Framework.DependencyInjection.Autofac": "1.0.0-*",
-        "Microsoft.Framework.DependencyInjection.Ninject": "1.0.0-*",
-        "Ninject": "3.0.1.10",
-        "structuremap": "2.6.4.1",
         "xunit.runner.kre": "1.0.0-*"
     },
     "frameworks": {
-        "aspnet50": { }
+        "aspnet50": {
+            "dependencies": {
+                "Microsoft.Framework.DependencyInjection.Autofac": "1.0.0-*",
+                "Microsoft.Framework.DependencyInjection.Ninject": "1.0.0-*",
+                "structuremap": "2.6.4.1"
+            }
+        },
+        "aspnetcore50": { }
     },
     "commands": {
         "test": "xunit.runner.kre"
