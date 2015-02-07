@@ -14,6 +14,12 @@ namespace Microsoft.Framework.DependencyInjection
         private readonly List<IServiceDescriptor> _descriptors = new List<IServiceDescriptor>();
 
         /// <inheritdoc />
+        public int Count => _descriptors.Count;
+
+        /// <inheritdoc />
+        public bool IsReadOnly => false;
+
+        /// <inheritdoc />
         public IServiceCollection Add([NotNull] IServiceDescriptor descriptor)
         {
             _descriptors.Add(descriptor);
@@ -21,16 +27,38 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         /// <inheritdoc />
-        public IServiceCollection Add([NotNull] IEnumerable<IServiceDescriptor> descriptors)
+        public void Clear()
         {
-            _descriptors.AddRange(descriptors);
-            return this;
+            _descriptors.Clear();
+        }
+
+        /// <inheritdoc />
+        public bool Contains(IServiceDescriptor item)
+        {
+            return _descriptors.Contains(item);
+        }
+
+        /// <inheritdoc />
+        public void CopyTo(IServiceDescriptor[] array, int arrayIndex)
+        {
+            _descriptors.CopyTo(array, arrayIndex);
+        }
+
+        /// <inheritdoc />
+        public bool Remove(IServiceDescriptor item)
+        {
+            return _descriptors.Remove(item);
         }
 
         /// <inheritdoc />
         public IEnumerator<IServiceDescriptor> GetEnumerator()
         {
             return _descriptors.GetEnumerator();
+        }
+
+        void ICollection<IServiceDescriptor>.Add(IServiceDescriptor item)
+        {
+            Add(item);
         }
 
         IEnumerator IEnumerable.GetEnumerator()

@@ -1,0 +1,24 @@
+{
+    "version": "1.0.0-*",
+    "description": "Contracts for dependency injection.",
+    "frameworks": {
+        "net45": {
+        },
+        "aspnet50": {
+            "dependencies": {
+                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
+            }
+        },
+        "aspnetcore50": {
+            "dependencies": {
+                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
+            }
+        },
+        ".NETPortable,Version=v4.6,Profile=Profile151": {
+            "frameworkAssemblies": {
+                "System.Runtime": "",
+                "System.ComponentModel":  ""
+            }
+        }
+    }
+}

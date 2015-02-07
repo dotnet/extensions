@@ -2,22 +2,18 @@
     "version": "1.0.0-*",
     "description": "Dependency injection abstraction and fallback implementation.",
     "dependencies": {
-        "Microsoft.Framework.ConfigurationModel": "1.0.0-*"
+        "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
+        "Microsoft.Framework.DependencyInjection.Interfaces": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
         "net45": { },
-        "aspnet50": {
-            "dependencies": {
-                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
-            }
-        },
+        "aspnet50": {},
         "aspnetcore50": {
             "dependencies": {
                 "System.Collections.Concurrent": "4.0.10-beta-*",
                 "System.Linq.Expressions": "4.0-beta-*",
                 "System.Threading": "4.0.10-beta-*",
-                "System.Threading.Tasks": "4.0.10-beta-*",
-                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
+                "System.Threading.Tasks": "4.0.10-beta-*"
             }
         },
         ".NETPortable,Version=v4.6,Profile=Profile151": {

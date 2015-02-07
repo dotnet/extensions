@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.Framework.DependencyInjection.Tests.Fakes;
 using Xunit;
 
@@ -232,6 +233,40 @@ namespace Microsoft.Framework.DependencyInjection
             Assert.Equal(typeof(IScopedInstance<>), descriptor.ServiceType);
             Assert.Null(descriptor.ImplementationInstance);
             Assert.Equal(LifecycleKind.Scoped, descriptor.Lifecycle);
+        }
+
+        [Fact]
+        public void Replace_AddsServiceIfServiceTypeIsNotRegistered()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            var descriptor1 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), LifecycleKind.Transient);
+            var descriptor2 = new ServiceDescriptor(typeof(IFakeOuterService), typeof(FakeOuterService), LifecycleKind.Transient);
+            collection.Add(descriptor1);
+
+            // Act
+            collection.Replace(descriptor2);
+
+            // Assert
+            Assert.Equal(new[] { descriptor1, descriptor2 }, collection);
+        }
+
+        [Fact]
+        public void Replace_ReplacesFirstServiceWithMatchingServiceType()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            var descriptor1 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), LifecycleKind.Transient);
+            var descriptor2 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), LifecycleKind.Transient);
+            collection.Add(descriptor1);
+            collection.Add(descriptor2);
+            var descriptor3 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), LifecycleKind.Singleton);
+
+            // Act
+            collection.Replace(descriptor3);
+
+            // Assert
+            Assert.Equal(new[] { descriptor2, descriptor3 }, collection);
         }
     }
 }

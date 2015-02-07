@@ -10,6 +10,13 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
+        /// <summary>
+        /// Adds the specified <paramref name="descriptor"/> to the <paramref name="collection"/> if the
+        /// service type hasn't been already registered.
+        /// </summary>
+        /// <param name="collection">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="descriptor">The <see cref="IServiceDescriptor"/>.</param>
+        /// <returns><c>true</c> if the <paramref name="descriptor"/> was added; otherwise <c>false</c>.</returns>
         public static bool TryAdd([NotNull] this IServiceCollection collection,
                                   [NotNull] IServiceDescriptor descriptor)
         {
@@ -21,14 +28,22 @@ namespace Microsoft.Framework.DependencyInjection
             return false;
         }
 
+        /// <summary>
+        /// Adds the specified <paramref name="descriptor"/>s to the <paramref name="collection"/> if the
+        /// service type hasn't been already registered.
+        /// </summary>
+        /// <param name="collection">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="descriptor">The <see cref="IServiceDescriptor"/>s.</param>
+        /// <returns><c>true</c> if any of the <paramref name="descriptor"/>s was added; otherwise <c>false</c>.</returns>
         public static bool TryAdd([NotNull] this IServiceCollection collection,
                                   [NotNull] IEnumerable<IServiceDescriptor> descriptors)
         {
-            bool anyAdded = false;
+            var anyAdded = false;
             foreach (var d in descriptors)
             {
                 anyAdded = collection.TryAdd(d) || anyAdded;
             }
+
             return anyAdded;
         }
 
@@ -172,6 +187,25 @@ namespace Microsoft.Framework.DependencyInjection
             where TService : class
         {
             return services.AddInstance(typeof(TService), implementationInstance);
+        }
+
+        /// <summary>
+        /// Removes the first service in <see cref="IServiceCollection"/> with the same service type
+        /// as <paramref name="descriptor"/> and adds <paramef name="descriptor"/> to the collection.
+        /// </summary>
+        /// <param name="collection">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="descriptor">The <see cref="IServiceDescriptor"/> to replace with.</param>
+        /// <returns></returns>
+        public static IServiceCollection Replace([NotNull] this IServiceCollection collection,
+                                                 [NotNull] IServiceDescriptor descriptor)
+        {
+            var registeredServiceDescriptor = collection.FirstOrDefault(s => s.ServiceType == descriptor.ServiceType);
+            if (registeredServiceDescriptor != null)
+            {
+                collection.Remove(registeredServiceDescriptor);
+            }
+
+            return collection.Add(descriptor);
         }
 
         private static IServiceCollection Add(IServiceCollection collection,

@@ -11,20 +11,13 @@ namespace Microsoft.Framework.DependencyInjection
 #if ASPNET50 || ASPNETCORE50
     [Microsoft.Framework.Runtime.AssemblyNeutral]
 #endif
-    public interface IServiceCollection : IEnumerable<IServiceDescriptor>
+    public interface IServiceCollection : ICollection<IServiceDescriptor>
     {
         /// <summary>
         /// Adds the <paramref name="descriptor"/> to this instance.
         /// </summary>
         /// <param name="descriptor">The <see cref="IServiceDescriptor"/> to add.</param>
         /// <returns>A reference to the current instance of <see cref="IServiceCollection"/>.</returns>
-        IServiceCollection Add(IServiceDescriptor descriptor);
-
-        /// <summary>
-        /// Adds a sequence of <see cref="IServiceDescriptor"/> to this instance.
-        /// </summary>
-        /// <param name="descriptor">The <see cref="IEnumerable{T}"/> of <see cref="IServiceDescriptor"/>s to add.</param>
-        /// <returns>A reference to the current instance of <see cref="IServiceCollection"/>.</returns>
-        IServiceCollection Add(IEnumerable<IServiceDescriptor> descriptors);
+        new IServiceCollection Add(IServiceDescriptor descriptor);
     }
 }
