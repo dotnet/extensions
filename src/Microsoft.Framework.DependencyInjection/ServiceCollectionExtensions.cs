@@ -10,6 +10,23 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
+
+        /// <summary>
+        /// Adds a sequence of <see cref="IServiceDescriptor"/> to the <paramref name="collection"/>.
+        /// </summary>
+        /// <param name="descriptor">The <see cref="IEnumerable{T}"/> of <see cref="IServiceDescriptor"/>s to add.</param>
+        /// <returns>A reference to the current instance of <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection Add([NotNull] this IServiceCollection collection,
+                                             [NotNull] IEnumerable<IServiceDescriptor> descriptors)
+        {
+            foreach (var descriptor in descriptors)
+            {
+                collection.Add(descriptor);
+            }
+
+            return collection;
+        }
+
         /// <summary>
         /// Adds the specified <paramref name="descriptor"/> to the <paramref name="collection"/> if the
         /// service type hasn't been already registered.

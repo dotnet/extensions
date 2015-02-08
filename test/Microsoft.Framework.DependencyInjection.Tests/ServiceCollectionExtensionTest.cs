@@ -236,6 +236,22 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         [Fact]
+        public void AddSequence_AddsServicesToCollection()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            var descriptor1 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), LifecycleKind.Transient);
+            var descriptor2 = new ServiceDescriptor(typeof(IFakeOuterService), typeof(FakeOuterService), LifecycleKind.Transient);
+            var descriptors = new[] { descriptor1, descriptor2 };
+
+            // Act
+            var result = collection.Add(descriptors);
+
+            // Assert
+            Assert.Equal(descriptors, collection);
+        }
+
+        [Fact]
         public void Replace_AddsServiceIfServiceTypeIsNotRegistered()
         {
             // Arrange
