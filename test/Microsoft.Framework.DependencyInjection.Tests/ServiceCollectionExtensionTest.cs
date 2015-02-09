@@ -220,22 +220,6 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         [Fact]
-        public void AddScopedInstanceIsScoped()
-        {
-            // Arrange
-            var collection = new ServiceCollection();
-
-            // Act
-            collection.AddScopedInstance();
-
-            // Assert
-            var descriptor = Assert.Single(collection);
-            Assert.Equal(typeof(IScopedInstance<>), descriptor.ServiceType);
-            Assert.Null(descriptor.ImplementationInstance);
-            Assert.Equal(LifecycleKind.Scoped, descriptor.Lifecycle);
-        }
-
-        [Fact]
         public void AddSequence_AddsServicesToCollection()
         {
             // Arrange

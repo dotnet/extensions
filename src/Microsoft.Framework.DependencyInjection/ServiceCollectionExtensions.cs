@@ -71,13 +71,6 @@ namespace Microsoft.Framework.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection AddScopedInstance([NotNull]this IServiceCollection services, IConfiguration config = null)
-        {
-            var describe = new ServiceDescriber(config);
-            services.TryAdd(describe.Scoped(typeof(IScopedInstance<>), typeof(ScopedInstance<>)));
-            return services;
-        }
-
         public static IServiceCollection AddTransient([NotNull] this IServiceCollection collection, 
                                                       [NotNull] Type service, 
                                                       [NotNull] Type implementationType)
