@@ -4,24 +4,32 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Framework.FileSystemGlobbing.Abstractions;
+using Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments;
 
-namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
+namespace Microsoft.Framework.FileSystemGlobbing.Internal
 {
     public class MatcherContext
     {
         private readonly DirectoryInfoBase _root;
-        private readonly IList<PatternContextBase> _includePatternContexts;
-        private readonly IList<PatternContextBase> _excludePatternContexts;
+        private readonly IList<IPatternContext> _includePatternContexts;
+        private readonly IList<IPatternContext> _excludePatternContexts;
         private readonly IList<string> _files;
 
-        public MatcherContext(Matcher matcher, DirectoryInfoBase directoryInfo)
+        private readonly IList<LiteralPathSegment> _declaredLiteralFolderSegments = new List<LiteralPathSegment>();
+        private readonly IList<LiteralPathSegment> _declaredLiteralFileSegments = new List<LiteralPathSegment>();
+
+        private bool _declaredParentPathSegment;
+        private bool _declaredWildcardPathSegment;
+
+        public MatcherContext(IEnumerable<IPattern> includePatterns, IEnumerable<IPattern> excludePatterns, DirectoryInfoBase directoryInfo)
         {
             _root = directoryInfo;
             _files = new List<string>();
 
-            _includePatternContexts = GetIncludePatternContexts(matcher.IncludePatterns);
-            _excludePatternContexts = GetExcludePatternContexts(matcher.ExcludePatterns);
+            _includePatternContexts = includePatterns.Select(pattern => pattern.CreatePatternContextForInclude()).ToList();
+            _excludePatternContexts = excludePatterns.Select(pattern => pattern.CreatePatternContextForExclude()).ToList();
         }
 
         public PatternMatchingResult Execute()
@@ -36,11 +44,26 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
         private void Match(DirectoryInfoBase directory, string parentRelativePath)
         {
             // Request all the including and excluding patterns to push current directory onto their status stack.
-            PushFrame(directory);
+            PushDirectory(directory);
+            Declare();
+
+            IEnumerable<FileSystemInfoBase> entities = null;
+            if (_declaredWildcardPathSegment || _declaredLiteralFileSegments.Any())
+            {
+                entities = directory.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+            }
+            else
+            {
+                entities = _declaredLiteralFolderSegments.Select(literal => directory.GetDirectory(literal.Value));
+            }
+            if (_declaredParentPathSegment)
+            {
+                entities = entities.Concat(new[] { directory.GetDirectory("..") });
+            }
 
             // collect files and sub directories
             var subDirectories = new List<DirectoryInfoBase>();
-            foreach (var entity in directory.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly))
+            foreach (var entity in entities)
             {
                 var fileInfo = entity as FileInfoBase;
                 if (fileInfo != null)
@@ -74,7 +97,44 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
             }
 
             // Request all the including and excluding patterns to pop their status stack.
-            PopFrame();
+            PopDirectory();
+        }
+
+        private void Declare()
+        {
+            _declaredLiteralFileSegments.Clear();
+            _declaredLiteralFolderSegments.Clear();
+            _declaredParentPathSegment = false;
+            _declaredWildcardPathSegment = false;
+
+            foreach (var include in _includePatternContexts)
+            {
+                include.Declare(DeclareInclude);
+            }
+        }
+
+        private void DeclareInclude(IPathSegment patternSegment, bool isLastSegment)
+        {
+            var literalSegment = patternSegment as LiteralPathSegment;
+            if (literalSegment != null)
+            {
+                if (isLastSegment)
+                {
+                    _declaredLiteralFileSegments.Add(literalSegment);
+                }
+                else
+                {
+                    _declaredLiteralFolderSegments.Add(literalSegment);
+                }
+            }
+            else if (patternSegment is ParentPathSegment)
+            {
+                _declaredParentPathSegment = true;
+            }
+            else if (patternSegment is WildcardPathSegment)
+            {
+                _declaredWildcardPathSegment = true;
+            }
         }
 
         private string CombinePath(string left, string right)
@@ -83,13 +143,13 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
             {
                 return right;
             }
-            else 
+            else
             {
                 return string.Format("{0}/{1}", left, right);
             }
         }
 
-        private bool MatchPatternContexts<TFileInfoBase>(TFileInfoBase fileinfo, Func<PatternContextBase, TFileInfoBase, bool> test)
+        private bool MatchPatternContexts<TFileInfoBase>(TFileInfoBase fileinfo, Func<IPatternContext, TFileInfoBase, bool> test)
         {
             var found = false;
 
@@ -121,68 +181,30 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
             return true;
         }
 
-        private void PopFrame()
+        private void PopDirectory()
         {
             foreach (var context in _excludePatternContexts)
             {
-                context.PopFrame();
+                context.PopDirectory();
             }
 
             foreach (var context in _includePatternContexts)
             {
-                context.PopFrame();
+                context.PopDirectory();
             }
         }
 
-        private void PushFrame(DirectoryInfoBase directory)
+        private void PushDirectory(DirectoryInfoBase directory)
         {
             foreach (var context in _includePatternContexts)
             {
-                context.PushFrame(directory);
+                context.PushDirectory(directory);
             }
 
             foreach (var context in _excludePatternContexts)
             {
-                context.PushFrame(directory);
+                context.PushDirectory(directory);
             }
-        }
-
-        private List<PatternContextBase> GetIncludePatternContexts(IEnumerable<Pattern> sourcePatterns)
-        {
-            var result = new List<PatternContextBase>();
-
-            foreach (var pattern in sourcePatterns)
-            {
-                if (pattern.Contains == null)
-                {
-                    result.Add(new PatternContextLinearInclude(this, pattern));
-                }
-                else
-                {
-                    result.Add(new PatternContextRaggedInclude(this, pattern));
-                }
-            }
-
-            return result;
-        }
-
-        private List<PatternContextBase> GetExcludePatternContexts(IEnumerable<Pattern> sourcePatterns)
-        {
-            var result = new List<PatternContextBase>();
-
-            foreach (var pattern in sourcePatterns)
-            {
-                if (pattern.Contains == null)
-                {
-                    result.Add(new PatternContextLinearExclude(this, pattern));
-                }
-                else
-                {
-                    result.Add(new PatternContextRaggedExclude(this, pattern));
-                }
-            }
-
-            return result;
         }
     }
 }

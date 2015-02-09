@@ -4,10 +4,12 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
+namespace Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments
 {
-    public class WildcardPathSegment : PatternSegment
+    public class WildcardPathSegment : IPathSegment
     {
+        public static readonly WildcardPathSegment MatchAll = new WildcardPathSegment(string.Empty, new List<string>(), string.Empty);
+
         public WildcardPathSegment(string beginsWith, List<string> contains, string endsWith)
         {
             BeginsWith = beginsWith;
@@ -21,7 +23,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
 
         public string EndsWith { get; }
 
-        public override bool TestMatchingSegment(string value, StringComparison comparisonType)
+        public bool Match(string value, StringComparison comparisonType)
         {
             var wildcard = this;
 
@@ -49,11 +51,12 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
                     value: containsValue,
                     startIndex: beginRemaining,
                     count: endRemaining - beginRemaining,
-                    comparisonType: StringComparison.Ordinal);
+                    comparisonType: comparisonType);
                 if (indexOf == -1)
                 {
                     return false;
                 }
+
                 beginRemaining = indexOf + containsValue.Length;
             }
 

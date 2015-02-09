@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
-using Microsoft.Framework.FileSystemGlobbing.Infrastructure;
 using Xunit;
 
 namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
@@ -73,6 +72,12 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
         {
             Assert.Equal(files.OrderBy(file => file), _result.Files.OrderBy(file => file));
 
+            return this;
+        }
+
+        public FileSystemGlobbingTestContext SubDirectory(string name)
+        {
+            _directoryInfo = (MockDirectoryInfo)_directoryInfo.GetDirectory(name);
             return this;
         }
     }

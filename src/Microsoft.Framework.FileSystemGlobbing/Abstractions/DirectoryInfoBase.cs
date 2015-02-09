@@ -9,5 +9,9 @@ namespace Microsoft.Framework.FileSystemGlobbing.Abstractions
     public abstract class DirectoryInfoBase : FileSystemInfoBase
     {
         public abstract IEnumerable<FileSystemInfoBase> EnumerateFileSystemInfos(string searchPattern, SearchOption searchOption);
+
+        public abstract DirectoryInfoBase GetDirectory(string path);
+
+        public abstract FileInfoBase GetFile(string path);
     }
 }

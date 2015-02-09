@@ -3,9 +3,9 @@
 
 using System;
 
-namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
+namespace Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments
 {
-    public class LiteralPathSegment : PatternSegment
+    public class LiteralPathSegment : IPathSegment
     {
         public LiteralPathSegment(string value)
         {
@@ -14,7 +14,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
 
         public string Value { get; }
 
-        public override bool TestMatchingSegment(string value, StringComparison comparisonType)
+        public bool Match(string value, StringComparison comparisonType)
         {
             return string.Equals(Value, value, comparisonType);
         }

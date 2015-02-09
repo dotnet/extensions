@@ -3,11 +3,11 @@
 
 using System;
 
-namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
+namespace Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments
 {
-    public abstract class PatternSegment
+    public class CurrentPathSegment : IPathSegment
     {
-        public virtual bool TestMatchingSegment(string value, StringComparison comparisonType)
+        public bool Match(string value, StringComparison comparisonType)
         {
             return false;
         }

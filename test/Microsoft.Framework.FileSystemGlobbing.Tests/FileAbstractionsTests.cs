@@ -4,7 +4,9 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.FileSystemGlobbing.Abstractions;
+using Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility;
 using Xunit;
 
 namespace Microsoft.Framework.FileSystemGlobbing.Tests
@@ -54,7 +56,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [RunWhenWhenDirectoryInfoWorks]
         public void SubFoldersAreEnumerated()
         {
             using (var scenario = new DisposableFileSystem()
@@ -67,6 +70,29 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
                 var alphaTxt = contents2.OfType<FileInfoBase>().Single();
 
                 Assert.Equal(1, contents1.Count());
+                Assert.Equal("beta", beta.Name);
+                Assert.Equal(1, contents2.Count());
+                Assert.Equal("alpha.txt", alphaTxt.Name);
+            }
+        }
+
+        [Fact]
+        public void GetDirectoryCanTakeDotDot()
+        {
+            using (var scenario = new DisposableFileSystem()
+                .CreateFolder("gamma")
+                .CreateFolder("beta")
+                .CreateFile("beta\\alpha.txt"))
+            {
+                var gamma = scenario.DirectoryInfo.GetDirectory("gamma");
+                var dotdot = gamma.GetDirectory("..");
+                var contents1 = dotdot.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+                var beta = dotdot.GetDirectory("beta");
+                var contents2 = beta.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+                var alphaTxt = contents2.OfType<FileInfoBase>().Single();
+
+                Assert.Equal("..", dotdot.Name);
+                Assert.Equal(2, contents1.Count());
                 Assert.Equal("beta", beta.Name);
                 Assert.Equal(1, contents2.Count());
                 Assert.Equal("alpha.txt", alphaTxt.Name);

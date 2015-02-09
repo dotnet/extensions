@@ -12,7 +12,8 @@
                 "System.Runtime": "4.0.20-*",
                 "System.Collections": "4.0.10-*",
                 "System.IO.FileSystem": "4.0.0-*",
-                "System.Linq": "4.0.0-*"
+                "System.Linq": "4.0.0-*",
+                "System.Runtime.Extensions": "4.0.10-*"
             }
         }
     }

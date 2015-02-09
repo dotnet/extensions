@@ -2,23 +2,33 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments;
+using Microsoft.Framework.FileSystemGlobbing.Internal.PatternContexts;
 
-namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
+namespace Microsoft.Framework.FileSystemGlobbing.Internal.Patterns
 {
-    public class Pattern
+    public static class PatternBuilder
     {
         private static readonly char[] _slashes = new[] { '/', '\\' };
         private static readonly char[] _star = new[] { '*' };
 
-        public Pattern(string pattern)
+        public static IPattern Build(string pattern)
         {
+            pattern = pattern.TrimStart(_slashes);
+
+            var allSegments = new List<IPathSegment>();
+
+            IList<IPathSegment> segmentsPatternStartsWith = null;
+            IList<IList<IPathSegment>> segmentsPatternContains = null;
+            IList<IPathSegment> segmentsPatternEndsWith = null;
+
             var endPattern = pattern.Length;
             for (int scanPattern = 0; scanPattern < endPattern;)
             {
                 var beginSegment = scanPattern;
                 var endSegment = NextIndex(pattern, _slashes, scanPattern, endPattern);
 
-                PatternSegment segment = null;
+                IPathSegment segment = null;
 
                 if (segment == null && endSegment - beginSegment == 3)
                 {
@@ -108,48 +118,105 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
                     }
                 }
 
-                if (segment is RecursiveWildcardSegment)
+                if (segment is CurrentPathSegment)
                 {
-                    if (StartsWith == null)
-                    {
-                        StartsWith = new List<PatternSegment>(Segments);
-                        EndsWith = new List<PatternSegment>();
-                        Contains = new List<IList<PatternSegment>>();
-                    }
-                    else if (EndsWith.Count != 0)
-                    {
-                        Contains.Add(EndsWith);
-                        EndsWith = new List<PatternSegment>();
-                    }
+                    // ignore ".\"
                 }
-                else if (EndsWith != null)
+                else
                 {
-                    EndsWith.Add(segment);
-                }
+                    if (segment is RecursiveWildcardSegment)
+                    {
+                        if (segmentsPatternStartsWith == null)
+                        {
+                            segmentsPatternStartsWith = new List<IPathSegment>(allSegments);
+                            segmentsPatternEndsWith = new List<IPathSegment>();
+                            segmentsPatternContains = new List<IList<IPathSegment>>();
+                        }
+                        else if (segmentsPatternEndsWith.Count != 0)
+                        {
+                            segmentsPatternContains.Add(segmentsPatternEndsWith);
+                            segmentsPatternEndsWith = new List<IPathSegment>();
+                        }
+                    }
+                    else if (segmentsPatternEndsWith != null)
+                    {
+                        segmentsPatternEndsWith.Add(segment);
+                    }
 
-                Segments.Add(segment);
+                    allSegments.Add(segment);
+                }
 
                 scanPattern = endSegment + 1;
             }
+
+            if (segmentsPatternStartsWith == null)
+            {
+                return new LinearPattern(allSegments);
+            }
+            else
+            {
+                return new RaggedPattern(allSegments, segmentsPatternStartsWith, segmentsPatternEndsWith, segmentsPatternContains);
+            }
         }
 
-        public IList<PatternSegment> Segments { get; } = new List<PatternSegment>();
-
-        public IList<PatternSegment> StartsWith { get; }
-
-        public IList<IList<PatternSegment>> Contains { get; }
-
-        public IList<PatternSegment> EndsWith { get; }
-
-        private int NextIndex(string pattern, char[] anyOf, int beginIndex, int endIndex)
+        private static int NextIndex(string pattern, char[] anyOf, int beginIndex, int endIndex)
         {
             var index = pattern.IndexOfAny(anyOf, beginIndex, endIndex - beginIndex);
             return index == -1 ? endIndex : index;
         }
 
-        private string Portion(string pattern, int beginIndex, int endIndex)
+        private static string Portion(string pattern, int beginIndex, int endIndex)
         {
             return pattern.Substring(beginIndex, endIndex - beginIndex);
+        }
+
+        private class LinearPattern : ILinearPattern
+        {
+            public LinearPattern(List<IPathSegment> allSegments)
+            {
+                Segments = allSegments;
+            }
+
+            public IList<IPathSegment> Segments { get; }
+
+            public IPatternContext CreatePatternContextForInclude()
+            {
+                return new PatternContextLinearInclude(this);
+            }
+
+            public IPatternContext CreatePatternContextForExclude()
+            {
+                return new PatternContextLinearExclude(this);
+            }
+        }
+
+        private class RaggedPattern : IRaggedPattern
+        {
+            public RaggedPattern(List<IPathSegment> allSegments, IList<IPathSegment> segmentsPatternStartsWith, IList<IPathSegment> segmentsPatternEndsWith, IList<IList<IPathSegment>> segmentsPatternContains)
+            {
+                Segments = allSegments;
+                StartsWith = segmentsPatternStartsWith;
+                Contains = segmentsPatternContains;
+                EndsWith = segmentsPatternEndsWith;
+            }
+
+            public IList<IList<IPathSegment>> Contains { get; }
+
+            public IList<IPathSegment> EndsWith { get; }
+
+            public IList<IPathSegment> Segments { get; }
+
+            public IList<IPathSegment> StartsWith { get; }
+
+            public IPatternContext CreatePatternContextForInclude()
+            {
+                return new PatternContextRaggedInclude(this);
+            }
+
+            public IPatternContext CreatePatternContextForExclude()
+            {
+                return new PatternContextRaggedExclude(this);
+            }
         }
     }
 }

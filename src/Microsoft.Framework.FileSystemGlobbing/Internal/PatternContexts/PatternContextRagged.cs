@@ -5,33 +5,21 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Framework.FileSystemGlobbing.Abstractions;
 
-namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
+namespace Microsoft.Framework.FileSystemGlobbing.Internal.PatternContexts
 {
-    public abstract class PatternContextRagged : PatternContextWithFrame<PatternContextRagged.FrameData>
+    public abstract class PatternContextRagged : PatternContext<PatternContextRagged.FrameData>
     {
-        public PatternContextRagged(MatcherContext matcherContext, Pattern pattern) : base(matcherContext, pattern)
+        public PatternContextRagged(IRaggedPattern pattern)
         {
+            Pattern = pattern;
         }
 
-        public bool IsStartsWith
+        public sealed override void PushDirectory(DirectoryInfoBase directory)
         {
-            get { return Frame.SegmentGroupIndex == -1; }
-        }
-
-        public bool IsEndsWith
-        {
-            get { return Frame.SegmentGroupIndex == Pattern.Contains.Count; }
-        }
-
-        public bool IsContains
-        {
-            get { return !IsStartsWith && !IsEndsWith; }
-        }
-
-        public override void PushFrame(DirectoryInfoBase directory)
-        {
+            // copy the current frame
             var frame = Frame;
-            if (FrameStack.Count == 0)
+
+            if (IsStackEmpty())
             {
                 // initializing
                 frame.SegmentGroupIndex = -1;
@@ -41,7 +29,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
             {
                 // no change
             }
-            else if (IsStartsWith)
+            else if (IsStartingGroup())
             {
                 if (!TestMatchingSegment(directory.Name))
                 {
@@ -54,7 +42,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
                     frame.SegmentIndex += 1;
                 }
             }
-            else if (IsContains && TestMatchingGroup(directory))
+            else if (!IsStartingGroup() && !IsEndingGroup() && TestMatchingGroup(directory))
             {
                 frame.SegmentIndex = Frame.SegmentGroup.Count;
                 frame.BacktrackAvailable = 0;
@@ -81,19 +69,44 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
                 }
             }
 
-            PushFrame(frame);
+            PushDataFrame(frame);
         }
 
-        public bool TestMatchingSegment(string value)
+        public struct FrameData
+        {
+            public bool IsNotApplicable;
+
+            public int SegmentGroupIndex;
+
+            public IList<IPathSegment> SegmentGroup;
+
+            public int BacktrackAvailable;
+
+            public int SegmentIndex;
+        }
+
+        protected IRaggedPattern Pattern { get; }
+
+        protected bool IsStartingGroup()
+        {
+            return Frame.SegmentGroupIndex == -1;
+        }
+
+        protected bool IsEndingGroup()
+        {
+            return Frame.SegmentGroupIndex == Pattern.Contains.Count;
+        }
+
+        protected bool TestMatchingSegment(string value)
         {
             if (Frame.SegmentIndex >= Frame.SegmentGroup.Count)
             {
                 return false;
             }
-            return Frame.SegmentGroup[Frame.SegmentIndex].TestMatchingSegment(value, StringComparison.Ordinal);
+            return Frame.SegmentGroup[Frame.SegmentIndex].Match(value, StringComparison.Ordinal);
         }
 
-        public bool TestMatchingGroup(FileSystemInfoBase value)
+        protected bool TestMatchingGroup(FileSystemInfoBase value)
         {
             var groupLength = Frame.SegmentGroup.Count;
             var backtrackLength = Frame.BacktrackAvailable + 1;
@@ -106,26 +119,13 @@ namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
             for (int index = 0; index != groupLength; ++index)
             {
                 var segment = Frame.SegmentGroup[groupLength - index - 1];
-                if (!segment.TestMatchingSegment(scan.Name, StringComparison.Ordinal))
+                if (!segment.Match(scan.Name, StringComparison.Ordinal))
                 {
                     return false;
                 }
                 scan = scan.ParentDirectory;
             }
             return true;
-        }
-
-        public struct FrameData
-        {
-            public bool IsNotApplicable;
-
-            public int SegmentGroupIndex;
-
-            public IList<PatternSegment> SegmentGroup;
-
-            public int BacktrackAvailable;
-
-            public int SegmentIndex;
         }
     }
 }

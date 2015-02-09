@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.Framework.FileSystemGlobbing.Infrastructure
+using System.Collections.Generic;
+
+namespace Microsoft.Framework.FileSystemGlobbing.Internal
 {
-    public class RecursiveWildcardSegment : PatternSegment
+    public interface ILinearPattern : IPattern
     {
+        IList<IPathSegment> Segments { get; }
     }
 }

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Framework.FileSystemGlobbing.Abstractions;
@@ -80,6 +81,36 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
         {
             var index = pattern.IndexOfAny(anyOf, startIndex, endIndex - startIndex);
             return index == -1 ? endIndex : index;
+        }
+
+        public override DirectoryInfoBase GetDirectory(string name)
+        {
+            if (string.Equals(name, "..", StringComparison.Ordinal))
+            {
+                var indexOfPenultimateSlash = FullName.LastIndexOf('\\', FullName.Length - 2);
+                var fullName = FullName.Substring(0, indexOfPenultimateSlash + 1);
+                return new MockDirectoryInfo(
+                    recorder: Recorder,
+                    parentDirectory: this,
+                    fullName: FullName.Substring(0, indexOfPenultimateSlash + 1),
+                    name: name,
+                    paths: Paths);
+            }
+            return new MockDirectoryInfo(
+                recorder: Recorder,
+                parentDirectory: this,
+                fullName: FullName + name + "\\",
+                name: name,
+                paths: Paths);
+        }
+
+        public override FileInfoBase GetFile(string name)
+        {
+            return new MockFileInfo(
+                recorder: Recorder,
+                parentDirectory: this,
+                fullName: FullName + name,
+                name: name);
         }
     }
 }
