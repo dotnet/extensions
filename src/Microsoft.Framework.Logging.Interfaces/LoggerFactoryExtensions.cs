@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Framework.Logging.Internal;
 
 namespace Microsoft.Framework.Logging
 {
@@ -22,7 +23,8 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("factory");
             }
 
-            return factory.CreateLogger(typeof(T).FullName);
+            return factory.CreateLogger(TypeNameHelper.GetTypeDisplayFullName(typeof(T)));
         }
     }
+        
 }
