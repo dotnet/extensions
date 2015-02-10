@@ -1,6 +1,9 @@
 {
     "version": "1.0.0-*",
     "description": "Logging infrastructure.",
+    "dependencies": {
+        "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
+    },
     "compilationOptions": {
         "define": [
             "TRACE"
@@ -8,17 +11,11 @@
     },
     "frameworks": {
         "net45": {
-            "dependencies": {
-                "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
-            },
             "frameworkAssemblies": {
                 "System.Collections.Concurrent": ""
             }
         },
         "aspnet50": {
-            "dependencies": {
-                "Microsoft.Framework.Logging.Interfaces": { "version": "1.0.0-*", "type": "build" }
-            },
             "frameworkAssemblies": {
                 "System.Collections.Concurrent": ""
             }
@@ -26,17 +23,14 @@
         "aspnetcore50": {
             "dependencies": {
                 "System.Collections.Concurrent": "4.0.10-beta-*",
+                "System.Collections": "4.0.10-beta-*",
                 "System.Diagnostics.TraceSource": "4.0.0-beta-*",
                 "System.Globalization": "4.0.10-beta-*",
                 "System.Linq": "4.0.0-beta-*",
-                "System.Threading": "4.0.10-beta-*",
-                "Microsoft.Framework.Logging.Interfaces": { "version": "1.0.0-*", "type": "build" }
+                "System.Threading": "4.0.10-beta-*"
             }
         },
         ".NETPortable,Version=v4.6,Profile=Profile151": {
-            "dependencies": {
-                "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
-            },
             "frameworkAssemblies": {
                 "System.Collections": "",
                 "System.Collections.Concurrent": "",

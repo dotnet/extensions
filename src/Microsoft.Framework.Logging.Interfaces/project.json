@@ -5,12 +5,12 @@
         "net45": { },
         "aspnet50": {
             "dependencies": {
-                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
+                "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
             }
         },
         "aspnetcore50": {
             "dependencies": {
-                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" },
+                "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
                 "System.Runtime": "4.0.20-beta-*",
                 "System.Runtime.Extensions": "4.0.10-beta-*",
                 "System.Runtime.InteropServices": "4.0.20-beta-*"
