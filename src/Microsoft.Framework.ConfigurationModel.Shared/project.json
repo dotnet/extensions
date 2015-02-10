@@ -5,12 +5,12 @@
         "net45": { },
         "aspnet50": { },
         "aspnetcore50": {
-            "dependencies": { 
+            "dependencies": {
                 "System.Runtime": "4.0.20-beta-*"
             }
         },
         ".NETPortable,Version=v4.6,Profile=Profile151": {
-            "frameworkAssemblies": { 
+            "frameworkAssemblies": {
                 "System.Runtime": ""
             }
         }

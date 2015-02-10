@@ -1,14 +1,14 @@
 {
-  "version": "1.0.0-*",
-  "description": "JSON configuration source for the ConfigurationModel package.",
-  "dependencies": {
-    "Newtonsoft.Json": "6.0.6",
-    "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
-    "Microsoft.Framework.ConfigurationModel.Shared": { "version": "1.0.0-*", "type": "build" }
-  },
-  "frameworks": {
-    "net45": { },
-    "aspnet50": { },
-    "aspnetcore50": {}
-  }
+    "version": "1.0.0-*",
+    "description": "JSON configuration source for the ConfigurationModel package.",
+    "dependencies": {
+        "Newtonsoft.Json": "6.0.6",
+        "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
+        "Microsoft.Framework.ConfigurationModel.Shared": { "version": "1.0.0-*", "type": "build" }
+    },
+    "frameworks": {
+        "net45": { },
+        "aspnet50": { },
+        "aspnetcore50": { }
+    }
 }
