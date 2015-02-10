@@ -6,12 +6,12 @@
         },
         "aspnet50": {
             "dependencies": {
-                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
+                "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
             }
         },
         "aspnetcore50": {
             "dependencies": {
-                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
+                "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
             }
         },
         ".NETPortable,Version=v4.6,Profile=Profile151": {
