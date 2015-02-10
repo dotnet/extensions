@@ -42,6 +42,11 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PatternContexts
                     frame.SegmentIndex += 1;
                 }
             }
+            else if (!IsStartingGroup() && directory.Name == "..")
+            {
+                // any parent path segment is not applicable in **
+                frame.IsNotApplicable = true;
+            }
             else if (!IsStartingGroup() && !IsEndingGroup() && TestMatchingGroup(directory))
             {
                 frame.SegmentIndex = Frame.SegmentGroup.Count;

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.Framework.FileSystemGlobbing.Internal;
 using Microsoft.Framework.FileSystemGlobbing.Internal.Patterns;
 using Xunit;
@@ -21,6 +22,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.Patterns
         [InlineData("abc/efg/h*j/*.*/", 4)]
         [InlineData("abc/efg/hij", 3)]
         [InlineData("abc/efg/hij/klm", 4)]
+        [InlineData("../abc/efg/hij/klm", 5)]
+        [InlineData("../../abc/efg/hij/klm", 6)]
         public void BuildLinearPattern(string sample, int segmentCount)
         {
             var pattern = PatternBuilder.Build(sample);
@@ -99,6 +102,31 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.Patterns
             var pattern = PatternBuilder.Build(sample) as IRaggedPattern;
 
             Assert.Null(pattern);
+        }
+
+        [Theory]
+        [InlineData("a/../")]
+        [InlineData("a/..")]
+        [InlineData("/a/../")]
+        [InlineData("./a/../")]
+        [InlineData("**/../")]
+        [InlineData("*.cs/../")]
+        public void ThrowExceptionForInvalidParentsPath(string sample)
+        {
+            // parent segment is only allowed at the beginning of the pattern
+            Assert.Throws<ArgumentException>(() => {
+                var pattern = PatternBuilder.Build(sample);
+
+                Assert.Null(pattern);
+            });
+        }
+
+        [Fact]
+        public void ThrowExceptionForNull()
+        {
+            Assert.Throws<ArgumentNullException>(() => {
+                PatternBuilder.Build(null);
+            });
         }
     }
 }

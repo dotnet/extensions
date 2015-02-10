@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNet.Testing.xunit;
@@ -20,8 +19,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
             {
                 var contents = scenario.DirectoryInfo.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
 
-                Assert.Equal(Path.GetFileName(scenario.TempFolder), scenario.DirectoryInfo.Name);
-                Assert.Equal(scenario.TempFolder, scenario.DirectoryInfo.FullName);
+                Assert.Equal(Path.GetFileName(scenario.RootPath), scenario.DirectoryInfo.Name);
+                Assert.Equal(scenario.RootPath, scenario.DirectoryInfo.FullName);
                 Assert.Equal(0, contents.Count());
             }
         }
@@ -96,38 +95,6 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
                 Assert.Equal("beta", beta.Name);
                 Assert.Equal(1, contents2.Count());
                 Assert.Equal("alpha.txt", alphaTxt.Name);
-            }
-        }
-
-        private class DisposableFileSystem : IDisposable
-        {
-            public DisposableFileSystem()
-            {
-                TempFolder = Path.GetTempFileName();
-                File.Delete(TempFolder);
-                Directory.CreateDirectory(TempFolder);
-                DirectoryInfo = new DirectoryInfoWrapper(new DirectoryInfo(TempFolder));
-            }
-
-            public string TempFolder { get; }
-
-            public DirectoryInfoBase DirectoryInfo { get; }
-
-            public DisposableFileSystem CreateFolder(string path)
-            {
-                Directory.CreateDirectory(Path.Combine(TempFolder, path));
-                return this;
-            }
-
-            public DisposableFileSystem CreateFile(string path)
-            {
-                File.WriteAllText(Path.Combine(TempFolder, path), "temp");
-                return this;
-            }
-
-            public void Dispose()
-            {
-                Directory.Delete(TempFolder, true);
             }
         }
     }

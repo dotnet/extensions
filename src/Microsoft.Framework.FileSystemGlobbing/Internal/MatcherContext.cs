@@ -56,6 +56,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal
             {
                 entities = _declaredLiteralFolderSegments.Select(literal => directory.GetDirectory(literal.Value));
             }
+
             if (_declaredParentPathSegment)
             {
                 entities = entities.Concat(new[] { directory.GetDirectory("..") });

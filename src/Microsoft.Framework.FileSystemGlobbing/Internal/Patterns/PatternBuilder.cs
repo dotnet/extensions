@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments;
 using Microsoft.Framework.FileSystemGlobbing.Internal.PatternContexts;
@@ -14,9 +15,15 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.Patterns
 
         public static IPattern Build(string pattern)
         {
+            if (pattern == null)
+            {
+                throw new ArgumentNullException("pattern");
+            }
+
             pattern = pattern.TrimStart(_slashes);
 
             var allSegments = new List<IPathSegment>();
+            var isParentSegmentLegal = true;
 
             IList<IPathSegment> segmentsPatternStartsWith = null;
             IList<IList<IPathSegment>> segmentsPatternContains = null;
@@ -50,9 +57,14 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.Patterns
                         segment = new RecursiveWildcardSegment();
                     }
                     else if (pattern[beginSegment] == '.' &&
-                        pattern[beginSegment + 1] == '.')
+                             pattern[beginSegment + 1] == '.')
                     {
                         // recognized ..
+
+                        if (!isParentSegmentLegal)
+                        {
+                            throw new ArgumentException("\"..\" can be only added at the beginning of the pattern.");
+                        }
                         segment = new ParentPathSegment();
                     }
                 }
@@ -116,6 +128,11 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.Patterns
                     {
                         segment = new WildcardPathSegment(beginsWith, contains, endsWith);
                     }
+                }
+
+                if (!(segment is ParentPathSegment))
+                {
+                    isParentSegmentLegal = false;
                 }
 
                 if (segment is CurrentPathSegment)
