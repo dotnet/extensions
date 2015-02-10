@@ -14,7 +14,13 @@ namespace Microsoft.Framework.FileSystemGlobbing.Abstractions
 
         public DirectoryInfoWrapper(DirectoryInfo directoryInfo, bool isParentPath = false)
         {
-            _directoryInfo = directoryInfo;
+            // Work around for https://github.com/dotnet/corefx/issues/616: DirectoryInfo.Exists returns 
+            // incorrect results when it is cast from FileSystemInfo.
+            //
+            // Once it is fixed us following line to replace the assignment to _directoryInfo
+            // _directoryInfo = directoryInfo.FullName;
+            _directoryInfo = new DirectoryInfo(directoryInfo.FullName);
+
             _isParentPath = isParentPath;
         }
 

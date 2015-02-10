@@ -336,7 +336,6 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
             scenario.AssertExact("1.txt", "2.txt", "../sibling/1.txt", "../sibling/inc/1.txt");
         }
 
-
         [Fact]
         public void ExcludeFolderByName()
         {

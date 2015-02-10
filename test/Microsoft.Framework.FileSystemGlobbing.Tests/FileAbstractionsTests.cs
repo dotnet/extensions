@@ -3,7 +3,6 @@
 
 using System.IO;
 using System.Linq;
-using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.FileSystemGlobbing.Abstractions;
 using Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility;
 using Xunit;
@@ -55,8 +54,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
             }
         }
 
-        [ConditionalFact]
-        [RunWhenWhenDirectoryInfoWorks]
+        [Fact]
         public void SubFoldersAreEnumerated()
         {
             using (var scenario = new DisposableFileSystem()

@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.FileSystemGlobbing.Abstractions;
 using Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility;
 using Xunit;
@@ -131,6 +132,15 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
                 "src/project2/compiler/shared/sub/sub/sharedsub.cs");
         }
 
+#if ASPNETCORE50
+        [ConditionalFact]
+        [RunWhenWhenDirectoryInfoWorks]
+        public void WarningTest()
+        {
+
+        }
+#endif
+
         private DisposableFileSystem CreateContext()
         {
             var context = new DisposableFileSystem();
@@ -197,7 +207,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
             var actual = results.Files.Select(relativePath => Path.GetFullPath(Path.Combine(_context.RootPath, directoryPath, relativePath)));
             var expect = expectFiles.Select(relativePath => Path.GetFullPath(Path.Combine(_context.RootPath, relativePath)));
 
-            AssertHelpers.SortAndEqual(expect, actual, StringComparer.InvariantCultureIgnoreCase);
+            AssertHelpers.SortAndEqual(expect, actual, StringComparer.OrdinalIgnoreCase);
         }
     }
 }

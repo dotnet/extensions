@@ -7,7 +7,8 @@ using System.Linq;
 
 namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
 {
-    public class RunWhenWhenDirectoryInfoWorksAttribute : Attribute, Microsoft.AspNet.Testing.xunit.ITestCondition
+    public class RunWhenWhenDirectoryInfoWorksAttribute :
+        Attribute, Microsoft.AspNet.Testing.xunit.ITestCondition
     {
         public bool IsMet
         {
@@ -21,7 +22,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
         {
             get
             {
-                return "CoreCLR DirectoryInfo incorrectly text directory existence.";
+                return "Issue: \"DirectoryInfo.Exists returns incorrect results when it is cast from FileSystemInfo.\" is fixed. Please remove the workaround in the produce code and this test case.";
             }
         }
 
@@ -40,7 +41,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
                 Directory.CreateDirectory(betaDir);
 
                 var beta = testDir.EnumerateFileSystemInfos("beta", SearchOption.TopDirectoryOnly).First() as DirectoryInfo;
-                return beta.Exists;
+                return !beta.Exists;
             }
             finally
             {

@@ -44,9 +44,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
 
                 File.WriteAllText(
                     fullPath,
-                    string.Format("Automatically generated for testing on {0} {1}",
-                        DateTime.Now.ToLongDateString(),
-                        DateTime.Now.ToLongTimeString()));
+                    string.Format("Automatically generated for testing on {0:yyyy}/{0:MM}/{0:dd} {0:hh}:{0:mm}:{0:ss}", DateTime.Now));
             }
 
             return this;
