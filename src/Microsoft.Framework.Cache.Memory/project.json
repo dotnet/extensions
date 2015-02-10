@@ -12,16 +12,16 @@
         },
         "aspnet50": {
             "dependencies": {
-                "Microsoft.Framework.Cache.Interfaces": { "version": "1.0.0-*", "type": "build" },
-                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
+                "Microsoft.Framework.Cache.Interfaces": "1.0.0-*",
+                "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
             }
         },
         "aspnetcore50": {
             "dependencies": {
                 "System.Threading": "4.0.10-beta-*",
                 "System.Threading.ThreadPool": "4.0.10-beta-*",
-                "Microsoft.Framework.Cache.Interfaces": { "version": "1.0.0-*", "type": "build" },
-                "Microsoft.Framework.Runtime.Interfaces": { "version": "1.0.0-*", "type": "build" }
+                "Microsoft.Framework.Cache.Interfaces": "1.0.0-*",
+                "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
             }
         }
     }
