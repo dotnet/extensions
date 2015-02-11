@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.Framework.FileSystemGlobbing.Internal;
+using Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments;
 using Microsoft.Framework.FileSystemGlobbing.Internal.Patterns;
 using Xunit;
 
@@ -13,13 +15,9 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.Patterns
         [Theory]
         [InlineData("abc", 1)]
         [InlineData("/abc", 1)]
-        [InlineData("/abc/", 1)]
-        [InlineData("abc/", 1)]
         [InlineData("abc/efg", 2)]
-        [InlineData("abc/efg/", 2)]
         [InlineData("abc/efg/h*j", 3)]
         [InlineData("abc/efg/h*j/*.*", 4)]
-        [InlineData("abc/efg/h*j/*.*/", 4)]
         [InlineData("abc/efg/hij", 3)]
         [InlineData("abc/efg/hij/klm", 4)]
         [InlineData("../abc/efg/hij/klm", 5)]
@@ -56,19 +54,23 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.Patterns
 
 
         [Theory]
+        [InlineData("/abc/", 2, 1, 0, 0)]
+        [InlineData("abc/", 2, 1, 0, 0)]
+        [InlineData("abc/efg/", 3, 2, 0, 0)]
+        [InlineData("abc/efg/h*j/*.*/", 5, 4, 0, 0)]
         [InlineData("abc/efg/**", 3, 2, 0, 0)]
         [InlineData("/abc/efg/**", 3, 2, 0, 0)]
         [InlineData("abc/efg/**/hij/klm", 5, 2, 0, 2)]
         [InlineData("abc/efg/**/hij/**/klm", 6, 2, 1, 1)]
         [InlineData("abc/efg/**/hij/**/klm/**", 7, 2, 2, 0)]
-        [InlineData("abc/efg/**/hij/**/klm/**/", 7, 2, 2, 0)]
+        [InlineData("abc/efg/**/hij/**/klm/**/", 8, 2, 2, 0)]
         [InlineData("**/hij/**/klm", 4, 0, 1, 1)]
         [InlineData("**/hij/**", 3, 0, 1, 0)]
         [InlineData("/**/hij/**", 3, 0, 1, 0)]
         [InlineData("**/**/hij/**", 4, 0, 1, 0)]
         [InlineData("ab/**/**/hij/**", 5, 1, 1, 0)]
-        [InlineData("ab/**/**/hij/**/", 5, 1, 1, 0)]
-        [InlineData("/ab/**/**/hij/**/", 5, 1, 1, 0)]
+        [InlineData("ab/**/**/hij/**/", 6, 1, 1, 0)]
+        [InlineData("/ab/**/**/hij/**/", 6, 1, 1, 0)]
         [InlineData("/ab/**/**/hij/**", 5, 1, 1, 0)]
         [InlineData("**/*.suffix", 2, 0, 0, 1)]
         [InlineData("**.suffix", 2, 0, 0, 1)]
@@ -91,13 +93,9 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.Patterns
         [Theory]
         [InlineData("abc")]
         [InlineData("/abc")]
-        [InlineData("/abc/")]
-        [InlineData("abc/")]
         [InlineData("abc/efg")]
-        [InlineData("abc/efg/")]
         [InlineData("abc/efg/h*j")]
         [InlineData("abc/efg/h*j/*.*")]
-        [InlineData("abc/efg/h*j/*.*/")]
         [InlineData("abc/efg/hij")]
         [InlineData("abc/efg/hij/klm")]
         public void BuildRaggedPatternNegative(string sample)

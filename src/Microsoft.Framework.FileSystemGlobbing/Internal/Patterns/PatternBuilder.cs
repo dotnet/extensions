@@ -22,6 +22,13 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.Patterns
 
             pattern = pattern.TrimStart(_slashes);
 
+            if (pattern.TrimEnd(_slashes).Length < pattern.Length)
+            {
+                // If the pattern end with a slash, it is considered as
+                // a directory.
+                pattern = pattern.TrimEnd(_slashes) + "/**";
+            }
+
             var allSegments = new List<IPathSegment>();
             var isParentSegmentLegal = true;
 
