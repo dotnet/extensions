@@ -70,6 +70,9 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.Patterns
         [InlineData("ab/**/**/hij/**/", 5, 1, 1, 0)]
         [InlineData("/ab/**/**/hij/**/", 5, 1, 1, 0)]
         [InlineData("/ab/**/**/hij/**", 5, 1, 1, 0)]
+        [InlineData("**/*.suffix", 2, 0, 0, 1)]
+        [InlineData("**.suffix", 2, 0, 0, 1)]
+        [InlineData("ab/**.suffix", 3, 1, 0, 1)]
         public void BuildRaggedPattern(string sample,
                              int segmentCount,
                              int startSegmentsCount,

@@ -78,6 +78,20 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.Patterns
                     }
                 }
 
+                if (segment == null && endSegment - beginSegment > 2)
+                {
+                    if (pattern[beginSegment] == '*' &&
+                        pattern[beginSegment + 1] == '*' &&
+                        pattern[beginSegment + 2] == '.')
+                    {
+                        // recognize **.
+                        // swallow the first *, add the recursive path segment and 
+                        // the remaining part will be treat as wild card in next loop.
+                        segment = new RecursiveWildcardSegment();
+                        endSegment = beginSegment;
+                    }
+                }
+
                 if (segment == null)
                 {
                     var beginsWith = string.Empty;
