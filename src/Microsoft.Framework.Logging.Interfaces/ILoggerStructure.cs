@@ -2,9 +2,6 @@
 
 namespace Microsoft.Framework.Logging
 {
-#if ASPNET50 || ASPNETCORE50
-    [Runtime.AssemblyNeutral]
-#endif
     public interface ILoggerStructure
     {
         /// <summary>

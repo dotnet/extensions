@@ -8,9 +8,6 @@ namespace Microsoft.Framework.Logging
     /// <summary>
     /// A generic interface for logging where the category name is taken from the specified T.
     /// </summary>
-#if ASPNET50 || ASPNETCORE50
-    [Runtime.AssemblyNeutral]
-#endif
     public interface ILogger<T> : ILogger
     {
         
