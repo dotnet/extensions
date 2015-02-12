@@ -3,9 +3,6 @@
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-#if ASPNET50 || ASPNETCORE50
-    [Microsoft.Framework.Runtime.AssemblyNeutral]
-#endif
     public interface ICommitableConfigurationSource
     {
         void Commit();

@@ -5,9 +5,6 @@ using System.Collections.Generic;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-#if ASPNET50 || ASPNETCORE50
-    [Microsoft.Framework.Runtime.AssemblyNeutral]
-#endif
     public interface IConfiguration
     {
         string this[string key] { get; set; }

@@ -6,11 +6,7 @@
     },
     "frameworks": {
         "net45": { },
-        "aspnet50": {
-            "dependencies": {
-                "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
-            }
-        },
+        "aspnet50": { },
         "aspnetcore50": {
             "dependencies": {
                 "System.Collections": "4.0.10-beta-*",
@@ -19,8 +15,7 @@
                 "System.Linq": "4.0.0-beta-*",
                 "System.Resources.ResourceManager": "4.0.0-beta-*",
                 "System.Runtime.Extensions": "4.0.10-beta-*",
-                "System.Runtime.InteropServices": "4.0.20-beta-*",
-                "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
+                "System.Runtime.InteropServices": "4.0.20-beta-*"
             }
         },
         ".NETPortable,Version=v4.6,Profile=Profile151": {
