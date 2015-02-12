@@ -8,9 +8,6 @@ namespace Microsoft.AspNet.FileProviders
     /// <summary>
     /// Represents a directory's content in the file provider.
     /// </summary>
-#if ASPNET50 || ASPNETCORE50
-    [Framework.Runtime.AssemblyNeutral]
-#endif
     public interface IDirectoryContents : IEnumerable<IFileInfo>
     {
         /// <summary>

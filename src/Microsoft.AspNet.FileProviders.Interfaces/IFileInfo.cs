@@ -9,9 +9,6 @@ namespace Microsoft.AspNet.FileProviders
     /// <summary>
     /// Represents a file in the given file provider.
     /// </summary>
-#if ASPNET50 || ASPNETCORE50
-    [Framework.Runtime.AssemblyNeutral]
-#endif
     public interface IFileInfo
     {
         /// <summary>

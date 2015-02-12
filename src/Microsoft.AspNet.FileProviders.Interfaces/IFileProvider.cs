@@ -8,9 +8,6 @@ namespace Microsoft.AspNet.FileProviders
     /// <summary>
     /// A read-only file provider abstraction.
     /// </summary>
-#if ASPNET50 || ASPNETCORE50
-    [Framework.Runtime.AssemblyNeutral]
-#endif
     public interface IFileProvider
     {
         /// <summary>
