@@ -12,9 +12,6 @@ namespace Microsoft.Framework.DependencyInjection
     /// <see cref="ImplementationType"/>, <see cref="ImplementationInstance"/>, amd <see cref="ImplementationFactory"/> specify the source 
     /// for the service instance. Only one of them should ever be non-null for a given <see cref="IServiceDescriptor"/> instance.
     /// </remarks>
-#if ASPNET50 || ASPNETCORE50
-    [Microsoft.Framework.Runtime.AssemblyNeutral]
-#endif
     public interface IServiceDescriptor
     {
         /// <summary>

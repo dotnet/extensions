@@ -4,14 +4,10 @@
     "frameworks": {
         "net45": {
         },
-        "aspnet50": {
-            "dependencies": {
-                "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
-            }
-        },
+        "aspnet50": { },
         "aspnetcore50": {
             "dependencies": {
-                "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
+                "System.ComponentModel": "4.0.0-beta-*"
             }
         },
         ".NETPortable,Version=v4.6,Profile=Profile151": {

@@ -8,9 +8,6 @@ namespace Microsoft.Framework.DependencyInjection
     /// <summary>
     /// Specifies the contract for a collection of service descriptors.
     /// </summary>
-#if ASPNET50 || ASPNETCORE50
-    [Microsoft.Framework.Runtime.AssemblyNeutral]
-#endif
     public interface IServiceCollection : ICollection<IServiceDescriptor>
     {
         /// <summary>

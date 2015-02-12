@@ -5,9 +5,6 @@
 
 namespace Microsoft.Framework.DependencyInjection
 {
-#if ASPNET50 || ASPNETCORE50
-    [Microsoft.Framework.Runtime.AssemblyNeutral]
-#endif
     public enum LifecycleKind
     {
         Singleton,
