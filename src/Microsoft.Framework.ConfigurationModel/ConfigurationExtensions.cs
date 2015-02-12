@@ -29,6 +29,12 @@ namespace Microsoft.Framework.ConfigurationModel
             configuration.Add(new CommandLineConfigurationSource(args));
             return configuration;
         }
+        
+        public static IConfigurationSourceContainer AddCommandLine(this IConfigurationSourceContainer configuration, string[] args, IDictionary<string, string> switchMappings)
+        {
+            configuration.Add(new CommandLineConfigurationSource(args, switchMappings));
+            return configuration;
+        }
 
         public static IConfigurationSourceContainer AddEnvironmentVariables(this IConfigurationSourceContainer configuration)
         {
