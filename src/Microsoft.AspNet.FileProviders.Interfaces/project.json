@@ -7,6 +7,10 @@
     "frameworks": {
         "net45": { },
         "aspnet50": { },
-        "aspnetcore50": { }
+        "aspnetcore50": {
+            "dependencies": {
+                "System.IO": "4.0.10-beta-*"
+            }
+        }
     }
 }
