@@ -3,11 +3,9 @@
 
 using System;
 using System.IO;
-using Microsoft.Framework.Runtime;
 
 namespace Microsoft.Framework.Cache.Distributed
 {
-    [AssemblyNeutral]
     public interface ICacheContext
     {
         /// <summary>

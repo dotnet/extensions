@@ -3,15 +3,9 @@
 
 using System;
 using Microsoft.Framework.Expiration.Interfaces;
-#if ASPNET50 || ASPNETCORE50
-using Microsoft.Framework.Runtime;
-#endif
 
 namespace Microsoft.Framework.Cache.Memory
 {
-#if ASPNET50 || ASPNETCORE50
-    [AssemblyNeutral]
-#endif
     public interface ICacheSetContext
     {
         /// <summary>

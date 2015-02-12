@@ -3,14 +3,10 @@
     "description": "ASP.NET 5 in memory cache abstractions.",
     "frameworks": {
         "net45": { },
-        "aspnet50": {
-            "dependencies": {
-                "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
-            }
-        },
+        "aspnet50": { },
         "aspnetcore50": {
             "dependencies": {
-                "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*"
+                "System.Runtime": "4.0.20-beta-*"
             }
         }
     }
