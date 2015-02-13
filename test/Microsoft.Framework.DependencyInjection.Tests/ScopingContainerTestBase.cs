@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Microsoft.Framework.DependencyInjection.Tests.Fakes;
 using Xunit;
-using System.Threading;
 
 namespace Microsoft.Framework.DependencyInjection.Tests
 {

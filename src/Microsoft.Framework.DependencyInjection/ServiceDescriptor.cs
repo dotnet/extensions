@@ -57,18 +57,18 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         /// <inheritdoc />
-        public LifecycleKind Lifecycle { get; private set; }
+        public LifecycleKind Lifecycle { get; }
 
         /// <inheritdoc />
-        public Type ServiceType { get; private set; }
+        public Type ServiceType { get; }
 
         /// <inheritdoc />
-        public Type ImplementationType { get; private set; }
+        public Type ImplementationType { get; }
 
         /// <inheritdoc />
-        public object ImplementationInstance { get; private set; }
+        public object ImplementationInstance { get; }
 
         /// <inheritdoc />
-        public Func<IServiceProvider, object> ImplementationFactory { get; private set; }
+        public Func<IServiceProvider, object> ImplementationFactory { get; }
     }
 }
