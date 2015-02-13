@@ -5,10 +5,11 @@ namespace Microsoft.Framework.Logging
 {
     public enum LogLevel
     {
-        Verbose = 1,
-        Information = 2,
-        Warning = 3,
-        Error = 4,
-        Critical = 5,
+        Debug = 1,
+        Verbose = 2,
+        Information = 3,
+        Warning = 4,
+        Error = 5,
+        Critical = 6,
     }
 }
