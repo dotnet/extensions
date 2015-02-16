@@ -13,19 +13,19 @@ namespace Microsoft.Framework.FileSystemGlobbing
         private IList<IPattern> _includePatterns = new List<IPattern>();
         private IList<IPattern> _excludePatterns = new List<IPattern>();
 
-        public Matcher AddInclude(string pattern)
+        public virtual Matcher AddInclude(string pattern)
         {
             _includePatterns.Add(PatternBuilder.Build(pattern));
             return this;
         }
 
-        public Matcher AddExclude(string pattern)
+        public virtual Matcher AddExclude(string pattern)
         {
             _excludePatterns.Add(PatternBuilder.Build(pattern));
             return this;
         }
 
-        public PatternMatchingResult Execute(DirectoryInfoBase directoryInfo)
+        public virtual PatternMatchingResult Execute(DirectoryInfoBase directoryInfo)
         {
             var context = new MatcherContext(_includePatterns, _excludePatterns, directoryInfo);
             return context.Execute();
