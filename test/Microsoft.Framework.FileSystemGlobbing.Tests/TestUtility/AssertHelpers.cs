@@ -12,29 +12,37 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
     {
         public static void SortAndEqual<T>(IEnumerable<T> expect, IEnumerable<T> actual, IEqualityComparer<T> comparer)
         {
-            var missing = expect.Except(actual, comparer);
-            var extra = actual.Except(expect, comparer);
-            var errorMessage = new StringBuilder("Two collections are not equal");
+            var result = expect.OrderBy(elem => elem).SequenceEqual(actual.OrderBy(elem => elem), comparer);
+            var message = string.Empty;
 
-            if (missing.Any())
+            if (!result)
             {
-                errorMessage.Append("\nMissing:\n");
-                foreach (var missedElement in missing)
+                var missing = expect.Except(actual, comparer);
+                var extra = actual.Except(expect, comparer);
+                var errorMessageBuilder = new StringBuilder("Two collections are not equal");
+
+                if (missing.Any())
                 {
-                    errorMessage.AppendFormat("\t{0}\n", missedElement.ToString());
+                    errorMessageBuilder.Append("\nMissing:\n");
+                    foreach (var missedElement in missing)
+                    {
+                        errorMessageBuilder.AppendFormat("\t{0}\n", missedElement.ToString());
+                    }
                 }
+
+                if (extra.Any())
+                {
+                    errorMessageBuilder.Append("\nExtra:\n");
+                    foreach (var extraElement in extra)
+                    {
+                        errorMessageBuilder.AppendFormat("\t{0}\n", extraElement.ToString());
+                    }
+                }
+
+                message = errorMessageBuilder.ToString();
             }
 
-            if (extra.Any())
-            {
-                errorMessage.Append("\nExtra:\n");
-                foreach (var extraElement in extra)
-                {
-                    errorMessage.AppendFormat("\t{0}\n", extraElement.ToString());
-                }
-            }
-
-            Assert.True(!missing.Any() && !extra.Any(), errorMessage.ToString());
+            Assert.True(result, message);
         }
     }
 }

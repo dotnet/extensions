@@ -13,6 +13,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
 
         public DisposableFileSystem(bool automaticCleanup = true)
         {
+            _automaticCleanup = automaticCleanup;
+
             RootPath = Path.GetTempFileName();
             File.Delete(RootPath);
             Directory.CreateDirectory(RootPath);

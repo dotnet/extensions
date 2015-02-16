@@ -145,7 +145,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
                 "src/project/content1.txt");
         }
 
-        [Fact] 
+        [Fact]
         public void FolderExclude()
         {
             var matcher = new Matcher();
@@ -193,6 +193,37 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
                 "src/project/compiler/resources/resource.res",
                 "src/project/compiler/resources/sub/resource2.res",
                 "src/project/compiler/resources/sub/sub/resource3.res");
+        }
+
+        [Theory]
+        [InlineData("source1.cs", "src/project/source1.cs")]
+        [InlineData("../project2/source1.cs", "src/project2/source1.cs")]
+        public void SingleFile(string pattern, string expect)
+        {
+            var matcher = new Matcher();
+            matcher.AddInclude(pattern);
+            ExecuteAndVerify(matcher, "src/project", expect);
+        }
+
+        [Fact]
+        public void SingleFileAndRecursive()
+        {
+            var matcher = new Matcher();
+            matcher.AddInclude("**/*.cs");
+            matcher.AddInclude("../project2/source1.cs");
+            ExecuteAndVerify(matcher, "src/project",
+                "src/project/source1.cs",
+                "src/project/sub/source2.cs",
+                "src/project/sub/source3.cs",
+                "src/project/sub2/source4.cs",
+                "src/project/sub2/source5.cs",
+                "src/project/compiler/preprocess/preprocess-source1.cs",
+                "src/project/compiler/preprocess/sub/preprocess-source2.cs",
+                "src/project/compiler/preprocess/sub/sub/preprocess-source3.cs",
+                "src/project/compiler/shared/shared1.cs",
+                "src/project/compiler/shared/sub/shared2.cs",
+                "src/project/compiler/shared/sub/sub/sharedsub.cs",
+                "src/project2/source1.cs");
         }
 
 #if ASPNETCORE50
