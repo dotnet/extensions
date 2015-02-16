@@ -144,7 +144,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.PatternContexts
 
             public override DirectoryInfoBase ParentDirectory { get { throw new NotImplementedException(); } }
 
-            public override IEnumerable<FileSystemInfoBase> EnumerateFileSystemInfos(string searchPattern, SearchOption searchOption) { throw new NotImplementedException(); }
+            public override IEnumerable<FileSystemInfoBase> EnumerateFileSystemInfos() { throw new NotImplementedException(); }
 
             public override DirectoryInfoBase GetDirectory(string path) { throw new NotImplementedException(); }
 

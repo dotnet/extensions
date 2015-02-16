@@ -50,7 +50,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal
             IEnumerable<FileSystemInfoBase> entities = null;
             if (_declaredWildcardPathSegment || _declaredLiteralFileSegments.Any())
             {
-                entities = directory.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+                entities = directory.EnumerateFileSystemInfos();
             }
             else
             {

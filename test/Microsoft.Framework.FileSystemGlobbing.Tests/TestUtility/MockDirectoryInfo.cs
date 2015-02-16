@@ -34,9 +34,9 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
 
         public string[] Paths { get; }
 
-        public override IEnumerable<FileSystemInfoBase> EnumerateFileSystemInfos(string searchPattern, SearchOption searchOption)
+        public override IEnumerable<FileSystemInfoBase> EnumerateFileSystemInfos()
         {
-            Recorder.Add("EnumerateFileSystemInfos", new { FullName, Name, searchPattern, searchOption });
+            Recorder.Add("EnumerateFileSystemInfos", new { FullName, Name });
 
             var names = new HashSet<string>();
 

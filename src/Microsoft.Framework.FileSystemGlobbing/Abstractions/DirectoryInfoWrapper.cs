@@ -24,11 +24,11 @@ namespace Microsoft.Framework.FileSystemGlobbing.Abstractions
             _isParentPath = isParentPath;
         }
 
-        public override IEnumerable<FileSystemInfoBase> EnumerateFileSystemInfos(string searchPattern, SearchOption searchOption)
+        public override IEnumerable<FileSystemInfoBase> EnumerateFileSystemInfos()
         {
             if (_directoryInfo.Exists)
             {
-                foreach (var fileSystemInfo in _directoryInfo.EnumerateFileSystemInfos(searchPattern, searchOption))
+                foreach (var fileSystemInfo in _directoryInfo.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly))
                 {
                     var directoryInfo = fileSystemInfo as DirectoryInfo;
                     if (directoryInfo != null)

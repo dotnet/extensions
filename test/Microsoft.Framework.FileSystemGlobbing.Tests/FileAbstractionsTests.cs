@@ -16,7 +16,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
         {
             using (var scenario = new DisposableFileSystem())
             {
-                var contents = scenario.DirectoryInfo.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+                var contents = scenario.DirectoryInfo.EnumerateFileSystemInfos();
 
                 Assert.Equal(Path.GetFileName(scenario.RootPath), scenario.DirectoryInfo.Name);
                 Assert.Equal(scenario.RootPath, scenario.DirectoryInfo.FullName);
@@ -30,7 +30,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
             using (var scenario = new DisposableFileSystem()
                 .CreateFile("alpha.txt"))
             {
-                var contents = scenario.DirectoryInfo.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+                var contents = scenario.DirectoryInfo.EnumerateFileSystemInfos();
                 var alphaTxt = contents.OfType<FileInfoBase>().Single();
 
                 Assert.Equal(1, contents.Count());
@@ -44,9 +44,9 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
             using (var scenario = new DisposableFileSystem()
                 .CreateFolder("beta"))
             {
-                var contents1 = scenario.DirectoryInfo.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+                var contents1 = scenario.DirectoryInfo.EnumerateFileSystemInfos();
                 var beta = contents1.OfType<DirectoryInfoBase>().Single();
-                var contents2 = beta.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+                var contents2 = beta.EnumerateFileSystemInfos();
 
                 Assert.Equal(1, contents1.Count());
                 Assert.Equal("beta", beta.Name);
@@ -61,9 +61,9 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
                 .CreateFolder("beta")
                 .CreateFile(Path.Combine("beta", "alpha.txt")))
             {
-                var contents1 = scenario.DirectoryInfo.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+                var contents1 = scenario.DirectoryInfo.EnumerateFileSystemInfos();
                 var beta = contents1.OfType<DirectoryInfoBase>().Single();
-                var contents2 = beta.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+                var contents2 = beta.EnumerateFileSystemInfos();
                 var alphaTxt = contents2.OfType<FileInfoBase>().Single();
 
                 Assert.Equal(1, contents1.Count());
@@ -83,9 +83,9 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
             {
                 var gamma = scenario.DirectoryInfo.GetDirectory("gamma");
                 var dotdot = gamma.GetDirectory("..");
-                var contents1 = dotdot.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+                var contents1 = dotdot.EnumerateFileSystemInfos();
                 var beta = dotdot.GetDirectory("beta");
-                var contents2 = beta.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+                var contents2 = beta.EnumerateFileSystemInfos();
                 var alphaTxt = contents2.OfType<FileInfoBase>().Single();
 
                 Assert.Equal("..", dotdot.Name);
