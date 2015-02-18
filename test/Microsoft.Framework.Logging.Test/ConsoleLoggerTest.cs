@@ -3,10 +3,11 @@
 
 using System;
 using System.Globalization;
-using Microsoft.Framework.Logging;
 using Microsoft.Framework.Logging.Console;
 using Microsoft.Framework.Logging.Test.Console;
+using Moq;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Framework.Logging.Test
 {
@@ -14,7 +15,9 @@ namespace Microsoft.Framework.Logging.Test
     {
         private const string _name = "test";
         private const string _state = "This is a test";
-        private static readonly Func<object, Exception, string> TheMessageAndError = (message, error) => string.Format(CultureInfo.CurrentCulture, "{0}\r\n{1}", message, error);
+
+        private static readonly Func<object, Exception, string> TheMessageAndError =
+            (message, error) => string.Format(CultureInfo.CurrentCulture, "{0}\r\n{1}", message, error);
 
         private Tuple<ConsoleLogger, ConsoleSink> SetUp(Func<string, LogLevel, bool> filter)
         {
@@ -24,6 +27,73 @@ namespace Microsoft.Framework.Logging.Test
             var logger = new ConsoleLogger(_name, filter);
             logger.Console = console;
             return new Tuple<ConsoleLogger, ConsoleSink>(logger, sink);
+        }
+
+        private Tuple<ILoggerFactory, ConsoleSink> SetUpFactory(Func<string, LogLevel, bool> filter)
+        {
+            var t = SetUp(null);
+            var logger = t.Item1;
+            var sink = t.Item2;
+
+            var provider = new Mock<ILoggerProvider>();
+            provider.Setup(f => f.Create(
+                It.IsAny<string>()))
+                .Returns(logger);
+
+            var factory = new LoggerFactory();
+            factory.AddProvider(provider.Object);
+
+            return new Tuple<ILoggerFactory, ConsoleSink>(factory, sink);
+        }
+
+        [Fact]
+        public void MessagesAreNotLoggedWhenBelowMinimumLevel()
+        {
+            // arrange
+            var t = SetUpFactory(null);
+            var factory = t.Item1;
+            var sink = t.Item2;
+            var logger = factory.Create(_name);
+
+
+            // act
+            logger.Write(LogLevel.Debug, 0, _state, null, null);
+            logger.Write(LogLevel.Verbose, 0, _state, null, null);
+
+            // assert
+            Assert.Equal(LogLevel.Verbose, factory.MinimumLevel);
+            Assert.Equal(1, sink.Writes.Count);
+        }
+
+        [Theory]
+        [InlineData(LogLevel.Debug, 6, true, true)]
+        [InlineData(LogLevel.Verbose, 5, false, true)]
+        [InlineData(LogLevel.Information, 4, false, true)]
+        [InlineData(LogLevel.Warning, 3, false, false)]
+        [InlineData(LogLevel.Error, 2, false, false)]
+        [InlineData(LogLevel.Critical, 1, false, false)]
+        public void MinimumLogLevelCanBeChanged(LogLevel minimumLevel, int expectedMessageCount, bool enabledDebug, bool enabledInformation)
+        {
+            var t = SetUpFactory(null);
+            var factory = t.Item1;
+            var sink = t.Item2;
+            var logger = factory.Create(_name);
+
+            factory.MinimumLevel = minimumLevel;
+
+            // act
+            logger.Write(LogLevel.Debug, 0, _state, null, null);
+            logger.Write(LogLevel.Verbose, 0, _state, null, null);
+            logger.Write(LogLevel.Information, 0, _state, null, null);
+            logger.Write(LogLevel.Warning, 0, _state, null, null);
+            logger.Write(LogLevel.Error, 0, _state, null, null);
+            logger.Write(LogLevel.Critical, 0, _state, null, null);
+
+            // assert
+            Assert.Equal(minimumLevel, factory.MinimumLevel);
+            Assert.Equal(expectedMessageCount, sink.Writes.Count);
+            Assert.Equal(enabledDebug, logger.IsEnabled(LogLevel.Debug));
+            Assert.Equal(enabledInformation, logger.IsEnabled(LogLevel.Information));
         }
 
         [Fact]
@@ -261,7 +331,8 @@ namespace Microsoft.Framework.Logging.Test
 
         private string getMessage(LogLevel logLevel, Exception exception)
         {
-            return string.Format("[{0}:{1}] {2}", logLevel.ToString().ToUpperInvariant(), _name, TheMessageAndError(_state, exception));
+            return string.Format("[{0}:{1}] {2}", logLevel.ToString().ToUpperInvariant(), _name,
+                TheMessageAndError(_state, exception));
         }
     }
 }

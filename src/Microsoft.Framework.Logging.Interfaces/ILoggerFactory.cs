@@ -9,6 +9,11 @@ namespace Microsoft.Framework.Logging
     public interface ILoggerFactory
     {
         /// <summary>
+        /// The minimum level of log messages sent to registered loggers.
+        /// </summary>
+        LogLevel MinimumLevel { get; set; }
+
+        /// <summary>
         /// Creates a new ILogger instance of the given name.
         /// </summary>
         /// <param name="name"></param>

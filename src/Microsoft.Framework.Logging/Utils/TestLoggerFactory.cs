@@ -14,6 +14,8 @@ namespace Microsoft.Framework.Logging
             _enabled = enabled;
         }
 
+        public LogLevel MinimumLevel { get; set; } = LogLevel.Verbose;
+
         public ILogger Create(string name)
         {
             return new TestLogger(name, _sink, _enabled);

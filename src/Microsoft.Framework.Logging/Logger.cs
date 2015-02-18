@@ -29,13 +29,16 @@ namespace Microsoft.Framework.Logging
         {
             foreach (var logger in _loggers)
             {
-                logger.Write(logLevel, eventId, state, exception, formatter);
+                if (logLevel >= _loggerFactory.MinimumLevel && logger.IsEnabled(logLevel))
+                {
+                    logger.Write(logLevel, eventId, state, exception, formatter);
+                }
             }
         }
 
         public bool IsEnabled(LogLevel logLevel)
         {
-            return _loggers.Any(l => l.IsEnabled(logLevel));
+            return logLevel >= _loggerFactory.MinimumLevel && _loggers.Any(l => l.IsEnabled(logLevel));
         }
 
         public IDisposable BeginScope(object state)

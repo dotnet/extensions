@@ -7,6 +7,8 @@ namespace Microsoft.Framework.Logging
     {
         public static NullLoggerFactory Instance = new NullLoggerFactory();
 
+        public LogLevel MinimumLevel { get; set; } = LogLevel.Verbose;
+
         public ILogger Create(string name)
         {
             return NullLogger.Instance;

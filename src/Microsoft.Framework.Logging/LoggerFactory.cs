@@ -30,12 +30,14 @@ namespace Microsoft.Framework.Logging
             return logger;
         }
 
+        public LogLevel MinimumLevel { get; set; } = LogLevel.Verbose;
+
         public void AddProvider(ILoggerProvider provider)
         {
             lock (_sync)
             {
                 _providers = _providers.Concat(new[] { provider }).ToArray();
-                foreach(var logger in _loggers)
+                foreach (var logger in _loggers)
                 {
                     logger.Value.AddProvider(provider);
                 }
