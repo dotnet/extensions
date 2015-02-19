@@ -59,7 +59,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
         {
             using (var scenario = new DisposableFileSystem()
                 .CreateFolder("beta")
-                .CreateFile("beta\\alpha.txt"))
+                .CreateFile(Path.Combine("beta", "alpha.txt")))
             {
                 var contents1 = scenario.DirectoryInfo.EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
                 var beta = contents1.OfType<DirectoryInfoBase>().Single();
@@ -79,7 +79,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
             using (var scenario = new DisposableFileSystem()
                 .CreateFolder("gamma")
                 .CreateFolder("beta")
-                .CreateFile("beta\\alpha.txt"))
+                .CreateFile(Path.Combine("beta", "alpha.txt")))
             {
                 var gamma = scenario.DirectoryInfo.GetDirectory("gamma");
                 var dotdot = gamma.GetDirectory("..");
