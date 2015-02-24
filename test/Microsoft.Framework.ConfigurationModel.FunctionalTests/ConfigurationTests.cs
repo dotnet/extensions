@@ -89,8 +89,6 @@ CommonKey3:CommonKey4=IniValue6";
             config.Add(memConfigSrc);
 
             // Assert
-            Assert.Equal(24, CountAllEntries(config));
-
             Assert.Equal("IniValue1", config.Get("IniKey1"));
             Assert.Equal("IniValue2", config.Get("IniKey2:IniKey3"));
             Assert.Equal("IniValue3", config.Get("IniKey2:IniKey4"));
@@ -156,7 +154,7 @@ CommonKey3:CommonKey4=IniValue6";
             foreach (var src in config)
             {
                 Assert.Equal("NewValue",
-                    (src as BaseConfigurationSource).Data["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
+                    (src as ConfigurationSource).Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
             }
 
             // Recover values by reloading
@@ -170,7 +168,7 @@ CommonKey3:CommonKey4=IniValue6";
             foreach (var src in config)
             {
                 Assert.Equal("NewValue",
-                    (src as BaseConfigurationSource).Data["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
+                    (src as ConfigurationSource).Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
             }
 
             // Recover values by reloading
@@ -198,11 +196,6 @@ CommonKey3:CommonKey4=IniValue6";
 
             var updatedXmlContent = _xmlConfigFileContent.Replace("XmlValue6", "NewValue");
             Assert.Equal(updatedXmlContent, File.ReadAllText(_xmlConfigFilePath));
-        }
-
-        private static int CountAllEntries(Configuration config)
-        {
-            return config.Aggregate(0, (acc, src) => acc + (src as BaseConfigurationSource).Data.Count);
         }
 
         public void Dispose()

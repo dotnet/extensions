@@ -24,11 +24,10 @@ SubHeader:Provider=MySql";
 
             iniConfigSrc.Load(StringToStream(ini));
 
-            Assert.Equal(4, iniConfigSrc.Data.Count);
-            Assert.Equal("TestConnectionString", iniConfigSrc.Data["defaultconnection:ConnectionString"]);
-            Assert.Equal("SqlClient", iniConfigSrc.Data["DEFAULTCONNECTION:PROVIDER"]);
-            Assert.Equal("AnotherTestConnectionString", iniConfigSrc.Data["Data:Inventory:CONNECTIONSTRING"]);
-            Assert.Equal("MySql", iniConfigSrc.Data["Data:Inventory:SubHeader:Provider"]);
+            Assert.Equal("TestConnectionString", iniConfigSrc.Get("defaultconnection:ConnectionString"));
+            Assert.Equal("SqlClient", iniConfigSrc.Get("DEFAULTCONNECTION:PROVIDER"));
+            Assert.Equal("AnotherTestConnectionString", iniConfigSrc.Get("Data:Inventory:CONNECTIONSTRING"));
+            Assert.Equal("MySql", iniConfigSrc.Get("Data:Inventory:SubHeader:Provider"));
         }
 
         [Fact]
@@ -39,8 +38,7 @@ SubHeader:Provider=MySql";
 
             iniConfigSrc.Load(StringToStream(ini));
 
-            Assert.Equal(1, iniConfigSrc.Data.Count);
-            Assert.Equal(string.Empty, iniConfigSrc.Data["DefaultKey"]);
+            Assert.Equal(string.Empty, iniConfigSrc.Get("DefaultKey"));
         }
 
         [Fact]
@@ -56,11 +54,10 @@ SubHeader:Provider=MySql";
 
             iniConfigSrc.Load(StringToStream(ini));
 
-            Assert.Equal(4, iniConfigSrc.Data.Count);
-            Assert.Equal("TestConnectionString", iniConfigSrc.Data["DefaultConnection:ConnectionString"]);
-            Assert.Equal("SqlClient", iniConfigSrc.Data["DefaultConnection:Provider"]);
-            Assert.Equal("AnotherTestConnectionString", iniConfigSrc.Data["Data:Inventory:ConnectionString"]);
-            Assert.Equal("MySql", iniConfigSrc.Data["Data:Inventory:Provider"]);
+            Assert.Equal("TestConnectionString", iniConfigSrc.Get("DefaultConnection:ConnectionString"));
+            Assert.Equal("SqlClient", iniConfigSrc.Get("DefaultConnection:Provider"));
+            Assert.Equal("AnotherTestConnectionString", iniConfigSrc.Get("Data:Inventory:ConnectionString"));
+            Assert.Equal("MySql", iniConfigSrc.Get("Data:Inventory:Provider"));
         }
 
         [Fact]
@@ -73,9 +70,8 @@ SubHeader:Provider=MySql";
 
             iniConfigSrc.Load(StringToStream(ini));
 
-            Assert.Equal(2, iniConfigSrc.Data.Count);
-            Assert.Equal("\"TestConnectionString", iniConfigSrc.Data["ConnectionString:DefaultConnection"]);
-            Assert.Equal("SqlClient\"", iniConfigSrc.Data["ConnectionString:Provider"]);
+            Assert.Equal("\"TestConnectionString", iniConfigSrc.Get("ConnectionString:DefaultConnection"));
+            Assert.Equal("SqlClient\"", iniConfigSrc.Get("ConnectionString:Provider"));
         }
 
         [Fact]
@@ -88,9 +84,8 @@ SubHeader:Provider=MySql";
 
             iniConfigSrc.Load(StringToStream(ini));
 
-            Assert.Equal(2, iniConfigSrc.Data.Count);
-            Assert.Equal("Test\"Connection\"String", iniConfigSrc.Data["ConnectionString:DefaultConnection"]);
-            Assert.Equal("Sql\"Client", iniConfigSrc.Data["ConnectionString:Provider"]);
+            Assert.Equal("Test\"Connection\"String", iniConfigSrc.Get("ConnectionString:DefaultConnection"));
+            Assert.Equal("Sql\"Client", iniConfigSrc.Get("ConnectionString:Provider"));
         }
 
         [Fact]
@@ -106,11 +101,10 @@ SubHeader:Provider=MySql";
 
             iniConfigSrc.Load(StringToStream(ini));
 
-            Assert.Equal(4, iniConfigSrc.Data.Count);
-            Assert.Equal("TestConnectionString", iniConfigSrc.Data["DefaultConnection:ConnectionString"]);
-            Assert.Equal("SqlClient", iniConfigSrc.Data["DefaultConnection:Provider"]);
-            Assert.Equal("AnotherTestConnectionString", iniConfigSrc.Data["Data:Inventory:ConnectionString"]);
-            Assert.Equal("MySql", iniConfigSrc.Data["Data:Inventory:Provider"]);
+            Assert.Equal("TestConnectionString", iniConfigSrc.Get("DefaultConnection:ConnectionString"));
+            Assert.Equal("SqlClient", iniConfigSrc.Get("DefaultConnection:Provider"));
+            Assert.Equal("AnotherTestConnectionString", iniConfigSrc.Get("Data:Inventory:ConnectionString"));
+            Assert.Equal("MySql", iniConfigSrc.Get("Data:Inventory:Provider"));
         }
 
         [Fact]
@@ -131,11 +125,10 @@ SubHeader:Provider=MySql";
 
             iniConfigSrc.Load(StringToStream(ini));
 
-            Assert.Equal(4, iniConfigSrc.Data.Count);
-            Assert.Equal("TestConnectionString", iniConfigSrc.Data["DefaultConnection:ConnectionString"]);
-            Assert.Equal("SqlClient", iniConfigSrc.Data["DefaultConnection:Provider"]);
-            Assert.Equal("AnotherTestConnectionString", iniConfigSrc.Data["Data:Inventory:ConnectionString"]);
-            Assert.Equal("MySql", iniConfigSrc.Data["Data:Inventory:Provider"]);
+            Assert.Equal("TestConnectionString", iniConfigSrc.Get("DefaultConnection:ConnectionString"));
+            Assert.Equal("SqlClient", iniConfigSrc.Get("DefaultConnection:Provider"));
+            Assert.Equal("AnotherTestConnectionString", iniConfigSrc.Get("Data:Inventory:ConnectionString"));
+            Assert.Equal("MySql", iniConfigSrc.Get("Data:Inventory:Provider"));
         }
 
         [Fact]
@@ -333,8 +326,8 @@ Provider=SqlClient";
 Data:DefaultConnection:Provider=SqlClient
 ";
             var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
-            iniConfigSrc.Data["Data:DefaultConnection:ConnectionString"] = "TestConnectionString";
-            iniConfigSrc.Data["Data:DefaultConnection:Provider"] = "SqlClient";
+            iniConfigSrc.Set("Data:DefaultConnection:ConnectionString", "TestConnectionString");
+            iniConfigSrc.Set("Data:DefaultConnection:Provider", "SqlClient");
             var cacheStream = new MemoryStream();
 
             iniConfigSrc.GenerateNewConfig(cacheStream);

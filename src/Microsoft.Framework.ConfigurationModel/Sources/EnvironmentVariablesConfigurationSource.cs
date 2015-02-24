@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-    public class EnvironmentVariablesConfigurationSource : BaseConfigurationSource
+    public class EnvironmentVariablesConfigurationSource : ConfigurationSource
     {
         private const string MySqlServerPrefix = "MYSQLCONNSTR_";
         private const string SqlAzureServerPrefix = "SQLAZURECONNSTR_";
@@ -39,14 +39,14 @@ namespace Microsoft.Framework.ConfigurationModel
 
         internal void Load(IDictionary envVariables)
         {
-            ReplaceData(envVariables
+            Data = envVariables
                 .Cast<DictionaryEntry>()
                 .SelectMany(AzureEnvToAppEnv)
                 .Where(entry => ((string)entry.Key).StartsWith(_prefix, StringComparison.OrdinalIgnoreCase))
                 .ToDictionary(
                     entry => ((string)entry.Key).Substring(_prefix.Length),
                     entry => (string)entry.Value,
-                    StringComparer.OrdinalIgnoreCase));
+                    StringComparer.OrdinalIgnoreCase);
         }
 
         private static IEnumerable<DictionaryEntry> AzureEnvToAppEnv(DictionaryEntry entry)

@@ -11,7 +11,7 @@ using Resources = Microsoft.Framework.ConfigurationModel.Json.Resources;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-    public class JsonConfigurationSource : BaseConfigurationSource, ICommitableConfigurationSource
+    public class JsonConfigurationSource : ConfigurationSource, ICommitableConfigurationSource
     {
         public JsonConfigurationSource(string path)
         {
@@ -163,7 +163,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 } while (startObjectCount > 0);
             }
 
-            ReplaceData(data);
+            Data = data;
         }
 
         // Use the original file as a template while generating new file contents

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace Microsoft.Framework.ConfigurationModel
 {
     public class MemoryConfigurationSource : 
-        BaseConfigurationSource, 
+        ConfigurationSource, 
         IEnumerable<KeyValuePair<string,string>>
     {
         public MemoryConfigurationSource()

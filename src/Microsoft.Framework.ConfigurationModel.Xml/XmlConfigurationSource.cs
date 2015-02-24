@@ -11,7 +11,7 @@ using Resources = Microsoft.Framework.ConfigurationModel.Xml.Resources;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-    public class XmlConfigurationSource : BaseConfigurationSource, ICommitableConfigurationSource
+    public class XmlConfigurationSource : ConfigurationSource, ICommitableConfigurationSource
     {
         private const string NameAttributeKey = "Name";
 
@@ -178,7 +178,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 }
             }
 
-            ReplaceData(data);
+            Data = data;
         }
 
         // Use the original file as a template while generating new file contents

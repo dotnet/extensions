@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-    public class IniFileConfigurationSource : BaseConfigurationSource, ICommitableConfigurationSource
+    public class IniFileConfigurationSource : ConfigurationSource, ICommitableConfigurationSource
     {
         // http://en.wikipedia.org/wiki/INI_file
         /// <summary>
@@ -151,7 +151,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 }
             }
 
-            ReplaceData(data);
+            Data = data;
         }
 
         // Use the original file as a template while generating new file contents

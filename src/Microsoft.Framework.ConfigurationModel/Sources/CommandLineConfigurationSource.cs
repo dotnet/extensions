@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-    public class CommandLineConfigurationSource : BaseConfigurationSource
+    public class CommandLineConfigurationSource : ConfigurationSource
     {
         private readonly Dictionary<string, string> _switchMappings;
 
@@ -117,7 +117,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 argIndex++;
             }
 
-            ReplaceData(data);
+            Data = data;
         }
 
         private Dictionary<string, string> GetValidatedSwitchMappingsCopy(IDictionary<string, string> switchMappings)

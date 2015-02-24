@@ -29,11 +29,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
             jsonConfigSrc.Load(StringToStream(json));
 
-            Assert.Equal(4, jsonConfigSrc.Data.Count);
-            Assert.Equal("test", jsonConfigSrc.Data["firstname"]);
-            Assert.Equal("last.name", jsonConfigSrc.Data["test.last.name"]);
-            Assert.Equal("Something street", jsonConfigSrc.Data["residential.address:STREET.name"]);
-            Assert.Equal("12345", jsonConfigSrc.Data["residential.address:zipcode"]);
+            Assert.Equal("test", jsonConfigSrc.Get("firstname"));
+            Assert.Equal("last.name", jsonConfigSrc.Get("test.last.name"));
+            Assert.Equal("Something street", jsonConfigSrc.Get("residential.address:STREET.name"));
+            Assert.Equal("12345", jsonConfigSrc.Get("residential.address:zipcode"));
         }
 
         [Fact]
@@ -47,8 +46,7 @@ namespace Microsoft.Framework.ConfigurationModel
 
             jsonConfigSrc.Load(StringToStream(json));
 
-            Assert.Equal(1, jsonConfigSrc.Data.Count);
-            Assert.Equal(string.Empty, jsonConfigSrc.Data["name"]);
+            Assert.Equal(string.Empty, jsonConfigSrc.Get("name"));
         }
 
         [Fact]
@@ -78,10 +76,9 @@ namespace Microsoft.Framework.ConfigurationModel
 
             jsonConfigSrc.Load(StringToStream(json));
 
-            Assert.Equal(3, jsonConfigSrc.Data.Count);
-            Assert.Equal("test", jsonConfigSrc.Data["name"]);
-            Assert.Equal("Something street", jsonConfigSrc.Data["address:street"]);
-            Assert.Equal("12345", jsonConfigSrc.Data["address:zipcode"]);
+            Assert.Equal("test", jsonConfigSrc.Get("name"));
+            Assert.Equal("Something street", jsonConfigSrc.Get("address:street"));
+            Assert.Equal("12345", jsonConfigSrc.Get("address:zipcode"));
         }
 
         [Fact]
@@ -311,9 +308,9 @@ namespace Microsoft.Framework.ConfigurationModel
 }";
             var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
             var outputCacheStream = new MemoryStream();
-            jsonConfigSrc.Data["name"] = "test";
-            jsonConfigSrc.Data["address:street"] = "Something street";
-            jsonConfigSrc.Data["address:zipcode"] = "12345";
+            jsonConfigSrc.Set("name", "test");
+            jsonConfigSrc.Set("address:street", "Something street");
+            jsonConfigSrc.Set("address:zipcode", "12345");
 
             jsonConfigSrc.GenerateNewConfig(outputCacheStream);
 

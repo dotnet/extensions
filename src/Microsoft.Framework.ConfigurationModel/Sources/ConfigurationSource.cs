@@ -7,19 +7,14 @@ using System.Linq;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-    public abstract class BaseConfigurationSource : IConfigurationSource
+    public abstract class ConfigurationSource : IConfigurationSource
     {
-        protected BaseConfigurationSource()
+        protected ConfigurationSource()
         {
             Data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
-        public IDictionary<string, string> Data { get; private set; }
-
-        protected virtual void ReplaceData(Dictionary<string, string> data)
-        {
-            Data = data;
-        }
+        protected IDictionary<string, string> Data { get; set; }
 
         public virtual bool TryGet(string key, out string value)
         {

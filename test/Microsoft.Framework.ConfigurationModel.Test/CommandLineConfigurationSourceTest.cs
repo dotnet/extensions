@@ -25,12 +25,11 @@ namespace Microsoft.Framework.ConfigurationModel
 
             cmdLineConfig.Load();
 
-            Assert.Equal(5, cmdLineConfig.Data.Count);
-            Assert.Equal("Value1", cmdLineConfig.Data["Key1"]);
-            Assert.Equal("Value2", cmdLineConfig.Data["Key2"]);
-            Assert.Equal("Value3", cmdLineConfig.Data["Key3"]);
-            Assert.Equal("Value4", cmdLineConfig.Data["Key4"]);
-            Assert.Equal("Value5", cmdLineConfig.Data["Key5"]);
+            Assert.Equal("Value1", cmdLineConfig.Get("Key1"));
+            Assert.Equal("Value2", cmdLineConfig.Get("Key2"));
+            Assert.Equal("Value3", cmdLineConfig.Get("Key3"));
+            Assert.Equal("Value4", cmdLineConfig.Get("Key4"));
+            Assert.Equal("Value5", cmdLineConfig.Get("Key5"));
         }
 
         [Fact]
@@ -55,13 +54,12 @@ namespace Microsoft.Framework.ConfigurationModel
 
             cmdLineConfig.Load();
 
-            Assert.Equal(6, cmdLineConfig.Data.Count);
-            Assert.Equal("Value1", cmdLineConfig.Data["LongKey1"]);
-            Assert.Equal("Value2", cmdLineConfig.Data["SuperLongKey2"]);
-            Assert.Equal("Value3", cmdLineConfig.Data["Key3"]);
-            Assert.Equal("Value4", cmdLineConfig.Data["Key4"]);
-            Assert.Equal("Value5", cmdLineConfig.Data["Key5"]);
-            Assert.Equal("Value6", cmdLineConfig.Data["SuchALongKey6"]);
+            Assert.Equal("Value1", cmdLineConfig.Get("LongKey1"));
+            Assert.Equal("Value2", cmdLineConfig.Get("SuperLongKey2"));
+            Assert.Equal("Value3", cmdLineConfig.Get("Key3"));
+            Assert.Equal("Value4", cmdLineConfig.Get("Key4"));
+            Assert.Equal("Value5", cmdLineConfig.Get("Key5"));
+            Assert.Equal("Value6", cmdLineConfig.Get("SuchALongKey6"));
         }
 
         [Fact]
@@ -158,8 +156,7 @@ namespace Microsoft.Framework.ConfigurationModel
 
             cmdLineConfig.Load();
 
-            Assert.Equal(1, cmdLineConfig.Data.Count());
-            Assert.Equal("Value2", cmdLineConfig.Data["Key1"]);
+            Assert.Equal("Value2", cmdLineConfig.Get("Key1"));
         }
 
         [Fact]

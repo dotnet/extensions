@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22530.0
+VisualStudioVersion = 14.0.22609.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F141E2D0-F9B8-4ADB-A19A-7B6FF4CA19A1}"
 EndProject
@@ -24,6 +24,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.ConfigurationModel.Shared", "src\Microsoft.Framework.ConfigurationModel.Shared\Microsoft.Framework.ConfigurationModel.Shared.kproj", "{8967162D-4966-40A7-9970-395A206732AC}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.ConfigurationModel.Interfaces", "src\Microsoft.Framework.ConfigurationModel.Interfaces\Microsoft.Framework.ConfigurationModel.Interfaces.kproj", "{3F1CB08E-9FBD-4CAE-A78A-4AC43F24FC49}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.ConfigurationModel.Test.Common", "test\Microsoft.Framework.ConfigurationModel.Test.Common\Microsoft.Framework.ConfigurationModel.Test.Common.kproj", "{29C120E5-F682-4BFB-826B-040A594802CA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -127,6 +129,18 @@ Global
 		{3F1CB08E-9FBD-4CAE-A78A-4AC43F24FC49}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{3F1CB08E-9FBD-4CAE-A78A-4AC43F24FC49}.Release|x86.ActiveCfg = Release|Any CPU
 		{3F1CB08E-9FBD-4CAE-A78A-4AC43F24FC49}.Release|x86.Build.0 = Release|Any CPU
+		{29C120E5-F682-4BFB-826B-040A594802CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29C120E5-F682-4BFB-826B-040A594802CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29C120E5-F682-4BFB-826B-040A594802CA}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{29C120E5-F682-4BFB-826B-040A594802CA}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{29C120E5-F682-4BFB-826B-040A594802CA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{29C120E5-F682-4BFB-826B-040A594802CA}.Debug|x86.Build.0 = Debug|Any CPU
+		{29C120E5-F682-4BFB-826B-040A594802CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29C120E5-F682-4BFB-826B-040A594802CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29C120E5-F682-4BFB-826B-040A594802CA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{29C120E5-F682-4BFB-826B-040A594802CA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{29C120E5-F682-4BFB-826B-040A594802CA}.Release|x86.ActiveCfg = Release|Any CPU
+		{29C120E5-F682-4BFB-826B-040A594802CA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -141,5 +155,6 @@ Global
 		{EAC77F15-F12E-496B-9184-1B1DA89BFFE9} = {B54371FF-B920-46C8-8D55-6B19DBB43EBF}
 		{8967162D-4966-40A7-9970-395A206732AC} = {F141E2D0-F9B8-4ADB-A19A-7B6FF4CA19A1}
 		{3F1CB08E-9FBD-4CAE-A78A-4AC43F24FC49} = {F141E2D0-F9B8-4ADB-A19A-7B6FF4CA19A1}
+		{29C120E5-F682-4BFB-826B-040A594802CA} = {B54371FF-B920-46C8-8D55-6B19DBB43EBF}
 	EndGlobalSection
 EndGlobal

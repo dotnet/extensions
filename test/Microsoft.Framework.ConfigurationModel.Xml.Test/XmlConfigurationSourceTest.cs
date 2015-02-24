@@ -33,11 +33,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
             xmlConfigSrc.Load(StringToStream(xml));
 
-            Assert.Equal(4, xmlConfigSrc.Data.Count);
-            Assert.Equal("Test.Connection.String", xmlConfigSrc.Data["DATA.SETTING:DEFAULTCONNECTION:CONNECTION.STRING"]);
-            Assert.Equal("SqlClient", xmlConfigSrc.Data["DATA.SETTING:DefaultConnection:Provider"]);
-            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Data["data.setting:inventory:connectionstring"]);
-            Assert.Equal("MySql", xmlConfigSrc.Data["Data.setting:Inventory:Provider"]);
+            Assert.Equal("Test.Connection.String", xmlConfigSrc.Get("DATA.SETTING:DEFAULTCONNECTION:CONNECTION.STRING"));
+            Assert.Equal("SqlClient", xmlConfigSrc.Get("DATA.SETTING:DefaultConnection:Provider"));
+            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Get("data.setting:inventory:connectionstring"));
+            Assert.Equal("MySql", xmlConfigSrc.Get("Data.setting:Inventory:Provider"));
         }
 
         [Fact]
@@ -54,9 +53,8 @@ namespace Microsoft.Framework.ConfigurationModel
 
             xmlConfigSrc.Load(StringToStream(xml));
 
-            Assert.Equal(2, xmlConfigSrc.Data.Count);
-            Assert.Equal(string.Empty, xmlConfigSrc.Data["Key1"]);
-            Assert.Equal(string.Empty, xmlConfigSrc.Data["Key2:Key3"]);
+            Assert.Equal(string.Empty, xmlConfigSrc.Get("Key1"));
+            Assert.Equal(string.Empty, xmlConfigSrc.Get("Key2:Key3"));
         }
 
         [Fact]
@@ -77,12 +75,11 @@ namespace Microsoft.Framework.ConfigurationModel
 
             xmlConfigSrc.Load(StringToStream(xml));
 
-            Assert.Equal(5, xmlConfigSrc.Data.Count);
-            Assert.Equal("8008", xmlConfigSrc.Data["Port"]);
-            Assert.Equal("TestConnectionString", xmlConfigSrc.Data["Data:DefaultConnection:ConnectionString"]);
-            Assert.Equal("SqlClient", xmlConfigSrc.Data["Data:DefaultConnection:Provider"]);
-            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Data["Data:Inventory:ConnectionString"]);
-            Assert.Equal("MySql", xmlConfigSrc.Data["Data:Inventory:Provider"]);
+            Assert.Equal("8008", xmlConfigSrc.Get("Port"));
+            Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
+            Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
+            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Get("Data:Inventory:ConnectionString"));
+            Assert.Equal("MySql", xmlConfigSrc.Get("Data:Inventory:Provider"));
         }
 
         [Fact]
@@ -103,18 +100,17 @@ namespace Microsoft.Framework.ConfigurationModel
 
             xmlConfigSrc.Load(StringToStream(xml));
 
-            Assert.Equal(5, xmlConfigSrc.Data.Count);
-            Assert.Equal("8008", xmlConfigSrc.Data["Port"]);
-            Assert.Equal("TestConnectionString", xmlConfigSrc.Data["Data:DefaultConnection:ConnectionString"]);
-            Assert.Equal("SqlClient", xmlConfigSrc.Data["Data:DefaultConnection:Provider"]);
-            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Data["Data:Inventory:ConnectionString"]);
-            Assert.Equal("MySql", xmlConfigSrc.Data["Data:Inventory:Provider"]);
+            Assert.Equal("8008", xmlConfigSrc.Get("Port"));
+            Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
+            Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
+            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Get("Data:Inventory:ConnectionString"));
+            Assert.Equal("MySql", xmlConfigSrc.Get("Data:Inventory:Provider"));
         }
 
         [Fact]
         public void NameAttributeContributesToPrefix()
         {
-            var xml = 
+            var xml =
                 @"<settings>
                     <Data Name='DefaultConnection'>
                         <ConnectionString>TestConnectionString</ConnectionString>
@@ -129,17 +125,16 @@ namespace Microsoft.Framework.ConfigurationModel
 
             xmlConfigSrc.Load(StringToStream(xml));
 
-            Assert.Equal(4, xmlConfigSrc.Data.Count);
-            Assert.Equal("TestConnectionString", xmlConfigSrc.Data["Data:DefaultConnection:ConnectionString"]);
-            Assert.Equal("SqlClient", xmlConfigSrc.Data["Data:DefaultConnection:Provider"]);
-            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Data["Data:Inventory:ConnectionString"]);
-            Assert.Equal("MySql", xmlConfigSrc.Data["Data:Inventory:Provider"]);
+            Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
+            Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
+            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Get("Data:Inventory:ConnectionString"));
+            Assert.Equal("MySql", xmlConfigSrc.Get("Data:Inventory:Provider"));
         }
 
         [Fact]
         public void NameAttributeInRootElementContributesToPrefix()
         {
-            var xml = 
+            var xml =
                 @"<settings Name='Data'>
                     <DefaultConnection>
                         <ConnectionString>TestConnectionString</ConnectionString>
@@ -154,17 +149,16 @@ namespace Microsoft.Framework.ConfigurationModel
 
             xmlConfigSrc.Load(StringToStream(xml));
 
-            Assert.Equal(4, xmlConfigSrc.Data.Count);
-            Assert.Equal("TestConnectionString", xmlConfigSrc.Data["Data:DefaultConnection:ConnectionString"]);
-            Assert.Equal("SqlClient", xmlConfigSrc.Data["Data:DefaultConnection:Provider"]);
-            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Data["Data:Inventory:ConnectionString"]);
-            Assert.Equal("MySql", xmlConfigSrc.Data["Data:Inventory:Provider"]);
+            Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
+            Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
+            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Get("Data:Inventory:ConnectionString"));
+            Assert.Equal("MySql", xmlConfigSrc.Get("Data:Inventory:Provider"));
         }
 
         [Fact]
         public void SupportMixingNameAttributesAndCommonAttributes()
         {
-            var xml = 
+            var xml =
                 @"<settings>
                     <Data Name='DefaultConnection'
                           ConnectionString='TestConnectionString'
@@ -177,17 +171,16 @@ namespace Microsoft.Framework.ConfigurationModel
 
             xmlConfigSrc.Load(StringToStream(xml));
 
-            Assert.Equal(4, xmlConfigSrc.Data.Count);
-            Assert.Equal("TestConnectionString", xmlConfigSrc.Data["Data:DefaultConnection:ConnectionString"]);
-            Assert.Equal("SqlClient", xmlConfigSrc.Data["Data:DefaultConnection:Provider"]);
-            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Data["Data:Inventory:ConnectionString"]);
-            Assert.Equal("MySql", xmlConfigSrc.Data["Data:Inventory:Provider"]);
+            Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
+            Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
+            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Get("Data:Inventory:ConnectionString"));
+            Assert.Equal("MySql", xmlConfigSrc.Get("Data:Inventory:Provider"));
         }
 
         [Fact]
         public void SupportCDATAAsTextNode()
         {
-            var xml = 
+            var xml =
                 @"<settings>
                     <Data>
                         <Inventory>
@@ -199,14 +192,13 @@ namespace Microsoft.Framework.ConfigurationModel
 
             xmlConfigSrc.Load(StringToStream(xml));
 
-            Assert.Equal(1, xmlConfigSrc.Data.Count);
-            Assert.Equal("SpecialStringWith<>", xmlConfigSrc.Data["Data:Inventory:Provider"]);
+            Assert.Equal("SpecialStringWith<>", xmlConfigSrc.Get("Data:Inventory:Provider"));
         }
 
         [Fact]
         public void SupportAndIgnoreComments()
         {
-            var xml = 
+            var xml =
                 @"<!-- Comments --> <settings>
                     <Data> <!-- Comments -->
                         <DefaultConnection>
@@ -223,11 +215,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
             xmlConfigSrc.Load(StringToStream(xml));
 
-            Assert.Equal(4, xmlConfigSrc.Data.Count);
-            Assert.Equal("TestConnectionString", xmlConfigSrc.Data["Data:DefaultConnection:ConnectionString"]);
-            Assert.Equal("SqlClient", xmlConfigSrc.Data["Data:DefaultConnection:Provider"]);
-            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Data["Data:Inventory:ConnectionString"]);
-            Assert.Equal("MySql", xmlConfigSrc.Data["Data:Inventory:Provider"]);
+            Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
+            Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
+            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Get("Data:Inventory:ConnectionString"));
+            Assert.Equal("MySql", xmlConfigSrc.Get("Data:Inventory:Provider"));
         }
 
         [Fact]
@@ -251,11 +242,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
             xmlConfigSrc.Load(StringToStream(xml));
 
-            Assert.Equal(4, xmlConfigSrc.Data.Count);
-            Assert.Equal("TestConnectionString", xmlConfigSrc.Data["Data:DefaultConnection:ConnectionString"]);
-            Assert.Equal("SqlClient", xmlConfigSrc.Data["Data:DefaultConnection:Provider"]);
-            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Data["Data:Inventory:ConnectionString"]);
-            Assert.Equal("MySql", xmlConfigSrc.Data["Data:Inventory:Provider"]);
+            Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
+            Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
+            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Get("Data:Inventory:ConnectionString"));
+            Assert.Equal("MySql", xmlConfigSrc.Get("Data:Inventory:Provider"));
         }
 
         [Fact]
@@ -281,11 +271,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
             xmlConfigSrc.Load(StringToStream(xml));
 
-            Assert.Equal(4, xmlConfigSrc.Data.Count);
-            Assert.Equal("TestConnectionString", xmlConfigSrc.Data["Data:DefaultConnection:ConnectionString"]);
-            Assert.Equal("SqlClient", xmlConfigSrc.Data["Data:DefaultConnection:Provider"]);
-            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Data["Data:Inventory:ConnectionString"]);
-            Assert.Equal("MySql", xmlConfigSrc.Data["Data:Inventory:Provider"]);
+            Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
+            Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
+            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Get("Data:Inventory:ConnectionString"));
+            Assert.Equal("MySql", xmlConfigSrc.Get("Data:Inventory:Provider"));
         }
 
         [Fact]
@@ -366,7 +355,7 @@ namespace Microsoft.Framework.ConfigurationModel
         [Fact]
         public void ThrowExceptionWhenKeyIsDuplicated()
         {
-            var xml = 
+            var xml =
                 @"<settings>
                     <Data>
                         <DefaultConnection>
@@ -617,8 +606,8 @@ namespace Microsoft.Framework.ConfigurationModel
 </settings>";
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
             var outputCacheStream = new MemoryStream();
-            xmlConfigSrc.Data["Key1:Key2:Key3"] = "Value1";
-            xmlConfigSrc.Data["Key4"] = "Value2";
+            xmlConfigSrc.Set("Key1:Key2:Key3", "Value1");
+            xmlConfigSrc.Set("Key4", "Value2");
 
             xmlConfigSrc.GenerateNewConfig(outputCacheStream);
 

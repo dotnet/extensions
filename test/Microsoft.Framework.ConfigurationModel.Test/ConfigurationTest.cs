@@ -48,7 +48,6 @@ namespace Microsoft.Framework.ConfigurationModel
             memRet3 = config.TryGet("MEM3:KEYINMEM3", out memVal3);
 
             // Assert
-            Assert.Equal(3, CountAllEntries(config));
             Assert.Contains(memConfigSrc1, config);
             Assert.Contains(memConfigSrc2, config);
             Assert.Contains(memConfigSrc3, config);
@@ -94,7 +93,6 @@ namespace Microsoft.Framework.ConfigurationModel
             config.AddLoadedSource(memConfigSrc2);
 
             // Assert
-            Assert.Equal(2, CountAllEntries(config));
             Assert.Equal("ValueInMem2", config.Get("Key1:Key2"));
         }
 
@@ -121,15 +119,14 @@ namespace Microsoft.Framework.ConfigurationModel
             config["Key2"] = "NewValue2";
 
             // Assert
-            Assert.Equal(6, CountAllEntries(config));
             Assert.Equal("NewValue1", config.Get("Key1"));
-            Assert.Equal("NewValue1", memConfigSrc1.Data["Key1"]);
-            Assert.Equal("NewValue1", memConfigSrc2.Data["Key1"]);
-            Assert.Equal("NewValue1", memConfigSrc3.Data["Key1"]);
+            Assert.Equal("NewValue1", memConfigSrc1.Get("Key1"));
+            Assert.Equal("NewValue1", memConfigSrc2.Get("Key1"));
+            Assert.Equal("NewValue1", memConfigSrc3.Get("Key1"));
             Assert.Equal("NewValue2", config["Key2"]);
-            Assert.Equal("NewValue2", memConfigSrc1.Data["Key2"]);
-            Assert.Equal("NewValue2", memConfigSrc2.Data["Key2"]);
-            Assert.Equal("NewValue2", memConfigSrc3.Data["Key2"]);
+            Assert.Equal("NewValue2", memConfigSrc1.Get("Key2"));
+            Assert.Equal("NewValue2", memConfigSrc2.Get("Key2"));
+            Assert.Equal("NewValue2", memConfigSrc3.Get("Key2"));
         }
 
         [Fact]
@@ -317,7 +314,6 @@ namespace Microsoft.Framework.ConfigurationModel
             var config = new Configuration();
 
             var exception = Assert.Throws<InvalidOperationException>(() => config.Commit());
-            Assert.Equal(0, CountAllEntries(config));
             Assert.Equal(Resources.Error_NoCommitableSource, exception.Message);
         }
 
@@ -333,13 +329,7 @@ namespace Microsoft.Framework.ConfigurationModel
             config.Add(memConfigSrc);
 
             var exception = Assert.Throws<InvalidOperationException>(() => config.Commit());
-            Assert.Equal(1, CountAllEntries(config));
             Assert.Equal(Resources.Error_NoCommitableSource, exception.Message);
-        }
-
-        private static int CountAllEntries(Configuration config)
-        {
-            return config.Aggregate(0, (acc, src) => acc + (src as BaseConfigurationSource).Data.Count);
         }
     }
 }

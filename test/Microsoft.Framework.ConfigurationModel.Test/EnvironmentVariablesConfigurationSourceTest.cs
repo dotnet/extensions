@@ -23,11 +23,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
             envConfigSrc.Load(dict);
 
-            Assert.Equal(4, envConfigSrc.Data.Count);
-            Assert.Equal("TestConnectionString", envConfigSrc.Data["defaultconnection:ConnectionString"]);
-            Assert.Equal("SqlClient", envConfigSrc.Data["DEFAULTCONNECTION:PROVIDER"]);
-            Assert.Equal("AnotherTestConnectionString", envConfigSrc.Data["Inventory:CONNECTIONSTRING"]);
-            Assert.Equal("MySql", envConfigSrc.Data["Inventory:Provider"]);
+            Assert.Equal("TestConnectionString", envConfigSrc.Get("defaultconnection:ConnectionString"));
+            Assert.Equal("SqlClient", envConfigSrc.Get("DEFAULTCONNECTION:PROVIDER"));
+            Assert.Equal("AnotherTestConnectionString", envConfigSrc.Get("Inventory:CONNECTIONSTRING"));
+            Assert.Equal("MySql", envConfigSrc.Get("Inventory:Provider"));
         }
 
         [Fact]
@@ -44,9 +43,8 @@ namespace Microsoft.Framework.ConfigurationModel
 
             envConfigSrc.Load(dict);
 
-            Assert.Equal(2, envConfigSrc.Data.Count);
-            Assert.Equal("TestConnectionString", envConfigSrc.Data["ConnectionString"]);
-            Assert.Equal("SqlClient", envConfigSrc.Data["Provider"]);
+            Assert.Equal("TestConnectionString", envConfigSrc.Get("ConnectionString"));
+            Assert.Equal("SqlClient", envConfigSrc.Get("Provider"));
         }
 
         [Fact]
@@ -65,17 +63,17 @@ namespace Microsoft.Framework.ConfigurationModel
 
             envConfigSrc.Load(dict);
 
-            Assert.Equal(9, envConfigSrc.Data.Count);
-            Assert.Equal("TestAppName", envConfigSrc.Data["APPSETTING_AppName"]);
-            Assert.False(envConfigSrc.Data.ContainsKey("AppName"));
-            Assert.Equal("CustomConnStr", envConfigSrc.Data["Data:db1:ConnectionString"]);
-            Assert.Equal("SQLConnStr", envConfigSrc.Data["Data:db2:ConnectionString"]);
-            Assert.Equal("System.Data.SqlClient", envConfigSrc.Data["Data:db2:ProviderName"]);
-            Assert.Equal("MySQLConnStr", envConfigSrc.Data["Data:db3:ConnectionString"]);
-            Assert.Equal("MySql.Data.MySqlClient", envConfigSrc.Data["Data:db3:ProviderName"]);
-            Assert.Equal("SQLAzureConnStr", envConfigSrc.Data["Data:db4:ConnectionString"]);
-            Assert.Equal("System.Data.SqlClient", envConfigSrc.Data["Data:db4:ProviderName"]);
-            Assert.Equal("CommonEnvValue", envConfigSrc.Data["CommonEnv"]);
+            string value;
+            Assert.Equal("TestAppName", envConfigSrc.Get("APPSETTING_AppName"));
+            Assert.False(envConfigSrc.TryGet("AppName", out value));
+            Assert.Equal("CustomConnStr", envConfigSrc.Get("Data:db1:ConnectionString"));
+            Assert.Equal("SQLConnStr", envConfigSrc.Get("Data:db2:ConnectionString"));
+            Assert.Equal("System.Data.SqlClient", envConfigSrc.Get("Data:db2:ProviderName"));
+            Assert.Equal("MySQLConnStr", envConfigSrc.Get("Data:db3:ConnectionString"));
+            Assert.Equal("MySql.Data.MySqlClient", envConfigSrc.Get("Data:db3:ProviderName"));
+            Assert.Equal("SQLAzureConnStr", envConfigSrc.Get("Data:db4:ConnectionString"));
+            Assert.Equal("System.Data.SqlClient", envConfigSrc.Get("Data:db4:ProviderName"));
+            Assert.Equal("CommonEnvValue", envConfigSrc.Get("CommonEnv"));
         }
 
         [Fact]
@@ -93,14 +91,13 @@ namespace Microsoft.Framework.ConfigurationModel
 
             envConfigSrc.Load(dict);
 
-            Assert.Equal(7, envConfigSrc.Data.Count);
-            Assert.Equal("CustomConnStr", envConfigSrc.Data["db1:ConnectionString"]);
-            Assert.Equal("SQLConnStr", envConfigSrc.Data["db2:ConnectionString"]);
-            Assert.Equal("System.Data.SqlClient", envConfigSrc.Data["db2:ProviderName"]);
-            Assert.Equal("MySQLConnStr", envConfigSrc.Data["db3:ConnectionString"]);
-            Assert.Equal("MySql.Data.MySqlClient", envConfigSrc.Data["db3:ProviderName"]);
-            Assert.Equal("SQLAzureConnStr", envConfigSrc.Data["db4:ConnectionString"]);
-            Assert.Equal("System.Data.SqlClient", envConfigSrc.Data["db4:ProviderName"]);
+            Assert.Equal("CustomConnStr", envConfigSrc.Get("db1:ConnectionString"));
+            Assert.Equal("SQLConnStr", envConfigSrc.Get("db2:ConnectionString"));
+            Assert.Equal("System.Data.SqlClient", envConfigSrc.Get("db2:ProviderName"));
+            Assert.Equal("MySQLConnStr", envConfigSrc.Get("db3:ConnectionString"));
+            Assert.Equal("MySql.Data.MySqlClient", envConfigSrc.Get("db3:ProviderName"));
+            Assert.Equal("SQLAzureConnStr", envConfigSrc.Get("db4:ConnectionString"));
+            Assert.Equal("System.Data.SqlClient", envConfigSrc.Get("db4:ProviderName"));
         }
 
         [Fact]
@@ -117,17 +114,6 @@ namespace Microsoft.Framework.ConfigurationModel
             var exception = Assert.Throws<ArgumentException>(() => envConfigSrc.Load(dict));
 
             Assert.Equal(expectedMsg, exception.Message);
-        }
-
-        [Fact]
-        public void HandleEmptyEnvironmentDictionaryProperly()
-        {
-            var dict = new Hashtable();
-            var envConfigSrc = new EnvironmentVariablesConfigurationSource();
-
-            envConfigSrc.Load(dict);
-
-            Assert.Equal(0, envConfigSrc.Data.Count);
         }
     }
 }

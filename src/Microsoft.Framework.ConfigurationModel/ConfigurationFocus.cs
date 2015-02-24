@@ -8,9 +8,9 @@ namespace Microsoft.Framework.ConfigurationModel
     public class ConfigurationFocus : IConfiguration
     {
         private readonly string _prefix;
-        private readonly Configuration _root;
+        private readonly IConfiguration _root;
 
-        public ConfigurationFocus(Configuration root, string prefix)
+        public ConfigurationFocus(IConfiguration root, string prefix)
         {
             _prefix = prefix;
             _root = root;
