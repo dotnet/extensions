@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-    public static class IConfigurationSourceExtensions
+    public static class ConfigurationSourceExtensions
     {
         public static string Get(this IConfigurationSource configSource,string key)
         {

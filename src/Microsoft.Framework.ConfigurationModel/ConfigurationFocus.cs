@@ -68,11 +68,6 @@ namespace Microsoft.Framework.ConfigurationModel
             _root.Reload();
         }
 
-        public void Commit()
-        {
-            _root.Commit();
-        }
-
         public IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys()
         {
             return _root.GetSubKeys(_prefix.Substring(0, _prefix.Length - 1));

@@ -307,29 +307,5 @@ namespace Microsoft.Framework.ConfigurationModel
 
             Assert.Equal(3, srcCount);
         }
-
-        [Fact]
-        public void CommitOnEmptyConfigurationThrows()
-        {
-            var config = new Configuration();
-
-            var exception = Assert.Throws<InvalidOperationException>(() => config.Commit());
-            Assert.Equal(Resources.Error_NoCommitableSource, exception.Message);
-        }
-
-        [Fact]
-        public void CommitOnConfigurationWithZeroCommitableSourceThrows()
-        {
-            var dict = new Dictionary<string, string>()
-                {
-                    {"Mem:KeyInMem", "MemVal"}
-                };
-            var memConfigSrc = new MemoryConfigurationSource(dict);
-            var config = new Configuration();
-            config.Add(memConfigSrc);
-
-            var exception = Assert.Throws<InvalidOperationException>(() => config.Commit());
-            Assert.Equal(Resources.Error_NoCommitableSource, exception.Message);
-        }
     }
 }

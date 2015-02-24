@@ -176,28 +176,6 @@ CommonKey3:CommonKey4=IniValue6";
             Assert.Equal("XmlValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
         }
 
-        [Fact]
-        public void CanCommitChangeBackToLastConfigFile()
-        {
-            // Arrange
-            var config = new Configuration();
-            config.AddIniFile(_iniConfigFilePath);
-            config.AddJsonFile(_jsonConfigFilePath);
-            config.AddXmlFile(_xmlConfigFilePath);
-            config.Set("CommonKey1:CommonKey2:CommonKey3:CommonKey4", "NewValue");
-
-            // Act
-            config.Commit();
-
-            // Assert
-            Assert.Equal(_iniConfigFileContent, File.ReadAllText(_iniConfigFilePath));
-
-            Assert.Equal(_jsonConfigFileContent, File.ReadAllText(_jsonConfigFilePath));
-
-            var updatedXmlContent = _xmlConfigFileContent.Replace("XmlValue6", "NewValue");
-            Assert.Equal(updatedXmlContent, File.ReadAllText(_xmlConfigFilePath));
-        }
-
         public void Dispose()
         {
             File.Delete(_iniConfigFilePath);

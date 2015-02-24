@@ -11,8 +11,7 @@ namespace Microsoft.Framework.ConfigurationModel
     public class Configuration : IConfiguration, IConfigurationSourceContainer
     {
         private readonly IList<IConfigurationSource> _sources = new List<IConfigurationSource>();
-        private readonly IList<ICommitableConfigurationSource> _committableSources = new List<ICommitableConfigurationSource>();
-
+      
         public Configuration()
         {
         }
@@ -75,16 +74,6 @@ namespace Microsoft.Framework.ConfigurationModel
             }
         }
 
-        public void Commit()
-        {
-            var final = _committableSources.LastOrDefault();
-            if (final == null)
-            {
-                throw new InvalidOperationException(Resources.Error_NoCommitableSource);
-            }
-            final.Commit();
-        }
-
         public IConfiguration GetSubKey(string key)
         {
             return new ConfigurationFocus(this, key + Constants.KeyDelimiter);
@@ -129,11 +118,6 @@ namespace Microsoft.Framework.ConfigurationModel
         internal IConfigurationSourceContainer AddLoadedSource(IConfigurationSource configurationSource)
         {
             _sources.Add(configurationSource);
-
-            if (configurationSource is ICommitableConfigurationSource)
-            {
-                _committableSources.Add(configurationSource as ICommitableConfigurationSource);
-            }
             return this;
         }
 

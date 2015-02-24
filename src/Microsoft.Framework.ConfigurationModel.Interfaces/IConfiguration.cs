@@ -27,7 +27,5 @@ namespace Microsoft.Framework.ConfigurationModel
         void Reload();
 
         void Set(string key, string value);
-
-        void Commit();
     }
 }
