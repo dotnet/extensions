@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-namespace Microsoft.Framework.Logging
+namespace Microsoft.Framework.Logging.Internal
 {
     /// <summary>
     /// Formatter to convert the named format items like {NamedformatItem} to <see cref="string.Format"/> format.

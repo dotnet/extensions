@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Microsoft.Framework.Logging.Internal;
 
 namespace Microsoft.Framework.Logging
 {
