@@ -23,7 +23,7 @@ namespace SampleApp
             var factory = new LoggerFactory();
 
             // getting the logger immediately using the class's name is conventional
-            _logger = factory.Create(typeof(Program).FullName);
+            _logger = factory.CreateLogger(typeof(Program).FullName);
 
             // providers may be added to an ILoggerFactory at any time, existing ILoggers are updated
 #if !ASPNETCORE50
@@ -56,9 +56,9 @@ namespace SampleApp
             catch (Exception ex)
             {
                 _logger.WriteCritical("Unexpected critical error starting application", ex);
-                _logger.Write(LogLevel.Critical, 0, "Unexpected critical error", ex, null);
+                _logger.Log(LogLevel.Critical, 0, "Unexpected critical error", ex, null);
                 // This write should not log anything
-                _logger.Write(LogLevel.Critical, 0, null, null, null);
+                _logger.Log(LogLevel.Critical, 0, null, null, null);
                 _logger.WriteError("Unexpected error", ex);
                 _logger.WriteWarning("Unexpected warning", ex);
             }

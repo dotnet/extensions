@@ -28,7 +28,7 @@ namespace Microsoft.Framework.Logging.Test
             var sink = new SerilogSink();
             serilog.WriteTo.Sink(sink);
             var provider = new SerilogLoggerProvider(serilog);
-            var logger = (SerilogLogger)provider.Create(_name);
+            var logger = (SerilogLogger)provider.CreateLogger(_name);
 
             return new Tuple<SerilogLogger, SerilogSink>(logger, sink);
         }
@@ -61,7 +61,7 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(LogLevel.Information, 0, _state, null, null);
+            logger.Log(LogLevel.Information, 0, _state, null, null);
 
             // Assert
             Assert.Single(sink.Writes);
@@ -76,11 +76,11 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(LogLevel.Verbose, 0, _state, null, null);
-            logger.Write(LogLevel.Information, 0, _state, null, null);
-            logger.Write(LogLevel.Warning, 0, _state, null, null);
-            logger.Write(LogLevel.Error, 0, _state, null, null);
-            logger.Write(LogLevel.Critical, 0, _state, null, null);
+            logger.Log(LogLevel.Verbose, 0, _state, null, null);
+            logger.Log(LogLevel.Information, 0, _state, null, null);
+            logger.Log(LogLevel.Warning, 0, _state, null, null);
+            logger.Log(LogLevel.Error, 0, _state, null, null);
+            logger.Log(LogLevel.Critical, 0, _state, null, null);
 
             // Assert
             Assert.Equal(5, sink.Writes.Count);
@@ -125,7 +125,7 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(logLevel, 0, _state, null, null);
+            logger.Log(logLevel, 0, _state, null, null);
 
             // Assert
             Assert.Equal(expected, sink.Writes.Count);
@@ -143,10 +143,10 @@ namespace Microsoft.Framework.Logging.Test
             var exception = new Exception();
 
             // Act
-            logger.Write(LogLevel.Information, 0, null, null, null);
-            logger.Write(LogLevel.Information, 0, _state, null, null);
-            logger.Write(LogLevel.Information, 0, _state, exception, null);
-            logger.Write(LogLevel.Information, 0, _state, exception, TheMessageAndError);
+            logger.Log(LogLevel.Information, 0, null, null, null);
+            logger.Log(LogLevel.Information, 0, _state, null, null);
+            logger.Log(LogLevel.Information, 0, _state, exception, null);
+            logger.Log(LogLevel.Information, 0, _state, exception, TheMessageAndError);
 
             // Assert
             Assert.Equal(3, sink.Writes.Count);
@@ -166,7 +166,7 @@ namespace Microsoft.Framework.Logging.Test
             // Act
             using (logger.BeginScope(new FoodScope("pizza")))
             {
-                logger.Write(LogLevel.Information, 0, _state, null, null);
+                logger.Log(LogLevel.Information, 0, _state, null, null);
             }
 
             // Assert
@@ -188,7 +188,7 @@ namespace Microsoft.Framework.Logging.Test
             {
                 using(logger.BeginScope(new FoodScope("bacon")))
                 {
-                    logger.Write(LogLevel.Information, 0, _state, null, null);
+                    logger.Log(LogLevel.Information, 0, _state, null, null);
                 }
             }
 
@@ -212,7 +212,7 @@ namespace Microsoft.Framework.Logging.Test
             {
                 using (logger.BeginScope(new LuckyScope(7)))
                 {
-                    logger.Write(LogLevel.Information, 0, _state, null, null);
+                    logger.Log(LogLevel.Information, 0, _state, null, null);
                 }
             }
 
@@ -224,7 +224,7 @@ namespace Microsoft.Framework.Logging.Test
             Assert.Equal("7", sink.Writes[0].Properties["LuckyNumber"].ToString());
         }
 
-        private class FoodScope : LoggerStructureBase
+        private class FoodScope : LogValuesBase
         {
             private string _name;
 
@@ -241,7 +241,7 @@ namespace Microsoft.Framework.Logging.Test
             }
         }
 
-        private class LuckyScope : LoggerStructureBase
+        private class LuckyScope : LogValuesBase
         {
             private int _luckyNumber;
 

@@ -14,7 +14,7 @@ namespace Microsoft.Framework.Logging.Console
             _filter = filter;
         }
 
-        public ILogger Create(string name)
+        public ILogger CreateLogger(string name)
         {
             return new ConsoleLogger(name, _filter);
         }

@@ -22,7 +22,7 @@ namespace Microsoft.Framework.Logging
                 throw new ArgumentNullException("factory");
             }
 
-            return factory.Create(typeof(T).FullName);
+            return factory.CreateLogger(typeof(T).FullName);
         }
     }
 }

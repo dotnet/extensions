@@ -13,6 +13,6 @@ namespace Microsoft.Framework.Logging
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        ILogger Create(string name);
+        ILogger CreateLogger(string name);
     }
 }

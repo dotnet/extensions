@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.Framework.Logging.Console
+namespace Microsoft.Framework.Logging.Console.Internal
 {
     public interface IConsole
     {

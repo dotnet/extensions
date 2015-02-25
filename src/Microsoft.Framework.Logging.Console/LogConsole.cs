@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Microsoft.Framework.Logging.Console.Internal;
 
 namespace Microsoft.Framework.Logging.Console
 {

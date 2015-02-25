@@ -34,7 +34,7 @@ namespace Microsoft.Framework.Logging.Test
             return null;
         }
 
-        public void Write(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
             _sink.Write(new WriteContext()
             {

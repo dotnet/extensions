@@ -2,13 +2,8 @@
 
 namespace Microsoft.Framework.Logging
 {
-    public interface ILoggerStructure
+    public interface ILogValues
     {
-        /// <summary>
-        /// A brief message to give context for the structure being logged.
-        /// </summary>
-        string Message { get; }
-
         /// <summary>
         /// Returns an enumerable of key value pairs mapping the name of the structured data to the data.
         /// </summary>

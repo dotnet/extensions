@@ -15,8 +15,8 @@ namespace Microsoft.Framework.Logging
         private static readonly Func<object, Exception, string> TheMessage = (message, error) => (string)message;
         private static readonly Func<object, Exception, string> TheMessageAndError = (message, error)
             => string.Format(CultureInfo.CurrentCulture, "{0}{1}{2}", message, Environment.NewLine, error);
-        private static readonly Func<object, Exception, string> _loggerStructureFormatter = (state, error)
-            => LoggerStructureFormatter((ILoggerStructure)state, error);
+        private static readonly Func<object, Exception, string> _logValuesFormatter = (state, error)
+            => LogValuesFormatter((ILogValues)state, error);
 
         //------------------------------------------DEBUG------------------------------------------//
 
@@ -28,7 +28,7 @@ namespace Microsoft.Framework.Logging
         // FYI, this field is called data because naming it message triggers CA1303 and CA2204 for callers.
         public static void WriteDebug([NotNull] this ILogger logger, string data)
         {
-            logger.Write(LogLevel.Debug, 0, data, null, TheMessage);
+            logger.Log(LogLevel.Debug, 0, data, null, TheMessage);
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="data">The message to log.</param>
         public static void WriteDebug([NotNull] this ILogger logger, int eventId, string data)
         {
-            logger.Write(LogLevel.Debug, eventId, data, null, TheMessage);
+            logger.Log(LogLevel.Debug, eventId, data, null, TheMessage);
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteDebug([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Write(LogLevel.Debug, 0, new LoggerStructureFormat(format, args), null, _loggerStructureFormatter);
+            logger.Log(LogLevel.Debug, 0, new LogValuesFormat(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -62,34 +62,34 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteDebug([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Write(LogLevel.Debug, eventId, new LoggerStructureFormat(format, args), null, _loggerStructureFormatter);
+            logger.Log(LogLevel.Debug, eventId, new LogValuesFormat(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
-        /// Formats the given <see cref="ILoggerStructure"/> and writes a debug log message.
+        /// Formats the given <see cref="ILogValues"/> and writes a debug log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
-        /// <param name="state">The <see cref="ILoggerStructure"/> to write.</param>
+        /// <param name="state">The <see cref="ILogValues"/> to write.</param>
         /// <param name="error">The exception to log.</param>
         public static void WriteDebug(
             [NotNull] this ILogger logger,
-            ILoggerStructure state,
+            ILogValues state,
             Exception error = null)
         {
-            logger.Write(LogLevel.Debug, state, error);
+            logger.Log(LogLevel.Debug, state, error);
         }
 
         /// <summary>
-        /// Formats the given <see cref="ILoggerStructure"/> and writes a debug log message.
+        /// Formats the given <see cref="ILogValues"/> and writes a debug log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="eventId">The event id associated with the log.</param>
-        /// <param name="state">The <see cref="ILoggerStructure"/> to write.</param>
+        /// <param name="state">The <see cref="ILogValues"/> to write.</param>
         /// <param name="error">The exception to log.</param>
         public static void WriteDebug(
             [NotNull] this ILogger logger,
             int eventId,
-            ILoggerStructure state,
+            ILogValues state,
             Exception error = null)
         {
             logger.WriteWithEvent(LogLevel.Debug, eventId, state, error);
@@ -105,7 +105,7 @@ namespace Microsoft.Framework.Logging
         // FYI, this field is called data because naming it message triggers CA1303 and CA2204 for callers.
         public static void WriteVerbose([NotNull] this ILogger logger, string data)
         {
-            logger.Write(LogLevel.Verbose, 0, data, null, TheMessage);
+            logger.Log(LogLevel.Verbose, 0, data, null, TheMessage);
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="data">The message to log.</param>
         public static void WriteVerbose([NotNull] this ILogger logger, int eventId, string data)
         {
-            logger.Write(LogLevel.Verbose, eventId, data, null, TheMessage);
+            logger.Log(LogLevel.Verbose, eventId, data, null, TheMessage);
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteVerbose([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Write(LogLevel.Verbose, 0, new LoggerStructureFormat(format, args), null, _loggerStructureFormatter);
+            logger.Log(LogLevel.Verbose, 0, new LogValuesFormat(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -139,34 +139,34 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteVerbose([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Write(LogLevel.Verbose, eventId, new LoggerStructureFormat(format, args), null, _loggerStructureFormatter);
+            logger.Log(LogLevel.Verbose, eventId, new LogValuesFormat(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
-        /// Formats the given <see cref="ILoggerStructure"/> and writes a verbose log message.
+        /// Formats the given <see cref="ILogValues"/> and writes a verbose log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
-        /// <param name="state">The <see cref="ILoggerStructure"/> to write.</param>
+        /// <param name="state">The <see cref="ILogValues"/> to write.</param>
         /// <param name="error">The exception to log.</param>
         public static void WriteVerbose(
             [NotNull] this ILogger logger,
-            ILoggerStructure state,
+            ILogValues state,
             Exception error = null)
         {
-            logger.Write(LogLevel.Verbose, state, error);
+            logger.Log(LogLevel.Verbose, state, error);
         }
 
         /// <summary>
-        /// Formats the given <see cref="ILoggerStructure"/> and writes a verbose log message.
+        /// Formats the given <see cref="ILogValues"/> and writes a verbose log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="eventId">The event id associated with the log.</param>
-        /// <param name="state">The <see cref="ILoggerStructure"/> to write.</param>
+        /// <param name="state">The <see cref="ILogValues"/> to write.</param>
         /// <param name="error">The exception to log.</param>
         public static void WriteVerbose(
             [NotNull] this ILogger logger,
             int eventId,
-            ILoggerStructure state,
+            ILogValues state,
             Exception error = null)
         {
             logger.WriteWithEvent(LogLevel.Verbose, eventId, state, error);
@@ -181,7 +181,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="message">The message to log.</param>
         public static void WriteInformation([NotNull] this ILogger logger, string message)
         {
-            logger.Write(LogLevel.Information, 0, message, null, TheMessage);
+            logger.Log(LogLevel.Information, 0, message, null, TheMessage);
         }
 
         /// <summary>
@@ -192,7 +192,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="message">The message to log.</param>
         public static void WriteInformation([NotNull] this ILogger logger, int eventId, string message)
         {
-            logger.Write(LogLevel.Information, eventId, message, null, TheMessage);
+            logger.Log(LogLevel.Information, eventId, message, null, TheMessage);
         }
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteInformation([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Write(LogLevel.Information, 0, new LoggerStructureFormat(format, args), null, _loggerStructureFormatter);
+            logger.Log(LogLevel.Information, 0, new LogValuesFormat(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -215,34 +215,34 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteInformation([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Write(LogLevel.Information, eventId, new LoggerStructureFormat(format, args), null, _loggerStructureFormatter);
+            logger.Log(LogLevel.Information, eventId, new LogValuesFormat(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
-        /// Formats the given <see cref="ILoggerStructure"/> and writes an informational log message.
+        /// Formats the given <see cref="ILogValues"/> and writes an informational log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
-        /// <param name="state">The <see cref="ILoggerStructure"/> to write.</param>
+        /// <param name="state">The <see cref="ILogValues"/> to write.</param>
         /// <param name="error">The exception to log.</param>
         public static void WriteInformation(
             [NotNull] this ILogger logger,
-            ILoggerStructure state,
+            ILogValues state,
             Exception error = null)
         {
-            logger.Write(LogLevel.Information, state, error);
+            logger.Log(LogLevel.Information, state, error);
         }
 
         /// <summary>
-        /// Formats the given <see cref="ILoggerStructure"/> and writes an informational log message.
+        /// Formats the given <see cref="ILogValues"/> and writes an informational log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="eventId">The event id associated with the log.</param>
-        /// <param name="state">The <see cref="ILoggerStructure"/> to write.</param>
+        /// <param name="state">The <see cref="ILogValues"/> to write.</param>
         /// <param name="error">The exception to log.</param>
         public static void WriteInformation(
             [NotNull] this ILogger logger,
             int eventId,
-            ILoggerStructure state,
+            ILogValues state,
             Exception error = null)
         {
             logger.WriteWithEvent(LogLevel.Information, eventId, state, error);
@@ -257,7 +257,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="message">The message to log.</param>
         public static void WriteWarning([NotNull] this ILogger logger, string message)
         {
-            logger.Write(LogLevel.Warning, 0, message, null, TheMessage);
+            logger.Log(LogLevel.Warning, 0, message, null, TheMessage);
         }
 
         /// <summary>
@@ -268,7 +268,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="message">The message to log.</param>
         public static void WriteWarning([NotNull] this ILogger logger, int eventId, string message)
         {
-            logger.Write(LogLevel.Warning, eventId, message, null, TheMessage);
+            logger.Log(LogLevel.Warning, eventId, message, null, TheMessage);
         }
 
         /// <summary>
@@ -279,7 +279,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteWarning([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Write(LogLevel.Warning, 0, new LoggerStructureFormat(format, args), null, _loggerStructureFormatter);
+            logger.Log(LogLevel.Warning, 0, new LogValuesFormat(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -291,7 +291,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteWarning([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Write(LogLevel.Warning, eventId, new LoggerStructureFormat(format, args), null, _loggerStructureFormatter);
+            logger.Log(LogLevel.Warning, eventId, new LogValuesFormat(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -302,7 +302,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="error">The exception to log.</param>
         public static void WriteWarning([NotNull] this ILogger logger, string message, Exception error)
         {
-            logger.Write(LogLevel.Warning, 0, message, error, TheMessageAndError);
+            logger.Log(LogLevel.Warning, 0, message, error, TheMessageAndError);
         }
 
         /// <summary>
@@ -314,34 +314,34 @@ namespace Microsoft.Framework.Logging
         /// <param name="error">The exception to log.</param>
         public static void WriteWarning([NotNull] this ILogger logger, int eventId, string message, Exception error)
         {
-            logger.Write(LogLevel.Warning, eventId, message, error, TheMessageAndError);
+            logger.Log(LogLevel.Warning, eventId, message, error, TheMessageAndError);
         }
 
         /// <summary>
-        /// Formats the given <see cref="ILoggerStructure"/> and writes a warning log message.
+        /// Formats the given <see cref="ILogValues"/> and writes a warning log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
-        /// <param name="state">The <see cref="ILoggerStructure"/> to write.</param>
+        /// <param name="state">The <see cref="ILogValues"/> to write.</param>
         /// <param name="error">The exception to log.</param>
         public static void WriteWarning(
             [NotNull] this ILogger logger,
-            ILoggerStructure state,
+            ILogValues state,
             Exception error = null)
         {
-            logger.Write(LogLevel.Warning, state, error);
+            logger.Log(LogLevel.Warning, state, error);
         }
 
         /// <summary>
-        /// Formats the given <see cref="ILoggerStructure"/> and writes a warning log message.
+        /// Formats the given <see cref="ILogValues"/> and writes a warning log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="eventId">The event id associated with the log.</param>
-        /// <param name="state">The <see cref="ILoggerStructure"/> to write.</param>
+        /// <param name="state">The <see cref="ILogValues"/> to write.</param>
         /// <param name="error">The exception to log.</param>
         public static void WriteWarning(
             [NotNull] this ILogger logger,
             int eventId,
-            ILoggerStructure state,
+            ILogValues state,
             Exception error = null)
         {
             logger.WriteWithEvent(LogLevel.Warning, eventId, state, error);
@@ -356,7 +356,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="message">The message to log.</param>
         public static void WriteError([NotNull] this ILogger logger, string message)
         {
-            logger.Write(LogLevel.Error, 0, message, null, TheMessage);
+            logger.Log(LogLevel.Error, 0, message, null, TheMessage);
         }
 
         /// <summary>
@@ -367,7 +367,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="message">The message to log.</param>
         public static void WriteError([NotNull] this ILogger logger, int eventId, string message)
         {
-            logger.Write(LogLevel.Error, eventId, message, null, TheMessage);
+            logger.Log(LogLevel.Error, eventId, message, null, TheMessage);
         }
 
         /// <summary>
@@ -378,7 +378,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteError([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Write(LogLevel.Error, 0, new LoggerStructureFormat(format, args), null, _loggerStructureFormatter);
+            logger.Log(LogLevel.Error, 0, new LogValuesFormat(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -390,7 +390,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteError([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Write(LogLevel.Error, eventId, new LoggerStructureFormat(format, args), null, _loggerStructureFormatter);
+            logger.Log(LogLevel.Error, eventId, new LogValuesFormat(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -401,7 +401,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="error">The exception to log.</param>
         public static void WriteError([NotNull] this ILogger logger, string message, Exception error)
         {
-            logger.Write(LogLevel.Error, 0, message, error, TheMessageAndError);
+            logger.Log(LogLevel.Error, 0, message, error, TheMessageAndError);
         }
 
         /// <summary>
@@ -413,34 +413,34 @@ namespace Microsoft.Framework.Logging
         /// <param name="error">The exception to log.</param>
         public static void WriteError([NotNull] this ILogger logger, int eventId, string message, Exception error)
         {
-            logger.Write(LogLevel.Error, eventId, message, error, TheMessageAndError);
+            logger.Log(LogLevel.Error, eventId, message, error, TheMessageAndError);
         }
 
         /// <summary>
-        /// Formats the given <see cref="ILoggerStructure"/> and writes an error log message.
+        /// Formats the given <see cref="ILogValues"/> and writes an error log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
-        /// <param name="state">The <see cref="ILoggerStructure"/> to write.</param>
+        /// <param name="state">The <see cref="ILogValues"/> to write.</param>
         /// <param name="error">The exception to log.</param>
         public static void WriteError(
             [NotNull] this ILogger logger,
-            ILoggerStructure state,
+            ILogValues state,
             Exception error = null)
         {
-            logger.Write(LogLevel.Error, state, error);
+            logger.Log(LogLevel.Error, state, error);
         }
 
         /// <summary>
-        /// Formats the given <see cref="ILoggerStructure"/> and writes an error log message.
+        /// Formats the given <see cref="ILogValues"/> and writes an error log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="eventId">The event id associated with the log.</param>
-        /// <param name="state">The <see cref="ILoggerStructure"/> to write.</param>
+        /// <param name="state">The <see cref="ILogValues"/> to write.</param>
         /// <param name="error">The exception to log.</param>
         public static void WriteError(
             [NotNull] this ILogger logger,
             int eventId,
-            ILoggerStructure state,
+            ILogValues state,
             Exception error = null)
         {
             logger.WriteWithEvent(LogLevel.Error, eventId, state, error);
@@ -455,7 +455,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="message">The message to log.</param>
         public static void WriteCritical([NotNull] this ILogger logger, string message)
         {
-            logger.Write(LogLevel.Critical, 0, message, null, TheMessage);
+            logger.Log(LogLevel.Critical, 0, message, null, TheMessage);
         }
 
         /// <summary>
@@ -466,7 +466,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="message">The message to log.</param>
         public static void WriteCritical([NotNull] this ILogger logger, int eventId, string message)
         {
-            logger.Write(LogLevel.Critical, eventId, message, null, TheMessage);
+            logger.Log(LogLevel.Critical, eventId, message, null, TheMessage);
         }
 
         /// <summary>
@@ -477,7 +477,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteCritical([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Write(LogLevel.Critical, 0, new LoggerStructureFormat(format, args), null, _loggerStructureFormatter);
+            logger.Log(LogLevel.Critical, 0, new LogValuesFormat(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -489,7 +489,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteCritical([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Write(LogLevel.Critical, eventId, new LoggerStructureFormat(format, args), null, _loggerStructureFormatter);
+            logger.Log(LogLevel.Critical, eventId, new LogValuesFormat(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -500,7 +500,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="error">The exception to log.</param>
         public static void WriteCritical([NotNull] this ILogger logger, string message, Exception error)
         {
-            logger.Write(LogLevel.Critical, 0, message, error, TheMessageAndError);
+            logger.Log(LogLevel.Critical, 0, message, error, TheMessageAndError);
         }
 
         /// <summary>
@@ -512,34 +512,34 @@ namespace Microsoft.Framework.Logging
         /// <param name="error">The exception to log.</param>
         public static void WriteCritical([NotNull] this ILogger logger, int eventId, string message, Exception error)
         {
-            logger.Write(LogLevel.Critical, eventId, message, error, TheMessageAndError);
+            logger.Log(LogLevel.Critical, eventId, message, error, TheMessageAndError);
         }
 
         /// <summary>
-        /// Formats the given <see cref="ILoggerStructure"/> and writes a critical log message.
+        /// Formats the given <see cref="ILogValues"/> and writes a critical log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
-        /// <param name="state">The <see cref="ILoggerStructure"/> to write.</param>
+        /// <param name="state">The <see cref="ILogValues"/> to write.</param>
         /// <param name="error">The exception to log.</param>
         public static void WriteCritical(
             [NotNull] this ILogger logger,
-            ILoggerStructure state,
+            ILogValues state,
             Exception error = null)
         {
-            logger.Write(LogLevel.Critical, state, error);
+            logger.Log(LogLevel.Critical, state, error);
         }
 
         /// <summary>
-        /// Formats the given <see cref="ILoggerStructure"/> and writes a critical log message.
+        /// Formats the given <see cref="ILogValues"/> and writes a critical log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="eventId">The event id associated with the log.</param>
-        /// <param name="state">The <see cref="ILoggerStructure"/> to write.</param>
+        /// <param name="state">The <see cref="ILogValues"/> to write.</param>
         /// <param name="error">The exception to log.</param>
         public static void WriteCritical(
             [NotNull] this ILogger logger,
             int eventId,
-            ILoggerStructure state,
+            ILogValues state,
             Exception error = null)
         {
             logger.WriteWithEvent(LogLevel.Critical, eventId, state, error);
@@ -547,26 +547,26 @@ namespace Microsoft.Framework.Logging
 
         //------------------------------------------HELPERS------------------------------------------//
 
-        private static void Write(
+        private static void Log(
             this ILogger logger,
             LogLevel logLevel,
-            ILoggerStructure state,
+            ILogValues state,
             Exception exception = null)
         {
-            logger.Write(logLevel, 0, state, exception, _loggerStructureFormatter);
+            logger.Log(logLevel, 0, state, exception, _logValuesFormatter);
         }
 
         private static void WriteWithEvent(
             this ILogger logger,
             LogLevel logLevel,
             int eventId,
-            ILoggerStructure state,
+            ILogValues state,
             Exception exception = null)
         {
-            logger.Write(logLevel, eventId, state, exception, _loggerStructureFormatter);
+            logger.Log(logLevel, eventId, state, exception, _logValuesFormatter);
         }
 
-        private static string LoggerStructureFormatter(ILoggerStructure state, Exception exception)
+        private static string LogValuesFormatter(ILogValues state, Exception exception)
         {
             if (exception == null)
             {

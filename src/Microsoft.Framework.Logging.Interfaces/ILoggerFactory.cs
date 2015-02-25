@@ -16,9 +16,9 @@ namespace Microsoft.Framework.Logging
         /// <summary>
         /// Creates a new ILogger instance of the given name.
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="categoryName"></param>
         /// <returns></returns>
-        ILogger Create(string name);
+        ILogger CreateLogger(string categoryName);
 
         void AddProvider(ILoggerProvider provider);
     }

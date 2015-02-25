@@ -25,7 +25,7 @@ namespace Microsoft.Framework.Logging.Serilog
                 .CreateLogger();
         }
 
-        public ILogger Create(string name)
+        public ILogger CreateLogger(string name)
         {
             return new SerilogLogger(this, _logger, name);
         }
@@ -39,7 +39,7 @@ namespace Microsoft.Framework.Logging.Serilog
         {
             for (var scope = CurrentScope; scope != null; scope = scope.Parent)
             {
-                var stateStructure = scope.State as ILoggerStructure;
+                var stateStructure = scope.State as ILogValues;
                 if (stateStructure != null)
                 {
                     foreach (var keyValue in stateStructure.GetValues())

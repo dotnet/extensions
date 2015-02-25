@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Logging.Console;
+using Microsoft.Framework.Logging.Console.Internal;
 
 namespace Microsoft.Framework.Logging.Test.Console
 {

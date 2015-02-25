@@ -17,7 +17,7 @@ namespace Microsoft.Framework.Logging.Test
             testSwitch.Level = SourceLevels.Warning;
 
             var factory = new LoggerFactory();
-            var logger = factory.Create("Test");
+            var logger = factory.CreateLogger("Test");
 
             // Act
             factory.AddProvider(new DiagnosticsLoggerProvider(testSwitch, new ConsoleTraceListener()));
@@ -45,7 +45,7 @@ namespace Microsoft.Framework.Logging.Test
             secondSwitch.Level = second;
 
             var factory = new LoggerFactory();
-            var logger = factory.Create("Test");
+            var logger = factory.CreateLogger("Test");
 
             // Act
             factory.AddProvider(new DiagnosticsLoggerProvider(firstSwitch, new ConsoleTraceListener()));

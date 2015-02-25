@@ -3,10 +3,8 @@ using System.Reflection;
 
 namespace Microsoft.Framework.Logging
 {
-    public abstract class LoggerStructureBase : ILoggerStructure
+    public abstract class LogValuesBase : ILogValues
     {
-        public string Message { get; set; }
-
         public virtual IEnumerable<KeyValuePair<string, object>> GetValues()
         {
             var values = new List<KeyValuePair<string, object>>();

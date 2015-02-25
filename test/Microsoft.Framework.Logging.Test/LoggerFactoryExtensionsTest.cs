@@ -18,7 +18,7 @@ namespace Microsoft.Framework.Logging.Test
             var expected = typeof(TestType).FullName;
 
             var factory = new Mock<ILoggerFactory>();
-            factory.Setup(f => f.Create(
+            factory.Setup(f => f.CreateLogger(
                 It.IsAny<string>()))
             .Returns(new Mock<ILogger>().Object);
 
@@ -26,7 +26,7 @@ namespace Microsoft.Framework.Logging.Test
             factory.Object.Create<TestType>();
 
             // Assert
-            factory.Verify(f => f.Create(expected));
+            factory.Verify(f => f.CreateLogger(expected));
         }
 #endif
 

@@ -16,9 +16,9 @@ namespace Microsoft.Framework.Logging.Test
 
         public LogLevel MinimumLevel { get; set; } = LogLevel.Verbose;
 
-        public ILogger Create(string name)
+        public ILogger CreateLogger(string categoryName)
         {
-            return new TestLogger(name, _sink, _enabled);
+            return new TestLogger(categoryName, _sink, _enabled);
         }
 
         public void AddProvider(ILoggerProvider provider)

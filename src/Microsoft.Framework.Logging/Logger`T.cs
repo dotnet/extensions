@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Framework.Logging
 {
-	/// <summary>
+    /// <summary>
     /// Delegates to a new <see cref="ILogger"/> instance using the full name of the given type, created by the
     /// provided <see cref="ILoggerFactory"/>.
     /// </summary>
@@ -33,9 +33,9 @@ namespace Microsoft.Framework.Logging
             return _logger.IsEnabled(logLevel);
         }
 
-        void ILogger.Write(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        void ILogger.Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
-            _logger.Write(logLevel, eventId, state, exception, formatter);
+            _logger.Log(logLevel, eventId, state, exception, formatter);
         }
     }
 }

@@ -6,9 +6,10 @@ using System;
 namespace Microsoft.Framework.Logging
 {
     /// <summary>
-    /// A generic interface for logging where the category name is taken from the specified T.
+    /// A generic interface for logging where the category name is taken from the specified TCategoryName.
+    /// For enabling activation of named ILogger from DI.
     /// </summary>
-    public interface ILogger<T> : ILogger
+    public interface ILogger<TCategoryName> : ILogger
     {
         
     }

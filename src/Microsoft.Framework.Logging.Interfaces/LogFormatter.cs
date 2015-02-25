@@ -17,7 +17,7 @@ namespace Microsoft.Framework.Logging
         /// Formats a message from the given state and exception, in the form 
         /// "state
         /// exception".
-        /// If state is an <see cref="ILoggerStructure"/>, <see cref="LogFormatter.FormatLogValues(ILoggerStructure)"/> 
+        /// If state is an <see cref="ILogValues"/>, <see cref="LogFormatter.FormatLogValues(ILogValues)"/> 
         /// is used to format the message, otherwise the state's ToString() is used.
         /// </summary>
         public static string Formatter(object state, Exception e)
@@ -25,10 +25,10 @@ namespace Microsoft.Framework.Logging
             var result = string.Empty;
             if (state != null)
             {
-                var structure = state as ILoggerStructure;
-                if (structure != null)
+                var values = state as ILogValues;
+                if (values != null)
                 {
-                    result += FormatLogValues(structure);
+                    result += FormatLogValues(values);
                 }
                 else
                 {
@@ -44,25 +44,25 @@ namespace Microsoft.Framework.Logging
         }
 
         /// <summary>
-        /// Formats an <see cref="ILoggerStructure"/>.
+        /// Formats an <see cref="ILogValues"/>.
         /// </summary>
-        /// <param name="structure">The <see cref="ILoggerStructure"/> to format.</param>
-        /// <returns>A string representation of the given <see cref="ILoggerStructure"/>.</returns>
-        public static string FormatLogValues([NotNull] ILoggerStructure structure)
+        /// <param name="logValues">The <see cref="ILogValues"/> to format.</param>
+        /// <returns>A string representation of the given <see cref="ILogValues"/>.</returns>
+        public static string FormatLogValues([NotNull] ILogValues logValues)
         {
             var builder = new StringBuilder();
-            FormatLogValues(structure, builder);
+            FormatLogValues(logValues, builder);
             return builder.ToString();
         }
 
         /// <summary>
-        /// Formats an <see cref="ILoggerStructure"/>.
+        /// Formats an <see cref="ILogValues"/>.
         /// </summary>
-        /// <param name="structure">The <see cref="ILoggerStructure"/> to format.</param>
+        /// <param name="logValues">The <see cref="ILogValues"/> to format.</param>
         /// <param name="builder">The <see cref="StringBuilder"/> to append to.</param>
-        private static void FormatLogValues([NotNull] ILoggerStructure structure, [NotNull] StringBuilder builder)
+        private static void FormatLogValues([NotNull] ILogValues logValues, [NotNull] StringBuilder builder)
         {
-            var values = structure.GetValues();
+            var values = logValues.GetValues();
             if (values == null)
             {
                 return;
@@ -70,11 +70,11 @@ namespace Microsoft.Framework.Logging
             
             foreach (var kvp in values)
             {
-                IEnumerable<ILoggerStructure> structureEnumerable;
-                ILoggerStructure loggerStructure;
+                IEnumerable<ILogValues> structureEnumerable;
+                ILogValues logs;
                 builder.Append(kvp.Key);
                 builder.Append(": ");
-                if ((structureEnumerable = kvp.Value as IEnumerable<ILoggerStructure>) != null)
+                if ((structureEnumerable = kvp.Value as IEnumerable<ILogValues>) != null)
                 {
                     var valArray = structureEnumerable.ToArray();
                     for (int j = 0; j < valArray.Length - 1; j++)
@@ -87,9 +87,9 @@ namespace Microsoft.Framework.Logging
                         FormatLogValues(valArray[valArray.Length - 1], builder);
                     }
                 }
-                else if ((loggerStructure = kvp.Value as ILoggerStructure) != null)
+                else if ((logs = kvp.Value as ILogValues) != null)
                 {
-                    FormatLogValues(loggerStructure, builder);
+                    FormatLogValues(logs, builder);
                 }
                 else
                 {

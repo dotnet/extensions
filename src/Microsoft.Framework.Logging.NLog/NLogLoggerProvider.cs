@@ -15,7 +15,7 @@ namespace Microsoft.Framework.Logging.NLog
             _logFactory = logFactory;
         }
 
-        public ILogger Create(string name)
+        public ILogger CreateLogger(string name)
         {
             return new Logger(_logFactory.GetLogger(name));
         }
@@ -29,7 +29,7 @@ namespace Microsoft.Framework.Logging.NLog
                 _logger = logger;
             }
 
-            public void Write(
+            public void Log(
                 LogLevel logLevel,
                 int eventId,
                 object state,

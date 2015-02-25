@@ -47,7 +47,7 @@ namespace Microsoft.Framework.Logging
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public ILogger Create(string name)
+        public ILogger CreateLogger(string name)
         {
             return new DiagnosticsLogger(GetOrAddTraceSource(name));
         }

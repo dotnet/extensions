@@ -16,15 +16,15 @@ namespace Microsoft.Framework.Logging
         private ILoggerProvider[] _providers = new ILoggerProvider[0];
         private readonly object _sync = new object();
 
-        public ILogger Create(string name)
+        public ILogger CreateLogger(string categoryName)
         {
             Logger logger;
             lock (_sync)
             {
-                if (!_loggers.TryGetValue(name, out logger))
+                if (!_loggers.TryGetValue(categoryName, out logger))
                 {
-                    logger = new Logger(this, name);
-                    _loggers[name] = logger;
+                    logger = new Logger(this, categoryName);
+                    _loggers[categoryName] = logger;
                 }
             }
             return logger;

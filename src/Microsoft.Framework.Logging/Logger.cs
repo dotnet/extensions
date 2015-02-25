@@ -21,17 +21,17 @@ namespace Microsoft.Framework.Logging
             _loggers = new ILogger[providers.Length];
             for (var index = 0; index != providers.Length; index++)
             {
-                _loggers[index] = providers[index].Create(name);
+                _loggers[index] = providers[index].CreateLogger(name);
             }
         }
 
-        public void Write(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
             foreach (var logger in _loggers)
             {
                 if (logLevel >= _loggerFactory.MinimumLevel && logger.IsEnabled(logLevel))
                 {
-                    logger.Write(logLevel, eventId, state, exception, formatter);
+                    logger.Log(logLevel, eventId, state, exception, formatter);
                 }
             }
         }
@@ -54,7 +54,7 @@ namespace Microsoft.Framework.Logging
 
         internal void AddProvider(ILoggerProvider provider)
         {
-            var logger = provider.Create(_name);
+            var logger = provider.CreateLogger(_name);
             _loggers = _loggers.Concat(new[] { logger }).ToArray();
         }
 

@@ -36,7 +36,7 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             var provider = new Mock<ILoggerProvider>();
-            provider.Setup(f => f.Create(
+            provider.Setup(f => f.CreateLogger(
                 It.IsAny<string>()))
                 .Returns(logger);
 
@@ -53,12 +53,12 @@ namespace Microsoft.Framework.Logging.Test
             var t = SetUpFactory(null);
             var factory = t.Item1;
             var sink = t.Item2;
-            var logger = factory.Create(_name);
+            var logger = factory.CreateLogger(_name);
 
 
             // act
-            logger.Write(LogLevel.Debug, 0, _state, null, null);
-            logger.Write(LogLevel.Verbose, 0, _state, null, null);
+            logger.Log(LogLevel.Debug, 0, _state, null, null);
+            logger.Log(LogLevel.Verbose, 0, _state, null, null);
 
             // assert
             Assert.Equal(LogLevel.Verbose, factory.MinimumLevel);
@@ -77,17 +77,17 @@ namespace Microsoft.Framework.Logging.Test
             var t = SetUpFactory(null);
             var factory = t.Item1;
             var sink = t.Item2;
-            var logger = factory.Create(_name);
+            var logger = factory.CreateLogger(_name);
 
             factory.MinimumLevel = minimumLevel;
 
             // act
-            logger.Write(LogLevel.Debug, 0, _state, null, null);
-            logger.Write(LogLevel.Verbose, 0, _state, null, null);
-            logger.Write(LogLevel.Information, 0, _state, null, null);
-            logger.Write(LogLevel.Warning, 0, _state, null, null);
-            logger.Write(LogLevel.Error, 0, _state, null, null);
-            logger.Write(LogLevel.Critical, 0, _state, null, null);
+            logger.Log(LogLevel.Debug, 0, _state, null, null);
+            logger.Log(LogLevel.Verbose, 0, _state, null, null);
+            logger.Log(LogLevel.Information, 0, _state, null, null);
+            logger.Log(LogLevel.Warning, 0, _state, null, null);
+            logger.Log(LogLevel.Error, 0, _state, null, null);
+            logger.Log(LogLevel.Critical, 0, _state, null, null);
 
             // assert
             Assert.Equal(minimumLevel, factory.MinimumLevel);
@@ -105,7 +105,7 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(LogLevel.Information, 0, _state, null, null);
+            logger.Log(LogLevel.Information, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -120,13 +120,13 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(LogLevel.Warning, 0, _state, null, null);
+            logger.Log(LogLevel.Warning, 0, _state, null, null);
 
             // Assert
             Assert.Equal(0, sink.Writes.Count);
 
             // Act
-            logger.Write(LogLevel.Critical, 0, _state, null, null);
+            logger.Log(LogLevel.Critical, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -141,13 +141,13 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(LogLevel.Warning, 0, _state, null, null);
+            logger.Log(LogLevel.Warning, 0, _state, null, null);
 
             // Assert
             Assert.Equal(0, sink.Writes.Count);
 
             // Act
-            logger.Write(LogLevel.Error, 0, _state, null, null);
+            logger.Log(LogLevel.Error, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -162,13 +162,13 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(LogLevel.Information, 0, _state, null, null);
+            logger.Log(LogLevel.Information, 0, _state, null, null);
 
             // Assert
             Assert.Equal(0, sink.Writes.Count);
 
             // Act
-            logger.Write(LogLevel.Warning, 0, _state, null, null);
+            logger.Log(LogLevel.Warning, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -183,13 +183,13 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(LogLevel.Verbose, 0, _state, null, null);
+            logger.Log(LogLevel.Verbose, 0, _state, null, null);
 
             // Assert
             Assert.Equal(0, sink.Writes.Count);
 
             // Act
-            logger.Write(LogLevel.Information, 0, _state, null, null);
+            logger.Log(LogLevel.Information, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -204,11 +204,11 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(LogLevel.Critical, 0, _state, null, null);
-            logger.Write(LogLevel.Error, 0, _state, null, null);
-            logger.Write(LogLevel.Warning, 0, _state, null, null);
-            logger.Write(LogLevel.Information, 0, _state, null, null);
-            logger.Write(LogLevel.Verbose, 0, _state, null, null);
+            logger.Log(LogLevel.Critical, 0, _state, null, null);
+            logger.Log(LogLevel.Error, 0, _state, null, null);
+            logger.Log(LogLevel.Warning, 0, _state, null, null);
+            logger.Log(LogLevel.Information, 0, _state, null, null);
+            logger.Log(LogLevel.Verbose, 0, _state, null, null);
 
             // Assert
             Assert.Equal(5, sink.Writes.Count);
@@ -223,7 +223,7 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(LogLevel.Critical, 0, _state, null, null);
+            logger.Log(LogLevel.Critical, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -241,7 +241,7 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(LogLevel.Error, 0, _state, null, null);
+            logger.Log(LogLevel.Error, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -259,7 +259,7 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(LogLevel.Warning, 0, _state, null, null);
+            logger.Log(LogLevel.Warning, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -277,7 +277,7 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(LogLevel.Information, 0, _state, null, null);
+            logger.Log(LogLevel.Information, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -295,7 +295,7 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Write(LogLevel.Verbose, 0, _state, null, null);
+            logger.Log(LogLevel.Verbose, 0, _state, null, null);
 
             // Assert
             Assert.Equal(1, sink.Writes.Count);
@@ -314,12 +314,12 @@ namespace Microsoft.Framework.Logging.Test
             var ex = new Exception();
 
             // Act
-            logger.Write(LogLevel.Critical, 0, _state, ex, TheMessageAndError);
-            logger.Write(LogLevel.Error, 0, _state, ex, TheMessageAndError);
-            logger.Write(LogLevel.Warning, 0, _state, ex, TheMessageAndError);
-            logger.Write(LogLevel.Information, 0, _state, ex, TheMessageAndError);
-            logger.Write(LogLevel.Verbose, 0, _state, ex, TheMessageAndError);
-            logger.Write(LogLevel.Debug, 0, _state, ex, TheMessageAndError);
+            logger.Log(LogLevel.Critical, 0, _state, ex, TheMessageAndError);
+            logger.Log(LogLevel.Error, 0, _state, ex, TheMessageAndError);
+            logger.Log(LogLevel.Warning, 0, _state, ex, TheMessageAndError);
+            logger.Log(LogLevel.Information, 0, _state, ex, TheMessageAndError);
+            logger.Log(LogLevel.Verbose, 0, _state, ex, TheMessageAndError);
+            logger.Log(LogLevel.Debug, 0, _state, ex, TheMessageAndError);
 
             // Assert
             Assert.Equal(6, sink.Writes.Count);

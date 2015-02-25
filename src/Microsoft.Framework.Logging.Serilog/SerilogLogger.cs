@@ -36,7 +36,7 @@ namespace Microsoft.Framework.Logging.Serilog
             return _logger.IsEnabled(ConvertLevel(logLevel));
         }
 
-        public void Write(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
             var level = ConvertLevel(logLevel);
             if (!_logger.IsEnabled(level))
@@ -63,7 +63,7 @@ namespace Microsoft.Framework.Logging.Serilog
             {
                 logger = logger.ForContext("EventId", eventId, false);
             }
-            var structure = state as ILoggerStructure;
+            var structure = state as ILogValues;
             if (structure != null)
             {
                 logger = logger.ForContext(new[] { new StructureEnricher(structure) });
@@ -97,9 +97,9 @@ namespace Microsoft.Framework.Logging.Serilog
 
         private class StructureEnricher : ILogEventEnricher
         {
-            private readonly ILoggerStructure _structure;
+            private readonly ILogValues _structure;
 
-            public StructureEnricher(ILoggerStructure structure)
+            public StructureEnricher(ILogValues structure)
             {
                 _structure = structure;
             }
