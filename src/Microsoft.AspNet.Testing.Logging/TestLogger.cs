@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Testing.Logging
                 Scope = state,
             });
 
-            return NullDisposable.Instance;
+            return null;
         }
 
         public void Write(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
