@@ -43,6 +43,22 @@ namespace Microsoft.Framework.ConfigurationModel.Xml
         }
 
         /// <summary>
+        /// Encrypted XML is not supported on this platform.
+        /// </summary>
+        internal static string Error_EncryptedXmlNotSupported
+        {
+            get { return GetString("Error_EncryptedXmlNotSupported"); }
+        }
+
+        /// <summary>
+        /// Encrypted XML is not supported on this platform.
+        /// </summary>
+        internal static string FormatError_EncryptedXmlNotSupported()
+        {
+            return GetString("Error_EncryptedXmlNotSupported");
+        }
+
+        /// <summary>
         /// File path must be a non-empty string.
         /// </summary>
         internal static string Error_InvalidFilePath

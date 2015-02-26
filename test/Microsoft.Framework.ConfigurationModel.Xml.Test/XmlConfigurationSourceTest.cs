@@ -9,7 +9,7 @@ using Resources = Microsoft.Framework.ConfigurationModel.Xml.Resources;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-    public class XmlConfigurationSourceTest
+    public partial class XmlConfigurationSourceTest
     {
         private static readonly string ArbitraryFilePath = "Unit tests do not touch file system";
 

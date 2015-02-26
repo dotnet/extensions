@@ -15,7 +15,14 @@ namespace Microsoft.Framework.ConfigurationModel
     {
         private const string NameAttributeKey = "Name";
 
+        private readonly XmlDocumentDecryptor _xmlDocumentDecryptor;
+
         public XmlConfigurationSource(string path)
+            : this(path, null)
+        {
+        }
+
+        internal XmlConfigurationSource(string path, XmlDocumentDecryptor xmlDocumentDecryptor)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -23,6 +30,8 @@ namespace Microsoft.Framework.ConfigurationModel
             }
 
             Path = PathResolver.ResolveAppRelativePath(path);
+
+            _xmlDocumentDecryptor = xmlDocumentDecryptor ?? XmlDocumentDecryptor.Instance;
         }
 
         public string Path { get; private set; }
@@ -41,12 +50,13 @@ namespace Microsoft.Framework.ConfigurationModel
 
             var readerSettings = new XmlReaderSettings()
                 {
+                    CloseInput = false, // caller will close the stream
                     DtdProcessing = DtdProcessing.Prohibit,
                     IgnoreComments = true,
                     IgnoreWhitespace = true
                 };
 
-            using (var reader = XmlReader.Create(stream, readerSettings))
+            using (var reader = _xmlDocumentDecryptor.CreateDecryptingXmlReader(stream, readerSettings))
             {
                 var prefixStack = new Stack<string>();
 
@@ -110,7 +120,7 @@ namespace Microsoft.Framework.ConfigurationModel
                             break;
 
                         default:
-                            throw new FormatException(Resources.FormatError_UnsupportedNodeType( reader.NodeType,
+                            throw new FormatException(Resources.FormatError_UnsupportedNodeType(reader.NodeType,
                                 GetLineInfo(reader)));
                     }
                     preNodeType = reader.NodeType;
