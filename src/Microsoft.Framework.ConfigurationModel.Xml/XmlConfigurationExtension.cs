@@ -5,7 +5,7 @@ namespace Microsoft.Framework.ConfigurationModel
 {
     public static class XmlConfigurationExtension
     {
-        public static IConfigurationSourceContainer AddXmlFile(this IConfigurationSourceContainer configuration, string path)
+        public static IConfigurationSourceRoot AddXmlFile(this IConfigurationSourceRoot configuration, string path)
         {
             configuration.Add(new XmlConfigurationSource(path));
             return configuration;

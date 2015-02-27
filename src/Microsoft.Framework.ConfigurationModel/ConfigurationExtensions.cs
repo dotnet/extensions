@@ -17,32 +17,32 @@ namespace Microsoft.Framework.ConfigurationModel
 
 
 #if NET45 || ASPNET50 || ASPNETCORE50
-        public static IConfigurationSourceContainer AddIniFile(this IConfigurationSourceContainer configuration, string path)
+        public static IConfigurationSourceRoot AddIniFile(this IConfigurationSourceRoot configuration, string path)
         {
             configuration.Add(new IniFileConfigurationSource(path));
             return configuration;
         }
 #endif
 
-        public static IConfigurationSourceContainer AddCommandLine(this IConfigurationSourceContainer configuration, string[] args)
+        public static IConfigurationSourceRoot AddCommandLine(this IConfigurationSourceRoot configuration, string[] args)
         {
             configuration.Add(new CommandLineConfigurationSource(args));
             return configuration;
         }
         
-        public static IConfigurationSourceContainer AddCommandLine(this IConfigurationSourceContainer configuration, string[] args, IDictionary<string, string> switchMappings)
+        public static IConfigurationSourceRoot AddCommandLine(this IConfigurationSourceRoot configuration, string[] args, IDictionary<string, string> switchMappings)
         {
             configuration.Add(new CommandLineConfigurationSource(args, switchMappings));
             return configuration;
         }
 
-        public static IConfigurationSourceContainer AddEnvironmentVariables(this IConfigurationSourceContainer configuration)
+        public static IConfigurationSourceRoot AddEnvironmentVariables(this IConfigurationSourceRoot configuration)
         {
             configuration.Add(new EnvironmentVariablesConfigurationSource());
             return configuration;
         }
 
-        public static IConfigurationSourceContainer AddEnvironmentVariables(this IConfigurationSourceContainer configuration, string prefix)
+        public static IConfigurationSourceRoot AddEnvironmentVariables(this IConfigurationSourceRoot configuration, string prefix)
         {
             configuration.Add(new EnvironmentVariablesConfigurationSource(prefix));
             return configuration;

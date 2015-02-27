@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
@@ -10,11 +11,11 @@ namespace Microsoft.Framework.ConfigurationModel
     {
         private readonly Dictionary<string, string> _switchMappings;
 
-        public CommandLineConfigurationSource(string[] args, IDictionary<string, string> switchMappings = null)
+        public CommandLineConfigurationSource(IEnumerable<string> args, IDictionary<string, string> switchMappings = null)
         {
             if (args == null)
             {
-                throw new ArgumentNullException("args");
+                throw new ArgumentNullException(nameof(args));
             }
 
             Args = args;
@@ -25,17 +26,17 @@ namespace Microsoft.Framework.ConfigurationModel
             }
         }
 
-        public string[] Args { get; private set; }
+        protected IEnumerable<string> Args { get; private set; }
 
         public override void Load()
         {
             var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             string key, value;
-            var argIndex = 0;
 
-            while (argIndex < Args.Length)
+            var enumerator = Args.GetEnumerator();
+            while (enumerator.MoveNext())
             {
-                var currentArg = Args[argIndex];
+                var currentArg = enumerator.Current;
                 var keyStartIndex = 0;
 
                 if (currentArg.StartsWith("--"))
@@ -80,14 +81,13 @@ namespace Microsoft.Framework.ConfigurationModel
                         key = currentArg.Substring(keyStartIndex);
                     }
 
-                    argIndex++;
-
-                    if (argIndex == Args.Length)
+                    var previousKey = enumerator.Current;
+                    if (!enumerator.MoveNext())
                     {
-                        throw new FormatException(Resources.FormatError_ValueIsMissing(Args[argIndex - 1]));
+                        throw new FormatException(Resources.FormatError_ValueIsMissing(previousKey));
                     }
 
-                    value = Args[argIndex];
+                    value = enumerator.Current;
                 }
                 else
                 {
@@ -114,7 +114,6 @@ namespace Microsoft.Framework.ConfigurationModel
 
                 // Override value when key is duplicated. So we always have the last argument win.
                 data[key] = value;
-                argIndex++;
             }
 
             Data = data;
@@ -131,14 +130,16 @@ namespace Microsoft.Framework.ConfigurationModel
                 // Only keys start with "--" or "-" are acceptable
                 if (!mapping.Key.StartsWith("-") && !mapping.Key.StartsWith("--"))
                 {
-                    throw new ArgumentException(Resources.FormatError_InvalidSwitchMapping(mapping.Key),
-                        "switchMappings");
+                    throw new ArgumentException(
+                        Resources.FormatError_InvalidSwitchMapping(mapping.Key),
+                        nameof(switchMappings));
                 }
 
                 if (switchMappingsCopy.ContainsKey(mapping.Key))
                 {
-                    throw new ArgumentException(Resources.FormatError_DuplicatedKeyInSwitchMappings(mapping.Key),
-                        "switchMappings");
+                    throw new ArgumentException(
+                        Resources.FormatError_DuplicatedKeyInSwitchMappings(mapping.Key),
+                        nameof(switchMappings));
                 }
 
                 switchMappingsCopy.Add(mapping.Key, mapping.Value);

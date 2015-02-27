@@ -5,7 +5,7 @@ namespace Microsoft.Framework.ConfigurationModel
 {
     public static class JsonConfigurationExtension
     {
-        public static IConfigurationSourceContainer AddJsonFile(this IConfigurationSourceContainer configuration, string path)
+        public static IConfigurationSourceRoot AddJsonFile(this IConfigurationSourceRoot configuration, string path)
         {
             configuration.Add(new JsonConfigurationSource(path));
             return configuration;

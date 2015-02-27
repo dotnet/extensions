@@ -48,9 +48,9 @@ namespace Microsoft.Framework.ConfigurationModel
             memRet3 = config.TryGet("MEM3:KEYINMEM3", out memVal3);
 
             // Assert
-            Assert.Contains(memConfigSrc1, config);
-            Assert.Contains(memConfigSrc2, config);
-            Assert.Contains(memConfigSrc3, config);
+            Assert.Contains(memConfigSrc1, config.Sources);
+            Assert.Contains(memConfigSrc2, config.Sources);
+            Assert.Contains(memConfigSrc3, config.Sources);
 
             Assert.True(memRet1);
             Assert.True(memRet2);
@@ -257,7 +257,7 @@ namespace Microsoft.Framework.ConfigurationModel
             config.AddLoadedSource(memConfigSrc3);
 
             // Assert
-            var enumerator = config.GetEnumerator();
+            var enumerator = config.Sources.GetEnumerator();
             int srcCount = 0;
             while (enumerator.MoveNext())
             {
@@ -297,7 +297,7 @@ namespace Microsoft.Framework.ConfigurationModel
             var enumerable = config as IEnumerable;
 
             // Assert
-            var enumerator = config.GetEnumerator();
+            var enumerator = config.Sources.GetEnumerator();
             int srcCount = 0;
             while (enumerator.MoveNext())
             {
