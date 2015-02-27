@@ -116,6 +116,23 @@ namespace Microsoft.AspNet.Testing
         }
 
         /// <summary>
+        /// Verifies that the code throws an <see cref="ArgumentNullException"/>.
+        /// </summary>
+        /// <param name="testCode">A delegate to the code to be tested</param>
+        /// <param name="paramName">The name of the parameter that should throw the exception</param>
+        /// <returns>The exception that was thrown, when successful</returns>
+        /// <exception>Thrown when an exception was not thrown, or when an exception of the incorrect type is thrown</exception>
+        public static ArgumentNullException ThrowsArgumentNull(Action testCode, string paramName)
+        {
+            var ex = Throws<ArgumentNullException>(testCode);
+            if (paramName != null)
+            {
+                Assert.Equal(paramName, ex.ParamName);
+            }
+            return ex;
+        }
+
+        /// <summary>
         /// Verifies that the code throws an ArgumentException with the expected message that indicates that the value cannot
         /// be null or empty.
         /// </summary>
