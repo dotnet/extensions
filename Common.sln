@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22613.0
+VisualStudioVersion = 14.0.22609.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FEAA3936-5906-4383-B750-F07FE1B156C5}"
 EndProject
@@ -16,10 +16,6 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.PropertyHelper.Internal", "src\Microsoft.Framework.PropertyHelper.Internal\Microsoft.Framework.PropertyHelper.Internal.kproj", "{A5EAE14C-F682-44BB-9CB0-68E3992534D0}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Internal.Test", "test\Microsoft.Framework.Internal.Test\Microsoft.Framework.Internal.Test.kproj", "{D81EAC23-B515-49FB-B04B-285A9C1C6583}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.NullLogger.Internal", "src\Microsoft.Framework.NullLogger.Internal\Microsoft.Framework.NullLogger.Internal.kproj", "{4917B89F-2714-4912-B8BB-3C955A0CA691}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.NullLoggerFactory.Internal", "src\Microsoft.Framework.NullLoggerFactory.Internal\Microsoft.Framework.NullLoggerFactory.Internal.kproj", "{945500CD-9524-4E8A-8919-0C5CCC081D36}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,14 +43,6 @@ Global
 		{D81EAC23-B515-49FB-B04B-285A9C1C6583}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D81EAC23-B515-49FB-B04B-285A9C1C6583}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D81EAC23-B515-49FB-B04B-285A9C1C6583}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4917B89F-2714-4912-B8BB-3C955A0CA691}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4917B89F-2714-4912-B8BB-3C955A0CA691}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4917B89F-2714-4912-B8BB-3C955A0CA691}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4917B89F-2714-4912-B8BB-3C955A0CA691}.Release|Any CPU.Build.0 = Release|Any CPU
-		{945500CD-9524-4E8A-8919-0C5CCC081D36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{945500CD-9524-4E8A-8919-0C5CCC081D36}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{945500CD-9524-4E8A-8919-0C5CCC081D36}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{945500CD-9524-4E8A-8919-0C5CCC081D36}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -65,7 +53,5 @@ Global
 		{7068BBDB-B932-426B-897D-11F24F9FF578} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 		{A5EAE14C-F682-44BB-9CB0-68E3992534D0} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 		{D81EAC23-B515-49FB-B04B-285A9C1C6583} = {6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}
-		{4917B89F-2714-4912-B8BB-3C955A0CA691} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
-		{945500CD-9524-4E8A-8919-0C5CCC081D36} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 	EndGlobalSection
 EndGlobal
