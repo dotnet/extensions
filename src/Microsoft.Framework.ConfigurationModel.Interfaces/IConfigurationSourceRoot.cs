@@ -5,8 +5,12 @@ using System.Collections.Generic;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-    public interface IConfigurationSourceContainer : IConfiguration, IEnumerable<IConfigurationSource>
+    public interface IConfigurationSourceRoot : IConfiguration
     {
-        IConfigurationSourceContainer Add(IConfigurationSource configurationSource);
+        IEnumerable<IConfigurationSource> Sources { get; }
+
+        IConfigurationSourceRoot Add(IConfigurationSource configurationSource);
+
+        void Reload();
     }
 }

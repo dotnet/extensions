@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
@@ -10,11 +11,11 @@ namespace Microsoft.Framework.ConfigurationModel
     {
         private readonly Dictionary<string, string> _switchMappings;
 
-        public CommandLineConfigurationSource(string[] args, IDictionary<string, string> switchMappings = null)
+        public CommandLineConfigurationSource(IEnumerable<string> args, IDictionary<string, string> switchMappings = null)
         {
             if (args == null)
             {
-                throw new ArgumentNullException("args");
+                throw new ArgumentNullException(nameof(args));
             }
 
             Args = args;
@@ -25,7 +26,7 @@ namespace Microsoft.Framework.ConfigurationModel
             }
         }
 
-        public string[] Args { get; private set; }
+        protected IEnumerable<string> Args { get; private set; }
 
         public override void Load()
         {
@@ -33,9 +34,9 @@ namespace Microsoft.Framework.ConfigurationModel
             string key, value;
             var argIndex = 0;
 
-            while (argIndex < Args.Length)
+            while (argIndex < Args.Count())
             {
-                var currentArg = Args[argIndex];
+                var currentArg = Args.ElementAt(argIndex);
                 var keyStartIndex = 0;
 
                 if (currentArg.StartsWith("--"))
@@ -82,12 +83,12 @@ namespace Microsoft.Framework.ConfigurationModel
 
                     argIndex++;
 
-                    if (argIndex == Args.Length)
+                    if (argIndex == Args.Count())
                     {
-                        throw new FormatException(Resources.FormatError_ValueIsMissing(Args[argIndex - 1]));
+                        throw new FormatException(Resources.FormatError_ValueIsMissing(Args.ElementAt(argIndex - 1)));
                     }
 
-                    value = Args[argIndex];
+                    value = Args.ElementAt(argIndex);
                 }
                 else
                 {
@@ -131,14 +132,16 @@ namespace Microsoft.Framework.ConfigurationModel
                 // Only keys start with "--" or "-" are acceptable
                 if (!mapping.Key.StartsWith("-") && !mapping.Key.StartsWith("--"))
                 {
-                    throw new ArgumentException(Resources.FormatError_InvalidSwitchMapping(mapping.Key),
-                        "switchMappings");
+                    throw new ArgumentException(
+                        Resources.FormatError_InvalidSwitchMapping(mapping.Key),
+                        nameof(switchMappings));
                 }
 
                 if (switchMappingsCopy.ContainsKey(mapping.Key))
                 {
-                    throw new ArgumentException(Resources.FormatError_DuplicatedKeyInSwitchMappings(mapping.Key),
-                        "switchMappings");
+                    throw new ArgumentException(
+                        Resources.FormatError_DuplicatedKeyInSwitchMappings(mapping.Key),
+                        nameof(switchMappings));
                 }
 
                 switchMappingsCopy.Add(mapping.Key, mapping.Value);

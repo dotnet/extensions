@@ -24,8 +24,6 @@ namespace Microsoft.Framework.ConfigurationModel
 
         IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys(string key);
 
-        void Reload();
-
         void Set(string key, string value);
     }
 }

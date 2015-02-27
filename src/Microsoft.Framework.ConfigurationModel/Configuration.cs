@@ -8,12 +8,19 @@ using System.Linq;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-    public class Configuration : IConfiguration, IConfigurationSourceContainer
+    public class Configuration : IConfiguration, IConfigurationSourceRoot
     {
         private readonly IList<IConfigurationSource> _sources = new List<IConfigurationSource>();
-      
-        public Configuration()
+
+        public Configuration(params IConfigurationSource[] sources)
         {
+            if (sources != null)
+            {
+                foreach (IConfigurationSource singleSource in sources)
+                {
+                    Add(singleSource);
+                }
+            }
         }
 
         public string this[string key]
@@ -25,6 +32,14 @@ namespace Microsoft.Framework.ConfigurationModel
             set
             {
                 Set(key, value);
+            }
+        }
+
+        public IEnumerable<IConfigurationSource> Sources
+        {
+            get
+            {
+                return _sources;
             }
         }
 
@@ -109,26 +124,16 @@ namespace Microsoft.Framework.ConfigurationModel
                 new ConfigurationFocus(this, prefix + segment + Constants.KeyDelimiter));
         }
 
-        public IConfigurationSourceContainer Add(IConfigurationSource configurationSource)
+        public IConfigurationSourceRoot Add(IConfigurationSource configurationSource)
         {
             configurationSource.Load();
             return AddLoadedSource(configurationSource);
         }
 
-        internal IConfigurationSourceContainer AddLoadedSource(IConfigurationSource configurationSource)
+        internal IConfigurationSourceRoot AddLoadedSource(IConfigurationSource configurationSource)
         {
             _sources.Add(configurationSource);
             return this;
-        }
-
-        public IEnumerator<IConfigurationSource> GetEnumerator()
-        {
-            return _sources.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }
