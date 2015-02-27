@@ -6,9 +6,9 @@ using Microsoft.Framework.Logging;
 
 namespace Microsoft.Framework.Internal
 {
-    public class NullLogger : ILogger
+    internal class NullLogger : ILogger
     {
-        public static NullLogger Instance = new NullLogger();
+        public static readonly NullLogger Instance = new NullLogger();
 
         public IDisposable BeginScope(object state)
         {
@@ -26,7 +26,7 @@ namespace Microsoft.Framework.Internal
 
         private class NullDisposable : IDisposable
         {
-            public static NullDisposable Instance = new NullDisposable();
+            public static readonly NullDisposable Instance = new NullDisposable();
 
             public void Dispose()
             {

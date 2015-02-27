@@ -5,9 +5,9 @@ using Microsoft.Framework.Logging;
 
 namespace Microsoft.Framework.Internal
 {
-    public class NullLoggerFactory : ILoggerFactory
+    internal class NullLoggerFactory : ILoggerFactory
     {
-        public static NullLoggerFactory Instance = new NullLoggerFactory();
+        public static readonly NullLoggerFactory Instance = new NullLoggerFactory();
 
         public LogLevel MinimumLevel { get; set; } = LogLevel.Verbose;
 

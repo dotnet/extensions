@@ -1,8 +1,7 @@
 ﻿{
     "version": "1.0.0-*",
-    "dependencies": {
-        "Microsoft.Framework.Logging": "1.0.0-*"
-    },
+    "shared": "*.cs",
+    "dependencies": { },
     "frameworks": {
         "net45": { },
         "aspnet50": { },
