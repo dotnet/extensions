@@ -18,17 +18,18 @@ namespace Microsoft.Framework.Internal
             var inner = new BufferEntryCollection();
 
             // Act
+            inner.Add("World");
             collection.Add("Hello");
             collection.Add(new[] { 'a', 'b', 'c' }, 1, 2);
             collection.Add(inner);
 
             // Assert
-            Assert.Equal(new[] { "Hello", "bc" }, collection);
+            Assert.Equal(new[] { "Hello", "bc", "World" }, collection);
             Assert.Same(inner.BufferEntries, collection.BufferEntries[2]);
         }
 
         [Fact]
-        public void AddChar_ThrowsIfIndexIsOutOfBounds()
+        public void AddChar_ThrowsIfIndexIsOutOfRange()
         {
             // Arrange
             var collection = new BufferEntryCollection();
@@ -57,11 +58,13 @@ namespace Microsoft.Framework.Internal
                 ex.Message);
         }
 
-        public static TheoryData AddWithChar_RepresentsStringsAsChunkedEntriesData
+        public static TheoryData AddChar_StoresArraysAsChunkedStringsData
         {
             get
             {
-                return new TheoryData<char[], int, int, IList<object>> {
+                return new TheoryData<char[], int, int, IList<object>>
+                {
+                    // Character array of values, index, count, expected character array.
                     {
                         new[] { 'a' }, 0, 1, new[] { "a" }
                     },
@@ -98,8 +101,9 @@ namespace Microsoft.Framework.Internal
         }
 
         [Theory]
-        [MemberData(nameof(AddWithChar_RepresentsStringsAsChunkedEntriesData))]
-        public void AddWithChar_RepresentsStringsAsChunkedEntries(char[] value, int index, int count, IList<object> expected)
+        [MemberData(nameof(AddChar_StoresArraysAsChunkedStringsData))]
+        public void AddChar_StoresArraysAsChunkedStrings(
+            char[] value, int index, int count, IList<object> expected)
         {
             // Arrange
             var collection = new BufferEntryCollection();
@@ -116,16 +120,13 @@ namespace Microsoft.Framework.Internal
         {
             // Arrange
             var collection = new BufferEntryCollection();
+            var expected = new[] { "foo", "bar" };
+
+            // Act
             collection.Add("foo");
             collection.Add("bar");
 
-            var expected = new[]
-                {
-                    "foo",
-                    "bar"
-                };
-
-            // Act and Assert
+            // Assert
             Assert.Equal(expected, collection);
         }
 
@@ -147,20 +148,23 @@ namespace Microsoft.Framework.Internal
         {
             // Arrange
             var nestedCollection = new BufferEntryCollection();
-            nestedCollection.Add("level 1");
             var nestedCollection2SecondLevel = new BufferEntryCollection();
+
+            var collection2 = new BufferEntryCollection();
+            collection2.Add("foo");
+            collection2.Add(nestedCollection);
+            collection2.Add("qux");
+
+            // Act
+            nestedCollection.Add("level 1");
             if (!isEmpty)
             {
                 nestedCollection2SecondLevel.Add("level 2");
             }
 
             nestedCollection.Add(nestedCollection2SecondLevel);
-            var collection2 = new BufferEntryCollection();
-            collection2.Add("foo");
-            collection2.Add(nestedCollection);
-            collection2.Add("qux");
 
-            // Act & Assert
+            // Assert
             Assert.Equal(expected, collection2);
         }
     }

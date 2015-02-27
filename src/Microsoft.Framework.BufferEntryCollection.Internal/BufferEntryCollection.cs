@@ -9,7 +9,7 @@ using System.Diagnostics;
 namespace Microsoft.Framework.Internal
 {
     /// <summary>
-    /// An ordered collection of strings with an enumerator that iterates over it as a sequence.
+    /// An ordered collection of strings with an enumerator that iterates over it.
     /// </summary>
     internal class BufferEntryCollection : IEnumerable<string>
     {
@@ -19,16 +19,14 @@ namespace Microsoft.Framework.Internal
         private readonly List<object> _buffer = new List<object>();
         private bool _isModified = false;
 
-        /// <summary>
-        /// Holds the collection of strings.
-        /// </summary>
-        public IReadOnlyList<object> BufferEntries
+        // internal for testing
+        internal IReadOnlyList<object> BufferEntries
         {
             get { return _buffer; }
         }
 
         /// <summary>
-        /// Flag which shows if the buffer entries were modified (Added to / Cleared).
+        /// Gets a value whether the buffer entries were modified (Added to / Cleared) or not.
         /// </summary>
         public bool IsModified
         {
@@ -46,7 +44,7 @@ namespace Microsoft.Framework.Internal
         }
 
         /// <summary>
-        /// Adds a subarray of characters to the buffer.
+        /// Adds a array of characters to the buffer.
         /// </summary>
         /// <param name="value">The array to add.</param>
         /// <param name="index">The character position in the array at which to start copying data.</param>
@@ -65,7 +63,12 @@ namespace Microsoft.Framework.Internal
             while (count > 0)
             {
                 // Split large char arrays into 1KB strings.
-                var currentCount = Math.Min(count, MaxCharToStringLength);
+                var currentCount = count;
+                if (MaxCharToStringLength < currentCount)
+                {
+                    currentCount = MaxCharToStringLength;
+                }
+
                 Add(new string(value, index, currentCount));
                 index += currentCount;
                 count -= currentCount;
@@ -98,6 +101,7 @@ namespace Microsoft.Framework.Internal
             return new BufferEntryEnumerator(_buffer);
         }
 
+        /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();

@@ -8,7 +8,9 @@
         "aspnet50": { },
         "aspnetcore50": {
             "dependencies": {
-                "System.Runtime": "4.0.20-*"
+                "System.Runtime": "4.0.20-*",
+                "System.Collections": "4.0.10-*",
+                "System.Diagnostics.Debug": "4.0.10-*"
             }
         }
     }
