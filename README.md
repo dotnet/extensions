@@ -8,4 +8,5 @@ This project is part of ASP.NET 5. You can find samples, documentation and getti
 ## Docs and samples
 
 * [ASP.NET 5 Moving Parts: IConfiguration](http://whereslou.com/2014/05/23/asp-net-vnext-moving-parts-iconfiguration/)
+* [ASP.NET 5 Configuration - Microsoft.Framework.ConfigurationModel](http://blog.jsinh.in/asp-net-5-configuration-microsoft-framework-configurationmodel/)
 
