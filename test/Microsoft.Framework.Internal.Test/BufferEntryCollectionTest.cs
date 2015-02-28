@@ -11,7 +11,33 @@ namespace Microsoft.Framework.Internal
     public class BufferEntryCollectionTest
     {
         [Fact]
-        public void Add_AddsBufferEntries()
+        public void Add_AddsBufferEntries_String()
+        {
+            // Arrange
+            var collection = new BufferEntryCollection();
+
+            // Act
+            collection.Add("Hello");
+
+            // Assert
+            Assert.Equal(new[] { "Hello" }, collection);
+        }
+
+        [Fact]
+        public void Add_AddsBufferEntries_CharArray()
+        {
+            // Arrange
+            var collection = new BufferEntryCollection();
+
+            // Act
+            collection.Add(new[] { 'a', 'b', 'c' }, 1, 2);
+
+            // Assert
+            Assert.Equal(new[] { "bc" }, collection);
+        }
+
+        [Fact]
+        public void Add_AddsBufferEntries_WithInnerCollection()
         {
             // Arrange
             var collection = new BufferEntryCollection();
