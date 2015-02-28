@@ -3,6 +3,7 @@
         "warningsAsErrors": "true"
     },
     "dependencies": {
+        "Microsoft.Framework.BufferEntryCollection.Internal": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Framework.CopyOnWriteDictionary.Internal": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Framework.PropertyHelper.Internal": { "type": "build", "version": "1.0.0-*" },
