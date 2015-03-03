@@ -23,6 +23,7 @@ namespace Microsoft.Framework.Logging.Console
         }
 
         public IConsole Console { get; set; }
+        protected string Name { get { return _name; } }
 
         public void Write(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
@@ -62,11 +63,10 @@ namespace Microsoft.Framework.Logging.Console
             {
                 var originalForegroundColor = Console.ForegroundColor;  // save current colors
                 var originalBackgroundColor = Console.BackgroundColor;
-                var severity = logLevel.ToString().ToUpperInvariant();
                 SetConsoleColor(logLevel);
                 try
                 {
-                    Console.WriteLine("[{0}:{1}] {2}", severity, _name, message);
+                    Console.WriteLine(FormatMessage(logLevel, message));
                 }
                 finally
                 {
@@ -75,6 +75,11 @@ namespace Microsoft.Framework.Logging.Console
                 }
             }
         }
+
+        protected virtual string FormatMessage(LogLevel logLevel, string message)
+        {
+            return $"[{logLevel.ToString().ToUpperInvariant()}:{_name}] {message}";
+        } 
 
         public bool IsEnabled(LogLevel logLevel)
         {
