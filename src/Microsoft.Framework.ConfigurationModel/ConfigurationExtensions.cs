@@ -17,26 +17,26 @@ namespace Microsoft.Framework.ConfigurationModel
 
 
 #if NET45 || ASPNET50 || ASPNETCORE50
-        public static IConfigurationSourceRoot AddIniFile(this IConfigurationSourceRoot configuration, string path)
+        public static IConfigurationSourceContainer AddIniFile(this IConfigurationSourceContainer configuration, string path)
         {
             configuration.Add(new IniFileConfigurationSource(path));
             return configuration;
         }
 #endif
 
-        public static IConfigurationSourceRoot AddCommandLine(this IConfigurationSourceRoot configuration, string[] args)
+        public static IConfigurationSourceContainer AddCommandLine(this IConfigurationSourceContainer configuration, string[] args)
         {
             configuration.Add(new CommandLineConfigurationSource(args));
             return configuration;
         }
 
-        public static IConfigurationSourceRoot AddEnvironmentVariables(this IConfigurationSourceRoot configuration)
+        public static IConfigurationSourceContainer AddEnvironmentVariables(this IConfigurationSourceContainer configuration)
         {
             configuration.Add(new EnvironmentVariablesConfigurationSource());
             return configuration;
         }
 
-        public static IConfigurationSourceRoot AddEnvironmentVariables(this IConfigurationSourceRoot configuration, string prefix)
+        public static IConfigurationSourceContainer AddEnvironmentVariables(this IConfigurationSourceContainer configuration, string prefix)
         {
             configuration.Add(new EnvironmentVariablesConfigurationSource(prefix));
             return configuration;

@@ -151,7 +151,7 @@ CommonKey3:CommonKey4=IniValue6";
             config.Set("CommonKey1:CommonKey2:CommonKey3:CommonKey4", "NewValue");
 
             // All config sources must be updated
-            foreach (var src in config.Sources)
+            foreach (var src in config)
             {
                 Assert.Equal("NewValue",
                     (src as ConfigurationSource).Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
@@ -165,7 +165,7 @@ CommonKey3:CommonKey4=IniValue6";
             config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"] = "NewValue";
 
             // All config sources must be updated
-            foreach (var src in config.Sources)
+            foreach (var src in config)
             {
                 Assert.Equal("NewValue",
                     (src as ConfigurationSource).Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));

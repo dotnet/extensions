@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-    internal class ConfigurationFocus : IConfiguration
+    public class ConfigurationFocus : IConfiguration
     {
         private readonly string _prefix;
         private readonly IConfiguration _root;
@@ -61,6 +61,11 @@ namespace Microsoft.Framework.ConfigurationModel
         public void Set(string key, string value)
         {
             _root.Set(_prefix + key, value);
+        }
+
+        public void Reload()
+        {
+            _root.Reload();
         }
 
         public IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys()
