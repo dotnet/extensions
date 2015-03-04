@@ -19,9 +19,8 @@ namespace Microsoft.Framework.Logging.Test.Console
 
         public ConsoleColor ForegroundColor { get; set; }
 
-        public void WriteLine(string format, params object[] args)
+        public void WriteLine(string message)
         {
-            var message = string.Format(format, args);
             _sink.Write(new ConsoleContext()
             {
                 ForegroundColor = ForegroundColor,
