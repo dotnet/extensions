@@ -3,7 +3,7 @@
 
 using System;
 using System.Globalization;
-using JetBrains.Annotations;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.Logging
 {
