@@ -224,7 +224,7 @@ namespace Microsoft.Framework.Logging.Test
             Assert.Equal("7", sink.Writes[0].Properties["LuckyNumber"].ToString());
         }
 
-        private class FoodScope : LogValuesBase
+        private class FoodScope : ReflectionBasedLogValues
         {
             private string _name;
 
@@ -241,7 +241,7 @@ namespace Microsoft.Framework.Logging.Test
             }
         }
 
-        private class LuckyScope : LogValuesBase
+        private class LuckyScope : ReflectionBasedLogValues
         {
             private int _luckyNumber;
 

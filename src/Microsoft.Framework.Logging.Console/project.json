@@ -11,7 +11,8 @@
         "aspnetcore50": {
             "dependencies": {
                 "System.Runtime": "4.0.20.0-beta-*",
-                "System.Console": "4.0.0-beta-*"
+                "System.Console": "4.0.0-beta-*",
+                "System.IO": "4.0.10-beta-*"
             }
         }
     }

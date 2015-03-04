@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.Framework.Logging.Internal;
 using Xunit;
 
 namespace Microsoft.Framework.Logging.Test
@@ -17,7 +18,7 @@ namespace Microsoft.Framework.Logging.Test
         [InlineData("0064", "{Hex:X4}", new object[] { 100 })]
         public void LogValues_With_Basic_Types(string expected, string format, object[] args)
         {
-            var logValues = new LogValuesFormat(format, args);
+            var logValues = new FormattedLogValues(format, args);
             Assert.Equal(expected, logValues.Format());
 
             // Original format is expected to be returned from GetValues.
@@ -31,7 +32,7 @@ namespace Microsoft.Framework.Logging.Test
         public void LogValues_With_DateTime(string expected, string format)
         {
             var dateTime = new DateTime(2015, 1, 1, 1, 1, 1);
-            var logValues = new LogValuesFormat(format, new object[] { dateTime, dateTime });
+            var logValues = new FormattedLogValues(format, new object[] { dateTime, dateTime });
             Assert.Equal(expected, logValues.Format());
 
             // Original format is expected to be returned from GetValues.
@@ -49,8 +50,8 @@ namespace Microsoft.Framework.Logging.Test
         public void LogValues_With_Escaped_Braces(string expected, string format, object[] args)
         {
             var logValues = args == null ?
-                new LogValuesFormat(format) :
-                new LogValuesFormat(format, args);
+                new FormattedLogValues(format) :
+                new FormattedLogValues(format, args);
 
             Assert.Equal(expected, logValues.Format());
 
@@ -66,7 +67,7 @@ namespace Microsoft.Framework.Logging.Test
         {
             Assert.Throws<FormatException>(() =>
             {
-                var logValues = new LogValuesFormat(format);
+                var logValues = new FormattedLogValues(format);
                 logValues.Format();
             });
         }

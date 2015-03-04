@@ -591,7 +591,7 @@ namespace Microsoft.Framework.Logging.Test
                 debug.Formatter(debug.State, debug.Exception));
         }
 
-        private class TestStructure : LogValuesBase
+        private class TestStructure : ReflectionBasedLogValues
         {
             public int Value { get; set; }
 

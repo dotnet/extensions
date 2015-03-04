@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Microsoft.Framework.Logging
 {
-    public abstract class LogValuesBase : ILogValues
+    public abstract class ReflectionBasedLogValues : ILogValues
     {
         public virtual IEnumerable<KeyValuePair<string, object>> GetValues()
         {

@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using Microsoft.Framework.Internal;
+using Microsoft.Framework.Logging.Internal;
 
 namespace Microsoft.Framework.Logging
 {
@@ -50,7 +51,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteDebug([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Log(LogLevel.Debug, 0, new LogValuesFormat(format, args), null, _logValuesFormatter);
+            logger.Log(LogLevel.Debug, 0, new FormattedLogValues(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -62,7 +63,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteDebug([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Log(LogLevel.Debug, eventId, new LogValuesFormat(format, args), null, _logValuesFormatter);
+            logger.Log(LogLevel.Debug, eventId, new FormattedLogValues(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -127,7 +128,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteVerbose([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Log(LogLevel.Verbose, 0, new LogValuesFormat(format, args), null, _logValuesFormatter);
+            logger.Log(LogLevel.Verbose, 0, new FormattedLogValues(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -139,7 +140,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteVerbose([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Log(LogLevel.Verbose, eventId, new LogValuesFormat(format, args), null, _logValuesFormatter);
+            logger.Log(LogLevel.Verbose, eventId, new FormattedLogValues(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -203,7 +204,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteInformation([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Log(LogLevel.Information, 0, new LogValuesFormat(format, args), null, _logValuesFormatter);
+            logger.Log(LogLevel.Information, 0, new FormattedLogValues(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -215,7 +216,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteInformation([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Log(LogLevel.Information, eventId, new LogValuesFormat(format, args), null, _logValuesFormatter);
+            logger.Log(LogLevel.Information, eventId, new FormattedLogValues(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -279,7 +280,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteWarning([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Log(LogLevel.Warning, 0, new LogValuesFormat(format, args), null, _logValuesFormatter);
+            logger.Log(LogLevel.Warning, 0, new FormattedLogValues(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -291,7 +292,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteWarning([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Log(LogLevel.Warning, eventId, new LogValuesFormat(format, args), null, _logValuesFormatter);
+            logger.Log(LogLevel.Warning, eventId, new FormattedLogValues(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -378,7 +379,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteError([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Log(LogLevel.Error, 0, new LogValuesFormat(format, args), null, _logValuesFormatter);
+            logger.Log(LogLevel.Error, 0, new FormattedLogValues(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -390,7 +391,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteError([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Log(LogLevel.Error, eventId, new LogValuesFormat(format, args), null, _logValuesFormatter);
+            logger.Log(LogLevel.Error, eventId, new FormattedLogValues(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -477,7 +478,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteCritical([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Log(LogLevel.Critical, 0, new LogValuesFormat(format, args), null, _logValuesFormatter);
+            logger.Log(LogLevel.Critical, 0, new FormattedLogValues(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
@@ -489,7 +490,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void WriteCritical([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Log(LogLevel.Critical, eventId, new LogValuesFormat(format, args), null, _logValuesFormatter);
+            logger.Log(LogLevel.Critical, eventId, new FormattedLogValues(format, args), null, _logValuesFormatter);
         }
 
         /// <summary>
