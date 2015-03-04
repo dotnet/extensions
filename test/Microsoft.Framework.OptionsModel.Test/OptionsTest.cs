@@ -63,7 +63,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
                 {"Boolean", "TRUe"},
                 {"Nested:Integer", "11"}
             };
-            var config = new Configuration { new MemoryConfigurationSource(dic) };
+            var config = new Configuration(new MemoryConfigurationSource(dic));
             var options = new ComplexOptions();
             OptionsServices.ReadProperties(options, config);
             Assert.True(options.Boolean);
@@ -81,7 +81,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
                 {"Nested:Integer", "11"},
                 {"Virtual","Sup"}
             };
-            var config = new Configuration { new MemoryConfigurationSource(dic) };
+            var config = new Configuration(new MemoryConfigurationSource(dic));
             var options = new DerivedOptions();
             OptionsServices.ReadProperties(options, config);
             Assert.True(options.Boolean);
@@ -99,7 +99,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
                 {"Boolean", "TRUe"},
                 {"Virtual","Sup"}
             };
-            var config = new Configuration { new MemoryConfigurationSource(dic) };
+            var config = new Configuration(new MemoryConfigurationSource(dic));
             var options = new DerivedOptions();
             OptionsServices.ReadProperties(options, config);
             Assert.Equal(0, options.Nested.Integer);
@@ -114,7 +114,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             {
                 {"StaticProperty", "stuff"},
             };
-            var config = new Configuration { new MemoryConfigurationSource(dic) };
+            var config = new Configuration(new MemoryConfigurationSource(dic));
             var options = new ComplexOptions();
             OptionsServices.ReadProperties(options, config);
             Assert.Equal("stuff", ComplexOptions.StaticProperty);
@@ -131,7 +131,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             {
                 {property, "stuff"},
             };
-            var config = new Configuration { new MemoryConfigurationSource(dic) };
+            var config = new Configuration(new MemoryConfigurationSource(dic));
             var options = new ComplexOptions();
             OptionsServices.ReadProperties(options, config);
             Assert.Null(options.GetType().GetProperty(property).GetValue(options));
@@ -145,7 +145,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             {
                 {"Message", "!"},
             };
-            var config = new Configuration { new MemoryConfigurationSource(dic) };
+            var config = new Configuration(new MemoryConfigurationSource(dic));
             services.Configure<FakeOptions>(o => o.Message += "Igetstomped", -100000);
             services.Configure<FakeOptions>(config);
             services.Configure<FakeOptions>(o => o.Message += "a", -100);
@@ -187,7 +187,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             {
                 {"Message", "!"},
             };
-            var config = new Configuration { new MemoryConfigurationSource(dic) };
+            var config = new Configuration(new MemoryConfigurationSource(dic));
 
             services.ConfigureOptions(new FakeOptionsSetupB { Name = "2" });
             services.Configure<FakeOptions>(o => o.Message += "Z", 10000, "2");
