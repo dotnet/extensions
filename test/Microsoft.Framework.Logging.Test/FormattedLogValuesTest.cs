@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Framework.Logging.Test
 {
-    public class LogValuesFormatTest
+    public class FormattedLogValuesTest
     {
         [Theory]
         [InlineData("", "", new object[] { })]
