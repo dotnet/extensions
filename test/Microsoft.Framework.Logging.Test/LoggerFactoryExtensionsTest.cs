@@ -23,7 +23,7 @@ namespace Microsoft.Framework.Logging.Test
             .Returns(new Mock<ILogger>().Object);
 
             // Act
-            factory.Object.Create<TestType>();
+            factory.Object.CreateLogger<TestType>();
 
             // Assert
             factory.Verify(f => f.CreateLogger(expected));

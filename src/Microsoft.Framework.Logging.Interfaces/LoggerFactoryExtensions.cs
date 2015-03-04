@@ -15,7 +15,7 @@ namespace Microsoft.Framework.Logging
         /// </summary>
         /// <typeparam name="T">The type.</typeparam>
         /// <param name="factory">The factory.</param>
-        public static ILogger Create<T>(this ILoggerFactory factory)
+        public static ILogger CreateLogger<T>(this ILoggerFactory factory)
         {
             if (factory == null)
             {

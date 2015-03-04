@@ -20,7 +20,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="factory">The factory.</param>
         public Logger(ILoggerFactory factory)
         {
-            _logger = factory.Create<T>();
+            _logger = factory.CreateLogger<T>();
         }
 
         IDisposable ILogger.BeginScope(object state)
