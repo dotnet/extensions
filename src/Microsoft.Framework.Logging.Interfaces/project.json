@@ -9,7 +9,10 @@
         "aspnet50": { },
         "aspnetcore50": {
             "dependencies": {
+                "System.Collections": "4.0.10-beta-*",
+                "System.Collections.Concurrent": "4.0.10-beta-*",
                 "System.Linq": "4.0.0-beta-*",
+                "System.Globalization": "4.0.10-beta-*",
                 "System.Runtime": "4.0.20-beta-*",
                 "System.Runtime.Extensions": "4.0.10-beta-*",
                 "System.Runtime.InteropServices": "4.0.20-beta-*"
@@ -17,6 +20,8 @@
         },
         ".NETPortable,Version=v4.6,Profile=Profile151": {
             "frameworkAssemblies": {
+                "System.Collections": "",
+                "System.Collections.Concurrent": "",
                 "System.Globalization": "",
                 "System.Linq": "",
                 "System.Runtime": "",

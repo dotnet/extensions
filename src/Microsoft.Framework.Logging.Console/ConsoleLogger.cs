@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace Microsoft.Framework.Logging.Console
@@ -14,6 +16,25 @@ namespace Microsoft.Framework.Logging.Console
         private readonly string _name;
         private Func<string, LogLevel, bool> _filter;
         private readonly object _lock = new object();
+
+        private static readonly Dictionary<LogLevel, string> _logLevelMappings = new Dictionary<LogLevel, string>()
+        {
+            { LogLevel.Information, "info" },
+            { LogLevel.Critical, "critical" },
+            { LogLevel.Debug, "debug" },
+            { LogLevel.Error, "error" },
+            { LogLevel.Verbose, "verbose" },
+            { LogLevel.Warning, "warning" }
+        };
+        private static readonly string UnknownLogLevel = "unknown";
+        private static readonly int Padding;
+
+        static ConsoleLogger()
+        {
+            Padding = Math.Max(
+                _logLevelMappings.Values.Max(v => v.Length),
+                UnknownLogLevel.Length);
+        }
 
         public ConsoleLogger(string name, Func<string, LogLevel, bool> filter)
         {
@@ -76,10 +97,15 @@ namespace Microsoft.Framework.Logging.Console
             }
         }
 
-        protected virtual string FormatMessage(LogLevel logLevel, string message)
+        private string FormatMessage(LogLevel logLevel, string message)
         {
-            return $"[{logLevel.ToString().ToUpperInvariant()}:{_name}] {message}";
-        } 
+            string logLevelString;
+            if(!_logLevelMappings.TryGetValue(logLevel, out logLevelString))
+            {
+                logLevelString = UnknownLogLevel;
+            }
+            return $"{logLevelString.PadRight(Padding)}: [{_name}] {message}";
+        }
 
         public bool IsEnabled(LogLevel logLevel)
         {
