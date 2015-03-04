@@ -319,20 +319,22 @@ namespace Microsoft.Framework.Logging.Test
             logger.Write(LogLevel.Warning, 0, _state, ex, TheMessageAndError);
             logger.Write(LogLevel.Information, 0, _state, ex, TheMessageAndError);
             logger.Write(LogLevel.Verbose, 0, _state, ex, TheMessageAndError);
+            logger.Write(LogLevel.Debug, 0, _state, ex, TheMessageAndError);
 
             // Assert
-            Assert.Equal(5, sink.Writes.Count);
-            Assert.Equal(getMessage(LogLevel.Critical, ex), sink.Writes[0].Message);
-            Assert.Equal(getMessage(LogLevel.Error, ex), sink.Writes[1].Message);
-            Assert.Equal(getMessage(LogLevel.Warning, ex), sink.Writes[2].Message);
-            Assert.Equal(getMessage(LogLevel.Information, ex), sink.Writes[3].Message);
-            Assert.Equal(getMessage(LogLevel.Verbose, ex), sink.Writes[4].Message);
+            Assert.Equal(6, sink.Writes.Count);
+            Assert.Equal(getMessage("critical", ex), sink.Writes[0].Message);
+            Assert.Equal(getMessage("error   ", ex), sink.Writes[1].Message);
+            Assert.Equal(getMessage("warning ", ex), sink.Writes[2].Message);
+            Assert.Equal(getMessage("info    ", ex), sink.Writes[3].Message);
+            Assert.Equal(getMessage("verbose ", ex), sink.Writes[4].Message);
+            Assert.Equal(getMessage("debug   ", ex), sink.Writes[5].Message);
         }
 
-        private string getMessage(LogLevel logLevel, Exception exception)
+        private string getMessage(string logLevelString, Exception exception)
         {
-            return string.Format("[{0}:{1}] {2}", logLevel.ToString().ToUpperInvariant(), _name,
-                TheMessageAndError(_state, exception));
+            return $"{logLevelString}: [{_name}] {TheMessageAndError(_state, exception)}";
+
         }
     }
 }
