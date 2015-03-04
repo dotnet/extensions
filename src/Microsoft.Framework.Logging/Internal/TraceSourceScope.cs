@@ -5,12 +5,12 @@
 using System;
 using System.Diagnostics;
 
-namespace Microsoft.Framework.Logging
+namespace Microsoft.Framework.Logging.Internal
 {
     /// <summary>
     /// Provides an IDisposable that represents a logical operation scope based on System.Diagnostics LogicalOperationStack
     /// </summary>
-    public class DiagnosticsScope : IDisposable
+    public class TraceSourceScope : IDisposable
     {
         // To detect redundant calls
         private bool _isDisposed;
@@ -20,7 +20,7 @@ namespace Microsoft.Framework.Logging
         /// <see cref="Trace.CorrelationManager.StartLogicalOperation(object operationId)"/>
         /// </summary>
         /// <param name="state">The state.</param>
-        public DiagnosticsScope(object state)
+        public TraceSourceScope(object state)
         {
 #if NET45 || ASPNET50
             Trace.CorrelationManager.StartLogicalOperation(state);

@@ -6,10 +6,11 @@ using Xunit;
 #if ASPNET50
 using Moq;
 #endif
+using Microsoft.Framework.Logging.Internal;
 
 namespace Microsoft.Framework.Logging.Test
 {
-    public class DiagnosticsScopeTest
+    public class TraceSourceScopeTest
     {
 #if ASPNET50
         [Fact]
@@ -22,7 +23,7 @@ namespace Microsoft.Framework.Logging.Test
 
             // Act
             var a = Trace.CorrelationManager.LogicalOperationStack.Peek();
-            var scope = new DiagnosticsScope(state);
+            var scope = new TraceSourceScope(state);
             var b = Trace.CorrelationManager.LogicalOperationStack.Peek();
             scope.Dispose();
             var c = Trace.CorrelationManager.LogicalOperationStack.Peek();

@@ -4,14 +4,15 @@
 #if NET45 || ASPNET50 || ASPNETCORE50
 using System;
 using System.Diagnostics;
+using Microsoft.Framework.Logging.Internal;
 
 namespace Microsoft.Framework.Logging
 {
-    internal class DiagnosticsLogger : ILogger
+    internal class TraceSourceLogger : ILogger
     {
         private readonly TraceSource _traceSource;
 
-        public DiagnosticsLogger(TraceSource traceSource)
+        public TraceSourceLogger(TraceSource traceSource)
         {
             _traceSource = traceSource;
         }
@@ -65,7 +66,7 @@ namespace Microsoft.Framework.Logging
 
         public IDisposable BeginScope(object state)
         {
-            return new DiagnosticsScope(state);
+            return new TraceSourceScope(state);
         }
     }
 }

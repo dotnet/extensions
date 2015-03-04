@@ -11,7 +11,7 @@ namespace Microsoft.Framework.Logging
     /// <summary>
     /// Provides an ILoggerFactory based on System.Diagnostics.TraceSource.
     /// </summary>
-    public class DiagnosticsLoggerProvider : ILoggerProvider
+    public class TraceSourceLoggerProvider : ILoggerProvider
     {
         private const string RootTraceName = "Microsoft.AspNet";
         private readonly SourceSwitch _rootSourceSwitch;
@@ -25,7 +25,7 @@ namespace Microsoft.Framework.Logging
         /// <summary>
         /// Creates a factory named "Microsoft.AspNet".
         /// </summary>
-        public DiagnosticsLoggerProvider()
+        public TraceSourceLoggerProvider()
         {
             _rootSourceSwitch = new SourceSwitch(RootTraceName);
             _rootTraceListener = null;
@@ -36,7 +36,7 @@ namespace Microsoft.Framework.Logging
         /// </summary>
         /// <param name="rootSourceSwitch"></param>
         /// <param name="rootTraceListener"></param>
-        public DiagnosticsLoggerProvider(SourceSwitch rootSourceSwitch, TraceListener rootTraceListener)
+        public TraceSourceLoggerProvider(SourceSwitch rootSourceSwitch, TraceListener rootTraceListener)
         {
             _rootSourceSwitch = rootSourceSwitch ?? new SourceSwitch(RootTraceName);
             _rootTraceListener = rootTraceListener;
@@ -49,7 +49,7 @@ namespace Microsoft.Framework.Logging
         /// <returns></returns>
         public ILogger CreateLogger(string name)
         {
-            return new DiagnosticsLogger(GetOrAddTraceSource(name));
+            return new TraceSourceLogger(GetOrAddTraceSource(name));
         }
 
         private TraceSource GetOrAddTraceSource(string name)

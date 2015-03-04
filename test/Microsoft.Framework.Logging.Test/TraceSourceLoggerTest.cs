@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Framework.Logging.Test
 {
-    public class DiagnosticsLoggerTest
+    public class TraceSourceLoggerTest
     {
         [Fact]
         public static void IsEnabledReturnsCorrectValue()
@@ -20,7 +20,7 @@ namespace Microsoft.Framework.Logging.Test
             var logger = factory.CreateLogger("Test");
 
             // Act
-            factory.AddProvider(new DiagnosticsLoggerProvider(testSwitch, new ConsoleTraceListener()));
+            factory.AddProvider(new TraceSourceLoggerProvider(testSwitch, new ConsoleTraceListener()));
 
             // Assert
             Assert.True(logger.IsEnabled(LogLevel.Critical));
@@ -48,8 +48,8 @@ namespace Microsoft.Framework.Logging.Test
             var logger = factory.CreateLogger("Test");
 
             // Act
-            factory.AddProvider(new DiagnosticsLoggerProvider(firstSwitch, new ConsoleTraceListener()));
-            factory.AddProvider(new DiagnosticsLoggerProvider(secondSwitch, new ConsoleTraceListener()));
+            factory.AddProvider(new TraceSourceLoggerProvider(firstSwitch, new ConsoleTraceListener()));
+            factory.AddProvider(new TraceSourceLoggerProvider(secondSwitch, new ConsoleTraceListener()));
 
             // Assert
             Assert.Equal(expected, logger.IsEnabled(LogLevel.Information));
