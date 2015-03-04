@@ -44,10 +44,10 @@ namespace SampleApp
 
         public void Main(string[] args)
         {
-            _logger.WriteInformation("Starting");
+            _logger.LogInformation("Starting");
 
             var startTime = DateTimeOffset.UtcNow;
-            _logger.WriteInformation(1, "Started at '{StartTime}' and 0x{Hello:X} is hex of 42", startTime, 42);
+            _logger.LogInformation(1, "Started at '{StartTime}' and 0x{Hello:X} is hex of 42", startTime, 42);
 
             try
             {
@@ -55,31 +55,31 @@ namespace SampleApp
             }
             catch (Exception ex)
             {
-                _logger.WriteCritical("Unexpected critical error starting application", ex);
+                _logger.LogCritical("Unexpected critical error starting application", ex);
                 _logger.Log(LogLevel.Critical, 0, "Unexpected critical error", ex, null);
                 // This write should not log anything
                 _logger.Log(LogLevel.Critical, 0, null, null, null);
-                _logger.WriteError("Unexpected error", ex);
-                _logger.WriteWarning("Unexpected warning", ex);
+                _logger.LogError("Unexpected error", ex);
+                _logger.LogWarning("Unexpected warning", ex);
             }
 
             using (_logger.BeginScope("Main"))
             {
                 Console.WriteLine("Hello World");
 
-                _logger.WriteInformation("Waiting for user input");
+                _logger.LogInformation("Waiting for user input");
                 Console.ReadLine();
             }
 
             var endTime = DateTimeOffset.UtcNow;
-            _logger.WriteInformation(2, "Stopping at '{StopTime}'", endTime);
+            _logger.LogInformation(2, "Stopping at '{StopTime}'", endTime);
 
-            _logger.WriteInformation("Stopping");
+            _logger.LogInformation("Stopping");
 
-            _logger.WriteInformation(Environment.NewLine);
-            _logger.WriteInformation("{Result,-10}{StartTime,15}{EndTime,15}{Duration,15}", "RESULT", "START TIME", "END TIME", "DURATION(ms)");
-            _logger.WriteInformation("{Result,-10}{StartTime,15}{EndTime,15}{Duration,15}", "------", "----- ----", "--- ----", "------------");
-            _logger.WriteInformation("{Result,-10}{StartTime,15:mm:s tt}{EndTime,15:mm:s tt}{Duration,15}", "SUCCESS", startTime, endTime, (endTime - startTime).TotalMilliseconds);
+            _logger.LogInformation(Environment.NewLine);
+            _logger.LogInformation("{Result,-10}{StartTime,15}{EndTime,15}{Duration,15}", "RESULT", "START TIME", "END TIME", "DURATION(ms)");
+            _logger.LogInformation("{Result,-10}{StartTime,15}{EndTime,15}{Duration,15}", "------", "----- ----", "--- ----", "------------");
+            _logger.LogInformation("{Result,-10}{StartTime,15:mm:s tt}{EndTime,15:mm:s tt}{Duration,15}", "SUCCESS", startTime, endTime, (endTime - startTime).TotalMilliseconds);
         }
     }
 }

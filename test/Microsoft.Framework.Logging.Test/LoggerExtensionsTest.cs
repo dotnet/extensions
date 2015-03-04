@@ -28,12 +28,12 @@ namespace Microsoft.Framework.Logging.Test
             var logger = SetUp(sink);
 
             // Act
-            logger.WriteVerbose(_state);
-            logger.WriteInformation(_state);
-            logger.WriteWarning(_state);
-            logger.WriteError(_state);
-            logger.WriteCritical(_state);
-            logger.WriteDebug(_state);
+            logger.LogVerbose(_state);
+            logger.LogInformation(_state);
+            logger.LogWarning(_state);
+            logger.LogError(_state);
+            logger.LogCritical(_state);
+            logger.LogDebug(_state);
 
             // Assert
             Assert.Equal(6, sink.Writes.Count);
@@ -83,12 +83,12 @@ namespace Microsoft.Framework.Logging.Test
             var logger = SetUp(sink);
 
             // Act
-            logger.WriteVerbose(_format, "test1", "test2");
-            logger.WriteInformation(_format, "test1", "test2");
-            logger.WriteWarning(_format, "test1", "test2");
-            logger.WriteError(_format, "test1", "test2");
-            logger.WriteCritical(_format, "test1", "test2");
-            logger.WriteDebug(_format, "test1", "test2");
+            logger.LogVerbose(_format, "test1", "test2");
+            logger.LogInformation(_format, "test1", "test2");
+            logger.LogWarning(_format, "test1", "test2");
+            logger.LogError(_format, "test1", "test2");
+            logger.LogCritical(_format, "test1", "test2");
+            logger.LogDebug(_format, "test1", "test2");
 
             // Assert
             Assert.Equal(6, sink.Writes.Count);
@@ -138,12 +138,12 @@ namespace Microsoft.Framework.Logging.Test
             var logger = SetUp(sink);
 
             // Act
-            logger.WriteVerbose(1, _state);
-            logger.WriteInformation(2, _state);
-            logger.WriteWarning(3, _state);
-            logger.WriteError(4, _state);
-            logger.WriteCritical(5, _state);
-            logger.WriteDebug(6, _state);
+            logger.LogVerbose(1, _state);
+            logger.LogInformation(2, _state);
+            logger.LogWarning(3, _state);
+            logger.LogError(4, _state);
+            logger.LogCritical(5, _state);
+            logger.LogDebug(6, _state);
 
             // Assert
             Assert.Equal(6, sink.Writes.Count);
@@ -193,12 +193,12 @@ namespace Microsoft.Framework.Logging.Test
             var logger = SetUp(sink);
 
             // Act
-            logger.WriteVerbose(1, _format, "test1", "test2");
-            logger.WriteInformation(2, _format, "test1", "test2");
-            logger.WriteWarning(3, _format, "test1", "test2");
-            logger.WriteError(4, _format, "test1", "test2");
-            logger.WriteCritical(5, _format, "test1", "test2");
-            logger.WriteDebug(6, _format, "test1", "test2");
+            logger.LogVerbose(1, _format, "test1", "test2");
+            logger.LogInformation(2, _format, "test1", "test2");
+            logger.LogWarning(3, _format, "test1", "test2");
+            logger.LogError(4, _format, "test1", "test2");
+            logger.LogCritical(5, _format, "test1", "test2");
+            logger.LogDebug(6, _format, "test1", "test2");
 
             // Assert
             Assert.Equal(6, sink.Writes.Count);
@@ -248,9 +248,9 @@ namespace Microsoft.Framework.Logging.Test
             var logger = SetUp(sink);
 
             // Act
-            logger.WriteWarning(_state, _exception);
-            logger.WriteError(_state, _exception);
-            logger.WriteCritical(_state, _exception);
+            logger.LogWarning(_state, _exception);
+            logger.LogError(_state, _exception);
+            logger.LogCritical(_state, _exception);
 
             // Assert
             Assert.Equal(3, sink.Writes.Count);
@@ -282,9 +282,9 @@ namespace Microsoft.Framework.Logging.Test
             var logger = SetUp(sink);
 
             // Act
-            logger.WriteWarning(3, _state, _exception);
-            logger.WriteError(4, _state, _exception);
-            logger.WriteCritical(5, _state, _exception);
+            logger.LogWarning(3, _state, _exception);
+            logger.LogError(4, _state, _exception);
+            logger.LogCritical(5, _state, _exception);
 
             // Assert
             Assert.Equal(3, sink.Writes.Count);
@@ -320,12 +320,12 @@ namespace Microsoft.Framework.Logging.Test
             };
 
             // Act
-            logger.WriteVerbose(testStructure);
-            logger.WriteInformation(testStructure);
-            logger.WriteWarning(testStructure);
-            logger.WriteError(testStructure);
-            logger.WriteCritical(testStructure);
-            logger.WriteDebug(testStructure);
+            logger.LogVerbose(testStructure);
+            logger.LogInformation(testStructure);
+            logger.LogWarning(testStructure);
+            logger.LogError(testStructure);
+            logger.LogCritical(testStructure);
+            logger.LogDebug(testStructure);
 
             // Assert
             Assert.Equal(6, sink.Writes.Count);
@@ -385,12 +385,12 @@ namespace Microsoft.Framework.Logging.Test
             };
 
             // Act
-            logger.WriteVerbose(1, testStructure);
-            logger.WriteInformation(2, testStructure);
-            logger.WriteWarning(3, testStructure);
-            logger.WriteError(4, testStructure);
-            logger.WriteCritical(5, testStructure);
-            logger.WriteDebug(6, testStructure);
+            logger.LogVerbose(1, testStructure);
+            logger.LogInformation(2, testStructure);
+            logger.LogWarning(3, testStructure);
+            logger.LogError(4, testStructure);
+            logger.LogCritical(5, testStructure);
+            logger.LogDebug(6, testStructure);
 
             // Assert
             Assert.Equal(6, sink.Writes.Count);
@@ -450,12 +450,12 @@ namespace Microsoft.Framework.Logging.Test
             };
 
             // Act
-            logger.WriteVerbose(testStructure, _exception);
-            logger.WriteInformation(testStructure, _exception);
-            logger.WriteWarning(testStructure, _exception);
-            logger.WriteError(testStructure, _exception);
-            logger.WriteCritical(testStructure, _exception);
-            logger.WriteDebug(testStructure, _exception);
+            logger.LogVerbose(testStructure, _exception);
+            logger.LogInformation(testStructure, _exception);
+            logger.LogWarning(testStructure, _exception);
+            logger.LogError(testStructure, _exception);
+            logger.LogCritical(testStructure, _exception);
+            logger.LogDebug(testStructure, _exception);
 
             // Assert
             Assert.Equal(6, sink.Writes.Count);
@@ -526,12 +526,12 @@ namespace Microsoft.Framework.Logging.Test
             };
 
             // Act
-            logger.WriteVerbose(1, testStructure, _exception);
-            logger.WriteInformation(2, testStructure, _exception);
-            logger.WriteWarning(3, testStructure, _exception);
-            logger.WriteError(4, testStructure, _exception);
-            logger.WriteCritical(5, testStructure, _exception);
-            logger.WriteDebug(6, testStructure, _exception);
+            logger.LogVerbose(1, testStructure, _exception);
+            logger.LogInformation(2, testStructure, _exception);
+            logger.LogWarning(3, testStructure, _exception);
+            logger.LogError(4, testStructure, _exception);
+            logger.LogCritical(5, testStructure, _exception);
+            logger.LogDebug(6, testStructure, _exception);
 
             // Assert
             Assert.Equal(6, sink.Writes.Count);
