@@ -5,19 +5,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
+        public static IServiceProvider BuildServiceProvider(this IServiceCollection services)
+        {
+            return new ServiceProvider(services);
+        }
 
         /// <summary>
-        /// Adds a sequence of <see cref="IServiceDescriptor"/> to the <paramref name="collection"/>.
+        /// Adds a sequence of <see cref="ServiceDescriptor"/> to the <paramref name="collection"/>.
         /// </summary>
-        /// <param name="descriptor">The <see cref="IEnumerable{T}"/> of <see cref="IServiceDescriptor"/>s to add.</param>
+        /// <param name="descriptor">The <see cref="IEnumerable{T}"/> of <see cref="ServiceDescriptor"/>s to add.</param>
         /// <returns>A reference to the current instance of <see cref="IServiceCollection"/>.</returns>
         public static IServiceCollection Add([NotNull] this IServiceCollection collection,
-                                             [NotNull] IEnumerable<IServiceDescriptor> descriptors)
+                                             [NotNull] IEnumerable<ServiceDescriptor> descriptors)
         {
             foreach (var descriptor in descriptors)
             {
@@ -32,10 +37,10 @@ namespace Microsoft.Framework.DependencyInjection
         /// service type hasn't been already registered.
         /// </summary>
         /// <param name="collection">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="descriptor">The <see cref="IServiceDescriptor"/>.</param>
+        /// <param name="descriptor">The <see cref="ServiceDescriptor"/>.</param>
         /// <returns><c>true</c> if the <paramref name="descriptor"/> was added; otherwise <c>false</c>.</returns>
         public static bool TryAdd([NotNull] this IServiceCollection collection,
-                                  [NotNull] IServiceDescriptor descriptor)
+                                  [NotNull] ServiceDescriptor descriptor)
         {
             if (!collection.Any(d => d.ServiceType == descriptor.ServiceType))
             {
@@ -50,10 +55,10 @@ namespace Microsoft.Framework.DependencyInjection
         /// service type hasn't been already registered.
         /// </summary>
         /// <param name="collection">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="descriptor">The <see cref="IServiceDescriptor"/>s.</param>
+        /// <param name="descriptor">The <see cref="ServiceDescriptor"/>s.</param>
         /// <returns><c>true</c> if any of the <paramref name="descriptor"/>s was added; otherwise <c>false</c>.</returns>
         public static bool TryAdd([NotNull] this IServiceCollection collection,
-                                  [NotNull] IEnumerable<IServiceDescriptor> descriptors)
+                                  [NotNull] IEnumerable<ServiceDescriptor> descriptors)
         {
             var anyAdded = false;
             foreach (var d in descriptors)
@@ -66,8 +71,7 @@ namespace Microsoft.Framework.DependencyInjection
 
         public static IServiceCollection AddTypeActivator([NotNull]this IServiceCollection services, IConfiguration config = null)
         {
-            var describe = new ServiceDescriber(config);
-            services.TryAdd(describe.Singleton<ITypeActivator, TypeActivator>());
+            services.TryAdd(ServiceDescriptor.Singleton<ITypeActivator, TypeActivator>());
             return services;
         }
 
@@ -75,42 +79,42 @@ namespace Microsoft.Framework.DependencyInjection
                                                       [NotNull] Type service, 
                                                       [NotNull] Type implementationType)
         {
-            return Add(collection, service, implementationType, LifecycleKind.Transient);
+            return Add(collection, service, implementationType, ServiceLifetime.Transient);
         }
 
         public static IServiceCollection AddTransient([NotNull] this IServiceCollection collection,
                                                       [NotNull] Type service,
                                                       [NotNull] Func<IServiceProvider, object> implementationFactory)
         {
-            return Add(collection, service, implementationFactory, LifecycleKind.Transient);
+            return Add(collection, service, implementationFactory, ServiceLifetime.Transient);
         }
 
         public static IServiceCollection AddScoped([NotNull] this IServiceCollection collection,
                                                    [NotNull] Type service,
                                                    [NotNull] Type implementationType)
         {
-            return Add(collection, service, implementationType, LifecycleKind.Scoped);
+            return Add(collection, service, implementationType, ServiceLifetime.Scoped);
         }
 
         public static IServiceCollection AddScoped([NotNull] this IServiceCollection collection,
                                                    [NotNull] Type service,
                                                    [NotNull] Func<IServiceProvider, object> implementationFactory)
         {
-            return Add(collection, service, implementationFactory, LifecycleKind.Scoped);
+            return Add(collection, service, implementationFactory, ServiceLifetime.Scoped);
         }
 
         public static IServiceCollection AddSingleton([NotNull] this IServiceCollection collection,
                                                       [NotNull] Type service,
                                                       [NotNull] Type implementationType)
         {
-            return Add(collection, service, implementationType, LifecycleKind.Singleton);
+            return Add(collection, service, implementationType, ServiceLifetime.Singleton);
         }
 
         public static IServiceCollection AddSingleton([NotNull] this IServiceCollection collection,
                                                       [NotNull] Type service,
                                                       [NotNull] Func<IServiceProvider, object> implementationFactory)
         {
-            return Add(collection, service, implementationFactory, LifecycleKind.Singleton);
+            return Add(collection, service, implementationFactory, ServiceLifetime.Singleton);
         }
 
         public static IServiceCollection AddInstance([NotNull] this IServiceCollection collection,
@@ -204,10 +208,10 @@ namespace Microsoft.Framework.DependencyInjection
         /// as <paramref name="descriptor"/> and adds <paramef name="descriptor"/> to the collection.
         /// </summary>
         /// <param name="collection">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="descriptor">The <see cref="IServiceDescriptor"/> to replace with.</param>
+        /// <param name="descriptor">The <see cref="ServiceDescriptor"/> to replace with.</param>
         /// <returns></returns>
         public static IServiceCollection Replace([NotNull] this IServiceCollection collection,
-                                                 [NotNull] IServiceDescriptor descriptor)
+                                                 [NotNull] ServiceDescriptor descriptor)
         {
             var registeredServiceDescriptor = collection.FirstOrDefault(s => s.ServiceType == descriptor.ServiceType);
             if (registeredServiceDescriptor != null)
@@ -221,7 +225,7 @@ namespace Microsoft.Framework.DependencyInjection
         private static IServiceCollection Add(IServiceCollection collection,
                                               Type service,
                                               Type implementationType,
-                                              LifecycleKind lifeCycle)
+                                              ServiceLifetime lifeCycle)
         {
             var descriptor = new ServiceDescriptor(service, implementationType, lifeCycle);
             return collection.Add(descriptor);
@@ -230,7 +234,7 @@ namespace Microsoft.Framework.DependencyInjection
         private static IServiceCollection Add(IServiceCollection collection,
                                               Type service,
                                               Func<IServiceProvider, object> implementationFactory,
-                                              LifecycleKind lifeCycle)
+                                              ServiceLifetime lifeCycle)
         {
             var descriptor = new ServiceDescriptor(service, implementationFactory, lifeCycle);
             return collection.Add(descriptor);

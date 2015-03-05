@@ -26,7 +26,7 @@ namespace Microsoft.Framework.DependencyInjection
         private readonly Dictionary<IService, object> _resolvedServices = new Dictionary<IService, object>();
         private ConcurrentBag<IDisposable> _disposables = new ConcurrentBag<IDisposable>();
 
-        public ServiceProvider(IEnumerable<IServiceDescriptor> serviceDescriptors)
+        public ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors)
         {
             _root = this;
             _table = new ServiceTable(serviceDescriptors);
@@ -121,11 +121,11 @@ namespace Microsoft.Framework.DependencyInjection
         internal IServiceCallSite GetResolveCallSite(IService service, ISet<Type> callSiteChain)
         {
             IServiceCallSite serviceCallSite = service.CreateCallSite(this, callSiteChain);
-            if (service.Lifecycle == LifecycleKind.Transient)
+            if (service.Lifetime == ServiceLifetime.Transient)
             {
                 return new TransientCallSite(serviceCallSite);
             }
-            else if (service.Lifecycle == LifecycleKind.Scoped)
+            else if (service.Lifetime == ServiceLifetime.Scoped)
             {
                 return new ScopedCallSite(service, serviceCallSite);
             }

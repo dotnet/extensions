@@ -13,7 +13,7 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
     {
         public static void Populate(
                 this ContainerBuilder builder,
-                IEnumerable<IServiceDescriptor> descriptors)
+                IEnumerable<ServiceDescriptor> descriptors)
         {
             builder.RegisterType<AutofacServiceProvider>().As<IServiceProvider>();
             builder.RegisterType<AutofacServiceScopeFactory>().As<IServiceScopeFactory>();
@@ -23,7 +23,7 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
 
         private static void Register(
                 ContainerBuilder builder,
-                IEnumerable<IServiceDescriptor> descriptors)
+                IEnumerable<ServiceDescriptor> descriptors)
         {
             foreach (var descriptor in descriptors)
             {
@@ -36,14 +36,14 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
                         builder
                             .RegisterGeneric(descriptor.ImplementationType)
                             .As(descriptor.ServiceType)
-                            .ConfigureLifecycle(descriptor.Lifecycle);
+                            .ConfigureLifecycle(descriptor.Lifetime);
                     }
                     else
                     {
                         builder
                             .RegisterType(descriptor.ImplementationType)
                             .As(descriptor.ServiceType)
-                            .ConfigureLifecycle(descriptor.Lifecycle);
+                            .ConfigureLifecycle(descriptor.Lifetime);
                     }
                 }
                 else if (descriptor.ImplementationFactory != null)
@@ -53,7 +53,7 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
                         var serviceProvider = context.Resolve<IServiceProvider>();
                         return descriptor.ImplementationFactory(serviceProvider);
                     })
-                    .ConfigureLifecycle(descriptor.Lifecycle)
+                    .ConfigureLifecycle(descriptor.Lifetime)
                     .CreateRegistration();
 
                     builder.RegisterComponent(registration);
@@ -63,24 +63,24 @@ namespace Microsoft.Framework.DependencyInjection.Autofac
                     builder
                         .RegisterInstance(descriptor.ImplementationInstance)
                         .As(descriptor.ServiceType)
-                        .ConfigureLifecycle(descriptor.Lifecycle);
+                        .ConfigureLifecycle(descriptor.Lifetime);
                 }
             }
         }
 
         private static IRegistrationBuilder<object, T, U> ConfigureLifecycle<T, U>(
                 this IRegistrationBuilder<object, T, U> registrationBuilder,
-                LifecycleKind lifecycleKind)
+                ServiceLifetime lifecycleKind)
         {
             switch (lifecycleKind)
             {
-                case LifecycleKind.Singleton:
+                case ServiceLifetime.Singleton:
                     registrationBuilder.SingleInstance();
                     break;
-                case LifecycleKind.Scoped:
+                case ServiceLifetime.Scoped:
                     registrationBuilder.InstancePerLifetimeScope();
                     break;
-                case LifecycleKind.Transient:
+                case ServiceLifetime.Transient:
                     registrationBuilder.InstancePerDependency();
                     break;
             }

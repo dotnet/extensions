@@ -8,16 +8,16 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 {
     internal class GenericService : IGenericService
     {
-        private readonly IServiceDescriptor _descriptor;
+        private readonly ServiceDescriptor _descriptor;
 
-        public GenericService(IServiceDescriptor descriptor)
+        public GenericService(ServiceDescriptor descriptor)
         {
             _descriptor = descriptor;
         }
 
-        public LifecycleKind Lifecycle
+        public ServiceLifetime Lifetime
         {
-            get { return _descriptor.Lifecycle; }
+            get { return _descriptor.Lifetime; }
         }
 
         public IService GetService(Type closedServiceType)
@@ -26,7 +26,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
             Type closedImplementationType =
                 _descriptor.ImplementationType.MakeGenericType(genericArguments);
 
-            var closedServiceDescriptor = new ServiceDescriptor(closedServiceType, closedImplementationType, Lifecycle);
+            var closedServiceDescriptor = new ServiceDescriptor(closedServiceType, closedImplementationType, Lifetime);
             return new Service(closedServiceDescriptor);
         }
     }

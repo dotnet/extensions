@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -11,7 +12,7 @@ namespace Microsoft.Framework.DependencyInjection
     /// </summary>
     public class ServiceCollection : IServiceCollection
     {
-        private readonly List<IServiceDescriptor> _descriptors = new List<IServiceDescriptor>();
+        private readonly List<ServiceDescriptor> _descriptors = new List<ServiceDescriptor>();
 
         /// <inheritdoc />
         public int Count => _descriptors.Count;
@@ -20,7 +21,7 @@ namespace Microsoft.Framework.DependencyInjection
         public bool IsReadOnly => false;
 
         /// <inheritdoc />
-        public IServiceCollection Add([NotNull] IServiceDescriptor descriptor)
+        public IServiceCollection Add([NotNull] ServiceDescriptor descriptor)
         {
             _descriptors.Add(descriptor);
             return this;
@@ -33,30 +34,30 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         /// <inheritdoc />
-        public bool Contains(IServiceDescriptor item)
+        public bool Contains(ServiceDescriptor item)
         {
             return _descriptors.Contains(item);
         }
 
         /// <inheritdoc />
-        public void CopyTo(IServiceDescriptor[] array, int arrayIndex)
+        public void CopyTo(ServiceDescriptor[] array, int arrayIndex)
         {
             _descriptors.CopyTo(array, arrayIndex);
         }
 
         /// <inheritdoc />
-        public bool Remove(IServiceDescriptor item)
+        public bool Remove(ServiceDescriptor item)
         {
             return _descriptors.Remove(item);
         }
 
         /// <inheritdoc />
-        public IEnumerator<IServiceDescriptor> GetEnumerator()
+        public IEnumerator<ServiceDescriptor> GetEnumerator()
         {
             return _descriptors.GetEnumerator();
         }
 
-        void ICollection<IServiceDescriptor>.Add(IServiceDescriptor item)
+        void ICollection<ServiceDescriptor>.Add(ServiceDescriptor item)
         {
             Add(item);
         }

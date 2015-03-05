@@ -12,18 +12,18 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
     /// </summary>
     internal class InstanceService : IService, IServiceCallSite
     {
-        private readonly IServiceDescriptor _descriptor;
+        private readonly ServiceDescriptor _descriptor;
 
-        public InstanceService(IServiceDescriptor descriptor)
+        public InstanceService(ServiceDescriptor descriptor)
         {
             _descriptor = descriptor;
         }
 
         public IService Next { get; set; }
 
-        public LifecycleKind Lifecycle
+        public ServiceLifetime Lifetime
         {
-            get { return _descriptor.Lifecycle; }
+            get { return _descriptor.Lifetime; }
         }
 
         public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)

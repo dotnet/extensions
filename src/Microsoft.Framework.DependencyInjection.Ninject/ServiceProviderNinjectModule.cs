@@ -12,10 +12,10 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
 {
     internal class ServiceProviderNinjectModule : NinjectModule
     {
-        private readonly IEnumerable<IServiceDescriptor> _serviceDescriptors;
+        private readonly IEnumerable<ServiceDescriptor> _serviceDescriptors;
 
         public ServiceProviderNinjectModule(
-                IEnumerable<IServiceDescriptor> serviceDescriptors)
+                IEnumerable<ServiceDescriptor> serviceDescriptors)
         {
             _serviceDescriptors = serviceDescriptors;
         }
@@ -43,15 +43,15 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
                     binding = Bind(descriptor.ServiceType).ToConstant(descriptor.ImplementationInstance);
                 }
 
-                switch (descriptor.Lifecycle)
+                switch (descriptor.Lifetime)
                 {
-                    case LifecycleKind.Singleton:
+                    case ServiceLifetime.Singleton:
                         binding.InSingletonScope();
                         break;
-                    case LifecycleKind.Scoped:
+                    case ServiceLifetime.Scoped:
                         binding.InRequestScope();
                         break;
-                    case LifecycleKind.Transient:
+                    case ServiceLifetime.Transient:
                         binding.InTransientScope();
                         break;
                 }

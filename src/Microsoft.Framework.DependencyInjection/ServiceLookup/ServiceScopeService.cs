@@ -13,9 +13,9 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
     {
         public IService Next { get; set; }
 
-        public LifecycleKind Lifecycle
+        public ServiceLifetime Lifetime
         {
-            get { return LifecycleKind.Scoped; }
+            get { return ServiceLifetime.Scoped; }
         }
 
         public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)

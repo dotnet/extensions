@@ -1,34 +1,26 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-
 namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
 {
     public static class TestServices
     {
-        public static IEnumerable<IServiceDescriptor> DefaultServices()
+        public static IServiceCollection DefaultServices()
         {
-            var describer = new ServiceDescriber();
+            var services = new ServiceCollection();
 
-            yield return describer.Transient<IFakeService, FakeService>();
-            yield return describer.Transient<IFakeMultipleService, FakeOneMultipleService>();
-            yield return describer.Transient<IFakeMultipleService, FakeTwoMultipleService>();
-            yield return describer.Transient<IFakeOuterService, FakeOuterService>();
-            yield return describer.Instance<IFakeServiceInstance>(new FakeService() { Message = "Instance" });
-            yield return describer.Scoped<IFakeScopedService, FakeService>();
-            yield return describer.Singleton<IFakeSingletonService, FakeService>();
-            yield return describer.Transient<IDependOnNonexistentService, DependOnNonexistentService>();
-            yield return describer.Describe(
-                typeof(IFakeOpenGenericService<string>),
-                typeof(FakeService),
-                lifecycle: LifecycleKind.Transient);
-            yield return describer.Describe(
-                typeof(IFakeOpenGenericService<>),
-                typeof(FakeOpenGenericService<>),
-                lifecycle: LifecycleKind.Transient);
+            services.AddTransient<IFakeService, FakeService>();
+            services.AddTransient<IFakeMultipleService, FakeOneMultipleService>();
+            services.AddTransient<IFakeMultipleService, FakeTwoMultipleService>();
+            services.AddTransient<IFakeOuterService, FakeOuterService>();
+            services.AddInstance<IFakeServiceInstance>(new FakeService() { Message = "Instance" });
+            services.AddScoped<IFakeScopedService, FakeService>();
+            services.AddSingleton<IFakeSingletonService, FakeService>();
+            services.AddTransient<IDependOnNonexistentService, DependOnNonexistentService>();
+            services.AddTransient<IFakeOpenGenericService<string>, FakeService>();
+            services.AddTransient(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>));
 
-            yield return describer.Transient<IFactoryService>(provider =>
+            services.AddTransient<IFactoryService>(provider =>
             {
                 var fakeService = provider.GetService<IFakeService>();
                 return new TransientFactoryService
@@ -38,7 +30,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
                 };
             });
 
-            yield return describer.Scoped<ScopedFactoryService>(provider =>
+            services.AddScoped(provider =>
             {
                 var fakeService = provider.GetService<IFakeService>();
                 return new ScopedFactoryService
@@ -47,7 +39,8 @@ namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
                 };
             });
 
-            yield return describer.Transient<ServiceAcceptingFactoryService, ServiceAcceptingFactoryService>();
+            services.AddTransient<ServiceAcceptingFactoryService, ServiceAcceptingFactoryService>();
+            return services;
         }
     }
 }

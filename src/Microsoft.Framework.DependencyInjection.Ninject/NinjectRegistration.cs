@@ -12,7 +12,7 @@ namespace Microsoft.Framework.DependencyInjection.Ninject
 {
     public static class NinjectRegistration
     {
-        public static void Populate(this IKernel kernel, IEnumerable<IServiceDescriptor> descriptors)
+        public static void Populate(this IKernel kernel, IEnumerable<ServiceDescriptor> descriptors)
         {
             kernel.Load(new ServiceProviderNinjectModule(descriptors));
         }

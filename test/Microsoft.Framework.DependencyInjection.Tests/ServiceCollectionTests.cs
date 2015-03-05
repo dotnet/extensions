@@ -29,7 +29,7 @@ namespace Microsoft.Framework.DependencyInjection
             // Arrange
             var serviceCollection = new ServiceCollection();
             var descriptor1 = new ServiceDescriptor(typeof(IFakeService), new FakeService());
-            var descriptor2 = new ServiceDescriptor(typeof(IFactoryService), typeof(TransientFactoryService), LifecycleKind.Transient);
+            var descriptor2 = new ServiceDescriptor(typeof(IFactoryService), typeof(TransientFactoryService), ServiceLifetime.Transient);
 
             // Act
             serviceCollection.Add(descriptor1);
@@ -46,7 +46,7 @@ namespace Microsoft.Framework.DependencyInjection
             // Arrange
             var serviceCollection = new ServiceCollection();
             var descriptor1 = new ServiceDescriptor(typeof(IFakeService), new FakeService());
-            var descriptor2 = new ServiceDescriptor(typeof(IFactoryService), typeof(TransientFactoryService), LifecycleKind.Transient);
+            var descriptor2 = new ServiceDescriptor(typeof(IFactoryService), typeof(TransientFactoryService), ServiceLifetime.Transient);
 
             // Act
             serviceCollection.Add(descriptor1);

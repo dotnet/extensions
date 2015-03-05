@@ -18,22 +18,22 @@ namespace Microsoft.Framework.DependencyInjection
             {
                 var serviceType = typeof(IFakeService);
                 var implementationType = typeof(FakeService);
-                return new TheoryData<Action<IServiceCollection>, Type, Type, LifecycleKind>
+                return new TheoryData<Action<IServiceCollection>, Type, Type, ServiceLifetime>
                 {
-                    { collection => collection.AddTransient(serviceType, implementationType), serviceType, implementationType, LifecycleKind.Transient },
-                    { collection => collection.AddTransient<IFakeService, FakeService>(), serviceType, implementationType, LifecycleKind.Transient },
-                    { collection => collection.AddTransient<IFakeService>(), serviceType, serviceType, LifecycleKind.Transient },
-                    { collection => collection.AddTransient(implementationType), implementationType, implementationType, LifecycleKind.Transient },
+                    { collection => collection.AddTransient(serviceType, implementationType), serviceType, implementationType, ServiceLifetime.Transient },
+                    { collection => collection.AddTransient<IFakeService, FakeService>(), serviceType, implementationType, ServiceLifetime.Transient },
+                    { collection => collection.AddTransient<IFakeService>(), serviceType, serviceType, ServiceLifetime.Transient },
+                    { collection => collection.AddTransient(implementationType), implementationType, implementationType, ServiceLifetime.Transient },
 
-                    { collection => collection.AddScoped(serviceType, implementationType), serviceType, implementationType, LifecycleKind.Scoped },
-                    { collection => collection.AddScoped<IFakeService, FakeService>(), serviceType, implementationType, LifecycleKind.Scoped },
-                    { collection => collection.AddScoped<IFakeService>(), serviceType, serviceType, LifecycleKind.Scoped },
-                    { collection => collection.AddScoped(implementationType), implementationType, implementationType, LifecycleKind.Scoped },
+                    { collection => collection.AddScoped(serviceType, implementationType), serviceType, implementationType, ServiceLifetime.Scoped },
+                    { collection => collection.AddScoped<IFakeService, FakeService>(), serviceType, implementationType, ServiceLifetime.Scoped },
+                    { collection => collection.AddScoped<IFakeService>(), serviceType, serviceType, ServiceLifetime.Scoped },
+                    { collection => collection.AddScoped(implementationType), implementationType, implementationType, ServiceLifetime.Scoped },
 
-                    { collection => collection.AddSingleton(serviceType, implementationType), serviceType, implementationType, LifecycleKind.Singleton },
-                    { collection => collection.AddSingleton<IFakeService, FakeService>(), serviceType, implementationType, LifecycleKind.Singleton },
-                    { collection => collection.AddSingleton<IFakeService>(), serviceType, serviceType, LifecycleKind.Singleton },
-                    { collection => collection.AddSingleton(implementationType), implementationType, implementationType, LifecycleKind.Singleton },
+                    { collection => collection.AddSingleton(serviceType, implementationType), serviceType, implementationType, ServiceLifetime.Singleton },
+                    { collection => collection.AddSingleton<IFakeService, FakeService>(), serviceType, implementationType, ServiceLifetime.Singleton },
+                    { collection => collection.AddSingleton<IFakeService>(), serviceType, serviceType, ServiceLifetime.Singleton },
+                    { collection => collection.AddSingleton(implementationType), implementationType, implementationType, ServiceLifetime.Singleton },
                 };
             }
         }
@@ -43,7 +43,7 @@ namespace Microsoft.Framework.DependencyInjection
         public void AddWithTypeAddsServiceWithRightLifecyle(Action<IServiceCollection> addTypeAction,
                                                             Type expectedServiceType,
                                                             Type expectedImplementationType,
-                                                            LifecycleKind lifeCycle)
+                                                            ServiceLifetime lifeCycle)
         {
             // Arrange
             var collection = new ServiceCollection();
@@ -55,7 +55,7 @@ namespace Microsoft.Framework.DependencyInjection
             var descriptor = Assert.Single(collection);
             Assert.Equal(expectedServiceType, descriptor.ServiceType);
             Assert.Equal(expectedImplementationType, descriptor.ImplementationType);
-            Assert.Equal(lifeCycle, descriptor.Lifecycle);
+            Assert.Equal(lifeCycle, descriptor.Lifetime);
         }
 
         public static TheoryData AddImplementationFactoryData
@@ -64,16 +64,16 @@ namespace Microsoft.Framework.DependencyInjection
             {
                 var serviceType = typeof(IFakeService);
 
-                return new TheoryData<Action<IServiceCollection>, LifecycleKind>
+                return new TheoryData<Action<IServiceCollection>, ServiceLifetime>
                 {
-                    { collection => collection.AddTransient<IFakeService>(_factory), LifecycleKind.Transient },
-                    { collection => collection.AddTransient(serviceType, _factory), LifecycleKind.Transient },
+                    { collection => collection.AddTransient<IFakeService>(_factory), ServiceLifetime.Transient },
+                    { collection => collection.AddTransient(serviceType, _factory), ServiceLifetime.Transient },
 
-                    { collection => collection.AddScoped<IFakeService>(_factory), LifecycleKind.Scoped },
-                    { collection => collection.AddScoped(serviceType, _factory), LifecycleKind.Scoped },
+                    { collection => collection.AddScoped<IFakeService>(_factory), ServiceLifetime.Scoped },
+                    { collection => collection.AddScoped(serviceType, _factory), ServiceLifetime.Scoped },
 
-                    { collection => collection.AddSingleton<IFakeService>(_factory), LifecycleKind.Singleton },
-                    { collection => collection.AddSingleton(serviceType, _factory), LifecycleKind.Singleton },
+                    { collection => collection.AddSingleton<IFakeService>(_factory), ServiceLifetime.Singleton },
+                    { collection => collection.AddSingleton(serviceType, _factory), ServiceLifetime.Singleton },
                 };
             }
         }
@@ -81,7 +81,7 @@ namespace Microsoft.Framework.DependencyInjection
         [Theory]
         [MemberData(nameof(AddImplementationFactoryData))]
         public void AddWithFactoryAddsServiceWithRightLifecyle(Action<IServiceCollection> addAction,
-                                                               LifecycleKind lifeCycle)
+                                                               ServiceLifetime lifeCycle)
         {
             // Arrange
             var collection = new ServiceCollection();
@@ -93,7 +93,7 @@ namespace Microsoft.Framework.DependencyInjection
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Same(_factory, descriptor.ImplementationFactory);
-            Assert.Equal(lifeCycle, descriptor.Lifecycle);
+            Assert.Equal(lifeCycle, descriptor.Lifetime);
         }
 
         public static TheoryData AddInstanceData
@@ -122,7 +122,7 @@ namespace Microsoft.Framework.DependencyInjection
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Same(_instance, descriptor.ImplementationInstance);
-            Assert.Equal(LifecycleKind.Singleton, descriptor.Lifecycle);
+            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
         }
 
         [Theory]
@@ -134,14 +134,14 @@ namespace Microsoft.Framework.DependencyInjection
             addAction(collection);
 
             // Act
-            var d = new ServiceDescriber().Transient<IFakeService, FakeService>();
+            var d = ServiceDescriptor.Transient<IFakeService, FakeService>();
 
             // Assert
             Assert.False(collection.TryAdd(d));
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Same(_instance, descriptor.ImplementationInstance);
-            Assert.Equal(LifecycleKind.Singleton, descriptor.Lifecycle);
+            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
         }
 
         [Fact]
@@ -151,14 +151,14 @@ namespace Microsoft.Framework.DependencyInjection
             var collection = new ServiceCollection();
 
             // Act
-            var d = new ServiceDescriber().Transient<IFakeService, FakeService>();
+            var d = ServiceDescriptor.Transient<IFakeService, FakeService>();
 
             // Assert
             Assert.True(collection.TryAdd(d));
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Null(descriptor.ImplementationInstance);
-            Assert.Equal(LifecycleKind.Transient, descriptor.Lifecycle);
+            Assert.Equal(ServiceLifetime.Transient, descriptor.Lifetime);
         }
 
         [Fact]
@@ -168,9 +168,9 @@ namespace Microsoft.Framework.DependencyInjection
             var collection = new ServiceCollection();
 
             // Act
-            var ds = new IServiceDescriptor[] {
-                new ServiceDescriber().Transient<IFakeService, FakeService>(),
-                new ServiceDescriber().Transient<IFakeService, FakeService>()
+            var ds = new ServiceDescriptor[] {
+                ServiceDescriptor.Transient<IFakeService, FakeService>(),
+                ServiceDescriptor.Transient<IFakeService, FakeService>()
             };
 
             // Assert
@@ -178,7 +178,7 @@ namespace Microsoft.Framework.DependencyInjection
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Null(descriptor.ImplementationInstance);
-            Assert.Equal(LifecycleKind.Transient, descriptor.Lifecycle);
+            Assert.Equal(ServiceLifetime.Transient, descriptor.Lifetime);
         }
 
         [Fact]
@@ -189,9 +189,9 @@ namespace Microsoft.Framework.DependencyInjection
             collection.AddSingleton<IFakeService, FakeService>();
 
             // Act
-            var ds = new IServiceDescriptor[] {
-                new ServiceDescriber().Transient<IFakeService, FakeService>(),
-                new ServiceDescriber().Transient<IFakeService, FakeService>()
+            var ds = new ServiceDescriptor[] {
+                ServiceDescriptor.Transient<IFakeService, FakeService>(),
+                ServiceDescriptor.Transient<IFakeService, FakeService>()
             };
 
             // Assert
@@ -199,7 +199,7 @@ namespace Microsoft.Framework.DependencyInjection
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Null(descriptor.ImplementationInstance);
-            Assert.Equal(LifecycleKind.Singleton, descriptor.Lifecycle);
+            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
         }
 
         [Fact]
@@ -215,7 +215,7 @@ namespace Microsoft.Framework.DependencyInjection
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(ITypeActivator), descriptor.ServiceType);
             Assert.Null(descriptor.ImplementationInstance);
-            Assert.Equal(LifecycleKind.Singleton, descriptor.Lifecycle);
+            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
         }
 
         [Fact]
@@ -223,8 +223,8 @@ namespace Microsoft.Framework.DependencyInjection
         {
             // Arrange
             var collection = new ServiceCollection();
-            var descriptor1 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), LifecycleKind.Transient);
-            var descriptor2 = new ServiceDescriptor(typeof(IFakeOuterService), typeof(FakeOuterService), LifecycleKind.Transient);
+            var descriptor1 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient);
+            var descriptor2 = new ServiceDescriptor(typeof(IFakeOuterService), typeof(FakeOuterService), ServiceLifetime.Transient);
             var descriptors = new[] { descriptor1, descriptor2 };
 
             // Act
@@ -239,8 +239,8 @@ namespace Microsoft.Framework.DependencyInjection
         {
             // Arrange
             var collection = new ServiceCollection();
-            var descriptor1 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), LifecycleKind.Transient);
-            var descriptor2 = new ServiceDescriptor(typeof(IFakeOuterService), typeof(FakeOuterService), LifecycleKind.Transient);
+            var descriptor1 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient);
+            var descriptor2 = new ServiceDescriptor(typeof(IFakeOuterService), typeof(FakeOuterService), ServiceLifetime.Transient);
             collection.Add(descriptor1);
 
             // Act
@@ -255,11 +255,11 @@ namespace Microsoft.Framework.DependencyInjection
         {
             // Arrange
             var collection = new ServiceCollection();
-            var descriptor1 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), LifecycleKind.Transient);
-            var descriptor2 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), LifecycleKind.Transient);
+            var descriptor1 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient);
+            var descriptor2 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient);
             collection.Add(descriptor1);
             collection.Add(descriptor2);
-            var descriptor3 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), LifecycleKind.Singleton);
+            var descriptor3 = new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Singleton);
 
             // Act
             collection.Replace(descriptor3);
