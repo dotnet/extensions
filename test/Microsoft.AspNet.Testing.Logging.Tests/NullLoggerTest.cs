@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Testing.Logging
             bool isCalled = false;
 
             // Act
-            logger.Write(LogLevel.Verbose, eventId: 0, state: null, exception: null, formatter: (ex, message) => { isCalled = true; return string.Empty; });
+            logger.Log(LogLevel.Verbose, eventId: 0, state: null, exception: null, formatter: (ex, message) => { isCalled = true; return string.Empty; });
 
             // Assert
             Assert.False(isCalled);

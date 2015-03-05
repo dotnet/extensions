@@ -23,8 +23,8 @@ namespace Microsoft.AspNet.Testing.Logging
             var factory = NullLoggerFactory.Instance;
 
             // Act
-            var logger1 = factory.Create("Logger1");
-            var logger2 = factory.Create("Logger2");
+            var logger1 = factory.CreateLogger("Logger1");
+            var logger2 = factory.CreateLogger("Logger2");
 
             // Assert
             Assert.Same(logger1, logger2);

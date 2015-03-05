@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Testing.Logging
 
         public LogLevel MinimumLevel { get; set; } = LogLevel.Verbose;
 
-        public ILogger Create(string name)
+        public ILogger CreateLogger(string name)
         {
             return new TestLogger(name, _sink, _enabled);
         }
