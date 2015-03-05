@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Serilog;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging.Serilog;
-using JetBrains.Annotations;
+using Serilog;
 
 namespace Microsoft.Framework.Logging
 {

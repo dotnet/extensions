@@ -5,10 +5,10 @@ using System;
 #if ASPNET50
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
+using Microsoft.Framework.Internal;
 #else
 using System.Threading;
 #endif
-using JetBrains.Annotations;
 using Serilog.Core;
 using Serilog.Events;
 

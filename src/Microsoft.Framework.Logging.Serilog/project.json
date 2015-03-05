@@ -2,6 +2,7 @@
     "version": "1.0.0-*",
     "dependencies": {
         "Microsoft.Framework.Logging.Interfaces": "1.0.0-*",
+        "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" },
         "Serilog": "1.4.14"
     },
     "frameworks": {

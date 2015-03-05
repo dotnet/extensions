@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using JetBrains.Annotations;
-using Serilog.Events;
+using Microsoft.Framework.Internal;
 using Serilog.Core;
-
+using Serilog.Events;
 using SLogger = Serilog.ILogger;
 
 namespace Microsoft.Framework.Logging.Serilog
