@@ -11,14 +11,22 @@
         "aspnetcore50": {
             "dependencies": {
                 "System.ComponentModel": "4.0.0-beta-*",
-                "System.Diagnostics.Debug": "4.0.10-beta-*"
+                "System.Diagnostics.Debug": "4.0.10-beta-*",
+                "System.Globalization": "4.0.10-beta-*",
+                "System.Linq": "4.0.0-beta-*",
+                "System.Reflection": "4.0.10-beta-*",
+                "System.Resources.ResourceManager": "4.0.0-beta-*"
             }
         },
         ".NETPortable,Version=v4.6,Profile=Profile151": {
             "frameworkAssemblies": {
-                "System.ComponentModel":  "",                
+                "System.ComponentModel": "",
                 "System.Diagnostics.Debug": "",
-                "System.Runtime": ""
+                "System.Globalization": "",
+                "System.Linq": "",
+                "System.Runtime": "",
+                "System.Reflection": "",
+                "System.Resources.ResourceManager": ""
             }
         }
     }
