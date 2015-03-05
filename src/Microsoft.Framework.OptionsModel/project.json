@@ -2,7 +2,7 @@
   "version": "1.0.0-*",
   "dependencies": {
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
-    "Microsoft.Framework.DependencyInjection": "1.0.0-*"
+    "Microsoft.Framework.DependencyInjection.Interfaces": "1.0.0-*"
   },
   "frameworks": {
     "net45": { },
@@ -10,11 +10,15 @@
     "aspnetcore50": {
       "dependencies": {
         "System.ComponentModel": "4.0.0-beta-*",
-        "System.Reflection.TypeExtensions": "4.0.0-beta-*"
+        "System.Reflection.TypeExtensions": "4.0.0-beta-*",
+        "System.Threading": "4.0.10-beta-*"
       }
     },
     ".NETPortable,Version=v4.6,Profile=Profile151": {
+      "frameworkAssemblies": {
         "System.ComponentModel": "",
+        "System.Threading": ""
+      }
     }
   }
 }
