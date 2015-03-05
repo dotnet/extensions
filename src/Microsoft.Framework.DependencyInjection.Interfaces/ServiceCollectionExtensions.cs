@@ -27,6 +27,19 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         /// <summary>
+        /// Adds the specified <paramref name="descriptor"/> to the <paramref name="collection"/>.
+        /// </summary>
+        /// <param name="collection">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="descriptor">The <see cref="ServiceDescriptor"/>.</param>
+        /// <returns>A reference to the current instance of <see cref="IServiceCollection"/>.</returns>
+        public static IServiceCollection Add([NotNull] this IServiceCollection collection,
+                                             [NotNull] ServiceDescriptor descriptor)
+        {
+            collection.Add(descriptor);
+            return collection;
+        }
+
+        /// <summary>
         /// Adds the specified <paramref name="descriptor"/> to the <paramref name="collection"/> if the
         /// service type hasn't been already registered.
         /// </summary>
@@ -110,7 +123,8 @@ namespace Microsoft.Framework.DependencyInjection
                                                      [NotNull] object implementationInstance)
         {
             var serviceDescriptor = new ServiceDescriptor(service, implementationInstance);
-            return collection.Add(serviceDescriptor);
+            collection.Add(serviceDescriptor);
+            return collection;
         }
 
         public static IServiceCollection AddTransient<TService, TImplementation>([NotNull] this IServiceCollection services)
@@ -207,7 +221,8 @@ namespace Microsoft.Framework.DependencyInjection
                 collection.Remove(registeredServiceDescriptor);
             }
 
-            return collection.Add(descriptor);
+            collection.Add(descriptor);
+            return collection;
         }
 
         private static IServiceCollection Add(IServiceCollection collection,
@@ -216,7 +231,8 @@ namespace Microsoft.Framework.DependencyInjection
                                               ServiceLifetime lifeCycle)
         {
             var descriptor = new ServiceDescriptor(service, implementationType, lifeCycle);
-            return collection.Add(descriptor);
+            collection.Add(descriptor);
+            return collection;
         }
 
         private static IServiceCollection Add(IServiceCollection collection,
@@ -225,7 +241,8 @@ namespace Microsoft.Framework.DependencyInjection
                                               ServiceLifetime lifeCycle)
         {
             var descriptor = new ServiceDescriptor(service, implementationFactory, lifeCycle);
-            return collection.Add(descriptor);
+            collection.Add(descriptor);
+            return collection;
         }
     }
 }

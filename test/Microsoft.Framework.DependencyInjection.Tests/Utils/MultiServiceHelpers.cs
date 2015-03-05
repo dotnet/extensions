@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Microsoft.Framework.DependencyInjection
+namespace Microsoft.Framework.DependencyInjection.Tests
 {
     public static class MultiServiceHelpers
     {

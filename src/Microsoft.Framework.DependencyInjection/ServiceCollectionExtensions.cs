@@ -12,11 +12,5 @@ namespace Microsoft.Framework.DependencyInjection
         {
             return new ServiceProvider(services);
         }
-
-        public static IServiceCollection AddTypeActivator([NotNull]this IServiceCollection services)
-        {
-            services.TryAdd(ServiceDescriptor.Singleton<ITypeActivator, TypeActivator>());
-            return services;
-        }
     }
 }

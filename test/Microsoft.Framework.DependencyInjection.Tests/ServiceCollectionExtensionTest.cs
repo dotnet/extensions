@@ -202,21 +202,21 @@ namespace Microsoft.Framework.DependencyInjection
             Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
         }
 
-        [Fact]
-        public void AddTypeDescriptorIsSingleton()
-        {
-            // Arrange
-            var collection = new ServiceCollection();
+        //[Fact]
+        //public void AddTypeDescriptorIsSingleton()
+        //{
+        //    // Arrange
+        //    var collection = new ServiceCollection();
 
-            // Act
-            collection.AddTypeActivator();
+        //    // Act
+        //    collection.AddTypeActivator();
 
-            // Assert
-            var descriptor = Assert.Single(collection);
-            Assert.Equal(typeof(ITypeActivator), descriptor.ServiceType);
-            Assert.Null(descriptor.ImplementationInstance);
-            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
-        }
+        //    // Assert
+        //    var descriptor = Assert.Single(collection);
+        //    Assert.Equal(typeof(ITypeActivator), descriptor.ServiceType);
+        //    Assert.Null(descriptor.ImplementationInstance);
+        //    Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
+        //}
 
         [Fact]
         public void AddSequence_AddsServicesToCollection()

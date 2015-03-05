@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Framework.Internal;
@@ -20,12 +21,18 @@ namespace Microsoft.Framework.DependencyInjection
         /// <inheritdoc />
         public bool IsReadOnly => false;
 
-        /// <inheritdoc />
-        public IServiceCollection Add([NotNull] ServiceDescriptor descriptor)
+        public ServiceDescriptor this[int index]
         {
-            _descriptors.Add(descriptor);
-            return this;
+            get { return _descriptors[index]; }
+            set { _descriptors.Add(value); }
         }
+
+        /// <inheritdoc />
+        //public IServiceCollection Add([NotNull] ServiceDescriptor descriptor)
+        //{
+        //    _descriptors.Add(descriptor);
+        //    return this;
+        //}
 
         /// <inheritdoc />
         public void Clear()
@@ -59,12 +66,27 @@ namespace Microsoft.Framework.DependencyInjection
 
         void ICollection<ServiceDescriptor>.Add(ServiceDescriptor item)
         {
-            Add(item);
+            _descriptors.Add(item);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        public int IndexOf(ServiceDescriptor item)
+        {
+            return _descriptors.IndexOf(item);
+        }
+
+        public void Insert(int index, ServiceDescriptor item)
+        {
+            _descriptors.Insert(index, item);
+        }
+
+        public void RemoveAt(int index)
+        {
+            _descriptors.RemoveAt(index);
         }
     }
 }
