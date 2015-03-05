@@ -12,10 +12,9 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class OptionsServiceCollectionExtensions
     {
-        public static IServiceCollection AddOptions([NotNull]this IServiceCollection services, IConfiguration config = null)
+        public static IServiceCollection AddOptions([NotNull]this IServiceCollection services)
         {
-            var describe = new ServiceDescriber(config);
-            services.TryAdd(describe.Singleton(typeof(IOptions<>), typeof(OptionsManager<>)));
+            services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptions<>), typeof(OptionsManager<>)));
             return services;
         }
 

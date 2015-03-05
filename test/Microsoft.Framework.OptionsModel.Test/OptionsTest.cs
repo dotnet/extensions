@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.DependencyInjection.Fallback;
 using Xunit;
 
 namespace Microsoft.Framework.OptionsModel.Tests
