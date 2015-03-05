@@ -3,15 +3,14 @@
 
 using Microsoft.Framework.Cache.Distributed;
 using Microsoft.Framework.Cache.Memory;
-using Microsoft.Framework.ConfigurationModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class CachingServicesExtensions
     {
-        public static IServiceCollection AddCachingServices(this IServiceCollection collection, IConfiguration configuration = null)
+        public static IServiceCollection AddCachingServices(this IServiceCollection collection)
         {
-            collection.AddOptions(configuration);
+            collection.AddOptions();
             return collection.AddTransient<IDistributedCache, LocalCache>()
                 .AddSingleton<IMemoryCache, MemoryCache>();
         }
