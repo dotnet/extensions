@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET45 || ASPNET50 || ASPNETCORE50
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.Logging
 {
@@ -13,37 +13,24 @@ namespace Microsoft.Framework.Logging
     /// </summary>
     public class TraceSourceLoggerProvider : ILoggerProvider
     {
-        private const string RootTraceName = "Microsoft.AspNet";
         private readonly SourceSwitch _rootSourceSwitch;
         private readonly TraceListener _rootTraceListener;
 
         private readonly ConcurrentDictionary<string, TraceSource> _sources = new ConcurrentDictionary<string, TraceSource>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DiagnosticsLoggerProvider"/> class. 
-        /// </summary>
-        /// <summary>
-        /// Creates a factory named "Microsoft.AspNet".
-        /// </summary>
-        public TraceSourceLoggerProvider()
-        {
-            _rootSourceSwitch = new SourceSwitch(RootTraceName);
-            _rootTraceListener = null;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DiagnosticsLoggerProvider"/> class.
+        /// Initializes a new instance of the <see cref="TraceSourceLoggerProvider"/> class.
         /// </summary>
         /// <param name="rootSourceSwitch"></param>
         /// <param name="rootTraceListener"></param>
-        public TraceSourceLoggerProvider(SourceSwitch rootSourceSwitch, TraceListener rootTraceListener)
+        public TraceSourceLoggerProvider([NotNull]SourceSwitch rootSourceSwitch, [NotNull]TraceListener rootTraceListener)
         {
-            _rootSourceSwitch = rootSourceSwitch ?? new SourceSwitch(RootTraceName);
+            _rootSourceSwitch = rootSourceSwitch;
             _rootTraceListener = rootTraceListener;
         }
 
         /// <summary>
-        /// Creates a new DiagnosticsLogger for the given component name.
+        /// Creates a new <see cref="ILogger"/>  for the given component name.
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
@@ -60,12 +47,15 @@ namespace Microsoft.Framework.Logging
         private TraceSource InitializeTraceSource(string traceSourceName)
         {
             var traceSource = new TraceSource(traceSourceName);
-            if (traceSourceName == RootTraceName)
+            string parentSourceName = ParentSourceName(traceSourceName);
+
+            if (string.IsNullOrEmpty(parentSourceName))
             {
                 if (HasDefaultSwitch(traceSource))
                 {
                     traceSource.Switch = _rootSourceSwitch;
                 }
+
                 if (_rootTraceListener != null)
                 {
                     traceSource.Listeners.Add(_rootTraceListener);
@@ -73,13 +63,13 @@ namespace Microsoft.Framework.Logging
             }
             else
             {
-                string parentSourceName = ParentSourceName(traceSourceName);
                 if (HasDefaultListeners(traceSource))
                 {
                     TraceSource parentTraceSource = GetOrAddTraceSource(parentSourceName);
                     traceSource.Listeners.Clear();
                     traceSource.Listeners.AddRange(parentTraceSource.Listeners);
                 }
+
                 if (HasDefaultSwitch(traceSource))
                 {
                     TraceSource parentTraceSource = GetOrAddTraceSource(parentSourceName);
@@ -93,7 +83,7 @@ namespace Microsoft.Framework.Logging
         private static string ParentSourceName(string traceSourceName)
         {
             int indexOfLastDot = traceSourceName.LastIndexOf('.');
-            return indexOfLastDot == -1 ? RootTraceName : traceSourceName.Substring(0, indexOfLastDot);
+            return indexOfLastDot == -1 ? null : traceSourceName.Substring(0, indexOfLastDot);
         }
 
         private static bool HasDefaultListeners(TraceSource traceSource)
@@ -108,4 +98,3 @@ namespace Microsoft.Framework.Logging
         }
     }
 }
-#endif

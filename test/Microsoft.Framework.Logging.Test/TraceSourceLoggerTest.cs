@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using Xunit;
 
 namespace Microsoft.Framework.Logging.Test
@@ -20,7 +21,7 @@ namespace Microsoft.Framework.Logging.Test
             var logger = factory.CreateLogger("Test");
 
             // Act
-            factory.AddProvider(new TraceSourceLoggerProvider(testSwitch, new ConsoleTraceListener()));
+            factory.AddTraceSource(testSwitch, new ConsoleTraceListener());
 
             // Assert
             Assert.True(logger.IsEnabled(LogLevel.Critical));
@@ -48,8 +49,8 @@ namespace Microsoft.Framework.Logging.Test
             var logger = factory.CreateLogger("Test");
 
             // Act
-            factory.AddProvider(new TraceSourceLoggerProvider(firstSwitch, new ConsoleTraceListener()));
-            factory.AddProvider(new TraceSourceLoggerProvider(secondSwitch, new ConsoleTraceListener()));
+            factory.AddTraceSource(firstSwitch, new ConsoleTraceListener());
+            factory.AddTraceSource(secondSwitch, new ConsoleTraceListener());
 
             // Assert
             Assert.Equal(expected, logger.IsEnabled(LogLevel.Information));

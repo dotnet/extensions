@@ -2,7 +2,6 @@
     "version": "1.0.0-*",
     "description": "Console logger implementation.",
     "dependencies": {
-        "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
     },
     "frameworks": {
@@ -12,7 +11,8 @@
             "dependencies": {
                 "System.Runtime": "4.0.20.0-beta-*",
                 "System.Console": "4.0.0-beta-*",
-                "System.IO": "4.0.10-beta-*"
+                "System.IO": "4.0.10-beta-*",
+                "System.Threading": "4.0.10-beta-*"
             }
         }
     }

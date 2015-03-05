@@ -1,15 +1,10 @@
-{
+﻿{
     "version": "1.0.0-*",
-    "description": "Logging infrastructure.",
     "dependencies": {
-        "Microsoft.Framework.DependencyInjection.Interfaces": "1.0.0-*",
-        "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
+        "Microsoft.Framework.Logging.Interfaces": "1.0.0-*",
+        "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" }
     },
-    "compilationOptions": {
-        "define": [
-            "TRACE"
-        ]
-    },
+
     "frameworks": {
         "net45": {
             "frameworkAssemblies": {
@@ -29,16 +24,6 @@
                 "System.Globalization": "4.0.10-beta-*",
                 "System.Linq": "4.0.0-beta-*",
                 "System.Threading": "4.0.10-beta-*"
-            }
-        },
-        ".NETPortable,Version=v4.6,Profile=Profile151": {
-            "frameworkAssemblies": {
-                "System.Collections": "",
-                "System.Collections.Concurrent": "",
-                "System.Reflection": "",
-                "System.Runtime.Extensions": "",
-                "System.Linq": "",
-                "System.Threading": ""
             }
         }
     }
