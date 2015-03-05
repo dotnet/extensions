@@ -6,6 +6,6 @@ namespace Microsoft.Framework.Logging.Console.Internal
     {
         ConsoleColor BackgroundColor { get; set; }
         ConsoleColor ForegroundColor { get; set; }
-        void WriteLine(string format, params object[] args);
+        void WriteLine(string message);
     }
 }

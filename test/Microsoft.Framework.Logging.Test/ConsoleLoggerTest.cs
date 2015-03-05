@@ -14,7 +14,7 @@ namespace Microsoft.Framework.Logging.Test
     public class ConsoleLoggerTest
     {
         private const string _name = "test";
-        private const string _state = "This is a test";
+        private const string _state = "This is a test, and {curly braces} are just fine!";
 
         private static readonly Func<object, Exception, string> TheMessageAndError =
             (message, error) => string.Format(CultureInfo.CurrentCulture, "{0}\r\n{1}", message, error);
