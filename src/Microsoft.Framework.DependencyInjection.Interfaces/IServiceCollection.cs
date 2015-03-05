@@ -10,11 +10,5 @@ namespace Microsoft.Framework.DependencyInjection
     /// </summary>
     public interface IServiceCollection : IList<ServiceDescriptor>
     {
-        /// <summary>
-        /// Adds the <paramref name="descriptor"/> to this instance.
-        /// </summary>
-        /// <param name="descriptor">The <see cref="ServiceDescriptor"/> to add.</param>
-        /// <returns>A reference to the current instance of <see cref="IServiceCollection"/>.</returns>
-        //new IServiceCollection Add(ServiceDescriptor descriptor);
     }
 }

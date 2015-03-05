@@ -23,16 +23,15 @@ namespace Microsoft.Framework.DependencyInjection
 
         public ServiceDescriptor this[int index]
         {
-            get { return _descriptors[index]; }
-            set { _descriptors.Add(value); }
+            get
+            {
+                return _descriptors[index];
+            }
+            set
+            {
+                _descriptors[index] = value;
+            }
         }
-
-        /// <inheritdoc />
-        //public IServiceCollection Add([NotNull] ServiceDescriptor descriptor)
-        //{
-        //    _descriptors.Add(descriptor);
-        //    return this;
-        //}
 
         /// <inheritdoc />
         public void Clear()
