@@ -321,7 +321,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             // Assert
             var optionsProps = options.GetType().GetProperties().ToDictionary(p => p.Name);
             var assertions = expectedValues
-                .Select(kvp => new Action<KeyValuePair<string, object>>(kvp2 =>
+                .Select(_ => new Action<KeyValuePair<string, object>>(kvp =>
                     Assert.Equal(kvp.Value, optionsProps[kvp.Key].GetValue(options))));
             Assert.Collection(expectedValues, assertions.ToArray());
         }
