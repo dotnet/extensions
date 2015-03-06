@@ -1,19 +1,24 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.Logging;
-
-namespace Microsoft.AspNet.Testing.Logging
+namespace Microsoft.Framework.Logging.Testing
 {
-    public class NullLoggerFactory : ILoggerFactory
+    public class TestLoggerFactory : ILoggerFactory
     {
-        public static readonly NullLoggerFactory Instance = new NullLoggerFactory();
+        private readonly TestSink _sink;
+        private readonly bool _enabled;
+
+        public TestLoggerFactory(TestSink sink, bool enabled)
+        {
+            _sink = sink;
+            _enabled = enabled;
+        }
 
         public LogLevel MinimumLevel { get; set; } = LogLevel.Verbose;
 
         public ILogger CreateLogger(string name)
         {
-            return NullLogger.Instance;
+            return new TestLogger(name, _sink, _enabled);
         }
 
         public void AddProvider(ILoggerProvider provider)

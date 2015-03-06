@@ -21,9 +21,9 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.TestAda
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.TestHost.Tests", "test\Microsoft.Framework.TestHost.Tests\Microsoft.Framework.TestHost.Tests.kproj", "{25D18D0C-119C-4AB4-BCA6-AC06179335FA}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Testing.Logging", "src\Microsoft.AspNet.Testing.Logging\Microsoft.AspNet.Testing.Logging.kproj", "{379AA56B-E1A6-4133-9A45-7F70385F39FB}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Testing", "src\Microsoft.Framework.Logging.Testing\Microsoft.Framework.Logging.Testing.kproj", "{379AA56B-E1A6-4133-9A45-7F70385F39FB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Testing.Logging.Tests", "test\Microsoft.AspNet.Testing.Logging.Tests\Microsoft.AspNet.Testing.Logging.Tests.kproj", "{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Testing.Tests", "test\Microsoft.Framework.Logging.Testing.Tests\Microsoft.Framework.Logging.Testing.Tests.kproj", "{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

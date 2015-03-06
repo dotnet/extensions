@@ -3,9 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Framework.Logging;
 
-namespace Microsoft.AspNet.Testing.Logging
+namespace Microsoft.Framework.Logging.Testing
 {
     public class TestSink
     {
