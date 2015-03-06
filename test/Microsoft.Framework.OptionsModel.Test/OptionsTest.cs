@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
@@ -52,6 +54,13 @@ namespace Microsoft.Framework.OptionsModel.Tests
                     base.Virtual = "Derived:" + value;
                 }
             }
+        }
+
+        public class NullableOptions
+        {
+            public bool? MyNullableBool { get; set; }
+            public int? MyNullableInt { get; set; }
+            public DateTime? MyNullableDateTime { get; set; }
         }
 
         [Fact]
@@ -241,6 +250,80 @@ namespace Microsoft.Framework.OptionsModel.Tests
             var options3 = service.GetNamedOptions("aBc");
             Assert.NotNull(options3);
             Assert.Equal("B", options3.Message);
+        }
+
+        public static TheoryData Configure_GetsNullableOptionsFromConfiguration_Data
+        {
+            get
+            {
+                return new TheoryData<IDictionary<string, string>, IDictionary<string, object>>
+                {
+                    {
+                        new Dictionary<string, string>
+                        {
+                            { nameof(NullableOptions.MyNullableBool), "true" },
+                            { nameof(NullableOptions.MyNullableInt), "1" },
+                            { nameof(NullableOptions.MyNullableDateTime), new DateTime(2015, 1, 1).ToShortDateString() }
+                        },
+                        new Dictionary<string, object>
+                        {
+                            { nameof(NullableOptions.MyNullableBool), true },
+                            { nameof(NullableOptions.MyNullableInt), 1 },
+                            { nameof(NullableOptions.MyNullableDateTime), new DateTime(2015, 1, 1) }
+                        }
+                    },
+                    {
+                        new Dictionary<string, string>
+                        {
+                            { nameof(NullableOptions.MyNullableBool), "false" },
+                            { nameof(NullableOptions.MyNullableInt), "-1" },
+                            { nameof(NullableOptions.MyNullableDateTime), new DateTime(1995, 12, 31).ToShortDateString() }
+                        },
+                        new Dictionary<string, object>
+                        {
+                            { nameof(NullableOptions.MyNullableBool), false },
+                            { nameof(NullableOptions.MyNullableInt), -1 },
+                            { nameof(NullableOptions.MyNullableDateTime), new DateTime(1995, 12, 31) }
+                        }
+                    },
+                    {
+                        new Dictionary<string, string>
+                        {
+                            { nameof(NullableOptions.MyNullableBool), null },
+                            { nameof(NullableOptions.MyNullableInt), null },
+                            { nameof(NullableOptions.MyNullableDateTime), null }
+                        },
+                        new Dictionary<string, object>
+                        {
+                            { nameof(NullableOptions.MyNullableBool), null },
+                            { nameof(NullableOptions.MyNullableInt), null },
+                            { nameof(NullableOptions.MyNullableDateTime), null }
+                        }
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Configure_GetsNullableOptionsFromConfiguration_Data))]
+        public void Configure_GetsNullableOptionsFromConfiguration(
+            IDictionary<string, string> configValues,
+            IDictionary<string, object> expectedValues)
+        {
+            // Arrange
+            var services = new ServiceCollection().AddOptions();
+            var config = new Configuration(new MemoryConfigurationSource(configValues));
+            services.Configure<NullableOptions>(config);
+            
+            // Act
+            var options = services.BuildServiceProvider().GetService<IOptions<NullableOptions>>().Options;
+
+            // Assert
+            var optionsProps = options.GetType().GetProperties().ToDictionary(p => p.Name);
+            var assertions = expectedValues
+                .Select(kvp => new Action<KeyValuePair<string, object>>(kvp2 =>
+                    Assert.Equal(kvp.Value, optionsProps[kvp.Key].GetValue(options))));
+            Assert.Collection(expectedValues, assertions.ToArray());
         }
     }
 }

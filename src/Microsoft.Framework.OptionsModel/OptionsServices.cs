@@ -34,9 +34,18 @@ namespace Microsoft.Framework.OptionsModel
                     ReadProperties(prop.GetValue(obj), config.GetSubKey(prop.Name));
                     continue;
                 }
+
+                var propertyType = prop.PropertyType;
+
+                // Handle Nullable<T>
+                if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                {
+                    propertyType = Nullable.GetUnderlyingType(propertyType);
+                }
+
                 try
                 {
-                    prop.SetValue(obj, Convert.ChangeType(configValue, prop.PropertyType));
+                    prop.SetValue(obj, Convert.ChangeType(configValue, propertyType));
                 }
                 catch
                 {
