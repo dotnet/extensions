@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0-*",
     "description": "Dependency injection abstraction and fallback implementation.",
     "dependencies": {
@@ -8,8 +8,8 @@
     },
     "frameworks": {
         "net45": { },
-        "aspnet50": { },
-        "aspnetcore50": {
+        "dnx451": { },
+        "dnxcore50": {
             "dependencies": {
                 "System.Collections.Concurrent": "4.0.10-beta-*",
                 "System.Linq.Expressions": "4.0.10-beta-*",
