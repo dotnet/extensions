@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,7 +14,7 @@ namespace Microsoft.Framework.OptionsModel
         public static void ReadProperties(object obj, IConfiguration config)
         {
             // No convert on portable or core
-#if NET45 || ASPNET50
+#if NET45 || DNX451
             if (obj == null || config == null)
             {
                 return;
