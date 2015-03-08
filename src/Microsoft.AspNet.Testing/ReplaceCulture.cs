@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Testing
             _originalCulture = CultureInfo.CurrentCulture;
             _originalUICulture = CultureInfo.CurrentUICulture;
 
-#if ASPNET50
+#if DNX451
             Thread.CurrentThread.CurrentCulture = Culture;
             Thread.CurrentThread.CurrentUICulture = UICulture;
 #else
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Testing
 
         public override void After(MethodInfo methodUnderTest)
         {
-#if ASPNET50
+#if DNX451
             Thread.CurrentThread.CurrentCulture = _originalCulture;
             Thread.CurrentThread.CurrentUICulture = _originalUICulture;
 #else

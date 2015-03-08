@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Testing.xunit
             }
 
             bool isWindows = false;
-#if ASPNETCORE50
+#if DNXCORE50
             Version osVersion = WindowsApis.OSVersion;
 
             // No platform check because it is always Windows

@@ -1,11 +1,11 @@
-{
+﻿{
     "version": "1.0.0-*",
     "dependencies": {
         "StyleCop":  "4.7.10.0"
     },
     "resources": [ "*.xml" ],
     "frameworks" : {
-        "aspnet50" : { 
+        "dnx451" : { 
             "dependencies": {
             }
         }

@@ -5,7 +5,7 @@
     },
     "frameworks": {
         "net45": { },
-        "aspnet50": { },
-        "aspnetcore50": { }
+        "dnx451": { },
+        "dnxcore50": { }
     }
 }
