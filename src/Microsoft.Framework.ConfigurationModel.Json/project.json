@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0-*",
     "description": "JSON configuration source for the ConfigurationModel package.",
     "dependencies": {
@@ -8,7 +8,7 @@
     },
     "frameworks": {
         "net45": { },
-        "aspnet50": { },
-        "aspnetcore50": { }
+        "dnx451": { },
+        "dnxcore50": { }
     }
 }

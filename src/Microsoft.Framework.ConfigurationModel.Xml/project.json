@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0-*",
     "description": "XML configuration source for the ConfigurationModel package.",
     "dependencies": {
@@ -12,13 +12,13 @@
                 "System.Xml": ""
             }
         },
-        "aspnet50": {
+        "dnx451": {
             "frameworkAssemblies": {
                 "System.Security": "",
                 "System.Xml": ""
             }
         },
-        "aspnetcore50": {
+        "dnxcore50": {
             "dependencies": {
                 "System.Xml.XmlDocument": "4.0.0-beta-*",
                 "System.Xml.XmlSerializer": "4.0.10-beta-*"

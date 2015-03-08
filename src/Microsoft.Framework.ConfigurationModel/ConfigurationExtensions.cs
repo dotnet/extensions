@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,7 @@ namespace Microsoft.Framework.ConfigurationModel
 {
     public static class ConfigurationExtensions
     {
-#if NET45 || ASPNET50 || ASPNETCORE50
+#if NET45 || DNX451 || DNXCORE50
         public static T Get<T>(this IConfiguration configuration, string key)
         {
             return (T)Convert.ChangeType(configuration.Get(key), typeof(T));
@@ -16,7 +16,7 @@ namespace Microsoft.Framework.ConfigurationModel
 #endif
 
 
-#if NET45 || ASPNET50 || ASPNETCORE50
+#if NET45 || DNX451 || DNXCORE50
         public static IConfigurationSourceRoot AddIniFile(this IConfigurationSourceRoot configuration, string path)
         {
             configuration.Add(new IniFileConfigurationSource(path));
