@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0-*",
     "dependencies": {
         "Microsoft.Framework.Logging.Interfaces": "1.0.0-*",
@@ -6,6 +6,6 @@
     },
     "frameworks": {
         "net45": { },
-        "aspnet50": { }
+        "dnx451": { }
     }
 }

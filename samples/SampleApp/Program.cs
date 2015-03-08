@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Logging.Console;
 using ILogger = Microsoft.Framework.Logging.ILogger;
-#if !ASPNETCORE50
+#if !DNXCORE50
 using Serilog;
 using Serilog.Sinks.IOFile;
 using Serilog.Formatting.Raw;
@@ -26,7 +26,7 @@ namespace SampleApp
             _logger = factory.CreateLogger(typeof(Program).FullName);
 
             // providers may be added to an ILoggerFactory at any time, existing ILoggers are updated
-#if !ASPNETCORE50
+#if !DNXCORE50
             factory.AddNLog(new global::NLog.LogFactory());
 
             factory.AddSerilog(new Serilog.LoggerConfiguration()

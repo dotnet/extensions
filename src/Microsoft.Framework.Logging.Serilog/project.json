@@ -6,7 +6,7 @@
         "Serilog": "1.4.14"
     },
     "frameworks": {
-        "aspnet50": {
+        "dnx451": {
             "frameworkAssemblies": {
                 "System.Runtime": ""
             }

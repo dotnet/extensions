@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0-*",
     "description": "Logging infrastructure.",
     "dependencies": {
@@ -16,12 +16,12 @@
                 "System.Collections.Concurrent": ""
             }
         },
-        "aspnet50": {
+        "dnx451": {
             "frameworkAssemblies": {
                 "System.Collections.Concurrent": ""
             }
         },
-        "aspnetcore50": {
+        "dnxcore50": {
             "dependencies": {
                 "System.Collections.Concurrent": "4.0.10-beta-*",
                 "System.Collections": "4.0.10-beta-*",

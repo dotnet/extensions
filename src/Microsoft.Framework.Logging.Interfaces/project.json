@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0-*",
     "description": "Logging interface definitions.",
     "dependencies": {
@@ -6,8 +6,8 @@
     },
     "frameworks": {
         "net45": { },
-        "aspnet50": { },
-        "aspnetcore50": {
+        "dnx451": { },
+        "dnxcore50": {
             "dependencies": {
                 "System.Collections": "4.0.10-beta-*",
                 "System.Collections.Concurrent": "4.0.10-beta-*",

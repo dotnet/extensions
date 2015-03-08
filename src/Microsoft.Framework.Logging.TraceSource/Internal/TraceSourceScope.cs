@@ -1,7 +1,7 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET45 || ASPNET50 || ASPNETCORE50
+#if NET45 || DNX451 || DNXCORE50
 using System;
 using System.Diagnostics;
 
@@ -22,7 +22,7 @@ namespace Microsoft.Framework.Logging.Internal
         /// <param name="state">The state.</param>
         public TraceSourceScope(object state)
         {
-#if NET45 || ASPNET50
+#if NET45 || DNX451
             Trace.CorrelationManager.StartLogicalOperation(state);
 #endif
         }
@@ -36,7 +36,7 @@ namespace Microsoft.Framework.Logging.Internal
         {
             if (!_isDisposed)
             {
-#if NET45 || ASPNET50
+#if NET45 || DNX451
                 Trace.CorrelationManager.StopLogicalOperation();
 #endif
                 _isDisposed = true;

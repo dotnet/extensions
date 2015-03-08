@@ -1,16 +1,16 @@
-{
+﻿{
     "dependencies": {
         "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Framework.Logging.Console": "1.0.0-*"
     },
     "frameworks": {
-        "aspnet50": {
+        "dnx451": {
             "dependencies": {
                 "Microsoft.Framework.Logging.NLog": "1.0.0-*",
                 "Microsoft.Framework.Logging.Serilog": "1.0.0-*"
             }
         },
-        "aspnetcore50": {
+        "dnxcore50": {
             "dependencies": {
                 "System.Console": "4.0.0-beta-*"
             }

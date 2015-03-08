@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 using Xunit;
-#if ASPNET50
+#if DNX451
 using Moq;
 #endif
 using Microsoft.Framework.Logging.Internal;
@@ -12,7 +12,7 @@ namespace Microsoft.Framework.Logging.Test
 {
     public class TraceSourceScopeTest
     {
-#if ASPNET50
+#if DNX451
         [Fact]
         public static void DiagnosticsScope_PushesAndPops_LogicalOperationStack()
         {
