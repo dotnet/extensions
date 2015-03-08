@@ -226,7 +226,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
                 "src/project2/source1.cs");
         }
 
-#if ASPNETCORE50
+#if DNXCORE50
         [ConditionalFact]
         [RunWhenWhenDirectoryInfoWorks]
         public void WarningTest()
