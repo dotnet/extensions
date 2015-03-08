@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0-*",
     "description": "ASP.NET 5 in memory cache abstractions and implementation.",
     "dependencies": {
@@ -7,8 +7,8 @@
     },
     "frameworks": {
         "net45": { },
-        "aspnet50": { },
-        "aspnetcore50": {
+        "dnx451": { },
+        "dnxcore50": {
             "dependencies": {
                 "System.Threading": "4.0.10-beta-*",
                 "System.Threading.ThreadPool": "4.0.10-beta-*"

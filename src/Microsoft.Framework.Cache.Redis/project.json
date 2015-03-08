@@ -6,6 +6,6 @@
     "StackExchange.Redis": "1.0.333"
   },
   "frameworks": {
-    "aspnet50": {}
+    "dnx451": {}
   }
 }

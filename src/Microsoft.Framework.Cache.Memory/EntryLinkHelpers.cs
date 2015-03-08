@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-#if ASPNETCORE50
+#if DNXCORE50
 using System.Threading;
 #else
 using System.Runtime.Remoting;
@@ -13,7 +13,7 @@ namespace Microsoft.Framework.Cache.Memory
 {
     public static class EntryLinkHelpers
     {
-#if ASPNETCORE50
+#if DNXCORE50
         private static readonly AsyncLocal<IEntryLink> _contextLink = new AsyncLocal<IEntryLink>();
 
         public static IEntryLink ContextLink
