@@ -35,7 +35,7 @@ namespace Microsoft.Framework.TestHost
             // This will block until the test host opens the port
             var listener = Task.Run(() => GetMessage(port, "TestDiscovery.Response"));
 
-            var process = RunKRE(project, arguments);
+            var process = RunDNX(project, arguments);
             process.WaitForExit();
 
             await listener;
@@ -66,7 +66,7 @@ namespace Microsoft.Framework.TestHost
             // This will block until the test host opens the port
             var listener = Task.Run(() => GetMessage(port, "TestExecution.Response"));
 
-            var process = RunKRE(project, arguments);
+            var process = RunDNX(project, arguments);
             process.WaitForExit();
 
             await listener;
@@ -74,7 +74,7 @@ namespace Microsoft.Framework.TestHost
             return process.ExitCode;
         }
 
-        private static Process RunKRE(string projectDirectory, IEnumerable<string> args)
+        private static Process RunDNX(string projectDirectory, IEnumerable<string> args)
         {
             // TODO: Mono?
 
