@@ -1,12 +1,12 @@
-{
+﻿{
     "version": "1.0.0-*",
     "shared": "*.cs",
     "dependencies": {
     },
     "frameworks": {
         "net45": { },
-        "aspnet50": { },
-        "aspnetcore50": {
+        "dnx451": { },
+        "dnxcore50": {
             "dependencies": {
                 "System.Runtime": "4.0.20-*"
             }

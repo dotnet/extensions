@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-#if !ASPNETCORE50
+#if !DNXCORE50
 using Moq;
 #endif
 using Xunit;
@@ -12,7 +12,7 @@ namespace Microsoft.Framework.Internal
 {
     public class CopyOnWriteDictionaryTest
     {
-#if !ASPNETCORE50
+#if !DNXCORE50
         [Fact]
         public void ReadOperation_DelegatesToSourceDictionary_IfNoMutationsArePerformed()
         {
