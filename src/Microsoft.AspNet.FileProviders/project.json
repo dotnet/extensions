@@ -1,4 +1,4 @@
-﻿{
+{
     "version": "1.0.0-*",
     "description": "Implementation of ASP.NET 5 file provider abstractions.",
     "dependencies": {

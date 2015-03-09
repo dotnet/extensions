@@ -1,4 +1,4 @@
-﻿{
+{
     "dependencies": {
         "Microsoft.AspNet.FileProviders": "1.0.0-*",
         "Shouldly": "1.1.1.1",
