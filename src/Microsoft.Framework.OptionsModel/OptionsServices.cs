@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Framework.ConfigurationModel;
-using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.Framework.OptionsModel
 {
@@ -13,17 +11,15 @@ namespace Microsoft.Framework.OptionsModel
     {
         public static void ReadProperties(object obj, IConfiguration config)
         {
-            // No convert on portable or core
-#if NET45 || DNX451
             if (obj == null || config == null)
             {
                 return;
             }
-            var props = obj.GetType().GetProperties();
+            var props = obj.GetType().GetTypeInfo().DeclaredProperties;
             foreach (var prop in props)
             {
                 // Only try to set properties with public setters
-                if (prop.GetSetMethod() == null)
+                if (prop.SetMethod == null)
                 {
                     continue;
                 }
@@ -38,7 +34,7 @@ namespace Microsoft.Framework.OptionsModel
                 var propertyType = prop.PropertyType;
 
                 // Handle Nullable<T>
-                if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                if (propertyType.GetTypeInfo().IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
                 {
                     propertyType = Nullable.GetUnderlyingType(propertyType);
                 }
@@ -52,7 +48,6 @@ namespace Microsoft.Framework.OptionsModel
                     // Ignore errors
                 }
             }
-#endif
         }
     }
 }
