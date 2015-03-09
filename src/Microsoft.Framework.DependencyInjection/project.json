@@ -1,4 +1,4 @@
-﻿{
+{
     "version": "1.0.0-*",
     "description": "Dependency injection abstraction and fallback implementation.",
     "dependencies": {
