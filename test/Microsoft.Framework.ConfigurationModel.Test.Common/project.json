@@ -1,4 +1,4 @@
-﻿{
+{
   "dependencies": {
     "Microsoft.Framework.ConfigurationModel": "1.0.0-*"
   },
