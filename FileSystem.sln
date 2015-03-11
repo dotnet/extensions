@@ -1,26 +1,26 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22527.0
+VisualStudioVersion = 14.0.22710.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A1477614-E825-4204-A684-385004B63AEB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FileProviders", "src\Microsoft.AspNet.FileProviders\Microsoft.AspNet.FileProviders.kproj", "{A830B046-595A-4992-B9E1-3C28C6440707}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FileProviders", "src\Microsoft.AspNet.FileProviders\Microsoft.AspNet.FileProviders.xproj", "{A830B046-595A-4992-B9E1-3C28C6440707}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{E399495E-82B8-4C06-8779-C1D02BEF4495}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FileProviders.Tests", "test\Microsoft.AspNet.FileProviders.Tests\Microsoft.AspNet.FileProviders.Tests.kproj", "{66FE5FDF-BBF9-4573-A7B7-53551731C0F9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FileProviders.Tests", "test\Microsoft.AspNet.FileProviders.Tests\Microsoft.AspNet.FileProviders.Tests.xproj", "{66FE5FDF-BBF9-4573-A7B7-53551731C0F9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1A060559-74DD-4B5A-BBA1-E8A441E729C1}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FileProviders.Interfaces", "src\Microsoft.AspNet.FileProviders.Interfaces\Microsoft.AspNet.FileProviders.Interfaces.kproj", "{DD94B7E8-3A59-4F84-98A0-8139BE259A87}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FileProviders.Interfaces", "src\Microsoft.AspNet.FileProviders.Interfaces\Microsoft.AspNet.FileProviders.Interfaces.xproj", "{DD94B7E8-3A59-4F84-98A0-8139BE259A87}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.FileSystemGlobbing", "src\Microsoft.Framework.FileSystemGlobbing\Microsoft.Framework.FileSystemGlobbing.kproj", "{970449A2-3BBB-4E87-8513-C41F109B1A3E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.FileSystemGlobbing", "src\Microsoft.Framework.FileSystemGlobbing\Microsoft.Framework.FileSystemGlobbing.xproj", "{970449A2-3BBB-4E87-8513-C41F109B1A3E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.FileSystemGlobbing.Tests", "test\Microsoft.Framework.FileSystemGlobbing.Tests\Microsoft.Framework.FileSystemGlobbing.Tests.kproj", "{45A5A942-4EFB-4839-AEA3-EB1D2BAB332C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.FileSystemGlobbing.Tests", "test\Microsoft.Framework.FileSystemGlobbing.Tests\Microsoft.Framework.FileSystemGlobbing.Tests.xproj", "{45A5A942-4EFB-4839-AEA3-EB1D2BAB332C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
