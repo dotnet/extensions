@@ -1,13 +1,11 @@
 {
+    "version": "1.0.0-*",
+    "description": "ASP.NET 5 distributed cache abstractions.",
     "dependencies": {
         "Microsoft.Framework.Caching.Memory": "1.0.0-*"
     },
     "frameworks": {
         "dnx451": { },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Console": "4.0.0-beta-*"
-            }
-        }
+        "dnxcore50": { }
     }
 }

@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.Framework.Caching.Memory": "1.0.0-*",
+    "xunit.runner.kre": "1.0.0-*"
+  },
+  "commands": {
+    "test": "xunit.runner.kre"
+  },
+  "frameworks": {
+    "dnx451": { }
+  }
+}

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using Microsoft.Framework.Cache.Redis;
+using Microsoft.Framework.Caching.Redis;
 
 namespace RedisCacheSample
 {

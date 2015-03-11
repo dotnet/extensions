@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.22604.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Cache.Memory", "src\Microsoft.Framework.Cache.Memory\Microsoft.Framework.Cache.Memory.xproj", "{966D16D8-5D4E-4433-9DA7-F53EE44B7EE7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Caching.Memory", "src\Microsoft.Framework.Caching.Memory\Microsoft.Framework.Caching.Memory.xproj", "{966D16D8-5D4E-4433-9DA7-F53EE44B7EE7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5A04042D-438D-407B-B239-0CAD6A2BD8C2}"
 EndProject
@@ -13,28 +13,28 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MemoryCacheSample", "sample
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2E14F082-1A04-4E7C-9162-1675119F9A9E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Cache.Memory.Tests", "test\Microsoft.Framework.Cache.Memory.Tests\Microsoft.Framework.Cache.Memory.Tests.xproj", "{1C24C0CE-84B6-4D6C-B484-32741D704FD8}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Caching.Memory.Tests", "test\Microsoft.Framework.Caching.Memory.Tests\Microsoft.Framework.Caching.Memory.Tests.xproj", "{1C24C0CE-84B6-4D6C-B484-32741D704FD8}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MemoryCacheConcurencySample", "samples\MemoryCacheConcurencySample\MemoryCacheConcurencySample.xproj", "{FF7C7587-BBCA-4574-95AE-101A6FF63B8F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Cache.Distributed", "src\Microsoft.Framework.Cache.Distributed\Microsoft.Framework.Cache.Distributed.xproj", "{74F4C074-93DD-4F7D-91CA-0F8DDC2BC6A1}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Caching.Distributed", "src\Microsoft.Framework.Caching.Distributed\Microsoft.Framework.Caching.Distributed.xproj", "{74F4C074-93DD-4F7D-91CA-0F8DDC2BC6A1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Cache.Distributed.Tests", "test\Microsoft.Framework.Cache.Distributed.Tests\Microsoft.Framework.Cache.Distributed.Tests.xproj", "{C5A8A2C1-588D-4A1A-BB1D-B33B6DD89797}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Caching.Distributed.Tests", "test\Microsoft.Framework.Caching.Distributed.Tests\Microsoft.Framework.Caching.Distributed.Tests.xproj", "{C5A8A2C1-588D-4A1A-BB1D-B33B6DD89797}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ProfilingSample", "samples\ProfilingSample\ProfilingSample.xproj", "{FD9FD44E-50D7-4121-9DAB-87A88191CE9F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Cache.Redis", "src\Microsoft.Framework.Cache.Redis\Microsoft.Framework.Cache.Redis.xproj", "{02E23070-947C-4438-8E50-CC2456D237BA}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Caching.Redis", "src\Microsoft.Framework.Caching.Redis\Microsoft.Framework.Caching.Redis.xproj", "{02E23070-947C-4438-8E50-CC2456D237BA}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RedisCacheSample", "samples\RedisCacheSample\RedisCacheSample.xproj", "{4109BDF4-BFF4-4AB6-8ED1-881DE410EA57}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Cache.Redis.Tests", "test\Microsoft.Framework.Cache.Redis.Tests\Microsoft.Framework.Cache.Redis.Tests.xproj", "{D1DCC5A4-3EC1-403B-B069-1F3FCB50E3A5}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Caching.Redis.Tests", "test\Microsoft.Framework.Caching.Redis.Tests\Microsoft.Framework.Caching.Redis.Tests.xproj", "{D1DCC5A4-3EC1-403B-B069-1F3FCB50E3A5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FB1086CF-F5C8-4B81-A685-C355F1BA9B97}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Cache.Interfaces", "src\Microsoft.Framework.Cache.Interfaces\Microsoft.Framework.Cache.Interfaces.xproj", "{60AAD8D1-33A3-4943-A4AF-C8A5BA418BC6}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Caching.Interfaces", "src\Microsoft.Framework.Caching.Interfaces\Microsoft.Framework.Caching.Interfaces.xproj", "{60AAD8D1-33A3-4943-A4AF-C8A5BA418BC6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

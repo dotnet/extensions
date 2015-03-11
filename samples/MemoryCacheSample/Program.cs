@@ -1,6 +1,6 @@
 using System;
 using System.Threading;
-using Microsoft.Framework.Cache.Memory;
+using Microsoft.Framework.Caching.Memory;
 
 namespace MemoryCacheSample
 {
