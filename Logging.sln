@@ -1,29 +1,29 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22625.0
+VisualStudioVersion = 14.0.22710.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging", "src\Microsoft.Framework.Logging\Microsoft.Framework.Logging.kproj", "{19D1B6C5-8A62-4387-8816-C54874D1DF5F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging", "src\Microsoft.Framework.Logging\Microsoft.Framework.Logging.xproj", "{19D1B6C5-8A62-4387-8816-C54874D1DF5F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{09920C51-6220-4D8D-94DC-E70C13446187}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Test", "test\Microsoft.Framework.Logging.Test\Microsoft.Framework.Logging.Test.kproj", "{96B1D6A8-7E40-43C7-813F-898DC8192DDE}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Test", "test\Microsoft.Framework.Logging.Test\Microsoft.Framework.Logging.Test.xproj", "{96B1D6A8-7E40-43C7-813F-898DC8192DDE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Interfaces", "src\Microsoft.Framework.Logging.Interfaces\Microsoft.Framework.Logging.Interfaces.kproj", "{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Interfaces", "src\Microsoft.Framework.Logging.Interfaces\Microsoft.Framework.Logging.Interfaces.xproj", "{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.NLog", "src\Microsoft.Framework.Logging.NLog\Microsoft.Framework.Logging.NLog.kproj", "{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.NLog", "src\Microsoft.Framework.Logging.NLog\Microsoft.Framework.Logging.NLog.xproj", "{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8C1F5D80-88EA-4961-84DC-7AC6E13951F4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SampleApp", "samples\SampleApp\SampleApp.kproj", "{550E0247-0BDD-4016-A29B-250F075686FD}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SampleApp", "samples\SampleApp\SampleApp.xproj", "{550E0247-0BDD-4016-A29B-250F075686FD}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Console", "src\Microsoft.Framework.Logging.Console\Microsoft.Framework.Logging.Console.kproj", "{75A4DE6D-BBAA-4D59-829D-94009E759A18}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Console", "src\Microsoft.Framework.Logging.Console\Microsoft.Framework.Logging.Console.xproj", "{75A4DE6D-BBAA-4D59-829D-94009E759A18}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Serilog", "src\Microsoft.Framework.Logging.Serilog\Microsoft.Framework.Logging.Serilog.kproj", "{00F5A9B3-6213-4526-8B2F-58D5B8427AA2}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Serilog", "src\Microsoft.Framework.Logging.Serilog\Microsoft.Framework.Logging.Serilog.xproj", "{00F5A9B3-6213-4526-8B2F-58D5B8427AA2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{699DB330-0095-4266-B7B0-3EAB3710CA49}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.TraceSource", "src\Microsoft.Framework.Logging.TraceSource\Microsoft.Framework.Logging.TraceSource.kproj", "{1A3EB66F-9E64-4676-852F-24995549ED8A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.TraceSource", "src\Microsoft.Framework.Logging.TraceSource\Microsoft.Framework.Logging.TraceSource.xproj", "{1A3EB66F-9E64-4676-852F-24995549ED8A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
