@@ -7,17 +7,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FEAA3936-590
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.NotNullAttribute.Internal", "src\Microsoft.Framework.NotNullAttribute.Internal\Microsoft.Framework.NotNullAttribute.Internal.kproj", "{F399199B-6ACB-4E17-B1A3-3A3355B87E2E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.NotNullAttribute.Internal", "src\Microsoft.Framework.NotNullAttribute.Internal\Microsoft.Framework.NotNullAttribute.Internal.xproj", "{F399199B-6ACB-4E17-B1A3-3A3355B87E2E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.CopyOnWriteDictionary.Internal", "src\Microsoft.Framework.CopyOnWriteDictionary.Internal\Microsoft.Framework.CopyOnWriteDictionary.Internal.kproj", "{D4BBCB55-914F-4BB3-922F-759FCC8C7728}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.CopyOnWriteDictionary.Internal", "src\Microsoft.Framework.CopyOnWriteDictionary.Internal\Microsoft.Framework.CopyOnWriteDictionary.Internal.xproj", "{D4BBCB55-914F-4BB3-922F-759FCC8C7728}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.PropertyActivator.Internal", "src\Microsoft.Framework.PropertyActivator.Internal\Microsoft.Framework.PropertyActivator.Internal.kproj", "{7068BBDB-B932-426B-897D-11F24F9FF578}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.PropertyActivator.Internal", "src\Microsoft.Framework.PropertyActivator.Internal\Microsoft.Framework.PropertyActivator.Internal.xproj", "{7068BBDB-B932-426B-897D-11F24F9FF578}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.PropertyHelper.Internal", "src\Microsoft.Framework.PropertyHelper.Internal\Microsoft.Framework.PropertyHelper.Internal.kproj", "{A5EAE14C-F682-44BB-9CB0-68E3992534D0}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.PropertyHelper.Internal", "src\Microsoft.Framework.PropertyHelper.Internal\Microsoft.Framework.PropertyHelper.Internal.xproj", "{A5EAE14C-F682-44BB-9CB0-68E3992534D0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Internal.Test", "test\Microsoft.Framework.Internal.Test\Microsoft.Framework.Internal.Test.kproj", "{D81EAC23-B515-49FB-B04B-285A9C1C6583}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Internal.Test", "test\Microsoft.Framework.Internal.Test\Microsoft.Framework.Internal.Test.xproj", "{D81EAC23-B515-49FB-B04B-285A9C1C6583}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.BufferEntryCollection.Internal", "src\Microsoft.Framework.BufferEntryCollection.Internal\Microsoft.Framework.BufferEntryCollection.Internal.kproj", "{E65C8677-F890-4B07-AC58-56B51FA7B03C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.BufferEntryCollection.Internal", "src\Microsoft.Framework.BufferEntryCollection.Internal\Microsoft.Framework.BufferEntryCollection.Internal.xproj", "{E65C8677-F890-4B07-AC58-56B51FA7B03C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
