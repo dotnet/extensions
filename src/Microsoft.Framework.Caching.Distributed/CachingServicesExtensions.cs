@@ -8,7 +8,7 @@ namespace Microsoft.Framework.DependencyInjection
 {
     public static class CachingServicesExtensions
     {
-        public static IServiceCollection AddCachingServices(this IServiceCollection collection)
+        public static IServiceCollection AddCaching(this IServiceCollection collection)
         {
             collection.AddOptions();
             return collection.AddTransient<IDistributedCache, LocalCache>()
