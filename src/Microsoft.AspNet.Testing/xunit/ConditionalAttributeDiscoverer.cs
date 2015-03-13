@@ -11,21 +11,31 @@ namespace Microsoft.AspNet.Testing.xunit
 {
     internal class ConditionalAttributeDiscoverer : IXunitTestCaseDiscoverer
     {
-        public IEnumerable<IXunitTestCase> Discover(ITestMethod testMethod, IAttributeInfo factAttribute)
+        private readonly IMessageSink _diagnosticMessageSink;
+
+        public ConditionalAttributeDiscoverer(IMessageSink diagnosticMessageSink)
+        {
+            _diagnosticMessageSink = diagnosticMessageSink;
+        }
+
+        public IEnumerable<IXunitTestCase> Discover(
+            ITestFrameworkDiscoveryOptions discoveryOptions,
+            ITestMethod testMethod,
+            IAttributeInfo factAttribute)
         {
             var skipReason = EvaluateSkipConditions(testMethod);
 
             IXunitTestCaseDiscoverer innerDiscoverer;
             if (testMethod.Method.GetCustomAttributes(typeof(TheoryAttribute)).Any())
             {
-                innerDiscoverer = new TheoryDiscoverer();
+                innerDiscoverer = new TheoryDiscoverer(_diagnosticMessageSink);
             }
             else
             {
-                innerDiscoverer = new FactDiscoverer();
+                innerDiscoverer = new FactDiscoverer(_diagnosticMessageSink);
             }
 
-            var res = innerDiscoverer.Discover(testMethod, factAttribute)
+            var res = innerDiscoverer.Discover(discoveryOptions, testMethod, factAttribute)
                       .Select(testCase => new SkipReasonTestCase(skipReason, testCase));
             return res;
         }

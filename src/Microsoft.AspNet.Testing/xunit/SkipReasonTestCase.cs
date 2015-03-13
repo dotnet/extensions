@@ -88,9 +88,24 @@ namespace Microsoft.AspNet.Testing.xunit
             }
         }
 
-        public Task<RunSummary> RunAsync(IMessageBus messageBus, object[] constructorArguments, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource)
+        public void Deserialize(IXunitSerializationInfo info)
+        {
+            _wrappedTestCase.Deserialize(info);
+        }
+
+        public Task<RunSummary> RunAsync(
+            IMessageSink diagnosticMessageSink,
+            IMessageBus messageBus,
+            object[] constructorArguments,
+            ExceptionAggregator aggregator,
+            CancellationTokenSource cancellationTokenSource)
         {
             return new XunitTestCaseRunner(this, DisplayName, _skipReason, constructorArguments, TestMethodArguments, messageBus, aggregator, cancellationTokenSource).RunAsync();
+        }
+
+        public void Serialize(IXunitSerializationInfo info)
+        {
+            _wrappedTestCase.Serialize(info);
         }
     }
 }
