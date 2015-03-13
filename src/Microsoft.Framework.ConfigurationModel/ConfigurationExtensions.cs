@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
@@ -19,7 +20,25 @@ namespace Microsoft.Framework.ConfigurationModel
 #if NET45 || DNX451 || DNXCORE50
         public static IConfigurationSourceRoot AddIniFile(this IConfigurationSourceRoot configuration, string path)
         {
-            configuration.Add(new IniFileConfigurationSource(path));
+            return AddIniFile(configuration, path, optional: false);
+        }
+
+        public static IConfigurationSourceRoot AddIniFile(this IConfigurationSourceRoot configuration, string path, bool optional)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentException(Resources.Error_InvalidFilePath, "path");
+            }
+
+            var fullPath = PathResolver.ResolveAppRelativePath(path);
+
+            if (!optional && !File.Exists(fullPath))
+            {
+                throw new FileNotFoundException(Resources.Error_FileNotFound, fullPath);
+            }
+
+            configuration.Add(new IniFileConfigurationSource(path, optional: optional));
+
             return configuration;
         }
 #endif

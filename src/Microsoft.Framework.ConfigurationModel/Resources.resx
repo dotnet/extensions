@@ -126,6 +126,9 @@
   <data name="Error_DuplicatedKeyInSwitchMappings" xml:space="preserve">
     <value>Keys in switch mappings are case-insensitive. A duplicated key '{0}' was found.</value>
   </data>
+  <data name="Error_FileNotFound" xml:space="preserve">
+    <value>The file '{0}' was not found and is not set optional.</value>
+  </data>
   <data name="Error_InvalidFilePath" xml:space="preserve">
     <value>File path must be a non-empty string.</value>
   </data>

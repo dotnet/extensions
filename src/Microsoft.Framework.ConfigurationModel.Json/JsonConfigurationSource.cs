@@ -14,22 +14,44 @@ namespace Microsoft.Framework.ConfigurationModel
     public class JsonConfigurationSource : ConfigurationSource
     {
         public JsonConfigurationSource(string path)
+            : this(path, optional: false)
+        {
+        }
+
+        public JsonConfigurationSource(string path, bool optional)
         {
             if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentException(Resources.Error_InvalidFilePath, "path");
             }
 
+            Optional = optional;
             Path = PathResolver.ResolveAppRelativePath(path);
         }
+
+        public bool Optional { get; private set; }
 
         public string Path { get; private set; }
 
         public override void Load()
         {
-            using (var stream = new FileStream(Path, FileMode.Open, FileAccess.Read))
+            if (!File.Exists(Path))
             {
-                Load(stream);
+                if (Optional)
+                {
+                    Data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                }
+                else
+                {
+                    throw new FileNotFoundException(Resources.Error_FileNotFound, Path);
+                }
+            }
+            else
+            {
+                using (var stream = new FileStream(Path, FileMode.Open, FileAccess.Read))
+                {
+                    Load(stream);
+                }
             }
         }
 
