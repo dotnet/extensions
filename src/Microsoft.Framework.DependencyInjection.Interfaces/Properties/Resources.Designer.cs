@@ -11,6 +11,54 @@ namespace Microsoft.Framework.DependencyInjection.Interfaces
             = new ResourceManager("Microsoft.Framework.DependencyInjection.Interfaces.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Multiple constructors accepting all given argument types have been found in type '{0}'. There should only be one applicable constructor.
+        /// </summary>
+        internal static string AmbiguousConstructorMatch
+        {
+            get { return GetString("AmbiguousConstructorMatch"); }
+        }
+
+        /// <summary>
+        /// Multiple constructors accepting all given argument types have been found in type '{0}'. There should only be one applicable constructor.
+        /// </summary>
+        internal static string FormatAmbiguousConstructorMatch(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AmbiguousConstructorMatch"), p0);
+        }
+
+        /// <summary>
+        /// Unable to locate implementation '{0}' for service '{1}'.
+        /// </summary>
+        internal static string CannotLocateImplementation
+        {
+            get { return GetString("CannotLocateImplementation"); }
+        }
+
+        /// <summary>
+        /// Unable to locate implementation '{0}' for service '{1}'.
+        /// </summary>
+        internal static string FormatCannotLocateImplementation(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("CannotLocateImplementation"), p0, p1);
+        }
+
+        /// <summary>
+        /// Unable to resolve service for type '{0}' while attempting to activate '{1}'.
+        /// </summary>
+        internal static string CannotResolveService
+        {
+            get { return GetString("CannotResolveService"); }
+        }
+
+        /// <summary>
+        /// Unable to resolve service for type '{0}' while attempting to activate '{1}'.
+        /// </summary>
+        internal static string FormatCannotResolveService(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("CannotResolveService"), p0, p1);
+        }
+
+        /// <summary>
         /// Unable to locate suitable constructor for type '{0}'. Ensure the type is concrete and all parameters are accepted by a constructor.
         /// </summary>
         internal static string NoConstructorMatch
