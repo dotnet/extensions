@@ -2,13 +2,13 @@
   "dependencies": {
     "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
     "Microsoft.Framework.ConfigurationModel.Test.Common": "1.0.0-*",
-    "xunit.runner.kre": "1.0.0-*"
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "frameworks": {
     "dnx451": { },
     "dnxcore50": { }
   },
   "commands": {
-    "test": "xunit.runner.kre"
+    "test": "xunit.runner.aspnet"
   }
 }
