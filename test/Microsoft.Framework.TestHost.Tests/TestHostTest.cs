@@ -25,7 +25,7 @@ namespace Microsoft.Framework.TestHost
             _testProject = Path.GetDirectoryName(libraryManager.GetLibraryInformation("Sample.Tests").Path);
         }
 
-        [Fact(Skip = "Waiting for xunit.runner.aspnet designtime support.")]
+        [Fact]
         public async Task ListTest()
         {
             // Arrange
@@ -48,7 +48,7 @@ namespace Microsoft.Framework.TestHost
             Assert.Equal("TestDiscovery.Response", host.Output[host.Output.Count - 1].MessageType);
         }
 
-        [Fact(Skip = "Waiting for xunit.runner.aspnet designtime support.")]
+        [Fact]
         public async Task RunTest_All()
         {
             // Arrange
@@ -123,7 +123,7 @@ namespace Microsoft.Framework.TestHost
             Assert.Equal("TestExecution.Response", host.Output[host.Output.Count - 1].MessageType);
         }
 
-        [Fact(Skip = "Waiting for xunit.runner.aspnet designtime support.")]
+        [Fact]
         public async Task RunTest_ByUniqueName()
         {
             // Arrange
