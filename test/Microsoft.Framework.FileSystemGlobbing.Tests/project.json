@@ -1,7 +1,7 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
-        "xunit.runner.kre": "1.0.0-*",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*",
         "Microsoft.Framework.FileSystemGlobbing": "1.0.0-*",
         "Microsoft.AspNet.Testing": "1.0.0-*"
     },
@@ -15,6 +15,6 @@
         }
     },
     "commands": {
-        "test": "xunit.runner.kre"
+        "test": "xunit.runner.aspnet"
     }
 }
