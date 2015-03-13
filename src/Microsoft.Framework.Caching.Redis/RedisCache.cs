@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using Microsoft.Framework.Caching.Distributed;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using StackExchange.Redis;
 
