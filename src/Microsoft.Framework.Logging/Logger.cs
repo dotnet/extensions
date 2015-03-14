@@ -27,9 +27,9 @@ namespace Microsoft.Framework.Logging
 
         public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
-            foreach (var logger in _loggers)
+            if (logLevel >= _loggerFactory.MinimumLevel)
             {
-                if (logLevel >= _loggerFactory.MinimumLevel && logger.IsEnabled(logLevel))
+                foreach (var logger in _loggers)
                 {
                     logger.Log(logLevel, eventId, state, exception, formatter);
                 }
@@ -38,16 +38,27 @@ namespace Microsoft.Framework.Logging
 
         public bool IsEnabled(LogLevel logLevel)
         {
-            return logLevel >= _loggerFactory.MinimumLevel && _loggers.Any(l => l.IsEnabled(logLevel));
+            if (logLevel < _loggerFactory.MinimumLevel)
+            {
+                return false;
+            }
+            foreach (var logger in _loggers)
+            {
+                if (logger.IsEnabled(logLevel))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public IDisposable BeginScope(object state)
         {
-            var count = _loggers.Length;
-            var scope = new Scope(count);
-            for (var index = 0; index < count; index++)
+            var loggers = _loggers;
+            var scope = new Scope(loggers.Length);
+            for (var index = 0; index != loggers.Length; index++)
             {
-                scope.SetDisposable(index, _loggers[index].BeginScope(state));
+                scope.SetDisposable(index, loggers[index].BeginScope(state));
             }
             return scope;
         }
@@ -60,7 +71,7 @@ namespace Microsoft.Framework.Logging
 
         private class Scope : IDisposable
         {
-            private bool _isDisposed; 
+            private bool _isDisposed;
 
             private IDisposable _disposable0;
             private IDisposable _disposable1;
