@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.FileProviders
             _fileWatcher.Changed += OnChanged;
             _fileWatcher.Renamed += OnRenamed;
             _fileWatcher.Deleted += OnChanged;
+            _fileWatcher.Error += OnError;
         }
 
         internal IExpirationTrigger CreateFileChangeTrigger(string filter)
@@ -76,6 +77,15 @@ namespace Microsoft.AspNet.FileProviders
         private void OnChanged(object sender, FileSystemEventArgs e)
         {
             OnFileSystemEntryChange(e.FullPath);
+        }
+
+        private void OnError(object sender, ErrorEventArgs e)
+        {
+            // Trigger all the cache entries on error.
+            foreach (var trigger in _triggerCache.Values)
+            {
+                ReportChangeForMatchedEntries(trigger.Pattern);
+            }
         }
 
         private void OnFileSystemEntryChange(string fullPath)
