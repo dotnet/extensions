@@ -74,14 +74,14 @@ namespace Microsoft.AspNet.FileProviders
         private string GetFullPath(string path)
         {
             var fullPath = Path.GetFullPath(Path.Combine(Root, path));
-            if (!IsRooted(fullPath))
+            if (!IsUnderneathRoot(fullPath))
             {
                 return null;
             }
             return fullPath;
         }
 
-        private bool IsRooted(string fullPath)
+        private bool IsUnderneathRoot(string fullPath)
         {
             return fullPath.StartsWith(Root, StringComparison.OrdinalIgnoreCase);
         }
