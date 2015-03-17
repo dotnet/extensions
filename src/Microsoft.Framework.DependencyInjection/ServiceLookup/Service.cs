@@ -107,12 +107,8 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
                 {
                     return _constructorInfo.Invoke(parameterValues);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.InnerException != null)
                 {
-                    if (ex.InnerException == null) 
-                    {
-                        throw;
-                    }
                     ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
                     // The above line will always throw, but the compiler requires we throw explicitly.
                     throw;
