@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.FileProviders
                 foreach (var newLocation in Directory.EnumerateFileSystemEntries(e.FullPath, "*", SearchOption.AllDirectories))
                 {
                     // Calculated previous path of this moved item.
-                    var oldLocation = newLocation.Replace(e.FullPath, e.OldFullPath);
+                    var oldLocation = Path.Combine(e.OldFullPath, newLocation.Substring(e.FullPath.Length + 1));
                     OnFileSystemEntryChange(oldLocation);
                     OnFileSystemEntryChange(newLocation);
                 }
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.FileProviders
                 return;
             }
 
-            var relativePath = fullPath.Replace(_root, string.Empty);
+            var relativePath = fullPath.Substring(_root.Length);
             if (_triggerCache.ContainsKey(relativePath))
             {
                 ReportChangeForMatchedEntries(relativePath);
