@@ -31,8 +31,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             var ex2 = Assert.Throws<Exception>(() => provider.GetService<ClassWithThrowingCtor>());
             Assert.Equal(nameof(ClassWithThrowingCtor), ex2.Message);
 
-            var ex3 = Assert.Throws<Exception>(() => provider.GetService<AbstractClass>());
-            Assert.Equal(typeof(MemberAccessException), ex3.GetType());
+            Assert.Throws<MemberAccessException>(() => provider.GetService<AbstractClass>());
         }
     }
 }
