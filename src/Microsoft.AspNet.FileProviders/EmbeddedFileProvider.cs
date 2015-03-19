@@ -181,11 +181,6 @@ namespace Microsoft.AspNet.FileProviders
                 get { return false; }
             }
 
-            public bool IsReadOnly
-            {
-                get { return true; }
-            }
-
             public Stream CreateReadStream()
             {
                 Stream stream = _assembly.GetManifestResourceStream(_resourcePath);
@@ -194,16 +189,6 @@ namespace Microsoft.AspNet.FileProviders
                     _length = stream.Length;
                 }
                 return stream;
-            }
-
-            public void WriteContent(byte[] content)
-            {
-                throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(EmbeddedFileProvider), nameof(WriteContent)));
-            }
-
-            public void Delete()
-            {
-                throw new InvalidOperationException(string.Format("{0} does not support {1}.", nameof(EmbeddedFileProvider), nameof(Delete)));
             }
         }
     }

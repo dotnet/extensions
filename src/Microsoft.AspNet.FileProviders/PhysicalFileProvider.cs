@@ -244,31 +244,11 @@ namespace Microsoft.AspNet.FileProviders
                 get { return false; }
             }
 
-            public bool IsReadOnly
-            {
-                get
-                {
-                    return _info.IsReadOnly;
-                }
-            }
-
             public Stream CreateReadStream()
             {
                 // Note: Buffer size must be greater than zero, even if the file size is zero.
                 return new FileStream(PhysicalPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1024 * 64,
                     FileOptions.Asynchronous | FileOptions.SequentialScan);
-            }
-
-            public void WriteContent(byte[] content)
-            {
-                File.WriteAllBytes(PhysicalPath, content);
-                _info.Refresh();
-            }
-
-            public void Delete()
-            {
-                File.Delete(PhysicalPath);
-                _info.Refresh();
             }
         }
 
@@ -314,24 +294,9 @@ namespace Microsoft.AspNet.FileProviders
                 get { return true; }
             }
 
-            public bool IsReadOnly
-            {
-                get { return true; }
-            }
-
             public Stream CreateReadStream()
             {
                 throw new InvalidOperationException("Cannot create a stream for a directory.");
-            }
-
-            public void WriteContent(byte[] content)
-            {
-                throw new InvalidOperationException("Cannot write content into a directory.");
-            }
-
-            public void Delete()
-            {
-                Directory.Delete(PhysicalPath, recursive: true);
             }
         }
     }

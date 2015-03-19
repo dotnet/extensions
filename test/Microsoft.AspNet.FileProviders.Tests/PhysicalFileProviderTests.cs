@@ -26,12 +26,10 @@ namespace Microsoft.AspNet.FileProviders
             var info = provider.GetFileInfo("File.txt");
             info.ShouldNotBe(null);
             info.Exists.ShouldBe(true);
-            info.IsReadOnly.ShouldBe(false);
 
             info = provider.GetFileInfo("/File.txt");
             info.ShouldNotBe(null);
             info.Exists.ShouldBe(true);
-            info.IsReadOnly.ShouldBe(false);
         }
 
         [Fact]
@@ -81,10 +79,8 @@ namespace Microsoft.AspNet.FileProviders
             }, state: fileInfo);
 
             // Write new content.
-            var newData = Encoding.UTF8.GetBytes("OldContent + NewContent");
-            fileInfo.WriteContent(newData);
+            File.WriteAllText(fileLocation, "OldContent + NewContent");
             fileInfo.Exists.ShouldBe(true);
-            fileInfo.Length.ShouldBe(newData.Length);
             // Wait for callbacks to be fired.
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
             trigger1.IsExpired.ShouldBe(true);
@@ -96,7 +92,8 @@ namespace Microsoft.AspNet.FileProviders
             trigger3.ShouldNotBe(trigger1);
 
             // Delete the file and verify file info is updated.
-            fileInfo.Delete();
+            File.Delete(fileLocation);
+            fileInfo = provider.GetFileInfo(fileName);
             fileInfo.Exists.ShouldBe(false);
             new FileInfo(fileLocation).Exists.ShouldBe(false);
 
@@ -142,7 +139,6 @@ namespace Microsoft.AspNet.FileProviders
             info.Exists.ShouldBe(true);
             var firstDirectory = info.Where(f => f.IsDirectory).Where(f => f.Exists).FirstOrDefault();
             Should.Throw<InvalidOperationException>(() => firstDirectory.CreateReadStream());
-            Should.Throw<InvalidOperationException>(() => firstDirectory.WriteContent(new byte[10]));
 
             var fileInfo = info.Where(f => f.Name == "File2.txt").FirstOrDefault();
             fileInfo.ShouldNotBe(null);
@@ -154,8 +150,6 @@ namespace Microsoft.AspNet.FileProviders
         {
             var info = new NotFoundFileInfo("NotFoundFile.txt");
             Should.Throw<InvalidOperationException>(() => info.CreateReadStream());
-            Should.Throw<InvalidOperationException>(() => info.WriteContent(new byte[10]));
-            Should.Throw<InvalidOperationException>(() => info.Delete());
         }
 
         [Fact]
@@ -251,7 +245,7 @@ namespace Microsoft.AspNet.FileProviders
 
             callbackResults.All(c => c == true).ShouldBe(true);
 
-            provider.GetFileInfo(fileName).Delete();
+            File.Delete(fileLocation);
         }
 
         [Fact]
@@ -277,7 +271,7 @@ namespace Microsoft.AspNet.FileProviders
 
             invocationCount.ShouldBe(1);
 
-            provider.GetFileInfo(fileName).Delete();
+            File.Delete(fileLocation);
         }
 
         [Fact]
@@ -292,7 +286,7 @@ namespace Microsoft.AspNet.FileProviders
             var lowerCaseExpirationTrigger = provider.Watch(fileName.ToLowerInvariant());
             expirationTrigger.ShouldBe(lowerCaseExpirationTrigger);
 
-            provider.GetFileInfo(fileName).Delete();
+            File.Delete(fileLocation);
         }
 
         [Fact]
@@ -333,8 +327,8 @@ namespace Microsoft.AspNet.FileProviders
             trigger1.IsExpired.ShouldBe(true);
             trigger2.IsExpired.ShouldBe(true);
 
-            provider.GetFileInfo(fileName1).Delete();
-            provider.GetFileInfo(fileName2).Delete();
+            File.Delete(fileLocation1);
+            File.Delete(fileLocation2);
 
             // Callbacks not invoked on expired triggers.
             invocationCount1.ShouldBe(1);
@@ -372,7 +366,7 @@ namespace Microsoft.AspNet.FileProviders
             expirationTrigger.IsExpired.ShouldBe(true);
             callbackCount.ShouldBe(1);
 
-            provider.GetFileInfo(fileName).Delete();
+            File.Delete(fileLocation);
         }
 
         [Fact]
@@ -402,7 +396,8 @@ namespace Microsoft.AspNet.FileProviders
         [Fact]
         public async Task Trigger_Fired_For_File_Or_Directory_Create_And_Delete()
         {
-            var provider = new PhysicalFileProvider(Path.GetTempPath());
+            var root = Path.GetTempPath();
+            var provider = new PhysicalFileProvider(root);
             string fileName = Guid.NewGuid().ToString();
             string directoryName = Guid.NewGuid().ToString();
 
@@ -414,7 +409,7 @@ namespace Microsoft.AspNet.FileProviders
 
             fileTrigger.ShouldNotBe(directoryTrigger);
 
-            File.WriteAllText(Path.Combine(Path.GetTempPath(), fileName), "Content");
+            File.WriteAllText(Path.Combine(root, fileName), "Content");
             Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), directoryName));
 
             // Wait for triggers to fire.
@@ -430,7 +425,7 @@ namespace Microsoft.AspNet.FileProviders
             directoryTrigger = provider.Watch(directoryName);
             directoryTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
 
-            provider.GetFileInfo(fileName).Delete();
+            File.Delete(Path.Combine(root, fileName));
             Directory.Delete(Path.Combine(Path.GetTempPath(), directoryName));
 
             // Wait for triggers to fire.
@@ -533,7 +528,7 @@ namespace Microsoft.AspNet.FileProviders
             pattern2TriggerCount.ShouldBe(1);
 
             Directory.Delete(subFolder, true);
-            provider.GetFileInfo(fileName + ".cshtml").Delete();
+            File.Delete(Path.Combine(root, fileName + ".cshtml"));
         }
 
         [Fact]
@@ -573,7 +568,7 @@ namespace Microsoft.AspNet.FileProviders
             pattern2TriggerCount.ShouldBe(1);
 
             Directory.Delete(subFolder, true);
-            provider.GetFileInfo(fileName + ".cshtml").Delete();
+            File.Delete(Path.Combine(root, fileName + ".cshtml"));
         }
 
         [Fact]
@@ -613,7 +608,7 @@ namespace Microsoft.AspNet.FileProviders
             pattern2TriggerCount.ShouldBe(2);
 
             Directory.Delete(subFolder, true);
-            provider.GetFileInfo(fileName + ".cshtml").Delete();
+            File.Delete(Path.Combine(root, fileName + ".cshtml"));
         }
 
         [Fact]

@@ -48,25 +48,7 @@ namespace Microsoft.AspNet.FileProviders
             get { return null; }
         }
 
-        public bool IsReadOnly
-        {
-            get
-            {
-                throw new InvalidOperationException(string.Format("The file {0} does not exist.", Name));
-            }
-        }
-
         public Stream CreateReadStream()
-        {
-            throw new InvalidOperationException(string.Format("The file {0} does not exist.", Name));
-        }
-
-        public void WriteContent(byte[] content)
-        {
-            throw new InvalidOperationException(string.Format("The file {0} does not exist.", Name));
-        }
-
-        public void Delete()
         {
             throw new InvalidOperationException(string.Format("The file {0} does not exist.", Name));
         }

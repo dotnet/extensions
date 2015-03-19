@@ -46,20 +46,5 @@ namespace Microsoft.AspNet.FileProviders
         /// </summary>
         /// <returns>The file stream</returns>
         Stream CreateReadStream();
-
-        /// <summary>
-        /// True if the file is readonly.
-        /// </summary>
-        bool IsReadOnly { get; }
-
-        /// <summary>
-        /// Store new contents for resource. Folders will be created if needed. 
-        /// </summary>
-        void WriteContent(byte[] content);
-
-        /// <summary>
-        /// Deletes the file.
-        /// </summary>
-        void Delete();
     }
 }
