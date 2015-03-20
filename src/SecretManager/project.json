@@ -1,0 +1,22 @@
+﻿{
+    "version": "1.0.0-*",
+    "description": "ASP.NET 5 tool to manage user secrets.",
+    "dependencies": {
+        "Microsoft.Framework.ConfigurationModel.UserSecrets": "1.0.0-*",
+        "Microsoft.Framework.CommandLineUtils": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.Framework.Logging": "1.0.0-*",
+        "Newtonsoft.Json": "6.0.6"
+    },
+    "commands": {
+        "user-secret": "SecretManager"
+    },
+    "userSecretsId":  "testuserSecretsId",
+    "frameworks": {
+        "dnx451": { },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Console": "4.0.0-beta-*"
+            }
+        }
+    }
+}
