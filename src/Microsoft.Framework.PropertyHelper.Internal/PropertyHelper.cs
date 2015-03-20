@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -23,7 +24,11 @@ namespace Microsoft.Framework.Internal
         private static readonly MethodInfo CallPropertySetterOpenGenericMethod =
             typeof(PropertyHelper).GetTypeInfo().GetDeclaredMethod("CallPropertySetter");
 
-        private static readonly ConcurrentDictionary<Type, PropertyHelper[]> ReflectionCache =
+        // Using an array rather than IEnumerable, as target will be called on the hot path numerous times.
+        private static readonly ConcurrentDictionary<Type, PropertyHelper[]> PropertiesCache =
+            new ConcurrentDictionary<Type, PropertyHelper[]>();
+
+        private static readonly ConcurrentDictionary<Type, PropertyHelper[]> VisiblePropertiesCache =
             new ConcurrentDictionary<Type, PropertyHelper[]>();
 
         private readonly Func<object, object> _valueGetter;
@@ -69,7 +74,45 @@ namespace Microsoft.Framework.Internal
         /// </returns>
         public static PropertyHelper[] GetProperties(Type type)
         {
-            return GetProperties(type, CreateInstance, ReflectionCache);
+            return GetProperties(type, CreateInstance, PropertiesCache);
+        }
+
+        /// <summary>
+        /// <para>
+        /// Creates and caches fast property helpers that expose getters for every non-hidden get property
+        /// on the specified type.
+        /// </para>
+        /// <para>
+        /// <see cref="GetVisibleProperties"/> excludes properties defined on base types that have been
+        /// hidden by definitions using the <c>new</c> keyword.
+        /// </para>
+        /// </summary>
+        /// <param name="instance">The instance to extract property accessors for.</param>
+        /// <returns>
+        /// A cached array of all public property getters from the instance's type.
+        /// </returns>
+        public static PropertyHelper[] GetVisibleProperties(object instance)
+        {
+            return GetVisibleProperties(instance.GetType(), CreateInstance, PropertiesCache, VisiblePropertiesCache);
+        }
+
+        /// <summary>
+        /// <para>
+        /// Creates a caches fast property helpers that expose getters for every non-hidden get property
+        /// on the specified type.
+        /// </para>
+        /// <para>
+        /// <see cref="GetVisibleProperties"/> excludes properties defined on base types that have been
+        /// hidden by definitions using the <c>new</c> keyword.
+        /// </para>
+        /// </summary>
+        /// <param name="type">The type to extract property accessors for.</param>
+        /// <returns>
+        /// A cached array of all public property getters from the type.
+        /// </returns>
+        public static PropertyHelper[] GetVisibleProperties(Type type)
+        {
+            return GetVisibleProperties(type, CreateInstance, PropertiesCache, VisiblePropertiesCache);
         }
 
         /// <summary>
@@ -192,6 +235,80 @@ namespace Microsoft.Framework.Internal
             setter((TDeclaringType)target, (TValue)value);
         }
 
+        protected static PropertyHelper[] GetVisibleProperties(
+            Type type,
+            Func<PropertyInfo, PropertyHelper> createPropertyHelper,
+            ConcurrentDictionary<Type, PropertyHelper[]> allPropertiesCache,
+            ConcurrentDictionary<Type, PropertyHelper[]> visiblePropertiesCache)
+        {
+            PropertyHelper[] result;
+            if (visiblePropertiesCache.TryGetValue(type, out result))
+            {
+                return result;
+            }
+
+            // The simple and common case, this is normal POCO object - no need to allocate.
+            var allPropertiesDefinedOnType = true;
+            var allProperties = GetProperties(type, createPropertyHelper, allPropertiesCache);
+            foreach (var propertyHelper in allProperties)
+            {
+                if (propertyHelper.Property.DeclaringType != type)
+                {
+                    allPropertiesDefinedOnType = false;
+                    break;
+                }
+            }
+            
+            if (allPropertiesDefinedOnType)
+            {
+                visiblePropertiesCache.TryAdd(type, allProperties);
+                return result;
+            }
+
+            // There's some inherited properties here, so we need to check for hiding via 'new'.
+            var filteredProperties = new List<PropertyHelper>(allProperties.Length);
+            foreach (var propertyHelper in allProperties)
+            {
+                var declaringType = propertyHelper.Property.DeclaringType;
+                if (declaringType == type)
+                {
+                    filteredProperties.Add(propertyHelper);
+                    continue;
+                }
+
+
+                // If this property was declared on a base type then look for the definition closest to the
+                // the type to see if we should include it.
+                var ignoreProperty = false;
+
+                // Walk up the hierarchy until we find the type that actally declares this
+                // PropertyInfo.
+                var currentTypeInfo = type.GetTypeInfo();
+                var declaringTypeInfo = declaringType.GetTypeInfo();
+                while (currentTypeInfo != null && currentTypeInfo != declaringTypeInfo)
+                {
+                    // We've found a 'more proximal' public definition
+                    var declaredProperty = currentTypeInfo.GetDeclaredProperty(propertyHelper.Name);
+                    if (declaredProperty != null)
+                    {
+                        ignoreProperty = true;
+                        break;
+                    }
+
+                    currentTypeInfo = currentTypeInfo.BaseType?.GetTypeInfo();
+                }
+
+                if (!ignoreProperty)
+                {
+                    filteredProperties.Add(propertyHelper);
+                }
+            }
+
+            result = filteredProperties.ToArray();
+            visiblePropertiesCache.TryAdd(type, result);
+            return result;
+        }
+
         protected static PropertyHelper[] GetProperties(
             Type type,
             Func<PropertyInfo, PropertyHelper> createPropertyHelper,
@@ -201,9 +318,7 @@ namespace Microsoft.Framework.Internal
             // part of the sequence of properties returned by this method.
             type = Nullable.GetUnderlyingType(type) ?? type;
 
-            // Using an array rather than IEnumerable, as target will be called on the hot path numerous times.
             PropertyHelper[] helpers;
-
             if (!cache.TryGetValue(type, out helpers))
             {
                 // We avoid loading indexed properties using the where statement.

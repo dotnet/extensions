@@ -242,6 +242,41 @@ namespace Microsoft.Framework.Internal
         }
 
         [Fact]
+        public void GetProperties_HiddenProperty()
+        {
+            // Arrange
+            var type = typeof(DerivedHiddenProperty);
+
+            // Act
+            var result = PropertyHelper.GetVisibleProperties(type).ToArray();
+
+            // Assert
+            Assert.Equal(2, result.Length);
+            Assert.Equal("Id", result[0].Name);
+            Assert.Equal(typeof(string), result[0].Property.PropertyType);
+            Assert.Equal("Name", result[1].Name);
+            Assert.Equal(typeof(string), result[1].Property.PropertyType);
+        }
+
+        [Fact]
+        public void GetProperties_HiddenProperty_TwoLevels()
+        {
+            // Arrange
+            var type = typeof(DerivedHiddenProperty2);
+
+            // Act
+            var result = PropertyHelper.GetVisibleProperties(type).ToArray();
+
+            // Assert
+            Assert.Equal(2, result.Length);
+            Assert.Equal("Id", result[0].Name);
+            Assert.Equal(typeof(Guid), result[0].Property.PropertyType);
+            Assert.Equal("Name", result[1].Name);
+            Assert.Equal(typeof(string), result[1].Property.PropertyType);
+        }
+
+
+        [Fact]
         public void MakeFastPropertySetter_SetsPropertyValues_ForPublicAndNobPublicProperties()
         {
             // Arrange
@@ -388,6 +423,25 @@ namespace Microsoft.Framework.Internal
         private struct MyStruct
         {
             public string Foo { get; set; }
+        }
+
+        private class BaseHiddenProperty
+        {
+            public int Id { get; set; }
+        }
+
+        private class DerivedHiddenProperty : BaseHiddenProperty
+        {
+            public new string Id { get; set; }
+
+            public string Name { get; set; }
+        }
+
+        private class DerivedHiddenProperty2 : DerivedHiddenProperty
+        {
+            public new Guid Id { get; set; }
+
+            public new string Name { get; private set; }
         }
     }
 }
