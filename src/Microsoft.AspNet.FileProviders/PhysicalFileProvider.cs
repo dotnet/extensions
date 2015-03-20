@@ -105,12 +105,7 @@ namespace Microsoft.AspNet.FileProviders
                 return new NotFoundFileInfo(subpath);
             }
 
-            if (fileInfo.Exists)
-            {
-                return new PhysicalFileInfo(_filesWatcher, fileInfo);
-            }
-
-            return new NotFoundFileInfo(subpath);
+            return new PhysicalFileInfo(_filesWatcher, fileInfo);
         }
 
         /// <summary>
