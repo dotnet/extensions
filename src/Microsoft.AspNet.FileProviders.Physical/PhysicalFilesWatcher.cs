@@ -148,9 +148,7 @@ namespace Microsoft.AspNet.FileProviders
 
         private bool IsDirectoryPath(string path)
         {
-            return path != null && path.Length > 1 &&
-                (path[path.Length - 1] == Path.DirectorySeparatorChar ||
-                path[path.Length - 1] == Path.AltDirectorySeparatorChar);
+            return path != null && path.Length >= 1 && (path[path.Length - 1] == Path.DirectorySeparatorChar || path[path.Length - 1] == Path.AltDirectorySeparatorChar);
         }
 
         private string WildcardToRegexPattern(string wildcard)
