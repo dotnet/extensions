@@ -4,11 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Common.CommandLine;
-using Microsoft.Framework.Runtime.Common.DependencyInjection;
 using Microsoft.Framework.TestAdapter;
 
 namespace Microsoft.Framework.TestHost
@@ -102,7 +100,7 @@ namespace Microsoft.Framework.TestHost
                     return;
                 }
 
-                var testServices = new ServiceProvider(_services);
+                var testServices = TestServices.CreateTestServices(_services, project);
                 testServices.Add(typeof(ITestExecutionSink), new TestExecutionSink(channel));
 
                 var args = new List<string>()
@@ -164,7 +162,7 @@ namespace Microsoft.Framework.TestHost
                     return;
                 }
 
-                var testServices = new ServiceProvider(_services);
+                var testServices = TestServices.CreateTestServices(_services, project);
                 testServices.Add(typeof(ITestDiscoverySink), new TestDiscoverySink(channel));
 
                 var args = new string[] { "test", "--list", "--designtime" };
