@@ -16,7 +16,8 @@ namespace Microsoft.Framework.TestHost
     {
         public static ServiceProvider CreateTestServices(
             IServiceProvider applicationServices,
-            Project project)
+            Project project,
+            ReportingChannel channel)
         {
             var services = new ServiceProvider(applicationServices);
 
@@ -31,6 +32,9 @@ namespace Microsoft.Framework.TestHost
             services.Add(
                 typeof(ISourceInformationProvider),
                 new SourceInformationProvider(projectReference, new NullLogger()));
+
+            services.Add(typeof(ITestDiscoverySink), new TestDiscoverySink(channel));
+            services.Add(typeof(ITestExecutionSink), new TestExecutionSink(channel));
 
             return services;
         }

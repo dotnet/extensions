@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Common.CommandLine;
-using Microsoft.Framework.TestAdapter;
 
 namespace Microsoft.Framework.TestHost
 {
@@ -100,9 +99,6 @@ namespace Microsoft.Framework.TestHost
                     return;
                 }
 
-                var testServices = TestServices.CreateTestServices(_services, project);
-                testServices.Add(typeof(ITestExecutionSink), new TestExecutionSink(channel));
-
                 var args = new List<string>()
                 {
                     "test",
@@ -120,6 +116,7 @@ namespace Microsoft.Framework.TestHost
 
                 try
                 {
+                    var testServices = TestServices.CreateTestServices(_services, project, channel);
                     await ProjectCommand.Execute(testServices, project, args.ToArray());
                 }
                 catch
@@ -162,13 +159,11 @@ namespace Microsoft.Framework.TestHost
                     return;
                 }
 
-                var testServices = TestServices.CreateTestServices(_services, project);
-                testServices.Add(typeof(ITestDiscoverySink), new TestDiscoverySink(channel));
-
                 var args = new string[] { "test", "--list", "--designtime" };
 
                 try
                 {
+                    var testServices = TestServices.CreateTestServices(_services, project, channel);
                     await ProjectCommand.Execute(testServices, project, args);
                 }
                 catch

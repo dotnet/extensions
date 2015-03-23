@@ -1228,42 +1228,42 @@ namespace dia2
             get;
         }
 
-        //void get_dataBytes([In] uint cbData, out uint pcbData, out byte pbData);
+        void get_dataBytes([In] uint cbData, out uint pcbData, out byte pbData);
 
-        //void findChildren([In] SymTagEnum symTag, [MarshalAs(UnmanagedType.LPWStr)] [In] string name, [In] uint compareFlags, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumSymbols ppResult);
+        void findChildren([In] SymTagEnum symTag, [MarshalAs(UnmanagedType.LPWStr)] [In] string name, [In] uint compareFlags, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumSymbols ppResult);
 
-        //void findChildrenEx([In] SymTagEnum symTag, [MarshalAs(UnmanagedType.LPWStr)] [In] string name, [In] uint compareFlags, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumSymbols ppResult);
+        void findChildrenEx([In] SymTagEnum symTag, [MarshalAs(UnmanagedType.LPWStr)] [In] string name, [In] uint compareFlags, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumSymbols ppResult);
 
-        //void findChildrenExByAddr([In] SymTagEnum symTag, [MarshalAs(UnmanagedType.LPWStr)] [In] string name, [In] uint compareFlags, [In] uint isect, [In] uint offset, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumSymbols ppResult);
+        void findChildrenExByAddr([In] SymTagEnum symTag, [MarshalAs(UnmanagedType.LPWStr)] [In] string name, [In] uint compareFlags, [In] uint isect, [In] uint offset, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumSymbols ppResult);
 
-        //void findChildrenExByVA([In] SymTagEnum symTag, [MarshalAs(UnmanagedType.LPWStr)] [In] string name, [In] uint compareFlags, [In] ulong va, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumSymbols ppResult);
+        void findChildrenExByVA([In] SymTagEnum symTag, [MarshalAs(UnmanagedType.LPWStr)] [In] string name, [In] uint compareFlags, [In] ulong va, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumSymbols ppResult);
 
-        //void findChildrenExByRVA([In] SymTagEnum symTag, [MarshalAs(UnmanagedType.LPWStr)] [In] string name, [In] uint compareFlags, [In] uint rva, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumSymbols ppResult);
+        void findChildrenExByRVA([In] SymTagEnum symTag, [MarshalAs(UnmanagedType.LPWStr)] [In] string name, [In] uint compareFlags, [In] uint rva, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumSymbols ppResult);
 
-        //void get_types([In] uint cTypes, out uint pcTypes, [MarshalAs(UnmanagedType.Interface)] out IDiaSymbol pTypes);
+        void get_types([In] uint cTypes, out uint pcTypes, [MarshalAs(UnmanagedType.Interface)] out IDiaSymbol pTypes);
 
-        //void get_typeIds([In] uint cTypeIds, out uint pcTypeIds, out uint pdwTypeIds);
+        void get_typeIds([In] uint cTypeIds, out uint pcTypeIds, out uint pdwTypeIds);
 
-        //void get_undecoratedNameEx([In] uint undecorateOptions, [MarshalAs(UnmanagedType.BStr)] out string name);
+        void get_undecoratedNameEx([In] uint undecorateOptions, [MarshalAs(UnmanagedType.BStr)] out string name);
 
-        //void get_numericProperties([In] uint cnt, out uint pcnt, out uint pProperties);
+        void get_numericProperties([In] uint cnt, out uint pcnt, out uint pProperties);
 
-        //void get_modifierValues([In] uint cnt, out uint pcnt, out ushort pModifiers);
+        void get_modifierValues([In] uint cnt, out uint pcnt, out ushort pModifiers);
 
-        //void findInlineFramesByAddr([In] uint isect, [In] uint offset, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumSymbols ppResult);
+        void findInlineFramesByAddr([In] uint isect, [In] uint offset, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumSymbols ppResult);
 
-        //void findInlineFramesByRVA([In] uint rva, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumSymbols ppResult);
+        void findInlineFramesByRVA([In] uint rva, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumSymbols ppResult);
 
-        //void findInlineFramesByVA([In] ulong va, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumSymbols ppResult);
+        void findInlineFramesByVA([In] ulong va, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumSymbols ppResult);
 
-        //void findInlineeLines([MarshalAs(UnmanagedType.Interface)] out IDiaEnumLineNumbers ppResult);
+        void findInlineeLines([MarshalAs(UnmanagedType.Interface)] out IDiaEnumLineNumbers ppResult);
 
-        //void findInlineeLinesByAddr([In] uint isect, [In] uint offset, [In] uint length, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumLineNumbers ppResult);
+        void findInlineeLinesByAddr([In] uint isect, [In] uint offset, [In] uint length, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumLineNumbers ppResult);
 
-        //void findInlineeLinesByRVA([In] uint rva, [In] uint length, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumLineNumbers ppResult);
+        void findInlineeLinesByRVA([In] uint rva, [In] uint length, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumLineNumbers ppResult);
 
-        //void findInlineeLinesByVA([In] ulong va, [In] uint length, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumLineNumbers ppResult);
+        void findInlineeLinesByVA([In] ulong va, [In] uint length, [MarshalAs(UnmanagedType.Interface)] out IDiaEnumLineNumbers ppResult);
 
-        //void getSrcLineOnTypeDefn([MarshalAs(UnmanagedType.Interface)] out IDiaLineNumber ppResult);
+        void getSrcLineOnTypeDefn([MarshalAs(UnmanagedType.Interface)] out IDiaLineNumber ppResult);
     }
 }
