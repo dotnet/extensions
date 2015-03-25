@@ -78,7 +78,7 @@ namespace Microsoft.Framework.TestHost
         {
             // TODO: Mono?
 
-            var allArgs = "/c k Microsoft.Framework.TestHost " + string.Join(" ", args.Select(Quote));
+            var allArgs = "/c dnx . Microsoft.Framework.TestHost " + string.Join(" ", args.Select(Quote));
             return Process.Start(new ProcessStartInfo
             {
                 FileName = "cmd",
