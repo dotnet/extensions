@@ -45,7 +45,15 @@ namespace Microsoft.Framework.OptionsModel
 
                 try
                 {
-                    prop.SetValue(obj, Convert.ChangeType(configValue, propertyType));
+                    //Handle enums
+                    if (propertyType.IsEnum)
+                    {
+                        prop.SetValue(obj, Enum.Parse(propertyType, configValue));
+                    }
+                    else
+                    {
+                        prop.SetValue(obj, Convert.ChangeType(configValue, propertyType));
+                    }
                 }
                 catch
                 {
