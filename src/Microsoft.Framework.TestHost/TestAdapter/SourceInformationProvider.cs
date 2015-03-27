@@ -9,6 +9,7 @@ using System.Reflection;
 using dia2;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Compilation;
 using Microsoft.Framework.TestAdapter;
 
 namespace Microsoft.Framework.TestHost.TestAdapter

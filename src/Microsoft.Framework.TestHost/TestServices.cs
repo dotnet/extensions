@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Compilation;
 using Microsoft.Framework.Runtime.Common.DependencyInjection;
 using Microsoft.Framework.TestAdapter;
 using Microsoft.Framework.TestHost.TestAdapter;
