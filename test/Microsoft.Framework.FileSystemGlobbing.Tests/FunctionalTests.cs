@@ -226,15 +226,6 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
                 "src/project2/source1.cs");
         }
 
-#if DNXCORE50
-        [ConditionalFact]
-        [RunWhenWhenDirectoryInfoWorks]
-        public void WarningTest()
-        {
-
-        }
-#endif
-
         private DisposableFileSystem CreateContext()
         {
             var context = new DisposableFileSystem();
