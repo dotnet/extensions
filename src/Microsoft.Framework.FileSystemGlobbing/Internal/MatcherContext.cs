@@ -46,19 +46,26 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal
             PushDirectory(directory);
             Declare();
 
-            IEnumerable<FileSystemInfoBase> entities = null;
+            var entities = new List<FileSystemInfoBase>();
             if (_declaredWildcardPathSegment || _declaredLiteralFileSegments.Any())
             {
-                entities = directory.EnumerateFileSystemInfos();
+                entities.AddRange(directory.EnumerateFileSystemInfos());
             }
             else
             {
-                entities = _declaredLiteralFolderSegments.Select(literal => directory.GetDirectory(literal.Value));
+                foreach (var literal in _declaredLiteralFolderSegments)
+                {
+                    var dirInfo = directory.GetDirectory(literal.Value);
+                    if (dirInfo != null)
+                    {
+                        entities.Add(dirInfo);
+                    }
+                }
             }
 
             if (_declaredParentPathSegment)
             {
-                entities = entities.Concat(new[] { directory.GetDirectory("..") });
+                entities.Add(directory.GetDirectory(".."));
             }
 
             // collect files and sub directories

@@ -39,9 +39,31 @@ namespace Microsoft.Framework.FileSystemGlobbing.Abstractions
 
         public override DirectoryInfoBase GetDirectory(string name)
         {
-            return new DirectoryInfoWrapper(
-                new DirectoryInfo(Path.Combine(_directoryInfo.FullName, name)),
-                isParentPath: string.Equals(name, "..", StringComparison.Ordinal));
+            var isParentPath = string.Equals(name, "..", StringComparison.Ordinal);
+
+            if (isParentPath)
+            {
+                return new DirectoryInfoWrapper(new DirectoryInfo(Path.Combine(_directoryInfo.FullName, name)), isParentPath);
+            }
+            else
+            {
+                var dirs = _directoryInfo.GetDirectories(name);
+
+                if (dirs.Length == 1)
+                {
+                    return new DirectoryInfoWrapper(dirs[0], isParentPath);
+                }
+                else if (dirs.Length == 0)
+                {
+                    return null;
+                }
+                else
+                {
+                    // this shouldn't happen. parameter name doesn't suppose to contain wild card.
+                    throw new InvalidOperationException(
+                        string.Format("More than one sub directories are found under {0} with name {1}.", _directoryInfo.FullName, name));
+                }
+            }
         }
 
         public override FileInfoBase GetFile(string name)
