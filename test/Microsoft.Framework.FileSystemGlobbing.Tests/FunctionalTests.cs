@@ -42,6 +42,47 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
                 "src/project/sub/source2.cs");
         }
 
+        [Theory]
+        [InlineData("src/project", "source1.cs", new string[] { "source1.cs" })]
+        [InlineData("src/project", "Source1.cs", new string[] { })]
+        [InlineData("src/project", "compiler/preprocess/**/*.cs", new string[] { "compiler/preprocess/preprocess-source1.cs",
+                                                                                 "compiler/preprocess/sub/preprocess-source2.cs",
+                                                                                 "compiler/preprocess/sub/sub/preprocess-source3.cs" })]
+        [InlineData("src/project", "compiler/Preprocess/**.cs", new string[] { })]
+        public void IncludeCaseSensitive(string root, string includePattern, string[] expectedFiles)
+        {
+            var matcher = new Matcher();
+            matcher.AddInclude(includePattern);
+
+            ExecuteAndVerify(matcher, root, expectedFiles.Select(f => root + "/" + f).ToArray());
+        }
+
+        [Theory]
+        [InlineData("src/project/compiler/preprocess/", "source.cs", new string[] { "preprocess-source1.cs",
+                                                                                    "sub/preprocess-source2.cs",
+                                                                                    "sub/sub/preprocess-source3.cs",
+                                                                                    "sub/sub/preprocess-source3.txt" })]
+        [InlineData("src/project/compiler/preprocess/", "**/Preprocess*", new string[] { "preprocess-source1.cs",
+                                                                                     "sub/preprocess-source2.cs",
+                                                                                     "sub/sub/preprocess-source3.cs",
+                                                                                     "sub/sub/preprocess-source3.txt" })]
+        [InlineData("src/project/compiler/preprocess/", "**/preprocess*", new string[] { })]
+        [InlineData("src/project/compiler/preprocess/", "**/*source*.cs", new string[] { "sub/sub/preprocess-source3.txt" })]
+        [InlineData("src/project/compiler/preprocess/", "sub/sub/*", new string[] { "preprocess-source1.cs",
+                                                                                    "sub/preprocess-source2.cs" })]
+        [InlineData("src/project/compiler/preprocess/", "sub/Sub/*", new string[] { "preprocess-source1.cs",
+                                                                                    "sub/preprocess-source2.cs",
+                                                                                    "sub/sub/preprocess-source3.cs",
+                                                                                    "sub/sub/preprocess-source3.txt" })]
+        public void ExcludeCaseSensitive(string root, string excludePattern, string[] expectedFiles)
+        {
+            var matcher = new Matcher();
+            matcher.AddInclude("**/*.*");
+            matcher.AddExclude(excludePattern);
+
+            ExecuteAndVerify(matcher, root, expectedFiles.Select(f => root + "/" + f).ToArray());
+        }
+
         [Fact]
         public void RecursiveAndDoubleParentsWithRecursiveSearch()
         {
