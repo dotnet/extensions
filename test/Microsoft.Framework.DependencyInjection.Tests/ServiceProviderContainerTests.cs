@@ -20,6 +20,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddTransient<ClassWithThrowingEmptyCtor>();
             serviceCollection.AddTransient<ClassWithThrowingCtor>();
+            serviceCollection.AddTransient<AbstractClass>();
             serviceCollection.AddTransient<IFakeService, FakeService>();
 
             var provider = serviceCollection.BuildServiceProvider();
@@ -29,6 +30,8 @@ namespace Microsoft.Framework.DependencyInjection.Tests
 
             var ex2 = Assert.Throws<Exception>(() => provider.GetService<ClassWithThrowingCtor>());
             Assert.Equal(nameof(ClassWithThrowingCtor), ex2.Message);
+
+            Assert.Throws<MemberAccessException>(() => provider.GetService<AbstractClass>());
         }
     }
 }
