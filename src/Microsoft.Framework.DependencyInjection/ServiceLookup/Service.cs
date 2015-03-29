@@ -142,7 +142,7 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
                 {
                     return Activator.CreateInstance(_descriptor.ImplementationType);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex.InnerException != null)
                 {
                     ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
                     // The above line will always throw, but the compiler requires we throw explicitly.
