@@ -63,7 +63,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 }
                 else
                 {
-                    throw new FileNotFoundException(Resources.Error_FileNotFound, Path);
+                    throw new FileNotFoundException(string.Format(Resources.Error_FileNotFound, Path), Path);
                 }
             }
             else

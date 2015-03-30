@@ -199,6 +199,35 @@ DefaultConnection=TestConnectionString
             Assert.Equal(expectedMsg, exception.Message);
         }
 
+        [Fact]
+        public void IniConfiguration_Throws_On_Missing_Configuration_File()
+        {
+            var configSource = new IniFileConfigurationSource("NotExistingConfig.ini", optional: false);
+            Assert.Throws<FileNotFoundException>(() =>
+            {
+                try
+                {
+                    configSource.Load();
+                }
+                catch (FileNotFoundException exception)
+                {
+                    Assert.Equal(
+                        string.Format(Resources.Error_FileNotFound,
+                        Path.Combine(Directory.GetCurrentDirectory(), "NotExistingConfig.ini")),
+                        exception.Message);
+                    throw;
+                }
+            });
+        }
+
+        [Fact]
+        public void IniConfiguration_Does_Not_Throw_On_Optional_Configuration()
+        {
+            var configSource = new IniFileConfigurationSource("NotExistingConfig.ini", optional: true);
+            configSource.Load();
+            Assert.Throws<InvalidOperationException>(() => configSource.Get("key"));
+        }
+
         private static Stream StringToStream(string str)
         {
             var memStream = new MemoryStream();

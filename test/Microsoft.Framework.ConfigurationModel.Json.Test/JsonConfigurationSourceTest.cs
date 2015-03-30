@@ -135,6 +135,35 @@ namespace Microsoft.Framework.ConfigurationModel
         }
 
         [Fact]
+        public void JsonConfiguration_Throws_On_Missing_Configuration_File()
+        {
+            var configSource = new JsonConfigurationSource("NotExistingConfig.json", optional: false);
+            Assert.Throws<FileNotFoundException>(() =>
+            {
+                try
+                {
+                    configSource.Load();
+                }
+                catch (FileNotFoundException exception)
+                {
+                    Assert.Equal(
+                        string.Format(Resources.Error_FileNotFound,
+                        Path.Combine(Directory.GetCurrentDirectory(), "NotExistingConfig.json")), 
+                        exception.Message);
+                    throw;
+                }
+            });
+        }
+
+        [Fact]
+        public void JsonConfiguration_Does_Not_Throw_On_Optional_Configuration()
+        {
+            var configSource = new JsonConfigurationSource("NotExistingConfig.json", optional: true);
+            configSource.Load();
+            Assert.Throws<InvalidOperationException>(() => configSource.Get("key"));
+        }
+
+        [Fact]
         public void ThrowExceptionWhenKeyIsDuplicated()
         {
             var json = @"{

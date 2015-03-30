@@ -43,6 +43,22 @@ namespace Microsoft.Framework.ConfigurationModel.Json
         }
 
         /// <summary>
+        /// The configuration file '{0}' was not found and is not optional.
+        /// </summary>
+        internal static string Error_FileNotFound
+        {
+            get { return GetString("Error_FileNotFound"); }
+        }
+
+        /// <summary>
+        /// The configuration file '{0}' was not found and is not optional.
+        /// </summary>
+        internal static string FormatError_FileNotFound(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_FileNotFound"), p0);
+        }
+
+        /// <summary>
         /// File path must be a non-empty string.
         /// </summary>
         internal static string Error_InvalidFilePath
@@ -120,22 +136,6 @@ namespace Microsoft.Framework.ConfigurationModel.Json
         internal static string FormatError_UnsupportedJSONToken(object p0, object p1, object p2, object p3)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("Error_UnsupportedJSONToken"), p0, p1, p2, p3);
-        }
-
-        /// <summary>
-        /// The file '{0}' was not found and is not set optional.
-        /// </summary>
-        internal static string Error_FileNotFound
-        {
-            get { return GetString("Error_FileNotFound"); }
-        }
-
-        /// <summary>
-        /// The file '{0}' was not found and is not set optional.
-        /// </summary>
-        internal static string FormatError_FileNotFound(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_FileNotFound"), p0);
         }
 
         private static string GetString(string name, params string[] formatterNames)

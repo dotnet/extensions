@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Newtonsoft.Json;
 
 using Resources = Microsoft.Framework.ConfigurationModel.Json.Resources;
@@ -43,7 +42,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 }
                 else
                 {
-                    throw new FileNotFoundException(Resources.Error_FileNotFound, Path);
+                    throw new FileNotFoundException(string.Format(Resources.Error_FileNotFound, Path), Path);
                 }
             }
             else
