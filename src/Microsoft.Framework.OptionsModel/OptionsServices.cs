@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Framework.ConfigurationModel;
 
@@ -9,17 +10,29 @@ namespace Microsoft.Framework.OptionsModel
 {
     public class OptionsServices
     {
+        private static IEnumerable<PropertyInfo> GetAllProperties(object obj)
+        {
+            var allProperties = new List<PropertyInfo>();
+            var type = obj.GetType().GetTypeInfo();
+            do
+            {
+                allProperties.AddRange(type.DeclaredProperties);
+                type = type.BaseType.GetTypeInfo();
+            } while (type != typeof(object).GetTypeInfo());
+            return allProperties;
+        }
+
         public static void ReadProperties(object obj, IConfiguration config)
         {
             if (obj == null || config == null)
             {
                 return;
             }
-            var props = obj.GetType().GetTypeInfo().DeclaredProperties;
+            var props = GetAllProperties(obj);
             foreach (var prop in props)
             {
                 // Only try to set properties with public setters
-                if (prop.SetMethod == null)
+                if (prop.SetMethod == null || !prop.SetMethod.IsPublic)
                 {
                     continue;
                 }
