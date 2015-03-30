@@ -8,6 +8,11 @@
             "dependencies": {
                 "System.Runtime": "4.0.20-beta-*"
             }
+        },
+        "netcore451": {
+            "frameworkAssemblies": {
+                "System.Runtime": ""
+            }
         }
     }
 }

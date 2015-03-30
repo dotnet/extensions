@@ -4,7 +4,7 @@
 using System;
 #if DNXCORE50
 using System.Threading;
-#else
+#elif !NETCORE451
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 #endif
@@ -20,6 +20,12 @@ namespace Microsoft.Framework.Caching.Memory
         {
             get { return _contextLink.Value; }
             set { _contextLink.Value = value; }
+        }
+#elif NETCORE451
+        public static IEntryLink ContextLink
+        {
+            get { return null; }
+            set { throw new NotImplementedException(); }
         }
 #else
         private const string ContextLinkDataName = "klr.host.EntryLinkHelpers.ContextLink";

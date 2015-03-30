@@ -4,6 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+#if NETCORE451
+using System.Threading.Tasks;
+#endif
 
 namespace Microsoft.Framework.Caching.Memory
 {
@@ -138,7 +141,11 @@ namespace Microsoft.Framework.Caching.Memory
             Context.PostEvictionCallbacks = null;
             if (callbacks != null)
             {
+#if NETCORE451
+                Task.Run(() => InvokeCallbacks(callbacks));
+#else
                 ThreadPool.QueueUserWorkItem(InvokeCallbacks, callbacks);
+#endif
             }
         }
 

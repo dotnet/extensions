@@ -8,6 +8,9 @@ using System.Threading;
 using Microsoft.Framework.Caching.Memory.Infrastructure;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
+#if NETCORE451
+using System.Threading.Tasks;
+#endif
 
 namespace Microsoft.Framework.Caching.Memory
 {
@@ -260,7 +263,11 @@ namespace Microsoft.Framework.Caching.Memory
             if (_expirationScanFrequency < now - _lastExpirationScan)
             {
                 _lastExpirationScan = now;
+#if NETCORE451
+                Task.Run(() => ScanForExpiredItems(state: null));
+#else
                 ThreadPool.QueueUserWorkItem(ScanForExpiredItems);
+#endif
             }
         }
 
