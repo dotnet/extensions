@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Framework.Internal;
 using NLog;
 
 namespace Microsoft.Framework.Logging.NLog
@@ -72,9 +73,20 @@ namespace Microsoft.Framework.Logging.NLog
                 return global::NLog.LogLevel.Debug;
             }
 
-            public IDisposable BeginScope(object state)
+            public IDisposable BeginScope([NotNull] object state)
             {
-                return NestedDiagnosticsContext.Push(state.ToString());
+                string scopeMessage;
+                var logValues = state as ILogValues;
+                if (logValues != null)
+                {
+                    scopeMessage = logValues.Format();
+                }
+                else
+                {
+                    scopeMessage = state.ToString();
+                }
+
+                return NestedDiagnosticsContext.Push(scopeMessage);
             }
         }
     }

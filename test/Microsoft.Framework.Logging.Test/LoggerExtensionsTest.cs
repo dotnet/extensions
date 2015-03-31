@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
+using Microsoft.Framework.Logging.Internal;
 using Xunit;
 
 namespace Microsoft.Framework.Logging.Test
@@ -589,6 +591,33 @@ namespace Microsoft.Framework.Logging.Test
             Assert.Equal(
                 "Test 1" + Environment.NewLine + _exception,
                 debug.Formatter(debug.State, debug.Exception));
+        }
+
+        [Fact]
+        public void BeginScope_CreatesScope_WithFormatStringValues()
+        {
+            // Arrange
+            var testSink = new TestSink(
+                writeEnabled: (writeContext) => true, 
+                beginEnabled: (beginScopeContext) => true);
+            var logger = new TestLogger("TestLogger", testSink, enabled: true);
+            var actionName = "App.Controllers.Home.Index";
+            var expectedStringMessage = "Executing action " + actionName;
+
+            // Act
+            var scope = logger.BeginScope("Executing action {ActionName}", actionName);
+
+            // Assert
+            Assert.Equal(1, testSink.Scopes.Count);
+            Assert.IsType<FormattedLogValues>(testSink.Scopes[0].Scope);
+            var scopeState = (FormattedLogValues)testSink.Scopes[0].Scope;
+            Assert.Equal(expectedStringMessage, scopeState.Format());
+            var scopeProperties = scopeState.GetValues();
+            Assert.NotNull(scopeProperties);
+            Assert.Contains(scopeProperties, (kvp) =>
+            {
+                return (string.Equals(kvp.Key, "ActionName") && string.Equals(kvp.Value?.ToString(), actionName));
+            });
         }
 
         private class TestStructure : ReflectionBasedLogValues

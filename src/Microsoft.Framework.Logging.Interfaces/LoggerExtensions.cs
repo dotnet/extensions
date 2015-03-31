@@ -546,6 +546,23 @@ namespace Microsoft.Framework.Logging
             logger.LogWithEvent(LogLevel.Critical, eventId, state, error);
         }
 
+        //------------------------------------------Scope------------------------------------------//
+
+        /// <summary>
+        /// Formats the message and creates a scope.
+        /// </summary>
+        /// <param name="logger">The <see cref="ILogger"/> to create the scope in.</param>
+        /// <param name="messageFormat">Format string of the scope message.</param>
+        /// <param name="args">An object array that contains zero or more objects to format.</param>
+        /// <returns>A disposable scope object. Can be null.</returns>
+        public static IDisposable BeginScope(
+            [NotNull] this ILogger logger,
+            [NotNull] string messageFormat,
+            params object[] args)
+        {
+            return logger.BeginScope(new FormattedLogValues(messageFormat, args));
+        }
+
         //------------------------------------------HELPERS------------------------------------------//
 
         private static void Log(
