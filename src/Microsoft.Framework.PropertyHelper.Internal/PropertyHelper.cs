@@ -261,7 +261,8 @@ namespace Microsoft.Framework.Internal
             
             if (allPropertiesDefinedOnType)
             {
-                visiblePropertiesCache.TryAdd(type, allProperties);
+                result = allProperties;
+                visiblePropertiesCache.TryAdd(type, result);
                 return result;
             }
 
@@ -275,7 +276,6 @@ namespace Microsoft.Framework.Internal
                     filteredProperties.Add(propertyHelper);
                     continue;
                 }
-
 
                 // If this property was declared on a base type then look for the definition closest to the
                 // the type to see if we should include it.

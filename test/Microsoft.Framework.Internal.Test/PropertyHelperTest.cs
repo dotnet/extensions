@@ -242,7 +242,22 @@ namespace Microsoft.Framework.Internal
         }
 
         [Fact]
-        public void GetProperties_HiddenProperty()
+        public void GetVisibleProperties_NoHiddenProperty()
+        {
+            // Arrange
+            var type = typeof(string);
+
+            // Act
+            var result = PropertyHelper.GetVisibleProperties(type).ToArray();
+
+            // Assert
+            Assert.Equal(1, result.Length);
+            Assert.Equal("Length", result[0].Name);
+            Assert.Equal(typeof(int), result[0].Property.PropertyType);
+        }
+
+        [Fact]
+        public void GetVisibleProperties_HiddenProperty()
         {
             // Arrange
             var type = typeof(DerivedHiddenProperty);
@@ -259,7 +274,7 @@ namespace Microsoft.Framework.Internal
         }
 
         [Fact]
-        public void GetProperties_HiddenProperty_TwoLevels()
+        public void GetVisibleProperties_HiddenProperty_TwoLevels()
         {
             // Arrange
             var type = typeof(DerivedHiddenProperty2);
