@@ -21,7 +21,7 @@ namespace Microsoft.Framework.Logging.Test
 
         public string Name { get; set; }
 
-        public IDisposable BeginScope(object state)
+        public IDisposable BeginScopeImpl(object state)
         {
             _scope = state;
 

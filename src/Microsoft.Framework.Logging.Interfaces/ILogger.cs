@@ -33,6 +33,6 @@ namespace Microsoft.Framework.Logging
         /// </summary>
         /// <param name="state">The identifier for the scope.</param>
         /// <returns>An IDisposable that ends the logical operation scope on dispose.</returns>
-        IDisposable BeginScope(object state);
+        IDisposable BeginScopeImpl(object state);
     }
 }

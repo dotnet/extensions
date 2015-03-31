@@ -23,9 +23,9 @@ namespace Microsoft.Framework.Logging
             _logger = factory.CreateLogger<T>();
         }
 
-        IDisposable ILogger.BeginScope(object state)
+        IDisposable ILogger.BeginScopeImpl(object state)
         {
-            return _logger.BeginScope(state);
+            return _logger.BeginScopeImpl(state);
         }
 
         bool ILogger.IsEnabled(LogLevel logLevel)

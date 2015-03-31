@@ -25,9 +25,9 @@ namespace Microsoft.Framework.Logging.Serilog
             _logger = logger.ForContext(Constants.SourceContextPropertyName, name);
         }
 
-        public IDisposable BeginScope(object state)
+        public IDisposable BeginScopeImpl(object state)
         {
-            return _provider.BeginScope(_name, state);
+            return _provider.BeginScopeImpl(_name, state);
         }
 
         public bool IsEnabled(LogLevel logLevel)

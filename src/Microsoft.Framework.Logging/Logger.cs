@@ -52,13 +52,13 @@ namespace Microsoft.Framework.Logging
             return false;
         }
 
-        public IDisposable BeginScope(object state)
+        public IDisposable BeginScopeImpl(object state)
         {
             var loggers = _loggers;
             var scope = new Scope(loggers.Length);
             for (var index = 0; index != loggers.Length; index++)
             {
-                scope.SetDisposable(index, loggers[index].BeginScope(state));
+                scope.SetDisposable(index, loggers[index].BeginScopeImpl(state));
             }
             return scope;
         }

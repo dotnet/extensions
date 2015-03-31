@@ -63,7 +63,7 @@ namespace SampleApp
                 _logger.LogWarning("Unexpected warning", ex);
             }
 
-            using (_logger.BeginScope("Main"))
+            using (_logger.BeginScopeImpl("Main"))
             {
                 Console.WriteLine("Hello World");
 

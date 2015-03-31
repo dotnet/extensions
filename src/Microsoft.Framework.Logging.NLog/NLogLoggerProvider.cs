@@ -73,7 +73,7 @@ namespace Microsoft.Framework.Logging.NLog
                 return global::NLog.LogLevel.Debug;
             }
 
-            public IDisposable BeginScope([NotNull] object state)
+            public IDisposable BeginScopeImpl([NotNull] object state)
             {
                 string scopeMessage;
                 var logValues = state as ILogValues;

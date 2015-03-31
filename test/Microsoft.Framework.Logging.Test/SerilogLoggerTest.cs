@@ -164,7 +164,7 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            using (logger.BeginScope(new FoodScope("pizza")))
+            using (logger.BeginScopeImpl(new FoodScope("pizza")))
             {
                 logger.Log(LogLevel.Information, 0, _state, null, null);
             }
@@ -184,9 +184,9 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            using (logger.BeginScope(new FoodScope("avocado")))
+            using (logger.BeginScopeImpl(new FoodScope("avocado")))
             {
-                using(logger.BeginScope(new FoodScope("bacon")))
+                using(logger.BeginScopeImpl(new FoodScope("bacon")))
                 {
                     logger.Log(LogLevel.Information, 0, _state, null, null);
                 }
@@ -208,9 +208,9 @@ namespace Microsoft.Framework.Logging.Test
             var sink = t.Item2;
 
             // Act
-            using (logger.BeginScope(new FoodScope("spaghetti")))
+            using (logger.BeginScopeImpl(new FoodScope("spaghetti")))
             {
-                using (logger.BeginScope(new LuckyScope(7)))
+                using (logger.BeginScopeImpl(new LuckyScope(7)))
                 {
                     logger.Log(LogLevel.Information, 0, _state, null, null);
                 }

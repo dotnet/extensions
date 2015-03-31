@@ -560,7 +560,7 @@ namespace Microsoft.Framework.Logging
             [NotNull] string messageFormat,
             params object[] args)
         {
-            return logger.BeginScope(new FormattedLogValues(messageFormat, args));
+            return logger.BeginScopeImpl(new FormattedLogValues(messageFormat, args));
         }
 
         //------------------------------------------HELPERS------------------------------------------//

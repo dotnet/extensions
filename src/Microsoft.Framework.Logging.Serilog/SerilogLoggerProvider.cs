@@ -30,7 +30,7 @@ namespace Microsoft.Framework.Logging.Serilog
             return new SerilogLogger(this, _logger, name);
         }
 
-        public IDisposable BeginScope(string name, object state)
+        public IDisposable BeginScopeImpl(string name, object state)
         {
             return new SerilogLoggerScope(this, CurrentScope, name, state);
         }
