@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Framework.Internal
@@ -190,15 +190,11 @@ namespace Microsoft.Framework.Internal
             Assert.Equal("Foo", property.Name);
         }
 
-        [Fact]
+        // Blocked by: https://bugzilla.xamarin.com/show_bug.cgi?id=25717
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void PropertyHelper_WorksForStruct()
         {
-            if (TestPlatformHelper.IsMono)
-            {
-                // PropertyHelper seems to be broken for value types on Mono.
-                return;
-            }
-
             // Arrange
             var anonymous = new MyProperties();
 
@@ -277,7 +273,6 @@ namespace Microsoft.Framework.Internal
         {
             // Arrange
             var type = typeof(DerivedClassWithNonReadableProperties);
-
 
             // Act
             var result = PropertyHelper.GetProperties(type).ToArray();
@@ -389,6 +384,104 @@ namespace Microsoft.Framework.Internal
 
             // Assert
             Assert.Equal("NewedTest value", instance.PropB);
+        }
+
+        [Fact]
+        public void MakeFastPropertyGetter_ReferenceType_ForNullObject_Throws()
+        {
+            // Arrange
+            var property = PropertyHelper
+                .GetProperties(typeof(BaseClass))
+                .Single(p => p.Name == nameof(BaseClass.PropA));
+
+            var accessor = PropertyHelper.MakeFastPropertyGetter(property.Property);
+
+            // Act & Assert
+            Assert.Throws<NullReferenceException>(() => accessor(null));
+        }
+
+        [Fact]
+        public void MakeFastPropertyGetter_ValueType_ForNullObject_Throws()
+        {
+            // Arrange
+            var property = PropertyHelper
+                .GetProperties(typeof(MyProperties))
+                .Single(p => p.Name == nameof(MyProperties.StringProp));
+
+            var accessor = PropertyHelper.MakeFastPropertyGetter(property.Property);
+
+            // Act & Assert
+            Assert.Throws<NullReferenceException>(() => accessor(null));
+        }
+
+        [Fact]
+        public void MakeNullSafeFastPropertyGetter_ReferenceType_Success()
+        {
+            // Arrange
+            var property = PropertyHelper
+                .GetProperties(typeof(BaseClass))
+                .Single(p => p.Name == nameof(BaseClass.PropA));
+
+            var accessor = PropertyHelper.MakeNullSafeFastPropertyGetter(property.Property);
+
+            // Act
+            var value = accessor(new BaseClass() { PropA = "Hi" });
+
+            // Assert
+            Assert.Equal("Hi", value);
+        }
+
+        // Blocked by: https://bugzilla.xamarin.com/show_bug.cgi?id=25717
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public void MakeNullSafeFastPropertyGetter_ValueType_Success()
+        {
+            // Arrange
+            var property = PropertyHelper
+                .GetProperties(typeof(MyProperties))
+                .Single(p => p.Name == nameof(MyProperties.StringProp));
+
+            var accessor = PropertyHelper.MakeNullSafeFastPropertyGetter(property.Property);
+
+            // Act
+            var value = accessor(new MyProperties() { StringProp = "Hi" });
+
+            // Assert
+            Assert.Equal("Hi", value);
+        }
+
+        [Fact]
+        public void MakeNullSafeFastPropertyGetter_ReferenceType_ForNullObject_ReturnsNull()
+        {
+            // Arrange
+            var property = PropertyHelper
+                .GetProperties(typeof(BaseClass))
+                .Single(p => p.Name == nameof(BaseClass.PropA));
+
+            var accessor = PropertyHelper.MakeNullSafeFastPropertyGetter(property.Property);
+
+            // Act
+            var value = accessor(null);
+
+            // Assert
+            Assert.Null(value);
+        }
+
+        [Fact]
+        public void MakeNullSafeFastPropertyGetter_ValueType_ForNullObject_ReturnsNull()
+        {
+            // Arrange
+            var property = PropertyHelper
+                .GetProperties(typeof(MyProperties))
+                .Single(p => p.Name == nameof(MyProperties.StringProp));
+
+            var accessor = PropertyHelper.MakeNullSafeFastPropertyGetter(property.Property);
+
+            // Act
+            var value = accessor(null);
+
+            // Assert
+            Assert.Null(value);
         }
 
         private class Static
