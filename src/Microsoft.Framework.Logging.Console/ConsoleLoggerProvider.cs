@@ -18,5 +18,9 @@ namespace Microsoft.Framework.Logging.Console
         {
             return new ConsoleLogger(name, _filter);
         }
+
+        public void Dispose()
+        {
+        }
     }
 }

@@ -164,44 +164,32 @@ namespace Microsoft.Framework.Logging
                 }
             }
 
-            protected virtual void Dispose(bool disposing)
+            public void Dispose()
             {
                 if (!_isDisposed)
                 {
-                    if (disposing)
+                    if (_disposable0 != null)
                     {
-                        if (_disposable0 != null)
+                        _disposable0.Dispose();
+                    }
+                    if (_disposable1 != null)
+                    {
+                        _disposable1.Dispose();
+                    }
+                    if (_disposable != null)
+                    {
+                        var count = _disposable.Length;
+                        for (var index = 0; index != count; ++index)
                         {
-                            _disposable0.Dispose();
-                        }
-                        if (_disposable1 != null)
-                        {
-                            _disposable1.Dispose();
-                        }
-                        if (_disposable != null)
-                        {
-                            var count = _disposable.Length;
-                            for (var index = 0; index != count; ++index)
+                            if (_disposable[index] != null)
                             {
-                                if (_disposable[index] != null)
-                                {
-                                    _disposable[index].Dispose();
-                                }
+                                _disposable[index].Dispose();
                             }
                         }
                     }
 
                     _isDisposed = true;
                 }
-            }
-
-            // This code added to correctly implement the disposable pattern.
-            public void Dispose()
-            {
-                // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-                Dispose(true);
-                // TODO: tell GC not to call its finalizer when the above finalizer is overridden.
-                // GC.SuppressFinalize(this);
             }
 
             internal void Add(IDisposable disposable)

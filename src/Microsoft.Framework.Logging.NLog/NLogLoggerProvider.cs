@@ -10,6 +10,7 @@ namespace Microsoft.Framework.Logging.NLog
     public class NLogLoggerProvider : ILoggerProvider
     {
         private readonly LogFactory _logFactory;
+        private bool _disposed = false;
 
         public NLogLoggerProvider(LogFactory logFactory)
         {
@@ -19,6 +20,17 @@ namespace Microsoft.Framework.Logging.NLog
         public ILogger CreateLogger(string name)
         {
             return new Logger(_logFactory.GetLogger(name));
+        }
+
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _logFactory.Flush();
+                _logFactory.Dispose();
+                _disposed = true;
+            }
         }
 
         private class Logger : ILogger

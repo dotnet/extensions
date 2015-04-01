@@ -19,6 +19,8 @@ namespace Microsoft.Framework.Logging.TraceSource
 
         private readonly ConcurrentDictionary<string, DiagnosticsTraceSource> _sources = new ConcurrentDictionary<string, DiagnosticsTraceSource>(StringComparer.OrdinalIgnoreCase);
 
+        private bool _disposed = false;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TraceSourceLoggerProvider"/> class.
         /// </summary>
@@ -96,6 +98,16 @@ namespace Microsoft.Framework.Logging.TraceSource
         {
             return string.IsNullOrEmpty(traceSource.Switch.DisplayName) == string.IsNullOrEmpty(traceSource.Name) &&
                 traceSource.Switch.Level == SourceLevels.Off;
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _rootTraceListener.Flush();
+                _rootTraceListener.Dispose();
+                _disposed = true;
+            }
         }
     }
 }
