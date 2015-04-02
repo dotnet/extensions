@@ -1,5 +1,8 @@
 Configuration
 =============
+AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/m1l7adh2cwv488dt/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/Configuration/branch/dev)
+
+Travis:   [![Travis](https://travis-ci.org/aspnet/Configuration.svg?branch=dev)](https://travis-ci.org/aspnet/Configuration)
 
 Configuration is a framework for accessing Key/Value based configuration settings in an application.
 
