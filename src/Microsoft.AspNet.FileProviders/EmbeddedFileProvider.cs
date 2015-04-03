@@ -41,8 +41,8 @@ namespace Microsoft.AspNet.FileProviders
             {
                 throw new ArgumentNullException("assembly");
             }
-            // Note: For ProjectK resources don't have a namespace anymore, just a directory path. Use '/' instead of '.'.
-            _baseNamespace = string.IsNullOrEmpty(baseNamespace) ? string.Empty : baseNamespace + "/";
+
+            _baseNamespace = string.IsNullOrEmpty(baseNamespace) ? string.Empty : baseNamespace + ".";
             _assembly = assembly;
             // REVIEW: Does this even make sense?
             _lastModified = DateTimeOffset.MaxValue;
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.FileProviders
                 subpath = subpath.Substring(1);
             }
 
-            string resourcePath = _baseNamespace + subpath;
+            string resourcePath = _baseNamespace + subpath.Replace('/', '.');
             string name = Path.GetFileName(subpath);
             if (_assembly.GetManifestResourceInfo(resourcePath) == null)
             {

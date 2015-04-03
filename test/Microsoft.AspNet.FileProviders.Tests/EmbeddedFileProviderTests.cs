@@ -7,14 +7,16 @@ using System.Linq;
 using Shouldly;
 using Xunit;
 
-namespace Microsoft.AspNet.FileProviders
+namespace Microsoft.AspNet.FileProviders.Tests
 {
     public class EmbeddedFileProviderTests
     {
+        private static readonly string Namespace = typeof(EmbeddedFileProviderTests).Namespace;
+
         [Fact]
         public void When_GetFileInfo_and_resource_does_not_exist_then_should_not_get_file_info()
         {
-            var provider = new EmbeddedFileProvider(this.GetType().Assembly, "");
+            var provider = new EmbeddedFileProvider(this.GetType().Assembly, Namespace);
 
             var fileInfo = provider.GetFileInfo("DoesNotExist.Txt");
             fileInfo.ShouldNotBe(null);
@@ -24,7 +26,7 @@ namespace Microsoft.AspNet.FileProviders
         [Fact]
         public void When_GetFileInfo_and_resource_exists_in_root_then_should_get_file_info()
         {
-            var provider = new EmbeddedFileProvider(this.GetType().Assembly, "");
+            var provider = new EmbeddedFileProvider(this.GetType().Assembly, Namespace);
             var expectedFileLength = new FileInfo("File.txt").Length;
             var fileInfo = provider.GetFileInfo("File.txt");
             fileInfo.ShouldNotBe(null);
@@ -49,7 +51,7 @@ namespace Microsoft.AspNet.FileProviders
         [Fact]
         public void When_GetFileInfo_and_resource_exists_in_subdirectory_then_should_get_file_info()
         {
-            var provider = new EmbeddedFileProvider(this.GetType().Assembly, "Resources");
+            var provider = new EmbeddedFileProvider(this.GetType().Assembly, Namespace + ".Resources");
 
             var fileInfo = provider.GetFileInfo("ResourcesInSubdirectory/File3.txt");
             fileInfo.ShouldNotBe(null);
@@ -64,7 +66,7 @@ namespace Microsoft.AspNet.FileProviders
         [Fact]
         public void When_GetFileInfo_and_resources_in_path_then_should_get_file_infos()
         {
-            var provider = new EmbeddedFileProvider(this.GetType().Assembly, "");
+            var provider = new EmbeddedFileProvider(this.GetType().Assembly, Namespace);
 
             var fileInfo = provider.GetFileInfo("Resources/File.txt");
             fileInfo.ShouldNotBe(null);
@@ -79,7 +81,7 @@ namespace Microsoft.AspNet.FileProviders
         [Fact]
         public void GetDirectoryContents()
         {
-            var provider = new EmbeddedFileProvider(this.GetType().Assembly, "Resources");
+            var provider = new EmbeddedFileProvider(this.GetType().Assembly, Namespace + ".Resources");
 
             var files = provider.GetDirectoryContents("");
             files.ShouldNotBe(null);
@@ -104,7 +106,7 @@ namespace Microsoft.AspNet.FileProviders
         [Fact]
         public void Trigger_ShouldNot_Support_Registering_Callbacks()
         {
-            var provider = new EmbeddedFileProvider(this.GetType().Assembly, "");
+            var provider = new EmbeddedFileProvider(this.GetType().Assembly, Namespace);
             var trigger = provider.Watch("Resources/File.txt");
             trigger.ShouldNotBe(null);
             trigger.ActiveExpirationCallbacks.ShouldBe(false);
