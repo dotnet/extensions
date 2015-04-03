@@ -97,37 +97,37 @@ namespace Microsoft.Framework.Logging.Test
 
             var verbose = sink.Writes[0];
             Assert.Equal(LogLevel.Verbose, verbose.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILogValues)verbose.State).Format());
+            Assert.Equal(string.Format(_format, "test1", "test2"), verbose.State?.ToString());
             Assert.Equal(0, verbose.EventId);
             Assert.Equal(null, verbose.Exception);
 
             var information = sink.Writes[1];
             Assert.Equal(LogLevel.Information, information.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILogValues)information.State).Format());
+            Assert.Equal(string.Format(_format, "test1", "test2"), information.State?.ToString());
             Assert.Equal(0, information.EventId);
             Assert.Equal(null, information.Exception);
 
             var warning = sink.Writes[2];
             Assert.Equal(LogLevel.Warning, warning.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILogValues)warning.State).Format());
+            Assert.Equal(string.Format(_format, "test1", "test2"), warning.State?.ToString());
             Assert.Equal(0, warning.EventId);
             Assert.Equal(null, warning.Exception);
 
             var error = sink.Writes[3];
             Assert.Equal(LogLevel.Error, error.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILogValues)error.State).Format());
+            Assert.Equal(string.Format(_format, "test1", "test2"), error.State?.ToString());
             Assert.Equal(0, error.EventId);
             Assert.Equal(null, error.Exception);
 
             var critical = sink.Writes[4];
             Assert.Equal(LogLevel.Critical, critical.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILogValues)critical.State).Format());
+            Assert.Equal(string.Format(_format, "test1", "test2"), critical.State?.ToString());
             Assert.Equal(0, critical.EventId);
             Assert.Equal(null, critical.Exception);
 
             var debug = sink.Writes[5];
             Assert.Equal(LogLevel.Debug, debug.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILogValues)debug.State).Format());
+            Assert.Equal(string.Format(_format, "test1", "test2"), debug.State?.ToString());
             Assert.Equal(0, debug.EventId);
             Assert.Equal(null, debug.Exception);
         }
@@ -207,37 +207,37 @@ namespace Microsoft.Framework.Logging.Test
 
             var verbose = sink.Writes[0];
             Assert.Equal(LogLevel.Verbose, verbose.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILogValues)verbose.State).Format());
+            Assert.Equal(string.Format(_format, "test1", "test2"), verbose.State?.ToString());
             Assert.Equal(1, verbose.EventId);
             Assert.Equal(null, verbose.Exception);
 
             var information = sink.Writes[1];
             Assert.Equal(LogLevel.Information, information.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILogValues)information.State).Format());
+            Assert.Equal(string.Format(_format, "test1", "test2"), information.State?.ToString());
             Assert.Equal(2, information.EventId);
             Assert.Equal(null, information.Exception);
 
             var warning = sink.Writes[2];
             Assert.Equal(LogLevel.Warning, warning.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILogValues)warning.State).Format());
+            Assert.Equal(string.Format(_format, "test1", "test2"), warning.State?.ToString());
             Assert.Equal(3, warning.EventId);
             Assert.Equal(null, warning.Exception);
 
             var error = sink.Writes[3];
             Assert.Equal(LogLevel.Error, error.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILogValues)error.State).Format());
+            Assert.Equal(string.Format(_format, "test1", "test2"), error.State?.ToString());
             Assert.Equal(4, error.EventId);
             Assert.Equal(null, error.Exception);
 
             var critical = sink.Writes[4];
             Assert.Equal(LogLevel.Critical, critical.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILogValues)critical.State).Format());
+            Assert.Equal(string.Format(_format, "test1", "test2"), critical.State?.ToString());
             Assert.Equal(5, critical.EventId);
             Assert.Equal(null, critical.Exception);
 
             var debug = sink.Writes[5];
             Assert.Equal(LogLevel.Debug, debug.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), ((ILogValues)debug.State).Format());
+            Assert.Equal(string.Format(_format, "test1", "test2"), debug.State?.ToString());
             Assert.Equal(6, debug.EventId);
             Assert.Equal(null, debug.Exception);
         }
@@ -611,7 +611,7 @@ namespace Microsoft.Framework.Logging.Test
             Assert.Equal(1, testSink.Scopes.Count);
             Assert.IsType<FormattedLogValues>(testSink.Scopes[0].Scope);
             var scopeState = (FormattedLogValues)testSink.Scopes[0].Scope;
-            Assert.Equal(expectedStringMessage, scopeState.Format());
+            Assert.Equal(expectedStringMessage, scopeState.ToString());
             var scopeProperties = scopeState.GetValues();
             Assert.NotNull(scopeProperties);
             Assert.Contains(scopeProperties, (kvp) =>
@@ -624,7 +624,7 @@ namespace Microsoft.Framework.Logging.Test
         {
             public int Value { get; set; }
 
-            public override string Format()
+            public override string ToString()
             {
                 return "Test " + Value;
             }

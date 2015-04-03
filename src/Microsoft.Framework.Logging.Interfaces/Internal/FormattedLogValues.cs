@@ -22,14 +22,14 @@ namespace Microsoft.Framework.Logging.Internal
             _values = values;
         }
 
-        public string Format()
-        {
-            return _formatter.Format(_values);
-        }
-
         public IEnumerable<KeyValuePair<string, object>> GetValues()
         {
             return _formatter.GetValues(_values);
+        }
+
+        public override string ToString()
+        {
+            return _formatter.Format(_values);
         }
     }
 }

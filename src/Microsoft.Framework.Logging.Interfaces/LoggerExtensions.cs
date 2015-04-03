@@ -588,10 +588,10 @@ namespace Microsoft.Framework.Logging
         {
             if (exception == null)
             {
-                return state.Format();
+                return state?.ToString();
             }
 
-            return state.Format() + Environment.NewLine + exception;
+            return state?.ToString() + Environment.NewLine + exception;
         }
     }
 }

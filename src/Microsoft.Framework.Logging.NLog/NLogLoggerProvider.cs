@@ -75,18 +75,7 @@ namespace Microsoft.Framework.Logging.NLog
 
             public IDisposable BeginScopeImpl([NotNull] object state)
             {
-                string scopeMessage;
-                var logValues = state as ILogValues;
-                if (logValues != null)
-                {
-                    scopeMessage = logValues.Format();
-                }
-                else
-                {
-                    scopeMessage = state.ToString();
-                }
-
-                return NestedDiagnosticsContext.Push(scopeMessage);
+                return NestedDiagnosticsContext.Push(state.ToString());
             }
         }
     }

@@ -19,7 +19,7 @@ namespace Microsoft.Framework.Logging.Test
         public void LogValues_With_Basic_Types(string expected, string format, object[] args)
         {
             var logValues = new FormattedLogValues(format, args);
-            Assert.Equal(expected, logValues.Format());
+            Assert.Equal(expected, logValues.ToString());
 
             // Original format is expected to be returned from GetValues.
             Assert.Equal(format, logValues.GetValues().First(v => v.Key == "{OriginalFormat}").Value);
@@ -33,7 +33,7 @@ namespace Microsoft.Framework.Logging.Test
         {
             var dateTime = new DateTime(2015, 1, 1, 1, 1, 1);
             var logValues = new FormattedLogValues(format, new object[] { dateTime, dateTime });
-            Assert.Equal(expected, logValues.Format());
+            Assert.Equal(expected, logValues.ToString());
 
             // Original format is expected to be returned from GetValues.
             Assert.Equal(format, logValues.GetValues().First(v => v.Key == "{OriginalFormat}").Value);
@@ -53,7 +53,7 @@ namespace Microsoft.Framework.Logging.Test
                 new FormattedLogValues(format) :
                 new FormattedLogValues(format, args);
 
-            Assert.Equal(expected, logValues.Format());
+            Assert.Equal(expected, logValues.ToString());
 
             // Original format is expected to be returned from GetValues.
             Assert.Equal(format, logValues.GetValues().First(v => v.Key == "{OriginalFormat}").Value);
@@ -68,7 +68,7 @@ namespace Microsoft.Framework.Logging.Test
             Assert.Throws<FormatException>(() =>
             {
                 var logValues = new FormattedLogValues(format);
-                logValues.Format();
+                logValues.ToString();
             });
         }
     }
