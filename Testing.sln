@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22613.0
+VisualStudioVersion = 14.0.22727.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5525B6EA-8BBB-4437-BD09-419AE380BBA8}"
 EndProject
@@ -24,6 +24,10 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Testing", "src\Microsoft.Framework.Logging.Testing\Microsoft.Framework.Logging.Testing.xproj", "{379AA56B-E1A6-4133-9A45-7F70385F39FB}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Testing.Tests", "test\Microsoft.Framework.Logging.Testing.Tests\Microsoft.Framework.Logging.Testing.Tests.xproj", "{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{57A90243-F8A5-4115-BA05-A1CEEBD8A5CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Framework.TestHost.UI", "tools\Microsoft.Framework.TestHost.UI\Microsoft.Framework.TestHost.UI.csproj", "{2A16C1BE-8777-473A-A581-02E10D82C49D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -67,6 +71,10 @@ Global
 		{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A16C1BE-8777-473A-A581-02E10D82C49D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A16C1BE-8777-473A-A581-02E10D82C49D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A16C1BE-8777-473A-A581-02E10D82C49D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A16C1BE-8777-473A-A581-02E10D82C49D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -81,5 +89,6 @@ Global
 		{25D18D0C-119C-4AB4-BCA6-AC06179335FA} = {09F799F3-E521-466F-B155-B89E2746C8C9}
 		{379AA56B-E1A6-4133-9A45-7F70385F39FB} = {5525B6EA-8BBB-4437-BD09-419AE380BBA8}
 		{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F} = {09F799F3-E521-466F-B155-B89E2746C8C9}
+		{2A16C1BE-8777-473A-A581-02E10D82C49D} = {57A90243-F8A5-4115-BA05-A1CEEBD8A5CD}
 	EndGlobalSection
 EndGlobal

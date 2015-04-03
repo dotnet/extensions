@@ -29,6 +29,8 @@ namespace Microsoft.Framework.TestHost
             var portOption = application.Option("--port", "Port number to listen for a connection.", CommandOptionType.SingleValue);
             var projectOption = application.Option("--project", "Path to a project file.", CommandOptionType.SingleValue);
 
+            var debugOption = application.Option("--debug", "Launch the debugger", CommandOptionType.NoValue);
+
             // Show help information if no subcommand was specified
             application.OnExecute(() =>
             {
@@ -43,6 +45,11 @@ namespace Microsoft.Framework.TestHost
 
                 command.OnExecute(async () =>
                 {
+                    if (debugOption.HasValue())
+                    {
+                        Debugger.Launch();
+                    }
+
                     var projectPath = projectOption.Value() ?? env.ApplicationBasePath;
                     var port = int.Parse(portOption.Value());
 
@@ -60,6 +67,11 @@ namespace Microsoft.Framework.TestHost
 
                 command.OnExecute(async () =>
                 {
+                    if (debugOption.HasValue())
+                    {
+                        Debugger.Launch();
+                    }
+
                     var projectPath = projectOption.Value() ?? env.ApplicationBasePath;
                     var port = int.Parse(portOption.Value());
 
@@ -82,7 +94,7 @@ namespace Microsoft.Framework.TestHost
 
                 string testCommand = null;
                 Project project = null;
-                if (Project.TryGetProject(projectPath, out project))
+                if (Project.TryGetProject(projectPath, out project, diagnostics: null))
                 {
                     project.Commands.TryGetValue("test", out testCommand);
                 }
@@ -142,7 +154,7 @@ namespace Microsoft.Framework.TestHost
 
                 string testCommand = null;
                 Project project = null;
-                if (Project.TryGetProject(projectPath, out project))
+                if (Project.TryGetProject(projectPath, out project, diagnostics: null))
                 {
                     project.Commands.TryGetValue("test", out testCommand);
                 }
