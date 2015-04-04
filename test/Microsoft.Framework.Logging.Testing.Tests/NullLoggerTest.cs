@@ -14,7 +14,7 @@ namespace Microsoft.Framework.Logging.Testing
             var logger = NullLogger.Instance;
 
             // Act & Assert
-            using (logger.BeginScope(null))
+            using (logger.BeginScopeImpl(null))
             {
             }
         }

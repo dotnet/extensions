@@ -9,7 +9,7 @@ namespace Microsoft.Framework.Logging.Testing
     {
         public static readonly NullLogger Instance = new NullLogger();
 
-        public IDisposable BeginScope(object state)
+        public IDisposable BeginScopeImpl(object state)
         {
             return NullDisposable.Instance;
         }
