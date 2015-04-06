@@ -58,7 +58,10 @@ namespace Microsoft.Framework.TestHost.Client
             arguments.Add("--project");
             arguments.Add(project);
 
-            //arguments.Add("--debug");
+            if (Debug)
+            {
+                arguments.Add("--debug");
+            }
 
             arguments.Add("list");
 
@@ -84,6 +87,11 @@ namespace Microsoft.Framework.TestHost.Client
 
             arguments.Add("--project");
             arguments.Add(project);
+
+            if (Debug)
+            {
+                arguments.Add("--debug");
+            }
 
             arguments.Add("run");
 

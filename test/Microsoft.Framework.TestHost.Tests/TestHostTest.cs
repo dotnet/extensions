@@ -79,51 +79,6 @@ namespace Microsoft.Framework.TestHost
             Assert.Equal("TestExecution.Response", host.Output[host.Output.Count - 1].MessageType);
         }
 
-        [Fact(Skip = "diagnosing ci failures")]
-        public async Task RunTest_ByDisplayName()
-        {
-            // Arrange
-            var host = new TestHostWrapper();
-
-            // Act
-            var result = await host.RunTestsAsync(
-                _testProject,
-                "SampleTest.TheoryTest1(x: 1)",
-                "SampleTest.TheoryTest1(x: 2)");
-
-            // Assert
-            Assert.Equal(0, result);
-
-            Assert.Equal(5, host.Output.Count);
-            Assert.Single(host.Output, m => TestStarted(m, "SampleTest.TheoryTest1(x: 1)"));
-            Assert.Single(host.Output, m => TestPassed(m, "SampleTest.TheoryTest1(x: 1)"));
-            Assert.Single(host.Output, m => TestStarted(m, "SampleTest.TheoryTest1(x: 2)"));
-            Assert.Single(host.Output, m => TestPassed(m, "SampleTest.TheoryTest1(x: 2)"));
-            Assert.Equal("TestExecution.Response", host.Output[host.Output.Count - 1].MessageType);
-        }
-
-        [Fact(Skip = "diagnosing ci failures")]
-        public async Task RunTest_ByDisplayName_Short()
-        {
-            // Arrange
-            var host = new TestHostWrapper();
-
-            // Act
-            var result = await host.RunTestsAsync(_testProject, "SampleTest.TheoryTest1");
-
-            // Assert
-            Assert.Equal(0, result);
-
-            Assert.Equal(7, host.Output.Count);
-            Assert.Single(host.Output, m => TestStarted(m, "SampleTest.TheoryTest1(x: 1)"));
-            Assert.Single(host.Output, m => TestPassed(m, "SampleTest.TheoryTest1(x: 1)"));
-            Assert.Single(host.Output, m => TestStarted(m, "SampleTest.TheoryTest1(x: 2)"));
-            Assert.Single(host.Output, m => TestPassed(m, "SampleTest.TheoryTest1(x: 2)"));
-            Assert.Single(host.Output, m => TestStarted(m, "SampleTest.TheoryTest1(x: 3)"));
-            Assert.Single(host.Output, m => TestPassed(m, "SampleTest.TheoryTest1(x: 3)"));
-            Assert.Equal("TestExecution.Response", host.Output[host.Output.Count - 1].MessageType);
-        }
-
         [Fact]
         public async Task RunTest_ByUniqueName()
         {
