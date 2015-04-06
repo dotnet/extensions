@@ -5,11 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Framework.Expiration.Interfaces;
-using Microsoft.Framework.Runtime;
-using Microsoft.Framework.Runtime.Infrastructure;
 using Shouldly;
 using Xunit;
 
@@ -155,9 +152,6 @@ namespace Microsoft.AspNet.FileProviders
         [Fact]
         public void RelativePathPastRootNotAllowed()
         {
-            var serviceProvider = CallContextServiceLocator.Locator.ServiceProvider;
-            var appEnvironment = (IApplicationEnvironment)serviceProvider.GetService(typeof(IApplicationEnvironment));
-
             var provider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "sub"));
 
             var info = provider.GetFileInfo("..\\File.txt");
@@ -171,18 +165,15 @@ namespace Microsoft.AspNet.FileProviders
             info = provider.GetFileInfo("File2.txt");
             info.ShouldNotBe(null);
             info.Exists.ShouldBe(true);
-            info.PhysicalPath.ShouldBe(Path.Combine(appEnvironment.ApplicationBasePath, "sub", "File2.txt"));
+            info.PhysicalPath.ShouldBe(Path.Combine(Environment.CurrentDirectory, "sub", "File2.txt"));
         }
 
         [Fact]
         public void AbsolutePathNotAllowed()
         {
-            var serviceProvider = CallContextServiceLocator.Locator.ServiceProvider;
-            var appEnvironment = (IApplicationEnvironment)serviceProvider.GetService(typeof(IApplicationEnvironment));
-
             var provider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "sub"));
 
-            var applicationBase = appEnvironment.ApplicationBasePath;
+            var applicationBase = Environment.CurrentDirectory;
             var file1 = Path.Combine(applicationBase, "File.txt");
 
             var info = provider.GetFileInfo(file1);
