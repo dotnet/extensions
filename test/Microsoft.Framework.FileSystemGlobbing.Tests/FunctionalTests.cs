@@ -29,6 +29,17 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
         }
 
         [Fact]
+        public void DuplicatePatterns()
+        {
+            var matcher = new Matcher();
+            matcher.AddInclude("sub/source2.cs");
+            matcher.AddInclude("sub/source2.cs");
+
+            ExecuteAndVerify(matcher, @"src/project",
+                "src/project/sub/source2.cs");
+        }
+
+        [Fact]
         public void RecursiveAndDoubleParentsWithRecursiveSearch()
         {
             var matcher = new Matcher();

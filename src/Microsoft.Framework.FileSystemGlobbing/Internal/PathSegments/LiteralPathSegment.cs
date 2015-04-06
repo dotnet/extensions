@@ -18,5 +18,18 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments
         {
             return string.Equals(Value, value, comparisonType);
         }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as LiteralPathSegment;
+
+            return other != null &&
+                string.Equals(other.Value, Value, StringComparison.Ordinal);
+        }
+
+        public override int GetHashCode()
+        {
+            return Value.GetHashCode();
+        }
     }
 }

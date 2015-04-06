@@ -16,8 +16,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal
         private readonly IList<IPatternContext> _excludePatternContexts;
         private readonly IList<string> _files;
 
-        private readonly IList<LiteralPathSegment> _declaredLiteralFolderSegments = new List<LiteralPathSegment>();
-        private readonly IList<LiteralPathSegment> _declaredLiteralFileSegments = new List<LiteralPathSegment>();
+        private readonly ISet<LiteralPathSegment> _declaredLiteralFolderSegments = new HashSet<LiteralPathSegment>();
+        private readonly ISet<LiteralPathSegment> _declaredLiteralFileSegments = new HashSet<LiteralPathSegment>();
 
         private bool _declaredParentPathSegment;
         private bool _declaredWildcardPathSegment;
