@@ -1,19 +1,22 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Windows.Input;
 
 namespace Microsoft.Framework.TestHost.UI
 {
-    public class RelayCommand<T> : ICommand
+    public class RelayCommand : ICommand
     {
-        private readonly Action<T> _execute = null;
-        private readonly Predicate<T> _canExecute = null;
+        private readonly Action<object> _execute = null;
+        private readonly Predicate<object> _canExecute = null;
 
-        public RelayCommand(Action<T> execute)
+        public RelayCommand(Action<object> execute)
             : this(execute, null)
         {
         }
 
-        public RelayCommand(Action<T> execute, Predicate<T> canExecute)
+        public RelayCommand(Action<object> execute, Predicate<object> canExecute)
         {
             _execute = execute;
             _canExecute = canExecute;
@@ -21,7 +24,7 @@ namespace Microsoft.Framework.TestHost.UI
 
         public bool CanExecute(object parameter)
         {
-            return _canExecute == null ? true : _canExecute((T)parameter);
+            return _canExecute == null ? true : _canExecute(parameter);
         }
 
         public event EventHandler CanExecuteChanged
@@ -32,7 +35,7 @@ namespace Microsoft.Framework.TestHost.UI
 
         public void Execute(object parameter)
         {
-            _execute((T)parameter);
+            _execute(parameter);
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
 using Microsoft.Framework.TestAdapter;
+using Microsoft.Framework.TestHost.Client;
 using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 

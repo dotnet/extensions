@@ -1,4 +1,6 @@
-﻿
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -8,7 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Threading;
+using Microsoft.Framework.TestHost.Client;
 using Microsoft.Win32;
 
 namespace Microsoft.Framework.TestHost.UI
@@ -32,12 +34,12 @@ namespace Microsoft.Framework.TestHost.UI
             _console = (TextBox)window.FindName("_consoleBuffer");
             _messages = (TextBox)window.FindName("_messageBuffer");
 
-            DiscoverTests = new RelayCommand<object>(ExecuteDiscoverTests, CanExecuteDiscoverTests);
-            SelectDNX = new RelayCommand<object>(ExecuteSelectDNX, CanExecuteSelectDNX);
-            SelectProject = new RelayCommand<object>(ExecuteSelectProject, CanExecuteSelectProject);
-            StartTestHost = new RelayCommand<object>(ExecuteStartTestHost, CanExecuteStartTestHost);
-            RunAllTests = new RelayCommand<object>(ExecuteRunAllTests, CanExecuteRunAllTests);
-            RunSelectedTests = new RelayCommand<object>(ExecuteRunSelectedTests, CanExecuteRunSelectedTests);
+            DiscoverTests = new RelayCommand(ExecuteDiscoverTests, CanExecuteDiscoverTests);
+            SelectDNX = new RelayCommand(ExecuteSelectDNX, CanExecuteSelectDNX);
+            SelectProject = new RelayCommand(ExecuteSelectProject, CanExecuteSelectProject);
+            StartTestHost = new RelayCommand(ExecuteStartTestHost, CanExecuteStartTestHost);
+            RunAllTests = new RelayCommand(ExecuteRunAllTests, CanExecuteRunAllTests);
+            RunSelectedTests = new RelayCommand(ExecuteRunSelectedTests, CanExecuteRunSelectedTests);
         }
 
         public string DNX

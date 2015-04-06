@@ -58,10 +58,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="DNX.cs" />
-    <Compile Include="Message.cs" />
+    <Compile Include="..\..\src\Microsoft.Framework.TestHost.Client\DNX.cs">
+      <Link>DNX.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\Microsoft.Framework.TestHost.Client\TestHostWrapper.cs">
+      <Link>TestHostWrapper.cs</Link>
+    </Compile>
+    <Compile Include="..\..\src\Microsoft.Framework.TestHost\Messages\Message.cs">
+      <Link>Message.cs</Link>
+    </Compile>
     <Compile Include="RelayCommand.cs" />
-    <Compile Include="TestHostWrapper.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

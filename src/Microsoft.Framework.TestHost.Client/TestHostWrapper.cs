@@ -12,7 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace Microsoft.Framework.TestHost.UI
+namespace Microsoft.Framework.TestHost.Client
 {
     public class TestHostWrapper
     {
@@ -20,12 +20,31 @@ namespace Microsoft.Framework.TestHost.UI
 
         public EventHandler<Message> MessageReceived;
 
-        public TestHostWrapper(string dnx)
+        public TestHostWrapper()
+            : this(Client.DNX.FindDnx())
         {
-            DNX = dnx;
+
         }
 
+        public TestHostWrapper(string dnx)
+            : this(dnx, debug: false)
+        {
+            
+        }
+
+        public TestHostWrapper(string dnx, bool debug)
+        {
+            DNX = dnx;
+            Debug = debug;
+
+            Output = new List<Message>();
+        }
+
+        private bool Debug { get; }
+
         private string DNX { get; }
+
+        public IList<Message> Output { get; }
 
         public async Task<int> RunListAsync(string project)
         {
@@ -117,6 +136,8 @@ namespace Microsoft.Framework.TestHost.UI
 
         private void OnMessageReceived(object sender, Message e)
         {
+            Output.Add(e);
+
             var handler = MessageReceived;
             if (handler != null)
             {
