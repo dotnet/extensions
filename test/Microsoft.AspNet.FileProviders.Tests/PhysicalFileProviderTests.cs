@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Expiration.Interfaces;
 using Shouldly;
 using Xunit;
@@ -360,7 +361,8 @@ namespace Microsoft.AspNet.FileProviders
             File.Delete(fileLocation);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void Trigger_For_Null_Empty_Whitespace_Filters()
         {
             var provider = new PhysicalFileProvider(Path.GetTempPath());
@@ -622,7 +624,8 @@ namespace Microsoft.AspNet.FileProviders
             trigger3.IsExpired.ShouldBe(false);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task Trigger_Fired_On_Directory_Name_Change()
         {
             var provider = new PhysicalFileProvider(Path.GetTempPath());
@@ -676,7 +679,8 @@ namespace Microsoft.AspNet.FileProviders
             newTriggers.All(t => t.IsExpired).ShouldBe(true);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task Triggers_NotFired_For_FileNames_Starting_With_Period_And_Hidden_Files()
         {
             var root = Path.GetTempPath();
