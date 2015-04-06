@@ -53,8 +53,7 @@ namespace Microsoft.Framework.TestHost
                     var projectPath = projectOption.Value() ?? env.ApplicationBasePath;
                     var port = int.Parse(portOption.Value());
 
-                    await DiscoverTests(port, projectPath);
-                    return 0;
+                    return await DiscoverTests(port, projectPath);
                 });
             });
 
@@ -75,8 +74,7 @@ namespace Microsoft.Framework.TestHost
                     var projectPath = projectOption.Value() ?? env.ApplicationBasePath;
                     var port = int.Parse(portOption.Value());
 
-                    await ExecuteTests(port, projectPath, tests.Values);
-                    return 0;
+                    return await ExecuteTests(port, projectPath, tests.Values);
                 });
 
             });
@@ -85,56 +83,56 @@ namespace Microsoft.Framework.TestHost
             return application.Execute(args);
         }
 
-        private async Task ExecuteTests(int port, string projectPath, IList<string> tests)
+        private async Task<int> ExecuteTests(int port, string projectPath, IList<string> tests)
         {
             Console.WriteLine("Listening on port {0}", port);
             using (var channel = await ReportingChannel.ListenOn(port))
             {
                 Console.WriteLine("Client accepted {0}", channel.Socket.LocalEndPoint);
 
-                string testCommand = null;
-                Project project = null;
-                if (Project.TryGetProject(projectPath, out project, diagnostics: null))
+                try
                 {
-                    project.Commands.TryGetValue("test", out testCommand);
-                }
-
-                if (testCommand == null)
-                {
-                    // No test command means no tests.
-                    Trace.TraceInformation("[ReportingChannel]: OnTransmit(ExecuteTests)");
-                    channel.Send(new Message()
+                    string testCommand = null;
+                    Project project = null;
+                    if (Project.TryGetProject(projectPath, out project, diagnostics: null))
                     {
-                        MessageType = "TestExecution.Response",
-                    });
+                        project.Commands.TryGetValue("test", out testCommand);
+                    }
 
-                    return;
-                }
+                    if (testCommand == null)
+                    {
+                        // No test command means no tests.
+                        Trace.TraceInformation("[ReportingChannel]: OnTransmit(ExecuteTests)");
+                        channel.Send(new Message()
+                        {
+                            MessageType = "TestExecution.Response",
+                        });
+                        return -1;
+                    }
 
-                var args = new List<string>()
+                    var args = new List<string>()
                 {
                     "test",
                     "--designtime"
                 };
 
-                if (tests != null)
-                {
-                    foreach (var test in tests)
+                    if (tests != null)
                     {
-                        args.Add("--test");
-                        args.Add(test);
+                        foreach (var test in tests)
+                        {
+                            args.Add("--test");
+                            args.Add(test);
+                        }
                     }
-                }
 
-                try
-                {
                     var testServices = TestServices.CreateTestServices(_services, project, channel);
                     await ProjectCommand.Execute(testServices, project, args.ToArray());
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // For now we're not doing anything with these exceptions, we might want to report them
-                    // to VS.   
+                    Trace.TraceError(ex.ToString());
+                    channel.SendError(ex);
+                    return -2;
                 }
 
                 Trace.TraceInformation("[ReportingChannel]: OnTransmit(ExecuteTests)");
@@ -142,46 +140,48 @@ namespace Microsoft.Framework.TestHost
                 {
                     MessageType = "TestExecution.Response",
                 });
+                return 0;
             }
         }
 
-        private async Task DiscoverTests(int port, string projectPath)
+        private async Task<int> DiscoverTests(int port, string projectPath)
         {
             Console.WriteLine("Listening on port {0}", port);
             using (var channel = await ReportingChannel.ListenOn(port))
             {
                 Console.WriteLine("Client accepted {0}", channel.Socket.LocalEndPoint);
 
-                string testCommand = null;
-                Project project = null;
-                if (Project.TryGetProject(projectPath, out project, diagnostics: null))
-                {
-                    project.Commands.TryGetValue("test", out testCommand);
-                }
-
-                if (testCommand == null)
-                {
-                    // No test command means no tests.
-                    Trace.TraceInformation("[ReportingChannel]: OnTransmit(DiscoverTests)");
-                    channel.Send(new Message()
-                    {
-                        MessageType = "TestDiscovery.Response",
-                    });
-
-                    return;
-                }
-
-                var args = new string[] { "test", "--list", "--designtime" };
-
                 try
                 {
+                    string testCommand = null;
+                    Project project = null;
+                    if (Project.TryGetProject(projectPath, out project, diagnostics: null))
+                    {
+                        project.Commands.TryGetValue("test", out testCommand);
+                    }
+
+                    if (testCommand == null)
+                    {
+                        // No test command means no tests.
+                        Trace.TraceInformation("[ReportingChannel]: OnTransmit(DiscoverTests)");
+                        channel.Send(new Message()
+                        {
+                            MessageType = "TestDiscovery.Response",
+                        });
+                        return -1;
+                    }
+
+                    var args = new string[] { "test", "--list", "--designtime" };
+
+
                     var testServices = TestServices.CreateTestServices(_services, project, channel);
                     await ProjectCommand.Execute(testServices, project, args);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // For now we're not doing anything with these exceptions, we might want to report them
-                    // to VS.   
+                    Trace.TraceError(ex.ToString());
+                    channel.SendError(ex);
+                    return -2;
                 }
 
                 Trace.TraceInformation("[ReportingChannel]: OnTransmit(DiscoverTests)");
@@ -189,6 +189,7 @@ namespace Microsoft.Framework.TestHost
                 {
                     MessageType = "TestDiscovery.Response",
                 });
+                return 0;
             }
         }
     }

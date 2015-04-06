@@ -199,7 +199,8 @@ namespace Microsoft.Framework.TestHost.Client
                             var message = JsonConvert.DeserializeObject<Message>(reader.ReadString());
                             OnMessageReceived(this, message);
 
-                            if (string.Equals(message.MessageType, terminalMessageType))
+                            if (string.Equals(message.MessageType, terminalMessageType) ||
+                                string.Equals(message.MessageType, "Error"))
                             {
                                 var writer = new BinaryWriter(stream);
                                 writer.Write(JsonConvert.SerializeObject(new Message
