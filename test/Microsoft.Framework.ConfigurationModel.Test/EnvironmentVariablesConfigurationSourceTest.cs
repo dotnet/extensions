@@ -109,7 +109,10 @@ namespace Microsoft.Framework.ConfigurationModel
                     {"SQLCONNSTR_db2", "SQLConnStr"},
                 };
             var envConfigSrc = new EnvironmentVariablesConfigurationSource();
-            var expectedMsg = "An item with the same key has already been added.";
+
+            // On mono the exception message is different 
+            var isMono = Type.GetType("Mono.Runtime") != null; 
+            var expectedMsg = isMono ? "An element with the same key already exists in the dictionary." : "An item with the same key has already been added.";
 
             var exception = Assert.Throws<ArgumentException>(() => envConfigSrc.Load(dict));
 
