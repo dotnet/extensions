@@ -9,6 +9,11 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments
     {
         public LiteralPathSegment(string value)
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             Value = value;
         }
 

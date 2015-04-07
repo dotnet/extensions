@@ -10,10 +10,12 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.PatternSegments
     public class LiteralPathSegmentTests
     {
         [Fact]
-        public void AllowNullInDefaultConstructor()
+        public void ThrowArgumentNullException()
         {
-            var pathSegment = new LiteralPathSegment(value: null);
-            Assert.NotNull(pathSegment);
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                var pathSegment = new LiteralPathSegment(value: null);
+            });
         }
 
         [Fact]
