@@ -40,3 +40,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: InternalsVisibleTo("Microsoft.Framework.ConfigurationModel.Test")]
 [assembly: NeutralResourcesLanguage("en-US")]
+[assembly: AssemblyMetadata("Serviceable", "True")]
