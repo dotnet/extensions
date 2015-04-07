@@ -28,12 +28,15 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
             }
         }
 
-        [Fact]
-        public void DuplicatePatterns()
+        [Theory]
+        [InlineData("sub/source2.cs", "sub/source2.cs")]
+        [InlineData("sub\\source2.cs", "sub\\source2.cs")]
+        [InlineData("sub/source2.cs", "sub\\source2.cs")]
+        public void DuplicatePatterns(string pattern1, string pattern2)
         {
             var matcher = new Matcher();
-            matcher.AddInclude("sub/source2.cs");
-            matcher.AddInclude("sub/source2.cs");
+            matcher.AddInclude(pattern1);
+            matcher.AddInclude(pattern2);
 
             ExecuteAndVerify(matcher, @"src/project",
                 "src/project/sub/source2.cs");
