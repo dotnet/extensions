@@ -211,9 +211,7 @@ DefaultConnection=TestConnectionString
                 }
                 catch (FileNotFoundException exception)
                 {
-                    Assert.Equal(
-                        string.Format(Resources.Error_FileNotFound, "NotExistingConfig.ini"),
-                        exception.Message);
+                    Assert.Equal(Resources.FormatError_FileNotFound("NotExistingConfig.ini"), exception.Message);
                     throw;
                 }
             });

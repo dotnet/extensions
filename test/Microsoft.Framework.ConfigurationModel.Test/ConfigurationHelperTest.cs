@@ -29,8 +29,7 @@ namespace Microsoft.Framework.ConfigurationModel.Test
         {
             var testFile = "config.j";
             var mockSourceRoot = new MockConfigurationSourceRoot();
-            var expectErrorMessage = string.Format(
-                Resources.Error_MissingBasePath,
+            var expectErrorMessage = Resources.FormatError_MissingBasePath(
                 testFile,
                 typeof(IConfigurationSourceRoot).Name,
                 nameof(mockSourceRoot.BasePath));
