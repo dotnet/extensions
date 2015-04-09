@@ -390,8 +390,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 catch (FileNotFoundException exception)
                 {
                     Assert.Equal(
-                        string.Format(Resources.Error_FileNotFound,
-                        Path.Combine(Directory.GetCurrentDirectory(), "NotExistingConfig.xml")),
+                        string.Format(Resources.Error_FileNotFound, "NotExistingConfig.xml"),
                         exception.Message);
                     throw;
                 }

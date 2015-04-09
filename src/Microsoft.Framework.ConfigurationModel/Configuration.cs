@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.ConfigurationModel.Internal;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Framework.ConfigurationModel.Internal;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
@@ -14,6 +13,11 @@ namespace Microsoft.Framework.ConfigurationModel
         private readonly IList<IConfigurationSource> _sources = new List<IConfigurationSource>();
 
         public Configuration(params IConfigurationSource[] sources)
+            : this(null, sources)
+        {
+        }
+
+        public Configuration(string basePath, params IConfigurationSource[] sources)
         {
             if (sources != null)
             {
@@ -22,6 +26,8 @@ namespace Microsoft.Framework.ConfigurationModel
                     Add(singleSource);
                 }
             }
+
+            BasePath = basePath;
         }
 
         public string this[string key]
@@ -42,6 +48,11 @@ namespace Microsoft.Framework.ConfigurationModel
             {
                 return _sources;
             }
+        }
+
+        public string BasePath
+        {
+            get;
         }
 
         public string Get(string key)

@@ -44,7 +44,7 @@ SubHeader:Provider=MySql";
         [Fact]
         public void LoadKeyValuePairsFromValidIniFileWithQuotedValues()
         {
-            var ini = "[DefaultConnection]\n" + 
+            var ini = "[DefaultConnection]\n" +
                       "ConnectionString=\"TestConnectionString\"\n" +
                       "Provider=\"SqlClient\"\n" +
                       "[Data:Inventory]\n" +
@@ -154,7 +154,7 @@ DefaultConnection=TestConnectionString
             ";
             var iniConfigSrc = new IniFileConfigurationSource(ArbitraryFilePath);
             var expectedMsg = Resources.FormatError_UnrecognizedLineFormat("[ConnectionString");
-            
+
             var exception = Assert.Throws<FormatException>(() => iniConfigSrc.Load(StringToStream(ini)));
 
             Assert.Equal(expectedMsg, exception.Message);
@@ -212,8 +212,7 @@ DefaultConnection=TestConnectionString
                 catch (FileNotFoundException exception)
                 {
                     Assert.Equal(
-                        string.Format(Resources.Error_FileNotFound,
-                        Path.Combine(Directory.GetCurrentDirectory(), "NotExistingConfig.ini")),
+                        string.Format(Resources.Error_FileNotFound, "NotExistingConfig.ini"),
                         exception.Message);
                     throw;
                 }

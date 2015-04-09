@@ -146,10 +146,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 }
                 catch (FileNotFoundException exception)
                 {
-                    Assert.Equal(
-                        string.Format(Resources.Error_FileNotFound,
-                        Path.Combine(Directory.GetCurrentDirectory(), "NotExistingConfig.json")), 
-                        exception.Message);
+                    Assert.Equal(Resources.FormatError_FileNotFound("NotExistingConfig.json"), exception.Message);
                     throw;
                 }
             });

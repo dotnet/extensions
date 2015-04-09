@@ -138,6 +138,9 @@
   <data name="Error_KeyIsDuplicated" xml:space="preserve">
     <value>A duplicate key '{0}' was found.</value>
   </data>
+  <data name="Error_MissingBasePath" xml:space="preserve">
+    <value>Unable to resolve path '{0}'; construct this {1} with a non-null {2}.</value>
+  </data>
   <data name="Error_NoCommitableSource" xml:space="preserve">
     <value>No registered configuration source is capable of committing changes.</value>
   </data>

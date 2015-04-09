@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using Microsoft.Framework.ConfigurationModel.Helper;
 using Microsoft.Framework.ConfigurationModel.Json;
 
 namespace Microsoft.Framework.ConfigurationModel
@@ -21,7 +22,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 throw new ArgumentException(Resources.Error_InvalidFilePath, "path");
             }
 
-            var fullPath = PathResolver.ResolveAppRelativePath(path);
+            var fullPath = ConfigurationHelper.ResolveConfigurationFilePath(configuration, path);
 
             if (!optional && !File.Exists(fullPath))
             {

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
-
 using Resources = Microsoft.Framework.ConfigurationModel.Json.Resources;
 
 namespace Microsoft.Framework.ConfigurationModel
@@ -25,7 +24,7 @@ namespace Microsoft.Framework.ConfigurationModel
             }
 
             Optional = optional;
-            Path = PathResolver.ResolveAppRelativePath(path);
+            Path = path;
         }
 
         public bool Optional { get; private set; }

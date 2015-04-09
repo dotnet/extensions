@@ -7,6 +7,8 @@ namespace Microsoft.Framework.ConfigurationModel
 {
     public interface IConfigurationSourceRoot : IConfiguration
     {
+        string BasePath { get; }
+
         IEnumerable<IConfigurationSource> Sources { get; }
 
         IConfigurationSourceRoot Add(IConfigurationSource configurationSource);

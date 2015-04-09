@@ -46,7 +46,7 @@ namespace Microsoft.Framework.ConfigurationModel
             }
 
             Optional = optional;
-            Path = PathResolver.ResolveAppRelativePath(path);
+            Path = path;
         }
 
         public bool Optional { get; private set; }

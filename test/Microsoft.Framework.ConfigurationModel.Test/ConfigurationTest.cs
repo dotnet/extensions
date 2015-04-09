@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,11 +13,28 @@ namespace Microsoft.Framework.ConfigurationModel
         private static readonly string ArbitraryFilePath = "Unit tests do not touch file system";
 
         [Fact]
+        public void SetBasePathThroughConstructor()
+        {
+            var expectedBasePath = @"C:\ExamplePath";
+            var config = new Configuration(basePath: expectedBasePath);
+
+            Assert.Equal(expectedBasePath, config.BasePath);
+        }
+
+        [Fact]
+        public void DefaultBasePathIsNull()
+        {
+            var config = new Configuration();
+
+            Assert.Null(config.BasePath);
+        }
+
+        [Fact]
         public void LoadAndCombineKeyValuePairsFromDifferentConfigurationSources()
         {
             // Arrange
             var dic1 = new Dictionary<string, string>()
-                { 
+                {
                     {"Mem1:KeyInMem1", "ValueInMem1"}
                 };
             var dic2 = new Dictionary<string, string>()
@@ -76,7 +92,7 @@ namespace Microsoft.Framework.ConfigurationModel
         {
             // Arrange
             var dic1 = new Dictionary<string, string>()
-                { 
+                {
                     {"Key1:Key2", "ValueInMem1"}
                 };
             var dic2 = new Dictionary<string, string>()
@@ -101,7 +117,7 @@ namespace Microsoft.Framework.ConfigurationModel
         {
             // Arrange
             var dict = new Dictionary<string, string>()
-                { 
+                {
                     {"Key1", "Value1"},
                     {"Key2", "Value2"}
                 };
@@ -134,7 +150,7 @@ namespace Microsoft.Framework.ConfigurationModel
         {
             // Arrange
             var dic1 = new Dictionary<string, string>()
-                { 
+                {
                     {"Data:DB1:Connection1", "MemVal1"},
                     {"Data:DB1:Connection2", "MemVal2"}
                 };
@@ -235,7 +251,7 @@ namespace Microsoft.Framework.ConfigurationModel
         {
             // Arrange
             var dict = new Dictionary<string, string>()
-                { 
+                {
                     {"Mem:KeyInMem", "MemVal"}
                 };
             var memConfigSrc1 = new MemoryConfigurationSource(dict);

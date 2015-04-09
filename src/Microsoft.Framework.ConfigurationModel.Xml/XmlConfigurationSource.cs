@@ -40,7 +40,7 @@ namespace Microsoft.Framework.ConfigurationModel
             }
 
             Optional = optional;
-            Path = PathResolver.ResolveAppRelativePath(path);
+            Path = path;
 
             _xmlDocumentDecryptor = xmlDocumentDecryptor ?? XmlDocumentDecryptor.Instance;
         }

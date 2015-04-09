@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.IO;
+using Microsoft.Framework.ConfigurationModel.Helper;
 using Microsoft.Framework.ConfigurationModel.Xml;
 
 namespace Microsoft.Framework.ConfigurationModel
@@ -20,7 +22,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 throw new ArgumentException(Resources.Error_InvalidFilePath, "path");
             }
 
-            var fullPath = PathResolver.ResolveAppRelativePath(path);
+            var fullPath = ConfigurationHelper.ResolveConfigurationFilePath(configuration, path);
 
             if (!optional && !File.Exists(fullPath))
             {

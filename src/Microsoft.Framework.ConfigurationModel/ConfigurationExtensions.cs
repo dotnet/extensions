@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Framework.ConfigurationModel.Helper;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
@@ -15,7 +16,6 @@ namespace Microsoft.Framework.ConfigurationModel
             return (T)Convert.ChangeType(configuration.Get(key), typeof(T));
         }
 #endif
-
 
 #if NET45 || DNX451 || DNXCORE50
         public static IConfigurationSourceRoot AddIniFile(this IConfigurationSourceRoot configuration, string path)
@@ -30,7 +30,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 throw new ArgumentException(Resources.Error_InvalidFilePath, "path");
             }
 
-            var fullPath = PathResolver.ResolveAppRelativePath(path);
+            var fullPath = ConfigurationHelper.ResolveConfigurationFilePath(configuration, path);
 
             if (!optional && !File.Exists(fullPath))
             {
@@ -38,7 +38,6 @@ namespace Microsoft.Framework.ConfigurationModel
             }
 
             configuration.Add(new IniFileConfigurationSource(path, optional: optional));
-
             return configuration;
         }
 #endif
@@ -48,7 +47,7 @@ namespace Microsoft.Framework.ConfigurationModel
             configuration.Add(new CommandLineConfigurationSource(args));
             return configuration;
         }
-        
+
         public static IConfigurationSourceRoot AddCommandLine(this IConfigurationSourceRoot configuration, string[] args, IDictionary<string, string> switchMappings)
         {
             configuration.Add(new CommandLineConfigurationSource(args, switchMappings));
