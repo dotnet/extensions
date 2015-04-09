@@ -1,11 +1,27 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
-        "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
+        "Microsoft.Framework.Logging.Interfaces": "1.0.0-*",
+        "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
-        "net45": { },
-        "dnx451": { },
-        "dnxcore50": { }
+        "net45": {
+            "dependencies": {
+                "xunit.assert": "2.0.0-rc3-*"
+            },
+            "frameworkAssemblies": {
+                "System.Runtime": "4.0.0.0"
+            }
+        },
+        "dnx451": {
+            "dependencies": {
+                "xunit.runner.aspnet": "2.0.0-aspnet-*"
+            }
+        },
+        "dnxcore50": {
+            "dependencies": {
+                "xunit.runner.aspnet": "2.0.0-aspnet-*"
+            }
+        }
     }
 }
