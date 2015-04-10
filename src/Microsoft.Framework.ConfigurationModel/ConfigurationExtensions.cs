@@ -37,7 +37,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 throw new FileNotFoundException(Resources.Error_FileNotFound, fullPath);
             }
 
-            configuration.Add(new IniFileConfigurationSource(path, optional: optional));
+            configuration.Add(new IniFileConfigurationSource(fullPath, optional: optional));
             return configuration;
         }
 #endif

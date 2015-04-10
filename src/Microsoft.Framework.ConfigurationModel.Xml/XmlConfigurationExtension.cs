@@ -29,7 +29,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 throw new FileNotFoundException(Resources.Error_FileNotFound, fullPath);
             }
 
-            configuration.Add(new XmlConfigurationSource(path, optional: optional));
+            configuration.Add(new XmlConfigurationSource(fullPath, optional: optional));
 
             return configuration;
         }
