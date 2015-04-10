@@ -55,7 +55,7 @@ namespace Microsoft.Framework.OptionsModel
                 try
                 {
                     //Handle enums
-                    if (propertyType.IsEnum)
+                    if (propertyType.GetTypeInfo().IsEnum)
                     {
                         prop.SetValue(obj, Enum.Parse(propertyType, configValue));
                     }
