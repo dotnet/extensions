@@ -91,7 +91,7 @@ namespace MemoryCacheSample
                 return new object();
             });
 
-            result = cache.GetOrSet(key, context =>
+            result = cache.GetOrSet<object>(key, context =>
             {
                 var link = new EntryLink();
 

@@ -2,6 +2,7 @@
     "dependencies": {
         "Microsoft.Framework.Caching.Memory": "1.0.0-*"
     },
+    "commands": { "MemoryCacheSample": "MemoryCacheSample" },
     "frameworks": {
         "dnx451": { },
         "dnxcore50": {
