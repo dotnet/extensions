@@ -63,6 +63,11 @@ namespace Microsoft.Framework.OptionsModel.Tests
             public DateTime? MyNullableDateTime { get; set; }
         }
 
+        public class EnumOptions
+        {
+            public UriKind UriKind { get; set; }
+        }
+
         [Fact]
         public void CanReadComplexProperties()
         {
@@ -314,7 +319,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             var services = new ServiceCollection().AddOptions();
             var config = new Configuration(new MemoryConfigurationSource(configValues));
             services.Configure<NullableOptions>(config);
-            
+
             // Act
             var options = services.BuildServiceProvider().GetService<IOptions<NullableOptions>>().Options;
 
@@ -325,5 +330,68 @@ namespace Microsoft.Framework.OptionsModel.Tests
                     Assert.Equal(kvp.Value, optionsProps[kvp.Key].GetValue(options))));
             Assert.Collection(expectedValues, assertions.ToArray());
         }
+
+        public static TheoryData Configure_GetsEnumOptionsFromConfiguration_Data
+        {
+            get
+            {
+                return new TheoryData<IDictionary<string, string>, IDictionary<string, object>>
+                {
+                    {
+                        new Dictionary<string, string>
+                        {
+                            { nameof(EnumOptions.UriKind), (UriKind.Absolute).ToString() },
+                        },
+                        new Dictionary<string, object>
+                        {
+                            { nameof(EnumOptions.UriKind), UriKind.Absolute },
+                        }
+                    },
+                    {
+                        new Dictionary<string, string>
+                        {
+                            { nameof(EnumOptions.UriKind), ((int)UriKind.Absolute).ToString() },
+                        },
+                        new Dictionary<string, object>
+                        {
+                            { nameof(EnumOptions.UriKind), UriKind.Absolute },
+                        }
+                    },
+                    {
+                        new Dictionary<string, string>
+                        {
+                            { nameof(EnumOptions.UriKind), null },
+                        },
+                        new Dictionary<string, object>
+                        {
+                            { nameof(EnumOptions.UriKind), UriKind.RelativeOrAbsolute },  //default enum, since not overridden by configuration
+                        }
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Configure_GetsEnumOptionsFromConfiguration_Data))]
+        public void Configure_GetsEnumOptionsFromConfiguration(
+            IDictionary<string, string> configValues,
+            IDictionary<string, object> expectedValues)
+        {
+            // Arrange
+            var services = new ServiceCollection().AddOptions();
+            var config = new Configuration(new MemoryConfigurationSource(configValues));
+            services.Configure<EnumOptions>(config);
+
+            // Act
+            var options = services.BuildServiceProvider().GetService<IOptions<EnumOptions>>().Options;
+
+            // Assert
+            var optionsProps = options.GetType().GetProperties().ToDictionary(p => p.Name);
+            var assertions = expectedValues
+                .Select(_ => new Action<KeyValuePair<string, object>>(kvp =>
+                    Assert.Equal(kvp.Value, optionsProps[kvp.Key].GetValue(options))));
+            Assert.Collection(expectedValues, assertions.ToArray());
+        }
+
     }
 }
