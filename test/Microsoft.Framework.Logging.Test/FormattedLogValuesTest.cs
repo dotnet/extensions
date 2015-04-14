@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Microsoft.Framework.Logging.Internal;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.Framework.Logging.Test
@@ -70,6 +71,107 @@ namespace Microsoft.Framework.Logging.Test
                 var logValues = new FormattedLogValues(format);
                 logValues.ToString();
             });
+        }
+
+        // message format, format arguments, expected message
+        public static TheoryData<string, object[], string> FormatsEnumerableValuesData
+        {
+            get
+            {
+                return new TheoryData<string, object[], string>
+                {
+                    // null value
+                    {
+                        "The view '{ViewName}' was not found. Searched locations: {SearchedLocations}",
+                        new object[] { "Index", null },
+                        "The view 'Index' was not found. Searched locations: "
+                    },
+                    // empty enumerable
+                    {
+                        "The view '{ViewName}' was not found. Searched locations: {SearchedLocations}",
+                        new object[] { "Index", new string[] { } },
+                        "The view 'Index' was not found. Searched locations: "
+                    },
+                    // single item enumerable
+                    {
+                        "The view '{ViewName}' was not found. Searched locations: {SearchedLocations}",
+                        new object[] { "Index", new[] { "Views/Home/Index.cshtml" } },
+                        "The view 'Index' was not found. Searched locations: Views/Home/Index.cshtml"
+                    },
+                    // null value item in enumerable
+                    {
+                        "The view '{ViewName}' was not found. Searched locations: {SearchedLocations}",
+                        new object[] { "Index", new string[] { null } },
+                        "The view 'Index' was not found. Searched locations: "
+                    },
+                    // null value item in enumerable
+                    {
+                        "The view '{ViewName}' was not found. Searched locations: {SearchedLocations}",
+                        new object[] { "Index", new string[] { null, "Views/Home/Index.cshtml" } },
+                        "The view 'Index' was not found. Searched locations: Views/Home/Index.cshtml"
+                    },
+                    // multi item enumerable
+                    {
+                        "The view '{ViewName}' was not found. Searched locations: {SearchedLocations}",
+                        new object[] { "Index", new[] { "Views/Home/Index.cshtml", "Views/Shared/Index.cshtml" } },
+                        "The view 'Index' was not found. Searched locations: " +
+                        "Views/Home/Index.cshtml, Views/Shared/Index.cshtml"
+                    },
+                    // non-string enumerable. ToString() should be called on non-string types
+                    {
+                        "Media type '{MediaType}' did not match any of the supported media types." +
+                        "Supported media types: {SupportedMediaTypes}",
+                        new object[]
+                        {
+                            MediaTypeHeaderValue.Parse("application/blah;ver=v1"),
+                            new[] 
+                            {
+                                MediaTypeHeaderValue.Parse("text/foo;p1=p1-value"),
+                                MediaTypeHeaderValue.Parse("application/xml")
+                            }
+                        },
+                        "Media type 'application/blah; ver=v1' did not match any of the supported media types." +
+                        "Supported media types: text/foo; p1=p1-value, application/xml"
+                    },
+                    // List<string> parameter
+                    {
+                        "The view '{ViewName}' was not found. Searched locations: {SearchedLocations}",
+                        new object[] { "Index", new[] { "Home/Index.cshtml", "Shared/Index.cshtml" }.ToList() },
+                        "The view 'Index' was not found. Searched locations: " +
+                        "Home/Index.cshtml, Shared/Index.cshtml"
+                    },
+                    // We support only one level of enumerable value
+                    {
+                        "The view '{ViewName}' was not found. Searched locations: {SearchedLocations}",
+                        new object[] { "Index", new[] { new[] { "abc", "def" }, new[] { "ghi", "jkl" } } },
+                        "The view 'Index' was not found. Searched locations: " +
+                        "System.String[], System.String[]"
+                    },
+                    // sub-enumerable having null value item
+                    {
+                        "The view '{ViewName}' was not found. Searched locations: {SearchedLocations}",
+                        new object[] { "Index", new Uri[][] { null, new[] { new Uri("http://def") } } },
+                        "The view 'Index' was not found. Searched locations: " +
+                        "System.Uri[]"
+                    },
+                    // non-string sub-enumerables
+                    {
+                        "The view '{ViewName}' was not found. Searched locations: {SearchedLocations}",
+                        new object[] { "Index", new[] { new Uri[] { null }, new[] { new Uri("http://def") } } },
+                        "The view 'Index' was not found. Searched locations: " +
+                        "System.Uri[], System.Uri[]"
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(FormatsEnumerableValuesData))]
+        public void FormatsEnumerableValues(string messageFormat, object[] arguments, string expected)
+        {
+            var logValues = new FormattedLogValues(messageFormat, arguments);
+
+            Assert.Equal(expected, logValues.ToString());
         }
     }
 }

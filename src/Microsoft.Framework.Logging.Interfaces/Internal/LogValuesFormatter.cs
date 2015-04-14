@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Globalization;
 using System.Text;
 
@@ -112,6 +114,32 @@ namespace Microsoft.Framework.Logging.Internal
 
         public string Format(object[] values)
         {
+            if (values != null)
+            {
+                for (int i = 0; i < values.Length; i++)
+                {
+                    var value = values[i];
+
+                    if (value == null)
+                    {
+                        continue;
+                    }
+
+                    // since 'string' implements IEnumerable, special case it
+                    if (value is string)
+                    {
+                        continue;
+                    }
+
+                    // if the value implements IEnumerable, build a comma separated string.
+                    var enumerable = value as IEnumerable;
+                    if (enumerable != null)
+                    {
+                        values[i] = string.Join(", ", enumerable.Cast<object>().Where(obj => obj != null));
+                    }
+                }
+            }
+
             return string.Format(CultureInfo.InvariantCulture, _format, values);
         }
 
