@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Common.CommandLine;
@@ -31,6 +32,8 @@ namespace Microsoft.Framework.TestHost
 
             var debugOption = application.Option("--debug", "Launch the debugger", CommandOptionType.NoValue);
 
+            var waitOption = application.Option("--wait", "Wait for attach", CommandOptionType.NoValue);
+
             // Show help information if no subcommand was specified
             application.OnExecute(() =>
             {
@@ -48,6 +51,11 @@ namespace Microsoft.Framework.TestHost
                     if (debugOption.HasValue())
                     {
                         Debugger.Launch();
+                    }
+
+                    if (waitOption.HasValue())
+                    {
+                        Thread.Sleep(10 * 1000);
                     }
 
                     var projectPath = projectOption.Value() ?? env.ApplicationBasePath;
@@ -69,6 +77,11 @@ namespace Microsoft.Framework.TestHost
                     if (debugOption.HasValue())
                     {
                         Debugger.Launch();
+                    }
+
+                    if (waitOption.HasValue())
+                    {
+                        Thread.Sleep(10 * 1000);
                     }
 
                     var projectPath = projectOption.Value() ?? env.ApplicationBasePath;

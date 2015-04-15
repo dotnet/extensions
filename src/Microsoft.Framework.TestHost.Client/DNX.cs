@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace Microsoft.Framework.TestHost.Client
 {
@@ -22,6 +24,22 @@ namespace Microsoft.Framework.TestHost.Client
             process.Start();
             process.WaitForExit();
             return process.StandardOutput.ReadToEnd().TrimEnd('\r', '\n');
+        }
+
+        public static string FindDnxDirectory()
+        {
+            var path = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".dnx\\runtimes");
+
+            if (Directory.Exists(path))
+            {
+                return path;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

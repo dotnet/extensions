@@ -23,6 +23,7 @@ namespace Microsoft.Framework.TestHost.UI
         private readonly TextBox _console;
         private readonly TextBox _messages;
 
+        private bool _debug;
         private string _dnx;
         private bool _isRunning;
         private int _processId;
@@ -40,6 +41,19 @@ namespace Microsoft.Framework.TestHost.UI
             StartTestHost = new RelayCommand(ExecuteStartTestHost, CanExecuteStartTestHost);
             RunAllTests = new RelayCommand(ExecuteRunAllTests, CanExecuteRunAllTests);
             RunSelectedTests = new RelayCommand(ExecuteRunSelectedTests, CanExecuteRunSelectedTests);
+        }
+
+        public bool Debug
+        {
+            get
+            {
+                return _debug;
+            }
+            set
+            {
+                _debug = value;
+                OnPropertyChanged();
+            }
         }
 
         public string DNX
@@ -118,7 +132,7 @@ namespace Microsoft.Framework.TestHost.UI
                 CheckFileExists = true,
                 DefaultExt = ".exe",
                 Filter = "dnx Executable (dnx.exe)|dnx.exe",
-                InitialDirectory = DNX == null ? null : Path.GetDirectoryName(DNX),
+                InitialDirectory = string.IsNullOrEmpty(DNX) ? Client.DNX.FindDnxDirectory() : Path.GetDirectoryName(DNX),
                 Title = "DNX"
             };
 
@@ -142,7 +156,7 @@ namespace Microsoft.Framework.TestHost.UI
                 CheckFileExists = true,
                 DefaultExt = ".json",
                 Filter = "Test Project Files (project.json)|project.json",
-                InitialDirectory = SelectedProject == null ? null : Path.GetDirectoryName(SelectedProject),
+                InitialDirectory = string.IsNullOrEmpty(SelectedProject) ? null : Path.GetDirectoryName(SelectedProject),
                 Title = "Select Test Project"
             };
 
@@ -173,9 +187,10 @@ namespace Microsoft.Framework.TestHost.UI
 
         private async void ExecuteDiscoverTests(object _)
         {
-            var wrapper = new TestHostWrapper(DNX);
+            var wrapper = new TestHostWrapper(DNX, Debug);
             _console.Text = string.Empty;
             _messages.Text = string.Empty;
+
             wrapper.ConsoleOutputReceived += TestHost_ConsoleOutputReceived;
             wrapper.MessageReceived += TestHost_MessageReceived;
 
@@ -205,9 +220,10 @@ namespace Microsoft.Framework.TestHost.UI
 
         private async void ExecuteRunAllTests(object _)
         {
-            var wrapper = new TestHostWrapper(DNX);
+            var wrapper = new TestHostWrapper(DNX, Debug);
             _console.Text = string.Empty;
             _messages.Text = string.Empty;
+
             wrapper.ConsoleOutputReceived += TestHost_ConsoleOutputReceived;
             wrapper.MessageReceived += TestHost_MessageReceived;
 

@@ -12,6 +12,13 @@
   Background="LightGray">
   <Window.Resources>
     <Style
+      x:Key="{x:Type CheckBox}"
+      TargetType="{x:Type CheckBox}">
+      <Setter
+        Property="Margin"
+        Value="5" />
+    </Style>
+    <Style
       x:Key="{x:Type TextBox}"
       TargetType="{x:Type TextBox}">
       <Setter
@@ -156,6 +163,17 @@
           <Button
             Content="Run All Tests"
             Command="{Binding RunAllTests}" />
+        </StackPanel>
+        <StackPanel
+          Orientation="Horizontal">
+          <CheckBox
+            x:Name="_debug"
+            IsChecked="{Binding Debug}"
+            VerticalAlignment="Center" />
+          <Label
+            Target="{x:Reference _debug}"
+            Content="Debug TestHost"
+            VerticalAlignment="Center"/>
         </StackPanel>
         <StackPanel
           Visibility="Collapsed">
