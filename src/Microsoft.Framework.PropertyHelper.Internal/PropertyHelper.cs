@@ -31,7 +31,7 @@ namespace Microsoft.Framework.Internal
         private static readonly ConcurrentDictionary<Type, PropertyHelper[]> VisiblePropertiesCache =
             new ConcurrentDictionary<Type, PropertyHelper[]>();
 
-        private readonly Func<object, object> _valueGetter;
+        private Action<object, object> _valueSetter;
 
         /// <summary>
         /// Initializes a fast <see cref="PropertyHelper"/>.
@@ -41,16 +41,60 @@ namespace Microsoft.Framework.Internal
         {
             Property = property;
             Name = property.Name;
-            _valueGetter = MakeFastPropertyGetter(property);
+            ValueGetter = MakeFastPropertyGetter(property);
         }
 
-        public PropertyInfo Property { get; private set; }
+        /// <summary>
+        /// Gets the backing <see cref="PropertyInfo"/>.
+        /// </summary>
+        public PropertyInfo Property { get; }
 
+        /// <summary>
+        /// Gets (or sets in derived types) the property name.
+        /// </summary>
         public virtual string Name { get; protected set; }
 
+        /// <summary>
+        /// Gets the property value getter.
+        /// </summary>
+        public Func<object, object> ValueGetter { get; }
+
+        /// <summary>
+        /// Gets the property value setter.
+        /// </summary>
+        public Action<object, object> ValueSetter
+        {
+            get
+            {
+                if (_valueSetter == null)
+                {
+                    // We'll allow safe races here.
+                    _valueSetter = MakeFastPropertySetter(Property);
+                }
+
+                return _valueSetter;
+            }
+        }
+
+
+        /// <summary>
+        /// Returns the property value for the specified <paramref name="instance"/>.
+        /// </summary>
+        /// <param name="instance">The object whose property value will be returned.</param>
+        /// <returns>The property value.</returns>
         public object GetValue(object instance)
         {
-            return _valueGetter(instance);
+            return ValueGetter(instance);
+        }
+
+        /// <summary>
+        /// Sets the property value for the specified <paramref name="instance" />.
+        /// </summary>
+        /// <param name="instance">The object whose property value will be set.</param>
+        /// <param name="value">The property value.</param>
+        public void SetValue(object instance, object value)
+        {
+            ValueSetter(instance, value);
         }
 
         /// <summary>
@@ -258,7 +302,7 @@ namespace Microsoft.Framework.Internal
                     break;
                 }
             }
-            
+
             if (allPropertiesDefinedOnType)
             {
                 result = allProperties;

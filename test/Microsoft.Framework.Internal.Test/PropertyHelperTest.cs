@@ -42,6 +42,54 @@ namespace Microsoft.Framework.Internal
         }
 
         [Fact]
+        public void PropertyHelper_ReturnsGetterDelegate()
+        {
+            // Arrange
+            var anonymous = new { bar = "baz" };
+            var property = PropertyHelper.GetProperties(anonymous.GetType()).First().Property;
+
+            // Act
+            var helper = new PropertyHelper(property);
+
+            // Assert
+            Assert.NotNull(helper.ValueGetter);
+            Assert.Equal("baz", helper.ValueGetter(anonymous));
+        }
+
+        [Fact]
+        public void SetValue_SetsPropertyValue()
+        {
+            // Arrange
+            var expected = "new value";
+            var instance = new BaseClass { PropA = "old value" };
+            var helper = PropertyHelper.GetProperties(
+                instance.GetType()).First(prop => prop.Name == "PropA");
+
+            // Act
+            helper.SetValue(instance, expected);
+
+            // Assert
+            Assert.Equal(expected, instance.PropA);
+        }
+
+        [Fact]
+        public void PropertyHelper_ReturnsSetterDelegate()
+        {
+            // Arrange
+            var expected = "new value";
+            var instance = new BaseClass { PropA = "old value" };
+            var helper = PropertyHelper.GetProperties(
+                instance.GetType()).First(prop => prop.Name == "PropA");
+
+            // Act and Assert
+            Assert.NotNull(helper.ValueSetter);
+            helper.ValueSetter(instance, expected);
+
+            // Assert
+            Assert.Equal(expected, instance.PropA);
+        }
+
+        [Fact]
         public void PropertyHelper_ReturnsValueCorrectly_ForValueTypes()
         {
             // Arrange
