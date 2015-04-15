@@ -32,6 +32,7 @@ namespace Microsoft.Framework.Internal
             new ConcurrentDictionary<Type, PropertyHelper[]>();
 
         private readonly Func<object, object> _valueGetter;
+        private Action<object, object> _valueSetter;
 
         /// <summary>
         /// Initializes a fast <see cref="PropertyHelper"/>.
@@ -48,9 +49,41 @@ namespace Microsoft.Framework.Internal
 
         public virtual string Name { get; protected set; }
 
+        /// <summary>
+        /// Gets the property value getter.
+        /// </summary>
+        public Func<object, object> ValueGetter => _valueGetter;
+
+        /// <summary>
+        /// Gets the property value setter.
+        /// </summary>
+        public Action<object, object> ValueSetter
+        {
+            get
+            {
+                if (_valueSetter == null)
+                {
+                    // We'll allow safe races here.
+                    _valueSetter = MakeFastPropertySetter(Property);
+                }
+
+                return _valueSetter;
+            }
+        }
+
         public object GetValue(object instance)
         {
             return _valueGetter(instance);
+        }
+
+        /// <summary>
+        /// Sets the property value for the specified <paramref name="instance" />.
+        /// </summary>
+        /// <param name="instance">The object whose property value will be set.</param>
+        /// <param name="value">The property value.</param>
+        public void SetValue(object instance, object value)
+        {
+            ValueSetter(instance, value);
         }
 
         /// <summary>
@@ -258,7 +291,7 @@ namespace Microsoft.Framework.Internal
                     break;
                 }
             }
-            
+
             if (allPropertiesDefinedOnType)
             {
                 result = allProperties;
