@@ -66,9 +66,6 @@ namespace Microsoft.Framework.Internal
             var ex = Assert.Throws<ArgumentOutOfRangeException>(
                 () => collection.Add(new[] { 'a', 'b', 'c' }, -1, 2));
             Assert.Equal("index", ex.ParamName);
-            Assert.Equal(
-                "Specified argument was out of the range of valid values.\r\nParameter name: index",
-                ex.Message);
         }
 
         [Fact]
@@ -81,9 +78,6 @@ namespace Microsoft.Framework.Internal
             var ex = Assert.Throws<ArgumentOutOfRangeException>(
                 () => collection.Add(new[] { 'a', 'b', 'c' }, 1, 3));
             Assert.Equal("count", ex.ParamName);
-            Assert.Equal(
-                "Specified argument was out of the range of valid values.\r\nParameter name: count",
-                ex.Message);
         }
 
         public static TheoryData AddChar_StoresArraysAsChunkedStringsData
