@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Framework.Runtime;
+using Microsoft.Framework.Runtime.Infrastructure;
 
 namespace Microsoft.AspNet.Testing.xunit
 {
@@ -31,7 +33,7 @@ namespace Microsoft.AspNet.Testing.xunit
             }
         }
 
-        private static bool CanRunOnThisFramework(RuntimeFrameworks excludedFrameworks)
+        private bool CanRunOnThisFramework(RuntimeFrameworks excludedFrameworks)
         {
             if (excludedFrameworks == RuntimeFrameworks.None)
             {
@@ -39,13 +41,19 @@ namespace Microsoft.AspNet.Testing.xunit
             }
 
             if (excludedFrameworks.HasFlag(RuntimeFrameworks.Mono) &&
-                  TestPlatformHelper.IsMono)
+                TestPlatformHelper.IsMono)
             {
                 return false;
             }
 
-            if (excludedFrameworks.HasFlag(RuntimeFrameworks.DotNet) &&
-                 !TestPlatformHelper.IsMono)
+            if (excludedFrameworks.HasFlag(RuntimeFrameworks.CLR) &&
+                TestPlatformHelper.RuntimeEnvironment.RuntimeType.Equals("CLR", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (excludedFrameworks.HasFlag(RuntimeFrameworks.CoreCLR) &&
+                TestPlatformHelper.RuntimeEnvironment.RuntimeType.Equals("CoreCLR", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
