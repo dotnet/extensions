@@ -10,8 +10,8 @@
     "dnx451": { },
     "dnxcore50": {
       "dependencies": {
-        "System.ComponentModel": "4.0.0-beta-*",
         "System.Reflection.TypeExtensions": "4.0.0-beta-*",
+        "System.Runtime.Extensions": "4.0.10-beta-*",
         "System.Threading": "4.0.10-beta-*"
       }
     },
