@@ -6,17 +6,23 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
-
-using Resources = Microsoft.Framework.ConfigurationModel.Xml.Resources;
+using Microsoft.Framework.ConfigurationModel.Xml;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
+    /// <summary>
+    /// An XML file based <see cref="ConfigurationSource"/>.
+    /// </summary>
     public class XmlConfigurationSource : ConfigurationSource
     {
         private const string NameAttributeKey = "Name";
 
         private readonly XmlDocumentDecryptor _xmlDocumentDecryptor;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="XmlConfigurationSource"/>.
+        /// </summary>
+        /// <param name="path">Absolute path of the XML configuration file.</param>
         public XmlConfigurationSource(string path)
             : this(path, null, optional: false)
         {
@@ -45,13 +51,23 @@ namespace Microsoft.Framework.ConfigurationModel
             _xmlDocumentDecryptor = xmlDocumentDecryptor ?? XmlDocumentDecryptor.Instance;
         }
 
-        public bool Optional { get; private set; }
+        /// <summary>
+        /// Gets a value that determines if ths instance of <see cref="XmlConfigurationSource"/> is optional.
+        /// </summary>
+        public bool Optional { get; }
 
-        public string Path { get; private set; }
+        /// <summary>
+        /// The absolute path of the file backing this instance of <see cref="XmlConfigurationSource"/>.
+        /// </summary>
+        public string Path { get; }
 
+        /// <summary>
+        /// Loads the contents of the file at <see cref="Path"/>.
+        /// </summary>
+        /// <exception cref="FileNotFoundException">If <see cref="Optional"/> is <c>false</c> and a
+        /// file does not exist at <see cref="Path"/>.</exception>
         public override void Load()
         {
-
             if (!File.Exists(Path))
             {
                 if (Optional)
@@ -60,7 +76,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 }
                 else
                 {
-                    throw new FileNotFoundException(string.Format(Resources.Error_FileNotFound, Path), Path);
+                    throw new FileNotFoundException(Resources.FormatError_FileNotFound(Path), Path);
                 }
             }
             else
@@ -238,7 +254,7 @@ namespace Microsoft.Framework.ConfigurationModel
             }
 
             prefixStack.Push(reader.LocalName);
-            var key = string.Join(Constants.KeyDelimiter, prefixStack.Reverse<string>());
+            var key = string.Join(Constants.KeyDelimiter, prefixStack.Reverse());
 
             if (data.ContainsKey(key))
             {

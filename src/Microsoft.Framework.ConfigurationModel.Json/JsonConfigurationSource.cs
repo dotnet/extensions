@@ -4,33 +4,56 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Framework.ConfigurationModel.Json;
 using Newtonsoft.Json;
-using Resources = Microsoft.Framework.ConfigurationModel.Json.Resources;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
+    /// <summary>
+    /// A JSON file based <see cref="ConfigurationSource"/>.
+    /// </summary>
     public class JsonConfigurationSource : ConfigurationSource
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="JsonConfigurationSource"/>.
+        /// </summary>
+        /// <param name="path">Absolute path of the JSON configuration file.</param>
         public JsonConfigurationSource(string path)
             : this(path, optional: false)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JsonConfigurationSource"/>.
+        /// </summary>
+        /// <param name="path">Absolute path of the JSON configuration file.</param>
+        /// <param name="optional">Determines if the configuration is optional.</param>
         public JsonConfigurationSource(string path, bool optional)
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentException(Resources.Error_InvalidFilePath, "path");
+                throw new ArgumentException(Resources.Error_InvalidFilePath, nameof(path));
             }
 
             Optional = optional;
             Path = path;
         }
 
-        public bool Optional { get; private set; }
+        /// <summary>
+        /// Gets a value that determines if ths instance of <see cref="JsonConfigurationSource"/> is optional.
+        /// </summary>
+        public bool Optional { get; }
 
-        public string Path { get; private set; }
+        /// <summary>
+        /// The absolute path of the file backing this instance of <see cref="JsonConfigurationSource"/>.
+        /// </summary>
+        public string Path { get; }
 
+        /// <summary>
+        /// Loads the contents of the file at <see cref="Path"/>.
+        /// </summary>
+        /// <exception cref="FileNotFoundException">If <see cref="Optional"/> is <c>false</c> and a
+        /// file does not exist at <see cref="Path"/>.</exception>
         public override void Load()
         {
             if (!File.Exists(Path))
@@ -41,7 +64,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 }
                 else
                 {
-                    throw new FileNotFoundException(string.Format(Resources.Error_FileNotFound, Path), Path);
+                    throw new FileNotFoundException(Resources.FormatError_FileNotFound(Path), Path);
                 }
             }
             else

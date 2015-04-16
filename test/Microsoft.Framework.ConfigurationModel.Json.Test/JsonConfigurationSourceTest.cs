@@ -3,9 +3,8 @@
 
 using System;
 using System.IO;
+using Microsoft.Framework.ConfigurationModel.Json;
 using Xunit;
-
-using Resources = Microsoft.Framework.ConfigurationModel.Json.Resources;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
@@ -138,18 +137,10 @@ namespace Microsoft.Framework.ConfigurationModel
         public void JsonConfiguration_Throws_On_Missing_Configuration_File()
         {
             var configSource = new JsonConfigurationSource("NotExistingConfig.json", optional: false);
-            Assert.Throws<FileNotFoundException>(() =>
-            {
-                try
-                {
-                    configSource.Load();
-                }
-                catch (FileNotFoundException exception)
-                {
-                    Assert.Equal(Resources.FormatError_FileNotFound("NotExistingConfig.json"), exception.Message);
-                    throw;
-                }
-            });
+            var exception = Assert.Throws<FileNotFoundException>(() => configSource.Load());
+
+            // Assert
+            Assert.Equal(Resources.FormatError_FileNotFound("NotExistingConfig.json"), exception.Message);
         }
 
         [Fact]

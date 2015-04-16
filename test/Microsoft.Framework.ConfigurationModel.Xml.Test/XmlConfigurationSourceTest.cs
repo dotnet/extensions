@@ -3,9 +3,8 @@
 
 using System;
 using System.IO;
+using Microsoft.Framework.ConfigurationModel.Xml;
 using Xunit;
-
-using Resources = Microsoft.Framework.ConfigurationModel.Xml.Resources;
 
 namespace Microsoft.Framework.ConfigurationModel
 {

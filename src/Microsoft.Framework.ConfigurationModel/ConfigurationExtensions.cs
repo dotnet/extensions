@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Framework.ConfigurationModel.Helper;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
@@ -18,23 +19,40 @@ namespace Microsoft.Framework.ConfigurationModel
 #endif
 
 #if NET45 || DNX451 || DNXCORE50
-        public static IConfigurationSourceRoot AddIniFile(this IConfigurationSourceRoot configuration, string path)
+        /// <summary>
+        /// Adds the INI configuration source at <paramref name="path"/> to <paramref name="configuraton"/>.
+        /// </summary>
+        /// <param name="configuration">The <see cref="IConfigurationSourceRoot"/> to add to.</param>
+        /// <param name="path">Absolute path or path relative to <see cref="IConfigurationSourceRoot.BasePath"/> of
+        /// <paramref name="configuration"/>.</param>
+        /// <returns>The <see cref="IConfigurationSourceRoot"/>.</returns>
+        public static IConfigurationSourceRoot AddIniFile([NotNull] this IConfigurationSourceRoot configuration, string path)
         {
             return AddIniFile(configuration, path, optional: false);
         }
 
-        public static IConfigurationSourceRoot AddIniFile(this IConfigurationSourceRoot configuration, string path, bool optional)
+        /// <summary>
+        /// Adds the JSON configuration source at <paramref name="path"/> to <paramref name="configuraton"/>.
+        /// </summary>
+        /// <param name="configuration">The <see cref="IConfigurationSourceRoot"/> to add to.</param>
+        /// <param name="path">Absolute path or path relative to <see cref="IConfigurationSourceRoot.BasePath"/> of
+        /// <paramref name="configuration"/>.</param>
+        /// <param name="optional">Determines if loading the configuration source is optional.</param>
+        /// <returns>The <see cref="IConfigurationSourceRoot"/>.</returns>
+        /// <exception cref="ArgumentException">If <paramref name="path"/> is null or empty.</exception>
+        /// <exception cref="FileNotFoundException">If <paramref name="optional"/> is <c>false</c> and the file cannot be resolved.</exception>
+        public static IConfigurationSourceRoot AddIniFile([NotNull] this IConfigurationSourceRoot configuration, string path, bool optional)
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentException(Resources.Error_InvalidFilePath, "path");
+                throw new ArgumentException(Resources.Error_InvalidFilePath, nameof(path));
             }
 
             var fullPath = ConfigurationHelper.ResolveConfigurationFilePath(configuration, path);
 
             if (!optional && !File.Exists(fullPath))
             {
-                throw new FileNotFoundException(Resources.Error_FileNotFound, fullPath);
+                throw new FileNotFoundException(Resources.FormatError_FileNotFound(fullPath), fullPath);
             }
 
             configuration.Add(new IniFileConfigurationSource(fullPath, optional: optional));

@@ -5,54 +5,63 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
+    /// <summary>
+    /// An INI file based <see cref="ConfigurationSource"/>.
+    /// Files are simple line structures (<a href="http://en.wikipedia.org/wiki/INI_file">INI Files on Wikipedia</a>)
+    /// </summary>
+    /// <examples>
+    /// [Section:Header]
+    /// key1=value1
+    /// key2 = " value2 "
+    /// ; comment
+    /// # comment
+    /// / comment
+    /// </examples>
     public class IniFileConfigurationSource : ConfigurationSource
     {
-
         /// <summary>
-        /// Files are simple line structures
-        /// [Section:Header]
-        /// key1=value1
-        /// key2 = " value2 "
-        /// ; comment
-        /// # comment
-        /// / comment
+        /// Initializes a new instance of <see cref="IniFileConfigurationSource"/>.
         /// </summary>
-        /// <param name="path">The path and file name to load.</param>
+        /// <param name="path">Absolute path of the INI configuration file.</param>
         public IniFileConfigurationSource(string path)
             : this(path, optional: false)
         {
         }
 
-        // http://en.wikipedia.org/wiki/INI_file
         /// <summary>
-        /// Files are simple line structures
-        /// [Section:Header]
-        /// key1=value1
-        /// key2 = " value2 "
-        /// ; comment
-        /// # comment
-        /// / comment
+        /// Initializes a new instance of <see cref="IniFileConfigurationSource"/>.
         /// </summary>
-        /// <param name="path">The path and file name to load.</param>
+        /// <param name="path">Absolute path of the INI configuration file.</param>
+        /// <param name="optional">Determines if the configuration is optional.</param>
         public IniFileConfigurationSource(string path, bool optional)
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentException(Resources.Error_InvalidFilePath, "path");
+                throw new ArgumentException(Resources.Error_InvalidFilePath, nameof(path));
             }
 
             Optional = optional;
             Path = path;
         }
 
-        public bool Optional { get; private set; }
-        
-        public string Path { get; private set; }
+        /// <summary>
+        /// Gets a value that determines if ths instance of <see cref="IniFileConfigurationSource"/> is optional.
+        /// </summary>
+        public bool Optional { get; }
 
+        /// <summary>
+        /// The absolute path of the file backing this instance of <see cref="IniFileConfigurationSource"/>.
+        /// </summary>
+        public string Path { get; }
+
+        /// <summary>
+        /// Loads the contents of the file at <see cref="Path"/>.
+        /// </summary>
+        /// <exception cref="FileNotFoundException">If <see cref="Optional"/> is <c>false</c> and a
+        /// file does not exist at <see cref="Path"/>.</exception>
         public override void Load()
         {
             if (!File.Exists(Path))
@@ -63,7 +72,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 }
                 else
                 {
-                    throw new FileNotFoundException(string.Format(Resources.Error_FileNotFound, Path), Path);
+                    throw new FileNotFoundException(Resources.FormatError_FileNotFound(Path), Path);
                 }
             }
             else
