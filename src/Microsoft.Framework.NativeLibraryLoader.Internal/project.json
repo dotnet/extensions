@@ -1,0 +1,26 @@
+{
+    "version": "1.0.0-*",
+    "shared": "*.cs",
+    "frameworks": {
+        "net45": { },
+        "dnxcore50": {
+            "dependencies": {
+                "System.AppContext": "4.0.0-*",
+                "System.IO.FileSystem": "4.0.0-*",
+                "System.Runtime.Extensions": "4.0.10-*",
+                "System.Runtime.InteropServices": "4.0.20-*"
+            }
+        },
+        "netcore451": {
+            "dependencies": {
+                "System.AppContext": "4.0.0-*",
+                "System.IO.FileSystem": "4.0.0-*"
+            },
+            "frameworkAssemblies": {
+                "System.Runtime": "4.0.10.0",
+                "System.Runtime.Extensions": "4.0.0.0",
+                "System.Runtime.InteropServices": "4.0.10.0"
+            }
+        }
+    }
+}
