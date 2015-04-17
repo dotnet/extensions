@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using Microsoft.Framework.Logging.Internal;
-using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.Framework.Logging.Test
@@ -123,15 +122,15 @@ namespace Microsoft.Framework.Logging.Test
                         "Supported media types: {SupportedMediaTypes}",
                         new object[]
                         {
-                            MediaTypeHeaderValue.Parse("application/blah;ver=v1"),
-                            new[] 
+                            new MediaType("application", "blah"),
+                            new[]
                             {
-                                MediaTypeHeaderValue.Parse("text/foo;p1=p1-value"),
-                                MediaTypeHeaderValue.Parse("application/xml")
+                                new MediaType("text", "foo"),
+                                new MediaType("application", "xml")
                             }
                         },
-                        "Media type 'application/blah; ver=v1' did not match any of the supported media types." +
-                        "Supported media types: text/foo; p1=p1-value, application/xml"
+                        "Media type 'application/blah' did not match any of the supported media types." +
+                        "Supported media types: text/foo, application/xml"
                     },
                     // List<string> parameter
                     {
@@ -172,6 +171,24 @@ namespace Microsoft.Framework.Logging.Test
             var logValues = new FormattedLogValues(messageFormat, arguments);
 
             Assert.Equal(expected, logValues.ToString());
+        }
+
+        private class MediaType
+        {
+            public MediaType(string type, string subType)
+            {
+                Type = type;
+                SubType = subType;
+            }
+
+            public string Type { get; }
+
+            public string SubType { get; }
+
+            public override string ToString()
+            {
+                return $"{Type}/{SubType}";
+            }
         }
     }
 }
