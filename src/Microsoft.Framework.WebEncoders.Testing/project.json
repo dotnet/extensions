@@ -1,0 +1,20 @@
+﻿{
+    "version": "1.0.0-*",
+    "dependencies": {
+        "Microsoft.Framework.WebEncoders": "1.0.0-*",
+        "xunit.assert": "2.0.0-rc3-*"
+    },
+    "frameworks": {
+        "net45": {
+            "frameworkAssemblies": {
+                "System.Runtime": "4.0.0.0"
+            }
+        },
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.Runtime": "4.0.0.0"
+            }
+        },
+        "dnxcore50": { }
+    }
+}

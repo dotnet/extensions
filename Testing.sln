@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22727.0
+VisualStudioVersion = 14.0.22801.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5525B6EA-8BBB-4437-BD09-419AE380BBA8}"
 EndProject
@@ -30,6 +30,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Framework.TestHost.UI", "tools\Microsoft.Framework.TestHost.UI\Microsoft.Framework.TestHost.UI.csproj", "{2A16C1BE-8777-473A-A581-02E10D82C49D}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.TestHost.Client", "src\Microsoft.Framework.TestHost.Client\Microsoft.Framework.TestHost.Client.xproj", "{90C1A9CE-E402-4206-8194-03A844435FC3}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.WebEncoders.Testing", "src\Microsoft.Framework.WebEncoders.Testing\Microsoft.Framework.WebEncoders.Testing.xproj", "{12732002-3304-4741-9914-8FCCB2C28193}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.WebEncoders.Testing.Tests", "test\Microsoft.Framework.WebEncoders.Testing.Tests\Microsoft.Framework.WebEncoders.Testing.Tests.xproj", "{F6958E64-32E4-4697-BFA8-0A78B7AB4CEA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +85,14 @@ Global
 		{90C1A9CE-E402-4206-8194-03A844435FC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{90C1A9CE-E402-4206-8194-03A844435FC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90C1A9CE-E402-4206-8194-03A844435FC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12732002-3304-4741-9914-8FCCB2C28193}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12732002-3304-4741-9914-8FCCB2C28193}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12732002-3304-4741-9914-8FCCB2C28193}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12732002-3304-4741-9914-8FCCB2C28193}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6958E64-32E4-4697-BFA8-0A78B7AB4CEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6958E64-32E4-4697-BFA8-0A78B7AB4CEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6958E64-32E4-4697-BFA8-0A78B7AB4CEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6958E64-32E4-4697-BFA8-0A78B7AB4CEA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,5 +109,7 @@ Global
 		{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F} = {09F799F3-E521-466F-B155-B89E2746C8C9}
 		{2A16C1BE-8777-473A-A581-02E10D82C49D} = {57A90243-F8A5-4115-BA05-A1CEEBD8A5CD}
 		{90C1A9CE-E402-4206-8194-03A844435FC3} = {5525B6EA-8BBB-4437-BD09-419AE380BBA8}
+		{12732002-3304-4741-9914-8FCCB2C28193} = {5525B6EA-8BBB-4437-BD09-419AE380BBA8}
+		{F6958E64-32E4-4697-BFA8-0A78B7AB4CEA} = {09F799F3-E521-466F-B155-B89E2746C8C9}
 	EndGlobalSection
 EndGlobal
