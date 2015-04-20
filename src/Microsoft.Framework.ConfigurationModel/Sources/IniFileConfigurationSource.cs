@@ -48,7 +48,7 @@ namespace Microsoft.Framework.ConfigurationModel
         }
 
         /// <summary>
-        /// Gets a value that determines if ths instance of <see cref="IniFileConfigurationSource"/> is optional.
+        /// Gets a value that determines if this instance of <see cref="IniFileConfigurationSource"/> is optional.
         /// </summary>
         public bool Optional { get; }
 
