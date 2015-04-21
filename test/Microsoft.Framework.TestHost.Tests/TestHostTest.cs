@@ -30,10 +30,12 @@ namespace Microsoft.Framework.TestHost
         public async Task ListTest()
         {
             // Arrange
-            var host = new TestHostWrapper();
+            var host = new TestHostWrapper(_testProject);
+
+            await host.StartAsync();
 
             // Act
-            var result = await host.RunListAsync(_testProject);
+            var result = await host.ListTestsAsync();
 
             // Assert
             Assert.Equal(0, result);
@@ -53,10 +55,12 @@ namespace Microsoft.Framework.TestHost
         public async Task RunTest_All()
         {
             // Arrange
-            var host = new TestHostWrapper();
+            var host = new TestHostWrapper(_testProject);
+
+            await host.StartAsync();
 
             // Act
-            var result = await host.RunTestsAsync(_testProject);
+            var result = await host.RunTestsAsync();
 
             // Assert
             Assert.Equal(0, result);
@@ -83,9 +87,11 @@ namespace Microsoft.Framework.TestHost
         public async Task RunTest_ByUniqueName()
         {
             // Arrange
-            var host = new TestHostWrapper();
+            var host = new TestHostWrapper(_testProject);
 
-            await host.RunListAsync(_testProject);
+            await host.StartAsync();
+
+            await host.ListTestsAsync();
 
             var test = host.Output
                 .Where(m => m.MessageType == "TestDiscovery.TestFound")
@@ -93,6 +99,9 @@ namespace Microsoft.Framework.TestHost
                 .Payload.ToObject<Test>();
 
             host.Output.Clear();
+
+            host = new TestHostWrapper(_testProject);
+            await host.StartAsync();
 
             // Act
             var result = await host.RunTestsAsync(_testProject, test.FullyQualifiedName);

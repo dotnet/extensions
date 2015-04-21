@@ -34,11 +34,110 @@ namespace Microsoft.Framework.TestHost
 
             var waitOption = application.Option("--wait", "Wait for attach", CommandOptionType.NoValue);
 
-            // Show help information if no subcommand was specified
-            application.OnExecute(() =>
+            // If no command was specified at the commandline, then wait for a command via message.
+            application.OnExecute(async () =>
             {
-                application.ShowHelp();
-                return 0;
+                if (debugOption.HasValue())
+                {
+                    Debugger.Launch();
+                }
+
+                if (waitOption.HasValue())
+                {
+                    Thread.Sleep(10 * 1000);
+                }
+
+                var projectPath = projectOption.Value() ?? env.ApplicationBasePath;
+                var port = int.Parse(portOption.Value());
+
+                Console.WriteLine("Listening on port {0}", port);
+                using (var channel = await ReportingChannel.ListenOn(port))
+                {
+                    Console.WriteLine("Client accepted {0}", channel.Socket.LocalEndPoint);
+
+                    try
+                    {
+                        string testCommand = null;
+                        Project project = null;
+                        if (Project.TryGetProject(projectPath, out project, diagnostics: null))
+                        {
+                            project.Commands.TryGetValue("test", out testCommand);
+                        }
+
+                        if (testCommand == null)
+                        {
+                            // No test command means no tests.
+                            Trace.TraceInformation("[ReportingChannel]: OnTransmit(ExecuteTests)");
+                            channel.Send(new Message()
+                            {
+                                MessageType = "TestExecution.Response",
+                            });
+                            return -1;
+                        }
+
+                        var message = channel.ReadQueue.Take();
+                        if (message.MessageType == "TestDiscovery.Start")
+                        {
+                            var commandArgs = new List<string>()
+                            {
+                                "test",
+                                "--list",
+                                "--designtime"
+                            };
+
+                            var testServices = TestServices.CreateTestServices(_services, project, channel);
+                            await ProjectCommand.Execute(testServices, project, commandArgs.ToArray());
+
+                            Trace.TraceInformation("[ReportingChannel]: OnTransmit(DiscoverTests)");
+                            channel.Send(new Message()
+                            {
+                                MessageType = "TestDiscovery.Response",
+                            });
+                            return 0;
+                        }
+                        else if (message.MessageType == "TestExecution.Start")
+                        {
+                            var commandArgs = new List<string>()
+                            {
+                                "test",
+                                "--designtime"
+                            };
+
+                            var tests = message.Payload?.ToObject<RunTestsMessage>().Tests;
+                            if (tests != null)
+                            {
+                                foreach (var test in tests)
+                                {
+                                    commandArgs.Add("--test");
+                                    commandArgs.Add(test);
+                                }
+                            }
+
+                            var testServices = TestServices.CreateTestServices(_services, project, channel);
+                            await ProjectCommand.Execute(testServices, project, commandArgs.ToArray());
+
+                            Trace.TraceInformation("[ReportingChannel]: OnTransmit(ExecuteTests)");
+                            channel.Send(new Message()
+                            {
+                                MessageType = "TestExecution.Response",
+                            });
+                            return 0;
+                        }
+                        else
+                        {
+                            var error = string.Format("Unexpected message type: '{0}'.", message.MessageType);
+                            Trace.TraceError(error);
+                            channel.SendError(error);
+                            return -1;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.TraceError(ex.ToString());
+                        channel.SendError(ex);
+                        return -2;
+                    }
+                }
             });
 
             application.Command("list", command =>
@@ -91,7 +190,6 @@ namespace Microsoft.Framework.TestHost
                 });
 
             });
-
 
             return application.Execute(args);
         }

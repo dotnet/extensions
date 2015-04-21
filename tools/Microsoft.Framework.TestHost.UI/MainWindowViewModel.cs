@@ -22,23 +22,29 @@ namespace Microsoft.Framework.TestHost.UI
         private readonly Window _window;
         private readonly TextBox _console;
         private readonly TextBox _messages;
+        private readonly TaskScheduler _scheduler;
 
         private bool _debug;
         private string _dnx;
         private bool _isRunning;
         private int _processId;
         private string _selectedProject;
+        private string _status;
+
+        private TestHostWrapper _host;
 
         public MainWindowViewModel(Window window)
         {
             _window = window;
             _console = (TextBox)window.FindName("_consoleBuffer");
             _messages = (TextBox)window.FindName("_messageBuffer");
+            _scheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
             DiscoverTests = new RelayCommand(ExecuteDiscoverTests, CanExecuteDiscoverTests);
             SelectDNX = new RelayCommand(ExecuteSelectDNX, CanExecuteSelectDNX);
             SelectProject = new RelayCommand(ExecuteSelectProject, CanExecuteSelectProject);
             StartTestHost = new RelayCommand(ExecuteStartTestHost, CanExecuteStartTestHost);
+            StopTestHost = new RelayCommand(ExecuteStopTestHost, CanExecuteStopTestHost);
             RunAllTests = new RelayCommand(ExecuteRunAllTests, CanExecuteRunAllTests);
             RunSelectedTests = new RelayCommand(ExecuteRunSelectedTests, CanExecuteRunSelectedTests);
         }
@@ -118,6 +124,19 @@ namespace Microsoft.Framework.TestHost.UI
             }
         }
 
+        public string Status
+        {
+            get
+            {
+                return _status;
+            }
+            set
+            {
+                _status = value;
+                OnPropertyChanged();
+            }
+        }
+
         public ICommand SelectDNX { get; }
 
         private bool CanExecuteSelectDNX(object _)
@@ -175,39 +194,107 @@ namespace Microsoft.Framework.TestHost.UI
 
         private void ExecuteStartTestHost(object _)
         {
+            _console.Text = string.Empty;
+            _messages.Text = string.Empty;
 
+            var host = new TestHostWrapper(SelectedProject, DNX, Debug);
+            host.ConsoleOutputReceived += TestHost_ConsoleOutputReceived;
+            host.MessageReceived += TestHost_MessageReceived;
+
+            try
+            {
+                IsRunning = true;
+
+                _host = host;
+                Status = "Starting TestHost...";
+
+                var timer = Stopwatch.StartNew();
+                var task = host.StartAsync();
+
+                task.ContinueWith((t) =>
+                {
+                    if (t.IsFaulted)
+                    {
+                        Status = "Starting TestHost failed.";
+                        ShowErrorDialog(t.Exception);
+                        Reset();
+                    }
+                    else
+                    {
+                        Status = string.Format("Started: pid {0} in {1}ms.", _host.Process.Id, timer.ElapsedMilliseconds);
+                        ProcessId = _host.Process.Id;
+                    }
+
+                }, _scheduler);
+            }
+            catch (Exception ex)
+            {
+                ShowErrorDialog(ex);
+                Reset();
+            }
+        }
+
+        public ICommand StopTestHost { get; }
+
+        private bool CanExecuteStopTestHost(object _)
+        {
+            return IsRunning && IsReady && ProcessId > 0;
+        }
+
+        private void ExecuteStopTestHost(object _)
+        {
+            if (_host == null)
+            {
+                return;
+            }
+
+            try
+            {
+                _host.Process.Kill();
+                Reset();
+            }
+            catch (Exception ex)
+            {
+                ShowErrorDialog(ex);
+                Reset();
+            }
         }
 
         public ICommand DiscoverTests { get; }
 
         private bool CanExecuteDiscoverTests(object _)
         {
-            return !IsRunning && IsReady;
+            return IsRunning && IsReady && ProcessId > 0;
         }
 
-        private async void ExecuteDiscoverTests(object _)
+        private void ExecuteDiscoverTests(object _)
         {
-            var wrapper = new TestHostWrapper(DNX, Debug);
-            _console.Text = string.Empty;
-            _messages.Text = string.Empty;
-
-            wrapper.ConsoleOutputReceived += TestHost_ConsoleOutputReceived;
-            wrapper.MessageReceived += TestHost_MessageReceived;
-
             try
             {
-                IsRunning = true;
-                await wrapper.RunListAsync(SelectedProject);
+                Status = "Discovering Tests...";
+
+                var timer = Stopwatch.StartNew();
+                var task = _host.ListTestsAsync();
+
+                task.ContinueWith(t =>
+                {
+                    if (t.IsFaulted)
+                    {
+                        Status = "Discovering Tests failed.";
+                        ShowErrorDialog(t.Exception);
+                    }
+                    else
+                    {
+                        Status = string.Format("Discovered Tests in {0}ms", timer.ElapsedMilliseconds);
+                    }
+
+                    Reset();
+                }, _scheduler);
             }
             catch (Exception ex)
             {
                 ShowErrorDialog(ex);
-            }
-            finally
-            {
-                wrapper.MessageReceived -= TestHost_MessageReceived;
-                wrapper.ConsoleOutputReceived -= TestHost_ConsoleOutputReceived;
-                IsRunning = false;
+                Reset();
             }
         }
 
@@ -215,32 +302,37 @@ namespace Microsoft.Framework.TestHost.UI
 
         private bool CanExecuteRunAllTests(object _)
         {
-            return !IsRunning && IsReady;
+            return IsRunning && IsReady && ProcessId > 0;
         }
 
-        private async void ExecuteRunAllTests(object _)
+        private void ExecuteRunAllTests(object _)
         {
-            var wrapper = new TestHostWrapper(DNX, Debug);
-            _console.Text = string.Empty;
-            _messages.Text = string.Empty;
-
-            wrapper.ConsoleOutputReceived += TestHost_ConsoleOutputReceived;
-            wrapper.MessageReceived += TestHost_MessageReceived;
-
             try
             {
-                IsRunning = true;    
-                await wrapper.RunTestsAsync(SelectedProject);
+                Status = "Running All Tests...";
+
+                var timer = Stopwatch.StartNew();
+                var task = _host.RunTestsAsync();
+
+                task.ContinueWith(t =>
+                {
+                    if (t.IsFaulted)
+                    {
+                        Status = "Running All Tests failed.";
+                        ShowErrorDialog(t.Exception);
+                    }
+                    else
+                    {
+                        Status = string.Format("Ran All Tests in {0}ms", timer.ElapsedMilliseconds);
+                    }
+
+                    Reset();
+                }, _scheduler);
             }
             catch (Exception ex)
             {
                 ShowErrorDialog(ex);
-            }
-            finally
-            {
-                wrapper.MessageReceived -= TestHost_MessageReceived;
-                wrapper.ConsoleOutputReceived -= TestHost_ConsoleOutputReceived;
-                IsRunning = false;
+                Reset();
             }
         }
 
@@ -248,7 +340,7 @@ namespace Microsoft.Framework.TestHost.UI
 
         private bool CanExecuteRunSelectedTests(object _)
         {
-            return !IsRunning && IsReady;
+            return IsRunning && IsReady && ProcessId > 0;
         }
 
         private async void ExecuteRunSelectedTests(object _)
@@ -277,6 +369,18 @@ namespace Microsoft.Framework.TestHost.UI
             if (handler != null)
             {
                 handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        private void Reset()
+        {
+            IsRunning = false;
+            ProcessId = 0;
+
+            if (_host != null)
+            {
+                _host.Dispose();
+                _host = null;
             }
         }
     }

@@ -8,52 +8,64 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Framework.TestHost.Client
 {
-    public class TestHostWrapper
+    public class TestHostWrapper : IDisposable
     {
         public DataReceivedEventHandler ConsoleOutputReceived;
 
         public EventHandler<Message> MessageReceived;
 
-        public TestHostWrapper()
-            : this(Client.DNX.FindDnx())
+        public TestHostWrapper(string project)
+            : this(project, TestHost.Client.DNX.FindDnx(), debug: false)
         {
-
         }
 
-        public TestHostWrapper(string dnx)
-            : this(dnx, debug: false)
+        public TestHostWrapper(string project, string dnx, bool debug)
         {
-            
-        }
-
-        public TestHostWrapper(string dnx, bool debug)
-        {
+            Project = project;
             DNX = dnx;
             Debug = debug;
 
             Output = new List<Message>();
         }
 
+        private TcpClient Client { get; set; }
+
         private bool Debug { get; }
 
         private string DNX { get; }
 
+        private int Port { get; set; }
+
+        public Process Process { get; private set; }
+
+        private string Project { get; }
+
         public IList<Message> Output { get; }
 
-        public async Task<int> RunListAsync(string project)
+        public async Task StartAsync()
         {
-            var port = FindFreePort();
+            if (Process != null)
+            {
+                throw new InvalidOperationException("TestHost cannot be reused.");
+            }
+
+            var project = Project;
+            if (Project.EndsWith("project.json", StringComparison.OrdinalIgnoreCase))
+            {
+                project = Path.GetDirectoryName(Project);
+            }
+
+            Port = FindFreePort();
 
             var arguments = new List<string>();
-
             arguments.Add("--port");
-            arguments.Add(port.ToString());
+            arguments.Add(Port.ToString());
 
             arguments.Add("--project");
             arguments.Add(project);
@@ -63,65 +75,10 @@ namespace Microsoft.Framework.TestHost.Client
                 arguments.Add("--debug");
             }
 
-            arguments.Add("list");
+            var allArgs = ". Microsoft.Framework.TestHost " + string.Join(" ", arguments.Select(Quote));
 
-            // This will block until the test host opens the port
-            var listener = Task.Run(() => GetMessage(port, "TestDiscovery.Response"));
-
-            var process = RunDNX(project, arguments);
-            process.WaitForExit();
-
-            await listener;
-
-            return process.ExitCode;
-        }
-
-        public async Task<int> RunTestsAsync(string project, params string[] tests)
-        {
-            var port = FindFreePort();
-
-            var arguments = new List<string>();
-
-            arguments.Add("--port");
-            arguments.Add(port.ToString());
-
-            arguments.Add("--project");
-            arguments.Add(project);
-
-            if (Debug)
-            {
-                arguments.Add("--debug");
-            }
-
-            arguments.Add("run");
-
-            foreach (var test in tests)
-            {
-                arguments.Add("--test");
-                arguments.Add(test);
-            }
-
-            // This will block until the test host opens the port
-            var listener = Task.Run(() => GetMessage(port, "TestExecution.Response"));
-
-            var process = RunDNX(project, arguments);
-            process.WaitForExit();
-
-            await listener;
-
-            return process.ExitCode;
-        }
-
-        private Process RunDNX(string project, IEnumerable<string> args)
-        {
-            if (project.EndsWith("project.json", StringComparison.OrdinalIgnoreCase))
-            {
-                project = Path.GetDirectoryName(project);
-            }
-
-            var allArgs = ". Microsoft.Framework.TestHost " + string.Join(" ", args.Select(Quote));
-            var process = new Process();
-            process.StartInfo = new ProcessStartInfo
+            Process = new Process();
+            Process.StartInfo = new ProcessStartInfo
             {
                 Arguments = allArgs,
                 CreateNoWindow = true,
@@ -132,14 +89,63 @@ namespace Microsoft.Framework.TestHost.Client
                 WorkingDirectory = project,
             };
 
-            process.OutputDataReceived += Process_OutputDataReceived;
-            process.ErrorDataReceived += Process_OutputDataReceived;
+            Process.OutputDataReceived += Process_OutputDataReceived;
+            Process.ErrorDataReceived += Process_OutputDataReceived;
 
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
+            Process.Start();
+            Process.BeginOutputReadLine();
+            Process.BeginErrorReadLine();
 
-            return process;
+            var client = new TcpClient();
+            for (var i = 0; i < 50; i++)
+            {
+                try
+                {
+                    await client.ConnectAsync(IPAddress.Loopback, Port);
+                    break;
+                }
+                catch (SocketException)
+                {
+                    await Task.Delay(100);
+                }
+            }
+
+            if (!client.Connected)
+            {
+                client.Close();
+                throw new Exception("Unable to connect.");
+            }
+
+            Client = client;
+        }
+
+        public async Task<int> ListTestsAsync()
+        {
+            // This will block until the test host replies
+            var payload = (object)null;
+
+            var listener = Task.Run(() => StartCommandAndWaitForResponse("TestDiscovery.Start", payload, "TestDiscovery.Response"));
+
+            Process.WaitForExit();
+
+            await listener;
+
+            return Process.ExitCode;
+        }
+
+        public async Task<int> RunTestsAsync(params string[] tests)
+        {
+            // This will block until the test host replies
+            var payload = new RunTestsMessage();
+            payload.Tests = tests == null ? new List<string>() : new List<string>(tests);
+
+            var listener = Task.Run(() => StartCommandAndWaitForResponse("TestExecution.Start", payload, "TestExecution.Response"));
+
+            Process.WaitForExit();
+
+            await listener;
+
+            return Process.ExitCode;
         }
 
         private void OnMessageReceived(object sender, Message e)
@@ -167,49 +173,35 @@ namespace Microsoft.Framework.TestHost.Client
             return "\"" + arg + "\"";
         }
 
-        private void GetMessage(int port, string terminalMessageType)
+        private void StartCommandAndWaitForResponse(string messageType, object payload, string terminalMessageType)
         {
             try
             {
-                using (var client = new TcpClient())
+                var stream = Client.GetStream();
+
+                using (var writer = new BinaryWriter(stream))
+                using (var reader = new BinaryReader(stream))
                 {
-                    for (var i = 0; i < 10; i++)
+                    writer.Write(JsonConvert.SerializeObject(new Message
                     {
-                        try
-                        {
-                            client.Connect(new IPEndPoint(IPAddress.Loopback, port));
-                            break;
-                        }
-                        catch (SocketException)
-                        {
-                            Thread.Sleep(100);
-                        }
-                    }
+                        MessageType = messageType,
+                        Payload = payload == null ? null : JToken.FromObject(payload),
+                    }));
 
-                    if (!client.Connected)
+                    while (true)
                     {
-                        throw new Exception("Unable to connect.");
-                    }
+                        var message = JsonConvert.DeserializeObject<Message>(reader.ReadString());
+                        OnMessageReceived(this, message);
 
-                    var stream = client.GetStream();
-                    using (var reader = new BinaryReader(stream))
-                    {
-                        while (true)
+                        if (string.Equals(message.MessageType, terminalMessageType) ||
+                            string.Equals(message.MessageType, "Error"))
                         {
-                            var message = JsonConvert.DeserializeObject<Message>(reader.ReadString());
-                            OnMessageReceived(this, message);
-
-                            if (string.Equals(message.MessageType, terminalMessageType) ||
-                                string.Equals(message.MessageType, "Error"))
+                            writer.Write(JsonConvert.SerializeObject(new Message
                             {
-                                var writer = new BinaryWriter(stream);
-                                writer.Write(JsonConvert.SerializeObject(new Message
-                                {
-                                    MessageType = "TestHost.Acknowledge"
-                                }));
+                                MessageType = "TestHost.Acknowledge"
+                            }));
 
-                                break;
-                            }
+                            break;
                         }
                     }
                 }
@@ -230,6 +222,15 @@ namespace Microsoft.Framework.TestHost.Client
             {
                 socket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
                 return ((IPEndPoint)socket.LocalEndPoint).Port;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (Client != null)
+            {
+                Client.Close();
+                Client = null;
             }
         }
     }

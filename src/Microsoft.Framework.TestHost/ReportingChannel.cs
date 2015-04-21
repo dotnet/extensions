@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -42,9 +43,13 @@ namespace Microsoft.Framework.TestHost
             _reader = new BinaryReader(stream);
             _ackWaitHandle = new ManualResetEventSlim();
 
-            // Waiting for the ack message on a background thread
-            new Thread(WaitForAck) { IsBackground = true }.Start();
+            ReadQueue = new BlockingCollection<Message>(boundedCapacity: 1);
+
+            // Read incoming messages on the background thread
+            new Thread(ReadMessages) { IsBackground = true }.Start();
         }
+
+        public BlockingCollection<Message> ReadQueue { get; }
 
         public Socket Socket { get; private set; }
 
@@ -65,39 +70,55 @@ namespace Microsoft.Framework.TestHost
             }
         }
 
-        public void SendError(Exception ex)
+        public void SendError(string error)
         {
             Send(new Message()
             {
                 MessageType = "Error",
                 Payload = JToken.FromObject(new ErrorMessage()
                 {
-                    Message = ex.Message,
+                    Message = error,
                 }),
             });
         }
 
-
-        private void WaitForAck()
+        public void SendError(Exception ex)
         {
-            try
-            {
-                var message = JsonConvert.DeserializeObject<Message>(_reader.ReadString());
+            SendError(ex.Message);
+        }
 
-                if (string.Equals(message.MessageType, "TestHost.Acknowledge"))
-                {
-                    _ackWaitHandle.Set();
-                }
-            }
-            catch (Exception ex)
+        private void ReadMessages()
+        {
+            while (true)
             {
-                Trace.TraceInformation("[ReportingChannel]: Waiting for ack failed {0}", ex);
+                try
+                {
+                    var message = JsonConvert.DeserializeObject<Message>(_reader.ReadString());
+                    ReadQueue.Add(message);
+
+                    if (string.Equals(message.MessageType, "TestHost.Acknowledge"))
+                    {
+                        _ackWaitHandle.Set();
+                        ReadQueue.CompleteAdding();
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceInformation("[ReportingChannel]: Waiting for message failed {0}", ex);
+                    throw;
+                }
             }
         }
 
         public void Dispose()
         {
-            // Wait for a graceful disconnect
+            // Wait for a graceful disconnect - drain the queue until we get an 'ACK'
+            Message message;
+            while (ReadQueue.TryTake(out message, millisecondsTimeout: 1))
+            {
+            }
+
             if (_ackWaitHandle.Wait(TimeSpan.FromSeconds(10)))
             {
                 Trace.TraceInformation("[ReportingChannel]: Received for ack from test host");

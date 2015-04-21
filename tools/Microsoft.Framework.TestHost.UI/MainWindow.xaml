@@ -66,6 +66,8 @@
         Height="5" />
       <RowDefinition
         MinHeight="200" />
+      <RowDefinition
+        Height="Auto"/>
     </Grid.RowDefinitions>
     <Border
       Grid.Row="0"
@@ -141,12 +143,13 @@
         Grid.Column="0"
         Grid.Row="0">
         <StackPanel
-          Orientation="Horizontal"
-          Visibility="Collapsed">
+          Orientation="Horizontal">
           <Button
-            Content="Start" />
+            Content="Start"
+            Command="{Binding StartTestHost}"/>
           <Button
-            Content="Stop" />
+            Content="Stop"
+            Command="{Binding StopTestHost}"/>
           <Label
             Content="Process:" />
           <TextBox
@@ -213,5 +216,12 @@
           TextWrapping="Wrap" />
       </ScrollViewer>
     </Grid>
+    <StatusBar
+      Grid.Row="4">
+      <StatusBarItem>
+        <Label 
+          Content="{Binding Status}" />
+      </StatusBarItem>
+    </StatusBar>
   </Grid>
 </Window>
