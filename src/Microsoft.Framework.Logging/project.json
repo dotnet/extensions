@@ -31,7 +31,7 @@
                 "System.Threading": "4.0.10-beta-*"
             }
         },
-        ".NETPortable,Version=v4.6,Profile=Profile151": {
+        ".NETPortable,Version=v4.5,Profile=Profile7": {
             "frameworkAssemblies": {
                 "System.Collections": "",
                 "System.Collections.Concurrent": "",
