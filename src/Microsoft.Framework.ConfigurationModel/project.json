@@ -19,7 +19,7 @@
         "System.Runtime.InteropServices": "4.0.20-beta-*"
       }
     },
-    "netcore451": {
+    ".NETPortable,Version=v4.6,Profile=Profile151": {
       "frameworkAssemblies": {
         "System.Collections": "",
         "System.Diagnostics.Debug": "",

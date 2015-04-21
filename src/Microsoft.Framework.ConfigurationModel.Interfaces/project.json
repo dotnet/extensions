@@ -10,7 +10,7 @@
                 "System.Linq": "4.0.0-beta-*"
             }
         },
-        "netcore451": {
+        ".NETPortable,Version=v4.6,Profile=Profile151": {
             "frameworkAssemblies": {
                 "System.Collections": "",
                 "System.Diagnostics.Debug": "",
