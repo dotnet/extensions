@@ -15,7 +15,7 @@
                 "System.Threading.ThreadPool": "4.0.10-beta-*"
             }
         },
-        "netcore451": {
+        ".NETPortable,Version=v4.5,Profile=Profile7": {
             "frameworkAssemblies": {
                 "System.Threading.Tasks": ""
             }

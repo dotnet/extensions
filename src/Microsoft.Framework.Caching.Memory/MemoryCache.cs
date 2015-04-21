@@ -8,7 +8,7 @@ using System.Threading;
 using Microsoft.Framework.Caching.Memory.Infrastructure;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
-#if NETCORE451
+#if !NET45 && !DNX451 && !DNXCORE50
 using System.Threading.Tasks;
 #endif
 
@@ -263,10 +263,10 @@ namespace Microsoft.Framework.Caching.Memory
             if (_expirationScanFrequency < now - _lastExpirationScan)
             {
                 _lastExpirationScan = now;
-#if NETCORE451
-                Task.Run(() => ScanForExpiredItems(state: null));
-#else
+#if NET45 || DNX451 || DNXCORE50
                 ThreadPool.QueueUserWorkItem(ScanForExpiredItems);
+#else
+                Task.Run(() => ScanForExpiredItems(state: null));
 #endif
             }
         }

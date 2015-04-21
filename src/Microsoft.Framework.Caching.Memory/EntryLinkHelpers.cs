@@ -4,7 +4,7 @@
 using System;
 #if DNXCORE50
 using System.Threading;
-#elif !NETCORE451
+#elif NET45 || DNX451 || DNXCORE50
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 #endif
@@ -21,13 +21,7 @@ namespace Microsoft.Framework.Caching.Memory
             get { return _contextLink.Value; }
             set { _contextLink.Value = value; }
         }
-#elif NETCORE451
-        public static IEntryLink ContextLink
-        {
-            get { return null; }
-            set { throw new NotImplementedException(); }
-        }
-#else
+#elif NET45 || DNX451
         private const string ContextLinkDataName = "klr.host.EntryLinkHelpers.ContextLink";
 
         public static IEntryLink ContextLink
@@ -47,6 +41,12 @@ namespace Microsoft.Framework.Caching.Memory
             {
                 CallContext.LogicalSetData(ContextLinkDataName, new ObjectHandle(value));
             }
+        }
+#else
+        public static IEntryLink ContextLink
+        {
+            get { return null; }
+            set { throw new NotImplementedException(); }
         }
 #endif
         public static IDisposable FlowContext(this IEntryLink link)

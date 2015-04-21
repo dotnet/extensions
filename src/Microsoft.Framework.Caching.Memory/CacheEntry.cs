@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-#if NETCORE451
+#if !NET45 && !DNX451 && !DNXCORE50
 using System.Threading.Tasks;
 #endif
 
@@ -17,7 +17,7 @@ namespace Microsoft.Framework.Caching.Memory
         private static readonly Action<object> ExpirationCallback = TriggerExpired;
 
         private readonly Action<CacheEntry> _notifyCacheOfExpiration;
-        
+
         internal CacheEntry(CacheSetContext context, object value, Action<CacheEntry> notifyCacheOfExpiration)
         {
             Context = context;
@@ -141,10 +141,10 @@ namespace Microsoft.Framework.Caching.Memory
             Context.PostEvictionCallbacks = null;
             if (callbacks != null)
             {
-#if NETCORE451
-                Task.Run(() => InvokeCallbacks(callbacks));
-#else
+#if NET45 || DNX451 || DNXCORE50
                 ThreadPool.QueueUserWorkItem(InvokeCallbacks, callbacks);
+#else
+                Task.Run(() => InvokeCallbacks(callbacks));
 #endif
             }
         }
