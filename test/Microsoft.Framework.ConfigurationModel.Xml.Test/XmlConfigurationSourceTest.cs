@@ -3,10 +3,10 @@
 
 using System;
 using System.IO;
-using Microsoft.Framework.ConfigurationModel.Xml;
+using Microsoft.Framework.ConfigurationModel.Test;
 using Xunit;
 
-namespace Microsoft.Framework.ConfigurationModel
+namespace Microsoft.Framework.ConfigurationModel.Xml.Test
 {
     public partial class XmlConfigurationSourceTest
     {
@@ -30,7 +30,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 </settings>";
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
             Assert.Equal("Test.Connection.String", xmlConfigSrc.Get("DATA.SETTING:DEFAULTCONNECTION:CONNECTION.STRING"));
             Assert.Equal("SqlClient", xmlConfigSrc.Get("DATA.SETTING:DefaultConnection:Provider"));
@@ -50,7 +50,7 @@ namespace Microsoft.Framework.ConfigurationModel
 </settings>";
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
             Assert.Equal(string.Empty, xmlConfigSrc.Get("Key1"));
             Assert.Equal(string.Empty, xmlConfigSrc.Get("Key2:Key3"));
@@ -72,7 +72,7 @@ namespace Microsoft.Framework.ConfigurationModel
 </settings>";
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
             Assert.Equal("8008", xmlConfigSrc.Get("Port"));
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
@@ -97,7 +97,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 </settings>";
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
             Assert.Equal("8008", xmlConfigSrc.Get("Port"));
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
@@ -122,7 +122,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 </settings>";
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
             Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
@@ -146,7 +146,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 </settings>";
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
             Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
@@ -168,7 +168,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 </settings>";
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
             Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
@@ -189,7 +189,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 </settings>";
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
             Assert.Equal("SpecialStringWith<>", xmlConfigSrc.Get("Data:Inventory:Provider"));
         }
@@ -212,7 +212,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 </settings><!-- Comments -->";
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
             Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
@@ -239,7 +239,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 </settings>";
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
             Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
@@ -268,7 +268,7 @@ namespace Microsoft.Framework.ConfigurationModel
                     </settings>";
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
 
-            xmlConfigSrc.Load(StringToStream(xml));
+            xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
             Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
@@ -303,7 +303,7 @@ namespace Microsoft.Framework.ConfigurationModel
                 + "To enable DTD processing set the DtdProcessing property on XmlReaderSettings "
                 + "to Parse and pass the settings into XmlReader.Create method.";
 
-            var exception = Assert.Throws<System.Xml.XmlException>(() => xmlConfigSrc.Load(StringToStream(xml)));
+            var exception = Assert.Throws<System.Xml.XmlException>(() => xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml)));
 
             Assert.Equal(expectedMsg, exception.Message);
         }
@@ -327,7 +327,7 @@ namespace Microsoft.Framework.ConfigurationModel
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
             var expectedMsg = Resources.FormatError_NamespaceIsNotSupported(Resources.FormatMsg_LineInfo(1, 11));
 
-            var exception = Assert.Throws<FormatException>(() => xmlConfigSrc.Load(StringToStream(xml)));
+            var exception = Assert.Throws<FormatException>(() => xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml)));
 
             Assert.Equal(expectedMsg, exception.Message);
         }
@@ -371,7 +371,7 @@ namespace Microsoft.Framework.ConfigurationModel
             var expectedMsg = Resources.FormatError_KeyIsDuplicated("Data:DefaultConnection:ConnectionString",
                 Resources.FormatMsg_LineInfo(8, 52));
 
-            var exception = Assert.Throws<FormatException>(() => xmlConfigSrc.Load(StringToStream(xml)));
+            var exception = Assert.Throws<FormatException>(() => xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml)));
 
             Assert.Equal(expectedMsg, exception.Message);
         }
@@ -400,25 +400,6 @@ namespace Microsoft.Framework.ConfigurationModel
             var configSource = new XmlConfigurationSource("NotExistingConfig.xml", optional: true);
             configSource.Load();
             Assert.Throws<InvalidOperationException>(() => configSource.Get("key"));
-        }
-
-        private static Stream StringToStream(string str)
-        {
-            var memStream = new MemoryStream();
-            var textWriter = new StreamWriter(memStream);
-            textWriter.Write(str);
-            textWriter.Flush();
-            memStream.Seek(0, SeekOrigin.Begin);
-
-            return memStream;
-        }
-
-        private static string StreamToString(Stream stream)
-        {
-            stream.Seek(0, SeekOrigin.Begin);
-            StreamReader reader = new StreamReader(stream);
-
-            return reader.ReadToEnd();
         }
     }
 }

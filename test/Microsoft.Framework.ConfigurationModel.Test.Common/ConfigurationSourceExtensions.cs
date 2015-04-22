@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Framework.ConfigurationModel
+namespace Microsoft.Framework.ConfigurationModel.Test
 {
     public static class ConfigurationSourceExtensions
     {

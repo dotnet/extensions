@@ -39,5 +39,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: InternalsVisibleTo("Microsoft.Framework.ConfigurationModel.Test")]
+[assembly: InternalsVisibleTo("Microsoft.Framework.ConfigurationModel.Json.Test")]
 [assembly: NeutralResourcesLanguage("en-US")]
 [assembly: AssemblyMetadata("Serviceable", "True")]

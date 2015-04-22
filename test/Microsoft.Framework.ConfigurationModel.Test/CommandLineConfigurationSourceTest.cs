@@ -3,10 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
-namespace Microsoft.Framework.ConfigurationModel
+namespace Microsoft.Framework.ConfigurationModel.Test
 {
     public class CommandLineConfigurationSourceTest
     {

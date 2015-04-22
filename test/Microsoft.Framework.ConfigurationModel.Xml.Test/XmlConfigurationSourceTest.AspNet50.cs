@@ -9,9 +9,10 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
 using System.Xml;
 using Microsoft.AspNet.Testing.xunit;
+using Microsoft.Framework.ConfigurationModel.Test;
 using Xunit;
 
-namespace Microsoft.Framework.ConfigurationModel
+namespace Microsoft.Framework.ConfigurationModel.Xml.Test
 {
     public partial class XmlConfigurationSourceTest
     {
@@ -58,7 +59,7 @@ namespace Microsoft.Framework.ConfigurationModel
             }));
 
             // Act
-            xmlConfigSrc.Load(StringToStream(xmlDocument.OuterXml));
+            xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xmlDocument.OuterXml));
 
             // Assert
             Assert.Equal("Test.Connection.String", xmlConfigSrc.Get("DATA.SETTING:DEFAULTCONNECTION:CONNECTION.STRING"));

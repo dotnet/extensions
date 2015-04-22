@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using Xunit;
 
-namespace Microsoft.Framework.ConfigurationModel.Xml
+namespace Microsoft.Framework.ConfigurationModel.Xml.Test
 {
     public class XmlConfigurationExtensionTest
     {

@@ -35,7 +35,8 @@ namespace Microsoft.Framework.ConfigurationModel
             return Data
                 .Where(kv => kv.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                 .Select(kv => Segment(kv.Key, prefix, delimiter))
-                .Concat(earlierKeys);
+                .Concat(earlierKeys)
+                .OrderBy(k => k, ConfigurationKeyComparer.Instance);
         }
 
         private static string Segment(string key, string prefix, string delimiter)

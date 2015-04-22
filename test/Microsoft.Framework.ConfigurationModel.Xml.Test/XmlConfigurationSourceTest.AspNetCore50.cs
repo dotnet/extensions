@@ -5,10 +5,10 @@
 // These tests only run on Core CLR.
 
 using System;
-using Microsoft.Framework.ConfigurationModel.Xml;
+using Microsoft.Framework.ConfigurationModel.Test;
 using Xunit;
 
-namespace Microsoft.Framework.ConfigurationModel
+namespace Microsoft.Framework.ConfigurationModel.Xml.Test
 {
     public partial class XmlConfigurationSourceTest
     {
@@ -49,7 +49,7 @@ namespace Microsoft.Framework.ConfigurationModel
             var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
 
             // Act & assert
-            var ex = Assert.Throws<PlatformNotSupportedException>(() => xmlConfigSrc.Load(StringToStream(xml)));
+            var ex = Assert.Throws<PlatformNotSupportedException>(() => xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml)));
             Assert.Equal(Resources.Error_EncryptedXmlNotSupported, ex.Message);
         }
     }

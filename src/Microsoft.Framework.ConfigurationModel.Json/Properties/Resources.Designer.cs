@@ -91,38 +91,6 @@ namespace Microsoft.Framework.ConfigurationModel.Json
         }
 
         /// <summary>
-        /// Only an object can be the root. Path '{0}', line {1} position {2}.
-        /// </summary>
-        internal static string Error_RootMustBeAnObject
-        {
-            get { return GetString("Error_RootMustBeAnObject"); }
-        }
-
-        /// <summary>
-        /// Only an object can be the root. Path '{0}', line {1} position {2}.
-        /// </summary>
-        internal static string FormatError_RootMustBeAnObject(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_RootMustBeAnObject"), p0, p1, p2);
-        }
-
-        /// <summary>
-        /// Unexpected end when parsing JSON. Path '{0}', line {1} position {2}.
-        /// </summary>
-        internal static string Error_UnexpectedEnd
-        {
-            get { return GetString("Error_UnexpectedEnd"); }
-        }
-
-        /// <summary>
-        /// Unexpected end when parsing JSON. Path '{0}', line {1} position {2}.
-        /// </summary>
-        internal static string FormatError_UnexpectedEnd(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_UnexpectedEnd"), p0, p1, p2);
-        }
-
-        /// <summary>
         /// Unsupported JSON token '{0}' was found. Path '{1}', line {2} position {3}.
         /// </summary>
         internal static string Error_UnsupportedJSONToken

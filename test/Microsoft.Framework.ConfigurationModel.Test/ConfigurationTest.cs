@@ -6,12 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.Framework.ConfigurationModel
+namespace Microsoft.Framework.ConfigurationModel.Test
 {
     public class ConfigurationTest
     {
-        private static readonly string ArbitraryFilePath = "Unit tests do not touch file system";
-
         [Fact]
         public void SetBasePathThroughConstructor()
         {

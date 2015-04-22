@@ -9,6 +9,10 @@
     "frameworks": {
         "net45": { },
         "dnx451": { },
-        "dnxcore50": { }
+        "dnxcore50": {
+            "dependencies": {
+                "System.Dynamic.Runtime": "4.0.10-*"
+            }
+        }
     }
 }

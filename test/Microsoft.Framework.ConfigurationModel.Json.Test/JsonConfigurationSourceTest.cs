@@ -3,15 +3,14 @@
 
 using System;
 using System.IO;
-using Microsoft.Framework.ConfigurationModel.Json;
+using Microsoft.Framework.ConfigurationModel.Test;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
     public class JsonConfigurationSourceTest
     {
-        private static readonly string ArbitraryFilePath = "Unit tests do not touch file system";
-
         [Fact]
         public void LoadKeyValuePairsFromValidJson()
         {
@@ -24,9 +23,9 @@ namespace Microsoft.Framework.ConfigurationModel
             'zipcode': '12345'
         }
 }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
+            var jsonConfigSrc = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
 
-            jsonConfigSrc.Load(StringToStream(json));
+            jsonConfigSrc.Load(TestStreamHelpers.StringToStream(json));
 
             Assert.Equal("test", jsonConfigSrc.Get("firstname"));
             Assert.Equal("last.name", jsonConfigSrc.Get("test.last.name"));
@@ -41,9 +40,9 @@ namespace Microsoft.Framework.ConfigurationModel
 {
     'name': ''
 }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
+            var jsonConfigSrc = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
 
-            jsonConfigSrc.Load(StringToStream(json));
+            jsonConfigSrc.Load(TestStreamHelpers.StringToStream(json));
 
             Assert.Equal(string.Empty, jsonConfigSrc.Get("name"));
         }
@@ -52,12 +51,9 @@ namespace Microsoft.Framework.ConfigurationModel
         public void NonObjectRootIsInvalid()
         {
             var json = @"'test'";
-            var jsonConfigSource = new JsonConfigurationSource(ArbitraryFilePath);
-            var expectedMsg = Resources.FormatError_RootMustBeAnObject(string.Empty, 1, 6);
-
-            var exception = Assert.Throws<FormatException>(() => jsonConfigSource.Load(StringToStream(json)));
-
-            Assert.Equal(expectedMsg, exception.Message);
+            var jsonConfigSource = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+          
+            var exception = Assert.Throws<JsonReaderException>(() => jsonConfigSource.Load(TestStreamHelpers.StringToStream(json)));
         }
 
         [Fact]
@@ -71,28 +67,13 @@ namespace Microsoft.Framework.ConfigurationModel
                     ""zipcode"": ""12345""
                 }
             }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
+            var jsonConfigSrc = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
 
-            jsonConfigSrc.Load(StringToStream(json));
+            jsonConfigSrc.Load(TestStreamHelpers.StringToStream(json));
 
             Assert.Equal("test", jsonConfigSrc.Get("name"));
             Assert.Equal("Something street", jsonConfigSrc.Get("address:street"));
             Assert.Equal("12345", jsonConfigSrc.Get("address:zipcode"));
-        }
-
-        [Fact]
-        public void ArraysAreNotSupported()
-        {
-            var json = @"{
-                'name': 'test',
-                'address': ['Something street', '12345']
-            }";
-            var jsonConfigSource = new JsonConfigurationSource(ArbitraryFilePath);
-            var expectedMsg = Resources.FormatError_UnsupportedJSONToken("StartArray", "address", 3, 29);
-
-            var exception = Assert.Throws<FormatException>(() => jsonConfigSource.Load(StringToStream(json)));
-
-            Assert.Equal(expectedMsg, exception.Message);
         }
 
         [Fact]
@@ -105,12 +86,9 @@ namespace Microsoft.Framework.ConfigurationModel
                     'zipcode': '12345'
                 }
             /* Missing a right brace here*/";
-            var jsonConfigSource = new JsonConfigurationSource(ArbitraryFilePath);
-            var expectedMsg = Resources.FormatError_UnexpectedEnd("address", 7, 44);
-
-            var exception = Assert.Throws<FormatException>(() => jsonConfigSource.Load(StringToStream(json)));
-
-            Assert.Equal(expectedMsg, exception.Message);
+            var jsonConfigSource = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+           
+            var exception = Assert.Throws<JsonReaderException>(() => jsonConfigSource.Load(TestStreamHelpers.StringToStream(json)));
         }
 
         [Fact]
@@ -149,43 +127,6 @@ namespace Microsoft.Framework.ConfigurationModel
             var configSource = new JsonConfigurationSource("NotExistingConfig.json", optional: true);
             configSource.Load();
             Assert.Throws<InvalidOperationException>(() => configSource.Get("key"));
-        }
-
-        [Fact]
-        public void ThrowExceptionWhenKeyIsDuplicated()
-        {
-            var json = @"{
-                'name': 'test',
-                'address': {
-                    'street': 'Something street',
-                    'zipcode': '12345'
-                },
-                'name': 'new name'
-            }";
-            var jsonConfigSrc = new JsonConfigurationSource(ArbitraryFilePath);
-
-            var exception = Assert.Throws<FormatException>(() => jsonConfigSrc.Load(StringToStream(json)));
-
-            Assert.Equal(Resources.FormatError_KeyIsDuplicated("name"), exception.Message);
-        }
-
-        private static Stream StringToStream(string str)
-        {
-            var memStream = new MemoryStream();
-            var textWriter = new StreamWriter(memStream);
-            textWriter.Write(str);
-            textWriter.Flush();
-            memStream.Seek(0, SeekOrigin.Begin);
-
-            return memStream;
-        }
-
-        private static string StreamToString(Stream stream)
-        {
-            stream.Seek(0, SeekOrigin.Begin);
-            StreamReader reader = new StreamReader(stream);
-
-            return reader.ReadToEnd();
         }
     }
 }

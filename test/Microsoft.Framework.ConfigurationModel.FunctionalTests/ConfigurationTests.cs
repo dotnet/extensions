@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.Framework.ConfigurationModel
+namespace Microsoft.Framework.ConfigurationModel.Test
 {
     public class ConfigurationTests : IDisposable
     {
