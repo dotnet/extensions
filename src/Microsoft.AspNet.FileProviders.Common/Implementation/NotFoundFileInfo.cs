@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.FileProviders
     /// <summary>
     /// Represents a non-existing file.
     /// </summary>
-    public class NotFoundFileInfo : IFileInfo
+    internal class NotFoundFileInfo : IFileInfo
     {
         private readonly string _name;
 
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.FileProviders
 
         public Stream CreateReadStream()
         {
-            throw new InvalidOperationException(string.Format("The file {0} does not exist.", Name));
+            throw new FileNotFoundException(string.Format("The file {0} does not exist.", Name));
         }
     }
 }

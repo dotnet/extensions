@@ -1,0 +1,18 @@
+{
+    "version": "1.0.0-*",
+    "description": "Implementation of ASP.NET 5 file provider abstractions for embedded resources.",
+    "dependencies": {
+        "Microsoft.AspNet.FileProviders.Common": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.AspNet.FileProviders.Interfaces": "1.0.0-*"
+    },
+    "frameworks": {
+        "net45": { },
+        "dnx451": { },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Reflection": "4.0.10-*",
+                "System.Runtime.Extensions": "4.0.10-beta-*"
+            }
+        }
+    }
+}

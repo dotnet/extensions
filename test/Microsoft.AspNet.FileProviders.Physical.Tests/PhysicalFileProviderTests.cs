@@ -114,9 +114,17 @@ namespace Microsoft.AspNet.FileProviders
 
             var provider = new PhysicalFileProvider(Path.GetTempPath());
 
-            provider.GetFileInfo(Guid.NewGuid().ToString()).Exists.ShouldBe(false);
-            provider.GetFileInfo(hiddenFileName).Exists.ShouldBe(false);
-            provider.GetFileInfo(fileNameStartingWithPeriod).Exists.ShouldBe(false);
+            var file = provider.GetFileInfo(Guid.NewGuid().ToString());
+            file.Exists.ShouldBe(false);
+            Should.Throw<FileNotFoundException>(() => file.CreateReadStream());
+
+            file = provider.GetFileInfo(hiddenFileName);
+            file.Exists.ShouldBe(false);
+            Should.Throw<FileNotFoundException>(() => file.CreateReadStream());
+
+            file = provider.GetFileInfo(fileNameStartingWithPeriod);
+            file.Exists.ShouldBe(false);
+            Should.Throw<FileNotFoundException>(() => file.CreateReadStream());
         }
 
         [Fact]
@@ -141,13 +149,6 @@ namespace Microsoft.AspNet.FileProviders
             var fileInfo = info.Where(f => f.Name == "File2.txt").FirstOrDefault();
             fileInfo.ShouldNotBe(null);
             fileInfo.Exists.ShouldBe(true);
-        }
-
-        [Fact]
-        public void NotFoundFileInfo_BasicTests()
-        {
-            var info = new NotFoundFileInfo("NotFoundFile.txt");
-            Should.Throw<InvalidOperationException>(() => info.CreateReadStream());
         }
 
         [Fact]

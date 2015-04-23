@@ -7,7 +7,7 @@ using System.Linq;
 using Shouldly;
 using Xunit;
 
-namespace Microsoft.AspNet.FileProviders.Tests
+namespace Microsoft.AspNet.FileProviders.Embedded.Tests
 {
     public class EmbeddedFileProviderTests
     {

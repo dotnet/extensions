@@ -3,31 +3,29 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.AspNet.FileProviders
 {
-    public class EnumerableDirectoryContents : IDirectoryContents
+    internal class NotFoundDirectoryContents : IDirectoryContents
     {
-        private readonly IEnumerable<IFileInfo> _entries;
-
-        public EnumerableDirectoryContents(IEnumerable<IFileInfo> entries)
+        public NotFoundDirectoryContents()
         {
-            _entries = entries;
         }
 
         public bool Exists
         {
-            get { return true; }
+            get { return false; }
         }
 
         public IEnumerator<IFileInfo> GetEnumerator()
         {
-            return _entries.GetEnumerator();
+            return Enumerable.Empty<IFileInfo>().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return _entries.GetEnumerator();
+            return GetEnumerator();
         }
     }
 }

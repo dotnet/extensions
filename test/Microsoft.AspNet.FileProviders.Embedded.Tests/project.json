@@ -1,0 +1,15 @@
+{
+    "dependencies": {
+        "Microsoft.AspNet.FileProviders.Embedded": "1.0.0-*",
+        "Microsoft.AspNet.Testing": "1.0.0-*",
+        "Shouldly": "1.1.1.1",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    },
+    "commands": {
+        "test": "xunit.runner.aspnet"
+    },
+    "resource": "File.txt;sub/**;Resources/**",
+    "frameworks": {
+        "dnx451": { }
+    }
+}
