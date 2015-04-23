@@ -8,6 +8,7 @@
         "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Framework.PropertyHelper.Internal": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Framework.PropertyActivator.Internal": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Framework.TypeNameHelper.Internal": { "type": "build", "version": "1.0.0-*" },
         "xunit.runner.aspnet": "2.0.0-aspnet-*",
         "Microsoft.AspNet.Testing": "1.0.0-*"
     },
