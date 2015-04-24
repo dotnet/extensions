@@ -9,6 +9,7 @@ using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
 using Microsoft.Framework.TestAdapter;
 using Microsoft.Framework.TestHost.Client;
+using Microsoft.Framework.TestHost.TestAdapter;
 using Xunit;
 
 namespace Microsoft.Framework.TestHost
@@ -40,7 +41,19 @@ namespace Microsoft.Framework.TestHost
             // Assert
             Assert.Equal(0, result);
 
-            Assert.Equal(8, host.Output.Count);
+            /* Following message will be sent when test is running in an environment missing DIA.
+               Should it exists, it will be extracted from the message list. 
+               {
+                   "Name": "Microsoft.Framework.TestHost.TestAdapter.SourceInformationProvider",
+                   "EventId": 0,
+                   "Level": "Warning",
+                   "Message": "Failed to create DIA DataSource. No source information will be available.\r\nSystem.Runtime.InteropServices.COMException (0x80040154): Retrieving the COM class factory for component with CLSID {E6756135-1E65-4D17-8576-610761398C3C} failed due to the following error: 80040154 Class not registered (Exception from HRESULT: 0x80040154 (REGDB_E_CLASSNOTREG)).\r\n   at Microsoft.Framework.TestHost.TestAdapter.SourceInformationProvider.EnsureInitialized() in C:\\projects\\testing\\src\\Microsoft.Framework.TestHost\\TestAdapter\\SourceInformationProvider.cs:line 155"
+             */
+
+            var fullMessageDiagnostics = string.Format("Full output: \n{0}", string.Join("\n", host.Output));
+            var testOutput = host.Output.Where(message => message.MessageType != "Log");
+
+            Assert.True(8 == testOutput.Count(), "Output count is not 8. \n" + fullMessageDiagnostics);
             Assert.Single(host.Output, m => TestFound(m, "SampleTest.True_is_true"));
             Assert.Single(host.Output, m => TestFound(m, "SampleTest.TheoryTest1(x: 1)"));
             Assert.Single(host.Output, m => TestFound(m, "SampleTest.TheoryTest1(x: 2)"));
