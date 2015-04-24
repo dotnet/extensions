@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,7 +8,6 @@ using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
 using Microsoft.Framework.TestAdapter;
 using Microsoft.Framework.TestHost.Client;
-using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Framework.TestHost
@@ -115,18 +113,6 @@ namespace Microsoft.Framework.TestHost
             Assert.Equal("TestExecution.Response", host.Output[host.Output.Count - 1].MessageType);
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Win7And2008R2)]
-        public void RunTest_DoesNotRunOnWin7()
-        {
-            Version osVersion = Environment.OSVersion.Version;
-
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT
-                && osVersion.Major == 6 && osVersion.Minor == 1)
-            {
-                throw new SystemException("Test should not be running on Win7");
-            }
-        }
 
         private static bool TestFound(Message message, string name)
         {
