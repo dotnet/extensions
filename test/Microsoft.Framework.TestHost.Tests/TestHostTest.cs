@@ -4,6 +4,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Infrastructure;
 using Microsoft.Framework.TestAdapter;
@@ -24,7 +25,8 @@ namespace Microsoft.Framework.TestHost
             _testProject = Path.GetDirectoryName(libraryManager.GetLibraryInformation("Sample.Tests").Path);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public async Task ListTest()
         {
             // Arrange
@@ -49,7 +51,8 @@ namespace Microsoft.Framework.TestHost
             Assert.Equal("TestDiscovery.Response", host.Output[host.Output.Count - 1].MessageType);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public async Task RunTest_All()
         {
             // Arrange
@@ -81,7 +84,8 @@ namespace Microsoft.Framework.TestHost
             Assert.Equal("TestExecution.Response", host.Output[host.Output.Count - 1].MessageType);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public async Task RunTest_ByUniqueName()
         {
             // Arrange
