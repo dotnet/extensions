@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Runtime;
-using Microsoft.Framework.Runtime.Infrastructure;
 
 namespace Microsoft.AspNet.Testing.xunit
 {
@@ -58,8 +56,8 @@ namespace Microsoft.AspNet.Testing.xunit
                         }
                     }
                     break;
-                case "Unix":
-                    if (excludedOperatingSystems.HasFlag(OperatingSystems.Unix))
+                case "Linux":
+                    if (excludedOperatingSystems.HasFlag(OperatingSystems.Linux))
                     {
                         return false;
                     }
