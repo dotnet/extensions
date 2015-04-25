@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.Expiration.Interfaces;
-using Shouldly;
 using Xunit;
 
 namespace Microsoft.AspNet.FileProviders
@@ -20,14 +19,14 @@ namespace Microsoft.AspNet.FileProviders
         [Fact]
         public void ExistingFilesReturnTrue()
         {
-            var provider = new PhysicalFileProvider(Environment.CurrentDirectory);
+            var provider = new PhysicalFileProvider(Directory.GetCurrentDirectory());
             var info = provider.GetFileInfo("File.txt");
-            info.ShouldNotBe(null);
-            info.Exists.ShouldBe(true);
+            Assert.NotNull(info);
+            Assert.True(info.Exists);
 
             info = provider.GetFileInfo("/File.txt");
-            info.ShouldNotBe(null);
-            info.Exists.ShouldBe(true);
+            Assert.NotNull(info);
+            Assert.True(info.Exists);
         }
 
         [Fact]
@@ -38,67 +37,67 @@ namespace Microsoft.AspNet.FileProviders
             File.WriteAllText(fileLocation, "OldContent");
             var provider = new PhysicalFileProvider(Path.GetTempPath());
             var fileInfo = provider.GetFileInfo(fileName);
-            fileInfo.Length.ShouldBe(new FileInfo(fileInfo.PhysicalPath).Length);
-            fileInfo.Exists.ShouldBe(true);
+            Assert.Equal(new FileInfo(fileInfo.PhysicalPath).Length, fileInfo.Length);
+            Assert.True(fileInfo.Exists);
 
             IExpirationTrigger trigger3 = null, trigger4 = null;
             var trigger1 = provider.Watch(fileName);
             var trigger2 = provider.Watch(fileName);
 
             // Valid trigger1 created.
-            trigger1.ShouldNotBe(null);
-            trigger1.IsExpired.ShouldBe(false);
-            trigger1.ActiveExpirationCallbacks.ShouldBe(true);
+            Assert.NotNull(trigger1);
+            Assert.False(trigger1.IsExpired);
+            Assert.True(trigger1.ActiveExpirationCallbacks);
 
             // Valid trigger2 created.
-            trigger2.ShouldNotBe(null);
-            trigger2.IsExpired.ShouldBe(false);
-            trigger2.ActiveExpirationCallbacks.ShouldBe(true);
+            Assert.NotNull(trigger2);
+            Assert.False(trigger2.IsExpired);
+            Assert.True(trigger2.ActiveExpirationCallbacks);
 
             // Trigger is the same for a specific file.
-            trigger1.ShouldBe(trigger2);
+            Assert.Equal(trigger2, trigger1);
 
             trigger1.RegisterExpirationCallback(state =>
             {
                 var infoFromState = state as IFileInfo;
                 trigger3 = provider.Watch(infoFromState.Name);
-                trigger3.ShouldNotBe(null);
+                Assert.NotNull(trigger3);
                 trigger3.RegisterExpirationCallback(_ => { }, null);
-                trigger3.IsExpired.ShouldBe(false);
+                Assert.False(trigger3.IsExpired);
             }, state: fileInfo);
 
             trigger2.RegisterExpirationCallback(state =>
             {
                 var infoFromState = state as IFileInfo;
                 trigger4 = provider.Watch(infoFromState.Name);
-                trigger4.ShouldNotBe(null);
+                Assert.NotNull(trigger4);
                 trigger4.RegisterExpirationCallback(_ => { }, null);
-                trigger4.IsExpired.ShouldBe(false);
+                Assert.False(trigger4.IsExpired);
             }, state: fileInfo);
 
             // Write new content.
             File.WriteAllText(fileLocation, "OldContent + NewContent");
-            fileInfo.Exists.ShouldBe(true);
+            Assert.True(fileInfo.Exists);
             // Wait for callbacks to be fired.
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            trigger1.IsExpired.ShouldBe(true);
-            trigger2.IsExpired.ShouldBe(true);
+            Assert.True(trigger1.IsExpired);
+            Assert.True(trigger2.IsExpired);
 
             // Trigger is the same for a specific file.
-            trigger3.ShouldBe(trigger4);
+            Assert.Equal(trigger4, trigger3);
             // A new trigger is created.
-            trigger3.ShouldNotBe(trigger1);
+            Assert.NotEqual(trigger1, trigger3);
 
             // Delete the file and verify file info is updated.
             File.Delete(fileLocation);
             fileInfo = provider.GetFileInfo(fileName);
-            fileInfo.Exists.ShouldBe(false);
-            new FileInfo(fileLocation).Exists.ShouldBe(false);
+            Assert.False(fileInfo.Exists);
+            Assert.False(new FileInfo(fileLocation).Exists);
 
             // Wait for callbacks to be fired.
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            trigger3.IsExpired.ShouldBe(true);
-            trigger4.IsExpired.ShouldBe(true);
+            Assert.True(trigger3.IsExpired);
+            Assert.True(trigger4.IsExpired);
         }
 
         [Fact]
@@ -115,87 +114,87 @@ namespace Microsoft.AspNet.FileProviders
             var provider = new PhysicalFileProvider(Path.GetTempPath());
 
             var file = provider.GetFileInfo(Guid.NewGuid().ToString());
-            file.Exists.ShouldBe(false);
-            Should.Throw<FileNotFoundException>(() => file.CreateReadStream());
+            Assert.False(file.Exists);
+            Assert.Throws<FileNotFoundException>(() => file.CreateReadStream());
 
             file = provider.GetFileInfo(hiddenFileName);
-            file.Exists.ShouldBe(false);
-            Should.Throw<FileNotFoundException>(() => file.CreateReadStream());
+            Assert.False(file.Exists);
+            Assert.Throws<FileNotFoundException>(() => file.CreateReadStream());
 
             file = provider.GetFileInfo(fileNameStartingWithPeriod);
-            file.Exists.ShouldBe(false);
-            Should.Throw<FileNotFoundException>(() => file.CreateReadStream());
+            Assert.False(file.Exists);
+            Assert.Throws<FileNotFoundException>(() => file.CreateReadStream());
         }
 
         [Fact]
         public void SubPathActsAsRoot()
         {
-            var provider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "sub"));
+            var provider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "sub"));
             var info = provider.GetFileInfo("File2.txt");
-            info.ShouldNotBe(null);
-            info.Exists.ShouldBe(true);
+            Assert.NotNull(info);
+            Assert.True(info.Exists);
         }
 
         [Fact]
         public void GetDirectoryContents_FromRootPath_ForEmptyDirectoryName()
         {
-            var provider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "sub"));
+            var provider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "sub"));
             var info = provider.GetDirectoryContents(string.Empty);
-            info.ShouldNotBe(null);
-            info.Exists.ShouldBe(true);
+            Assert.NotNull(info);
+            Assert.True(info.Exists);
             var firstDirectory = info.Where(f => f.IsDirectory).Where(f => f.Exists).FirstOrDefault();
-            Should.Throw<InvalidOperationException>(() => firstDirectory.CreateReadStream());
+            Assert.Throws<InvalidOperationException>(() => firstDirectory.CreateReadStream());
 
             var fileInfo = info.Where(f => f.Name == "File2.txt").FirstOrDefault();
-            fileInfo.ShouldNotBe(null);
-            fileInfo.Exists.ShouldBe(true);
+            Assert.NotNull(fileInfo);
+            Assert.True(fileInfo.Exists);
         }
 
         [Fact]
         public void RelativePathPastRootNotAllowed()
         {
-            var provider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "sub"));
+            var provider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "sub"));
 
             var info = provider.GetFileInfo("..\\File.txt");
-            info.ShouldNotBe(null);
-            info.Exists.ShouldBe(false);
+            Assert.NotNull(info);
+            Assert.False(info.Exists);
 
             info = provider.GetFileInfo(".\\..\\File.txt");
-            info.ShouldNotBe(null);
-            info.Exists.ShouldBe(false);
+            Assert.NotNull(info);
+            Assert.False(info.Exists);
 
             info = provider.GetFileInfo("File2.txt");
-            info.ShouldNotBe(null);
-            info.Exists.ShouldBe(true);
-            info.PhysicalPath.ShouldBe(Path.Combine(Environment.CurrentDirectory, "sub", "File2.txt"));
+            Assert.NotNull(info);
+            Assert.True(info.Exists);
+            Assert.Equal(Path.Combine(Directory.GetCurrentDirectory(), "sub", "File2.txt"), info.PhysicalPath);
         }
 
         [Fact]
         public void AbsolutePathNotAllowed()
         {
-            var provider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "sub"));
+            var provider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "sub"));
 
-            var applicationBase = Environment.CurrentDirectory;
+            var applicationBase = Directory.GetCurrentDirectory();
             var file1 = Path.Combine(applicationBase, "File.txt");
 
             var info = provider.GetFileInfo(file1);
-            info.ShouldNotBe(null);
-            info.Exists.ShouldBe(false);
+            Assert.NotNull(info);
+            Assert.False(info.Exists);
 
             var file2 = Path.Combine(applicationBase, "sub", "File2.txt");
             info = provider.GetFileInfo(file2);
-            info.ShouldNotBe(null);
-            info.Exists.ShouldBe(false);
+            Assert.NotNull(info);
+            Assert.False(info.Exists);
 
             var directory1 = Path.Combine(applicationBase, "sub");
             var directoryContents = provider.GetDirectoryContents(directory1);
-            info.ShouldNotBe(null);
-            info.Exists.ShouldBe(false);
+            Assert.NotNull(info);
+            Assert.False(info.Exists);
 
             var directory2 = Path.Combine(applicationBase, "Does_Not_Exists");
             directoryContents = provider.GetDirectoryContents(directory2);
-            info.ShouldNotBe(null);
-            info.Exists.ShouldBe(false);
+            Assert.NotNull(info);
+            Assert.False(info.Exists);
         }
 
         [Fact]
@@ -217,8 +216,8 @@ namespace Microsoft.AspNet.FileProviders
                 {
                     var expirationTrigger = provider.Watch(fileName);
                     triggers[(int)index] = expirationTrigger;
-                    expirationTrigger.ShouldNotBe(null);
-                    expirationTrigger.IsExpired.ShouldNotBe(true);
+                    Assert.NotNull(expirationTrigger);
+                    Assert.False(expirationTrigger.IsExpired);
                     expirationTrigger.RegisterExpirationCallback(_ => { callbackResults[(int)index] = true; }, index);
                 }, state: i));
             }
@@ -233,10 +232,10 @@ namespace Microsoft.AspNet.FileProviders
 
             for (int index = 1; index < count; index++)
             {
-                triggers[index].ShouldBe(triggers[index - 1]);
+                Assert.Equal(triggers[index - 1], triggers[index]);
             }
 
-            callbackResults.All(c => c == true).ShouldBe(true);
+            Assert.True(callbackResults.All(c => c));
 
             File.Delete(fileLocation);
         }
@@ -262,7 +261,7 @@ namespace Microsoft.AspNet.FileProviders
             // Wait for callbacks to be fired.
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
 
-            invocationCount.ShouldBe(1);
+            Assert.Equal(1, invocationCount);
 
             File.Delete(fileLocation);
         }
@@ -277,7 +276,7 @@ namespace Microsoft.AspNet.FileProviders
 
             var expirationTrigger = provider.Watch(fileName);
             var lowerCaseExpirationTrigger = provider.Watch(fileName.ToLowerInvariant());
-            expirationTrigger.ShouldBe(lowerCaseExpirationTrigger);
+            Assert.Equal(lowerCaseExpirationTrigger, expirationTrigger);
 
             File.Delete(fileLocation);
         }
@@ -299,15 +298,15 @@ namespace Microsoft.AspNet.FileProviders
             var trigger2 = provider.Watch(fileName2);
             trigger2.RegisterExpirationCallback(_ => { invocationCount2++; }, null);
 
-            trigger1.ShouldNotBe(null);
-            trigger1.IsExpired.ShouldNotBe(true);
-            trigger1.ActiveExpirationCallbacks.ShouldBe(true);
+            Assert.NotNull(trigger1);
+            Assert.False(trigger1.IsExpired);
+            Assert.True(trigger1.ActiveExpirationCallbacks);
 
-            trigger2.ShouldNotBe(null);
-            trigger2.IsExpired.ShouldNotBe(true);
-            trigger2.ActiveExpirationCallbacks.ShouldBe(true);
+            Assert.NotNull(trigger2);
+            Assert.False(trigger2.IsExpired);
+            Assert.True(trigger2.ActiveExpirationCallbacks);
 
-            trigger1.ShouldNotBe(trigger2);
+            Assert.NotEqual(trigger2, trigger1);
 
             File.AppendAllText(fileLocation1, "Update1");
             File.AppendAllText(fileLocation2, "Update2");
@@ -315,17 +314,17 @@ namespace Microsoft.AspNet.FileProviders
             // Wait for callbacks to be fired.
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
 
-            invocationCount1.ShouldBe(1);
-            invocationCount2.ShouldBe(1);
-            trigger1.IsExpired.ShouldBe(true);
-            trigger2.IsExpired.ShouldBe(true);
+            Assert.Equal(1, invocationCount1);
+            Assert.Equal(1, invocationCount2);
+            Assert.True(trigger1.IsExpired);
+            Assert.True(trigger2.IsExpired);
 
             File.Delete(fileLocation1);
             File.Delete(fileLocation2);
 
             // Callbacks not invoked on expired triggers.
-            invocationCount1.ShouldBe(1);
-            invocationCount2.ShouldBe(1);
+            Assert.Equal(1, invocationCount1);
+            Assert.Equal(1, invocationCount2);
         }
 
         [Fact]
@@ -346,7 +345,7 @@ namespace Microsoft.AspNet.FileProviders
             File.AppendAllText(fileLocation, "UpdatedContent");
             // Wait for callback to be fired.
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            expirationTrigger.IsExpired.ShouldBe(true);
+            Assert.True(expirationTrigger.IsExpired);
 
             // Verify file system watcher is stable.
             int callbackCount = 0;
@@ -356,8 +355,8 @@ namespace Microsoft.AspNet.FileProviders
 
             // Wait for callback to be fired.
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            expirationTrigger.IsExpired.ShouldBe(true);
-            callbackCount.ShouldBe(1);
+            Assert.True(expirationTrigger.IsExpired);
+            Assert.Equal(1, callbackCount);
 
             File.Delete(fileLocation);
         }
@@ -369,22 +368,22 @@ namespace Microsoft.AspNet.FileProviders
             var provider = new PhysicalFileProvider(Path.GetTempPath());
 
             var trigger = provider.Watch(null);
-            trigger.IsExpired.ShouldBe(false);
-            trigger.ActiveExpirationCallbacks.ShouldBe(false);
+            Assert.False(trigger.IsExpired);
+            Assert.False(trigger.ActiveExpirationCallbacks);
 
             trigger = provider.Watch(string.Empty);
-            trigger.IsExpired.ShouldBe(false);
-            trigger.ActiveExpirationCallbacks.ShouldBe(true);
+            Assert.False(trigger.IsExpired);
+            Assert.True(trigger.ActiveExpirationCallbacks);
 
             // White space.
             trigger = provider.Watch("  ");
-            trigger.IsExpired.ShouldBe(false);
-            trigger.ActiveExpirationCallbacks.ShouldBe(true);
+            Assert.False(trigger.IsExpired);
+            Assert.True(trigger.ActiveExpirationCallbacks);
 
             // Absolute path.
             trigger = provider.Watch(Path.Combine(Path.GetTempPath() + "filename"));
-            trigger.IsExpired.ShouldBe(false);
-            trigger.ActiveExpirationCallbacks.ShouldBe(false);
+            Assert.False(trigger.IsExpired);
+            Assert.False(trigger.ActiveExpirationCallbacks);
         }
 
         [Fact]
@@ -401,7 +400,7 @@ namespace Microsoft.AspNet.FileProviders
             var directoryTrigger = provider.Watch(directoryName);
             directoryTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
 
-            fileTrigger.ShouldNotBe(directoryTrigger);
+            Assert.NotEqual(directoryTrigger, fileTrigger);
 
             File.WriteAllText(Path.Combine(root, fileName), "Content");
             Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), directoryName));
@@ -409,10 +408,10 @@ namespace Microsoft.AspNet.FileProviders
             // Wait for triggers to fire.
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
 
-            triggerCount.ShouldBe(2);
+            Assert.Equal(2, triggerCount);
 
-            fileTrigger.IsExpired.ShouldBe(true);
-            directoryTrigger.IsExpired.ShouldBe(true);
+            Assert.True(fileTrigger.IsExpired);
+            Assert.True(directoryTrigger.IsExpired);
 
             fileTrigger = provider.Watch(fileName);
             fileTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
@@ -424,7 +423,7 @@ namespace Microsoft.AspNet.FileProviders
 
             // Wait for triggers to fire.
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            triggerCount.ShouldBe(4);
+            Assert.Equal(4, triggerCount);
         }
 
         [Fact]
@@ -443,21 +442,21 @@ namespace Microsoft.AspNet.FileProviders
             File.WriteAllText(Path.Combine(folderPath, fileName), "Content");
 
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            triggerCount.ShouldBe(1);
+            Assert.Equal(1, triggerCount);
 
             fileTrigger = provider.Watch("/" + folderName + "/");
             fileTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
 
             File.AppendAllText(Path.Combine(folderPath, fileName), "UpdatedContent");
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            triggerCount.ShouldBe(2);
+            Assert.Equal(2, triggerCount);
 
             fileTrigger = provider.Watch("/" + folderName + "/");
             fileTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
 
             File.Delete(Path.Combine(folderPath, fileName));
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            triggerCount.ShouldBe(3);
+            Assert.Equal(3, triggerCount);
         }
 
         [Fact]
@@ -474,7 +473,7 @@ namespace Microsoft.AspNet.FileProviders
 
             Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), directoryName));
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            triggerCount.ShouldBe(1);
+            Assert.Equal(1, triggerCount);
 
             // Matches file/directory with this name.
             fileTrigger = provider.Watch("/" + fileName);
@@ -482,7 +481,7 @@ namespace Microsoft.AspNet.FileProviders
 
             File.WriteAllText(Path.Combine(Path.GetTempPath(), fileName), "Content");
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            triggerCount.ShouldBe(2);
+            Assert.Equal(2, triggerCount);
         }
 
         [Fact]
@@ -508,8 +507,8 @@ namespace Microsoft.AspNet.FileProviders
             File.WriteAllText(Path.Combine(root, fileName + ".cshtml"), "Content");
 
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            pattern1TriggerCount.ShouldBe(1);
-            pattern2TriggerCount.ShouldBe(1);
+            Assert.Equal(1, pattern1TriggerCount);
+            Assert.Equal(1, pattern2TriggerCount);
 
             trigger1 = provider.Watch(pattern1);
             trigger1.RegisterExpirationCallback(callback1, null);
@@ -518,8 +517,8 @@ namespace Microsoft.AspNet.FileProviders
             File.WriteAllText(Path.Combine(subFolder, fileName + ".txt"), "Content");
 
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            pattern1TriggerCount.ShouldBe(2);
-            pattern2TriggerCount.ShouldBe(1);
+            Assert.Equal(2, pattern1TriggerCount);
+            Assert.Equal(1, pattern2TriggerCount);
 
             Directory.Delete(subFolder, true);
             File.Delete(Path.Combine(root, fileName + ".cshtml"));
@@ -548,8 +547,8 @@ namespace Microsoft.AspNet.FileProviders
             File.WriteAllText(Path.Combine(root, fileName + ".cshtml"), "Content");
 
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            pattern1TriggerCount.ShouldBe(1);
-            pattern2TriggerCount.ShouldBe(1);
+            Assert.Equal(1, pattern1TriggerCount);
+            Assert.Equal(1, pattern2TriggerCount);
 
             trigger1 = provider.Watch(pattern1);
             trigger1.RegisterExpirationCallback(callback1, null);
@@ -558,8 +557,8 @@ namespace Microsoft.AspNet.FileProviders
             File.WriteAllText(Path.Combine(subFolder, fileName + ".txt"), "Content");
 
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            pattern1TriggerCount.ShouldBe(2);
-            pattern2TriggerCount.ShouldBe(1);
+            Assert.Equal(2, pattern1TriggerCount);
+            Assert.Equal(1, pattern2TriggerCount);
 
             Directory.Delete(subFolder, true);
             File.Delete(Path.Combine(root, fileName + ".cshtml"));
@@ -586,20 +585,20 @@ namespace Microsoft.AspNet.FileProviders
             File.WriteAllText(Path.Combine(root, fileName + ".cshtml"), "Content");
 
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            pattern1TriggerCount.ShouldBe(1);
-            pattern2TriggerCount.ShouldBe(0);
+            Assert.Equal(1, pattern1TriggerCount);
+            Assert.Equal(0, pattern2TriggerCount);
 
             trigger1 = provider.Watch(pattern1);
             trigger1.RegisterExpirationCallback(_ => { pattern1TriggerCount++; }, null);
             // Register this trigger again.
             var trigger3 = provider.Watch(pattern2);
             trigger3.RegisterExpirationCallback(_ => { pattern2TriggerCount++; }, null);
-            trigger3.ShouldBe(trigger2);
+            Assert.Equal(trigger2, trigger3);
             File.WriteAllText(Path.Combine(subFolder, fileName + ".cshtml"), "Content");
 
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            pattern1TriggerCount.ShouldBe(2);
-            pattern2TriggerCount.ShouldBe(2);
+            Assert.Equal(2, pattern1TriggerCount);
+            Assert.Equal(2, pattern2TriggerCount);
 
             Directory.Delete(subFolder, true);
             File.Delete(Path.Combine(root, fileName + ".cshtml"));
@@ -613,16 +612,16 @@ namespace Microsoft.AspNet.FileProviders
             var trigger2 = provider.Watch("a/b");
             var trigger3 = provider.Watch(@"a\b");
 
-            trigger1.ShouldBe(trigger2);
-            trigger2.ShouldBe(trigger3);
+            Assert.Equal(trigger2, trigger1);
+            Assert.Equal(trigger3, trigger2);
 
-            trigger1.ActiveExpirationCallbacks.ShouldBe(true);
-            trigger2.ActiveExpirationCallbacks.ShouldBe(true);
-            trigger3.ActiveExpirationCallbacks.ShouldBe(true);
+            Assert.True(trigger1.ActiveExpirationCallbacks);
+            Assert.True(trigger2.ActiveExpirationCallbacks);
+            Assert.True(trigger3.ActiveExpirationCallbacks);
 
-            trigger1.IsExpired.ShouldBe(false);
-            trigger2.IsExpired.ShouldBe(false);
-            trigger3.IsExpired.ShouldBe(false);
+            Assert.False(trigger1.IsExpired);
+            Assert.False(trigger2.IsExpired);
+            Assert.False(trigger3.IsExpired);
         }
 
         [ConditionalFact]
@@ -657,10 +656,10 @@ namespace Microsoft.AspNet.FileProviders
 
             // Wait for triggers to fire.
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            oldDirectoryTrigger.IsExpired.ShouldBe(true);
-            newDirectoryTrigger.IsExpired.ShouldBe(true);
-            oldTriggers.All(t => t.IsExpired).ShouldBe(true);
-            newTriggers.All(t => t.IsExpired).ShouldBe(true);
+            Assert.True(oldDirectoryTrigger.IsExpired);
+            Assert.True(newDirectoryTrigger.IsExpired);
+            oldTriggers.ForEach(t => Assert.True(t.IsExpired));
+            newTriggers.ForEach(t => Assert.True(t.IsExpired));
 
             newDirectoryTrigger = provider.Watch(newDirectoryName);
             newTriggers = new List<IExpirationTrigger>();
@@ -676,8 +675,8 @@ namespace Microsoft.AspNet.FileProviders
 
             // Wait for triggers to fire.
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            newDirectoryTrigger.IsExpired.ShouldBe(true);
-            newTriggers.All(t => t.IsExpired).ShouldBe(true);
+            Assert.True(newDirectoryTrigger.IsExpired);
+            newTriggers.ForEach(t => Assert.True(t.IsExpired));
         }
 
         [ConditionalFact]
@@ -701,9 +700,9 @@ namespace Microsoft.AspNet.FileProviders
             var triggerFileNameStartingPeriod = provider.Watch(Path.GetFileName(fileNameStartingWithPeriod));
             var systemFileTrigger = provider.Watch(Path.GetFileName(systemFileName));
 
-            hiddenFileTrigger.IsExpired.ShouldBe(false);
-            triggerFileNameStartingPeriod.IsExpired.ShouldBe(false);
-            systemFileTrigger.IsExpired.ShouldBe(false);
+            Assert.False(hiddenFileTrigger.IsExpired);
+            Assert.False(triggerFileNameStartingPeriod.IsExpired);
+            Assert.False(systemFileTrigger.IsExpired);
 
             File.AppendAllText(hiddenFileName, "Appending text");
             File.WriteAllText(fileNameStartingWithPeriod, "Updated Contents");
@@ -712,9 +711,9 @@ namespace Microsoft.AspNet.FileProviders
             // Wait for triggers to fire.
             await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
 
-            hiddenFileTrigger.IsExpired.ShouldBe(false);
-            triggerFileNameStartingPeriod.IsExpired.ShouldBe(false);
-            systemFileTrigger.IsExpired.ShouldBe(false);
+            Assert.False(hiddenFileTrigger.IsExpired);
+            Assert.False(triggerFileNameStartingPeriod.IsExpired);
+            Assert.False(systemFileTrigger.IsExpired);
         }
     }
 }
