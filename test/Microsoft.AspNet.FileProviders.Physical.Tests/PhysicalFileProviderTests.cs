@@ -101,27 +101,53 @@ namespace Microsoft.AspNet.FileProviders
         }
 
         [Fact]
-        public void Missing_Hidden_And_FilesStartingWithPeriod_ReturnFalse()
+        public void Exists_WithNonExistingFile_ReturnsFalse()
         {
+            // Set stuff up on disk (nothing to set up here because we're testing a non-existing file)
             var root = Path.GetTempPath();
-            var hiddenFileName = Path.Combine(root, Guid.NewGuid().ToString());
-            File.WriteAllText(hiddenFileName, "Content");
-            var fileNameStartingWithPeriod = Path.Combine(root, ".", Guid.NewGuid().ToString());
-            File.WriteAllText(fileNameStartingWithPeriod, "Content");
-            var fileInfo = new FileInfo(hiddenFileName);
-            File.SetAttributes(hiddenFileName, fileInfo.Attributes | FileAttributes.Hidden);
+            var nonExistingFileName = Guid.NewGuid().ToString();
 
-            var provider = new PhysicalFileProvider(Path.GetTempPath());
+            // Use the file provider to try to read the file info back
+            var provider = new PhysicalFileProvider(root);
+            var file = provider.GetFileInfo(nonExistingFileName);
 
-            var file = provider.GetFileInfo(Guid.NewGuid().ToString());
             Assert.False(file.Exists);
             Assert.Throws<FileNotFoundException>(() => file.CreateReadStream());
+        }
 
-            file = provider.GetFileInfo(hiddenFileName);
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public void Exists_WithHiddenFile_ReturnsFalse()
+        {
+            // Set stuff up on disk
+            var root = Path.GetTempPath();
+            var tempFileName = Guid.NewGuid().ToString();
+            var physicalHiddenFileName = Path.Combine(root, tempFileName);
+            File.WriteAllText(physicalHiddenFileName, "Content");
+            var fileInfo = new FileInfo(physicalHiddenFileName);
+            File.SetAttributes(physicalHiddenFileName, fileInfo.Attributes | FileAttributes.Hidden);
+
+            // Use the file provider to try to read the file info back
+            var provider = new PhysicalFileProvider(root);
+            var file = provider.GetFileInfo(tempFileName);
+
             Assert.False(file.Exists);
             Assert.Throws<FileNotFoundException>(() => file.CreateReadStream());
+        }
 
-            file = provider.GetFileInfo(fileNameStartingWithPeriod);
+        [Fact]
+        public void Exists_WithFileStartingWithPeriod_ReturnsFalse()
+        {
+            // Set stuff up on disk
+            var root = Path.GetTempPath();
+            var fileNameStartingWithPeriod = "." + Guid.NewGuid().ToString();
+            var physicalFileNameStartingWithPeriod = Path.Combine(root, fileNameStartingWithPeriod);
+            File.WriteAllText(physicalFileNameStartingWithPeriod, "Content");
+
+            // Use the file provider to try to read the file info back
+            var provider = new PhysicalFileProvider(root);
+            var file = provider.GetFileInfo(fileNameStartingWithPeriod);
+
             Assert.False(file.Exists);
             Assert.Throws<FileNotFoundException>(() => file.CreateReadStream());
         }
