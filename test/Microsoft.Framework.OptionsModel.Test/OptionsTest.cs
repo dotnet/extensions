@@ -33,7 +33,6 @@ namespace Microsoft.Framework.OptionsModel.Tests
             {
                 get { return null; }
             }
-
         }
 
         public class NestedOptions
@@ -78,8 +77,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
                 {"Nested:Integer", "11"}
             };
             var config = new Configuration(new MemoryConfigurationSource(dic));
-            var options = new ComplexOptions();
-            OptionsServices.ReadProperties(options, config);
+            var options = ConfigurationBinder.Bind<ComplexOptions>(config);
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
             Assert.Equal(11, options.Nested.Integer);
@@ -96,8 +94,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
                 {"Virtual","Sup"}
             };
             var config = new Configuration(new MemoryConfigurationSource(dic));
-            var options = new DerivedOptions();
-            OptionsServices.ReadProperties(options, config);
+            var options = ConfigurationBinder.Bind<DerivedOptions>(config);
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
             Assert.Equal(11, options.Nested.Integer);
@@ -114,8 +111,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
                 {"Virtual","Sup"}
             };
             var config = new Configuration(new MemoryConfigurationSource(dic));
-            var options = new DerivedOptions();
-            OptionsServices.ReadProperties(options, config);
+            var options = ConfigurationBinder.Bind<DerivedOptions>(config);
             Assert.Equal(0, options.Nested.Integer);
             Assert.True(options.Boolean);
             Assert.Equal("Derived:Sup", options.Virtual);
@@ -129,8 +125,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
                 {"StaticProperty", "stuff"},
             };
             var config = new Configuration(new MemoryConfigurationSource(dic));
-            var options = new ComplexOptions();
-            OptionsServices.ReadProperties(options, config);
+            var options = ConfigurationBinder.Bind<ComplexOptions>(config);
             Assert.Equal("stuff", ComplexOptions.StaticProperty);
         }
 
@@ -146,8 +141,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
                 {property, "stuff"},
             };
             var config = new Configuration(new MemoryConfigurationSource(dic));
-            var options = new ComplexOptions();
-            OptionsServices.ReadProperties(options, config);
+            var options = ConfigurationBinder.Bind<ComplexOptions>(config);
             Assert.Null(options.GetType().GetProperty(property).GetValue(options));
         }
 

@@ -8,8 +8,8 @@ namespace Microsoft.Framework.OptionsModel
 {
     public class ConfigureFromConfigurationOptions<TOptions> : ConfigureOptions<TOptions>
     {
-        public ConfigureFromConfigurationOptions([NotNull] IConfiguration config) 
-            : base(options => OptionsServices.ReadProperties(options, config))
+        public ConfigureFromConfigurationOptions([NotNull] IConfiguration config)
+            : base(options => ConfigurationBinder.Bind(options, config))
         {
         }
     }
