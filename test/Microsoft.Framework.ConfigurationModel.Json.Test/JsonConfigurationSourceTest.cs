@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using Microsoft.Framework.ConfigurationModel.Json;
 using Microsoft.Framework.ConfigurationModel.Test;
 using Newtonsoft.Json;
 using Xunit;

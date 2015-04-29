@@ -102,8 +102,8 @@ namespace Microsoft.Framework.ConfigurationModel.Json.Test
             jsonConfigSource2.Load(TestStreamHelpers.StringToStream(json2));
 
             var config = new Configuration();
-            config.AddLoadedSource(jsonConfigSource1);
-            config.AddLoadedSource(jsonConfigSource2);
+            config.Add(jsonConfigSource1, load: false);
+            config.Add(jsonConfigSource2, load: false);
 
             Assert.Equal(3, config.GetSubKeys("ip").Count());
             Assert.Equal("15.16.17.18", config.Get("ip:0"));
@@ -135,8 +135,8 @@ namespace Microsoft.Framework.ConfigurationModel.Json.Test
             jsonConfigSource2.Load(TestStreamHelpers.StringToStream(json2));
 
             var config = new Configuration();
-            config.AddLoadedSource(jsonConfigSource1);
-            config.AddLoadedSource(jsonConfigSource2);
+            config.Add(jsonConfigSource1, load: false);
+            config.Add(jsonConfigSource2, load: false);
 
             Assert.Equal(3, config.GetSubKeys("ip").Count());
             Assert.Equal("1.2.3.4", config.Get("ip:0"));
@@ -168,8 +168,8 @@ namespace Microsoft.Framework.ConfigurationModel.Json.Test
             jsonConfigSource2.Load(TestStreamHelpers.StringToStream(json2));
 
             var config = new Configuration();
-            config.AddLoadedSource(jsonConfigSource1);
-            config.AddLoadedSource(jsonConfigSource2);
+            config.Add(jsonConfigSource1, load: false);
+            config.Add(jsonConfigSource2, load: false);
 
             Assert.Equal(4, config.GetSubKeys("ip").Count());
             Assert.Equal("1.2.3.4", config.Get("ip:0"));
@@ -193,7 +193,7 @@ namespace Microsoft.Framework.ConfigurationModel.Json.Test
             jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
 
             var config = new Configuration();
-            config.AddLoadedSource(jsonConfigSource);
+            config.Add(jsonConfigSource, load: false);
 
             var subkey = config.GetSubKey("setting");
             var indexSubkeys = subkey.GetSubKeys().ToArray();
@@ -222,7 +222,7 @@ namespace Microsoft.Framework.ConfigurationModel.Json.Test
             jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
 
             var config = new Configuration();
-            config.AddLoadedSource(jsonConfigSource);
+            config.Add(jsonConfigSource, load: false);
 
             var subkey = config.GetSubKey("setting");
             var indexSubkeys = subkey.GetSubKeys().ToArray();

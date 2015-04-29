@@ -53,9 +53,9 @@ namespace Microsoft.Framework.ConfigurationModel.Test
             bool memRet1, memRet2, memRet3;
 
             // Act
-            config.AddLoadedSource(memConfigSrc1);
-            config.AddLoadedSource(memConfigSrc2);
-            config.AddLoadedSource(memConfigSrc3);
+            config.Add(memConfigSrc1, load: false);
+            config.Add(memConfigSrc2, load: false);
+            config.Add(memConfigSrc3, load: false);
 
             memRet1 = config.TryGet("mem1:keyinmem1", out memVal1);
             memRet2 = config.TryGet("Mem2:KeyInMem2", out memVal2);
@@ -103,8 +103,8 @@ namespace Microsoft.Framework.ConfigurationModel.Test
             var config = new Configuration();
 
             // Act
-            config.AddLoadedSource(memConfigSrc1);
-            config.AddLoadedSource(memConfigSrc2);
+            config.Add(memConfigSrc1, load: false);
+            config.Add(memConfigSrc2, load: false);
 
             // Assert
             Assert.Equal("ValueInMem2", config.Get("Key1:Key2"));
@@ -124,9 +124,9 @@ namespace Microsoft.Framework.ConfigurationModel.Test
             var memConfigSrc3 = new MemoryConfigurationSource(dict);
 
             var config = new Configuration();
-            config.AddLoadedSource(memConfigSrc1);
-            config.AddLoadedSource(memConfigSrc2);
-            config.AddLoadedSource(memConfigSrc3);
+            config.Add(memConfigSrc1, load: false);
+            config.Add(memConfigSrc2, load: false);
+            config.Add(memConfigSrc3, load: false);
 
             // Act
             config.Set("Key1", "NewValue1");
@@ -165,9 +165,9 @@ namespace Microsoft.Framework.ConfigurationModel.Test
             var memConfigSrc3 = new MemoryConfigurationSource(dic3);
 
             var config = new Configuration();
-            config.AddLoadedSource(memConfigSrc1);
-            config.AddLoadedSource(memConfigSrc2);
-            config.AddLoadedSource(memConfigSrc3);
+            config.Add(memConfigSrc1, load: false);
+            config.Add(memConfigSrc2, load: false);
+            config.Add(memConfigSrc3, load: false);
 
             string memVal1, memVal2, memVal3, memVal4, memVal5;
             bool memRet1, memRet2, memRet3, memRet4, memRet5;
@@ -227,9 +227,9 @@ namespace Microsoft.Framework.ConfigurationModel.Test
             var memConfigSrc3 = new MemoryConfigurationSource(dic3);
 
             var config = new Configuration();
-            config.AddLoadedSource(memConfigSrc1);
-            config.AddLoadedSource(memConfigSrc2);
-            config.AddLoadedSource(memConfigSrc3);
+            config.Add(memConfigSrc1, load: false);
+            config.Add(memConfigSrc2, load: false);
+            config.Add(memConfigSrc3, load: false);
 
             // Act
             var configFocusList = config.GetSubKeys("Data");
@@ -266,9 +266,9 @@ namespace Microsoft.Framework.ConfigurationModel.Test
             var config = new Configuration();
 
             // Act
-            config.AddLoadedSource(memConfigSrc1);
-            config.AddLoadedSource(memConfigSrc2);
-            config.AddLoadedSource(memConfigSrc3);
+            config.Add(memConfigSrc1, load: false);
+            config.Add(memConfigSrc2, load: false);
+            config.Add(memConfigSrc3, load: false);
 
             // Assert
             var enumerator = config.Sources.GetEnumerator();
@@ -304,9 +304,9 @@ namespace Microsoft.Framework.ConfigurationModel.Test
             var config = new Configuration();
 
             // Act
-            config.AddLoadedSource(memConfigSrc1);
-            config.AddLoadedSource(memConfigSrc2);
-            config.AddLoadedSource(memConfigSrc3);
+            config.Add(memConfigSrc1, load: false);
+            config.Add(memConfigSrc2, load: false);
+            config.Add(memConfigSrc3, load: false);
 
             var enumerable = config as IEnumerable;
 

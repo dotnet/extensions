@@ -136,14 +136,29 @@ namespace Microsoft.Framework.ConfigurationModel
                 new ConfigurationFocus(this, prefix + segment + Constants.KeyDelimiter));
         }
 
+        /// <summary>
+        /// Adds a new configuration source.
+        /// </summary>
+        /// <param name="configurationSource">The configuration source to add.</param>
+        /// <returns>The same configuration source.</returns>
         public IConfigurationSourceRoot Add(IConfigurationSource configurationSource)
         {
-            configurationSource.Load();
-            return AddLoadedSource(configurationSource);
+            return Add(configurationSource, load: true);
         }
 
-        internal IConfigurationSourceRoot AddLoadedSource(IConfigurationSource configurationSource)
+        /// <summary>
+        /// Adds a new configuration source.
+        /// </summary>
+        /// <param name="configurationSource">The configuration source to add.</param>
+        /// <param name="load">If true, the configuration source's <see cref="IConfigurationSource.Load"/> method will be called.</param>
+        /// <returns>The same configuration source.</returns>
+        /// <remarks>This method is intended only for test scenarios.</remarks>
+        public IConfigurationSourceRoot Add(IConfigurationSource configurationSource, bool load)
         {
+            if (load)
+            {
+                configurationSource.Load();
+            }
             _sources.Add(configurationSource);
             return this;
         }
