@@ -23,7 +23,7 @@
                 "System.Console": "4.0.0-beta-*",
                 "System.Diagnostics.Process": "4.0.0-beta-*",
                 "System.Diagnostics.TraceSource": "4.0.0-beta-*",
-                "System.Net.Sockets": "4.0.0-beta-*"
+                "System.Net.Sockets": "4.0.10-beta-*"
             }
         }
     }
