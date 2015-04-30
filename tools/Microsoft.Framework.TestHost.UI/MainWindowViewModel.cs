@@ -26,6 +26,7 @@ namespace Microsoft.Framework.TestHost.UI
 
         private bool _debug;
         private string _dnx;
+        private string _dthPort;
         private bool _isRunning;
         private int _processId;
         private string _selectedProject;
@@ -73,6 +74,19 @@ namespace Microsoft.Framework.TestHost.UI
                 _dnx = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsReady));
+            }
+        }
+
+        public string DTHPort
+        {
+            get
+            {
+                return _dthPort;
+            }
+            set
+            {
+                _dthPort = value;
+                OnPropertyChanged();
             }
         }
 
@@ -198,6 +212,13 @@ namespace Microsoft.Framework.TestHost.UI
             _messages.Text = string.Empty;
 
             var host = new TestHostWrapper(SelectedProject, DNX, Debug);
+
+            int dthPort;
+            if (!string.IsNullOrEmpty(DTHPort) && int.TryParse(DTHPort, out dthPort))
+            {
+                host.DTHPort = dthPort;
+            }
+
             host.ConsoleOutputReceived += TestHost_ConsoleOutputReceived;
             host.MessageReceived += TestHost_MessageReceived;
 
@@ -238,7 +259,7 @@ namespace Microsoft.Framework.TestHost.UI
 
         private bool CanExecuteStopTestHost(object _)
         {
-            return IsRunning && IsReady && ProcessId > 0;
+            return IsRunning && IsReady;
         }
 
         private void ExecuteStopTestHost(object _)

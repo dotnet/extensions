@@ -34,6 +34,8 @@ namespace Microsoft.Framework.TestHost.Client
             Output = new List<Message>();
         }
 
+        public int? DTHPort { get; set; }
+
         private TcpClient Client { get; set; }
 
         private bool Debug { get; }
@@ -76,6 +78,10 @@ namespace Microsoft.Framework.TestHost.Client
             }
 
             var allArgs = ". Microsoft.Framework.TestHost " + string.Join(" ", arguments.Select(Quote));
+            if (DTHPort != null)
+            {
+                allArgs = "--port " + DTHPort + " " + allArgs;
+            }
 
             Process = new Process();
             Process.StartInfo = new ProcessStartInfo

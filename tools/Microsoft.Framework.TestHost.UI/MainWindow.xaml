@@ -7,7 +7,7 @@
   xmlns:local="clr-namespace:Microsoft.Framework.TestHost.UI"
   mc:Ignorable="d"
   Title="TestHost Diagnostics"
-  Height="600"
+  Height="800"
   Width="800"
   Background="LightGray">
   <Window.Resources>
@@ -169,14 +169,20 @@
         </StackPanel>
         <StackPanel
           Orientation="Horizontal">
+          <Label
+            Content="DTH Port:" />
+          <TextBox
+            Text="{Binding DTHPort}"
+            Width="60"/>
+          <Label
+            Target="{x:Reference _debug}"
+            Content="Debug TestHost"
+            VerticalAlignment="Center"
+            Margin="5 5 -5 5"/>
           <CheckBox
             x:Name="_debug"
             IsChecked="{Binding Debug}"
             VerticalAlignment="Center" />
-          <Label
-            Target="{x:Reference _debug}"
-            Content="Debug TestHost"
-            VerticalAlignment="Center"/>
         </StackPanel>
         <StackPanel
           Visibility="Collapsed">
