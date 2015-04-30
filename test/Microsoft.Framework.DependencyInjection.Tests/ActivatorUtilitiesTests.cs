@@ -7,7 +7,7 @@ using System.Linq;
 using Microsoft.Framework.DependencyInjection.Tests.Fakes;
 using Xunit;
 
-namespace Microsoft.Framework.DependencyInjection.Interfaces.Tests
+namespace Microsoft.Framework.DependencyInjection.Abstractions.Tests
 {
     public class ActivatorUtilitiesTests
     {
