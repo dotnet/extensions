@@ -6,7 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
-using Microsoft.Framework.DependencyInjection.Interfaces;
+using Microsoft.Framework.DependencyInjection.Abstractions;
 
 namespace Microsoft.Framework.DependencyInjection
 {

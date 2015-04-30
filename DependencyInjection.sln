@@ -15,7 +15,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Depende
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.DependencyInjection.Tests", "test\Microsoft.Framework.DependencyInjection.Tests\Microsoft.Framework.DependencyInjection.Tests.xproj", "{20201277-5461-49EF-811B-63ED3CD274EF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.DependencyInjection.Interfaces", "src\Microsoft.Framework.DependencyInjection.Interfaces\Microsoft.Framework.DependencyInjection.Interfaces.xproj", "{4E959D3B-2E0D-4296-B22C-D428DED294F0}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.DependencyInjection.Abstractions", "src\Microsoft.Framework.DependencyInjection.Abstractions\Microsoft.Framework.DependencyInjection.Abstractions.xproj", "{4E959D3B-2E0D-4296-B22C-D428DED294F0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
