@@ -2,7 +2,7 @@
     "version": "1.0.0-*",
     "description": "Console logger implementation.",
     "dependencies": {
-        "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
+        "Microsoft.Framework.Logging.Abstractions": "1.0.0-*"
     },
     "frameworks": {
         "net45": { },

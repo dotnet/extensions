@@ -1,7 +1,7 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
-        "Microsoft.Framework.Logging.Interfaces": "1.0.0-*",
+        "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" },
         "NLog": "3.1.0"
     },

@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{09920C51-6
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Test", "test\Microsoft.Framework.Logging.Test\Microsoft.Framework.Logging.Test.xproj", "{96B1D6A8-7E40-43C7-813F-898DC8192DDE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Interfaces", "src\Microsoft.Framework.Logging.Interfaces\Microsoft.Framework.Logging.Interfaces.xproj", "{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Abstractions", "src\Microsoft.Framework.Logging.Abstractions\Microsoft.Framework.Logging.Abstractions.xproj", "{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.NLog", "src\Microsoft.Framework.Logging.NLog\Microsoft.Framework.Logging.NLog.xproj", "{718CBC9D-1E65-447D-A64A-7AC467FB5D6A}"
 EndProject

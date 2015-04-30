@@ -3,7 +3,7 @@
     "description": "Logging infrastructure.",
     "dependencies": {
         "Microsoft.Framework.DependencyInjection.Interfaces": "1.0.0-*",
-        "Microsoft.Framework.Logging.Interfaces": "1.0.0-*"
+        "Microsoft.Framework.Logging.Abstractions": "1.0.0-*"
     },
     "compilationOptions": {
         "define": [
