@@ -21,7 +21,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Configu
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.ConfigurationModel.FunctionalTests", "test\Microsoft.Framework.ConfigurationModel.FunctionalTests\Microsoft.Framework.ConfigurationModel.FunctionalTests.xproj", "{EAC77F15-F12E-496B-9184-1B1DA89BFFE9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.ConfigurationModel.Interfaces", "src\Microsoft.Framework.ConfigurationModel.Interfaces\Microsoft.Framework.ConfigurationModel.Interfaces.xproj", "{3F1CB08E-9FBD-4CAE-A78A-4AC43F24FC49}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.ConfigurationModel.Abstractions", "src\Microsoft.Framework.ConfigurationModel.Abstractions\Microsoft.Framework.ConfigurationModel.Abstractions.xproj", "{3F1CB08E-9FBD-4CAE-A78A-4AC43F24FC49}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.ConfigurationModel.Test.Common", "test\Microsoft.Framework.ConfigurationModel.Test.Common\Microsoft.Framework.ConfigurationModel.Test.Common.xproj", "{29C120E5-F682-4BFB-826B-040A594802CA}"
 EndProject
