@@ -3,7 +3,7 @@
     "description": "Implementation of ASP.NET 5 file provider abstractions for physical files.",
     "dependencies": {
         "Microsoft.AspNet.FileProviders.Common": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.AspNet.FileProviders.Interfaces": "1.0.0-*"
+        "Microsoft.AspNet.FileProviders.Abstractions": "1.0.0-*"
     },
     "frameworks": {
         "net45": { },
