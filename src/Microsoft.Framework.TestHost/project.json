@@ -10,7 +10,7 @@
         "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Framework.Runtime": "1.0.0-*",
         "Microsoft.Framework.Runtime.Common": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*",
+        "Microsoft.Framework.Runtime.Interfaces": "1.0.0-*",
         "Newtonsoft.Json": "6.0.6"
     },
     "commands": {
