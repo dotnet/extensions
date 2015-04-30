@@ -57,7 +57,10 @@ namespace Microsoft.Framework.OptionsModel
                 return;
             }
 
-            propertyValue = BindType(property.PropertyType, propertyValue, configuration);
+            propertyValue = BindType(
+                property.PropertyType,
+                propertyValue,
+                configuration);
 
             if (propertyValue != null && hasPublicSetter)
             {
@@ -83,14 +86,24 @@ namespace Microsoft.Framework.OptionsModel
                 {
                     if (typeInstance == null)
                     {
+                        if (typeInfo.IsInterface || typeInfo.IsAbstract)
+                        {
+                            throw new InvalidOperationException(Resources.FormatError_CannotActivateAbstractOrInterface(type));
+                        }
+
+                        bool hasParameterlessConstructor = typeInfo.DeclaredConstructors.Any(ctor => ctor.IsPublic && ctor.GetParameters().Length == 0);
+                        if (!hasParameterlessConstructor)
+                        {
+                            throw new InvalidOperationException(Resources.FormatError_MissingParameterlessConstructor(type));
+                        }
+
                         try
                         {
                             typeInstance = Activator.CreateInstance(type);
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            // Cannot create the value so we cannot populate it
-                            return typeInstance;
+                            throw new InvalidOperationException(Resources.FormatError_FailedToActivate(type), ex);
                         }
                     }
 
@@ -141,16 +154,13 @@ namespace Microsoft.Framework.OptionsModel
             {
                 var keyConfiguration = keyProperty.Value;
 
-                try
+                var item = BindType(
+                    type: valueType,
+                    typeInstance: null,
+                    configuration: keyConfiguration);
+                if (item != null)
                 {
-                    var item = BindType(valueType, null, keyConfiguration);
-                    if (item != null)
-                    {
-                        addMethod.Invoke(dictionary, new[] { keyProperty.Key, item });
-                    }
-                }
-                catch
-                {
+                    addMethod.Invoke(dictionary, new[] { keyProperty.Key, item });
                 }
             }
         }
@@ -172,7 +182,10 @@ namespace Microsoft.Framework.OptionsModel
 
                 try
                 {
-                    var item = BindType(itemType, null, keyConfiguration);
+                    var item = BindType(
+                        type: itemType,
+                        typeInstance: null,
+                        configuration: keyConfiguration);
                     if (item != null)
                     {
                         addMethod.Invoke(collection, new[] { item });
@@ -188,24 +201,27 @@ namespace Microsoft.Framework.OptionsModel
         {
             var typeInfo = type.GetTypeInfo();
 
+            if (typeInfo.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                return CreateValueFromConfiguration(Nullable.GetUnderlyingType(type), value, configuration);
+            }
+
+            var configurationValue = configuration.Get(key: null);
+
             try
             {
-                if (typeInfo.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                if (typeInfo.IsEnum)
                 {
-                    return CreateValueFromConfiguration(Nullable.GetUnderlyingType(type), value, configuration);
-                }
-                else if (typeInfo.IsEnum)
-                {
-                    return Enum.Parse(type, configuration.Get(null));
+                    return Enum.Parse(type, configurationValue);
                 }
                 else
                 {
-                    return Convert.ChangeType(configuration.Get(null), type);
+                    return Convert.ChangeType(configurationValue, type);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                return null;
+                throw new InvalidOperationException(Resources.FormatError_FailedBinding(configurationValue, type), ex);
             }
         }
 

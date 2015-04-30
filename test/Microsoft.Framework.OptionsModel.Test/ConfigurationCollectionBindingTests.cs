@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Framework.ConfigurationModel;
 using Xunit;
@@ -156,22 +157,6 @@ namespace Microsoft.Framework.OptionsModel.Test
             Assert.Equal("val10", options.NestedLists[1][0]);
             Assert.Equal("val11", options.NestedLists[1][1]);
             Assert.Equal("val12", options.NestedLists[1][2]);
-        }
-
-        [Fact]
-        public void StringListInterfaceBinding()
-        {
-            var input = new Dictionary<string, string>
-            {
-                {"StringListInterface:0", "val0"},
-                {"StringListInterface:1", "val1"},
-            };
-
-            var config = new Configuration(new MemoryConfigurationSource(input));
-
-            var options = ConfigurationBinder.Bind<OptionsWithLists>(config);
-
-            Assert.Null(options.StringListInterface);
         }
 
         [Fact]
