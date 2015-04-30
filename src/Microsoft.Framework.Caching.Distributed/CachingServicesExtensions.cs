@@ -11,8 +11,9 @@ namespace Microsoft.Framework.DependencyInjection
         public static IServiceCollection AddCaching(this IServiceCollection collection)
         {
             collection.AddOptions();
-            return collection.AddTransient<IDistributedCache, LocalCache>()
-                .AddSingleton<IMemoryCache, MemoryCache>();
+            collection.TryAdd(ServiceDescriptor.Transient<IDistributedCache, LocalCache>());
+            collection.TryAdd(ServiceDescriptor.Singleton<IMemoryCache, MemoryCache>());
+            return collection;
         }
     }
 }
