@@ -34,7 +34,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Caching.Interfaces", "src\Microsoft.Framework.Caching.Interfaces\Microsoft.Framework.Caching.Interfaces.xproj", "{60AAD8D1-33A3-4943-A4AF-C8A5BA418BC6}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Caching.Abstractions", "src\Microsoft.Framework.Caching.Abstractions\Microsoft.Framework.Caching.Abstractions.xproj", "{60AAD8D1-33A3-4943-A4AF-C8A5BA418BC6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
