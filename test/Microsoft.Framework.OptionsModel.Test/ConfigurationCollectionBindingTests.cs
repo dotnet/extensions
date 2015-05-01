@@ -35,6 +35,31 @@ namespace Microsoft.Framework.OptionsModel.Test
         }
 
         [Fact]
+        public void IntListBinding()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"IntList:0", "42"},
+                {"IntList:1", "43"},
+                {"IntList:2", "44"},
+                {"IntList:x", "45"}
+            };
+
+            var config = new Configuration(new MemoryConfigurationSource(input));
+
+            var options = ConfigurationBinder.Bind<OptionsWithLists>(config);
+
+            var list = options.IntList;
+
+            Assert.Equal(4, list.Count);
+
+            Assert.Equal(42, list[0]);
+            Assert.Equal(43, list[1]);
+            Assert.Equal(44, list[2]);
+            Assert.Equal(45, list[3]);
+        }
+
+        [Fact]
         public void AlreadyInitializedListBinding()
         {
             var input = new Dictionary<string, string>
@@ -171,6 +196,27 @@ namespace Microsoft.Framework.OptionsModel.Test
         }
 
         [Fact]
+        public void IntDictionaryBinding()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"IntDictionary:abc", "42"},
+                {"IntDictionary:def", "43"},
+                {"IntDictionary:ghi", "44"}
+            };
+
+            var config = new Configuration(new MemoryConfigurationSource(input));
+
+            var options = ConfigurationBinder.Bind<OptionsWithDictionary>(config);
+
+            Assert.Equal(3, options.IntDictionary.Count);
+
+            Assert.Equal(42, options.IntDictionary["abc"]);
+            Assert.Equal(43, options.IntDictionary["def"]);
+            Assert.Equal(44, options.IntDictionary["ghi"]);
+        }
+
+        [Fact]
         public void ObjectDictionary()
         {
             var input = new Dictionary<string, string>
@@ -293,6 +339,8 @@ namespace Microsoft.Framework.OptionsModel.Test
 
             public List<string> StringList { get; set; }
 
+            public List<int> IntList { get; set; }
+
             // This cannot be initialized because we cannot
             // activate an interface
             public IList<string> StringListInterface { get; set; }
@@ -306,6 +354,8 @@ namespace Microsoft.Framework.OptionsModel.Test
 
         private class OptionsWithDictionary
         {
+            public Dictionary<string, int> IntDictionary { get; set; }
+
             public Dictionary<string, string> StringDictionary { get; set; }
 
             public Dictionary<string, NestedOptions> ObjectDictionary { get; set; }
