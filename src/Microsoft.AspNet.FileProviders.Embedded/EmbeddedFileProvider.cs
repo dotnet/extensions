@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Microsoft.Framework.Expiration.Interfaces;
+using Microsoft.Framework.Caching;
 
 namespace Microsoft.AspNet.FileProviders
 {

@@ -6,7 +6,7 @@ using System.IO;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.Framework.Expiration.Interfaces;
+using Microsoft.Framework.Caching;
 
 namespace Microsoft.AspNet.FileProviders
 {

@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Framework.Expiration.Interfaces;
+using Microsoft.Framework.Caching;
 using Xunit;
 
 namespace Microsoft.AspNet.FileProviders
