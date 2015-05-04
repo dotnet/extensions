@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading;
-using Microsoft.Framework.Expiration.Interfaces;
 
 namespace Microsoft.Framework.Caching.Memory
 {

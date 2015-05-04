@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Framework.Expiration.Interfaces
+namespace Microsoft.Framework.Caching
 {
     public interface IExpirationTrigger
     {
