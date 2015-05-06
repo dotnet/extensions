@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Framework.ConfigurationModel.Internal;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
@@ -55,18 +56,14 @@ namespace Microsoft.Framework.ConfigurationModel
             get;
         }
 
-        public string Get(string key)
+        public string Get([NotNull] string key)
         {
-            if (key == null) throw new ArgumentNullException("key");
-
             string value;
             return TryGet(key, out value) ? value : null;
         }
 
-        public bool TryGet(string key, out string value)
+        public bool TryGet([NotNull] string key, out string value)
         {
-            if (key == null) throw new ArgumentNullException("key");
-
             // If a key in the newly added configuration source is identical to a key in a 
             // formerly added configuration source, the new one overrides the former one.
             // So we search in reverse order, starting with latest configuration source.
@@ -82,11 +79,8 @@ namespace Microsoft.Framework.ConfigurationModel
         }
 
 
-        public void Set(string key, string value)
+        public void Set([NotNull] string key, [NotNull] string value)
         {
-            if (key == null) throw new ArgumentNullException("key");
-            if (value == null) throw new ArgumentNullException("value");
-
             foreach (var src in _sources)
             {
                 src.Set(key, value);
@@ -111,10 +105,8 @@ namespace Microsoft.Framework.ConfigurationModel
             return GetSubKeysImplementation(string.Empty);
         }
 
-        public IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys(string key)
+        public IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys([NotNull] string key)
         {
-            if (key == null) throw new ArgumentNullException("key");
-
             return GetSubKeysImplementation(key + Constants.KeyDelimiter);
         }
 
