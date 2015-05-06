@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection.Tests
 {
@@ -22,13 +23,8 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             return null;
         }
 
-        private static IEnumerable Cast(IEnumerable collection, Type castItemsTo)
+        private static IEnumerable Cast([NotNull] IEnumerable collection, Type castItemsTo)
         {
-            if (collection == null)
-            {
-                throw new ArgumentNullException("collection");
-            }
-
             IList castedCollection = CreateEmptyList(castItemsTo);
 
             foreach (object item in collection)
