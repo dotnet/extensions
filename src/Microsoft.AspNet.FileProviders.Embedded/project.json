@@ -2,7 +2,7 @@
     "version": "1.0.0-*",
     "description": "Implementation of ASP.NET 5 file provider abstractions for embedded resources.",
     "dependencies": {
-        "Microsoft.AspNet.FileProviders.Common": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.AspNet.FileProviders.Sources": { "version": "1.0.0-*", "type": "build" },
         "Microsoft.AspNet.FileProviders.Abstractions": "1.0.0-*"
     },
     "frameworks": {
