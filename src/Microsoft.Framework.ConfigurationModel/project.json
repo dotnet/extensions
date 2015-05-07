@@ -3,7 +3,7 @@
     "description": "Implementation of key-value pair based configuration. Includes configuration sources for INI, command line, and environment variables.",
     "dependencies": {
         "Microsoft.Framework.ConfigurationModel.Abstractions": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" }
+        "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" }
     },
   "frameworks": {
     "net45": {},
