@@ -3,7 +3,7 @@
     "description": "Dependency injection abstraction and fallback implementation.",
     "dependencies": {
         "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type": "build" }
+        "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
         "net45": { },
