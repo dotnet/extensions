@@ -3,12 +3,12 @@
         "warningsAsErrors": "true"
     },
     "dependencies": {
-        "Microsoft.Framework.BufferEntryCollection.Internal": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.CopyOnWriteDictionary.Internal": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.NotNullAttribute.Internal": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.PropertyHelper.Internal": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.PropertyActivator.Internal": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.TypeNameHelper.Internal": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Framework.BufferEntryCollection.Sources": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Framework.CopyOnWriteDictionary.Sources": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Framework.PropertyHelper.Sources": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Framework.PropertyActivator.Sources": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Framework.TypeNameHelper.Sources": { "type": "build", "version": "1.0.0-*" },
         "xunit.runner.aspnet": "2.0.0-aspnet-*",
         "Microsoft.AspNet.Testing": "1.0.0-*"
     },
