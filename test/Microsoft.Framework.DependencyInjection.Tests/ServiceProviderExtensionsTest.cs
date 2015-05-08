@@ -24,6 +24,21 @@ namespace Microsoft.Framework.DependencyInjection
             Assert.Contains(services, item => item is Foo2);
             Assert.Equal(2, services.Count());
         }
+        
+        [Fact]
+        public void NonGeneric_GetRequiredServices_ReturnsAllServices()
+        {
+            // Arrange
+            var serviceProvider = CreateFooServiceProvider(2);
+
+            // Act
+            var services = serviceProvider.GetRequiredServices(typeof(IFoo));
+
+            // Assert
+            Assert.Contains(services, item => item is Foo1);
+            Assert.Contains(services, item => item is Foo2);
+            Assert.Equal(2, services.Count());
+        }
 
         [Fact]
         public void GetServicesReturns_A_Service()
