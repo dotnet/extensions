@@ -13,6 +13,8 @@ namespace ProfilingSample
             MemoryCache cache = new MemoryCache(new MemoryCacheOptions());
             string key = "MyKey";
 
+            var options = new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMilliseconds(50));
+
             var tasks = new List<Task>();
             for (int threads = 0; threads < 100; threads++)
             {
@@ -20,15 +22,16 @@ namespace ProfilingSample
                 {
                     for (int i = 0; i < 110000; i++)
                     {
-                        cache.GetOrSet(key, context =>
+                        object value;
+                        if(!cache.TryGetValue(key, out value))
                         {
-                            context.SetAbsoluteExpiration(TimeSpan.FromMilliseconds(50));
                             // Fake expensive object creation.
                             for (int j = 0; j < 1000000; j++)
                             {
                             }
-                            return new object();
-                        });
+
+                            cache.Set(key, new object(), options);
+                        }
                     }
                 });
                 tasks.Add(task);

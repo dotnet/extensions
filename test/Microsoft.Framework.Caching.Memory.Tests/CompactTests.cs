@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Caching.Memory.Infrastructure;
 using Xunit;
 
 namespace Microsoft.Framework.Caching.Memory
@@ -13,7 +12,7 @@ namespace Microsoft.Framework.Caching.Memory
         {
             return new MemoryCache(new MemoryCacheOptions()
             {
-                ListenForMemoryPressure = false,
+                CompactOnMemoryPressure = false,
             });
         }
 
@@ -39,16 +38,8 @@ namespace Microsoft.Framework.Caching.Memory
         public void Compact100PercentClearsAllButNeverRemoveItems()
         {
             var cache = CreateCache();
-            cache.Set("key1", context =>
-            {
-                context.SetPriority(CachePreservationPriority.NeverRemove);
-                return "Value1";
-            });
-            cache.Set("key2", context =>
-            {
-                context.SetPriority(CachePreservationPriority.NeverRemove);
-                return "Value2";
-            });
+            cache.Set("key1", "Value1", new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove));
+            cache.Set("key2", "Value2", new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove));
             cache.Set("key3", "value3");
             cache.Set("key4", "value4");
             Assert.Equal(4, cache.Count);
@@ -62,16 +53,8 @@ namespace Microsoft.Framework.Caching.Memory
         public void CompactPrioritizesLowPriortyItems()
         {
             var cache = CreateCache();
-            cache.Set("key1", context =>
-            {
-                context.SetPriority(CachePreservationPriority.Low);
-                return "Value1";
-            });
-            cache.Set("key2", context =>
-            {
-                context.SetPriority(CachePreservationPriority.Low);
-                return "Value2";
-            });
+            cache.Set("key1", "Value1", new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.Low));
+            cache.Set("key2", "Value2", new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.Low));
             cache.Set("key3", "value3");
             cache.Set("key4", "value4");
             Assert.Equal(4, cache.Count);

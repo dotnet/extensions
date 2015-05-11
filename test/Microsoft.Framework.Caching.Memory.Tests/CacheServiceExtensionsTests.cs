@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
@@ -70,6 +71,11 @@ namespace Microsoft.Framework.Caching.Distributed
 
         private class TestMemoryCache : IMemoryCache
         {
+            public IEntryLink CreateLinkingScope()
+            {
+                throw new NotImplementedException();
+            }
+
             public void Dispose()
             {
                 throw new NotImplementedException();
@@ -80,12 +86,12 @@ namespace Microsoft.Framework.Caching.Distributed
                 throw new NotImplementedException();
             }
 
-            public object Set(string key, IEntryLink link, object state, Func<ICacheSetContext, object> create)
+            public object Set(string key, object value, MemoryCacheEntryOptions cacheEntryOptions)
             {
                 throw new NotImplementedException();
             }
 
-            public bool TryGetValue(string key, IEntryLink link, out object value)
+            public bool TryGetValue(string key, out object value)
             {
                 throw new NotImplementedException();
             }
@@ -98,7 +104,27 @@ namespace Microsoft.Framework.Caching.Distributed
                 throw new NotImplementedException();
             }
 
+            public Task ConnectAsync()
+            {
+                throw new NotImplementedException();
+            }
+
+            public byte[] Get(string key)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<byte[]> GetAsync(string key)
+            {
+                throw new NotImplementedException();
+            }
+
             public void Refresh(string key)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task RefreshAsync(string key)
             {
                 throw new NotImplementedException();
             }
@@ -108,12 +134,27 @@ namespace Microsoft.Framework.Caching.Distributed
                 throw new NotImplementedException();
             }
 
-            public Stream Set(string key, object state, Action<ICacheContext> create)
+            public Task RemoveAsync(string key)
             {
                 throw new NotImplementedException();
             }
 
-            public bool TryGetValue(string key, out Stream value)
+            public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool TryGetValue(string key, out byte[] value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<bool> TryGetValueAsync(string key, out byte[] value)
             {
                 throw new NotImplementedException();
             }

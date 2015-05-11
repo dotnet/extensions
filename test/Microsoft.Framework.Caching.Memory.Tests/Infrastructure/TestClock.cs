@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Framework.Caching.Memory.Infrastructure
+namespace Microsoft.Framework.Internal
 {
     public class TestClock : ISystemClock
     {

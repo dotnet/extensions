@@ -6,11 +6,14 @@ using System.Globalization;
 using System.Threading;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.Caching.Distributed;
+using Microsoft.Framework.Caching.Memory;
 using Xunit;
 
 namespace Microsoft.Framework.Caching.Redis
 {
     // TODO: Disabled due to CI failure
+    // These tests require Redis server to be started on the machine. Make sure to change the value of
+    // "RedisTestConfig.RedisPort" accordingly.
     // public
     class TimeExpirationTests
     {
@@ -22,14 +25,14 @@ namespace Microsoft.Framework.Caching.Redis
             var value = new byte[1];
 
             var expected = DateTimeOffset.Now - TimeSpan.FromMinutes(1);
-            ExceptionAssert.ThrowsArgumentOutOfRange(() =>
-            {
-                var result = cache.Set(key, context =>
+            ExceptionAssert.ThrowsArgumentOutOfRange(
+                () =>
                 {
-                    context.SetAbsoluteExpiration(expected);
-                    context.Data.Write(value, 0, value.Length);
-                });
-            }, "absolute", "The absolute expiration value must be in the future.", expected.ToString(CultureInfo.CurrentCulture));
+                    cache.Set(key, value, new DistributedCacheEntryOptions().SetAbsoluteExpiration(expected));
+                },
+                nameof(DistributedCacheEntryOptions.AbsoluteExpiration),
+                "The absolute expiration value must be in the future.",
+                expected.ToString(CultureInfo.CurrentCulture));
         }
 
         [Fact]
@@ -39,24 +42,17 @@ namespace Microsoft.Framework.Caching.Redis
             var key = "myKey";
             var value = new byte[1];
 
-            var result = cache.Set(key, context =>
-            {
-                context.SetAbsoluteExpiration(DateTimeOffset.UtcNow + TimeSpan.FromSeconds(1));
-                context.Data.Write(value, 0, value.Length);
-            });
-            Assert.Equal(value, result.ReadAllBytes());
+            cache.Set(key, value, new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(1)));
 
-            var found = cache.TryGetValue(key, out result);
-            Assert.True(found);
-            Assert.Equal(value, result.ReadAllBytes());
+            byte[] result = cache.Get(key);
+            Assert.Equal(value, result);
 
-            for (int i = 0; i < 4 && found; i++)
+            for (int i = 0; i < 4 && (result != null); i++)
             {
                 Thread.Sleep(TimeSpan.FromSeconds(0.5));
-                found = cache.TryGetValue(key, out result);
+                result = cache.Get(key);
             }
 
-            Assert.False(found);
             Assert.Null(result);
         }
 
@@ -67,15 +63,9 @@ namespace Microsoft.Framework.Caching.Redis
             var key = "myKey";
             var value = new byte[1];
 
-            var result = cache.Set(key, context =>
-            {
-                context.SetAbsoluteExpiration(DateTimeOffset.UtcNow + TimeSpan.FromSeconds(0.25));
-                context.Data.Write(value, 0, value.Length);
-            });
-            Assert.Equal(value, result.ReadAllBytes());
+            cache.Set(key, value, new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(0.25)));
 
-            var found = cache.TryGetValue(key, out result);
-            Assert.False(found);
+            var result = cache.Get(key);
             Assert.Null(result);
         }
 
@@ -88,12 +78,11 @@ namespace Microsoft.Framework.Caching.Redis
 
             ExceptionAssert.ThrowsArgumentOutOfRange(() =>
             {
-                var result = cache.Set(key, context =>
-                {
-                    context.SetAbsoluteExpiration(TimeSpan.FromMinutes(-1));
-                    context.Data.Write(value, 0, value.Length);
-                });
-            }, "relative", "The relative expiration value must be positive.", TimeSpan.FromMinutes(-1));
+                cache.Set(key, value, new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(-1)));
+            },
+            nameof(DistributedCacheEntryOptions.AbsoluteExpirationRelativeToNow),
+            "The relative expiration value must be positive.",
+            TimeSpan.FromMinutes(-1));
         }
 
         [Fact]
@@ -103,14 +92,14 @@ namespace Microsoft.Framework.Caching.Redis
             var key = "myKey";
             var value = new byte[1];
 
-            ExceptionAssert.ThrowsArgumentOutOfRange(() =>
-            {
-                var result = cache.Set(key, context =>
+            ExceptionAssert.ThrowsArgumentOutOfRange(
+                () =>
                 {
-                    context.SetAbsoluteExpiration(TimeSpan.Zero);
-                    context.Data.Write(value, 0, value.Length);
-                });
-            }, "relative", "The relative expiration value must be positive.", TimeSpan.Zero);
+                    cache.Set(key, value, new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.Zero));
+                },
+                nameof(DistributedCacheEntryOptions.AbsoluteExpirationRelativeToNow),
+                "The relative expiration value must be positive.",
+                TimeSpan.Zero);
         }
 
         [Fact]
@@ -120,23 +109,17 @@ namespace Microsoft.Framework.Caching.Redis
             var key = "myKey";
             var value = new byte[1];
 
-            var result = cache.Set(key, context =>
-            {
-                context.SetAbsoluteExpiration(TimeSpan.FromSeconds(1));
-                context.Data.Write(value, 0, value.Length);
-            });
-            Assert.Equal(value, result.ReadAllBytes());
+            cache.Set(key, value, new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(1)));
 
-            var found = cache.TryGetValue(key, out result);
-            Assert.True(found);
-            Assert.Equal(value, result.ReadAllBytes());
-          
-            for (int i = 0; i < 4 && found; i++)
+            var result = cache.Get(key);
+            Assert.Equal(value, result);
+
+            for (int i = 0; i < 4 && (result != null); i++)
             {
                 Thread.Sleep(TimeSpan.FromSeconds(0.5));
-                found = cache.TryGetValue(key, out result);
+                result = cache.Get(key);
             }
-            Assert.False(found);
+            Assert.Null(result);
         }
 
         [Fact]
@@ -146,15 +129,9 @@ namespace Microsoft.Framework.Caching.Redis
             var key = "myKey";
             var value = new byte[1];
 
-            var result = cache.Set(key, context =>
-            {
-                context.SetAbsoluteExpiration(TimeSpan.FromSeconds(0.25));
-                context.Data.Write(value, 0, value.Length);
-            });
-            Assert.Equal(value, result.ReadAllBytes());
+            cache.Set(key, value, new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(0.25)));
 
-            var found = cache.TryGetValue(key, out result);
-            Assert.False(found);
+            var result = cache.Get(key);
             Assert.Null(result);
         }
 
@@ -167,12 +144,8 @@ namespace Microsoft.Framework.Caching.Redis
 
             ExceptionAssert.ThrowsArgumentOutOfRange(() =>
             {
-                var result = cache.Set(key, context =>
-                {
-                    context.SetSlidingExpiration(TimeSpan.FromMinutes(-1));
-                    context.Data.Write(value, 0, value.Length);
-                });
-            }, "offset", "The sliding expiration value must be positive.", TimeSpan.FromMinutes(-1));
+                cache.Set(key, value, new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(-1)));
+            }, nameof(DistributedCacheEntryOptions.SlidingExpiration), "The sliding expiration value must be positive.", TimeSpan.FromMinutes(-1));
         }
 
         [Fact]
@@ -182,14 +155,14 @@ namespace Microsoft.Framework.Caching.Redis
             var key = "myKey";
             var value = new byte[1];
 
-            ExceptionAssert.ThrowsArgumentOutOfRange(() =>
-            {
-                var result = cache.Set(key, context =>
+            ExceptionAssert.ThrowsArgumentOutOfRange(
+                () =>
                 {
-                    context.SetSlidingExpiration(TimeSpan.Zero);
-                    context.Data.Write(value, 0, value.Length);
-                });
-            }, "offset", "The sliding expiration value must be positive.", TimeSpan.Zero);
+                    cache.Set(key, value, new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.Zero));
+                },
+                nameof(DistributedCacheEntryOptions.SlidingExpiration),
+                "The sliding expiration value must be positive.",
+                TimeSpan.Zero);
         }
 
         [Fact]
@@ -199,21 +172,14 @@ namespace Microsoft.Framework.Caching.Redis
             var key = "myKey";
             var value = new byte[1];
 
-            var result = cache.Set(key, context =>
-            {
-                context.SetSlidingExpiration(TimeSpan.FromSeconds(1));
-                context.Data.Write(value, 0, value.Length);
-            });
-            Assert.Equal(value, result.ReadAllBytes());
+            cache.Set(key, value, new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(1)));
 
-            var found = cache.TryGetValue(key, out result);
-            Assert.True(found);
-            Assert.Equal(value, result.ReadAllBytes());
+            var result = cache.Get(key);
+            Assert.Equal(value, result);
 
             Thread.Sleep(TimeSpan.FromSeconds(3));
 
-            found = cache.TryGetValue(key, out result);
-            Assert.False(found);
+            result = cache.Get(key);
             Assert.Null(result);
         }
 
@@ -224,15 +190,9 @@ namespace Microsoft.Framework.Caching.Redis
             var key = "myKey";
             var value = new byte[1];
 
-            var result = cache.Set(key, context =>
-            {
-                context.SetSlidingExpiration(TimeSpan.FromSeconds(0.25));
-                context.Data.Write(value, 0, value.Length);
-            });
-            Assert.Equal(value, result.ReadAllBytes());
+            cache.Set(key, value, new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(0.25)));
 
-            var found = cache.TryGetValue(key, out result);
-            Assert.False(found);
+            var result = cache.Get(key);
             Assert.Null(result);
         }
 
@@ -243,30 +203,21 @@ namespace Microsoft.Framework.Caching.Redis
             var key = "myKey";
             var value = new byte[1];
 
-            var result = cache.Set(key, context =>
-            {
-                context.SetSlidingExpiration(TimeSpan.FromSeconds(1));
-                context.Data.Write(value, 0, value.Length);
-            });
-            Assert.Equal(value, result.ReadAllBytes());
+            cache.Set(key, value, new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(1)));
 
-            var found = cache.TryGetValue(key, out result);
-            Assert.True(found);
-            Assert.Equal(value, result.ReadAllBytes());
-            
+            var result = cache.Get(key);
+            Assert.Equal(value, result);
+
             for (int i = 0; i < 5; i++)
             {
                 Thread.Sleep(TimeSpan.FromSeconds(0.5));
 
-                found = cache.TryGetValue(key, out result);
-                Assert.True(found);
-                Assert.Equal(value, result.ReadAllBytes());
+                result = cache.Get(key);
+                Assert.Equal(value, result);
             }
 
             Thread.Sleep(TimeSpan.FromSeconds(3));
-            found = cache.TryGetValue(key, out result);
-
-            Assert.False(found);
+            result = cache.Get(key);
             Assert.Null(result);
         }
 
@@ -277,31 +228,24 @@ namespace Microsoft.Framework.Caching.Redis
             var key = "myKey";
             var value = new byte[1];
 
-            var result = cache.Set(key, context =>
-            {
-                context.SetSlidingExpiration(TimeSpan.FromSeconds(1));
-                context.SetAbsoluteExpiration(TimeSpan.FromSeconds(3));
-                context.Data.Write(value, 0, value.Length);
-            });
-            Assert.Equal(value, result.ReadAllBytes());
+            cache.Set(key, value, new DistributedCacheEntryOptions()
+                .SetSlidingExpiration(TimeSpan.FromSeconds(1))
+                .SetAbsoluteExpiration(TimeSpan.FromSeconds(3)));
 
-            var found = cache.TryGetValue(key, out result);
-            Assert.True(found);
-            Assert.Equal(value, result.ReadAllBytes());
+            var result = cache.Get(key);
+            Assert.Equal(value, result);
 
             for (int i = 0; i < 5; i++)
             {
                 Thread.Sleep(TimeSpan.FromSeconds(0.5));
 
-                found = cache.TryGetValue(key, out result);
-                Assert.True(found);
-                Assert.Equal(value, result.ReadAllBytes());
+                result = cache.Get(key);
+                Assert.Equal(value, result);
             }
 
             Thread.Sleep(TimeSpan.FromSeconds(1));
 
-            found = cache.TryGetValue(key, out result);
-            Assert.False(found);
+            result = cache.Get(key);
             Assert.Null(result);
         }
     }

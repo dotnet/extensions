@@ -5,7 +5,7 @@ using System;
 using System.Globalization;
 using System.Threading;
 using Microsoft.AspNet.Testing;
-using Microsoft.Framework.Caching.Memory.Infrastructure;
+using Microsoft.Framework.Internal;
 using Xunit;
 
 namespace Microsoft.Framework.Caching.Memory
@@ -17,7 +17,7 @@ namespace Microsoft.Framework.Caching.Memory
             return new MemoryCache(new MemoryCacheOptions()
             {
                 Clock = clock,
-                ListenForMemoryPressure = false,
+                CompactOnMemoryPressure = false,
             });
         }
 
@@ -32,12 +32,12 @@ namespace Microsoft.Framework.Caching.Memory
             var expected = clock.UtcNow - TimeSpan.FromMinutes(1);
             ExceptionAssert.ThrowsArgumentOutOfRange(() =>
             {
-                var result = cache.Set(key, context =>
-                {
-                    context.SetAbsoluteExpiration(expected);
-                    return obj;
-                });
-            }, "absolute", "The absolute expiration value must be in the future.", expected.ToString(CultureInfo.CurrentCulture));
+                var result = cache.Set(key, obj, new MemoryCacheEntryOptions().SetAbsoluteExpiration(expected));
+
+            },
+            nameof(MemoryCacheEntryOptions.AbsoluteExpiration),
+            "The absolute expiration value must be in the future.",
+            expected.ToString(CultureInfo.CurrentCulture));
         }
 
         [Fact]
@@ -46,18 +46,15 @@ namespace Microsoft.Framework.Caching.Memory
             var clock = new TestClock();
             var cache = CreateCache(clock);
             var key = "myKey";
-            var obj = new object();
+            var value = new object();
 
-            var result = cache.Set(key, context =>
-            {
-                context.SetAbsoluteExpiration(clock.UtcNow + TimeSpan.FromMinutes(1));
-                return obj;
-            });
-            Assert.Same(obj, result);
+            var result = cache.Set(key, value, new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(clock.UtcNow + TimeSpan.FromMinutes(1)));
+            Assert.Same(value, result);
 
             var found = cache.TryGetValue(key, out result);
             Assert.True(found);
-            Assert.Same(obj, result);
+            Assert.Same(value, result);
 
             clock.Add(TimeSpan.FromMinutes(2));
 
@@ -72,25 +69,23 @@ namespace Microsoft.Framework.Caching.Memory
             var clock = new TestClock();
             var cache = CreateCache(clock);
             var key = "myKey";
-            var obj = new object();
+            var value = new object();
             var callbackInvoked = new ManualResetEvent(false);
 
-            var result = cache.Set(key, context =>
-            {
-                context.SetAbsoluteExpiration(clock.UtcNow + TimeSpan.FromMinutes(1));
-                context.RegisterPostEvictionCallback((subkey, value, reason, state) =>
+            var options = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(clock.UtcNow + TimeSpan.FromMinutes(1))
+                .RegisterPostEvictionCallback((subkey, subValue, reason, state) =>
                 {
                     // TODO: Verify params
                     var localCallbackInvoked = (ManualResetEvent)state;
                     localCallbackInvoked.Set();
-                }, state: callbackInvoked);
-                return obj;
-            });
-            Assert.Same(obj, result);
+                }, callbackInvoked);
+            var result = cache.Set(key, value, options);
+            Assert.Same(value, result);
 
             var found = cache.TryGetValue(key, out result);
             Assert.True(found);
-            Assert.Same(obj, result);
+            Assert.Same(value, result);
 
             clock.Add(TimeSpan.FromMinutes(2));
             var ignored = cache.Get("otherKey"); // Background expiration checks are triggered by misc cache activity.
@@ -108,16 +103,16 @@ namespace Microsoft.Framework.Caching.Memory
             var clock = new TestClock();
             var cache = CreateCache(clock);
             var key = "myKey";
-            var obj = new object();
+            var value = new object();
 
             ExceptionAssert.ThrowsArgumentOutOfRange(() =>
             {
-                var result = cache.Set(key, context =>
-                {
-                    context.SetAbsoluteExpiration(TimeSpan.FromMinutes(-1));
-                    return obj;
-                });
-            }, "relative", "The relative expiration value must be positive.", TimeSpan.FromMinutes(-1));
+                var result = cache.Set(key, value, new MemoryCacheEntryOptions()
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(-1)));
+            },
+            nameof(MemoryCacheEntryOptions.AbsoluteExpirationRelativeToNow),
+            "The relative expiration value must be positive.",
+            TimeSpan.FromMinutes(-1));
         }
 
         [Fact]
@@ -126,16 +121,15 @@ namespace Microsoft.Framework.Caching.Memory
             var clock = new TestClock();
             var cache = CreateCache(clock);
             var key = "myKey";
-            var obj = new object();
+            var value = new object();
 
             ExceptionAssert.ThrowsArgumentOutOfRange(() =>
             {
-                var result = cache.Set(key, context =>
-                {
-                    context.SetAbsoluteExpiration(TimeSpan.Zero);
-                    return obj;
-                });
-            }, "relative", "The relative expiration value must be positive.", TimeSpan.Zero);
+                var result = cache.Set(key, value, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.Zero));
+            },
+            nameof(MemoryCacheEntryOptions.AbsoluteExpirationRelativeToNow),
+            "The relative expiration value must be positive.",
+            TimeSpan.Zero);
         }
 
         [Fact]
@@ -144,18 +138,14 @@ namespace Microsoft.Framework.Caching.Memory
             var clock = new TestClock();
             var cache = CreateCache(clock);
             var key = "myKey";
-            var obj = new object();
+            var value = new object();
 
-            var result = cache.Set(key, context =>
-            {
-                context.SetAbsoluteExpiration(TimeSpan.FromMinutes(1));
-                return obj;
-            });
-            Assert.Same(obj, result);
+            var result = cache.Set(key, value, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(1)));
+            Assert.Same(value, result);
 
             var found = cache.TryGetValue(key, out result);
             Assert.True(found);
-            Assert.Same(obj, result);
+            Assert.Same(value, result);
 
             clock.Add(TimeSpan.FromMinutes(2));
 
@@ -170,16 +160,16 @@ namespace Microsoft.Framework.Caching.Memory
             var clock = new TestClock();
             var cache = CreateCache(clock);
             var key = "myKey";
-            var obj = new object();
+            var value = new object();
 
             ExceptionAssert.ThrowsArgumentOutOfRange(() =>
             {
-                var result = cache.Set(key, context =>
-                {
-                    context.SetSlidingExpiration(TimeSpan.FromMinutes(-1));
-                    return obj;
-                });
-            }, "offset", "The sliding expiration value must be positive.", TimeSpan.FromMinutes(-1));
+                var result = cache.Set(key, value, new MemoryCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(-1)));
+            },
+            nameof(MemoryCacheEntryOptions.SlidingExpiration),
+            "The sliding expiration value must be positive.",
+            TimeSpan.FromMinutes(-1));
         }
 
         [Fact]
@@ -188,16 +178,16 @@ namespace Microsoft.Framework.Caching.Memory
             var clock = new TestClock();
             var cache = CreateCache(clock);
             var key = "myKey";
-            var obj = new object();
+            var value = new object();
 
             ExceptionAssert.ThrowsArgumentOutOfRange(() =>
             {
-                var result = cache.Set(key, context =>
-                {
-                    context.SetSlidingExpiration(TimeSpan.Zero);
-                    return obj;
-                });
-            }, "offset", "The sliding expiration value must be positive.", TimeSpan.Zero);
+                var result = cache.Set(key, value, new MemoryCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.Zero));
+            },
+            nameof(MemoryCacheEntryOptions.SlidingExpiration),
+            "The sliding expiration value must be positive.",
+            TimeSpan.Zero);
         }
 
         [Fact]
@@ -206,18 +196,14 @@ namespace Microsoft.Framework.Caching.Memory
             var clock = new TestClock();
             var cache = CreateCache(clock);
             var key = "myKey";
-            var obj = new object();
+            var value = new object();
 
-            var result = cache.Set(key, context =>
-            {
-                context.SetSlidingExpiration(TimeSpan.FromMinutes(1));
-                return obj;
-            });
-            Assert.Same(obj, result);
+            var result = cache.Set(key, value, new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(1)));
+            Assert.Same(value, result);
 
             var found = cache.TryGetValue(key, out result);
             Assert.True(found);
-            Assert.Same(obj, result);
+            Assert.Same(value, result);
 
             clock.Add(TimeSpan.FromMinutes(2));
 
@@ -232,18 +218,15 @@ namespace Microsoft.Framework.Caching.Memory
             var clock = new TestClock();
             var cache = CreateCache(clock);
             var key = "myKey";
-            var obj = new object();
+            var value = new object();
 
-            var result = cache.Set(key, context =>
-            {
-                context.SetSlidingExpiration(TimeSpan.FromMinutes(1));
-                return obj;
-            });
-            Assert.Same(obj, result);
+            var result = cache.Set(key, value, new MemoryCacheEntryOptions()
+                .SetSlidingExpiration(TimeSpan.FromMinutes(1)));
+            Assert.Same(value, result);
 
             var found = cache.TryGetValue(key, out result);
             Assert.True(found);
-            Assert.Same(obj, result);
+            Assert.Same(value, result);
 
             for (int i = 0; i < 10; i++)
             {
@@ -251,7 +234,7 @@ namespace Microsoft.Framework.Caching.Memory
 
                 found = cache.TryGetValue(key, out result);
                 Assert.True(found);
-                Assert.Same(obj, result);
+                Assert.Same(value, result);
             }
         }
 
@@ -261,19 +244,16 @@ namespace Microsoft.Framework.Caching.Memory
             var clock = new TestClock();
             var cache = CreateCache(clock);
             var key = "myKey";
-            var obj = new object();
+            var value = new object();
 
-            var result = cache.Set(key, context =>
-            {
-                context.SetSlidingExpiration(TimeSpan.FromMinutes(1));
-                context.SetAbsoluteExpiration(TimeSpan.FromMinutes(2));
-                return obj;
-            });
-            Assert.Same(obj, result);
+            var result = cache.Set(key, value, new MemoryCacheEntryOptions()
+                .SetSlidingExpiration(TimeSpan.FromMinutes(1))
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(2)));
+            Assert.Same(value, result);
 
             var found = cache.TryGetValue(key, out result);
             Assert.True(found);
-            Assert.Same(obj, result);
+            Assert.Same(value, result);
 
             for (int i = 0; i < 7; i++)
             {
@@ -281,7 +261,7 @@ namespace Microsoft.Framework.Caching.Memory
 
                 found = cache.TryGetValue(key, out result);
                 Assert.True(found);
-                Assert.Same(obj, result);
+                Assert.Same(value, result);
             }
 
             clock.Add(TimeSpan.FromSeconds(15));

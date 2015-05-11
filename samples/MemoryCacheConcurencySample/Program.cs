@@ -1,5 +1,7 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.Caching.Memory;
 
@@ -9,9 +11,12 @@ namespace MemoryCacheSample
     {
         private const string Key = "MyKey";
         private static readonly Random Random = new Random();
+        private MemoryCacheEntryOptions _cacheEntryOptions;
 
         public void Main()
         {
+            _cacheEntryOptions = GetCacheEntryOptions();
+
             IMemoryCache cache = new MemoryCache(new MemoryCacheOptions());
 
             SetKey(cache, "0");
@@ -29,16 +34,15 @@ namespace MemoryCacheSample
         private void SetKey(IMemoryCache cache, string value)
         {
             Console.WriteLine("Setting: " + value);
-            cache.Set(Key, value, ConfigureEntry);
+            cache.Set(Key, value, _cacheEntryOptions);
         }
 
-        private object ConfigureEntry(ICacheSetContext context)
+        private MemoryCacheEntryOptions GetCacheEntryOptions()
         {
-            var value = (string)context.State;
-            context.SetAbsoluteExpiration(TimeSpan.FromSeconds(7));
-            context.SetSlidingExpiration(TimeSpan.FromSeconds(3));
-            context.RegisterPostEvictionCallback(AfterEvicted, null);
-            return value;
+            return new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromSeconds(7))
+                .SetSlidingExpiration(TimeSpan.FromSeconds(3))
+                .RegisterPostEvictionCallback(AfterEvicted, state: null);
         }
 
         private void AfterEvicted(string key, object value, EvictionReason reason, object state)
@@ -75,7 +79,11 @@ namespace MemoryCacheSample
                     else
                     {
                         Console.Write("Reading...");
-                        var result = cache.GetOrSet(Key, "B", ConfigureEntry);
+                        object result;
+                        if(!cache.TryGetValue(Key, out result))
+                        {
+                            result = cache.Set(Key, "B", _cacheEntryOptions);
+                        }
                         Console.WriteLine("Read: " + (result ?? "(null)"));
                     }
                 }

@@ -1,5 +1,9 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Threading;
+using Microsoft.Framework.Caching;
 using Microsoft.Framework.Caching.Memory;
 
 namespace MemoryCacheSample
@@ -18,8 +22,7 @@ namespace MemoryCacheSample
 
             // Create / Overwrite
             result = cache.Set(key, newObject);
-            result = cache.Set(key, context => new object());
-            result = cache.Set(key, state, context => new object());
+            result = cache.Set(key, new object());
 
             // Retrieve, null if not found
             result = cache.Get(key);
@@ -30,89 +33,83 @@ namespace MemoryCacheSample
             // Delete
             cache.Remove(key);
 
-            // Conditional operations:
-
-            // Retrieve / Create when we want to lazily create the object.
-            result = cache.GetOrSet(key, context => new object());
-
-            // Retrieve / Create when we want to lazily create the object.
-            result = cache.GetOrSet(key, state, context => new object());
-
             // Cache entry configuration:
 
             // Stays in the cache as long as possible
-            result = cache.GetOrSet(key, state, context =>
-            {
-                context.SetPriority(CachePreservationPriority.NeverRemove);
-                return new object();
-            });
+            result = cache.Set(
+                key,
+                new object(),
+                new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove));
 
             // Automatically remove if not accessed in the given time
-            result = cache.GetOrSet(key, state, context =>
-            {
-                context.SetSlidingExpiration(TimeSpan.FromMinutes(5));
-                return new object();
-            });
+            result = cache.Set(
+                key,
+                new object(),
+                new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(5)));
 
             // Automatically remove at a certain time
-            result = cache.GetOrSet(key, state, context =>
-            {
-                context.SetAbsoluteExpiration(new DateTime(2014, 12, 31));
-                // or relative:
-                // context.SetAbsoluteExpiration(TimeSpan.FromMinutes(5));
-                return new object();
-            });
+            result = cache.Set(
+                key,
+                new object(),
+                new MemoryCacheEntryOptions().SetAbsoluteExpiration(DateTimeOffset.UtcNow.AddDays(2)));
+
+            // Automatically remove at a certain time, which is relative to UTC now
+            result = cache.Set(
+                key,
+                new object(),
+                new MemoryCacheEntryOptions().SetAbsoluteExpiration(relative: TimeSpan.FromMinutes(10)));
 
             // Automatically remove if not accessed in the given time
             // Automatically remove at a certain time (if it lives that long)
-            result = cache.GetOrSet(key, state, context =>
-            {
-                context.SetSlidingExpiration(TimeSpan.FromMinutes(5));
-
-                context.SetAbsoluteExpiration(new DateTime(2014, 12, 31));
-                // or relative:
-                // context.SetAbsoluteExpiration(TimeSpan.FromMinutes(5));
-                return new object();
-            });
+            result = cache.Set(
+                key,
+                new object(),
+                new MemoryCacheEntryOptions()
+                .SetSlidingExpiration(TimeSpan.FromMinutes(5))
+                .SetAbsoluteExpiration(DateTimeOffset.UtcNow.AddDays(2)));
 
             // Callback when evicted
-            result = cache.GetOrSet(key, state, context =>
-            {
-                context.RegisterPostEvictionCallback((echoKey, value, reason, substate) =>
-                    Console.WriteLine(echoKey + ": '" + value + "' was evicted due to " + reason), state: null);
-                return new object();
-            });
+            var options = new MemoryCacheEntryOptions()
+                .RegisterPostEvictionCallback(
+                (echoKey, value, reason, substate) =>
+                {
+                    Console.WriteLine(echoKey + ": '" + value + "' was evicted due to " + reason);
+                });
+            result = cache.Set(key, new object(), options);
 
             // Remove on trigger
             var cts = new CancellationTokenSource();
-            result = cache.GetOrSet(key, state, context =>
-            {
-                context.AddExpirationTrigger(new CancellationTokenTrigger(cts.Token));
-                return new object();
-            });
-
-            result = cache.GetOrSet<object>(key, context =>
-            {
-                var link = new EntryLink();
-
-                var inner1 = cache.GetOrSet("subkey1", link, subContext =>
+            options = new MemoryCacheEntryOptions()
+                .AddExpirationTrigger(new CancellationTokenTrigger(cts.Token))
+                .RegisterPostEvictionCallback(
+                (echoKey, value, reason, substate) =>
                 {
-                    return "SubValue1";
+                    Console.WriteLine(echoKey + ": '" + value + "' was evicted due to " + reason);
                 });
+            result = cache.Set(key, new object(), options);
 
-                string inner2;
-                using (link.FlowContext())
-                {
-                    inner2 = cache.GetOrSet("subkey2", subContext =>
+            // Fire the trigger to see the registered callback being invoked
+            cts.Cancel();
+
+            // Expire an entry if the dependent entry expires
+            using (var link = cache.CreateLinkingScope())
+            {
+                cts = new CancellationTokenSource();
+                cache.Set("key1", "value1", new MemoryCacheEntryOptions()
+                    .AddExpirationTrigger(new CancellationTokenTrigger(cts.Token)));
+
+                // expire this entry if the entry with key "key1" expires.
+                cache.Set("key2", "value2", new MemoryCacheEntryOptions()
+                    .AddEntryLink(link)
+                    .RegisterPostEvictionCallback(
+                    (echoKey, value, reason, substate) =>
                     {
-                        return "SubValue2";
-                    });
-                }
+                        Console.WriteLine(echoKey + ": '" + value + "' was evicted due to " + reason);
+                    }));
+            }
 
-                context.AddEntryLink(link);
-
-                return inner1 + inner2;
-            });
+            // Fire the trigger to see the registered callback being invoked
+            cts.Cancel();
         }
     }
 }

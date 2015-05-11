@@ -2,8 +2,9 @@
     "version": "1.0.0-*",
     "description": "ASP.NET 5 distributed cache implementation on Redis.",
     "dependencies": {
-        "Microsoft.Framework.Caching.Distributed": "1.0.0-*",
+        "Microsoft.Framework.Caching.Abstractions": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Framework.OptionsModel": "1.0.0-*",
         "StackExchange.Redis": "1.0.333"
     },
   "frameworks": {

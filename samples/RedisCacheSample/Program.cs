@@ -1,5 +1,10 @@
-﻿using System;
-using System.IO;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.Caching.Redis;
 
 namespace RedisCacheSample
@@ -12,12 +17,11 @@ namespace RedisCacheSample
         /// run "redis-server" from command prompt.
         /// </summary>
         /// <param name="args"></param>
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            string key = "myKey";
-            object state = null;
-            byte[] value = new byte[10];
-            Stream valueStream;
+            var key = "myKey";
+            var message = "Hello, World!";
+            var value = Encoding.UTF8.GetBytes(message);
 
             Console.WriteLine("Connecting to cache");
             var cache = new RedisCache(new RedisCacheOptions
@@ -27,35 +31,34 @@ namespace RedisCacheSample
             });
             Console.WriteLine("Connected");
 
-            Console.WriteLine("Setting");
-            valueStream = cache.Set(key, state, context =>
-            {
-                context.Data.Write(value, 0, value.Length);
-            });
+            Console.WriteLine($"Setting value '{message}' in cache");
+            await cache.SetAsync(key, value, new DistributedCacheEntryOptions());
             Console.WriteLine("Set");
 
-            Console.WriteLine("Getting");
-            if (cache.TryGetValue(key, out valueStream))
+            Console.WriteLine("Getting value from cache");
+            value = await cache.GetAsync(key);
+            if (value != null)
             {
-                Console.WriteLine("Retrieved: " + valueStream);
+                Console.WriteLine("Retrieved: " + Encoding.UTF8.GetString(value));
             }
             else
             {
                 Console.WriteLine("Not Found");
             }
 
-            Console.WriteLine("Refreshing");
-            cache.Refresh(key);
+            Console.WriteLine("Refreshing value in cache");
+            await cache.RefreshAsync(key);
             Console.WriteLine("Refreshed");
 
-            Console.WriteLine("Removing");
-            cache.Remove(key);
+            Console.WriteLine("Removing value from cache");
+            await cache.RemoveAsync(key);
             Console.WriteLine("Removed");
 
-            Console.WriteLine("Getting");
-            if (cache.TryGetValue(key, out valueStream))
+            Console.WriteLine("Getting value from cache again");
+            value = await cache.GetAsync(key);
+            if (value != null)
             {
-                Console.WriteLine("Retrieved: " + valueStream);
+                Console.WriteLine("Retrieved: " + Encoding.UTF8.GetString(value));
             }
             else
             {

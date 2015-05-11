@@ -8,6 +8,20 @@ namespace Microsoft.Framework.Caching.Memory
 {
     public class EntryLink : IEntryLink
     {
+        private bool _disposed;
+
+        public EntryLink()
+            : this(parent: null)
+        {
+        }
+
+        public EntryLink(EntryLink parent)
+        {
+            Parent = parent;
+        }
+
+        public EntryLink Parent { get; }
+
         private readonly List<IExpirationTrigger> _triggers = new List<IExpirationTrigger>();
 
         public DateTimeOffset? AbsoluteExpiration { get; private set; }
@@ -28,6 +42,15 @@ namespace Microsoft.Framework.Caching.Memory
             else if (absoluteExpiration < AbsoluteExpiration.Value)
             {
                 AbsoluteExpiration = absoluteExpiration;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+                EntryLinkHelpers.DisposeLinkingScope();
             }
         }
     }

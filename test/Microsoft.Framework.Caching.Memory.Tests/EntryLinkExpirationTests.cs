@@ -3,10 +3,11 @@
 
 using System;
 using System.Linq;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.Caching.Memory.Infrastructure;
 using Xunit;
 
-namespace Microsoft.Framework.Caching.Memory.Tests
+namespace Microsoft.Framework.Caching.Memory
 {
     public class EntryLinkExpirationTests
     {
@@ -20,88 +21,67 @@ namespace Microsoft.Framework.Caching.Memory.Tests
             return new MemoryCache(new MemoryCacheOptions()
             {
                 Clock = clock,
-                ListenForMemoryPressure = false,
+                CompactOnMemoryPressure = false,
             });
         }
 
         [Fact]
-        public void GetWithLinkPopulatesTriggers()
+        public void SetPopulates_Triggers_IntoScopedLink()
         {
             var cache = CreateCache();
             var obj = new object();
             string key = "myKey";
-            string key1 = "myKey1";
 
-            var link = new EntryLink();
-
-            var trigger = new TestTrigger() { ActiveExpirationCallbacks = true };
-            cache.Set(key, link, context =>
+            IEntryLink linkScope1;
+            using (linkScope1 = cache.CreateLinkingScope())
             {
-                context.AddExpirationTrigger(trigger);
-                return obj;
-            });
+                Assert.Same(linkScope1, EntryLinkHelpers.ContextLink);
 
-            Assert.Equal(1, link.Triggers.Count());
-            Assert.Null(link.AbsoluteExpiration);
+                var trigger = new TestTrigger() { ActiveExpirationCallbacks = true };
+                cache.Set(key, obj, new MemoryCacheEntryOptions().AddExpirationTrigger(trigger));
+            }
 
-            cache.Set(key1, context =>
-            {
-                context.AddEntryLink(link);
-                return obj;
-            });
+            Assert.Equal(1, linkScope1.Triggers.Count());
+            Assert.Null(linkScope1.AbsoluteExpiration);
         }
 
         [Fact]
-        public void GetWithLinkPopulatesAbsoluteExpiration()
+        public void SetPopulates_AbsoluteExpiration_IntoScopeLink()
         {
             var cache = CreateCache();
             var obj = new object();
             string key = "myKey";
-            string key1 = "myKey1";
-
-            var link = new EntryLink();
-
-            var trigger = new TestTrigger() { ActiveExpirationCallbacks = true };
             var time = new DateTimeOffset(2051, 1, 1, 1, 1, 1, TimeSpan.Zero);
-            cache.Set(key, link, context =>
-            {
-                context.SetAbsoluteExpiration(time);
-                return obj;
-            });
 
-            Assert.Equal(0, link.Triggers.Count());
-            Assert.NotNull(link.AbsoluteExpiration);
-            Assert.Equal(time, link.AbsoluteExpiration);
-
-            cache.Set(key1, context =>
+            IEntryLink linkScope1;
+            using (linkScope1 = cache.CreateLinkingScope())
             {
-                context.AddEntryLink(link);
-                return obj;
-            });
+                Assert.Same(linkScope1, EntryLinkHelpers.ContextLink);
+
+                var trigger = new TestTrigger() { ActiveExpirationCallbacks = true };
+                cache.Set(key, obj, new MemoryCacheEntryOptions().SetAbsoluteExpiration(time));
+            }
+
+            Assert.Equal(0, linkScope1.Triggers.Count());
+            Assert.NotNull(linkScope1.AbsoluteExpiration);
+            Assert.Equal(time, linkScope1.AbsoluteExpiration);
         }
 
         [Fact]
-        public void TriggerExpiresLinkedEntry()
+        public void TriggerExpires_LinkedEntry()
         {
             var cache = CreateCache();
             var obj = new object();
             string key = "myKey";
             string key1 = "myKey1";
-
-            var link = new EntryLink();
-
             var trigger = new TestTrigger() { ActiveExpirationCallbacks = true };
-            cache.Set(key, link, context =>
-            {
-                context.AddExpirationTrigger(trigger);
-                return obj;
-            });
 
-            cache.Set(key1, context =>
+            using (var link = cache.CreateLinkingScope())
             {
-                context.AddEntryLink(link);
-                return obj;
-            });
+                cache.Set(key, obj, new MemoryCacheEntryOptions().AddExpirationTrigger(trigger));
+
+                cache.Set(key1, obj, new MemoryCacheEntryOptions().AddEntryLink(link));
+            }
 
             Assert.StrictEqual(obj, cache.Get(key));
             Assert.StrictEqual(obj, cache.Get(key1));
@@ -114,28 +94,21 @@ namespace Microsoft.Framework.Caching.Memory.Tests
         }
 
         [Fact]
-        public void AbsoluteExpirationWorksAcrossLink()
+        public void AbsoluteExpiration_WorksAcrossLink()
         {
             var clock = new TestClock();
             var cache = CreateCache(clock);
             var obj = new object();
             string key = "myKey";
             string key1 = "myKey1";
-
-            var link = new EntryLink();
-
             var trigger = new TestTrigger() { ActiveExpirationCallbacks = true };
-            cache.Set(key, link, context =>
-            {
-                context.SetAbsoluteExpiration(TimeSpan.FromSeconds(5));
-                return obj;
-            });
 
-            cache.Set(key1, context =>
+            using (var link = cache.CreateLinkingScope())
             {
-                context.AddEntryLink(link);
-                return obj;
-            });
+                cache.Set(key, obj, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(5)));
+
+                cache.Set(key1, obj, new MemoryCacheEntryOptions().AddEntryLink(link));
+            }
 
             Assert.StrictEqual(obj, cache.Get(key));
             Assert.StrictEqual(obj, cache.Get(key1));
@@ -155,19 +128,14 @@ namespace Microsoft.Framework.Caching.Memory.Tests
             string key = "myKey";
             string key1 = "myKey1";
 
-            var link = new EntryLink();
-
             Assert.Null(EntryLinkHelpers.ContextLink);
 
-            using (link.FlowContext())
+            IEntryLink link;
+            using (link = cache.CreateLinkingScope())
             {
                 Assert.StrictEqual(link, EntryLinkHelpers.ContextLink);
                 var trigger = new TestTrigger() { ActiveExpirationCallbacks = true };
-                cache.Set(key, context =>
-                {
-                    context.AddExpirationTrigger(trigger);
-                    return obj;
-                });
+                cache.Set(key, obj, new MemoryCacheEntryOptions().AddExpirationTrigger(trigger));
             }
 
             Assert.Null(EntryLinkHelpers.ContextLink);
@@ -175,11 +143,7 @@ namespace Microsoft.Framework.Caching.Memory.Tests
             Assert.Equal(1, link.Triggers.Count());
             Assert.Null(link.AbsoluteExpiration);
 
-            cache.Set(key1, context =>
-            {
-                context.AddEntryLink(link);
-                return obj;
-            });
+            cache.Set(key1, obj, new MemoryCacheEntryOptions().AddEntryLink(link));
         }
 
         [Fact]
@@ -190,25 +154,20 @@ namespace Microsoft.Framework.Caching.Memory.Tests
             string key = "myKey";
             string key1 = "myKey1";
 
-            var link1 = new EntryLink();
-            var link2 = new EntryLink();
-
             Assert.Null(EntryLinkHelpers.ContextLink);
 
-            using (link1.FlowContext())
+            IEntryLink link1;
+            IEntryLink link2;
+            using (link1 = cache.CreateLinkingScope())
             {
                 Assert.StrictEqual(link1, EntryLinkHelpers.ContextLink);
 
-                using (link2.FlowContext())
+                using (link2 = cache.CreateLinkingScope())
                 {
                     Assert.StrictEqual(link2, EntryLinkHelpers.ContextLink);
 
                     var trigger = new TestTrigger() { ActiveExpirationCallbacks = true };
-                    cache.Set(key, context =>
-                    {
-                        context.AddExpirationTrigger(trigger);
-                        return obj;
-                    });
+                    cache.Set(key, obj, new MemoryCacheEntryOptions().AddExpirationTrigger(trigger));
                 }
 
                 Assert.StrictEqual(link1, EntryLinkHelpers.ContextLink);
@@ -221,11 +180,7 @@ namespace Microsoft.Framework.Caching.Memory.Tests
             Assert.Equal(1, link2.Triggers.Count());
             Assert.Null(link2.AbsoluteExpiration);
 
-            cache.Set(key1, context =>
-            {
-                context.AddEntryLink(link2);
-                return obj;
-            });
+            cache.Set(key1, obj, new MemoryCacheEntryOptions().AddEntryLink(link2));
         }
 
         [Fact]
@@ -234,55 +189,36 @@ namespace Microsoft.Framework.Caching.Memory.Tests
             var clock = new TestClock();
             var cache = CreateCache(clock);
             var obj = new object();
-            string key1 = "myKey1";
             string key2 = "myKey2";
             string key3 = "myKey3";
-
-            var link1 = new EntryLink();
-            var link2 = new EntryLink();
 
             var trigger2 = new TestTrigger() { ActiveExpirationCallbacks = true };
             var trigger3 = new TestTrigger() { ActiveExpirationCallbacks = true };
 
-            cache.GetOrSet(key1, context1 =>
+            IEntryLink link1 = null;
+            IEntryLink link2 = null;
+
+            using (link1 = cache.CreateLinkingScope())
             {
-                using (link1.FlowContext())
+                cache.Set(key2, obj, new MemoryCacheEntryOptions()
+                    .AddExpirationTrigger(trigger2)
+                    .SetAbsoluteExpiration(TimeSpan.FromSeconds(10)));
+
+                using (link2 = cache.CreateLinkingScope())
                 {
-                    cache.GetOrSet(key2, context2 =>
-                    {
-                        context2.AddExpirationTrigger(trigger2);
-                        context2.SetAbsoluteExpiration(TimeSpan.FromSeconds(10));
-
-                        using (link2.FlowContext())
-                        {
-                            cache.GetOrSet(key3, context3 =>
-                            {
-                                context3.AddExpirationTrigger(trigger3);
-                                context3.SetAbsoluteExpiration(TimeSpan.FromSeconds(15));
-                                return obj;
-                            });
-                        }
-                        context2.AddEntryLink(link2);
-                        return obj;
-                    });
+                    cache.Set(key3, obj, new MemoryCacheEntryOptions()
+                        .AddExpirationTrigger(trigger3)
+                        .SetAbsoluteExpiration(TimeSpan.FromSeconds(15)));
                 }
-                context1.AddEntryLink(link1);
-                return obj;
-            });
+            }
 
-            Assert.Equal(2, link1.Triggers.Count());
+            Assert.Equal(1, link1.Triggers.Count());
             Assert.NotNull(link1.AbsoluteExpiration);
             Assert.Equal(clock.UtcNow + TimeSpan.FromSeconds(10), link1.AbsoluteExpiration);
 
             Assert.Equal(1, link2.Triggers.Count());
             Assert.NotNull(link2.AbsoluteExpiration);
             Assert.Equal(clock.UtcNow + TimeSpan.FromSeconds(15), link2.AbsoluteExpiration);
-
-            cache.Set(key1, context =>
-            {
-                context.AddEntryLink(link2);
-                return obj;
-            });
         }
     }
 }

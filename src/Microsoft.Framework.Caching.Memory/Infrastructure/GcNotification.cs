@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Framework.Caching.Memory.Infrastructure
+namespace Microsoft.Framework.Internal
 {
     /// <summary>
     /// Registers a callback that fires each time a Gen2 garbage collection occurs,

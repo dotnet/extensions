@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 #if DNXCORE50
 using System.Threading;
 #elif NET45 || DNX451 || DNXCORE50
@@ -11,12 +12,12 @@ using System.Runtime.Remoting.Messaging;
 
 namespace Microsoft.Framework.Caching.Memory
 {
-    public static class EntryLinkHelpers
+    internal static class EntryLinkHelpers
     {
 #if DNXCORE50
-        private static readonly AsyncLocal<IEntryLink> _contextLink = new AsyncLocal<IEntryLink>();
+        private static readonly AsyncLocal<EntryLink> _contextLink = new AsyncLocal<EntryLink>();
 
-        public static IEntryLink ContextLink
+        public static EntryLink ContextLink
         {
             get { return _contextLink.Value; }
             set { _contextLink.Value = value; }
@@ -24,7 +25,7 @@ namespace Microsoft.Framework.Caching.Memory
 #elif NET45 || DNX451
         private const string ContextLinkDataName = "klr.host.EntryLinkHelpers.ContextLink";
 
-        public static IEntryLink ContextLink
+        public static EntryLink ContextLink
         {
             get
             {
@@ -35,7 +36,7 @@ namespace Microsoft.Framework.Caching.Memory
                     return null;
                 }
 
-                return handle.Unwrap() as IEntryLink;
+                return handle.Unwrap() as EntryLink;
             }
             set
             {
@@ -43,37 +44,26 @@ namespace Microsoft.Framework.Caching.Memory
             }
         }
 #else
-        public static IEntryLink ContextLink
+        public static EntryLink ContextLink
         {
             get { return null; }
             set { throw new NotImplementedException(); }
         }
 #endif
-        public static IDisposable FlowContext(this IEntryLink link)
+
+        internal static IEntryLink CreateLinkingScope()
         {
-            var priorLink = ContextLink;
-            ContextLink = link;
-            return new LinkContextReverter(priorLink);
+            var parentLink = ContextLink;
+            var newLink = new EntryLink(parent: parentLink);
+            ContextLink = newLink;
+            return newLink;
         }
 
-        private class LinkContextReverter : IDisposable
+        internal static void DisposeLinkingScope()
         {
-            private readonly IEntryLink _priorLink;
-            private bool _disposed;
-
-            public LinkContextReverter(IEntryLink priorLink)
-            {
-                _priorLink = priorLink;
-            }
-
-            public void Dispose()
-            {
-                if (!_disposed)
-                {
-                    _disposed = true;
-                    ContextLink = _priorLink;
-                }
-            }
+            var currentLink = ContextLink;
+            var priorLink = ((EntryLink)currentLink).Parent;
+            ContextLink = priorLink;
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Microsoft.Framework.Caching.Memory
         {
             return new MemoryCache(new MemoryCacheOptions()
             {
-                ListenForMemoryPressure = false,
+                CompactOnMemoryPressure = false,
             });
         }
 
@@ -63,23 +63,6 @@ namespace Microsoft.Framework.Caching.Memory
         }
 
         [Fact]
-        public void GetOrSetDoesNotOverwrite()
-        {
-            var cache = CreateCache();
-            var obj = new object();
-            var obj2 = new object();
-            string key = "myKey";
-
-            // Assigned
-            var result = cache.GetOrSet(key, context => obj);
-            Assert.Same(obj, result);
-
-            // Retrieved
-            result = cache.GetOrSet(key, context => obj2);
-            Assert.Same(obj, result);
-        }
-
-        [Fact]
         public void SetAlwaysOverwrites()
         {
             var cache = CreateCache();
@@ -101,42 +84,47 @@ namespace Microsoft.Framework.Caching.Memory
         public void SetOverwritesAndInvokesCallbacks()
         {
             var cache = CreateCache();
-            var obj = new object();
+            var value1 = new object();
             string key = "myKey";
             var callback1Invoked = new ManualResetEvent(false);
             var callback2Invoked = new ManualResetEvent(false);
 
-            var result = cache.Set(key, context =>
+            var options1 = new MemoryCacheEntryOptions();
+            options1.PostEvictionCallbacks.Add(new PostEvictionCallbackRegistration()
             {
-                context.RegisterPostEvictionCallback((subkey, value, reason, state) =>
+                EvictionCallback = (subkey, subValue, reason, state) =>
                 {
                     Assert.Equal(key, subkey);
-                    Assert.Same(value, obj);
+                    Assert.Same(subValue, value1);
                     Assert.Equal(EvictionReason.Replaced, reason);
                     var localCallbackInvoked = (ManualResetEvent)state;
                     localCallbackInvoked.Set();
-                }, state: callback1Invoked);
-                return obj;
+                },
+                State = callback1Invoked
             });
-            Assert.Same(obj, result);
 
-            var obj2 = new object();
-            result = cache.Set(key, context =>
+            var result = cache.Set(key, value1, options1);
+            Assert.Same(value1, result);
+
+            var value2 = new object();
+            var options2 = new MemoryCacheEntryOptions();
+            options2.PostEvictionCallbacks.Add(new PostEvictionCallbackRegistration()
             {
-                context.RegisterPostEvictionCallback((subkey, value, reason, state) =>
+                EvictionCallback = (subkey, subValue, reason, state) =>
                 {
                     // Shouldn't be invoked.
                     var localCallbackInvoked = (ManualResetEvent)state;
                     localCallbackInvoked.Set();
-                }, state: callback2Invoked);
-                return obj2;
+                },
+                State = callback2Invoked
             });
-            Assert.Same(obj2, result);
+            result = cache.Set(key, value2, options2);
+            Assert.Same(value2, result);
             Assert.True(callback1Invoked.WaitOne(100), "Callback1");
             Assert.False(callback2Invoked.WaitOne(0), "Callback2");
 
             result = cache.Get(key);
-            Assert.Same(obj2, result);
+            Assert.Same(value2, result);
 
             Assert.False(callback2Invoked.WaitOne(0), "Callback2");
         }
@@ -160,23 +148,25 @@ namespace Microsoft.Framework.Caching.Memory
         public void RemoveRemovesAndInvokesCallback()
         {
             var cache = CreateCache();
-            var obj = new object();
+            var value = new object();
             string key = "myKey";
             var callbackInvoked = new ManualResetEvent(false);
 
-            var result = cache.Set(key, context =>
+            var options = new MemoryCacheEntryOptions();
+            options.PostEvictionCallbacks.Add(new PostEvictionCallbackRegistration()
             {
-                context.RegisterPostEvictionCallback((subkey, value, reason, state) =>
+                EvictionCallback = (subkey, subValue, reason, state) =>
                 {
                     Assert.Equal(key, subkey);
-                    Assert.Same(value, obj);
+                    Assert.Same(value, subValue);
                     Assert.Equal(EvictionReason.Removed, reason);
                     var localCallbackInvoked = (ManualResetEvent)state;
                     localCallbackInvoked.Set();
-                }, state: callbackInvoked);
-                return obj;
+                },
+                State = callbackInvoked
             });
-            Assert.Same(obj, result);
+            var result = cache.Set(key, value, options);
+            Assert.Same(value, result);
 
             cache.Remove(key);
             Assert.True(callbackInvoked.WaitOne(100), "Callback");
@@ -189,25 +179,28 @@ namespace Microsoft.Framework.Caching.Memory
         public void RemoveAndReAddFromCallbackWorks()
         {
             var cache = CreateCache();
-            var obj = new object();
+            var value = new object();
             var obj2 = new object();
             string key = "myKey";
             var callbackInvoked = new ManualResetEvent(false);
 
-            var result = cache.Set(key, context =>
+            var options = new MemoryCacheEntryOptions();
+            options.PostEvictionCallbacks.Add(new PostEvictionCallbackRegistration()
             {
-                context.RegisterPostEvictionCallback((subkey, value, reason, state) =>
+                EvictionCallback = (subkey, subValue, reason, state) =>
                 {
                     Assert.Equal(key, subkey);
-                    Assert.Same(value, obj);
+                    Assert.Same(subValue, value);
                     Assert.Equal(EvictionReason.Removed, reason);
                     var localCallbackInvoked = (ManualResetEvent)state;
                     cache.Set(key, obj2);
                     localCallbackInvoked.Set();
-                }, state: callbackInvoked);
-                return obj;
+                },
+                State = callbackInvoked
             });
-            Assert.Same(obj, result);
+
+            var result = cache.Set(key, value, options);
+            Assert.Same(value, result);
 
             cache.Remove(key);
             Assert.True(callbackInvoked.WaitOne(100), "Callback");

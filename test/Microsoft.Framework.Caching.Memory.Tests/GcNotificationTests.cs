@@ -3,9 +3,10 @@
 
 using System;
 using System.Threading;
+using Microsoft.Framework.Internal;
 using Xunit;
 
-namespace Microsoft.Framework.Caching.Memory.Infrastructure
+namespace Microsoft.Framework.Caching.Memory
 {
     public class GcNotificationTests
     {

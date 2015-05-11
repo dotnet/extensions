@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Caching.Memory.Infrastructure;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.Caching.Memory
@@ -11,7 +11,7 @@ namespace Microsoft.Framework.Caching.Memory
     {
         public ISystemClock Clock { get; set; }
 
-        public bool ListenForMemoryPressure { get; set; } = true;
+        public bool CompactOnMemoryPressure { get; set; } = true;
 
         public TimeSpan ExpirationScanFrequency { get; set; } = TimeSpan.FromMinutes(1);
 

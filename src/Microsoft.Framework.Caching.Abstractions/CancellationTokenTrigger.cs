@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 
-namespace Microsoft.Framework.Caching.Memory
+namespace Microsoft.Framework.Caching
 {
     public class CancellationTokenTrigger : IExpirationTrigger
     {
