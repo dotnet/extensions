@@ -1,0 +1,49 @@
+{
+  "locked": true,
+  "version": -9998,
+  "projectFileDependencyGroups": {
+    "": [],
+    ".NETFramework,Version=v4.5": [],
+    "DNX,Version=v4.5.1": [],
+    "DNXCore,Version=v5.0": [
+      "System.Runtime >= 4.0.20-*"
+    ]
+  },
+  "libraries": {
+    "System.Runtime/4.0.20.0": {
+      "serviceable": false,
+      "sha": "mKeVIcXozI9BvOA9M9MTDv0G14Z1pQRoSGuAfSQz9VfEBsNUpaGTRUInyeKb7QmIQUKSZ5RPYwRFDKqA1F/Ksw==",
+      "frameworks": {
+        ".NETFramework,Version=v4.5": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [],
+          "compileAssemblies": []
+        },
+        "DNX,Version=v4.5.1": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [],
+          "compileAssemblies": []
+        },
+        "DNXCore,Version=v5.0": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [
+            "lib/aspnetcore50/System.Runtime.dll"
+          ],
+          "compileAssemblies": [
+            "lib/contract/System.Runtime.dll"
+          ]
+        }
+      },
+      "files": [
+        "System.Runtime.4.0.20.0.nupkg",
+        "System.Runtime.4.0.20.0.nupkg.sha512",
+        "System.Runtime.nuspec",
+        "lib/aspnetcore50/System.Runtime.dll",
+        "lib/contract/System.Runtime.dll"
+      ]
+    }
+  }
+}

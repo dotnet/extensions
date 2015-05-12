@@ -1,0 +1,121 @@
+{
+  "locked": true,
+  "version": -9998,
+  "projectFileDependencyGroups": {
+    "": [],
+    ".NETFramework,Version=v4.5": [],
+    "DNX,Version=v4.5.1": [],
+    "DNXCore,Version=v5.0": [
+      "System.Runtime >= 4.0.20-*",
+      "System.Collections >= 4.0.10-*",
+      "System.Diagnostics.Debug >= 4.0.10-*"
+    ]
+  },
+  "libraries": {
+    "System.Collections/4.0.10.0": {
+      "serviceable": false,
+      "sha": "YsU7e47CUc8yeLyDHBfcKQGQZNPHZmVJx02qXcLi7fAiUGvnnBeSUhywdtyJrpG1Q5WXu3+ebqavG48cgcxOeA==",
+      "frameworks": {
+        ".NETFramework,Version=v4.5": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [],
+          "compileAssemblies": []
+        },
+        "DNX,Version=v4.5.1": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [],
+          "compileAssemblies": []
+        },
+        "DNXCore,Version=v5.0": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [
+            "lib/aspnetcore50/System.Collections.dll"
+          ],
+          "compileAssemblies": [
+            "lib/contract/System.Collections.dll"
+          ]
+        }
+      },
+      "files": [
+        "System.Collections.4.0.10.0.nupkg",
+        "System.Collections.4.0.10.0.nupkg.sha512",
+        "System.Collections.nuspec",
+        "lib/aspnetcore50/System.Collections.dll",
+        "lib/contract/System.Collections.dll"
+      ]
+    },
+    "System.Diagnostics.Debug/4.0.10.0": {
+      "serviceable": false,
+      "sha": "HyUQ5FL78j4D7ywFUytYBMOoSDa94sRpGvtfgXuNjwESMp28irW7vBrNTaYI4ivTVmp9aBH1zkAz26CdzH59sA==",
+      "frameworks": {
+        ".NETFramework,Version=v4.5": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [],
+          "compileAssemblies": []
+        },
+        "DNX,Version=v4.5.1": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [],
+          "compileAssemblies": []
+        },
+        "DNXCore,Version=v5.0": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [
+            "lib/aspnetcore50/System.Diagnostics.Debug.dll"
+          ],
+          "compileAssemblies": [
+            "lib/contract/System.Diagnostics.Debug.dll"
+          ]
+        }
+      },
+      "files": [
+        "System.Diagnostics.Debug.4.0.10.0.nupkg",
+        "System.Diagnostics.Debug.4.0.10.0.nupkg.sha512",
+        "System.Diagnostics.Debug.nuspec",
+        "lib/aspnetcore50/System.Diagnostics.Debug.dll",
+        "lib/contract/System.Diagnostics.Debug.dll"
+      ]
+    },
+    "System.Runtime/4.0.20.0": {
+      "serviceable": false,
+      "sha": "mKeVIcXozI9BvOA9M9MTDv0G14Z1pQRoSGuAfSQz9VfEBsNUpaGTRUInyeKb7QmIQUKSZ5RPYwRFDKqA1F/Ksw==",
+      "frameworks": {
+        ".NETFramework,Version=v4.5": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [],
+          "compileAssemblies": []
+        },
+        "DNX,Version=v4.5.1": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [],
+          "compileAssemblies": []
+        },
+        "DNXCore,Version=v5.0": {
+          "dependencies": {},
+          "frameworkAssemblies": [],
+          "runtimeAssemblies": [
+            "lib/aspnetcore50/System.Runtime.dll"
+          ],
+          "compileAssemblies": [
+            "lib/contract/System.Runtime.dll"
+          ]
+        }
+      },
+      "files": [
+        "System.Runtime.4.0.20.0.nupkg",
+        "System.Runtime.4.0.20.0.nupkg.sha512",
+        "System.Runtime.nuspec",
+        "lib/aspnetcore50/System.Runtime.dll",
+        "lib/contract/System.Runtime.dll"
+      ]
+    }
+  }
+}
