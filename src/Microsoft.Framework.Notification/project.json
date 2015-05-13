@@ -1,0 +1,57 @@
+﻿{
+    "version": "1.0.0-*",
+    "description": "Logging infrastructure.",
+    "dependencies": {
+        "Microsoft.Framework.DependencyInjection.Interfaces": "1.0.0-*",
+        "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type" : "build" },
+        "System.Runtime": "4.0.20-beta-*"
+    },
+    "compilationOptions": {
+        "define": [
+            "TRACE"
+        ]
+    },
+    "frameworks": {
+        "net45": {
+            "frameworkAssemblies": {
+                "System.Linq": "",
+                "System.Collections.Concurrent": ""
+            }
+        },
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.Linq": "",
+                "System.Collections.Concurrent": ""
+            }
+        },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Collections.Concurrent": "4.0.10-beta-*",
+                "System.Collections": "4.0.10-beta-*",
+                "System.Diagnostics.Debug": "4.0.10-beta-*",
+                "System.Globalization": "4.0.10-beta-*",
+                "System.Linq": "4.0.0-beta-*",
+                "System.Threading": "4.0.10-beta-*",
+                "System.Reflection.Emit": "4.0.0-beta-*",
+                "System.Reflection.Extensions": "4.0.0-beta-*",
+                "System.Reflection.TypeExtensions": "4.0.0-beta-*",
+                "System.Resources.ResourceManager": "4.0.0-beta-*",
+                "System.Runtime.Extensions": "4.0.10-beta-*"
+            }
+        },
+        ".NETPortable,Version=v4.6,Profile=Profile151": {
+            "frameworkAssemblies": {
+                "System.Collections": "",
+                "System.Collections.Concurrent": "",
+                "System.Diagnostics.Debug": "",
+                "System.Globalization": "",
+                "System.Reflection": "",
+                "System.Reflection.Extensions": "",
+                "System.Resources.ResourceManager": "",
+                "System.Runtime.Extensions": "",
+                "System.Linq": "",
+                "System.Threading": ""
+            }
+        }
+    }
+}
