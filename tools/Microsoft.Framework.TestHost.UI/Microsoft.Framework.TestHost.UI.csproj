@@ -58,10 +58,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="..\..\src\Microsoft.Framework.TestHost.Client\DNX.cs">
+    <Compile Include="..\..\src\Microsoft.Framework.TestHost.Client.Sources\DNX.cs">
       <Link>DNX.cs</Link>
     </Compile>
-    <Compile Include="..\..\src\Microsoft.Framework.TestHost.Client\TestHostWrapper.cs">
+    <Compile Include="..\..\src\Microsoft.Framework.TestHost.Client.Sources\TestHostWrapper.cs">
       <Link>TestHostWrapper.cs</Link>
     </Compile>
     <Compile Include="..\..\src\Microsoft.Framework.TestHost\Messages\Message.cs">
