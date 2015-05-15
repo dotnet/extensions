@@ -2,9 +2,8 @@
     "version": "1.0.0-*",
     "description": "Logging infrastructure.",
     "dependencies": {
-        "Microsoft.Framework.DependencyInjection.Interfaces": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type" : "build" },
-        "System.Runtime": "4.0.20-beta-*"
+        "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
+        "Microsoft.Framework.NotNullAttribute.Internal": { "version": "1.0.0-*", "type" : "build" }
     },
     "compilationOptions": {
         "define": [
@@ -40,6 +39,9 @@
             }
         },
         ".NETPortable,Version=v4.6,Profile=Profile151": {
+            "dependencies": {
+                "System.Runtime": "4.0.20-beta-*"
+            },
             "frameworkAssemblies": {
                 "System.Collections": "",
                 "System.Collections.Concurrent": "",
