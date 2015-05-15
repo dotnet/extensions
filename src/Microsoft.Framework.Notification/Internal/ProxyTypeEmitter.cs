@@ -12,50 +12,21 @@ using System.Reflection.Emit;
 
 namespace Microsoft.Framework.Notification.Internal
 {
-    public static class Converter
+    public static class ProxyTypeEmitter
     {
-        // Used to provide uniqueness for type names.
-        private static int _proxyCounter;
-
-        private static AssemblyBuilder AssemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("ProxyHolderAssembly"), AssemblyBuilderAccess.Run);
-        private static ModuleBuilder ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Main Module");
-
-        public static object Convert(ConverterCache cache, Type outputType, Type inputType, object input)
+        public static Type GetProxyType(ProxyTypeCache cache, Type targetType, Type sourceType)
         {
-            if (input == null)
+            if (targetType.IsAssignableFrom(sourceType))
             {
                 return null;
             }
 
-            if (inputType == outputType)
-            {
-                return input;
-            }
+            var key = new Tuple<Type, Type>(sourceType, targetType);
 
-            if (outputType.IsAssignableFrom(inputType))
-            {
-                return input;
-            }
-
-            // If we get to this point, all of the trivial conversions have been tried. We don't attempt value
-            // conversions such as int -> double. The only thing left is proxy generation, which requires that
-            // the destination type be an interface.
-            //
-            // We should always end up with a proxy type or an exception
-            var proxyType = GetProxyType(cache, outputType, inputType);
-            Debug.Assert(proxyType != null);
-
-            return Activator.CreateInstance(proxyType, input);
-        }
-
-        private static Type GetProxyType(ConverterCache cache, Type tout, Type tin)
-        {
-            var key = new Tuple<Type, Type>(tin, tout);
-
-            CacheResult result;
+            ProxyTypeCacheResult result;
             if (!cache.TryGetValue(key, out result))
             {
-                var context = new ProxyBuilderContext(cache, tout, tin);
+                var context = new ProxyBuilderContext(cache, targetType, sourceType);
 
                 // Check that all required types are proxy-able - this will create the TypeBuilder, Constructor,
                 // and property mappings.
@@ -87,7 +58,7 @@ namespace Microsoft.Framework.Notification.Internal
                 // We only want to publish the results after all of the proxies are totally generated.
                 foreach (var verificationResult in context.Visited)
                 {
-                    cache[verificationResult.Key] = CacheResult.FromTypeBuilder(
+                    cache[verificationResult.Key] = ProxyTypeCacheResult.FromTypeBuilder(
                         verificationResult.Key, 
                         verificationResult.Value.TypeBuilder,
                         verificationResult.Value.ConstructorBuilder);
@@ -121,7 +92,7 @@ namespace Microsoft.Framework.Notification.Internal
                 return true;
             }
 
-            CacheResult cacheResult;
+            ProxyTypeCacheResult cacheResult;
             if (context.Cache.TryGetValue(key, out cacheResult))
             {
                 // If we get here we've got a published conversion or error, so we can stop searching.
@@ -137,7 +108,7 @@ namespace Microsoft.Framework.Notification.Internal
             if (!targetType.GetTypeInfo().IsInterface)
             {
                 var message = Resources.FormatConverter_TypeMustBeInterface(targetType.FullName, sourceType.FullName);
-                context.Cache[key] = CacheResult.FromError(key, message);
+                context.Cache[key] = ProxyTypeCacheResult.FromError(key, message);
 
                 return false;
             }
@@ -157,7 +128,7 @@ namespace Microsoft.Framework.Notification.Internal
                     var message = Resources.FormatConverter_PropertyMustHaveGetter(
                         targetProperty.Name,
                         targetType.FullName);
-                    context.Cache[key] = CacheResult.FromError(key, message);
+                    context.Cache[key] = ProxyTypeCacheResult.FromError(key, message);
 
                     return false;
                 }
@@ -167,7 +138,7 @@ namespace Microsoft.Framework.Notification.Internal
                     var message = Resources.FormatConverter_PropertyMustNotHaveSetter(
                         targetProperty.Name,
                         targetType.FullName);
-                    context.Cache[key] = CacheResult.FromError(key, message);
+                    context.Cache[key] = ProxyTypeCacheResult.FromError(key, message);
 
                     return false;
                 }
@@ -177,7 +148,7 @@ namespace Microsoft.Framework.Notification.Internal
                     var message = Resources.FormatConverter_PropertyMustNotHaveIndexParameters(
                         targetProperty.Name,
                         targetType.FullName);
-                    context.Cache[key] = CacheResult.FromError(key, message);
+                    context.Cache[key] = ProxyTypeCacheResult.FromError(key, message);
 
                     return false;
                 }
@@ -197,7 +168,7 @@ namespace Microsoft.Framework.Notification.Internal
                         var error = context.Cache[propertyKey];
                         Debug.Assert(error != null && error.IsError);
 
-                        context.Cache[key] = CacheResult.FromError(key, error.Error);
+                        context.Cache[key] = ProxyTypeCacheResult.FromError(key, error.Error);
                         return false;
                     }
 
@@ -212,8 +183,8 @@ namespace Microsoft.Framework.Notification.Internal
             verificationResult.Mappings = propertyMappings;
 
             var baseType = typeof(ProxyBase<>).MakeGenericType(sourceType);
-            var typeBuilder = ModuleBuilder.DefineType(
-                "ProxyType" + _proxyCounter++ + " wrapping:" + sourceType.Name + " to look like:" + targetType.Name,
+            var typeBuilder = ProxyAssembly.DefineType(
+                string.Format("Proxy_From_{0}_To_{1}", sourceType.Name, targetType.Name),
                 TypeAttributes.Class,
                 baseType,
                 new Type[] { targetType });
@@ -309,7 +280,7 @@ namespace Microsoft.Framework.Notification.Internal
             var key = new Tuple<Type, Type>(sourceType, targetType);
 
             ConstructorBuilder constructorBuilder = null;
-            CacheResult cacheResult;
+            ProxyTypeCacheResult cacheResult;
             VerificationResult verificationResult;
             if (context.Cache.TryGetValue(key, out cacheResult))
             {
@@ -356,7 +327,7 @@ namespace Microsoft.Framework.Notification.Internal
 
         private class ProxyBuilderContext
         {
-            public ProxyBuilderContext(ConverterCache cache, Type targetType, Type sourceType)
+            public ProxyBuilderContext(ProxyTypeCache cache, Type targetType, Type sourceType)
             {
                 Cache = cache;
 
@@ -364,7 +335,7 @@ namespace Microsoft.Framework.Notification.Internal
                 Visited = new Dictionary<Tuple<Type, Type>, VerificationResult>();
             }
 
-            public ConverterCache Cache { get; }
+            public ProxyTypeCache Cache { get; }
 
             public Tuple<Type, Type> Key { get; }
 

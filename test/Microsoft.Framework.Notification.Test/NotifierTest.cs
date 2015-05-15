@@ -7,11 +7,6 @@ namespace Microsoft.Framework.Notification
 {
     public class NotifierTest
     {
-        INotifier NewNotifier()
-        {
-            return new Notifier(new NotifierParameterAdapter());
-        }
-
         public class OneTarget
         {
             public int OneCallCount { get; private set; }
@@ -26,7 +21,7 @@ namespace Microsoft.Framework.Notification
         [Fact]
         public void ShouldNotifyBecomesTrueAfterEnlisting()
         {
-            var notifier = NewNotifier();
+            var notifier = CreateNotifier();
 
             Assert.False(notifier.ShouldNotify("One"));
             Assert.False(notifier.ShouldNotify("Two"));
@@ -40,7 +35,7 @@ namespace Microsoft.Framework.Notification
         [Fact]
         public void CallingNotifyWillInvokeMethod()
         {
-            var notifier = NewNotifier();
+            var notifier = CreateNotifier();
             var target = new OneTarget();
 
             notifier.EnlistTarget(target);
@@ -53,7 +48,7 @@ namespace Microsoft.Framework.Notification
         [Fact]
         public void CallingNotifyForNonEnlistedNameIsHarmless()
         {
-            var notifier = new Notifier(new NotifierParameterAdapter());
+            var notifier = CreateNotifier();
             var target = new OneTarget();
 
             notifier.EnlistTarget(target);
@@ -81,7 +76,7 @@ namespace Microsoft.Framework.Notification
         [Fact]
         public void ParametersWillSplatFromObjectByName()
         {
-            var notifier = NewNotifier();
+            var notifier = CreateNotifier();
             var target = new TwoTarget();
 
             notifier.EnlistTarget(target);
@@ -96,7 +91,7 @@ namespace Microsoft.Framework.Notification
         [Fact]
         public void ExtraParametersAreHarmless()
         {
-            var notifier = NewNotifier();
+            var notifier = CreateNotifier();
             var target = new TwoTarget();
 
             notifier.EnlistTarget(target);
@@ -111,7 +106,7 @@ namespace Microsoft.Framework.Notification
         [Fact]
         public void MissingParametersArriveAsNull()
         {
-            var notifier = NewNotifier();
+            var notifier = CreateNotifier();
             var target = new TwoTarget();
 
             notifier.EnlistTarget(target);
@@ -125,7 +120,7 @@ namespace Microsoft.Framework.Notification
         [Fact]
         public void NotificationCanDuckType()
         {
-            var notifier = NewNotifier();
+            var notifier = CreateNotifier();
             var target = new ThreeTarget();
 
             notifier.EnlistTarget(target);
@@ -201,6 +196,11 @@ namespace Microsoft.Framework.Notification
             }
 
             public int Value { get; private set; }
+        }
+
+        private static INotifier CreateNotifier()
+        {
+            return new Notifier(new NotifierMethodAdapter());
         }
     }
 }

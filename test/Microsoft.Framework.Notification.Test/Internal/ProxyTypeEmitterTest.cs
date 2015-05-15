@@ -4,124 +4,80 @@
 using System;
 using Xunit;
 
-namespace Microsoft.Framework.Notification
+namespace Microsoft.Framework.Notification.Internal
 {
-    public class NotifierParameterAdapterTest
+    public class ProxyTypeEmitterTest
     {
-        [Fact]
-        public void Adapt_Null()
+        public static TheoryData<Type> GetProxyType_Identity_Data
+        {
+            get
+            {
+                return new TheoryData<Type>()
+                {
+                    { typeof(string) },
+                    { typeof(Person) },
+                    { typeof(int) },
+                    { typeof(SomeValueType) },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(GetProxyType_Identity_Data))]
+        public void GetProxyType_Identity(Type type)
         {
             // Arrange
-            var value = (object)null;
-
-            var adapter = new NotifierParameterAdapter();
+            var cache = new ProxyTypeCache();
 
             // Act
-            var result = adapter.Adapt(value, typeof(string));
+            var result = ProxyTypeEmitter.GetProxyType(cache, type, type);
 
             // Assert
             Assert.Null(result);
         }
 
-        public static TheoryData<object, Type> Identity_ReferenceTypes_Data
+        public static TheoryData<Type, Type> GetProxyType_Assignable_Data
         {
             get
             {
-                return new TheoryData<object, Type>()
+                return new TheoryData<Type, Type>()
                 {
-                    { "Hello, world!", typeof(string) },
-                    { new Person(), typeof(Person) },
+                    { typeof(int), typeof(IConvertible) }, // Interface assignment
+                    { typeof(DerivedPerson), typeof(Person) }, // Base-class assignment
+                    { typeof(decimal), typeof(decimal?) }, // value-type to nullable assignment
                 };
             }
         }
 
         [Theory]
-        [MemberData(nameof(Identity_ReferenceTypes_Data))]
-        public void Adapt_Identity_ReferenceTypes(object value, Type outputType)
+        [MemberData(nameof(GetProxyType_Assignable_Data))]
+        public void GetProxyType_Assignable(Type sourceType, Type targetType)
         {
             // Arrange
-            var adapter = new NotifierParameterAdapter();
+            var cache = new ProxyTypeCache();
 
             // Act
-            var result = adapter.Adapt(value, outputType);
+            var result = ProxyTypeEmitter.GetProxyType(cache, targetType, sourceType);
 
             // Assert
-            Assert.IsType(outputType, result);
-            Assert.Same(value, result);
-        }
-
-        public static TheoryData<object, Type> Identity_ValueTypes_Data
-        {
-            get
-            {
-                return new TheoryData<object, Type>()
-                {
-                    { 19, typeof(int) },
-                    { new SomeValueType(17), typeof(SomeValueType) },
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(Identity_ValueTypes_Data))]
-        public void Adapt_Identity_ValueTypes(object value, Type outputType)
-        {
-            // Arrange
-            var adapter = new NotifierParameterAdapter();
-
-            // Act
-            var result = adapter.Adapt(value, outputType);
-
-            // Assert
-            Assert.IsType(outputType, result);
-            Assert.Same(value, result); // This works because of boxing
-        }
-
-        public static TheoryData<object, Type> Assignable_Data
-        {
-            get
-            {
-                return new TheoryData<object, Type>()
-                {
-                    { 5, typeof(IConvertible) }, // Interface assignment
-                    { new DerivedPerson(), typeof(Person) }, // Base-class assignment
-                    { 5.8m, typeof(decimal?) }, // value-type to nullable assignment
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(Assignable_Data))]
-        public void Adapt_Assignable(object value, Type outputType)
-        {
-            // Arrange
-            var adapter = new NotifierParameterAdapter();
-
-            // Act
-            var result = adapter.Adapt(value, outputType);
-
-            // Assert
-            Assert.IsType(value.GetType(), result);
-            Assert.IsAssignableFrom(outputType, result);
-            Assert.Same(value, result);
+            Assert.Null(result);
         }
 
         [Fact]
-        public void Adapt_Proxy_DestinationIsNotInterface()
+        public void GetProxyType_Fails_DestinationIsNotInterface()
         {
             // Arrange
-            var value = new Person();
-            var outputType = typeof(string);
+            var sourceType = typeof(Person);
+            var targetType = typeof(string);
 
             var expectedMessage = string.Format(
                 "Type '{0}' must be an interface in order to support proxy generation from source type '{1}'.",
-                outputType.FullName,
-                value.GetType().FullName);
-
-            var adapter = new NotifierParameterAdapter();
+                targetType.FullName,
+                sourceType.FullName);
 
             // Act
-            var exception = Assert.Throws<InvalidOperationException>(() => adapter.Adapt(value, outputType));
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => ProxyTypeEmitter.GetProxyType(new ProxyTypeCache(), targetType, sourceType));
 
             // Assert
             Assert.Equal(expectedMessage, exception.Message);
@@ -131,18 +87,17 @@ namespace Microsoft.Framework.Notification
         public void Adapt_Proxy_InvalidProperty_DestinationIsNotInterface()
         {
             // Arrange
-            var value = new Person();
-            var outputType = typeof(IBadPerson);
+            var sourceType = typeof(Person);
+            var targetType = typeof(IBadPerson);
 
             var expectedMessage = string.Format(
                 "Type '{0}' must be an interface in order to support proxy generation from source type '{1}'.",
                 typeof(string),
                 typeof(Address).FullName);
 
-            var adapter = new NotifierParameterAdapter();
-
             // Act
-            var exception = Assert.Throws<InvalidOperationException>(() => adapter.Adapt(value, outputType));
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => ProxyTypeEmitter.GetProxyType(new ProxyTypeCache(), targetType, sourceType));
 
             // Assert
             Assert.Equal(expectedMessage, exception.Message);
@@ -166,10 +121,8 @@ namespace Microsoft.Framework.Notification
 
             var outputType = typeof(IPerson);
 
-            var adapter = new NotifierParameterAdapter();
-
             // Act
-            var result = adapter.Adapt(value, outputType);
+            var result = ConvertTo<IPerson>(value);
 
             // Assert
             var person = Assert.IsAssignableFrom<IPerson>(result);
@@ -199,12 +152,8 @@ namespace Microsoft.Framework.Notification
                 Tag = "C1",
             };
 
-            var outputType = typeof(IC1);
-
-            var adapter = new NotifierParameterAdapter();
-
             // Act
-            var result = adapter.Adapt(value, outputType);
+            var result = ConvertTo<IC1>(value);
 
             // Assert
             var c1 = Assert.IsAssignableFrom<IC1>(result);
@@ -223,12 +172,8 @@ namespace Microsoft.Framework.Notification
                 Ignored = "hi",
             };
 
-            var outputType = typeof(IPrivateGetter);
-
-            var adapter = new NotifierParameterAdapter();
-
             // Act
-            var result = adapter.Adapt(value, outputType);
+            var result = ConvertTo<IPrivateGetter>(value);
 
             // Assert
             var proxy = Assert.IsAssignableFrom<IPrivateGetter>(result);
@@ -241,12 +186,8 @@ namespace Microsoft.Framework.Notification
             // Arrange
             var value = new PrivateGetter();
 
-            var outputType = typeof(IPrivateGetter);
-
-            var adapter = new NotifierParameterAdapter();
-
             // Act
-            var result = adapter.Adapt(value, outputType);
+            var result = ConvertTo<IPrivateGetter>(value);
 
             // Assert
             var proxy = Assert.IsAssignableFrom<IPrivateGetter>(result);
@@ -257,17 +198,39 @@ namespace Microsoft.Framework.Notification
         public void Adapt_InvalidProxy_IndexerProperty()
         {
             // Arrange
-            var value = new Indexer();
-            var outputType = typeof(IIndexer);
+            var sourceType = typeof(Indexer);
+            var targetType = typeof(IIndexer);
 
             var expected =
-                $"The property 'Item' on type '{outputType}' must not define a setter to support proxy generation.";
-
-            var adapter = new NotifierParameterAdapter();
+                $"The property 'Item' on type '{targetType}' must not define a setter to support proxy generation.";
 
             // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => adapter.Adapt(value, outputType));
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => ProxyTypeEmitter.GetProxyType(new ProxyTypeCache(), targetType, sourceType));
             Assert.Equal(expected, exception.Message);
+        }
+
+        private object ConvertTo(object value, Type type)
+        {
+            var cache = new ProxyTypeCache();
+            var proxyType = ProxyTypeEmitter.GetProxyType(cache, type, value.GetType());
+
+            Assert.NotNull(proxyType);
+            var proxy = Activator.CreateInstance(proxyType, value);
+
+            Assert.IsAssignableFrom(type, proxy);
+            return proxy;
+        }
+
+        private T ConvertTo<T>(object value)
+        {
+            var cache = new ProxyTypeCache();
+            var proxyType = ProxyTypeEmitter.GetProxyType(cache, typeof(T), value.GetType());
+
+            Assert.NotNull(proxyType);
+            var proxy = Activator.CreateInstance(proxyType, value);
+
+            return Assert.IsAssignableFrom<T>(proxy);
         }
 
         public interface IPrivateGetter

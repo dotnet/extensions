@@ -8,23 +8,23 @@ using System.Reflection.Emit;
 
 namespace Microsoft.Framework.Notification.Internal
 {
-    public class CacheResult
+    public class ProxyTypeCacheResult
     {
-        public static CacheResult FromError(Tuple<Type, Type> key, string error)
+        public static ProxyTypeCacheResult FromError(Tuple<Type, Type> key, string error)
         {
-            return new CacheResult()
+            return new ProxyTypeCacheResult()
             {
                 Key = key,
                 Error = error,
             };
         }
 
-        public static CacheResult FromTypeBuilder(
+        public static ProxyTypeCacheResult FromTypeBuilder(
             Tuple<Type, Type> key,
             TypeBuilder typeBuilder,
             ConstructorBuilder constructorBuilder)
         {
-            return new CacheResult()
+            return new ProxyTypeCacheResult()
             {
                 Key = key,
                 TypeBuilder = typeBuilder,

@@ -8,7 +8,7 @@ using System.Collections.Concurrent;
 
 namespace Microsoft.Framework.Notification.Internal
 {
-    public class ConverterCache : ConcurrentDictionary<Tuple<Type, Type>, CacheResult>
+    public class ProxyTypeCache : ConcurrentDictionary<Tuple<Type, Type>, ProxyTypeCacheResult>
     {
     }
 }

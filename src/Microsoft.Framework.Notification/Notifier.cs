@@ -3,19 +3,20 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Microsoft.Framework.Notification
 {
     public class Notifier : INotifier
     {
-        private readonly ConcurrentDictionary<string, List<Entry>> _notificationNames = new ConcurrentDictionary<string, List<Entry>>(StringComparer.Ordinal);
-        private readonly INotifyParameterAdapter _parameterAdapter;
+        private readonly NotificationListenerCache _listeners = new NotificationListenerCache();
+        
+        private readonly INotifierMethodAdapter _methodAdapter;
 
-        public Notifier(INotifyParameterAdapter parameterAdapter)
+        public Notifier(INotifierMethodAdapter methodAdapter)
         {
-            _parameterAdapter = parameterAdapter;
+            _methodAdapter = methodAdapter;
         }
 
         public void EnlistTarget(object target)
@@ -36,74 +37,75 @@ namespace Microsoft.Framework.Notification
 
         private void Enlist(string notificationName, object target, MethodInfo methodInfo)
         {
-            var entries = _notificationNames.GetOrAdd(
+            var entries = _listeners.GetOrAdd(
                 notificationName,
-                _ => new List<Entry>());
-            entries.Add(new Entry(target, methodInfo));
+                _ => new ConcurrentBag<ListenerEntry>());
+
+            entries.Add(new ListenerEntry(target, methodInfo));
         }
 
         public bool ShouldNotify(string notificationName)
         {
-            return _notificationNames.ContainsKey(notificationName);
+            return _listeners.ContainsKey(notificationName);
         }
 
         public void Notify(string notificationName, object parameters)
         {
-            List<Entry> entries;
-            if (_notificationNames.TryGetValue(notificationName, out entries))
+            if (parameters == null)
+            {
+                return;
+            }
+
+            ConcurrentBag<ListenerEntry> entries;
+            if (_listeners.TryGetValue(notificationName, out entries))
             {
                 foreach (var entry in entries)
                 {
-                    entry.Send(parameters, _parameterAdapter);
+                    var succeeded = false;
+                    foreach (var adapter in entry.Adapters)
+                    {
+                        if (adapter(entry.Target, parameters))
+                        {
+                            succeeded = true;
+                            break;
+                        }
+                    }
+
+                    if (!succeeded)
+                    {
+                        var newAdapter = _methodAdapter.Adapt(entry.MethodInfo, parameters.GetType());
+                        succeeded = newAdapter(entry.Target, parameters);
+                        Debug.Assert(succeeded);
+
+                        entry.Adapters.Add(newAdapter);
+                    }
                 }
             }
         }
 
-        internal class Entry
+        private class NotificationListenerCache : ConcurrentDictionary<string, ConcurrentBag<ListenerEntry>>
         {
-            private MethodInfo _methodInfo;
-            private object _target;
-
-            public Entry(object target, MethodInfo methodInfo)
+            public NotificationListenerCache()
+                : base(StringComparer.Ordinal)
             {
-                _target = target;
-                _methodInfo = methodInfo;
+            }
+        }
+
+        private class ListenerEntry
+        {
+            public ListenerEntry(object target, MethodInfo methodInfo)
+            {
+                Target = target;
+                MethodInfo = methodInfo;
+
+                Adapters = new ConcurrentBag<Func<object, object, bool>>();
             }
 
-            internal void Send(object parameters, INotifyParameterAdapter parameterAdapter)
-            {
-                var methodParameterInfos = _methodInfo.GetParameters();
-                var methodParameterCount = methodParameterInfos.Length;
-                var methodParameterValues = new object[methodParameterCount];
+            public ConcurrentBag<Func<object, object, bool>> Adapters { get; }
 
-                var objectTypeInfo = parameters.GetType().GetTypeInfo();
-                for (var index = 0; index != methodParameterCount; ++index)
-                {
-                    var objectPropertyInfo = objectTypeInfo.GetDeclaredProperty(methodParameterInfos[index].Name);
-                    if (objectPropertyInfo == null)
-                    {
-                        continue;
-                    }
+            public MethodInfo MethodInfo { get; }
 
-                    var objectPropertyValue = objectPropertyInfo.GetValue(parameters);
-                    if (objectPropertyValue == null)
-                    {
-                        continue;
-                    }
-
-                    var methodParameterInfo = methodParameterInfos[index];
-                    if (methodParameterInfo.ParameterType.GetTypeInfo().IsAssignableFrom(objectPropertyInfo.PropertyType.GetTypeInfo()))
-                    {
-                        methodParameterValues[index] = objectPropertyValue;
-                    }
-                    else
-                    {
-                        methodParameterValues[index] = parameterAdapter.Adapt(objectPropertyValue, methodParameterInfo.ParameterType);
-                    }
-                }
-
-                _methodInfo.Invoke(_target, methodParameterValues);
-            }
+            public object Target { get; }
         }
     }
 }
