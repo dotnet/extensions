@@ -12,13 +12,6 @@ namespace Microsoft.Framework.ConfigurationModel
     public static class ConfigurationExtensions
     {
 #if NET45 || DNX451 || DNXCORE50
-        public static T Get<T>(this IConfiguration configuration, string key)
-        {
-            return (T)Convert.ChangeType(configuration.Get(key), typeof(T));
-        }
-#endif
-
-#if NET45 || DNX451 || DNXCORE50
         /// <summary>
         /// Adds the INI configuration source at <paramref name="path"/> to <paramref name="configuraton"/>.
         /// </summary>
