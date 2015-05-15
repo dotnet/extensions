@@ -85,17 +85,17 @@ namespace Microsoft.Framework.ConfigurationModel.Test
                 throw new NotImplementedException();
             }
 
-            public IConfiguration GetSubKey(string key)
+            public IConfiguration GetConfigurationSection(string key)
             {
                 throw new NotImplementedException();
             }
 
-            public IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys()
+            public IEnumerable<KeyValuePair<string, IConfiguration>> GetConfigurationSections()
             {
                 throw new NotImplementedException();
             }
 
-            public IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys(string key)
+            public IEnumerable<KeyValuePair<string, IConfiguration>> GetConfigurationSections(string key)
             {
                 throw new NotImplementedException();
             }

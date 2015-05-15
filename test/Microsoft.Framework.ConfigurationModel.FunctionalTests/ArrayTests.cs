@@ -56,18 +56,18 @@ i=ini_i.i.i.i
             config.AddJsonFile(_json2ConfigFilePath);
             config.AddXmlFile(_xmlConfigFilePath);
 
-            var subkey = config.GetSubKey("address");
-            var indexSubkeys = subkey.GetSubKeys().ToArray();
+            var configurationSection = config.GetConfigurationSection("address");
+            var indexConfigurationSections = configurationSection.GetConfigurationSections().ToArray();
 
-            Assert.Equal(8, indexSubkeys.Length);
-            Assert.Equal("0", indexSubkeys[0].Key);
-            Assert.Equal("1", indexSubkeys[1].Key);
-            Assert.Equal("2", indexSubkeys[2].Key);
-            Assert.Equal("3", indexSubkeys[3].Key);
-            Assert.Equal("4", indexSubkeys[4].Key);
-            Assert.Equal("i", indexSubkeys[5].Key);
-            Assert.Equal("j", indexSubkeys[6].Key);
-            Assert.Equal("x", indexSubkeys[7].Key);
+            Assert.Equal(8, indexConfigurationSections.Length);
+            Assert.Equal("0", indexConfigurationSections[0].Key);
+            Assert.Equal("1", indexConfigurationSections[1].Key);
+            Assert.Equal("2", indexConfigurationSections[2].Key);
+            Assert.Equal("3", indexConfigurationSections[3].Key);
+            Assert.Equal("4", indexConfigurationSections[4].Key);
+            Assert.Equal("i", indexConfigurationSections[5].Key);
+            Assert.Equal("j", indexConfigurationSections[6].Key);
+            Assert.Equal("x", indexConfigurationSections[7].Key);
         }
 
         [Fact]

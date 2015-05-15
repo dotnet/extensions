@@ -53,9 +53,9 @@ namespace Microsoft.Framework.ConfigurationModel.Internal
             return _root.TryGet(_prefix + key, out value);
         }
 
-        public IConfiguration GetSubKey(string key)
+        public IConfiguration GetConfigurationSection(string key)
         {
-            return _root.GetSubKey(_prefix + key);
+            return _root.GetConfigurationSection(_prefix + key);
         }
 
         public void Set(string key, string value)
@@ -63,14 +63,14 @@ namespace Microsoft.Framework.ConfigurationModel.Internal
             _root.Set(_prefix + key, value);
         }
 
-        public IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys()
+        public IEnumerable<KeyValuePair<string, IConfiguration>> GetConfigurationSections()
         {
-            return _root.GetSubKeys(_prefix.Substring(0, _prefix.Length - 1));
+            return _root.GetConfigurationSections(_prefix.Substring(0, _prefix.Length - 1));
         }
 
-        public IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys(string key)
+        public IEnumerable<KeyValuePair<string, IConfiguration>> GetConfigurationSections(string key)
         {
-            return _root.GetSubKeys(_prefix + key);
+            return _root.GetConfigurationSections(_prefix + key);
         }
     }
 }

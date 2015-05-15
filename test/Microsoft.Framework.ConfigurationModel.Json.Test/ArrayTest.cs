@@ -105,7 +105,7 @@ namespace Microsoft.Framework.ConfigurationModel.Json.Test
             config.Add(jsonConfigSource1, load: false);
             config.Add(jsonConfigSource2, load: false);
 
-            Assert.Equal(3, config.GetSubKeys("ip").Count());
+            Assert.Equal(3, config.GetConfigurationSections("ip").Count());
             Assert.Equal("15.16.17.18", config.Get("ip:0"));
             Assert.Equal("7.8.9.10", config.Get("ip:1"));
             Assert.Equal("11.12.13.14", config.Get("ip:2"));
@@ -138,7 +138,7 @@ namespace Microsoft.Framework.ConfigurationModel.Json.Test
             config.Add(jsonConfigSource1, load: false);
             config.Add(jsonConfigSource2, load: false);
 
-            Assert.Equal(3, config.GetSubKeys("ip").Count());
+            Assert.Equal(3, config.GetConfigurationSections("ip").Count());
             Assert.Equal("1.2.3.4", config.Get("ip:0"));
             Assert.Equal("15.16.17.18", config.Get("ip:1"));
             Assert.Equal("11.12.13.14", config.Get("ip:2"));
@@ -171,7 +171,7 @@ namespace Microsoft.Framework.ConfigurationModel.Json.Test
             config.Add(jsonConfigSource1, load: false);
             config.Add(jsonConfigSource2, load: false);
 
-            Assert.Equal(4, config.GetSubKeys("ip").Count());
+            Assert.Equal(4, config.GetConfigurationSections("ip").Count());
             Assert.Equal("1.2.3.4", config.Get("ip:0"));
             Assert.Equal("7.8.9.10", config.Get("ip:1"));
             Assert.Equal("11.12.13.14", config.Get("ip:2"));
@@ -195,13 +195,13 @@ namespace Microsoft.Framework.ConfigurationModel.Json.Test
             var config = new Configuration();
             config.Add(jsonConfigSource, load: false);
 
-            var subkey = config.GetSubKey("setting");
-            var indexSubkeys = subkey.GetSubKeys().ToArray();
+            var configurationSection = config.GetConfigurationSection("setting");
+            var indexConfigurationSections = configurationSection.GetConfigurationSections().ToArray();
 
-            Assert.Equal(3, indexSubkeys.Count());
-            Assert.Equal("b", indexSubkeys[0].Value.Get(null));
-            Assert.Equal("a", indexSubkeys[1].Value.Get(null));
-            Assert.Equal("2", indexSubkeys[2].Value.Get(null));
+            Assert.Equal(3, indexConfigurationSections.Count());
+            Assert.Equal("b", indexConfigurationSections[0].Value.Get(null));
+            Assert.Equal("a", indexConfigurationSections[1].Value.Get(null));
+            Assert.Equal("2", indexConfigurationSections[2].Value.Get(null));
         }
 
         [Fact]
@@ -224,16 +224,16 @@ namespace Microsoft.Framework.ConfigurationModel.Json.Test
             var config = new Configuration();
             config.Add(jsonConfigSource, load: false);
 
-            var subkey = config.GetSubKey("setting");
-            var indexSubkeys = subkey.GetSubKeys().ToArray();
+            var configurationSection = config.GetConfigurationSection("setting");
+            var indexConfigurationSections = configurationSection.GetConfigurationSections().ToArray();
 
-            Assert.Equal(6, indexSubkeys.Count());
-            Assert.Equal("4", indexSubkeys[0].Key);
-            Assert.Equal("10", indexSubkeys[1].Key);
-            Assert.Equal("42", indexSubkeys[2].Key);
-            Assert.Equal("1text", indexSubkeys[3].Key);
-            Assert.Equal("bob", indexSubkeys[4].Key);
-            Assert.Equal("hello", indexSubkeys[5].Key);
+            Assert.Equal(6, indexConfigurationSections.Count());
+            Assert.Equal("4", indexConfigurationSections[0].Key);
+            Assert.Equal("10", indexConfigurationSections[1].Key);
+            Assert.Equal("42", indexConfigurationSections[2].Key);
+            Assert.Equal("1text", indexConfigurationSections[3].Key);
+            Assert.Equal("bob", indexConfigurationSections[4].Key);
+            Assert.Equal("hello", indexConfigurationSections[5].Key);
         }
     }
 }

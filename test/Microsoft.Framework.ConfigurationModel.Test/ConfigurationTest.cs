@@ -144,7 +144,7 @@ namespace Microsoft.Framework.ConfigurationModel.Test
         }
 
         [Fact]
-        public void CanGetSubKey()
+        public void CanGetConfigurationSection()
         {
             // Arrange
             var dic1 = new Dictionary<string, string>()
@@ -173,7 +173,7 @@ namespace Microsoft.Framework.ConfigurationModel.Test
             bool memRet1, memRet2, memRet3, memRet4, memRet5;
 
             // Act
-            var configFocus = config.GetSubKey("Data");
+            var configFocus = config.GetConfigurationSection("Data");
 
             memRet1 = configFocus.TryGet("DB1:Connection1", out memVal1);
             memRet2 = configFocus.TryGet("DB1:Connection2", out memVal2);
@@ -206,7 +206,7 @@ namespace Microsoft.Framework.ConfigurationModel.Test
         }
 
         [Fact]
-        public void CanGetSubKeys()
+        public void CanGetConfigurationSections()
         {
             // Arrange
             var dic1 = new Dictionary<string, string>()
@@ -232,16 +232,16 @@ namespace Microsoft.Framework.ConfigurationModel.Test
             config.Add(memConfigSrc3, load: false);
 
             // Act
-            var configFocusList = config.GetSubKeys("Data");
-            var subKeysSet = configFocusList.ToDictionary(e => e.Key, e => e.Value);
+            var configFocusList = config.GetConfigurationSections("Data");
+            var configurationSectionsSet = configFocusList.ToDictionary(e => e.Key, e => e.Value);
 
             // Assert
             Assert.Equal(2, configFocusList.Count());
-            Assert.Equal("MemVal1", subKeysSet["DB1"].Get("Connection1"));
-            Assert.Equal("MemVal2", subKeysSet["DB1"].Get("Connection2"));
-            Assert.Equal("MemVal3", subKeysSet["DB2Connection"].Get(null));
-            Assert.False(subKeysSet.ContainsKey("DB3"));
-            Assert.False(subKeysSet.ContainsKey("Source:DB3"));
+            Assert.Equal("MemVal1", configurationSectionsSet["DB1"].Get("Connection1"));
+            Assert.Equal("MemVal2", configurationSectionsSet["DB1"].Get("Connection2"));
+            Assert.Equal("MemVal3", configurationSectionsSet["DB2Connection"].Get(null));
+            Assert.False(configurationSectionsSet.ContainsKey("DB3"));
+            Assert.False(configurationSectionsSet.ContainsKey("Source:DB3"));
         }
 
         [Fact]

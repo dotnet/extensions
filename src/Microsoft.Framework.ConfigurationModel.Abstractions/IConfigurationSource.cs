@@ -13,6 +13,9 @@ namespace Microsoft.Framework.ConfigurationModel
 
         void Load();
 
-        IEnumerable<string> ProduceSubKeys(IEnumerable<string> earlierKeys, string prefix, string delimiter);
+        IEnumerable<string> ProduceConfigurationSections(
+            IEnumerable<string> earlierKeys,
+            string prefix,
+            string delimiter);
     }
 }

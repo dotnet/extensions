@@ -95,26 +95,26 @@ namespace Microsoft.Framework.ConfigurationModel
             }
         }
 
-        public IConfiguration GetSubKey(string key)
+        public IConfiguration GetConfigurationSection(string key)
         {
             return new ConfigurationFocus(this, key + Constants.KeyDelimiter);
         }
 
-        public IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys()
+        public IEnumerable<KeyValuePair<string, IConfiguration>> GetConfigurationSections()
         {
-            return GetSubKeysImplementation(string.Empty);
+            return GetConfigurationSectionsImplementation(string.Empty);
         }
 
-        public IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys([NotNull] string key)
+        public IEnumerable<KeyValuePair<string, IConfiguration>> GetConfigurationSections([NotNull] string key)
         {
-            return GetSubKeysImplementation(key + Constants.KeyDelimiter);
+            return GetConfigurationSectionsImplementation(key + Constants.KeyDelimiter);
         }
 
-        private IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeysImplementation(string prefix)
+        private IEnumerable<KeyValuePair<string, IConfiguration>> GetConfigurationSectionsImplementation(string prefix)
         {
             var segments = _sources.Aggregate(
                 Enumerable.Empty<string>(),
-                (seed, source) => source.ProduceSubKeys(seed, prefix, Constants.KeyDelimiter));
+                (seed, source) => source.ProduceConfigurationSections(seed, prefix, Constants.KeyDelimiter));
 
             var distinctSegments = segments.Distinct();
 
@@ -142,7 +142,8 @@ namespace Microsoft.Framework.ConfigurationModel
         /// Adds a new configuration source.
         /// </summary>
         /// <param name="configurationSource">The configuration source to add.</param>
-        /// <param name="load">If true, the configuration source's <see cref="IConfigurationSource.Load"/> method will be called.</param>
+        /// <param name="load">If true, the configuration source's <see cref="IConfigurationSource.Load"/> method will
+       ///  be called.</param>
         /// <returns>The same configuration source.</returns>
         /// <remarks>This method is intended only for test scenarios.</remarks>
         public IConfigurationSourceRoot Add(IConfigurationSource configurationSource, bool load)

@@ -30,7 +30,10 @@ namespace Microsoft.Framework.ConfigurationModel
         {
         }
        
-        public virtual IEnumerable<string> ProduceSubKeys(IEnumerable<string> earlierKeys, string prefix, string delimiter)
+        public virtual IEnumerable<string> ProduceConfigurationSections(
+            IEnumerable<string> earlierKeys,
+            string prefix,
+            string delimiter)
         {
             return Data
                 .Where(kv => kv.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))

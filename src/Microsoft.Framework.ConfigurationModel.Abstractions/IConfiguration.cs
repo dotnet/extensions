@@ -18,11 +18,11 @@ namespace Microsoft.Framework.ConfigurationModel
 
         bool TryGet(string key, out string value);
 
-        IConfiguration GetSubKey(string key);
+        IConfiguration GetConfigurationSection(string key);
 
-        IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys();
+        IEnumerable<KeyValuePair<string, IConfiguration>> GetConfigurationSections();
 
-        IEnumerable<KeyValuePair<string, IConfiguration>> GetSubKeys(string key);
+        IEnumerable<KeyValuePair<string, IConfiguration>> GetConfigurationSections(string key);
 
         void Set(string key, string value);
     }
