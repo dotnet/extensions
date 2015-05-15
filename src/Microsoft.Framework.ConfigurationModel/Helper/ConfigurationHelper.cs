@@ -8,7 +8,7 @@ namespace Microsoft.Framework.ConfigurationModel.Helper
 {
     public static class ConfigurationHelper
     {
-        public static string ResolveConfigurationFilePath(IConfigurationSourceRoot configuration, string path)
+        public static string ResolveConfigurationFilePath(IConfigurationBuilder configuration, string path)
         {
             if (!Path.IsPathRooted(path))
             {
@@ -16,7 +16,7 @@ namespace Microsoft.Framework.ConfigurationModel.Helper
                 {
                     throw new InvalidOperationException(Resources.FormatError_MissingBasePath(
                         path,
-                        typeof(IConfigurationSourceRoot).Name,
+                        typeof(IConfigurationBuilder).Name,
                         nameof(configuration.BasePath)));
                 }
                 else

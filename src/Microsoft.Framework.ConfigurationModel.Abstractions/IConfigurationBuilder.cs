@@ -5,13 +5,13 @@ using System.Collections.Generic;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-    public interface IConfigurationSourceRoot : IConfiguration
+    public interface IConfigurationBuilder : IConfiguration
     {
         string BasePath { get; }
 
         IEnumerable<IConfigurationSource> Sources { get; }
 
-        IConfigurationSourceRoot Add(IConfigurationSource configurationSource);
+        IConfigurationBuilder Add(IConfigurationSource configurationSource);
 
         void Reload();
     }

@@ -17,11 +17,13 @@ namespace Microsoft.Framework.ConfigurationModel
         /// <summary>
         /// Adds the JSON configuration source at <paramref name="path"/> to <paramref name="configuraton"/>.
         /// </summary>
-        /// <param name="configuration">The <see cref="IConfigurationSourceRoot"/> to add to.</param>
-        /// <param name="path">Absolute path or path relative to <see cref="IConfigurationSourceRoot.BasePath"/> of
+        /// <param name="configuration">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="path">Absolute path or path relative to <see cref="IConfigurationBuilder.BasePath"/> of
         /// <paramref name="configuration"/>.</param>
-        /// <returns>The <see cref="IConfigurationSourceRoot"/>.</returns>
-        public static IConfigurationSourceRoot AddJsonFile([NotNull] this IConfigurationSourceRoot configuration, string path)
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        public static IConfigurationBuilder AddJsonFile(
+            [NotNull] this IConfigurationBuilder configuration,
+            string path)
         {
             return AddJsonFile(configuration, path, optional: false);
         }
@@ -29,14 +31,18 @@ namespace Microsoft.Framework.ConfigurationModel
         /// <summary>
         /// Adds the JSON configuration source at <paramref name="path"/> to <paramref name="configuraton"/>.
         /// </summary>
-        /// <param name="configuration">The <see cref="IConfigurationSourceRoot"/> to add to.</param>
-        /// <param name="path">Absolute path or path relative to <see cref="IConfigurationSourceRoot.BasePath"/> of
+        /// <param name="configuration">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="path">Absolute path or path relative to <see cref="IConfigurationBuilder.BasePath"/> of
         /// <paramref name="configuration"/>.</param>
         /// <param name="optional">Determines if loading the configuration source is optional.</param>
-        /// <returns>The <see cref="IConfigurationSourceRoot"/>.</returns>
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         /// <exception cref="ArgumentException">If <paramref name="path"/> is null or empty.</exception>
-        /// <exception cref="FileNotFoundException">If <paramref name="optional"/> is <c>false</c> and the file cannot be resolved.</exception>
-        public static IConfigurationSourceRoot AddJsonFile([NotNull] this IConfigurationSourceRoot configuration, string path, bool optional)
+        /// <exception cref="FileNotFoundException">If <paramref name="optional"/> is <c>false</c> and the file cannot
+        /// be resolved.</exception>
+        public static IConfigurationBuilder AddJsonFile(
+            [NotNull] this IConfigurationBuilder configuration,
+            string path,
+            bool optional)
         {
             if (string.IsNullOrEmpty(path))
             {

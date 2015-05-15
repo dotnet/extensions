@@ -17,7 +17,7 @@ namespace Microsoft.Framework.ConfigurationModel.Test
             var testFile = Path.GetTempFileName();
             var testDir = Path.GetDirectoryName(testFile);
             var testFileName = Path.GetFileName(testFile);
-            var mockSourceRoot = new MockConfigurationSourceRoot { BasePath = testDir };
+            var mockSourceRoot = new MockConfigurationBuilder { BasePath = testDir };
 
             var actualPath = ConfigurationHelper.ResolveConfigurationFilePath(mockSourceRoot, testFileName);
 
@@ -28,10 +28,10 @@ namespace Microsoft.Framework.ConfigurationModel.Test
         public void ThrowWhenBasePathIsNull()
         {
             var testFile = "config.j";
-            var mockSourceRoot = new MockConfigurationSourceRoot();
+            var mockSourceRoot = new MockConfigurationBuilder();
             var expectErrorMessage = Resources.FormatError_MissingBasePath(
                 testFile,
-                typeof(IConfigurationSourceRoot).Name,
+                typeof(IConfigurationBuilder).Name,
                 nameof(mockSourceRoot.BasePath));
 
             var exception = Assert.Throws<InvalidOperationException>(() =>
@@ -48,16 +48,16 @@ namespace Microsoft.Framework.ConfigurationModel.Test
             var testFile = Path.GetTempFileName();
             var testDir = Path.GetDirectoryName(testFile);
             var testFileName = Path.GetFileName(testFile);
-            var mockSourceRoot = new MockConfigurationSourceRoot { BasePath = testDir };
+            var mockBuilder = new MockConfigurationBuilder { BasePath = testDir };
 
             File.Delete(testFile);
 
-            var path = ConfigurationHelper.ResolveConfigurationFilePath(mockSourceRoot, testFileName);
+            var path = ConfigurationHelper.ResolveConfigurationFilePath(mockBuilder, testFileName);
 
             Assert.Equal(testFile, path);
         }
 
-        private class MockConfigurationSourceRoot : IConfigurationSourceRoot
+        private class MockConfigurationBuilder : IConfigurationBuilder
         {
             public string this[string key]
             {
@@ -75,7 +75,7 @@ namespace Microsoft.Framework.ConfigurationModel.Test
                 get { throw new NotImplementedException(); }
             }
 
-            public IConfigurationSourceRoot Add(IConfigurationSource configurationSource)
+            public IConfigurationBuilder Add(IConfigurationSource configurationSource)
             {
                 throw new NotImplementedException();
             }

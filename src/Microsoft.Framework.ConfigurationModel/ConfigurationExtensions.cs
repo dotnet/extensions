@@ -15,11 +15,11 @@ namespace Microsoft.Framework.ConfigurationModel
         /// <summary>
         /// Adds the INI configuration source at <paramref name="path"/> to <paramref name="configuraton"/>.
         /// </summary>
-        /// <param name="configuration">The <see cref="IConfigurationSourceRoot"/> to add to.</param>
-        /// <param name="path">Absolute path or path relative to <see cref="IConfigurationSourceRoot.BasePath"/> of
+        /// <param name="configuration">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="path">Absolute path or path relative to <see cref="IConfigurationBuilder.BasePath"/> of
         /// <paramref name="configuration"/>.</param>
-        /// <returns>The <see cref="IConfigurationSourceRoot"/>.</returns>
-        public static IConfigurationSourceRoot AddIniFile([NotNull] this IConfigurationSourceRoot configuration, string path)
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        public static IConfigurationBuilder AddIniFile([NotNull] this IConfigurationBuilder configuration, string path)
         {
             return AddIniFile(configuration, path, optional: false);
         }
@@ -27,14 +27,18 @@ namespace Microsoft.Framework.ConfigurationModel
         /// <summary>
         /// Adds the JSON configuration source at <paramref name="path"/> to <paramref name="configuraton"/>.
         /// </summary>
-        /// <param name="configuration">The <see cref="IConfigurationSourceRoot"/> to add to.</param>
-        /// <param name="path">Absolute path or path relative to <see cref="IConfigurationSourceRoot.BasePath"/> of
+        /// <param name="configuration">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="path">Absolute path or path relative to <see cref="IConfigurationBuilder.BasePath"/> of
         /// <paramref name="configuration"/>.</param>
         /// <param name="optional">Determines if loading the configuration source is optional.</param>
-        /// <returns>The <see cref="IConfigurationSourceRoot"/>.</returns>
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         /// <exception cref="ArgumentException">If <paramref name="path"/> is null or empty.</exception>
-        /// <exception cref="FileNotFoundException">If <paramref name="optional"/> is <c>false</c> and the file cannot be resolved.</exception>
-        public static IConfigurationSourceRoot AddIniFile([NotNull] this IConfigurationSourceRoot configuration, string path, bool optional)
+        /// <exception cref="FileNotFoundException">If <paramref name="optional"/> is <c>false</c> and the file cannot
+        /// be resolved.</exception>
+        public static IConfigurationBuilder AddIniFile(
+            [NotNull] this IConfigurationBuilder configuration,
+            string path,
+            bool optional)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -53,25 +57,30 @@ namespace Microsoft.Framework.ConfigurationModel
         }
 #endif
 
-        public static IConfigurationSourceRoot AddCommandLine(this IConfigurationSourceRoot configuration, string[] args)
+        public static IConfigurationBuilder AddCommandLine(this IConfigurationBuilder configuration, string[] args)
         {
             configuration.Add(new CommandLineConfigurationSource(args));
             return configuration;
         }
 
-        public static IConfigurationSourceRoot AddCommandLine(this IConfigurationSourceRoot configuration, string[] args, IDictionary<string, string> switchMappings)
+        public static IConfigurationBuilder AddCommandLine(
+            this IConfigurationBuilder configuration,
+            string[] args,
+            IDictionary<string, string> switchMappings)
         {
             configuration.Add(new CommandLineConfigurationSource(args, switchMappings));
             return configuration;
         }
 
-        public static IConfigurationSourceRoot AddEnvironmentVariables(this IConfigurationSourceRoot configuration)
+        public static IConfigurationBuilder AddEnvironmentVariables(this IConfigurationBuilder configuration)
         {
             configuration.Add(new EnvironmentVariablesConfigurationSource());
             return configuration;
         }
 
-        public static IConfigurationSourceRoot AddEnvironmentVariables(this IConfigurationSourceRoot configuration, string prefix)
+        public static IConfigurationBuilder AddEnvironmentVariables(
+            this IConfigurationBuilder configuration,
+            string prefix)
         {
             configuration.Add(new EnvironmentVariablesConfigurationSource(prefix));
             return configuration;

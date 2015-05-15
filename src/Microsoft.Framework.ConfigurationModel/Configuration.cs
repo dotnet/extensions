@@ -9,7 +9,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.ConfigurationModel
 {
-    public class Configuration : IConfiguration, IConfigurationSourceRoot
+    public class Configuration : IConfiguration, IConfigurationBuilder
     {
         private readonly IList<IConfigurationSource> _sources = new List<IConfigurationSource>();
 
@@ -133,7 +133,7 @@ namespace Microsoft.Framework.ConfigurationModel
         /// </summary>
         /// <param name="configurationSource">The configuration source to add.</param>
         /// <returns>The same configuration source.</returns>
-        public IConfigurationSourceRoot Add(IConfigurationSource configurationSource)
+        public IConfigurationBuilder Add(IConfigurationSource configurationSource)
         {
             return Add(configurationSource, load: true);
         }
@@ -146,7 +146,7 @@ namespace Microsoft.Framework.ConfigurationModel
        ///  be called.</param>
         /// <returns>The same configuration source.</returns>
         /// <remarks>This method is intended only for test scenarios.</remarks>
-        public IConfigurationSourceRoot Add(IConfigurationSource configurationSource, bool load)
+        public IConfigurationBuilder Add(IConfigurationSource configurationSource, bool load)
         {
             if (load)
             {
