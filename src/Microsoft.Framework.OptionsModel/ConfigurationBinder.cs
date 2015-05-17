@@ -39,7 +39,7 @@ namespace Microsoft.Framework.OptionsModel
 
         private static void BindProperty(PropertyInfo property, object propertyOwner, IConfiguration configuration)
         {
-            configuration = configuration.GetSubKey(property.Name);
+            configuration = configuration.GetConfigurationSection(property.Name);
 
             if (property.GetMethod == null || !property.GetMethod.IsPublic)
             {
@@ -81,7 +81,7 @@ namespace Microsoft.Framework.OptionsModel
             }
             else
             {
-                var subkeys = configuration.GetSubKeys();
+                var subkeys = configuration.GetConfigurationSections();
                 if (subkeys.Count() != 0)
                 {
                     if (typeInstance == null)
@@ -148,7 +148,7 @@ namespace Microsoft.Framework.OptionsModel
             }
 
             var addMethod = iDictionaryTypeInfo.GetDeclaredMethod("Add");
-            var subkeys = configuration.GetSubKeys().ToList();
+            var subkeys = configuration.GetConfigurationSections().ToList();
 
             foreach (var keyProperty in subkeys)
             {
@@ -174,7 +174,7 @@ namespace Microsoft.Framework.OptionsModel
             var itemType = iCollectionTypeInfo.GenericTypeArguments[0];
 
             var addMethod = iCollectionTypeInfo.GetDeclaredMethod("Add");
-            var subkeys = configuration.GetSubKeys().ToList();
+            var subkeys = configuration.GetConfigurationSections().ToList();
 
             foreach (var keyProperty in subkeys)
             {
