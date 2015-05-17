@@ -40,7 +40,7 @@ namespace Microsoft.Framework.Caching.Redis
         {
             if (relative <= TimeSpan.Zero)
             {
-                throw new ArgumentOutOfRangeException("relative", relative, "The relative expiration value must be positive.");
+                throw new ArgumentOutOfRangeException(nameof(relative), relative, "The relative expiration value must be positive.");
             }
             AbsoluteExpiration = CreationTime + relative;
         }
@@ -49,7 +49,7 @@ namespace Microsoft.Framework.Caching.Redis
         {
             if (absolute <= CreationTime)
             {
-                throw new ArgumentOutOfRangeException("absolute", absolute, "The absolute expiration value must be in the future.");
+                throw new ArgumentOutOfRangeException(nameof(absolute), absolute, "The absolute expiration value must be in the future.");
             }
             AbsoluteExpiration = absolute.ToUniversalTime();
         }
@@ -58,7 +58,7 @@ namespace Microsoft.Framework.Caching.Redis
         {
             if (offset <= TimeSpan.Zero)
             {
-                throw new ArgumentOutOfRangeException("offset", offset, "The sliding expiration value must be positive.");
+                throw new ArgumentOutOfRangeException(nameof(offset), offset, "The sliding expiration value must be positive.");
             }
             SlidingExpiration = offset;
         }
