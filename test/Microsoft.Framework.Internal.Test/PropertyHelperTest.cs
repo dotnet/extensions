@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Framework.Internal
@@ -190,7 +190,8 @@ namespace Microsoft.Framework.Internal
             Assert.Equal("Foo", property.Name);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void PropertyHelper_WorksForStruct()
         {
             // Arrange
@@ -271,7 +272,6 @@ namespace Microsoft.Framework.Internal
         {
             // Arrange
             var type = typeof(DerivedClassWithNonReadableProperties);
-
 
             // Act
             var result = PropertyHelper.GetProperties(type).ToArray();
@@ -430,7 +430,8 @@ namespace Microsoft.Framework.Internal
             Assert.Equal("Hi", value);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void MakeNullSafeFastPropertyGetter_ValueType_Success()
         {
             // Arrange
