@@ -1,15 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Logging.Console;
 using ILogger = Microsoft.Framework.Logging.ILogger;
-#if !DNXCORE50
-using Serilog;
-using Serilog.Sinks.IOFile;
-using Serilog.Formatting.Raw;
-using Serilog.Sinks.RollingFile;
-using Serilog.Formatting.Json;
-#endif
 
 namespace SampleApp
 {
@@ -28,15 +19,6 @@ namespace SampleApp
             // providers may be added to an ILoggerFactory at any time, existing ILoggers are updated
 #if !DNXCORE50
             factory.AddNLog(new global::NLog.LogFactory());
-
-            factory.AddSerilog(new Serilog.LoggerConfiguration()
-                .Enrich.WithMachineName()
-                .Enrich.WithProcessId()
-                .Enrich.WithThreadId()
-                .MinimumLevel.Debug()
-                .WriteTo.RollingFile("file-{Date}.txt", outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level}:{EventId} [{SourceContext}] {Message}{NewLine}{Exception}")
-                .WriteTo.Sink(new RollingFileSink("file-{Date}.json", new JsonFormatter(), null, null))
-                .WriteTo.Sink(new FileSink("dump.txt", new RawFormatter(), null)));
 #endif
             factory.AddConsole();
             factory.AddConsole((category, logLevel) => logLevel >= LogLevel.Critical && category.Equals(typeof(Program).FullName));

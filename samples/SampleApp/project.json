@@ -6,8 +6,7 @@
     "frameworks": {
         "dnx451": {
             "dependencies": {
-                "Microsoft.Framework.Logging.NLog": "1.0.0-*",
-                "Microsoft.Framework.Logging.Serilog": "1.0.0-*"
+                "Microsoft.Framework.Logging.NLog": "1.0.0-*"
             }
         },
         "dnxcore50": {
