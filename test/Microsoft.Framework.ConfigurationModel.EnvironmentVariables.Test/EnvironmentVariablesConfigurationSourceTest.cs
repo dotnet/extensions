@@ -3,9 +3,10 @@
 
 using System;
 using System.Collections;
+using Microsoft.Framework.ConfigurationModel.Test;
 using Xunit;
 
-namespace Microsoft.Framework.ConfigurationModel.Test
+namespace Microsoft.Framework.ConfigurationModel.EnvironmentVariables.Test
 {
     public class EnvironmentVariablesConfigurationSourceTest
     {

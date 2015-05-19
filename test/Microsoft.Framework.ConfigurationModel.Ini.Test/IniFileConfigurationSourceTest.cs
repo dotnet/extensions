@@ -3,9 +3,10 @@
 
 using System;
 using System.IO;
+using Microsoft.Framework.ConfigurationModel.Test;
 using Xunit;
 
-namespace Microsoft.Framework.ConfigurationModel.Test
+namespace Microsoft.Framework.ConfigurationModel.Ini.Test
 {
     public class IniFileConfigurationSourceTest
     {

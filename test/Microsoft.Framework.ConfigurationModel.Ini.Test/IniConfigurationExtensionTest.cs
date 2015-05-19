@@ -1,13 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using Xunit;
 
-namespace Microsoft.Framework.ConfigurationModel.Test
+namespace Microsoft.Framework.ConfigurationModel.Ini.Test
 {
-    public class ConfigurationExtensionsTest
+    public class IniConfigurationExtensionTest
     {
         [Theory]
         [InlineData(null)]
@@ -18,7 +18,8 @@ namespace Microsoft.Framework.ConfigurationModel.Test
             var configurationSource = new Configuration();
 
             // Act and Assert
-            var ex = Assert.Throws<ArgumentException>(() => ConfigurationExtensions.AddIniFile(configurationSource, path));
+            var ex = Assert.Throws<ArgumentException>(
+                () => IniConfigurationExtension.AddIniFile(configurationSource, path));
             Assert.Equal("path", ex.ParamName);
             Assert.StartsWith("File path must be a non-empty string.", ex.Message);
         }
@@ -31,7 +32,8 @@ namespace Microsoft.Framework.ConfigurationModel.Test
             var configurationSource = new Configuration();
 
             // Act and Assert
-            var ex = Assert.Throws<FileNotFoundException>(() => ConfigurationExtensions.AddIniFile(configurationSource, path));
+            var ex = Assert.Throws<FileNotFoundException>(
+                () => IniConfigurationExtension.AddIniFile(configurationSource, path));
             Assert.Equal($"The configuration file '{path}' was not found and is not optional.", ex.Message);
         }
     }

@@ -1,0 +1,13 @@
+﻿{
+  "version": "1.0.0-*",
+  "description": "Environment variables configuration source for the Configuration package.",
+  "dependencies": {
+    "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
+    "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" }
+  },
+  "frameworks": {
+    "net45": { },
+    "dnx451": { },
+    "dnxcore50": { }
+    }
+}

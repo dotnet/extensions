@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.Framework.ConfigurationModel
+namespace Microsoft.Framework.ConfigurationModel.Ini
 {
     /// <summary>
     /// An INI file based <see cref="ConfigurationSource"/>.

@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Framework.ConfigurationModel
+namespace Microsoft.Framework.ConfigurationModel.EnvironmentVariables
 {
     public class EnvironmentVariablesConfigurationSource : ConfigurationSource
     {

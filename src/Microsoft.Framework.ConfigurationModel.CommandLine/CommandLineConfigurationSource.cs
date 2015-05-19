@@ -3,9 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace Microsoft.Framework.ConfigurationModel
+namespace Microsoft.Framework.ConfigurationModel.CommandLine
 {
     public class CommandLineConfigurationSource : ConfigurationSource
     {

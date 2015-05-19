@@ -1,15 +1,14 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using Microsoft.Framework.ConfigurationModel.Helper;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.Framework.ConfigurationModel
+namespace Microsoft.Framework.ConfigurationModel.Ini
 {
-    public static class ConfigurationExtensions
+    public static class IniConfigurationExtension
     {
 #if NET45 || DNX451 || DNXCORE50
         /// <summary>
@@ -56,34 +55,5 @@ namespace Microsoft.Framework.ConfigurationModel
             return configuration;
         }
 #endif
-
-        public static IConfigurationBuilder AddCommandLine(this IConfigurationBuilder configuration, string[] args)
-        {
-            configuration.Add(new CommandLineConfigurationSource(args));
-            return configuration;
-        }
-
-        public static IConfigurationBuilder AddCommandLine(
-            this IConfigurationBuilder configuration,
-            string[] args,
-            IDictionary<string, string> switchMappings)
-        {
-            configuration.Add(new CommandLineConfigurationSource(args, switchMappings));
-            return configuration;
-        }
-
-        public static IConfigurationBuilder AddEnvironmentVariables(this IConfigurationBuilder configuration)
-        {
-            configuration.Add(new EnvironmentVariablesConfigurationSource());
-            return configuration;
-        }
-
-        public static IConfigurationBuilder AddEnvironmentVariables(
-            this IConfigurationBuilder configuration,
-            string prefix)
-        {
-            configuration.Add(new EnvironmentVariablesConfigurationSource(prefix));
-            return configuration;
-        }
     }
 }

@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.Framework.ConfigurationModel.Ini;
 using Xunit;
 
 namespace Microsoft.Framework.ConfigurationModel.FunctionalTests
