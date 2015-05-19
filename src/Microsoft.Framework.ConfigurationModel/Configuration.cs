@@ -81,6 +81,10 @@ namespace Microsoft.Framework.ConfigurationModel
 
         public void Set([NotNull] string key, [NotNull] string value)
         {
+            if (!_sources.Any())
+            {
+                throw new InvalidOperationException(Resources.Error_NoSources);
+            }
             foreach (var src in _sources)
             {
                 src.Set(key, value);

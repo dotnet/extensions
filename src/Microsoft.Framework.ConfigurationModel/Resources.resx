@@ -156,6 +156,9 @@
   <data name="Error_NoCommitableSource" xml:space="preserve">
     <value>No registered configuration source is capable of committing changes.</value>
   </data>
+  <data name="Error_NoSources" xml:space="preserve">
+    <value>A configuration source is not registered. Please register one before setting a value.</value>
+  </data>
   <data name="Error_ShortSwitchNotDefined" xml:space="preserve">
     <value>The short switch '{0}' is not defined in the switch mappings.</value>
   </data>

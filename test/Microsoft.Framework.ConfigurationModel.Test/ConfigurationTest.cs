@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -320,6 +321,20 @@ namespace Microsoft.Framework.ConfigurationModel.Test
             }
 
             Assert.Equal(3, srcCount);
+        }
+
+        [Fact]
+        public void SetValueThrowsExceptionNoSourceRegistered()
+        {
+            // Arrange
+            var config = new Configuration();
+            var expectedMsg = Resources.Error_NoSources;
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => config.Set("Title", "Welcome"));
+
+            // Assert
+            Assert.Equal(expectedMsg, ex.Message);
         }
     }
 }
