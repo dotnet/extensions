@@ -214,6 +214,90 @@ namespace Microsoft.Framework.Notification
             Assert.Null(value.C2.C1.C2.C1);
         }
 
+        [Fact]
+        public void Adapt_Proxy_WithPrivatePropertyGetterOnSourceType_ReferenceTypeProperty()
+        {
+            // Arrange
+            var value = new PrivateGetter()
+            {
+                Ignored = "hi",
+            };
+
+            var outputType = typeof(IPrivateGetter);
+
+            var adapter = new NotifierParameterAdapter();
+
+            // Act
+            var result = adapter.Adapt(value, outputType);
+
+            // Assert
+            var proxy = Assert.IsAssignableFrom<IPrivateGetter>(result);
+            Assert.Null(proxy.Ignored);
+        }
+
+        [Fact]
+        public void Adapt_Proxy_WithPrivatePropertyGetterOnSourceType_ValueTypeProperty()
+        {
+            // Arrange
+            var value = new PrivateGetter();
+
+            var outputType = typeof(IPrivateGetter);
+
+            var adapter = new NotifierParameterAdapter();
+
+            // Act
+            var result = adapter.Adapt(value, outputType);
+
+            // Assert
+            var proxy = Assert.IsAssignableFrom<IPrivateGetter>(result);
+            Assert.Equal(0, proxy.IgnoredAlso);
+        }
+
+        [Fact]
+        public void Adapt_InvalidProxy_IndexerProperty()
+        {
+            // Arrange
+            var value = new Indexer();
+            var outputType = typeof(IIndexer);
+
+            var expected =
+                $"The property 'Item' on type '{outputType}' must not define a setter to support proxy generation.";
+
+            var adapter = new NotifierParameterAdapter();
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => adapter.Adapt(value, outputType));
+            Assert.Equal(expected, exception.Message);
+        }
+
+        public interface IPrivateGetter
+        {
+            string Ignored { get; }
+
+            int IgnoredAlso { get; }
+        }
+
+        public class PrivateGetter
+        {
+            public string Ignored { private get; set; }
+
+            private int IgnoredAlso { get; set; } = 17;
+        }
+
+        public interface IIndexer
+        {
+            int this[int key] { get; set; }
+        }
+
+        public class Indexer
+        {
+            public int this[int key]
+            {
+                get { return 0; }
+                set { }
+            }
+        }
+
         public interface IC1
         {
             IC2 C2 { get; }

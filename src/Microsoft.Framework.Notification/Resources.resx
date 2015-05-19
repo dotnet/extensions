@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Converter_PropertyMustHaveGetter" xml:space="preserve">
-    <value>The property '{0}' on type '{1}' must define a getter to support proxy generation. </value>
+    <value>The property '{0}' on type '{1}' must define a getter to support proxy generation.</value>
   </data>
   <data name="Converter_PropertyMustNotHaveIndexParameters" xml:space="preserve">
     <value>The property '{0}' on type '{1}' must not use index parameters to support proxy generation.</value>

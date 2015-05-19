@@ -11,7 +11,7 @@ namespace Microsoft.Framework.Notification
             = new ResourceManager("Microsoft.Framework.Notification.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// The property '{0}' on type '{1}' must define a getter to support proxy generation. 
+        /// The property '{0}' on type '{1}' must define a getter to support proxy generation.
         /// </summary>
         internal static string Converter_PropertyMustHaveGetter
         {
@@ -19,7 +19,7 @@ namespace Microsoft.Framework.Notification
         }
 
         /// <summary>
-        /// The property '{0}' on type '{1}' must define a getter to support proxy generation. 
+        /// The property '{0}' on type '{1}' must define a getter to support proxy generation.
         /// </summary>
         internal static string FormatConverter_PropertyMustHaveGetter(object p0, object p1)
         {
