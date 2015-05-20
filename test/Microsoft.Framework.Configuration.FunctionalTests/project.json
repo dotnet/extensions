@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "Microsoft.Framework.Configuration.Ini": "1.0.0-*",
+    "Microsoft.Framework.Configuration.Json": "1.0.0-*",
+    "Microsoft.Framework.Configuration.Test.Common": "1.0.0-*",
+    "Microsoft.Framework.Configuration.Xml": "1.0.0-*",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  }
+}
