@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "Microsoft.Framework.DependencyInjection" : "1.0.0-*",
-    "Microsoft.Framework.Configuration": "1.0.0-*",
+    "Microsoft.Framework.Configuration.Binder": "1.0.0-*",
     "Microsoft.Framework.OptionsModel": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
