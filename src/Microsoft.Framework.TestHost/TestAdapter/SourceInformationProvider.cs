@@ -288,7 +288,7 @@ namespace Microsoft.Framework.TestHost.TestAdapter
             {
             }
 
-            public Assembly Load(string name)
+            public Assembly Load(AssemblyName assemblyName)
             {
                 throw new NotImplementedException();
             }
