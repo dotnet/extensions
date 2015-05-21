@@ -101,9 +101,10 @@ namespace Microsoft.Framework.Configuration.Json.Test
             var jsonConfigSource2 = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource2.Load(TestStreamHelpers.StringToStream(json2));
 
-            var config = new ConfigurationSection();
-            config.Add(jsonConfigSource1, load: false);
-            config.Add(jsonConfigSource2, load: false);
+            var builder = new ConfigurationBuilder();
+            builder.Add(jsonConfigSource1, load: false);
+            builder.Add(jsonConfigSource2, load: false);
+            var config = builder.Build();
 
             Assert.Equal(3, config.GetConfigurationSections("ip").Count());
             Assert.Equal("15.16.17.18", config.Get("ip:0"));
@@ -134,9 +135,10 @@ namespace Microsoft.Framework.Configuration.Json.Test
             var jsonConfigSource2 = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource2.Load(TestStreamHelpers.StringToStream(json2));
 
-            var config = new ConfigurationSection();
-            config.Add(jsonConfigSource1, load: false);
-            config.Add(jsonConfigSource2, load: false);
+            var builder = new ConfigurationBuilder();
+            builder.Add(jsonConfigSource1, load: false);
+            builder.Add(jsonConfigSource2, load: false);
+            var config = builder.Build();
 
             Assert.Equal(3, config.GetConfigurationSections("ip").Count());
             Assert.Equal("1.2.3.4", config.Get("ip:0"));
@@ -167,9 +169,10 @@ namespace Microsoft.Framework.Configuration.Json.Test
             var jsonConfigSource2 = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource2.Load(TestStreamHelpers.StringToStream(json2));
 
-            var config = new ConfigurationSection();
-            config.Add(jsonConfigSource1, load: false);
-            config.Add(jsonConfigSource2, load: false);
+            var builder = new ConfigurationBuilder();
+            builder.Add(jsonConfigSource1, load: false);
+            builder.Add(jsonConfigSource2, load: false);
+            var config = builder.Build();
 
             Assert.Equal(4, config.GetConfigurationSections("ip").Count());
             Assert.Equal("1.2.3.4", config.Get("ip:0"));
@@ -192,8 +195,9 @@ namespace Microsoft.Framework.Configuration.Json.Test
             var jsonConfigSource = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
 
-            var config = new ConfigurationSection();
-            config.Add(jsonConfigSource, load: false);
+            var builder = new ConfigurationBuilder();
+            builder.Add(jsonConfigSource, load: false);
+            var config = builder.Build();
 
             var configurationSection = config.GetConfigurationSection("setting");
             var indexConfigurationSections = configurationSection.GetConfigurationSections().ToArray();
@@ -221,8 +225,9 @@ namespace Microsoft.Framework.Configuration.Json.Test
             var jsonConfigSource = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
 
-            var config = new ConfigurationSection();
-            config.Add(jsonConfigSource, load: false);
+            var builder = new ConfigurationBuilder();
+            builder.Add(jsonConfigSource, load: false);
+            var config = builder.Build();
 
             var configurationSection = config.GetConfigurationSection("setting");
             var indexConfigurationSections = configurationSection.GetConfigurationSections().ToArray();

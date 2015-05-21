@@ -78,14 +78,16 @@ CommonKey3:CommonKey4=IniValue6";
         public void LoadAndCombineKeyValuePairsFromDifferentConfigurationSources()
         {
             // Arrange
-            var config = new ConfigurationSection();
+            var builder = new ConfigurationBuilder();
 
             // Act
-            config.AddIniFile(_iniConfigFilePath);
-            config.AddJsonFile(_jsonConfigFilePath);
-            config.AddXmlFile(_xmlConfigFilePath);
+            builder.AddIniFile(_iniConfigFilePath);
+            builder.AddJsonFile(_jsonConfigFilePath);
+            builder.AddXmlFile(_xmlConfigFilePath);
             var memConfigSrc = new MemoryConfigurationSource(_memConfigContent);
-            config.Add(memConfigSrc);
+            builder.Add(memConfigSrc);
+
+            var config = builder.Build();
 
             // Assert
             Assert.Equal("IniValue1", config.Get("IniKey1"));
@@ -119,20 +121,24 @@ CommonKey3:CommonKey4=IniValue6";
         public void CanOverrideValuesWithNewConfigurationSource()
         {
             // Arrange
-            var config = new ConfigurationSection();
+            var builder = new ConfigurationBuilder();
 
             // Act & Assert
-            config.AddIniFile(_iniConfigFilePath);
+            builder.AddIniFile(_iniConfigFilePath);
+            var config = builder.Build();
             Assert.Equal("IniValue6", config.Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
 
-            config.AddJsonFile(_jsonConfigFilePath);
+            builder.AddJsonFile(_jsonConfigFilePath);
+            config = builder.Build();
             Assert.Equal("JsonValue6", config.Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
 
-            config.AddXmlFile(_xmlConfigFilePath);
+            builder.AddXmlFile(_xmlConfigFilePath);
+            config = builder.Build();
             Assert.Equal("XmlValue6", config.Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
 
             var memConfigSrc = new MemoryConfigurationSource(_memConfigContent);
-            config.Add(memConfigSrc);
+            builder.Add(memConfigSrc);
+            config = builder.Build();
             Assert.Equal("MemValue6", config.Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
         }
 
@@ -140,17 +146,19 @@ CommonKey3:CommonKey4=IniValue6";
         public void CanSetValuesAndReloadValues()
         {
             // Arrange
-            var config = new ConfigurationSection();
-            config.AddIniFile(_iniConfigFilePath);
-            config.AddJsonFile(_jsonConfigFilePath);
-            config.AddXmlFile(_xmlConfigFilePath);
+            var builder = new ConfigurationBuilder();
+            builder.AddIniFile(_iniConfigFilePath);
+            builder.AddJsonFile(_jsonConfigFilePath);
+            builder.AddXmlFile(_xmlConfigFilePath);
+
+            var config = builder.Build();
 
             // Act & Assert
             // Set value with Set() method
             config.Set("CommonKey1:CommonKey2:CommonKey3:CommonKey4", "NewValue");
 
             // All config sources must be updated
-            foreach (var src in config.Sources)
+            foreach (var src in builder.Sources)
             {
                 Assert.Equal("NewValue",
                     (src as ConfigurationSource).Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
@@ -158,13 +166,14 @@ CommonKey3:CommonKey4=IniValue6";
 
             // Recover values by reloading
             config.Reload();
+
             Assert.Equal("XmlValue6", config.Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
 
             // Set value with indexer
             config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"] = "NewValue";
 
             // All config sources must be updated
-            foreach (var src in config.Sources)
+            foreach (var src in builder.Sources)
             {
                 Assert.Equal("NewValue",
                     (src as ConfigurationSource).Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));

@@ -74,7 +74,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"Boolean", "TRUe"},
                 {"Nested:Integer", "11"}
             };
-            var config = new ConfigurationSection(new MemoryConfigurationSource(dic));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
             var options = ConfigurationBinder.Bind<ComplexOptions>(config);
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
@@ -91,7 +92,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"Nested:Integer", "11"},
                 {"Virtual","Sup"}
             };
-            var config = new ConfigurationSection(new MemoryConfigurationSource(dic));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
             var options = ConfigurationBinder.Bind<DerivedOptions>(config);
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
@@ -106,7 +108,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             {
                 {"StaticProperty", "stuff"},
             };
-            var config = new ConfigurationSection(new MemoryConfigurationSource(dic));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
             var options = ConfigurationBinder.Bind<ComplexOptions>(config);
             Assert.Equal("stuff", ComplexOptions.StaticProperty);
         }
@@ -122,7 +125,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             {
                 {property, "stuff"},
             };
-            var config = new ConfigurationSection(new MemoryConfigurationSource(dic));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
             var options = ConfigurationBinder.Bind<ComplexOptions>(config);
             Assert.Null(options.GetType().GetTypeInfo().GetDeclaredProperty(property).GetValue(options));
         }
@@ -135,7 +139,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"ISomeInterfaceProperty:Subkey", "x"}
             };
 
-            var config = new ConfigurationSection(new MemoryConfigurationSource(input));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
 
             var exception = Assert.Throws<InvalidOperationException>(
                 () => ConfigurationBinder.Bind<TestOptions>(config));
@@ -152,7 +157,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"ClassWithoutPublicConstructorProperty:Subkey", "x"}
             };
 
-            var config = new ConfigurationSection(new MemoryConfigurationSource(input));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
 
             var exception = Assert.Throws<InvalidOperationException>(
                 () => ConfigurationBinder.Bind<TestOptions>(config));
@@ -171,7 +177,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"IntProperty", IncorrectValue}
             };
 
-            var config = new ConfigurationSection(new MemoryConfigurationSource(input));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
 
             var exception = Assert.Throws<InvalidOperationException>(
                 () => ConfigurationBinder.Bind<TestOptions>(config));
@@ -189,7 +196,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"ThrowsWhenActivatedProperty:subkey", "x"}
             };
 
-            var config = new ConfigurationSection(new MemoryConfigurationSource(input));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
 
             var exception = Assert.Throws<InvalidOperationException>(
                 () => ConfigurationBinder.Bind<TestOptions>(config));
@@ -207,7 +215,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"NestedOptionsProperty:NestedOptions2Property:ISomeInterfaceProperty:subkey", "x"}
             };
 
-            var config = new ConfigurationSection(new MemoryConfigurationSource(input));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
 
             var exception = Assert.Throws<InvalidOperationException>(
                 () => ConfigurationBinder.Bind<TestOptions>(config));

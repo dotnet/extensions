@@ -25,5 +25,7 @@ namespace Microsoft.Framework.Configuration
         IEnumerable<KeyValuePair<string, IConfiguration>> GetConfigurationSections(string key);
 
         void Set(string key, string value);
+
+        void Reload();
     }
 }

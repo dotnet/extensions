@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Framework.Configuration
 {
-    public interface IConfigurationBuilder : IConfiguration
+    public interface IConfigurationBuilder
     {
         string BasePath { get; }
 
@@ -13,6 +13,6 @@ namespace Microsoft.Framework.Configuration
 
         IConfigurationBuilder Add(IConfigurationSource configurationSource);
 
-        void Reload();
+        IConfiguration Build();
     }
 }

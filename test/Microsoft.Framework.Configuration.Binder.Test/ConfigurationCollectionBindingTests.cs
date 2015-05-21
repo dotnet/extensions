@@ -20,7 +20,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"StringList:x", "valx"}
             };
 
-            var config = new ConfigurationSection(new MemoryConfigurationSource(input));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
 
             var options = ConfigurationBinder.Bind<OptionsWithLists>(config);
 
@@ -45,7 +46,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"IntList:x", "45"}
             };
 
-            var config = new ConfigurationSection(new MemoryConfigurationSource(input));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
 
             var options = ConfigurationBinder.Bind<OptionsWithLists>(config);
 
@@ -70,7 +72,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"AlreadyInitializedList:x", "valx"}
             };
 
-            var config = new ConfigurationSection(new MemoryConfigurationSource(input));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
 
             var options = ConfigurationBinder.Bind<OptionsWithLists>(config);
 
@@ -96,7 +99,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"CustomList:x", "valx"}
             };
 
-            var config = new ConfigurationSection(new MemoryConfigurationSource(input));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
 
             var options = ConfigurationBinder.Bind<OptionsWithLists>(config);
 
@@ -120,7 +124,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"ObjectList:2:Integer", "32"},
             };
 
-            var config = new ConfigurationSection(new MemoryConfigurationSource(input));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
 
             var options = ConfigurationBinder.Bind<OptionsWithLists>(config);
 
@@ -143,7 +148,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"NestedLists:1:2", "val12"},
             };
 
-            var config = new ConfigurationSection(new MemoryConfigurationSource(input));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
 
             var options = ConfigurationBinder.Bind<OptionsWithLists>(config);
 
@@ -168,7 +174,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"StringDictionary:ghi", "val_3"}
             };
 
-            var config = new ConfigurationSection(new MemoryConfigurationSource(input));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
 
             var options = ConfigurationBinder.Bind<OptionsWithDictionary>(config);
 
@@ -189,7 +196,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"IntDictionary:ghi", "44"}
             };
 
-            var config = new ConfigurationSection(new MemoryConfigurationSource(input));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
 
             var options = ConfigurationBinder.Bind<OptionsWithDictionary>(config);
 
@@ -210,7 +218,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"ObjectDictionary:ghi:Integer", "3"}
             };
 
-            var config = new ConfigurationSection(new MemoryConfigurationSource(input));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
 
             var options = ConfigurationBinder.Bind<OptionsWithDictionary>(config);
 
@@ -233,7 +242,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"ListDictionary:def:2", "def_2"}
             };
 
-            var config = new ConfigurationSection(new MemoryConfigurationSource(input));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
 
             var options = ConfigurationBinder.Bind<OptionsWithDictionary>(config);
 
@@ -260,7 +270,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"ObjectList:1:ListInNestedOption:2", "12"},
             };
 
-            var config = new ConfigurationSection(new MemoryConfigurationSource(input));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
 
             var options = ConfigurationBinder.Bind<OptionsWithLists>(config);
 
@@ -285,7 +296,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"NonStringKeyDictionary:ghi", "val_3"}
             };
 
-            var config = new ConfigurationSection(new MemoryConfigurationSource(input));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
 
             var options = ConfigurationBinder.Bind<OptionsWithDictionary>(config);
 

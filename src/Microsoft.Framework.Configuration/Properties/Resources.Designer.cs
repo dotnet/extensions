@@ -11,6 +11,22 @@ namespace Microsoft.Framework.Configuration
             = new ResourceManager("Microsoft.Framework.Configuration.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Reload can only be called on top-level configuration element
+        /// </summary>
+        internal static string Error_InvalidReload
+        {
+            get { return GetString("Error_InvalidReload"); }
+        }
+
+        /// <summary>
+        /// Reload can only be called on top-level configuration element
+        /// </summary>
+        internal static string FormatError_InvalidReload()
+        {
+            return GetString("Error_InvalidReload");
+        }
+
+        /// <summary>
         /// Unable to resolve path '{0}'; construct this {1} with a non-null {2}.
         /// </summary>
         internal static string Error_MissingBasePath

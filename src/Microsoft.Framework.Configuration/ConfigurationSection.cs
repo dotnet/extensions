@@ -9,26 +9,13 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.Configuration
 {
-    public class ConfigurationSection : IConfiguration, IConfigurationBuilder
+    public class ConfigurationSection : IConfiguration
     {
         private readonly IList<IConfigurationSource> _sources = new List<IConfigurationSource>();
 
-        public ConfigurationSection(params IConfigurationSource[] sources)
-            : this(null, sources)
+        public ConfigurationSection(IList<IConfigurationSource> sources)
         {
-        }
-
-        public ConfigurationSection(string basePath, params IConfigurationSource[] sources)
-        {
-            if (sources != null)
-            {
-                foreach (var singleSource in sources)
-                {
-                    Add(singleSource);
-                }
-            }
-
-            BasePath = basePath;
+            _sources = sources;
         }
 
         public string this[string key]
@@ -49,11 +36,6 @@ namespace Microsoft.Framework.Configuration
             {
                 return _sources;
             }
-        }
-
-        public string BasePath
-        {
-            get;
         }
 
         public string Get([NotNull] string key)
@@ -77,7 +59,6 @@ namespace Microsoft.Framework.Configuration
             value = null;
             return false;
         }
-
 
         public void Set([NotNull] string key, [NotNull] string value)
         {
@@ -130,34 +111,6 @@ namespace Microsoft.Framework.Configuration
             return new KeyValuePair<string, IConfiguration>(
                 segment,
                 new ConfigurationFocus(this, prefix + segment + Constants.KeyDelimiter));
-        }
-
-        /// <summary>
-        /// Adds a new configuration source.
-        /// </summary>
-        /// <param name="configurationSource">The configuration source to add.</param>
-        /// <returns>The same configuration source.</returns>
-        public IConfigurationBuilder Add(IConfigurationSource configurationSource)
-        {
-            return Add(configurationSource, load: true);
-        }
-
-        /// <summary>
-        /// Adds a new configuration source.
-        /// </summary>
-        /// <param name="configurationSource">The configuration source to add.</param>
-        /// <param name="load">If true, the configuration source's <see cref="IConfigurationSource.Load"/> method will
-       ///  be called.</param>
-        /// <returns>The same configuration source.</returns>
-        /// <remarks>This method is intended only for test scenarios.</remarks>
-        public IConfigurationBuilder Add(IConfigurationSource configurationSource, bool load)
-        {
-            if (load)
-            {
-                configurationSource.Load();
-            }
-            _sources.Add(configurationSource);
-            return this;
         }
     }
 }

@@ -15,17 +15,17 @@ namespace Microsoft.Framework.Configuration.Test
         public void SetBasePathThroughConstructor()
         {
             var expectedBasePath = @"C:\ExamplePath";
-            var config = new ConfigurationSection(basePath: expectedBasePath);
+            var builder = new ConfigurationBuilder(basePath: expectedBasePath);
 
-            Assert.Equal(expectedBasePath, config.BasePath);
+            Assert.Equal(expectedBasePath, builder.BasePath);
         }
 
         [Fact]
         public void DefaultBasePathIsNull()
         {
-            var config = new ConfigurationSection();
+            var builder = new ConfigurationBuilder();
 
-            Assert.Null(config.BasePath);
+            Assert.Null(builder.BasePath);
         }
 
         [Fact]
@@ -48,24 +48,26 @@ namespace Microsoft.Framework.Configuration.Test
             var memConfigSrc2 = new MemoryConfigurationSource(dic2);
             var memConfigSrc3 = new MemoryConfigurationSource(dic3);
 
-            var config = new ConfigurationSection();
+            var builder = new ConfigurationBuilder();
 
             string memVal1, memVal2, memVal3;
             bool memRet1, memRet2, memRet3;
 
             // Act
-            config.Add(memConfigSrc1, load: false);
-            config.Add(memConfigSrc2, load: false);
-            config.Add(memConfigSrc3, load: false);
+            builder.Add(memConfigSrc1, load: false);
+            builder.Add(memConfigSrc2, load: false);
+            builder.Add(memConfigSrc3, load: false);
+
+            var config = builder.Build();
 
             memRet1 = config.TryGet("mem1:keyinmem1", out memVal1);
             memRet2 = config.TryGet("Mem2:KeyInMem2", out memVal2);
             memRet3 = config.TryGet("MEM3:KEYINMEM3", out memVal3);
 
             // Assert
-            Assert.Contains(memConfigSrc1, config.Sources);
-            Assert.Contains(memConfigSrc2, config.Sources);
-            Assert.Contains(memConfigSrc3, config.Sources);
+            Assert.Contains(memConfigSrc1, builder.Sources);
+            Assert.Contains(memConfigSrc2, builder.Sources);
+            Assert.Contains(memConfigSrc3, builder.Sources);
 
             Assert.True(memRet1);
             Assert.True(memRet2);
@@ -101,11 +103,13 @@ namespace Microsoft.Framework.Configuration.Test
             var memConfigSrc1 = new MemoryConfigurationSource(dic1);
             var memConfigSrc2 = new MemoryConfigurationSource(dic2);
 
-            var config = new ConfigurationSection();
+            var builder = new ConfigurationBuilder();
 
             // Act
-            config.Add(memConfigSrc1, load: false);
-            config.Add(memConfigSrc2, load: false);
+            builder.Add(memConfigSrc1, load: false);
+            builder.Add(memConfigSrc2, load: false);
+
+            var config = builder.Build();
 
             // Assert
             Assert.Equal("ValueInMem2", config.Get("Key1:Key2"));
@@ -124,10 +128,13 @@ namespace Microsoft.Framework.Configuration.Test
             var memConfigSrc2 = new MemoryConfigurationSource(dict);
             var memConfigSrc3 = new MemoryConfigurationSource(dict);
 
-            var config = new ConfigurationSection();
-            config.Add(memConfigSrc1, load: false);
-            config.Add(memConfigSrc2, load: false);
-            config.Add(memConfigSrc3, load: false);
+            var builder = new ConfigurationBuilder();
+
+            builder.Add(memConfigSrc1, load: false);
+            builder.Add(memConfigSrc2, load: false);
+            builder.Add(memConfigSrc3, load: false);
+
+            var config = builder.Build();
 
             // Act
             config.Set("Key1", "NewValue1");
@@ -165,10 +172,12 @@ namespace Microsoft.Framework.Configuration.Test
             var memConfigSrc2 = new MemoryConfigurationSource(dic2);
             var memConfigSrc3 = new MemoryConfigurationSource(dic3);
 
-            var config = new ConfigurationSection();
-            config.Add(memConfigSrc1, load: false);
-            config.Add(memConfigSrc2, load: false);
-            config.Add(memConfigSrc3, load: false);
+            var builder = new ConfigurationBuilder();
+            builder.Add(memConfigSrc1, load: false);
+            builder.Add(memConfigSrc2, load: false);
+            builder.Add(memConfigSrc3, load: false);
+
+            var config = builder.Build();
 
             string memVal1, memVal2, memVal3, memVal4, memVal5;
             bool memRet1, memRet2, memRet3, memRet4, memRet5;
@@ -227,10 +236,12 @@ namespace Microsoft.Framework.Configuration.Test
             var memConfigSrc2 = new MemoryConfigurationSource(dic2);
             var memConfigSrc3 = new MemoryConfigurationSource(dic3);
 
-            var config = new ConfigurationSection();
-            config.Add(memConfigSrc1, load: false);
-            config.Add(memConfigSrc2, load: false);
-            config.Add(memConfigSrc3, load: false);
+            var builder = new ConfigurationBuilder();
+            builder.Add(memConfigSrc1, load: false);
+            builder.Add(memConfigSrc2, load: false);
+            builder.Add(memConfigSrc3, load: false);
+
+            var config = builder.Build();
 
             // Act
             var configFocusList = config.GetConfigurationSections("Data");
@@ -264,15 +275,17 @@ namespace Microsoft.Framework.Configuration.Test
                     memConfigSrc3
                 };
 
-            var config = new ConfigurationSection();
+            var builder = new ConfigurationBuilder();
 
             // Act
-            config.Add(memConfigSrc1, load: false);
-            config.Add(memConfigSrc2, load: false);
-            config.Add(memConfigSrc3, load: false);
+            builder.Add(memConfigSrc1, load: false);
+            builder.Add(memConfigSrc2, load: false);
+            builder.Add(memConfigSrc3, load: false);
+
+            var config = builder.Build();
 
             // Assert
-            var enumerator = config.Sources.GetEnumerator();
+            var enumerator = builder.Sources.GetEnumerator();
             int srcCount = 0;
             while (enumerator.MoveNext())
             {
@@ -302,17 +315,17 @@ namespace Microsoft.Framework.Configuration.Test
                     memConfigSrc3
                 };
 
-            var config = new ConfigurationSection();
+            var builder = new ConfigurationBuilder();
 
             // Act
-            config.Add(memConfigSrc1, load: false);
-            config.Add(memConfigSrc2, load: false);
-            config.Add(memConfigSrc3, load: false);
+            builder.Add(memConfigSrc1, load: false);
+            builder.Add(memConfigSrc2, load: false);
+            builder.Add(memConfigSrc3, load: false);
 
-            var enumerable = config as IEnumerable;
+            var enumerable = builder as IEnumerable;
 
             // Assert
-            var enumerator = config.Sources.GetEnumerator();
+            var enumerator = builder.Sources.GetEnumerator();
             int srcCount = 0;
             while (enumerator.MoveNext())
             {
@@ -327,7 +340,9 @@ namespace Microsoft.Framework.Configuration.Test
         public void SetValueThrowsExceptionNoSourceRegistered()
         {
             // Arrange
-            var config = new ConfigurationSection();
+            var builder = new ConfigurationBuilder();
+            var config = builder.Build();
+
             var expectedMsg = Resources.Error_NoSources;
 
             // Act

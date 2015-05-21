@@ -114,6 +114,11 @@ namespace Microsoft.Framework.Configuration.Test
             {
                 throw new NotImplementedException();
             }
+
+            public IConfiguration Build()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
