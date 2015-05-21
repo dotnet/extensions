@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Xunit;
 
-namespace Microsoft.Framework.Configuration.Test
+namespace Microsoft.Framework.Configuration.Binder.Test
 {
     public class ConfigurationBinderTests
     {

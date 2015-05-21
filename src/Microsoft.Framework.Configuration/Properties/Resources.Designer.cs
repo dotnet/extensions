@@ -11,54 +11,6 @@ namespace Microsoft.Framework.Configuration
             = new ResourceManager("Microsoft.Framework.Configuration.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// Cannot create instance of type '{0}' because it is either abstract or an interface.
-        /// </summary>
-        internal static string Error_CannotActivateAbstractOrInterface
-        {
-            get { return GetString("Error_CannotActivateAbstractOrInterface"); }
-        }
-
-        /// <summary>
-        /// Cannot create instance of type '{0}' because it is either abstract or an interface.
-        /// </summary>
-        internal static string FormatError_CannotActivateAbstractOrInterface(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_CannotActivateAbstractOrInterface"), p0);
-        }
-
-        /// <summary>
-        /// Failed to convert '{0}' to type '{1}'.
-        /// </summary>
-        internal static string Error_FailedBinding
-        {
-            get { return GetString("Error_FailedBinding"); }
-        }
-
-        /// <summary>
-        /// Failed to convert '{0}' to type '{1}'.
-        /// </summary>
-        internal static string FormatError_FailedBinding(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_FailedBinding"), p0, p1);
-        }
-
-        /// <summary>
-        /// Failed to create instance of type '{0}'.
-        /// </summary>
-        internal static string Error_FailedToActivate
-        {
-            get { return GetString("Error_FailedToActivate"); }
-        }
-
-        /// <summary>
-        /// Failed to create instance of type '{0}'.
-        /// </summary>
-        internal static string FormatError_FailedToActivate(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_FailedToActivate"), p0);
-        }
-
-        /// <summary>
         /// Unable to resolve path '{0}'; construct this {1} with a non-null {2}.
         /// </summary>
         internal static string Error_MissingBasePath
@@ -72,22 +24,6 @@ namespace Microsoft.Framework.Configuration
         internal static string FormatError_MissingBasePath(object p0, object p1, object p2)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("Error_MissingBasePath"), p0, p1, p2);
-        }
-
-        /// <summary>
-        /// Cannot create instance of type '{0}' because it is missing a public parameterless constructor.
-        /// </summary>
-        internal static string Error_MissingParameterlessConstructor
-        {
-            get { return GetString("Error_MissingParameterlessConstructor"); }
-        }
-
-        /// <summary>
-        /// Cannot create instance of type '{0}' because it is missing a public parameterless constructor.
-        /// </summary>
-        internal static string FormatError_MissingParameterlessConstructor(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_MissingParameterlessConstructor"), p0);
         }
 
         /// <summary>
