@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Framework.Configuration;
+using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
@@ -76,7 +77,8 @@ namespace Microsoft.Framework.OptionsModel.Tests
                 {"Boolean", "TRUe"},
                 {"Nested:Integer", "11"}
             };
-            var config = new ConfigurationSection(new MemoryConfigurationSource(dic));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
             var options = ConfigurationBinder.Bind<ComplexOptions>(config);
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
@@ -93,7 +95,8 @@ namespace Microsoft.Framework.OptionsModel.Tests
                 {"Nested:Integer", "11"},
                 {"Virtual","Sup"}
             };
-            var config = new ConfigurationSection(new MemoryConfigurationSource(dic));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
             var options = ConfigurationBinder.Bind<DerivedOptions>(config);
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
@@ -108,7 +111,8 @@ namespace Microsoft.Framework.OptionsModel.Tests
             {
                 {"StaticProperty", "stuff"},
             };
-            var config = new ConfigurationSection(new MemoryConfigurationSource(dic));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
             var options = ConfigurationBinder.Bind<ComplexOptions>(config);
             Assert.Equal("stuff", ComplexOptions.StaticProperty);
         }
@@ -124,7 +128,8 @@ namespace Microsoft.Framework.OptionsModel.Tests
             {
                 {property, "stuff"},
             };
-            var config = new ConfigurationSection(new MemoryConfigurationSource(dic));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
             var options = ConfigurationBinder.Bind<ComplexOptions>(config);
             Assert.Null(options.GetType().GetProperty(property).GetValue(options));
         }
@@ -137,7 +142,8 @@ namespace Microsoft.Framework.OptionsModel.Tests
             {
                 {"Message", "!"},
             };
-            var config = new ConfigurationSection(new MemoryConfigurationSource(dic));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
             services.Configure<FakeOptions>(o => o.Message += "Igetstomped", -100000);
             services.Configure<FakeOptions>(config);
             services.Configure<FakeOptions>(o => o.Message += "a", -100);
@@ -179,7 +185,8 @@ namespace Microsoft.Framework.OptionsModel.Tests
             {
                 {"Message", "!"},
             };
-            var config = new ConfigurationSection(new MemoryConfigurationSource(dic));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
 
             services.ConfigureOptions(new FakeOptionsSetupB { Name = "2" });
             services.Configure<FakeOptions>(o => o.Message += "Z", 10000, "2");
@@ -295,7 +302,8 @@ namespace Microsoft.Framework.OptionsModel.Tests
         {
             // Arrange
             var services = new ServiceCollection().AddOptions();
-            var config = new ConfigurationSection(new MemoryConfigurationSource(configValues));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(configValues));
+            var config = builder.Build();
             services.Configure<NullableOptions>(config);
 
             // Act
@@ -357,7 +365,8 @@ namespace Microsoft.Framework.OptionsModel.Tests
         {
             // Arrange
             var services = new ServiceCollection().AddOptions();
-            var config = new ConfigurationSection(new MemoryConfigurationSource(configValues));
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(configValues));
+            var config = builder.Build();
             services.Configure<EnumOptions>(config);
 
             // Act
