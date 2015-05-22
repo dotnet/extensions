@@ -97,6 +97,88 @@ namespace Microsoft.Framework.Logging.Test
         }
 
         [Fact]
+        public void ThrowsException_WhenNoMessageAndExceptionAreProvided()
+        {
+            // Arrange
+            var t = SetUp(null);
+            var logger = (ILogger)t.Item1;
+            var sink = t.Item2;
+            var expectedExceptionMessage = "No message or exception details were found " +
+                    "to create a message for the log.";
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => logger.LogCritical(state: null));
+            Assert.Equal(expectedExceptionMessage, exception.Message);
+            exception = Assert.Throws<InvalidOperationException>(() => logger.LogCritical(state: null, error: null));
+            Assert.Equal(expectedExceptionMessage, exception.Message);
+        }
+
+        [Fact]
+        public void DoesNotLog_NewLine_WhenNoExceptionIsProvided()
+        {
+            // Arrange
+            var t = SetUp(null);
+            var logger = (ILogger)t.Item1;
+            var sink = t.Item2;
+            var expectedMessage = "Route with name 'Default' was not found.";
+
+            // Act
+            logger.LogCritical(expectedMessage);
+            logger.LogCritical(expectedMessage, error: null);
+            logger.LogCritical(eventId: 10, message: expectedMessage);
+            logger.LogCritical(eventId: 10, message: expectedMessage, error: null);
+
+            // Assert
+            Assert.Equal(4, sink.Writes.Count);
+            Assert.Equal($"critical: [{_name}] {expectedMessage}", sink.Writes[0].Message);
+            Assert.Equal($"critical: [{_name}] {expectedMessage}", sink.Writes[1].Message);
+            Assert.Equal($"critical: [{_name}] {expectedMessage}", sink.Writes[2].Message);
+            Assert.Equal($"critical: [{_name}] {expectedMessage}", sink.Writes[3].Message);
+        }
+
+        [Theory]
+        [InlineData("Route with name 'Default' was not found.")]
+        [InlineData("")]
+        public void Writes_NewLine_WhenExceptionIsProvided(string message)
+        {
+            // Arrange
+            var t = SetUp(null);
+            var logger = (ILogger)t.Item1;
+            var sink = t.Item2;
+            var exception = new InvalidOperationException("Invalid value");
+            var expectedMessage = $"{message}{Environment.NewLine}{exception}";
+
+            // Act
+            logger.LogCritical(message, exception);
+            logger.LogCritical(10, message, exception);
+
+            // Assert
+            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal($"critical: [{_name}] {expectedMessage}", sink.Writes[0].Message);
+            Assert.Equal($"critical: [{_name}] {expectedMessage}", sink.Writes[1].Message);
+        }
+
+        [Fact]
+        public void WritesException_WhenNoMessageIsProvided()
+        {
+            // Arrange
+            var t = SetUp(null);
+            var logger = (ILogger)t.Item1;
+            var sink = t.Item2;
+            var exception = new InvalidOperationException("Invalid value");
+            var expectedMessage = exception.ToString();
+
+            // Act
+            logger.LogCritical(state: null, error: exception);
+            logger.LogCritical(10, state: null, error: exception);
+
+            // Assert
+            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal($"critical: [{_name}] {expectedMessage}", sink.Writes[0].Message);
+            Assert.Equal($"critical: [{_name}] {expectedMessage}", sink.Writes[1].Message);
+        }
+
+        [Fact]
         public void LogsWhenNullFilterGiven()
         {
             // Arrange
