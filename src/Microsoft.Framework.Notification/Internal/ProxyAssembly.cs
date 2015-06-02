@@ -20,8 +20,13 @@ namespace Microsoft.Framework.Notification.Internal
         {
             var assemblyName = new AssemblyName("Microsoft.Framework.Notification.ProxyAssembly");
 
-            AssemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
-            ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Main Module");
+#if NET45 || DNX451
+            var access = AssemblyBuilderAccess.RunAndSave;
+#else
+            var access = AssemblyBuilderAccess.Run;
+#endif
+            AssemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, access);
+            ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Microsoft.Framework.Notification.ProxyAssembly.dll");
         }
 
         public static TypeBuilder DefineType(
@@ -33,6 +38,16 @@ namespace Microsoft.Framework.Notification.Internal
             name = name + "_" + Counter++;
             return ModuleBuilder.DefineType(name, attributes, baseType, interfaces);
         }
+
+#if NET45 || DNX451
+
+        public static void WriteToFile(string file)
+        {
+            AssemblyBuilder.Save(file);
+        }
+
+#endif
+
     }
 }
 

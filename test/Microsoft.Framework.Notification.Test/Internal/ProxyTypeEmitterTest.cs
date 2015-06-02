@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace Microsoft.Framework.Notification.Internal
@@ -210,6 +212,306 @@ namespace Microsoft.Framework.Notification.Internal
             Assert.Equal(expected, exception.Message);
         }
 
+        [Fact]
+        public void Adapt_List_ToReadOnlyList()
+        {
+            // Arrange
+            var value = new List<string>()
+            {
+                "Hello",
+                "World",
+            };
+
+            // Act 
+            var proxy = Convert<IList<string>, IReadOnlyList<string>>(value);
+
+            // Assert
+            Assert.NotNull(proxy);
+            Assert.Equal(2, proxy.Count);
+            Assert.Equal("Hello", proxy[0]);
+            Assert.Equal("World", proxy[1]);
+        }
+
+        [Fact]
+        public void Adapt_List_ToReadOnlyList_Enumerator()
+        {
+            // Arrange
+            var value = new List<string>()
+            {
+                "Hello",
+                "World",
+            };
+
+            // Act 
+            var proxy = Convert<IList<string>, IReadOnlyList<string>>(value);
+
+            // Assert
+            Assert.NotNull(proxy);
+
+            var sequence = value.Zip(proxy, (i, j) => Tuple.Create(i, j));
+            foreach (var item in sequence)
+            {
+                Assert.Equal(item.Item1, item.Item2);
+            }
+        }
+
+        [Fact]
+        public void Adapt_ListWithProxy_ToReadOnlyList()
+        {
+            // Arrange
+            var value = new List<Person>()
+            {
+                new Person() { FirstName = "Billy" },
+                new Person() { FirstName = "Joe" },
+            };
+
+            // Act 
+            var proxy = Convert<IList<Person>, IReadOnlyList<IPerson>>(value);
+
+            // Assert
+            Assert.NotNull(proxy);
+            Assert.Equal(2, proxy.Count);
+            Assert.Equal("Billy", proxy[0].FirstName);
+            Assert.Equal("Joe", proxy[1].FirstName);
+        }
+
+        [Fact]
+        public void Adapt_ListWithProxy_ToReadOnlyList_Enumerator()
+        {
+            // Arrange
+            var value = new List<Person>()
+            {
+                new Person() { FirstName = "Billy" },
+                new Person() { FirstName = "Joe" },
+            };
+
+            // Act 
+            var proxy = Convert<IList<Person>, IReadOnlyList<IPerson>>(value);
+
+            // Assert
+            Assert.NotNull(proxy);
+
+            var sequence = value.Zip(proxy, (i, j) => Tuple.Create(i, j));
+            foreach (var item in sequence)
+            {
+                Assert.Equal(item.Item1.FirstName, item.Item2.FirstName);
+            }
+        }
+
+        [Fact]
+        public void Adapt_Array_ToReadOnlyList()
+        {
+            // Arrange
+            var value = new string[]
+            {
+                "Hello",
+                "World",
+            };
+
+            // Act 
+            var proxy = Convert<IList<string>, IReadOnlyList<string>>(value);
+
+            // Assert
+            Assert.NotNull(proxy);
+            Assert.Equal(2, proxy.Count);
+            Assert.Equal("Hello", proxy[0]);
+            Assert.Equal("World", proxy[1]);
+        }
+
+        [Fact]
+        public void Adapt_Array_ToReadOnlyList_Enumerator()
+        {
+            // Arrange
+            var value = new string[]
+            {
+                "Hello",
+                "World",
+            };
+
+            // Act 
+            var proxy = Convert<IList<string>, IReadOnlyList<string>>(value);
+
+            // Assert
+            Assert.NotNull(proxy);
+
+            var sequence = value.Zip(proxy, (i, j) => Tuple.Create(i, j));
+            foreach (var item in sequence)
+            {
+                Assert.Equal(item.Item1, item.Item2);
+            }
+        }
+
+        [Fact]
+        public void Adapt_ListProperty_ToReadOnlyList()
+        {
+            // Arrange
+            var value = new HasListProperty()
+            {
+                ListProperty = new List<string>()
+                {
+                    "Hello",
+                    "World",
+                },
+            };
+
+            // Act 
+            var proxy = ConvertTo<IHasReadOnlyListProperty>(value);
+
+            // Assert
+            Assert.NotNull(proxy.ListProperty);
+            Assert.Equal(2, proxy.ListProperty.Count);
+            Assert.Equal("Hello", proxy.ListProperty[0]);
+            Assert.Equal("World", proxy.ListProperty[1]);
+        }
+
+        [Fact]
+        public void Adapt_ListListProperty_ToReadOnlyList_Enumerator()
+        {
+            // Arrange
+            var value = new HasListProperty()
+            {
+                ListProperty = new List<string>()
+                {
+                    "Hello",
+                    "World",
+                },
+            };
+
+            // Act 
+            var proxy = ConvertTo<IHasReadOnlyListProperty>(value);
+
+            // Assert
+            Assert.NotNull(proxy.ListProperty);
+
+            var sequence = value.ListProperty.Zip(proxy.ListProperty, (i, j) => Tuple.Create(i, j));
+            foreach (var item in sequence)
+            {
+                Assert.Equal(item.Item1, item.Item2);
+            }
+        }
+
+        [Fact]
+        public void Adapt_ArrayListProperty_ToReadOnlyList()
+        {
+            // Arrange
+            var value = new HasArrayProperty()
+            {
+                ListProperty = new string[]
+                {
+                    "Hello",
+                    "World",
+                },
+            };
+
+            // Act 
+            var proxy = ConvertTo<IHasReadOnlyListProperty>(value);
+
+            // Assert
+            Assert.NotNull(proxy.ListProperty);
+            Assert.Equal(2, proxy.ListProperty.Count);
+            Assert.Equal("Hello", proxy.ListProperty[0]);
+            Assert.Equal("World", proxy.ListProperty[1]);
+        }
+
+        [Fact]
+        public void Adapt_ArrayListProperty_ToReadOnlyList_Enumerator()
+        {
+            // Arrange
+            var value = new HasArrayProperty()
+            {
+                ListProperty = new string[]
+                {
+                    "Hello",
+                    "World",
+                },
+            };
+
+            // Act 
+            var proxy = ConvertTo<IHasReadOnlyListProperty>(value);
+
+            // Assert
+            Assert.NotNull(proxy.ListProperty);
+
+            var sequence = value.ListProperty.Zip(proxy.ListProperty, (i, j) => Tuple.Create(i, j));
+            foreach (var item in sequence)
+            {
+                Assert.Equal(item.Item1, item.Item2);
+            }
+        }
+
+        [Fact]
+        public void Adapt_ListPropertyWithProxy_ToReadOnlyList()
+        {
+            // Arrange
+            var value = new HasListOfPersonProperty()
+            {
+                ListProperty = new List<Person>()
+                {
+                    new Person() { FirstName = "Billy" },
+                    new Person() { FirstName = "Joe" },
+                }
+            };
+
+            // Act 
+            var proxy = ConvertTo<IHasReadOnlyListOfPersonProperty>(value);
+
+            // Assert
+            Assert.NotNull(proxy);
+            Assert.Equal(2, proxy.ListProperty.Count);
+            Assert.Equal("Billy", proxy.ListProperty[0].FirstName);
+            Assert.Equal("Joe", proxy.ListProperty[1].FirstName);
+        }
+
+        [Fact]
+        public void Adapt_ListPropertyWithProxy_ToReadOnlyList_Enumerator()
+        {
+            // Arrange
+            var value = new HasListOfPersonProperty()
+            {
+                ListProperty = new List<Person>()
+                {
+                    new Person() { FirstName = "Billy" },
+                    new Person() { FirstName = "Joe" },
+                }
+            };
+
+            // Act 
+            var proxy = ConvertTo<IHasReadOnlyListOfPersonProperty>(value);
+
+            // Assert
+            Assert.NotNull(proxy);
+
+            var sequence = value.ListProperty.Zip(proxy.ListProperty, (i, j) => Tuple.Create(i, j));
+            foreach (var item in sequence)
+            {
+                Assert.Equal(item.Item1.FirstName, item.Item2.FirstName);
+            }
+        }
+
+        [Fact]
+        public void Adapt_NestedList()
+        {
+            // Arrange
+            var value = new List<IList<IList<Person>>>()
+            {
+                new List<IList<Person>>()
+                {
+                    new List<Person>()
+                    {
+                        new Person() { FirstName = "Billy" },
+                    },
+                },
+            };
+
+            // Act 
+            var proxy = Convert<IList<IList<IList<Person>>>, IReadOnlyList<IReadOnlyList<IReadOnlyList<IPerson>>>>(value);
+
+            // Assert
+            Assert.NotNull(proxy);
+            Assert.Equal(1, proxy[0][0].Count);
+            Assert.Equal("Billy", proxy[0][0][0].FirstName);
+        }
+
         private object ConvertTo(object value, Type type)
         {
             var cache = new ProxyTypeCache();
@@ -231,6 +533,47 @@ namespace Microsoft.Framework.Notification.Internal
             var proxy = Activator.CreateInstance(proxyType, value);
 
             return Assert.IsAssignableFrom<T>(proxy);
+        }
+
+        private U Convert<T, U>(object value)
+        {
+            var cache = new ProxyTypeCache();
+            var proxyType = ProxyTypeEmitter.GetProxyType(cache, typeof(U), typeof(T));
+
+            Assert.NotNull(proxyType);
+            var proxy = Activator.CreateInstance(proxyType, value);
+
+            return Assert.IsAssignableFrom<U>(proxy);
+        }
+
+        public interface IHasReadOnlyListProperty
+        {
+            IReadOnlyList<string> ListProperty { get; }
+        }
+
+        public class HasListProperty
+        {
+            public IList<string> ListProperty { get; set; }
+        }
+
+        public class HasArrayProperty
+        {
+            public string[] ListProperty { get; set; }
+        }
+
+        public class HasReadOnlyListProperty
+        {
+            public IReadOnlyList<string> ListProperty { get; set; }
+        }
+
+        public interface IHasReadOnlyListOfPersonProperty
+        {
+            IReadOnlyList<IPerson> ListProperty { get; }
+        }
+
+        public class HasListOfPersonProperty
+        {
+            public IList<Person> ListProperty { get; set; }
         }
 
         public interface IPrivateGetter

@@ -42,42 +42,50 @@ namespace Microsoft.Framework.Notification.Internal
 
                 Debug.Assert(context.Visited.ContainsKey(context.Key));
 
-                // Now that we've generated all of the constructors for the proxies, we can generate the rest
-                // of the type.
+                // Now that we've generated all of the constructors for the proxies, we can generate the properties.
                 foreach (var verificationResult in context.Visited)
                 {
-                    AddProperties(
-                        context,
-                        verificationResult.Value.TypeBuilder,
-                        verificationResult.Value.Mappings);
+                    if (verificationResult.Value.Mappings != null)
+                    {
+                        AddProperties(
+                            context,
+                            verificationResult.Value.TypeBuilder,
+                            verificationResult.Value.Mappings);
+                    }
+                }
 
-
-                    verificationResult.Value.TypeBuilder.CreateTypeInfo().AsType();
+                // Now generate the type
+                foreach (var verificationResult in context.Visited)
+                {
+                    if (verificationResult.Value.TypeBuilder != null)
+                    {
+                        verificationResult.Value.Type = verificationResult.Value.TypeBuilder.CreateTypeInfo().AsType();
+                    }
                 }
 
                 // We only want to publish the results after all of the proxies are totally generated.
                 foreach (var verificationResult in context.Visited)
                 {
-                    cache[verificationResult.Key] = ProxyTypeCacheResult.FromTypeBuilder(
-                        verificationResult.Key, 
-                        verificationResult.Value.TypeBuilder,
-                        verificationResult.Value.ConstructorBuilder);
+                    cache[verificationResult.Key] = ProxyTypeCacheResult.FromType(
+                        verificationResult.Key,
+                        verificationResult.Value.Type,
+                        verificationResult.Value.Constructor);
                 }
 
-                return context.Visited[context.Key].TypeBuilder.CreateTypeInfo().AsType();
+                return context.Visited[context.Key].Type;
             }
             else if (result.IsError)
             {
                 throw new InvalidOperationException(result.Error);
             }
-            else if (result.TypeBuilder == null)
+            else if (result.Type == null)
             {
                 // This is an identity convertion
                 return null;
             }
             else
             {
-                return result.TypeBuilder.CreateTypeInfo().AsType();
+                return result.Type;
             }
         }
 
@@ -118,6 +126,46 @@ namespace Microsoft.Framework.Notification.Internal
             var verificationResult = new VerificationResult();
             context.Visited.Add(key, verificationResult);
 
+            // We support conversions from IList<T> -> IReadOnlyList<U> and IReadOnlyList<T> -> IReadOnlyList<U>
+            if (targetType.GetTypeInfo().IsGenericType &&
+                targetType.GetTypeInfo().GetGenericTypeDefinition() == typeof(IReadOnlyList<>))
+            {
+                var sourceInterfaceType = GetGenericImplementation(sourceType, typeof(IList<>));
+                if (sourceInterfaceType != null)
+                {
+                    var targetElementType = targetType.GetGenericArguments()[0];
+                    var sourceElementType = sourceInterfaceType.GetGenericArguments()[0];
+
+                    var elementKey = new Tuple<Type, Type>(sourceElementType, targetElementType);
+                    if (!VerifyProxySupport(context, elementKey))
+                    {
+                        var error = context.Cache[elementKey];
+                        Debug.Assert(error != null && error.IsError);
+                        context.Cache[key] = error;
+                        return false;
+                    }
+
+                    VerificationResult elementResult;
+                    context.Visited.TryGetValue(elementKey, out elementResult);
+
+                    var proxyType = elementResult?.Type?.GetTypeInfo() ?? (TypeInfo)elementResult?.TypeBuilder;
+                    if (proxyType == null)
+                    {
+                        // No proxy needed for elements.
+                        verificationResult.Type = typeof(ProxyList<,>).MakeGenericType(elementKey.Item1, elementKey.Item2);
+                        verificationResult.Constructor = verificationResult.Type.GetConstructors()[0];
+                    }
+                    else
+                    {
+                        // We need to proxy each of the elements. Let's generate a type.
+                        GenerateProxyTypeForList(elementKey.Item1, elementKey.Item2, proxyType.AsType(), verificationResult);
+                    }
+
+                    return true;
+                }
+            }
+
+            // This doesn't match any of our interface conversions, so we'll codegen a proxy.
             var propertyMappings = new List<KeyValuePair<PropertyInfo, PropertyInfo>>();
 
             var sourceProperties = sourceType.GetRuntimeProperties();
@@ -157,8 +205,8 @@ namespace Microsoft.Framework.Notification.Internal
                 //
                 // For now we'll just store null, and later generate a stub getter that returns default(T).
                 var sourceProperty = sourceProperties.Where(p => p.Name == targetProperty.Name).FirstOrDefault();
-                if (sourceProperty != null && 
-                    sourceProperty.CanRead && 
+                if (sourceProperty != null &&
+                    sourceProperty.CanRead &&
                     sourceProperty.GetMethod?.IsPublic == true)
                 {
                     var propertyKey = new Tuple<Type, Type>(sourceProperty.PropertyType, targetProperty.PropertyType);
@@ -181,7 +229,44 @@ namespace Microsoft.Framework.Notification.Internal
             }
 
             verificationResult.Mappings = propertyMappings;
+            GenerateProxyTypeFromProperties(sourceType, targetType, verificationResult);
 
+            return true;
+        }
+
+        private static void GenerateProxyTypeForList(
+            Type sourceElementType,
+            Type targetElementType,
+            Type proxyType,
+            VerificationResult verificationResult)
+        {
+            var baseType = typeof(ProxyList<,>).MakeGenericType(sourceElementType, targetElementType);
+            var baseConstructor = baseType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)[0];
+
+            var typeBuilder = ProxyAssembly.DefineType(
+                string.Format("Proxy_From_IList<{0}>_To_IReadOnlyList<{1}>", sourceElementType.Name, targetElementType.Name),
+                TypeAttributes.Class,
+                baseType,
+                new Type[] { typeof(IReadOnlyList<>).MakeGenericType(targetElementType) });
+
+            var constructorBuilder = typeBuilder.DefineConstructor(
+                MethodAttributes.Public,
+                CallingConventions.Standard,
+                new Type[] { typeof(IList<>).MakeGenericType(sourceElementType) });
+
+            var il = constructorBuilder.GetILGenerator();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldarg_1);
+            il.Emit(OpCodes.Ldtoken, proxyType);
+            il.Emit(OpCodes.Call, baseConstructor);
+            il.Emit(OpCodes.Ret);
+
+            verificationResult.Constructor = constructorBuilder;
+            verificationResult.TypeBuilder = typeBuilder;
+        }
+
+        private static void GenerateProxyTypeFromProperties(Type sourceType, Type targetType, VerificationResult verificationResult)
+        {
             var baseType = typeof(ProxyBase<>).MakeGenericType(sourceType);
             var typeBuilder = ProxyAssembly.DefineType(
                 string.Format("Proxy_From_{0}_To_{1}", sourceType.Name, targetType.Name),
@@ -201,10 +286,8 @@ namespace Microsoft.Framework.Notification.Internal
             il.Emit(OpCodes.Call, baseType.GetConstructor(new Type[] { sourceType }));
             il.Emit(OpCodes.Ret);
 
-            verificationResult.ConstructorBuilder = constructorBuilder;
+            verificationResult.Constructor = constructorBuilder;
             verificationResult.TypeBuilder = typeBuilder;
-
-            return true;
         }
 
         private static void AddProperties(
@@ -248,7 +331,7 @@ namespace Microsoft.Framework.Notification.Internal
                 {
                     // Push 'this' and get the underlying instance.
                     il.Emit(OpCodes.Ldarg_0);
-                    il.Emit(OpCodes.Ldfld, 
+                    il.Emit(OpCodes.Ldfld,
                         typeBuilder.BaseType.GetField(
                             "Instance",
                             BindingFlags.Instance | BindingFlags.Public));
@@ -279,50 +362,49 @@ namespace Microsoft.Framework.Notification.Internal
             // If we get here, then we actually need a proxy.
             var key = new Tuple<Type, Type>(sourceType, targetType);
 
-            ConstructorBuilder constructorBuilder = null;
+            ConstructorInfo constructor = null;
             ProxyTypeCacheResult cacheResult;
             VerificationResult verificationResult;
             if (context.Cache.TryGetValue(key, out cacheResult))
             {
                 Debug.Assert(!cacheResult.IsError);
-                Debug.Assert(cacheResult.ConstructorBuilder != null);
+                Debug.Assert(cacheResult.Constructor != null);
 
                 // This means we've got a fully-built (published) type.
-                constructorBuilder = cacheResult.ConstructorBuilder;
+                constructor = cacheResult.Constructor;
             }
             else if (context.Visited.TryGetValue(key, out verificationResult))
             {
-                Debug.Assert(verificationResult.ConstructorBuilder != null);
-                constructorBuilder = verificationResult.ConstructorBuilder;
+                if (verificationResult.Constructor != null)
+                {
+                    constructor = verificationResult.Constructor;
+                }
             }
 
-            Debug.Assert(constructorBuilder != null);
-
-            var endLabel = il.DefineLabel();
-            var createProxyLabel = il.DefineLabel();
-
-            // If the 'source' value is null, then just return it.
-            il.Emit(OpCodes.Dup);
-            il.Emit(OpCodes.Brfalse_S, endLabel);
-
-            // If the 'source' value isn't a proxy then we need to create one.
-            il.Emit(OpCodes.Dup);
-            il.Emit(OpCodes.Isinst, typeof(ProxyBase));
-            il.Emit(OpCodes.Brfalse_S, createProxyLabel);
-
-            // If the 'source' value is-a proxy then get the wrapped value.
-            il.Emit(OpCodes.Isinst, typeof(ProxyBase));
-            il.EmitCall(OpCodes.Callvirt, typeof(ProxyBase).GetMethod("get_UnderlyingInstanceAsObject"), null);
-            il.Emit(OpCodes.Dup);
-            il.Emit(OpCodes.Isinst, targetType);
-            il.Emit(OpCodes.Brtrue_S, endLabel);
-
-            il.MarkLabel(createProxyLabel);
+            Debug.Assert(constructor != null);
 
             // Create the proxy.
-            il.Emit(OpCodes.Newobj, constructorBuilder);
+            il.Emit(OpCodes.Newobj, constructor);
+        }
 
-            il.MarkLabel(endLabel);
+        private static Type GetGenericImplementation(Type type, Type openGenericInterfaceType)
+        {
+            if (type.GetTypeInfo().IsGenericType &&
+                type.GetTypeInfo().GetGenericTypeDefinition() == openGenericInterfaceType)
+            {
+                return type;
+            }
+
+            foreach (var interfaceType in type.GetTypeInfo().ImplementedInterfaces)
+            {
+                if (interfaceType.GetTypeInfo().IsGenericType &&
+                    interfaceType.GetTypeInfo().GetGenericTypeDefinition() == openGenericInterfaceType)
+                {
+                    return interfaceType;
+                }
+            }
+
+            return null;
         }
 
         private class ProxyBuilderContext
@@ -348,11 +430,13 @@ namespace Microsoft.Framework.Notification.Internal
 
         private class VerificationResult
         {
-            public ConstructorBuilder ConstructorBuilder { get; set; }
+            public ConstructorInfo Constructor { get; set; }
 
             public IEnumerable<KeyValuePair<PropertyInfo, PropertyInfo>> Mappings { get; set; }
 
             public TypeBuilder TypeBuilder { get; set; }
+
+            public Type Type { get; set; }
         }
     }
 }

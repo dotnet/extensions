@@ -4,7 +4,7 @@
 #if NET45 || DNX451 || DNXCORE50
 
 using System;
-using System.Reflection.Emit;
+using System.Reflection;
 
 namespace Microsoft.Framework.Notification.Internal
 {
@@ -19,20 +19,20 @@ namespace Microsoft.Framework.Notification.Internal
             };
         }
 
-        public static ProxyTypeCacheResult FromTypeBuilder(
+        public static ProxyTypeCacheResult FromType(
             Tuple<Type, Type> key,
-            TypeBuilder typeBuilder,
-            ConstructorBuilder constructorBuilder)
+            Type type,
+            ConstructorInfo constructor)
         {
             return new ProxyTypeCacheResult()
             {
                 Key = key,
-                TypeBuilder = typeBuilder,
-                ConstructorBuilder = constructorBuilder,
+                Type = type,
+                Constructor = constructor,
             };
         }
 
-        public ConstructorBuilder ConstructorBuilder { get; private set; }
+        public ConstructorInfo Constructor { get; private set; }
 
         public string Error { get; private set; }
 
@@ -40,7 +40,7 @@ namespace Microsoft.Framework.Notification.Internal
 
         public Tuple<Type, Type> Key { get; private set; }
 
-        public TypeBuilder TypeBuilder { get; private set; }
+        public Type Type { get; private set; }
     }
 }
 #endif
