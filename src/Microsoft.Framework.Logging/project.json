@@ -21,24 +21,15 @@
                 "System.Collections.Concurrent": ""
             }
         },
-        "dnxcore50": {
+        "dotnet": {
             "dependencies": {
                 "System.Collections.Concurrent": "4.0.10-beta-*",
                 "System.Collections": "4.0.10-beta-*",
+                "System.ComponentModel": "4.0.0-*",
                 "System.Diagnostics.TraceSource": "4.0.0-beta-*",
                 "System.Globalization": "4.0.10-beta-*",
                 "System.Linq": "4.0.0-beta-*",
                 "System.Threading": "4.0.10-beta-*"
-            }
-        },
-        ".NETPortable,Version=v4.5,Profile=Profile7": {
-            "frameworkAssemblies": {
-                "System.Collections": "",
-                "System.Collections.Concurrent": "",
-                "System.Reflection": "",
-                "System.Runtime.Extensions": "",
-                "System.Linq": "",
-                "System.Threading": ""
             }
         }
     }
