@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-#if DNXCORE50
+#if DOTNET
 using System.Threading;
-#elif NET45 || DNX451 || DNXCORE50
+#else
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 #endif
@@ -14,7 +14,7 @@ namespace Microsoft.Framework.Caching.Memory
 {
     internal static class EntryLinkHelpers
     {
-#if DNXCORE50
+#if DOTNET
         private static readonly AsyncLocal<EntryLink> _contextLink = new AsyncLocal<EntryLink>();
 
         public static EntryLink ContextLink
@@ -22,7 +22,7 @@ namespace Microsoft.Framework.Caching.Memory
             get { return _contextLink.Value; }
             set { _contextLink.Value = value; }
         }
-#elif NET45 || DNX451
+#else
         private const string ContextLinkDataName = "klr.host.EntryLinkHelpers.ContextLink";
 
         public static EntryLink ContextLink
@@ -42,12 +42,6 @@ namespace Microsoft.Framework.Caching.Memory
             {
                 CallContext.LogicalSetData(ContextLinkDataName, new ObjectHandle(value));
             }
-        }
-#else
-        public static EntryLink ContextLink
-        {
-            get { return null; }
-            set { throw new NotImplementedException(); }
         }
 #endif
 

@@ -4,15 +4,8 @@
     },
     "description": "ASP.NET 5 in memory cache abstractions.",
     "frameworks": {
-        ".NETPortable,Version=v4.5,Profile=Profile7": {
-            "frameworkAssemblies": {
-                "System.Collections": "",
-                "System.Runtime": "",
-                "System.Threading.Tasks": ""
-            }
-        },
         "dnx451": { },
-        "dnxcore50": {
+        "dotnet": {
             "dependencies": {
                 "System.Collections": "4.0.10-beta-*",
                 "System.Threading": "4.0.10-beta-*",

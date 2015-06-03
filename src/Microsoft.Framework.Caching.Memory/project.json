@@ -2,6 +2,7 @@
     "version": "1.0.0-*",
     "description": "ASP.NET 5 in memory cache abstractions and implementation.",
     "dependencies": {
+        "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
         "Microsoft.Framework.Caching.Abstractions": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Framework.OptionsModel": "1.0.0-*"
@@ -9,15 +10,11 @@
     "frameworks": {
         "net45": { },
         "dnx451": { },
-        "dnxcore50": {
+        "dotnet": {
             "dependencies": {
+                "System.Linq": "4.0.0-*",
                 "System.Threading": "4.0.10-beta-*",
                 "System.Threading.ThreadPool": "4.0.10-beta-*"
-            }
-        },
-        ".NETPortable,Version=v4.5,Profile=Profile7": {
-            "frameworkAssemblies": {
-                "System.Threading.Tasks": ""
             }
         }
     }
