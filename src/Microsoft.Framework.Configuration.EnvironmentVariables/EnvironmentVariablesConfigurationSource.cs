@@ -30,12 +30,10 @@ namespace Microsoft.Framework.Configuration.EnvironmentVariables
             _prefix = string.Empty;
         }
 
-#if NET45 || DNX451 || DNXCORE50
         public override void Load()
         {
             Load(Environment.GetEnvironmentVariables());
         }
-#endif
 
         internal void Load(IDictionary envVariables)
         {

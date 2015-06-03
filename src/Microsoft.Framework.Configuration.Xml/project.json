@@ -18,7 +18,7 @@
                 "System.Xml": ""
             }
         },
-        "dnxcore50": {
+        "dotnet": {
             "dependencies": {
                 "System.Xml.XmlDocument": "4.0.0-beta-*",
                 "System.Xml.XmlSerializer": "4.0.10-beta-*"
