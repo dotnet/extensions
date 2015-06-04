@@ -8,19 +8,6 @@
   "frameworks": {
     "net45": { },
     "dnx451": { },
-    "dnxcore50": { },
-    ".NETPortable,Version=v4.5,Profile=Profile7": {
-      "frameworkAssemblies": {
-        "System.Collections": "",
-        "System.Diagnostics.Debug": "",
-        "System.Globalization": "",
-        "System.Linq": "",
-        "System.Reflection": "",
-        "System.Resources.ResourceManager": "",
-        "System.Runtime": "",
-        "System.Runtime.Extensions": "",
-        "System.Runtime.InteropServices": ""
-      }
-    }
+    "dotnet": { }
   }
 }

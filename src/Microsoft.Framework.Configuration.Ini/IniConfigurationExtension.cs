@@ -11,7 +11,6 @@ namespace Microsoft.Framework.Configuration
 {
     public static class IniConfigurationExtension
     {
-#if NET45 || DNX451 || DNXCORE50
         /// <summary>
         /// Adds the INI configuration source at <paramref name="path"/> to <paramref name="configuraton"/>.
         /// </summary>
@@ -55,6 +54,5 @@ namespace Microsoft.Framework.Configuration
             configuration.Add(new IniFileConfigurationSource(fullPath, optional: optional));
             return configuration;
         }
-#endif
     }
 }
