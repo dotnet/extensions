@@ -106,15 +106,14 @@ namespace Microsoft.Framework.TestHost
 
                         if (message.MessageType == "TestDiscovery.Start")
                         {
-                            var commandArgs = new List<string>()
+                            var commandArgs = new string[]
                             {
-                                "test",
                                 "--list",
                                 "--designtime"
                             };
 
                             var testServices = TestServices.CreateTestServices(_services, project, channel);
-                            await ProjectCommand.Execute(testServices, project, commandArgs.ToArray());
+                            await ProjectCommand.Execute(testServices, project, "test", commandArgs);
 
                             Trace.TraceInformation("[ReportingChannel]: OnTransmit(DiscoverTests)");
                             channel.Send(new Message()
@@ -127,7 +126,6 @@ namespace Microsoft.Framework.TestHost
                         {
                             var commandArgs = new List<string>()
                             {
-                                "test",
                                 "--designtime"
                             };
 
@@ -142,7 +140,7 @@ namespace Microsoft.Framework.TestHost
                             }
 
                             var testServices = TestServices.CreateTestServices(_services, project, channel);
-                            await ProjectCommand.Execute(testServices, project, commandArgs.ToArray());
+                            await ProjectCommand.Execute(testServices, project, "test", commandArgs.ToArray());
 
                             Trace.TraceInformation("[ReportingChannel]: OnTransmit(ExecuteTests)");
                             channel.Send(new Message()
@@ -251,7 +249,6 @@ namespace Microsoft.Framework.TestHost
 
                     var args = new List<string>()
                     {
-                        "test",
                         "--designtime"
                     };
 
@@ -265,7 +262,7 @@ namespace Microsoft.Framework.TestHost
                     }
 
                     var testServices = TestServices.CreateTestServices(_services, project, channel);
-                    await ProjectCommand.Execute(testServices, project, args.ToArray());
+                    await ProjectCommand.Execute(testServices, project, "test", args.ToArray());
                 }
                 catch (Exception ex)
                 {
@@ -310,10 +307,10 @@ namespace Microsoft.Framework.TestHost
                         return -1;
                     }
 
-                    var args = new string[] { "test", "--list", "--designtime" };
+                    var args = new string[] { "--list", "--designtime" };
 
                     var testServices = TestServices.CreateTestServices(_services, project, channel);
-                    await ProjectCommand.Execute(testServices, project, args);
+                    await ProjectCommand.Execute(testServices, project, "test", args);
                 }
                 catch (Exception ex)
                 {
