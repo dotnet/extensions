@@ -4,9 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-#if !NET45 && !DNX451 && !DNXCORE50
-using System.Threading.Tasks;
-#endif
 
 namespace Microsoft.Framework.Caching.Memory
 {
@@ -154,11 +151,7 @@ namespace Microsoft.Framework.Caching.Memory
             PostEvictionCallbacks = null;
             if (callbacks != null)
             {
-#if NET45 || DNX451 || DNXCORE50
                 ThreadPool.QueueUserWorkItem(InvokeCallbacks, callbacks);
-#else
-                Task.Run(() => InvokeCallbacks(callbacks));
-#endif
             }
         }
 
