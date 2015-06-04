@@ -8,7 +8,7 @@
     "frameworks": {
         "net45": { },
         "dnx451": { },
-        "dnxcore50": {
+        "dotnet": {
             "dependencies": {
                 "System.Collections": "4.0.10-beta-*",
                 "System.Collections.Concurrent": "4.0.10-beta-*",
@@ -18,18 +18,6 @@
                 "System.Runtime": "4.0.20-beta-*",
                 "System.Runtime.Extensions": "4.0.10-beta-*",
                 "System.Runtime.InteropServices": "4.0.20-beta-*"
-            }
-        },
-        ".NETPortable,Version=v4.5,Profile=Profile7": {
-            "frameworkAssemblies": {
-                "System.Collections": "",
-                "System.Collections.Concurrent": "",
-                "System.Globalization": "",
-                "System.Linq": "",
-                "System.Reflection": "",
-                "System.Runtime": "",
-                "System.Runtime.Extensions": "",
-                "System.Runtime.InteropServices": ""
             }
         }
     }

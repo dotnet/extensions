@@ -16,7 +16,7 @@
                 "System.Collections.Concurrent": ""
             }
         },
-        "dnxcore50": {
+        "dotnet": {
             "dependencies": {
                 "System.Collections.Concurrent": "4.0.10-beta-*",
                 "System.Collections": "4.0.10-beta-*",
