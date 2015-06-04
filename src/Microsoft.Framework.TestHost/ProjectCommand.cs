@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Common.DependencyInjection;
@@ -29,6 +30,17 @@ namespace Microsoft.Framework.TestHost
                 (IAssemblyLoaderContainer)services.GetService(typeof(IAssemblyLoaderContainer)),
                 environment,
                 newServices);
+
+            var options = (IRuntimeOptions)services.GetService(typeof(IRuntimeOptions));
+            if (options.CompilationServerPort.HasValue)
+            {
+                args = new string[]
+                {
+                    "--port",
+                    options.CompilationServerPort.Value.ToString()
+                }
+                .Concat(args).ToArray();
+            }
 
             return await applicationHost.Main(args);
         }
