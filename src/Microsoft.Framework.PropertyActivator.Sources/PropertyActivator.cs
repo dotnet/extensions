@@ -34,14 +34,31 @@ namespace Microsoft.Framework.Internal
             [NotNull] Type activateAttributeType,
             [NotNull] Func<PropertyInfo, PropertyActivator<TContext>> createActivateInfo)
         {
-            return type.GetRuntimeProperties()
-                       .Where(property =>
-                              property.IsDefined(activateAttributeType) &&
-                              property.GetIndexParameters().Length == 0 &&
-                              property.SetMethod != null &&
-                              !property.SetMethod.IsStatic)
-                       .Select(createActivateInfo)
-                       .ToArray();
+            return GetPropertiesToActivate(type, activateAttributeType, createActivateInfo, includeNonPublic: false);
+        }
+
+        public static PropertyActivator<TContext>[] GetPropertiesToActivate(
+            [NotNull] Type type,
+            [NotNull] Type activateAttributeType,
+            [NotNull] Func<PropertyInfo, PropertyActivator<TContext>> createActivateInfo,
+            bool includeNonPublic)
+        {
+            var properties = type.GetRuntimeProperties()
+                .Where((property) =>
+                {
+                    return
+                        property.IsDefined(activateAttributeType) &&
+                        property.GetIndexParameters().Length == 0 &&
+                        property.SetMethod != null &&
+                        !property.SetMethod.IsStatic;
+                });
+
+            if (!includeNonPublic)
+            {
+                properties = properties.Where(property => property.SetMethod.IsPublic);
+            }
+
+            return properties.Select(createActivateInfo).ToArray();
         }
     }
 }

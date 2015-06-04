@@ -96,6 +96,43 @@ namespace Microsoft.Framework.Internal
                 });
         }
 
+        [Fact]
+        public void GetPropertiesToActivate_ExcludesNonPublic()
+        {
+            // Arrange
+            var instance = new TestClassWithPropertyVisiblity();
+            var typeInfo = instance.GetType().GetTypeInfo();
+            var expectedPropertyInfo = typeInfo.GetDeclaredProperty("Public");
+
+            // Act
+            var propertiesToActivate = PropertyActivator<int>.GetPropertiesToActivate(
+                typeof(TestClassWithPropertyVisiblity),
+                typeof(TestActivateAttribute),
+                (propertyInfo) => new PropertyActivator<int>(propertyInfo, valueAccessor: (val) => val));
+
+            // Assert
+            Assert.Equal(1, propertiesToActivate.Length);
+            Assert.Single(propertiesToActivate, p => p.PropertyInfo == expectedPropertyInfo);
+        }
+
+        [Fact]
+        public void GetPropertiesToActivate_IncludesNonPublic()
+        {
+            // Arrange
+            var instance = new TestClassWithPropertyVisiblity();
+            var typeInfo = instance.GetType().GetTypeInfo();
+
+            // Act
+            var propertiesToActivate = PropertyActivator<int>.GetPropertiesToActivate(
+                typeof(TestClassWithPropertyVisiblity),
+                typeof(TestActivateAttribute),
+                (propertyInfo) => new PropertyActivator<int>(propertyInfo, valueAccessor: (val) => val),
+                includeNonPublic: true);
+
+            // Assert
+            Assert.Equal(5, propertiesToActivate.Length);
+        }
+
         private class TestClass
         {
             public int IntProperty { get; set; }
@@ -117,6 +154,24 @@ namespace Microsoft.Framework.Internal
 
             [TestActivate]
             public static int StaticActivatablProperty { get; set; }
+        }
+
+        private class TestClassWithPropertyVisiblity
+        {
+            [TestActivate]
+            public int Public { get; set; }
+
+            [TestActivate]
+            protected int Protected { get; set; }
+
+            [TestActivate]
+            internal int Internal { get; set; }
+
+            [TestActivate]
+            protected internal int ProtectedInternal {get; set; }
+
+            [TestActivate]
+            private int Private { get; set; }
         }
 
         [AttributeUsage(AttributeTargets.Property)]
