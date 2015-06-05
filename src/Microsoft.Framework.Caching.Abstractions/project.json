@@ -4,15 +4,16 @@
     },
     "description": "ASP.NET 5 in memory cache abstractions.",
     "frameworks": {
+        "net45": { },
         "dnx451": { },
         "dotnet": {
             "dependencies": {
                 "System.Collections": "4.0.10-beta-*",
                 "System.Threading": "4.0.10-beta-*",
-                "System.Threading.ThreadPool": "4.0.10-beta-*"
+                "System.Threading.ThreadPool": "4.0.10-beta-*",
+                "System.Threading.Tasks": "4.0.10-beta-*"
             }
-        },
-        "net45": { }
+        }
     },
     "version": "1.0.0-*"
 }
