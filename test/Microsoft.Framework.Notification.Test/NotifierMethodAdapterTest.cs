@@ -99,8 +99,6 @@ namespace Microsoft.Framework.Notification
             Assert.Null(listener.Name);
         }
 
-#if NET45 || DNX451 || DNXCORE50
-
         [Fact]
         public void Adapt_SplatsParameters_WithProxy()
         {
@@ -119,8 +117,6 @@ namespace Microsoft.Framework.Notification
             Assert.Equal(17, listener.Id);
             Assert.Equal("Bill", listener.Name);
         }
-
-#endif
 
         private MethodInfo GetMethodInfo<T>(Expression<Action<T>> expression)
         {
@@ -148,8 +144,6 @@ namespace Microsoft.Framework.Notification
             }
         }
 
-#if NET45 || DNX451 || DNXCORE50
-
         private class Listener3
         {
             public int Id { get; set; } = 5;
@@ -172,8 +166,6 @@ namespace Microsoft.Framework.Notification
         {
             string Name { get; }
         }
-
-#endif
 
     }
 }
