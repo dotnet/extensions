@@ -1,0 +1,18 @@
+{
+    "commands": {
+        "test": "xunit.runner.dnx"
+    },
+    "dependencies": {
+        "Microsoft.AspNet.Testing": "1.0.0-*",
+        "Microsoft.Framework.Caching.SqlServer": "1.0.0-*",
+        "Microsoft.Framework.Configuration.EnvironmentVariables": "1.0.0-*",
+        "Microsoft.Framework.Configuration.Json": "1.0.0-*",
+        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+        "xunit": "2.1.0-*",
+        "xunit.runner.dnx": "2.1.0-*"
+    },
+    "frameworks": {
+        "dnx451": { },
+        "dnxcore50": { }
+    }
+}

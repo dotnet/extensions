@@ -1,0 +1,25 @@
+{
+    "commands": {
+        "sqlservercache": "Microsoft.Framework.Caching.SqlConfig"
+    },
+    "dependencies": {
+        "Microsoft.Framework.CommandLineUtils.Sources": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.Framework.Logging": "1.0.0-*",
+        "Microsoft.Framework.Logging.Console": "1.0.0-*"
+    },
+    "description": "Contains commands for creating table and indexes in Microsoft SQL Server database to be used for ASP.NET 5 distributed caching.",
+    "frameworks": {
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.Data": "4.0.0.0"
+            }
+        },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Console": "4.0.0-beta-*",
+                "System.Data.SqlClient": "4.0.0-beta-*"
+            }
+        }
+    },
+    "version": "1.0.0-*"
+}
