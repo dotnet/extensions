@@ -34,6 +34,8 @@ namespace Microsoft.Framework.TestHost.Client
             Output = new List<Message>();
         }
 
+        public int? ProtocolVersion { get; set; }
+
         public int? DTHPort { get; set; }
 
         private TcpClient Client { get; set; }
@@ -188,6 +190,32 @@ namespace Microsoft.Framework.TestHost.Client
                 using (var writer = new BinaryWriter(stream))
                 using (var reader = new BinaryReader(stream))
                 {
+                    // If we're using a ProtocolVersion then establish that with the TestHost
+                    if (ProtocolVersion.HasValue)
+                    {
+                        writer.Write(JsonConvert.SerializeObject(new Message()
+                        {
+                            MessageType = "ProtocolVersion",
+                            Payload = JToken.FromObject(new ProtocolVersionMessage()
+                            {
+                                Version = ProtocolVersion.Value,
+                            }),
+                        }));
+
+                        var message = JsonConvert.DeserializeObject<Message>(reader.ReadString());
+                        OnMessageReceived(this, message);
+
+                        if (message.MessageType == "ProtocolVersion")
+                        {
+                            ProtocolVersion = message.Payload?.ToObject<ProtocolVersionMessage>().Version;
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException(
+                                $"Invalid ProtocolVersion response {message.MessageType}");
+                        }
+                    }
+
                     writer.Write(JsonConvert.SerializeObject(new Message
                     {
                         MessageType = messageType,

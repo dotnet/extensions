@@ -130,6 +130,81 @@ namespace Microsoft.Framework.TestHost
             Assert.Equal("TestExecution.Response", host.Output[host.Output.Count - 1].MessageType);
         }
 
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public async Task RunTest_ByUniqueName_ProtocolVersion_MatchingVersion()
+        {
+            // Arrange
+            var host = new TestHostWrapper(_testProject);
+            host.ProtocolVersion = 1;
+
+            await host.StartAsync();
+
+            await host.ListTestsAsync();
+
+            var test = host.Output
+                .Where(m => m.MessageType == "TestDiscovery.TestFound")
+                .First()
+                .Payload.ToObject<Test>();
+
+            host.Output.Clear();
+
+            host = new TestHostWrapper(_testProject);
+            host.ProtocolVersion = 1;
+            await host.StartAsync();
+
+            // Act
+            var result = await host.RunTestsAsync(_testProject, test.FullyQualifiedName);
+
+            // Assert
+            Assert.Equal(0, result);
+
+            Assert.Equal(1, host.ProtocolVersion);
+
+            Assert.Equal(4, host.Output.Count);
+            Assert.Single(host.Output, m => m.MessageType == "ProtocolVersion");
+            Assert.Single(host.Output, m => TestStarted(m, test.DisplayName));
+            Assert.Single(host.Output, m => TestPassed(m, test.DisplayName));
+            Assert.Equal("TestExecution.Response", host.Output[host.Output.Count - 1].MessageType);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public async Task RunTest_ByUniqueName_ProtocolVersion_UnknownVersion()
+        {
+            // Arrange
+            var host = new TestHostWrapper(_testProject);
+            host.ProtocolVersion = 2;
+
+            await host.StartAsync();
+
+            await host.ListTestsAsync();
+
+            var test = host.Output
+                .Where(m => m.MessageType == "TestDiscovery.TestFound")
+                .First()
+                .Payload.ToObject<Test>();
+
+            host.Output.Clear();
+
+            host = new TestHostWrapper(_testProject);
+            host.ProtocolVersion = 2;
+            await host.StartAsync();
+
+            // Act
+            var result = await host.RunTestsAsync(_testProject, test.FullyQualifiedName);
+
+            // Assert
+            Assert.Equal(0, result);
+
+            Assert.Equal(1, host.ProtocolVersion);
+
+            Assert.Equal(4, host.Output.Count);
+            Assert.Single(host.Output, m => m.MessageType == "ProtocolVersion");
+            Assert.Single(host.Output, m => TestStarted(m, test.DisplayName));
+            Assert.Single(host.Output, m => TestPassed(m, test.DisplayName));
+            Assert.Equal("TestExecution.Response", host.Output[host.Output.Count - 1].MessageType);
+        }
 
         private static bool TestFound(Message message, string name)
         {
