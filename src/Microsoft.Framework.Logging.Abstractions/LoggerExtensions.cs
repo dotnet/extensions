@@ -13,6 +13,8 @@ namespace Microsoft.Framework.Logging
     /// </summary>
     public static class LoggerExtensions
     {
+        private static readonly Func<object, Exception, string> _messageFormatter = MessageFormatter;
+
         //------------------------------------------DEBUG------------------------------------------//
 
         /// <summary>
@@ -23,7 +25,7 @@ namespace Microsoft.Framework.Logging
         // FYI, this field is called data because naming it message triggers CA1303 and CA2204 for callers.
         public static void LogDebug([NotNull] this ILogger logger, string data)
         {
-            logger.Log(LogLevel.Debug, 0, data, null, MessageFormatter);
+            logger.Log(LogLevel.Debug, 0, data, null, _messageFormatter);
         }
 
         /// <summary>
@@ -34,7 +36,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="data">The message to log.</param>
         public static void LogDebug([NotNull] this ILogger logger, int eventId, string data)
         {
-            logger.Log(LogLevel.Debug, eventId, data, null, MessageFormatter);
+            logger.Log(LogLevel.Debug, eventId, data, null, _messageFormatter);
         }
 
         /// <summary>
@@ -45,7 +47,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void LogDebug([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Log(LogLevel.Debug, 0, new FormattedLogValues(format, args), null, MessageFormatter);
+            logger.Log(LogLevel.Debug, 0, new FormattedLogValues(format, args), null, _messageFormatter);
         }
 
         /// <summary>
@@ -57,7 +59,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void LogDebug([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Log(LogLevel.Debug, eventId, new FormattedLogValues(format, args), null, MessageFormatter);
+            logger.Log(LogLevel.Debug, eventId, new FormattedLogValues(format, args), null, _messageFormatter);
         }
 
         /// <summary>
@@ -100,7 +102,7 @@ namespace Microsoft.Framework.Logging
         // FYI, this field is called data because naming it message triggers CA1303 and CA2204 for callers.
         public static void LogVerbose([NotNull] this ILogger logger, string data)
         {
-            logger.Log(LogLevel.Verbose, 0, data, null, MessageFormatter);
+            logger.Log(LogLevel.Verbose, 0, data, null, _messageFormatter);
         }
 
         /// <summary>
@@ -111,7 +113,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="data">The message to log.</param>
         public static void LogVerbose([NotNull] this ILogger logger, int eventId, string data)
         {
-            logger.Log(LogLevel.Verbose, eventId, data, null, MessageFormatter);
+            logger.Log(LogLevel.Verbose, eventId, data, null, _messageFormatter);
         }
 
         /// <summary>
@@ -122,7 +124,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void LogVerbose([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Log(LogLevel.Verbose, 0, new FormattedLogValues(format, args), null, MessageFormatter);
+            logger.Log(LogLevel.Verbose, 0, new FormattedLogValues(format, args), null, _messageFormatter);
         }
 
         /// <summary>
@@ -134,7 +136,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void LogVerbose([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Log(LogLevel.Verbose, eventId, new FormattedLogValues(format, args), null, MessageFormatter);
+            logger.Log(LogLevel.Verbose, eventId, new FormattedLogValues(format, args), null, _messageFormatter);
         }
 
         /// <summary>
@@ -176,7 +178,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="message">The message to log.</param>
         public static void LogInformation([NotNull] this ILogger logger, string message)
         {
-            logger.Log(LogLevel.Information, 0, message, null, MessageFormatter);
+            logger.Log(LogLevel.Information, 0, message, null, _messageFormatter);
         }
 
         /// <summary>
@@ -187,7 +189,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="message">The message to log.</param>
         public static void LogInformation([NotNull] this ILogger logger, int eventId, string message)
         {
-            logger.Log(LogLevel.Information, eventId, message, null, MessageFormatter);
+            logger.Log(LogLevel.Information, eventId, message, null, _messageFormatter);
         }
 
         /// <summary>
@@ -198,7 +200,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void LogInformation([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Log(LogLevel.Information, 0, new FormattedLogValues(format, args), null, MessageFormatter);
+            logger.Log(LogLevel.Information, 0, new FormattedLogValues(format, args), null, _messageFormatter);
         }
 
         /// <summary>
@@ -210,7 +212,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void LogInformation([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Log(LogLevel.Information, eventId, new FormattedLogValues(format, args), null, MessageFormatter);
+            logger.Log(LogLevel.Information, eventId, new FormattedLogValues(format, args), null, _messageFormatter);
         }
 
         /// <summary>
@@ -252,7 +254,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="message">The message to log.</param>
         public static void LogWarning([NotNull] this ILogger logger, string message)
         {
-            logger.Log(LogLevel.Warning, 0, message, null, MessageFormatter);
+            logger.Log(LogLevel.Warning, 0, message, null, _messageFormatter);
         }
 
         /// <summary>
@@ -263,7 +265,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="message">The message to log.</param>
         public static void LogWarning([NotNull] this ILogger logger, int eventId, string message)
         {
-            logger.Log(LogLevel.Warning, eventId, message, null, MessageFormatter);
+            logger.Log(LogLevel.Warning, eventId, message, null, _messageFormatter);
         }
 
         /// <summary>
@@ -274,7 +276,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void LogWarning([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Log(LogLevel.Warning, 0, new FormattedLogValues(format, args), null, MessageFormatter);
+            logger.Log(LogLevel.Warning, 0, new FormattedLogValues(format, args), null, _messageFormatter);
         }
 
         /// <summary>
@@ -286,7 +288,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void LogWarning([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Log(LogLevel.Warning, eventId, new FormattedLogValues(format, args), null, MessageFormatter);
+            logger.Log(LogLevel.Warning, eventId, new FormattedLogValues(format, args), null, _messageFormatter);
         }
 
         /// <summary>
@@ -297,7 +299,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="error">The exception to log.</param>
         public static void LogWarning([NotNull] this ILogger logger, string message, Exception error)
         {
-            logger.Log(LogLevel.Warning, 0, message, error, MessageFormatter);
+            logger.Log(LogLevel.Warning, 0, message, error, _messageFormatter);
         }
 
         /// <summary>
@@ -309,7 +311,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="error">The exception to log.</param>
         public static void LogWarning([NotNull] this ILogger logger, int eventId, string message, Exception error)
         {
-            logger.Log(LogLevel.Warning, eventId, message, error, MessageFormatter);
+            logger.Log(LogLevel.Warning, eventId, message, error, _messageFormatter);
         }
 
         /// <summary>
@@ -351,7 +353,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="message">The message to log.</param>
         public static void LogError([NotNull] this ILogger logger, string message)
         {
-            logger.Log(LogLevel.Error, 0, message, null, MessageFormatter);
+            logger.Log(LogLevel.Error, 0, message, null, _messageFormatter);
         }
 
         /// <summary>
@@ -362,7 +364,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="message">The message to log.</param>
         public static void LogError([NotNull] this ILogger logger, int eventId, string message)
         {
-            logger.Log(LogLevel.Error, eventId, message, null, MessageFormatter);
+            logger.Log(LogLevel.Error, eventId, message, null, _messageFormatter);
         }
 
         /// <summary>
@@ -373,7 +375,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void LogError([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Log(LogLevel.Error, 0, new FormattedLogValues(format, args), null, MessageFormatter);
+            logger.Log(LogLevel.Error, 0, new FormattedLogValues(format, args), null, _messageFormatter);
         }
 
         /// <summary>
@@ -385,7 +387,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void LogError([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Log(LogLevel.Error, eventId, new FormattedLogValues(format, args), null, MessageFormatter);
+            logger.Log(LogLevel.Error, eventId, new FormattedLogValues(format, args), null, _messageFormatter);
         }
 
         /// <summary>
@@ -396,7 +398,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="error">The exception to log.</param>
         public static void LogError([NotNull] this ILogger logger, string message, Exception error)
         {
-            logger.Log(LogLevel.Error, 0, message, error, MessageFormatter);
+            logger.Log(LogLevel.Error, 0, message, error, _messageFormatter);
         }
 
         /// <summary>
@@ -408,7 +410,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="error">The exception to log.</param>
         public static void LogError([NotNull] this ILogger logger, int eventId, string message, Exception error)
         {
-            logger.Log(LogLevel.Error, eventId, message, error, MessageFormatter);
+            logger.Log(LogLevel.Error, eventId, message, error, _messageFormatter);
         }
 
         /// <summary>
@@ -450,7 +452,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="message">The message to log.</param>
         public static void LogCritical([NotNull] this ILogger logger, string message)
         {
-            logger.Log(LogLevel.Critical, 0, message, null, MessageFormatter);
+            logger.Log(LogLevel.Critical, 0, message, null, _messageFormatter);
         }
 
         /// <summary>
@@ -461,7 +463,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="message">The message to log.</param>
         public static void LogCritical([NotNull] this ILogger logger, int eventId, string message)
         {
-            logger.Log(LogLevel.Critical, eventId, message, null, MessageFormatter);
+            logger.Log(LogLevel.Critical, eventId, message, null, _messageFormatter);
         }
 
         /// <summary>
@@ -472,7 +474,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void LogCritical([NotNull] this ILogger logger, string format, params object[] args)
         {
-            logger.Log(LogLevel.Critical, 0, new FormattedLogValues(format, args), null, MessageFormatter);
+            logger.Log(LogLevel.Critical, 0, new FormattedLogValues(format, args), null, _messageFormatter);
         }
 
         /// <summary>
@@ -484,7 +486,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="args">An object array that contains zero or more objects to format.</param>
         public static void LogCritical([NotNull] this ILogger logger, int eventId, string format, params object[] args)
         {
-            logger.Log(LogLevel.Critical, eventId, new FormattedLogValues(format, args), null, MessageFormatter);
+            logger.Log(LogLevel.Critical, eventId, new FormattedLogValues(format, args), null, _messageFormatter);
         }
 
         /// <summary>
@@ -495,7 +497,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="error">The exception to log.</param>
         public static void LogCritical([NotNull] this ILogger logger, string message, Exception error)
         {
-            logger.Log(LogLevel.Critical, 0, message, error, MessageFormatter);
+            logger.Log(LogLevel.Critical, 0, message, error, _messageFormatter);
         }
 
         /// <summary>
@@ -507,7 +509,7 @@ namespace Microsoft.Framework.Logging
         /// <param name="error">The exception to log.</param>
         public static void LogCritical([NotNull] this ILogger logger, int eventId, string message, Exception error)
         {
-            logger.Log(LogLevel.Critical, eventId, message, error, MessageFormatter);
+            logger.Log(LogLevel.Critical, eventId, message, error, _messageFormatter);
         }
 
         /// <summary>
@@ -565,7 +567,7 @@ namespace Microsoft.Framework.Logging
             ILogValues state,
             Exception exception = null)
         {
-            logger.Log(logLevel, 0, state, exception, MessageFormatter);
+            logger.Log(logLevel, 0, state, exception, _messageFormatter);
         }
 
         private static void LogWithEvent(
@@ -575,7 +577,7 @@ namespace Microsoft.Framework.Logging
             ILogValues state,
             Exception exception = null)
         {
-            logger.Log(logLevel, eventId, state, exception, MessageFormatter);
+            logger.Log(logLevel, eventId, state, exception, _messageFormatter);
         }
 
         private static string MessageFormatter(object state, Exception error)
