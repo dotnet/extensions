@@ -67,6 +67,9 @@
     <Compile Include="..\..\src\Microsoft.Framework.TestHost\Messages\Message.cs">
       <Link>Message.cs</Link>
     </Compile>
+    <Compile Include="..\..\src\Microsoft.Framework.TestHost\Messages\ProtocolVersionMessage.cs">
+      <Link>ProtocolVersionMessage.cs</Link>
+    </Compile>
     <Compile Include="..\..\src\Microsoft.Framework.TestHost\Messages\RunTestsMessage.cs">
       <Link>RunTestsMessage.cs</Link>
     </Compile>

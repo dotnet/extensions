@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.Runtime;
 using Microsoft.Framework.Runtime.Common.CommandLine;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Framework.TestHost
 {
@@ -22,7 +23,9 @@ namespace Microsoft.Framework.TestHost
 
         public int Main(string[] args)
         {
-            var application = new CommandLineApplication();
+            // We want to allow unexpected args, in case future VS needs to pass anything in that we don't current.
+            // This will allow us to retain backwards compatibility.
+            var application = new CommandLineApplication(throwOnUnexpectedArg: false);
             application.HelpOption("-?|-h|--help");
 
             var env = (IApplicationEnvironment)_services.GetService(typeof(IApplicationEnvironment));
@@ -76,6 +79,31 @@ namespace Microsoft.Framework.TestHost
                         }
 
                         var message = channel.ReadQueue.Take();
+
+                        // The message might be a request to negotiate protocol version. For now we only know
+                        // about version 1.
+                        if (message.MessageType == "ProtocolVersion")
+                        {
+                            var version = message.Payload?.ToObject<ProtocolVersionMessage>().Version;
+                            var supportedVersion = 1;
+                            Trace.TraceInformation(
+                                "[ReportingChannel]: Requested Version: {0} - Using Version: {1}",
+                                version,
+                                supportedVersion);
+
+                            channel.Send(new Message()
+                            {
+                                MessageType = "ProtocolVersion",
+                                Payload = JToken.FromObject(new ProtocolVersionMessage()
+                                {
+                                    Version = supportedVersion,
+                                }),
+                            });
+
+                            // Take the next message, which should be the command to execute.
+                            message = channel.ReadQueue.Take();
+                        }
+
                         if (message.MessageType == "TestDiscovery.Start")
                         {
                             var commandArgs = new List<string>()
