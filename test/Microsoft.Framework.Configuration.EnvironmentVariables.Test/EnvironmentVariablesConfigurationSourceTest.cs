@@ -102,7 +102,7 @@ namespace Microsoft.Framework.Configuration.EnvironmentVariables.Test
         }
 
         [Fact]
-        public void ThrowExceptionWhenKeyIsDuplicatedInAzureEnvironment()
+        public void LastVariableAddedWhenKeyIsDuplicatedInAzureEnvironment()
         {
             var dict = new Hashtable()
                 {
@@ -111,13 +111,27 @@ namespace Microsoft.Framework.Configuration.EnvironmentVariables.Test
                 };
             var envConfigSrc = new EnvironmentVariablesConfigurationSource();
 
-            // On mono the exception message is different 
-            var isMono = Type.GetType("Mono.Runtime") != null; 
-            var expectedMsg = isMono ? "An element with the same key already exists in the dictionary." : "An item with the same key has already been added.";
+            envConfigSrc.Load(dict);
 
-            var exception = Assert.Throws<ArgumentException>(() => envConfigSrc.Load(dict));
+            Assert.True(!string.IsNullOrEmpty(envConfigSrc.Get("Data:db2:ConnectionString")));
+            Assert.Equal("System.Data.SqlClient", envConfigSrc.Get("Data:db2:ProviderName"));
+        }
 
-            Assert.Equal(expectedMsg, exception.Message);
+        [Fact]
+        public void LastVariableAddedWhenMultipleEnvironmentVariablesWithSameNameButDifferentCaseExist()
+        {
+            var dict = new Hashtable()
+                {
+                    {"CommonEnv", "CommonEnvValue1"},
+                    {"commonenv", "commonenvValue2"},
+                    {"cOMMonEnv", "commonenvValue3"},
+                };
+            var envConfigSrc = new EnvironmentVariablesConfigurationSource();
+
+            envConfigSrc.Load(dict);
+
+            Assert.True(!string.IsNullOrEmpty(envConfigSrc.Get("cOMMonEnv")));
+            Assert.True(!string.IsNullOrEmpty(envConfigSrc.Get("CommonEnv")));
         }
     }
 }

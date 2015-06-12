@@ -37,14 +37,18 @@ namespace Microsoft.Framework.Configuration.EnvironmentVariables
 
         internal void Load(IDictionary envVariables)
         {
-            Data = envVariables
+            Data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            var filteredEnvVariables = envVariables
                 .Cast<DictionaryEntry>()
                 .SelectMany(AzureEnvToAppEnv)
-                .Where(entry => ((string)entry.Key).StartsWith(_prefix, StringComparison.OrdinalIgnoreCase))
-                .ToDictionary(
-                    entry => ((string)entry.Key).Substring(_prefix.Length),
-                    entry => (string)entry.Value,
-                    StringComparer.OrdinalIgnoreCase);
+                .Where(entry => ((string)entry.Key).StartsWith(_prefix, StringComparison.OrdinalIgnoreCase));
+
+            foreach (var envVariable in filteredEnvVariables)
+            {
+                var key = ((string)envVariable.Key).Substring(_prefix.Length);
+                Data[key] = (string)envVariable.Value;
+            }
         }
 
         private static IEnumerable<DictionaryEntry> AzureEnvToAppEnv(DictionaryEntry entry)
