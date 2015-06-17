@@ -76,6 +76,114 @@ namespace Microsoft.Framework.DependencyInjection
             return anyAdded;
         }
 
+        public static bool TryAddTransient(
+            [NotNull] this IServiceCollection collection,
+            [NotNull] Type service)
+        {
+            var descriptor = ServiceDescriptor.Transient(service, service);
+            return TryAdd(collection, descriptor);
+        }
+
+        public static bool TryAddTransient(
+            [NotNull] this IServiceCollection collection,
+            [NotNull] Type service,
+            [NotNull] Type implementationType)
+        {
+            var descriptor = ServiceDescriptor.Transient(service, implementationType);
+            return TryAdd(collection, descriptor);
+        }
+
+        public static bool TryAddTransient(
+            [NotNull] this IServiceCollection collection,
+            [NotNull] Type service,
+            [NotNull] Func<IServiceProvider, object> implementationFactory)
+        {
+            var descriptor = ServiceDescriptor.Transient(service, implementationFactory);
+            return TryAdd(collection, descriptor);
+        }
+
+        public static bool TryAddTransient<TService>([NotNull] this IServiceCollection collection)
+        {
+            return TryAddTransient(collection, typeof(TService), typeof(TService));
+        }
+
+        public static bool TryAddTransient<TService, TImplementation>([NotNull] this IServiceCollection collection)
+        {
+            return TryAddTransient(collection, typeof(TService), typeof(TImplementation));
+        }
+
+        public static bool TryAddScoped(
+            [NotNull] this IServiceCollection collection,
+            [NotNull] Type service)
+        {
+            var descriptor = ServiceDescriptor.Scoped(service, service);
+            return TryAdd(collection, descriptor);
+        }
+
+        public static bool TryAddScoped(
+            [NotNull] this IServiceCollection collection,
+            [NotNull] Type service,
+            [NotNull] Type implementationType)
+        {
+            var descriptor = ServiceDescriptor.Scoped(service, implementationType);
+            return TryAdd(collection, descriptor);
+        }
+
+        public static bool TryAddScoped(
+            [NotNull] this IServiceCollection collection,
+            [NotNull] Type service,
+            [NotNull] Func<IServiceProvider, object> implementationFactory)
+        {
+            var descriptor = ServiceDescriptor.Scoped(service, implementationFactory);
+            return TryAdd(collection, descriptor);
+        }
+
+        public static bool TryAddScoped<TService>([NotNull] this IServiceCollection collection)
+        {
+            return TryAddScoped(collection, typeof(TService), typeof(TService));
+        }
+
+        public static bool TryAddScoped<TService, TImplementation>([NotNull] this IServiceCollection collection)
+        {
+            return TryAddScoped(collection, typeof(TService), typeof(TImplementation));
+        }
+
+        public static bool TryAddSingleton(
+            [NotNull] this IServiceCollection collection,
+            [NotNull] Type service)
+        {
+            var descriptor = ServiceDescriptor.Singleton(service, service);
+            return TryAdd(collection, descriptor);
+        }
+
+        public static bool TryAddSingleton(
+            [NotNull] this IServiceCollection collection,
+            [NotNull] Type service,
+            [NotNull] Type implementationType)
+        {
+            var descriptor = ServiceDescriptor.Singleton(service, implementationType);
+            return TryAdd(collection, descriptor);
+        }
+
+        public static bool TryAddSingleton(
+            [NotNull] this IServiceCollection collection,
+            [NotNull] Type service,
+            [NotNull] Func<IServiceProvider, object> implementationFactory)
+        {
+            var descriptor = ServiceDescriptor.Singleton(service, implementationFactory);
+            return TryAdd(collection, descriptor);
+        }
+
+        public static bool TryAddSingleton<TService>([NotNull] this IServiceCollection collection)
+        {
+            return TryAddSingleton(collection, typeof(TService), typeof(TService));
+        }
+
+        public static bool TryAddSingleton<TService, TImplementation>([NotNull] this IServiceCollection collection)
+        {
+            return TryAddSingleton(collection, typeof(TService), typeof(TImplementation));
+        }
+
         public static IServiceCollection AddTransient([NotNull] this IServiceCollection collection,
                                                       [NotNull] Type service,
                                                       [NotNull] Type implementationType)
