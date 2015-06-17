@@ -90,6 +90,22 @@ namespace Microsoft.Framework.DependencyInjection.Abstractions
             return string.Format(CultureInfo.CurrentCulture, GetString("NoServiceRegistered"), p0);
         }
 
+        /// <summary>
+        /// The {0} must have the {1} property set to a non-null value.
+        /// </summary>
+        internal static string TryAddEnumerable_ImplementationTypeMustBeSet
+        {
+            get { return GetString("TryAddEnumerable_ImplementationTypeMustBeSet"); }
+        }
+
+        /// <summary>
+        /// The {0} must have the {1} property set to a non-null value.
+        /// </summary>
+        internal static string FormatTryAddEnumerable_ImplementationTypeMustBeSet(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TryAddEnumerable_ImplementationTypeMustBeSet"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection.Tests.Fakes;
 using Xunit;
 
@@ -273,6 +274,89 @@ namespace Microsoft.Framework.DependencyInjection
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Null(descriptor.ImplementationInstance);
             Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
+        }
+
+        [Fact]
+        public void TryAddEnumerable_DoesNotAddDuplicate()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            collection.TryAddEnumerable(ServiceDescriptor.Transient<IFakeService, FakeService>());
+
+            // Act
+            var result = collection.TryAddEnumerable(ServiceDescriptor.Transient<IFakeService, FakeService>());
+
+            // Assert
+            Assert.False(result);
+
+            var descriptor = Assert.Single(collection);
+            Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
+            Assert.Equal(typeof(FakeService), descriptor.ImplementationType);
+            Assert.Equal(ServiceLifetime.Transient, descriptor.Lifetime);
+        }
+
+        [Fact]
+        public void TryAddEnumerable_AllowsMultipleRegistrations()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            collection.TryAddEnumerable(ServiceDescriptor.Transient<IFakeService, FakeService>());
+
+            // Act
+            var result = collection.TryAddEnumerable(ServiceDescriptor.Transient<IFakeService, IFakeService>());
+
+            // Assert
+            Assert.True(result);
+
+            Assert.Single(collection, sd => sd.ImplementationType == typeof(FakeService));
+            Assert.Single(collection, sd => sd.ImplementationType == typeof(IFakeService));
+        }
+
+        [Fact]
+        public void TryAddEnumerable_AllowsMultipleRegistrations_WithFactory()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            collection.Add(ServiceDescriptor.Transient<IFakeService>((_) => new FakeService()));
+
+            // Act
+            var result = collection.TryAddEnumerable(ServiceDescriptor.Transient<IFakeService, FakeService>());
+
+            // Assert
+            Assert.True(result);
+
+            Assert.Single(collection, sd => sd.ImplementationFactory != null);
+            Assert.Single(collection, sd => sd.ImplementationType == typeof(FakeService));
+        }
+
+        [Fact]
+        public void TryAddEnumerable_AllowsMultipleRegistrations_WithInstance()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            collection.Add(ServiceDescriptor.Instance<IFakeService>(new FakeService()));
+
+            // Act
+            var result = collection.TryAddEnumerable(ServiceDescriptor.Transient<IFakeService, FakeService>());
+
+            // Assert
+            Assert.True(result);
+
+            Assert.Single(collection, sd => sd.ImplementationInstance != null);
+            Assert.Single(collection, sd => sd.ImplementationType == typeof(FakeService));
+        }
+
+        [Fact]
+        public void TryAddEnumerable_ThrowsForNonType()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgument(
+                () => collection.TryAddEnumerable(ServiceDescriptor.Instance<IFakeService>(new FakeService())),
+                "descriptor",
+                "The ServiceDescriptor must have the ImplementationType property set to a non-null value.");
         }
 
         [Fact]
