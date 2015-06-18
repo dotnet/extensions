@@ -3,18 +3,14 @@
 
 using System;
 using System.Collections.ObjectModel;
+using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.TestAdapter
 {
     public sealed class TestResult
     {
-        public TestResult(Test test)
+        public TestResult([NotNull] Test test)
         {
-            if (test == null)
-            {
-                throw new ArgumentNullException("test");
-            }
-
             Test = test;
             Messages = new Collection<string>();
         }
