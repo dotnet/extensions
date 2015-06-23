@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if PROXY_SUPPORT
+
 using System;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -17,12 +19,8 @@ namespace Microsoft.Framework.Notification.Internal
         static ProxyAssembly()
         {
             var assemblyName = new AssemblyName("Microsoft.Framework.Notification.ProxyAssembly");
-
-#if NET45 || DNX451
-            var access = AssemblyBuilderAccess.RunAndSave;
-#else
             var access = AssemblyBuilderAccess.Run;
-#endif
+
             AssemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, access);
             ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Microsoft.Framework.Notification.ProxyAssembly.dll");
         }
@@ -36,15 +34,6 @@ namespace Microsoft.Framework.Notification.Internal
             name = name + "_" + Counter++;
             return ModuleBuilder.DefineType(name, attributes, baseType, interfaces);
         }
-
-#if NET45 || DNX451
-
-        public static void WriteToFile(string file)
-        {
-            AssemblyBuilder.Save(file);
-        }
-
-#endif
-
     }
 }
+#endif

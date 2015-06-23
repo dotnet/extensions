@@ -9,8 +9,12 @@ namespace Microsoft.Framework.DependencyInjection
     {
         public static IServiceCollection AddNotifier(this IServiceCollection services)
         {
-            services.TryAdd(ServiceDescriptor.Singleton(typeof(INotifierMethodAdapter), typeof(NotifierMethodAdapter)));
-            services.TryAdd(ServiceDescriptor.Singleton(typeof(INotifier), typeof(Notifier)));
+#if PROXY_SUPPORT
+            services.TryAddSingleton<INotifierMethodAdapter, ProxyNotifierMethodAdapter>();
+#else
+            services.TryAddSingleton<INotifierMethodAdapter, ReflectionNotifierMethodAdapter>();
+#endif
+            services.TryAddSingleton<INotifier, Notifier>();
             return services;
         }
     }

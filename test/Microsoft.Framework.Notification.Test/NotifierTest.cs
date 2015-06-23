@@ -200,7 +200,7 @@ namespace Microsoft.Framework.Notification
 
         private static INotifier CreateNotifier()
         {
-            return new Notifier(new NotifierMethodAdapter());
+            return new Notifier(new ProxyNotifierMethodAdapter());
         }
     }
 }

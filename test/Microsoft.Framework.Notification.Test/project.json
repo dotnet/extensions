@@ -3,6 +3,8 @@
         "Microsoft.Framework.Notification": "1.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
+    "compile": "..\\..\\src\\Microsoft.Framework.Notification\\ReflectionNotifierMethodAdapter.cs",
+    "compilationOptions": {"define": ["TEST"]},
     "commands": {
         "run": "xunit.runner.aspnet",
         "test": "xunit.runner.aspnet"
