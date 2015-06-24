@@ -75,6 +75,22 @@ namespace Microsoft.Framework.Configuration.Json
         }
 
         /// <summary>
+        /// Could not parse the JSON file. Error on line number '{0}' : '{1}'.
+        /// </summary>
+        internal static string Error_JSONParseError
+        {
+            get { return GetString("Error_JSONParseError"); }
+        }
+
+        /// <summary>
+        /// Could not parse the JSON file. Error on line number '{0}' : '{1}'.
+        /// </summary>
+        internal static string FormatError_JSONParseError(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_JSONParseError"), p0, p1);
+        }
+
+        /// <summary>
         /// A duplicate key '{0}' was found.
         /// </summary>
         internal static string Error_KeyIsDuplicated

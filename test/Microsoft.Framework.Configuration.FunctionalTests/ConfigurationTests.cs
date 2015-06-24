@@ -184,6 +184,27 @@ CommonKey3:CommonKey4=IniValue6";
             Assert.Equal("XmlValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
         }
 
+        [Fact]
+        public void LoadIncorrectJsonFile_ThrowFormatException()
+        {
+            // Arrange
+            var json = @"{
+                'name': 'test',
+                'address': {
+                    'street': 'Something street' /*Missing comma*/
+                    'zipcode': '12345'
+                }
+            }";
+            var jsonFile = Path.GetTempFileName();
+            File.WriteAllText(jsonFile, json);
+
+            var builder = new ConfigurationBuilder();
+
+            // Act & Assert
+            var exception = Assert.Throws<FormatException>(() => builder.AddJsonFile(jsonFile));
+            Assert.NotNull(exception.Message);
+        }
+
         public void Dispose()
         {
             File.Delete(_iniConfigFilePath);

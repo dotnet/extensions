@@ -54,7 +54,10 @@ namespace Microsoft.Framework.Configuration
             var json = @"'test'";
             var jsonConfigSource = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
           
-            var exception = Assert.Throws<JsonReaderException>(() => jsonConfigSource.Load(TestStreamHelpers.StringToStream(json)));
+            var exception = Assert.Throws<FormatException>(
+                () => jsonConfigSource.Load(TestStreamHelpers.StringToStream(json)));
+
+            Assert.NotNull(exception.Message);
         }
 
         [Fact]
@@ -89,7 +92,9 @@ namespace Microsoft.Framework.Configuration
             /* Missing a right brace here*/";
             var jsonConfigSource = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
            
-            var exception = Assert.Throws<JsonReaderException>(() => jsonConfigSource.Load(TestStreamHelpers.StringToStream(json)));
+            var exception = Assert.Throws<FormatException>(
+                () => jsonConfigSource.Load(TestStreamHelpers.StringToStream(json)));
+            Assert.NotNull(exception.Message);
         }
 
         [Fact]
