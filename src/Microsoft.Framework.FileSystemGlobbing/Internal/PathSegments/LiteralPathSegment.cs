@@ -2,12 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Framework.FileSystemGlobbing.Util;
 
 namespace Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments
 {
     public class LiteralPathSegment : IPathSegment
     {
-        public LiteralPathSegment(string value)
+        private readonly StringComparison _comparisonType;
+
+        public LiteralPathSegment(string value, StringComparison comparisonType)
         {
             if (value == null)
             {
@@ -15,13 +18,15 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments
             }
 
             Value = value;
+
+            _comparisonType = comparisonType;
         }
 
         public string Value { get; }
 
-        public bool Match(string value, StringComparison comparisonType)
+        public bool Match(string value)
         {
-            return string.Equals(Value, value, comparisonType);
+            return string.Equals(Value, value, _comparisonType);
         }
 
         public override bool Equals(object obj)
@@ -29,12 +34,13 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments
             var other = obj as LiteralPathSegment;
 
             return other != null &&
-                string.Equals(other.Value, Value, StringComparison.Ordinal);
+                _comparisonType == other._comparisonType &&
+                string.Equals(other.Value, Value, _comparisonType);
         }
 
         public override int GetHashCode()
         {
-            return Value.GetHashCode();
+            return StringComparisonHelper.GetStringComparer(_comparisonType).GetHashCode(Value);
         }
     }
 }

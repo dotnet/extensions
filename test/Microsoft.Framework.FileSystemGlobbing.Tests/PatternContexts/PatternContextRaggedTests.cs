@@ -16,7 +16,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.PatternContexts
         [Fact]
         public void PredictBeforeEnterDirectoryShouldThrow()
         {
-            var pattern = PatternBuilder.Build("**") as IRaggedPattern;
+            var builder = new PatternBuilder();
+            var pattern = builder.Build("**") as IRaggedPattern;
             var context = new PatternContextRaggedInclude(pattern);
 
             Assert.Throws<InvalidOperationException>(() =>
@@ -36,7 +37,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.PatternContexts
         [InlineData("/a/b/**/c/d", new string[] { "root", "a", "b", "whatever", "anything" }, null, false)]
         public void PredictReturnsCorrectResult(string patternString, string[] pushDirectory, string expectSegment, bool expectWildcard)
         {
-            var pattern = PatternBuilder.Build(patternString) as IRaggedPattern;
+            var builder = new PatternBuilder();
+            var pattern = builder.Build(patternString) as IRaggedPattern;
             Assert.NotNull(pattern);
 
             var context = new PatternContextRaggedInclude(pattern);
@@ -64,7 +66,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.PatternContexts
         [InlineData("/a/b/**/c/d", new string[] { "root", "a", "c" })]
         public void PredictNotCallBackWhenEnterUnmatchDirectory(string patternString, string[] pushDirectory)
         {
-            var pattern = PatternBuilder.Build(patternString) as IRaggedPattern;
+            var builder = new PatternBuilder();
+            var pattern = builder.Build(patternString) as IRaggedPattern;
             var context = new PatternContextRaggedInclude(pattern);
             PatternContextHelper.PushDirectory(context, pushDirectory);
 

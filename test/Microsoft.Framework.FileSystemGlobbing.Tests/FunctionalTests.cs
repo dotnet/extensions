@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Framework.FileSystemGlobbing.Abstractions;
 using Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility;
 using Xunit;
@@ -51,7 +50,24 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
         [InlineData("src/project", "compiler/Preprocess/**.cs", new string[] { })]
         public void IncludeCaseSensitive(string root, string includePattern, string[] expectedFiles)
         {
-            var matcher = new Matcher();
+            var matcher = new Matcher(StringComparison.Ordinal);
+            matcher.AddInclude(includePattern);
+
+            ExecuteAndVerify(matcher, root, expectedFiles.Select(f => root + "/" + f).ToArray());
+        }
+
+        [Theory]
+        [InlineData("src/project", "source1.cs", new string[] { "source1.cs" })]
+        [InlineData("src/project", "Source1.cs", new string[] { "Source1.cs" })]
+        [InlineData("src/project", "compiler/preprocess/**/*.cs", new string[] { "compiler/preprocess/preprocess-source1.cs",
+                                                                                 "compiler/preprocess/sub/preprocess-source2.cs",
+                                                                                 "compiler/preprocess/sub/sub/preprocess-source3.cs" })]
+        [InlineData("src/project", "compiler/Preprocess/**.cs", new string[] { "compiler/Preprocess/preprocess-source1.cs",
+                                                                                 "compiler/Preprocess/sub/preprocess-source2.cs",
+                                                                                 "compiler/Preprocess/sub/sub/preprocess-source3.cs" })]
+        public void IncludeCaseInsensitive(string root, string includePattern, string[] expectedFiles)
+        {
+            var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
             matcher.AddInclude(includePattern);
 
             ExecuteAndVerify(matcher, root, expectedFiles.Select(f => root + "/" + f).ToArray());
@@ -62,12 +78,26 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
                                                                                     "sub/preprocess-source2.cs",
                                                                                     "sub/sub/preprocess-source3.cs",
                                                                                     "sub/sub/preprocess-source3.txt" })]
+        [InlineData("src/project/compiler/preprocess/", "preprocess-source1.cs", new string[] { 
+                                                                                    "sub/preprocess-source2.cs",
+                                                                                    "sub/sub/preprocess-source3.cs",
+                                                                                    "sub/sub/preprocess-source3.txt" })]
+        [InlineData("src/project/compiler/preprocess/", "preprocesS-source1.cs", new string[] { 
+                                                                                    "preprocess-source1.cs",
+                                                                                    "sub/preprocess-source2.cs",
+                                                                                    "sub/sub/preprocess-source3.cs",
+                                                                                    "sub/sub/preprocess-source3.txt" })]
         [InlineData("src/project/compiler/preprocess/", "**/Preprocess*", new string[] { "preprocess-source1.cs",
                                                                                      "sub/preprocess-source2.cs",
                                                                                      "sub/sub/preprocess-source3.cs",
                                                                                      "sub/sub/preprocess-source3.txt" })]
         [InlineData("src/project/compiler/preprocess/", "**/preprocess*", new string[] { })]
         [InlineData("src/project/compiler/preprocess/", "**/*source*.cs", new string[] { "sub/sub/preprocess-source3.txt" })]
+        [InlineData("src/project/compiler/preprocess/", "**/*Source*.cs", new string[] {
+                                                                                    "preprocess-source1.cs",
+                                                                                    "sub/preprocess-source2.cs",
+                                                                                    "sub/sub/preprocess-source3.cs",
+                                                                                    "sub/sub/preprocess-source3.txt" })]
         [InlineData("src/project/compiler/preprocess/", "sub/sub/*", new string[] { "preprocess-source1.cs",
                                                                                     "sub/preprocess-source2.cs" })]
         [InlineData("src/project/compiler/preprocess/", "sub/Sub/*", new string[] { "preprocess-source1.cs",
@@ -76,7 +106,37 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
                                                                                     "sub/sub/preprocess-source3.txt" })]
         public void ExcludeCaseSensitive(string root, string excludePattern, string[] expectedFiles)
         {
-            var matcher = new Matcher();
+            var matcher = new Matcher(StringComparison.Ordinal);
+            matcher.AddInclude("**/*.*");
+            matcher.AddExclude(excludePattern);
+
+            ExecuteAndVerify(matcher, root, expectedFiles.Select(f => root + "/" + f).ToArray());
+        }
+
+        [Theory]
+        [InlineData("src/project/compiler/preprocess/", "source.cs", new string[] { "preprocess-source1.cs",
+                                                                                    "sub/preprocess-source2.cs",
+                                                                                    "sub/sub/preprocess-source3.cs",
+                                                                                    "sub/sub/preprocess-source3.txt" })]
+        [InlineData("src/project/compiler/preprocess/", "preprocess-source1.cs", new string[] { 
+                                                                                    "sub/preprocess-source2.cs",
+                                                                                    "sub/sub/preprocess-source3.cs",
+                                                                                    "sub/sub/preprocess-source3.txt" })]
+        [InlineData("src/project/compiler/preprocess/", "preprocesS-source1.cs", new string[] { 
+                                                                                    "sub/preprocess-source2.cs",
+                                                                                    "sub/sub/preprocess-source3.cs",
+                                                                                    "sub/sub/preprocess-source3.txt" })]
+        [InlineData("src/project/compiler/preprocess/", "**/Preprocess*", new string[] { })]
+        [InlineData("src/project/compiler/preprocess/", "**/preprocess*", new string[] { })]
+        [InlineData("src/project/compiler/preprocess/", "**/*source*.cs", new string[] { "sub/sub/preprocess-source3.txt" })]
+        [InlineData("src/project/compiler/preprocess/", "**/*Source*.cs", new string[] { "sub/sub/preprocess-source3.txt" })]
+        [InlineData("src/project/compiler/preprocess/", "sub/sub/*", new string[] { "preprocess-source1.cs",
+                                                                                    "sub/preprocess-source2.cs" })]
+        [InlineData("src/project/compiler/preprocess/", "sub/Sub/*", new string[] { "preprocess-source1.cs",
+                                                                                    "sub/preprocess-source2.cs" })]
+        public void ExcludeCaseInsensitive(string root, string excludePattern, string[] expectedFiles)
+        {
+            var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
             matcher.AddInclude("**/*.*");
             matcher.AddExclude(excludePattern);
 

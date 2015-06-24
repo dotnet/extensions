@@ -9,9 +9,9 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments
     {
         private static readonly string LiteralParent = "..";
 
-        public bool Match(string value, StringComparison comparisonType)
+        public bool Match(string value)
         {
-            return string.Equals(LiteralParent, value, System.StringComparison.Ordinal);
+            return string.Equals(LiteralParent, value, StringComparison.Ordinal);
         }
     }
 }

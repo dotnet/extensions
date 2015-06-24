@@ -7,7 +7,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments
 {
     public class RecursiveWildcardSegment : IPathSegment
     {
-        public bool Match(string value, StringComparison comparisonType)
+        public bool Match(string value)
         {
             return false;
         }

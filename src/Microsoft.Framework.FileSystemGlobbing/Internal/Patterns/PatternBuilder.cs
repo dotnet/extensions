@@ -8,12 +8,24 @@ using Microsoft.Framework.FileSystemGlobbing.Internal.PatternContexts;
 
 namespace Microsoft.Framework.FileSystemGlobbing.Internal.Patterns
 {
-    public static class PatternBuilder
+    public class PatternBuilder
     {
         private static readonly char[] _slashes = new[] { '/', '\\' };
         private static readonly char[] _star = new[] { '*' };
 
-        public static IPattern Build(string pattern)
+        public PatternBuilder()
+        {
+            ComparisonType = StringComparison.OrdinalIgnoreCase;
+        }
+
+        public PatternBuilder(StringComparison comparisonType)
+        {
+            ComparisonType = comparisonType;
+        }
+
+        public StringComparison ComparisonType { get; }
+
+        public IPattern Build(string pattern)
         {
             if (pattern == null)
             {
@@ -115,7 +127,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.Patterns
                             if (endLiteral == endSegment)
                             {
                                 // and the only bit
-                                segment = new LiteralPathSegment(Portion(pattern, beginLiteral, endLiteral));
+                                segment = new LiteralPathSegment(Portion(pattern, beginLiteral, endLiteral), ComparisonType);
                             }
                             else
                             {
@@ -147,7 +159,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.Patterns
 
                     if (segment == null)
                     {
-                        segment = new WildcardPathSegment(beginsWith, contains, endsWith);
+                        segment = new WildcardPathSegment(beginsWith, contains, endsWith, ComparisonType);
                     }
                 }
 

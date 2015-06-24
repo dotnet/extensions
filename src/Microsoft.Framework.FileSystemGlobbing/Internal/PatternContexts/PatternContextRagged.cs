@@ -108,7 +108,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PatternContexts
             {
                 return false;
             }
-            return Frame.SegmentGroup[Frame.SegmentIndex].Match(value, StringComparison.Ordinal);
+            return Frame.SegmentGroup[Frame.SegmentIndex].Match(value);
         }
 
         protected bool TestMatchingGroup(FileSystemInfoBase value)
@@ -124,7 +124,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PatternContexts
             for (int index = 0; index != groupLength; ++index)
             {
                 var segment = Frame.SegmentGroup[groupLength - index - 1];
-                if (!segment.Match(scan.Name, StringComparison.Ordinal))
+                if (!segment.Match(scan.Name))
                 {
                     return false;
                 }

@@ -8,13 +8,19 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments
 {
     public class WildcardPathSegment : IPathSegment
     {
-        public static readonly WildcardPathSegment MatchAll = new WildcardPathSegment(string.Empty, new List<string>(), string.Empty);
+        // It doesn't matter which StringComparison type is used in this MatchAll segment because 
+        // all comparing are skipped since there is no content in the segment.
+        public static readonly WildcardPathSegment MatchAll = new WildcardPathSegment(
+            string.Empty, new List<string>(), string.Empty, StringComparison.OrdinalIgnoreCase);
 
-        public WildcardPathSegment(string beginsWith, List<string> contains, string endsWith)
+        private readonly StringComparison _comparisonType;
+
+        public WildcardPathSegment(string beginsWith, List<string> contains, string endsWith, StringComparison comparisonType)
         {
             BeginsWith = beginsWith;
             Contains = contains;
             EndsWith = endsWith;
+            _comparisonType = comparisonType;
         }
 
         public string BeginsWith { get; }
@@ -23,7 +29,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments
 
         public string EndsWith { get; }
 
-        public bool Match(string value, StringComparison comparisonType)
+        public bool Match(string value)
         {
             var wildcard = this;
 
@@ -32,12 +38,12 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments
                 return false;
             }
 
-            if (!value.StartsWith(wildcard.BeginsWith, comparisonType))
+            if (!value.StartsWith(wildcard.BeginsWith, _comparisonType))
             {
                 return false;
             }
 
-            if (!value.EndsWith(wildcard.EndsWith, comparisonType))
+            if (!value.EndsWith(wildcard.EndsWith, _comparisonType))
             {
                 return false;
             }
@@ -51,7 +57,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments
                     value: containsValue,
                     startIndex: beginRemaining,
                     count: endRemaining - beginRemaining,
-                    comparisonType: comparisonType);
+                    comparisonType: _comparisonType);
                 if (indexOf == -1)
                 {
                     return false;

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Framework.FileSystemGlobbing.Abstractions;
 using Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments;
+using Microsoft.Framework.FileSystemGlobbing.Util;
 
 namespace Microsoft.Framework.FileSystemGlobbing.Internal
 {
@@ -16,19 +17,28 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal
         private readonly IList<IPatternContext> _excludePatternContexts;
         private readonly IList<string> _files;
 
+        private readonly HashSet<string> _declaredLiteralFolderSegmentInString;
         private readonly HashSet<LiteralPathSegment> _declaredLiteralFolderSegments = new HashSet<LiteralPathSegment>();
         private readonly HashSet<LiteralPathSegment> _declaredLiteralFileSegments = new HashSet<LiteralPathSegment>();
 
         private bool _declaredParentPathSegment;
         private bool _declaredWildcardPathSegment;
 
-        public MatcherContext(IEnumerable<IPattern> includePatterns, IEnumerable<IPattern> excludePatterns, DirectoryInfoBase directoryInfo)
+        private readonly StringComparison _comparisonType;
+
+        public MatcherContext(IEnumerable<IPattern> includePatterns,
+                              IEnumerable<IPattern> excludePatterns,
+                              DirectoryInfoBase directoryInfo,
+                              StringComparison comparison)
         {
             _root = directoryInfo;
             _files = new List<string>();
+            _comparisonType = comparison;
 
             _includePatternContexts = includePatterns.Select(pattern => pattern.CreatePatternContextForInclude()).ToList();
             _excludePatternContexts = excludePatterns.Select(pattern => pattern.CreatePatternContextForExclude()).ToList();
+
+            _declaredLiteralFolderSegmentInString = new HashSet<string>(StringComparisonHelper.GetStringComparer(comparison));
         }
 
         public PatternMatchingResult Execute()
@@ -53,12 +63,12 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal
             }
             else
             {
-                foreach (var literal in _declaredLiteralFolderSegments)
+                var candidates = directory.EnumerateFileSystemInfos().OfType<DirectoryInfoBase>();
+                foreach (var candidate in candidates)
                 {
-                    var dirInfo = directory.GetDirectory(literal.Value);
-                    if (dirInfo != null)
+                    if (_declaredLiteralFolderSegmentInString.Contains(candidate.Name))
                     {
-                        entities.Add(dirInfo);
+                        entities.Add(candidate);
                     }
                 }
             }
@@ -132,6 +142,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal
                 else
                 {
                     _declaredLiteralFolderSegments.Add(literalSegment);
+                    _declaredLiteralFolderSegmentInString.Add(literalSegment.Value);
                 }
             }
             else if (patternSegment is ParentPathSegment)

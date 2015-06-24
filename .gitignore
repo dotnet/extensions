@@ -26,3 +26,4 @@ nuget.exe
 *.sln.ide
 debugSettings.json
 project.lock.json
+/.vs/

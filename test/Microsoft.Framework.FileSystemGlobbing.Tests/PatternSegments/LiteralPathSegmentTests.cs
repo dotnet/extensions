@@ -14,14 +14,14 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.PatternSegments
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
-                var pathSegment = new LiteralPathSegment(value: null);
+                var pathSegment = new LiteralPathSegment(value: null, comparisonType: StringComparison.OrdinalIgnoreCase);
             });
         }
 
         [Fact]
         public void AllowEmptyInDefaultConstructor()
         {
-            var pathSegment = new LiteralPathSegment(string.Empty);
+            var pathSegment = new LiteralPathSegment(string.Empty, comparisonType: StringComparison.Ordinal);
             Assert.NotNull(pathSegment);
         }
 
@@ -32,11 +32,11 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.PatternSegments
         [InlineData("something", "anything", StringComparison.OrdinalIgnoreCase, false)]
         [InlineData("something", "Something", StringComparison.OrdinalIgnoreCase, true)]
         [InlineData("something", "something", StringComparison.OrdinalIgnoreCase, true)]
-        public void Match(string initialValue, string testSample, StringComparison comparerType, bool expectation)
+        public void Match(string initialValue, string testSample, StringComparison comparisonType, bool expectation)
         {
-            var pathSegment = new LiteralPathSegment(initialValue);
+            var pathSegment = new LiteralPathSegment(initialValue, comparisonType);
             Assert.Equal(initialValue, pathSegment.Value);
-            Assert.Equal(expectation, pathSegment.Match(testSample, comparerType));
+            Assert.Equal(expectation, pathSegment.Match(testSample));
         }
     }
 }

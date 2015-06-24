@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using Microsoft.Framework.FileSystemGlobbing.Internal;
-using Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments;
 using Microsoft.Framework.FileSystemGlobbing.Internal.Patterns;
 using Xunit;
 
@@ -24,7 +22,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.Patterns
         [InlineData("../../abc/efg/hij/klm", 6)]
         public void BuildLinearPattern(string sample, int segmentCount)
         {
-            var pattern = PatternBuilder.Build(sample);
+            var builder = new PatternBuilder();
+            var pattern = builder.Build(sample);
 
             Assert.True(pattern is ILinearPattern);
             Assert.Equal(segmentCount, (pattern as ILinearPattern).Segments.Count);
@@ -47,7 +46,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.Patterns
         [InlineData("/ab/**/**/hij/**")]
         public void BuildLinearPatternNegative(string sample)
         {
-            var pattern = PatternBuilder.Build(sample) as ILinearPattern;
+            var builder = new PatternBuilder();
+            var pattern = builder.Build(sample) as ILinearPattern;
 
             Assert.Null(pattern);
         }
@@ -81,7 +81,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.Patterns
                              int containSegmentCount,
                              int endSegmentCount)
         {
-            var pattern = PatternBuilder.Build(sample) as IRaggedPattern;
+            var builder = new PatternBuilder();
+            var pattern = builder.Build(sample) as IRaggedPattern;
 
             Assert.NotNull(pattern);
             Assert.Equal(segmentCount, pattern.Segments.Count);
@@ -100,7 +101,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.Patterns
         [InlineData("abc/efg/hij/klm")]
         public void BuildRaggedPatternNegative(string sample)
         {
-            var pattern = PatternBuilder.Build(sample) as IRaggedPattern;
+            var builder = new PatternBuilder();
+            var pattern = builder.Build(sample) as IRaggedPattern;
 
             Assert.Null(pattern);
         }
@@ -115,8 +117,10 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.Patterns
         public void ThrowExceptionForInvalidParentsPath(string sample)
         {
             // parent segment is only allowed at the beginning of the pattern
-            Assert.Throws<ArgumentException>(() => {
-                var pattern = PatternBuilder.Build(sample);
+            Assert.Throws<ArgumentException>(() =>
+            {
+                var builder = new PatternBuilder();
+                var pattern = builder.Build(sample);
 
                 Assert.Null(pattern);
             });
@@ -125,8 +129,10 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.Patterns
         [Fact]
         public void ThrowExceptionForNull()
         {
-            Assert.Throws<ArgumentNullException>(() => {
-                PatternBuilder.Build(null);
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                var builder = new PatternBuilder();
+                builder.Build(null);
             });
         }
     }
