@@ -133,12 +133,16 @@
     <value>Unable to locate suitable constructor for type '{0}'. Ensure the type is concrete and all parameters are accepted by a constructor.</value>
     <comment>{0} = service type</comment>
   </data>
+  <data name="NoImplementation" xml:space="preserve">
+    <value>Service type '{0}' has been registered without an implementation type.</value>
+    <comment>{0} = service type</comment>
+  </data>
   <data name="NoServiceRegistered" xml:space="preserve">
     <value>No service for type '{0}' has been registered.</value>
     <comment>{0} = service type</comment>
   </data>
-  <data name="TryAddEnumerable_ImplementationTypeMustBeSet" xml:space="preserve">
-    <value>The {0} must have the {1} property set to a non-null value.</value>
-    <comment>{0} = ServiceDescriptor, {1} = ImplementationType</comment>
+  <data name="TryAddIndistinguishableTypeToEnumerable" xml:space="preserve">
+    <value>Implementation type cannot be '{0}' because it is indistinguishable from other services registered for '{1}'.</value>
+    <comment>{0} = implementation type, {1} = service type</comment>
   </data>
 </root>

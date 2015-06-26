@@ -91,19 +91,35 @@ namespace Microsoft.Framework.DependencyInjection.Abstractions
         }
 
         /// <summary>
-        /// The {0} must have the {1} property set to a non-null value.
+        /// Implementation type cannot be '{0}' because it is indistinguishable from other services registered for '{1}'.
         /// </summary>
-        internal static string TryAddEnumerable_ImplementationTypeMustBeSet
+        internal static string TryAddIndistinguishableTypeToEnumerable
         {
-            get { return GetString("TryAddEnumerable_ImplementationTypeMustBeSet"); }
+            get { return GetString("TryAddIndistinguishableTypeToEnumerable"); }
         }
 
         /// <summary>
-        /// The {0} must have the {1} property set to a non-null value.
+        /// Implementation type cannot be '{0}' because it is indistinguishable from other services registered for '{1}'.
         /// </summary>
-        internal static string FormatTryAddEnumerable_ImplementationTypeMustBeSet(object p0, object p1)
+        internal static string FormatTryAddIndistinguishableTypeToEnumerable(object p0, object p1)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TryAddEnumerable_ImplementationTypeMustBeSet"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("TryAddIndistinguishableTypeToEnumerable"), p0, p1);
+        }
+
+        /// <summary>
+        /// Service type '{0}' has been registered without an implementation type.
+        /// </summary>
+        internal static string NoImplementation
+        {
+            get { return GetString("NoImplementation"); }
+        }
+
+        /// <summary>
+        /// Service type '{0}' has been registered without an implementation type.
+        /// </summary>
+        internal static string FormatNoImplementation(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("NoImplementation"), p0);
         }
 
         private static string GetString(string name, params string[] formatterNames)

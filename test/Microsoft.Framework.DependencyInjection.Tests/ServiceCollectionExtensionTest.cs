@@ -6,11 +6,12 @@ using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection.Tests.Fakes;
 using Xunit;
 
+using AbstractionResources = Microsoft.Framework.DependencyInjection.Abstractions.Resources;
+
 namespace Microsoft.Framework.DependencyInjection
 {
     public class ServiceCollectionExtensionTest
     {
-        private static readonly Func<IServiceProvider, IFakeService> _factory = _ => new FakeService();
         private static readonly FakeService _instance = new FakeService();
 
         public static TheoryData AddImplementationTypeData
@@ -64,25 +65,33 @@ namespace Microsoft.Framework.DependencyInjection
             get
             {
                 var serviceType = typeof(IFakeService);
+                var implementationType = typeof(FakeService);
+                var objectType = typeof(object);
 
-                return new TheoryData<Action<IServiceCollection>, ServiceLifetime>
+                return new TheoryData<Action<IServiceCollection>, Type, Type, ServiceLifetime>
                 {
-                    { collection => collection.AddTransient<IFakeService>(_factory), ServiceLifetime.Transient },
-                    { collection => collection.AddTransient(serviceType, _factory), ServiceLifetime.Transient },
+                    { collection => collection.AddTransient(serviceType, s => new FakeService()), serviceType, objectType, ServiceLifetime.Transient },
+                    { collection => collection.AddTransient<IFakeService>(s => new FakeService()), serviceType, serviceType, ServiceLifetime.Transient },
+                    { collection => collection.AddTransient<IFakeService, FakeService>(s => new FakeService()), serviceType, implementationType, ServiceLifetime.Transient },
 
-                    { collection => collection.AddScoped<IFakeService>(_factory), ServiceLifetime.Scoped },
-                    { collection => collection.AddScoped(serviceType, _factory), ServiceLifetime.Scoped },
+                    { collection => collection.AddScoped(serviceType, s => new FakeService()), serviceType, objectType, ServiceLifetime.Scoped },
+                    { collection => collection.AddScoped<IFakeService>(s => new FakeService()), serviceType, serviceType, ServiceLifetime.Scoped },
+                    { collection => collection.AddScoped<IFakeService, FakeService>(s => new FakeService()), serviceType, implementationType, ServiceLifetime.Scoped },
 
-                    { collection => collection.AddSingleton<IFakeService>(_factory), ServiceLifetime.Singleton },
-                    { collection => collection.AddSingleton(serviceType, _factory), ServiceLifetime.Singleton },
+                    { collection => collection.AddSingleton(serviceType, s => new FakeService()), serviceType, objectType, ServiceLifetime.Singleton },
+                    { collection => collection.AddSingleton<IFakeService>(s => new FakeService()), serviceType, serviceType, ServiceLifetime.Singleton },
+                    { collection => collection.AddSingleton<IFakeService, FakeService>(s => new FakeService()), serviceType, implementationType, ServiceLifetime.Singleton },
                 };
             }
         }
 
         [Theory]
         [MemberData(nameof(AddImplementationFactoryData))]
-        public void AddWithFactoryAddsServiceWithRightLifecyle(Action<IServiceCollection> addAction,
-                                                               ServiceLifetime lifeCycle)
+        public void AddWithFactoryAddsServiceWithRightLifecyle(
+            Action<IServiceCollection> addAction,
+            Type serviceType,
+            Type implementationType,
+            ServiceLifetime lifeCycle)
         {
             // Arrange
             var collection = new ServiceCollection();
@@ -92,8 +101,8 @@ namespace Microsoft.Framework.DependencyInjection
 
             // Assert
             var descriptor = Assert.Single(collection);
-            Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
-            Assert.Same(_factory, descriptor.ImplementationFactory);
+            Assert.Equal(serviceType, descriptor.ServiceType);
+            Assert.Equal(implementationType, descriptor.GetImplementationType());
             Assert.Equal(lifeCycle, descriptor.Lifetime);
         }
 
@@ -133,12 +142,12 @@ namespace Microsoft.Framework.DependencyInjection
             // Arrange
             var collection = new ServiceCollection();
             addAction(collection);
-
-            // Act
             var d = ServiceDescriptor.Transient<IFakeService, FakeService>();
 
+            // Act
+            collection.TryAdd(d);
+
             // Assert
-            Assert.False(collection.TryAdd(d));
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Same(_instance, descriptor.ImplementationInstance);
@@ -151,7 +160,7 @@ namespace Microsoft.Framework.DependencyInjection
             {
                 var serviceType = typeof(IFakeService);
                 var implementationType = typeof(FakeService);
-                return new TheoryData<Func<IServiceCollection, bool>, Type, Type, ServiceLifetime>
+                return new TheoryData<Action<IServiceCollection>, Type, Type, ServiceLifetime>
                 {
                     { collection => collection.TryAddTransient(serviceType, implementationType), serviceType, implementationType, ServiceLifetime.Transient },
                     { collection => collection.TryAddTransient<IFakeService, FakeService>(), serviceType, implementationType, ServiceLifetime.Transient },
@@ -174,7 +183,7 @@ namespace Microsoft.Framework.DependencyInjection
         [Theory]
         [MemberData(nameof(TryAddImplementationTypeData))]
         public void TryAdd_WithType_AddsService(
-            Func<IServiceCollection, bool> addAction,
+            Action<IServiceCollection> addAction,
             Type expectedServiceType,
             Type expectedImplementationType,
             ServiceLifetime expectedLifetime)
@@ -183,11 +192,9 @@ namespace Microsoft.Framework.DependencyInjection
             var collection = new ServiceCollection();
 
             // Act
-            var result = addAction(collection);
+            addAction(collection);
 
             // Assert
-            Assert.True(result);
-
             var descriptor = Assert.Single(collection);
             Assert.Equal(expectedServiceType, descriptor.ServiceType);
             Assert.Same(expectedImplementationType, descriptor.ImplementationType);
@@ -197,7 +204,7 @@ namespace Microsoft.Framework.DependencyInjection
         [Theory]
         [MemberData(nameof(TryAddImplementationTypeData))]
         public void TryAdd_WithType_DoesNotAddDuplicate(
-            Func<IServiceCollection, bool> addAction,
+            Action<IServiceCollection> addAction,
             Type expectedServiceType,
             Type expectedImplementationType,
             ServiceLifetime expectedLifetime)
@@ -207,11 +214,9 @@ namespace Microsoft.Framework.DependencyInjection
             collection.Add(ServiceDescriptor.Transient(expectedServiceType, expectedServiceType));
 
             // Act
-            var result = addAction(collection);
+            addAction(collection);
 
             // Assert
-            Assert.False(result);
-
             var descriptor = Assert.Single(collection);
             Assert.Equal(expectedServiceType, descriptor.ServiceType);
             Assert.Same(expectedServiceType, descriptor.ImplementationType);
@@ -223,141 +228,138 @@ namespace Microsoft.Framework.DependencyInjection
         {
             // Arrange
             var collection = new ServiceCollection();
-
-            // Act
             var d = ServiceDescriptor.Transient<IFakeService, FakeService>();
 
+            // Act
+            collection.TryAdd(d);
+
             // Assert
-            Assert.True(collection.TryAdd(d));
             var descriptor = Assert.Single(collection);
             Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
             Assert.Null(descriptor.ImplementationInstance);
             Assert.Equal(ServiceLifetime.Transient, descriptor.Lifetime);
         }
 
-        [Fact]
-        public void TryAddWithEnumerableReturnsTrueIfAnyAdded()
+        public static TheoryData TryAddEnumerableImplementationTypeData
+        {
+            get
+            {
+                var serviceType = typeof(IFakeService);
+                var implementationType = typeof(FakeService);
+                return new TheoryData<ServiceDescriptor, Type, Type, ServiceLifetime>
+                {
+                    { ServiceDescriptor.Transient<IFakeService, FakeService>(), serviceType, implementationType, ServiceLifetime.Transient },
+                    { ServiceDescriptor.Transient<IFakeService, FakeService>(s => new FakeService()), serviceType, implementationType, ServiceLifetime.Transient },
+
+                    { ServiceDescriptor.Scoped<IFakeService, FakeService>(), serviceType, implementationType, ServiceLifetime.Scoped },
+                    { ServiceDescriptor.Scoped<IFakeService, FakeService>(s => new FakeService()), serviceType, implementationType, ServiceLifetime.Scoped },
+
+                    { ServiceDescriptor.Singleton<IFakeService, FakeService>(), serviceType, implementationType, ServiceLifetime.Singleton },
+                    { ServiceDescriptor.Singleton<IFakeService, FakeService >(s => new FakeService()), serviceType, implementationType, ServiceLifetime.Singleton },
+
+                    { ServiceDescriptor.Instance<IFakeService>(_instance), serviceType, implementationType, ServiceLifetime.Singleton },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TryAddEnumerableImplementationTypeData))]
+        public void TryAddEnumerable_AddsService(
+            ServiceDescriptor descriptor,
+            Type expectedServiceType,
+            Type expectedImplementationType,
+            ServiceLifetime expectedLifetime)
         {
             // Arrange
             var collection = new ServiceCollection();
 
             // Act
-            var ds = new ServiceDescriptor[] {
-                ServiceDescriptor.Transient<IFakeService, FakeService>(),
-                ServiceDescriptor.Transient<IFakeService, FakeService>()
-            };
+            collection.TryAddEnumerable(descriptor);
 
             // Assert
-            Assert.True(collection.TryAdd(ds));
-            var descriptor = Assert.Single(collection);
-            Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
-            Assert.Null(descriptor.ImplementationInstance);
-            Assert.Equal(ServiceLifetime.Transient, descriptor.Lifetime);
+            var d = Assert.Single(collection);
+            Assert.Equal(expectedServiceType, d.ServiceType);
+            Assert.Equal(expectedImplementationType, d.GetImplementationType());
+            Assert.Equal(expectedLifetime, d.Lifetime);
         }
 
-        [Fact]
-        public void TryAddWithEnumerableReturnsFalseIfNoneAdded()
+
+        [Theory]
+        [MemberData(nameof(TryAddEnumerableImplementationTypeData))]
+        public void TryAddEnumerable_DoesNotAddDuplicate(
+            ServiceDescriptor descriptor,
+            Type expectedServiceType,
+            Type expectedImplementationType,
+            ServiceLifetime expectedLifetime)
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddSingleton<IFakeService, FakeService>();
+            collection.TryAddEnumerable(descriptor);
 
             // Act
-            var ds = new ServiceDescriptor[] {
-                ServiceDescriptor.Transient<IFakeService, FakeService>(),
-                ServiceDescriptor.Transient<IFakeService, FakeService>()
-            };
+            collection.TryAddEnumerable(descriptor);
 
             // Assert
-            Assert.False(collection.TryAdd(ds));
-            var descriptor = Assert.Single(collection);
-            Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
-            Assert.Null(descriptor.ImplementationInstance);
-            Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
+            var d = Assert.Single(collection);
+            Assert.Equal(expectedServiceType, d.ServiceType);
+            Assert.Equal(expectedImplementationType, d.GetImplementationType());
+            Assert.Equal(expectedLifetime, d.Lifetime);
         }
 
-        [Fact]
-        public void TryAddEnumerable_DoesNotAddDuplicate()
+        public static TheoryData TryAddEnumerableInvalidImplementationTypeData
         {
-            // Arrange
-            var collection = new ServiceCollection();
-            collection.TryAddEnumerable(ServiceDescriptor.Transient<IFakeService, FakeService>());
+            get
+            {
+                var serviceType = typeof(IFakeService);
+                var implementationType = typeof(FakeService);
+                var objectType = typeof(object);
 
-            // Act
-            var result = collection.TryAddEnumerable(ServiceDescriptor.Transient<IFakeService, FakeService>());
+                return new TheoryData<ServiceDescriptor, Type, Type>
+                {
+                    { ServiceDescriptor.Transient<IFakeService>(s => new FakeService()), serviceType, serviceType },
+                    { ServiceDescriptor.Transient(serviceType, s => new FakeService()), serviceType, objectType },
 
-            // Assert
-            Assert.False(result);
+                    { ServiceDescriptor.Scoped<IFakeService>(s => new FakeService()), serviceType, serviceType },
+                    { ServiceDescriptor.Scoped(serviceType, s => new FakeService()), serviceType, objectType },
 
-            var descriptor = Assert.Single(collection);
-            Assert.Equal(typeof(IFakeService), descriptor.ServiceType);
-            Assert.Equal(typeof(FakeService), descriptor.ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, descriptor.Lifetime);
+                    { ServiceDescriptor.Singleton<IFakeService>(s => new FakeService()), serviceType, serviceType },
+                    { ServiceDescriptor.Singleton(serviceType, s => new FakeService()), serviceType, objectType },
+                };
+            }
         }
 
-        [Fact]
-        public void TryAddEnumerable_AllowsMultipleRegistrations()
-        {
-            // Arrange
-            var collection = new ServiceCollection();
-            collection.TryAddEnumerable(ServiceDescriptor.Transient<IFakeService, FakeService>());
-
-            // Act
-            var result = collection.TryAddEnumerable(ServiceDescriptor.Transient<IFakeService, IFakeService>());
-
-            // Assert
-            Assert.True(result);
-
-            Assert.Single(collection, sd => sd.ImplementationType == typeof(FakeService));
-            Assert.Single(collection, sd => sd.ImplementationType == typeof(IFakeService));
-        }
-
-        [Fact]
-        public void TryAddEnumerable_AllowsMultipleRegistrations_WithFactory()
-        {
-            // Arrange
-            var collection = new ServiceCollection();
-            collection.Add(ServiceDescriptor.Transient<IFakeService>((_) => new FakeService()));
-
-            // Act
-            var result = collection.TryAddEnumerable(ServiceDescriptor.Transient<IFakeService, FakeService>());
-
-            // Assert
-            Assert.True(result);
-
-            Assert.Single(collection, sd => sd.ImplementationFactory != null);
-            Assert.Single(collection, sd => sd.ImplementationType == typeof(FakeService));
-        }
-
-        [Fact]
-        public void TryAddEnumerable_AllowsMultipleRegistrations_WithInstance()
-        {
-            // Arrange
-            var collection = new ServiceCollection();
-            collection.Add(ServiceDescriptor.Instance<IFakeService>(new FakeService()));
-
-            // Act
-            var result = collection.TryAddEnumerable(ServiceDescriptor.Transient<IFakeService, FakeService>());
-
-            // Assert
-            Assert.True(result);
-
-            Assert.Single(collection, sd => sd.ImplementationInstance != null);
-            Assert.Single(collection, sd => sd.ImplementationType == typeof(FakeService));
-        }
-
-        [Fact]
-        public void TryAddEnumerable_ThrowsForNonType()
+        [Theory]
+        [MemberData(nameof(TryAddEnumerableInvalidImplementationTypeData))]
+        public void TryAddEnumerable_ThrowsWhenAddingIndistinguishableImplementationType(
+            ServiceDescriptor descriptor,
+            Type serviceType,
+            Type implementationType)
         {
             // Arrange
             var collection = new ServiceCollection();
 
             // Act & Assert
             ExceptionAssert.ThrowsArgument(
-                () => collection.TryAddEnumerable(ServiceDescriptor.Instance<IFakeService>(new FakeService())),
+                () => collection.TryAddEnumerable(descriptor),
                 "descriptor",
-                "The ServiceDescriptor must have the ImplementationType property set to a non-null value.");
+                AbstractionResources.FormatTryAddIndistinguishableTypeToEnumerable(implementationType, serviceType));
         }
+
+        [Fact]
+        public void GetImplementationType_ThrowsForNoImplementationType()
+        {
+            // Arrange
+            var serviceType = typeof(IFakeService);
+            var collection = new ServiceCollection();
+            var descriptor = new ServiceDescriptor(serviceType, null);
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgument(
+                () => descriptor.GetImplementationType(),
+                null,
+                AbstractionResources.FormatNoImplementation(serviceType));
+        }
+
 
         [Fact]
         public void AddSequence_AddsServicesToCollection()
