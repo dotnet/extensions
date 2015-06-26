@@ -82,7 +82,14 @@ namespace Microsoft.Framework.DependencyInjection
         public static IEnumerable<object> GetRequiredServices([NotNull] this IServiceProvider provider, [NotNull] Type serviceType)
         {
             var genericEnumerable = typeof(IEnumerable<>).MakeGenericType(new [] { serviceType });
-            return (IEnumerable<object>)provider.GetRequiredService(genericEnumerable);
+            var providers = (IEnumerable<object>)provider.GetRequiredService(genericEnumerable);
+            
+            if (!providers.Any())
+            {
+                throw new InvalidOperationException(Resources.FormatNoServiceRegistered(serviceType));
+            }
+
+            return providers;
         }
     }
 }
