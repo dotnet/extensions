@@ -35,6 +35,11 @@ namespace Microsoft.Framework.Logging.Console
             }
         }
 
+        public void ResetColor()
+        {
+            System.Console.ResetColor();
+        }
+
         public void WriteLine(string message)
         {
             System.Console.Error.WriteLine(message);

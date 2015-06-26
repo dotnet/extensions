@@ -83,8 +83,6 @@ namespace Microsoft.Framework.Logging.Console
             }
             lock (_lock)
             {
-                var originalForegroundColor = Console.ForegroundColor;  // save current colors
-                var originalBackgroundColor = Console.BackgroundColor;
                 SetConsoleColor(logLevel);
                 try
                 {
@@ -92,8 +90,7 @@ namespace Microsoft.Framework.Logging.Console
                 }
                 finally
                 {
-                    Console.ForegroundColor = originalForegroundColor;  // reset initial colors
-                    Console.BackgroundColor = originalBackgroundColor;
+                    Console.ResetColor();
                 }
             }
         }

@@ -19,6 +19,11 @@ namespace Microsoft.Framework.Logging.Test.Console
 
         public ConsoleColor ForegroundColor { get; set; }
 
+        public void ResetColor()
+        {
+            System.Console.ResetColor();
+        }
+
         public void WriteLine(string message)
         {
             _sink.Write(new ConsoleContext()

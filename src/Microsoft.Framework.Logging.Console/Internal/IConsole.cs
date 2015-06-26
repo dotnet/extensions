@@ -9,6 +9,7 @@ namespace Microsoft.Framework.Logging.Console.Internal
     {
         ConsoleColor BackgroundColor { get; set; }
         ConsoleColor ForegroundColor { get; set; }
+        void ResetColor();
         void WriteLine(string message);
     }
 }
