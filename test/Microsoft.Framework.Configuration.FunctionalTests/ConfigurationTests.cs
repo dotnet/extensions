@@ -84,8 +84,7 @@ CommonKey3:CommonKey4=IniValue6";
             builder.AddIniFile(_iniConfigFilePath);
             builder.AddJsonFile(_jsonConfigFilePath);
             builder.AddXmlFile(_xmlConfigFilePath);
-            var memConfigSrc = new MemoryConfigurationSource(_memConfigContent);
-            builder.Add(memConfigSrc);
+            builder.AddInMemoryCollection(_memConfigContent);
 
             var config = builder.Build();
 
@@ -136,8 +135,7 @@ CommonKey3:CommonKey4=IniValue6";
             config = builder.Build();
             Assert.Equal("XmlValue6", config.Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
 
-            var memConfigSrc = new MemoryConfigurationSource(_memConfigContent);
-            builder.Add(memConfigSrc);
+            builder.AddInMemoryCollection(_memConfigContent);
             config = builder.Build();
             Assert.Equal("MemValue6", config.Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
         }
