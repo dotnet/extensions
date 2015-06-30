@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using Microsoft.AspNet.Testing;
 using Microsoft.Framework.Configuration.Test;
 using Xunit;
 
@@ -277,6 +278,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
         }
 
         [Fact]
+        [ReplaceCulture]
         public void ThrowExceptionWhenFindDTD()
         {
             var xml =

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Framework.Configuration.Memory;
 using Xunit;
@@ -66,6 +67,95 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             public UriKind UriKind { get; set; }
         }
 
+        public class GenericOptions<T>
+        {
+            public T Value { get; set; }
+        }
+
+        [Theory]
+        [InlineData("2147483647", typeof(int))]
+        [InlineData("4294967295", typeof(uint))]
+        [InlineData("32767", typeof(short))]
+        [InlineData("65535", typeof(ushort))]
+        [InlineData("-9223372036854775808", typeof(long))]
+        [InlineData("18446744073709551615", typeof(ulong))]
+        [InlineData("trUE", typeof(bool))]
+        [InlineData("255", typeof(byte))]
+        [InlineData("127", typeof(sbyte))]
+        [InlineData("\uffff", typeof(char))]
+        [InlineData("79228162514264337593543950335", typeof(decimal))]
+        [InlineData("1.79769e+308", typeof(double))]
+        [InlineData("3.40282347E+38", typeof(float))]
+        [InlineData("2015-12-24T07:34:42-5:00", typeof(DateTime))]
+        [InlineData("12/24/2015 13:44:55 +4", typeof(DateTimeOffset))]
+        [InlineData("99.22:22:22.1234567", typeof(TimeSpan))]
+        // enum test
+        [InlineData("Constructor", typeof(AttributeTargets))]
+        [InlineData("CA761232-ED42-11CE-BACD-00AA0057B223", typeof(Guid))]
+        public void CanReadAllSupportedTypes(string value, Type type)
+        {
+            // arrange
+            var dic = new Dictionary<string, string>
+            {
+                {"Value", value}
+            };
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
+            var optionsType = typeof(GenericOptions<>).MakeGenericType(type);
+            var options = Activator.CreateInstance(optionsType);
+            var expectedValue = TypeDescriptor.GetConverter(type).ConvertFromInvariantString(value);
+
+            // act
+            ConfigurationBinder.Bind(options, config);            
+            var optionsValue = options.GetType().GetProperty("Value").GetValue(options);
+            
+            // assert            
+            Assert.Equal(expectedValue, optionsValue);
+        }
+
+        [Theory]
+        [InlineData(typeof(int))]
+        [InlineData(typeof(uint))]
+        [InlineData(typeof(short))]
+        [InlineData(typeof(ushort))]
+        [InlineData(typeof(long))]
+        [InlineData(typeof(ulong))]
+        [InlineData(typeof(bool))]
+        [InlineData(typeof(byte))]
+        [InlineData(typeof(sbyte))]
+        [InlineData(typeof(char))]
+        [InlineData(typeof(decimal))]
+        [InlineData(typeof(double))]
+        [InlineData(typeof(float))]
+        [InlineData(typeof(DateTime))]
+        [InlineData(typeof(DateTimeOffset))]
+        [InlineData(typeof(TimeSpan))]
+        [InlineData(typeof(AttributeTargets))]
+        [InlineData(typeof(Guid))]
+        public void ConsistentExceptionOnFailedBinding(Type type)
+        {
+            // arrange
+            const string IncorrectValue = "Invalid data";
+            var dic = new Dictionary<string, string>
+            {
+                {"Value", IncorrectValue}
+            };
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
+            var optionsType = typeof(GenericOptions<>).MakeGenericType(type);
+            var options = Activator.CreateInstance(optionsType);
+            
+            // act
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => ConfigurationBinder.Bind(options, config));
+
+            // assert
+            Assert.NotNull(exception.InnerException);
+            Assert.Equal(
+                Resources.FormatError_FailedBinding(IncorrectValue, type),
+                exception.Message);
+        }
+
         [Fact]
         public void CanReadComplexProperties()
         {
@@ -91,7 +181,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"Integer", "-2"},
                 {"Boolean", "TRUe"},
                 {"Nested:Integer", "11"},
-                {"Virtual","Sup"}
+                {"Virtual", "Sup"}
             };
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
             var config = builder.Build();
@@ -165,27 +255,6 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 () => ConfigurationBinder.Bind<TestOptions>(config));
             Assert.Equal(
                 Resources.FormatError_MissingParameterlessConstructor(typeof(ClassWithoutPublicConstructor)),
-                exception.Message);
-        }
-
-        [Fact]
-        public void ExceptionWhenTryingToBindToTypeThatCannotBeConverted()
-        {
-            const string IncorrectValue = "This is not an int";
-
-            var input = new Dictionary<string, string>
-            {
-                {"IntProperty", IncorrectValue}
-            };
-
-            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
-            var config = builder.Build();
-
-            var exception = Assert.Throws<InvalidOperationException>(
-                () => ConfigurationBinder.Bind<TestOptions>(config));
-            Assert.NotNull(exception.InnerException);
-            Assert.Equal(
-                Resources.FormatError_FailedBinding(IncorrectValue, typeof(int)),
                 exception.Message);
         }
 

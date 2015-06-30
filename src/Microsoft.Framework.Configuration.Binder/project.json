@@ -12,6 +12,10 @@
   "frameworks": {
     "net45": { },
     "dnx451": { },
-    "dotnet": { }
+    "dotnet": {
+      "dependencies": {
+        "System.ComponentModel.TypeConverter": "4.0.0-*"
+      }
+    }
   }
 }

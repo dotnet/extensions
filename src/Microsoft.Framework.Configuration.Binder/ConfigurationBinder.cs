@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Framework.Configuration.Binder;
@@ -208,14 +209,7 @@ namespace Microsoft.Framework.Configuration
 
             try
             {
-                if (typeInfo.IsEnum)
-                {
-                    return Enum.Parse(type, configurationValue);
-                }
-                else
-                {
-                    return Convert.ChangeType(configurationValue, type);
-                }
+                return TypeDescriptor.GetConverter(type).ConvertFromInvariantString(configurationValue);
             }
             catch (Exception ex)
             {
