@@ -28,7 +28,7 @@ namespace Microsoft.Framework.Configuration
         {
         }
 
-        internal XmlConfigurationSource(string path, bool optional)
+        public XmlConfigurationSource(string path, bool optional)
             : this(path, null, optional: optional)
         {
         }
