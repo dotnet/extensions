@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "Logging infrastructure.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/logging"
+    },
     "dependencies": {
         "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
         "Microsoft.Framework.Logging.Abstractions": "1.0.0-*"
