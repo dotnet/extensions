@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "ASP.NET 5 distributed cache implementation on Redis.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aspnet/caching"
+    },
     "dependencies": {
         "Microsoft.Framework.Caching.Abstractions": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },

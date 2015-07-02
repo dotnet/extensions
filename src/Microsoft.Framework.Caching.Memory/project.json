@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "ASP.NET 5 in memory cache abstractions and implementation.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aspnet/caching"
+    },
     "dependencies": {
         "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
         "Microsoft.Framework.Caching.Abstractions": "1.0.0-*",
