@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "ASP.NET 5 file provider interfaces.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/filesystem"
+    },
     "dependencies": {
         "Microsoft.Framework.Caching.Abstractions": "1.0.0-*"
     },

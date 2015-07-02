@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "Implementation of ASP.NET 5 file provider abstractions for physical files.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/filesystem"
+    },
     "dependencies": {
         "Microsoft.AspNet.FileProviders.Sources": { "version": "1.0.0-*", "type": "build" },
         "Microsoft.AspNet.FileProviders.Abstractions": "1.0.0-*"

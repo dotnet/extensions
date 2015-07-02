@@ -1,5 +1,9 @@
 {
     "version": "1.0.0-*",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/filesystem"
+    },
     "shared": "**/*.cs",
     "dependencies": {
         "Microsoft.AspNet.FileProviders.Abstractions": "1.0.0-*"
