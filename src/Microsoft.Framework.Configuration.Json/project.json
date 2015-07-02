@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "JSON configuration source for the Configuration package.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/aspnet/configuration"
+    },
     "dependencies": {
         "Newtonsoft.Json": "6.0.6",
         "Microsoft.Framework.Configuration": "1.0.0-*",
