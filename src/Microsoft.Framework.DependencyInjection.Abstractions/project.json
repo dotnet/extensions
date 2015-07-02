@@ -1,6 +1,10 @@
 {
     "version": "1.0.0-*",
     "description": "Contracts for dependency injection.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/dependencyinjection"
+    },
     "dependencies": {
         "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" }
     },
