@@ -1,6 +1,10 @@
 ﻿{
     "version": "1.0.0-*",
     "description": "Shared sources for automating Microsoft.Framework.TestHost",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/testing"
+    },
     "shared": "*.cs",
     "dependencies": {
     },
