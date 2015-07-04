@@ -6,7 +6,7 @@ using Xunit;
 #if DNX451
 using Moq;
 #endif
-using Microsoft.Framework.Logging.Internal;
+using Microsoft.Framework.Logging.TraceSource.Internal;
 
 namespace Microsoft.Framework.Logging.Test
 {

@@ -5,8 +5,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.Framework.Internal;
+using DiagnosticsTraceSource = System.Diagnostics.TraceSource;
 
-namespace Microsoft.Framework.Logging
+namespace Microsoft.Framework.Logging.TraceSource
 {
     /// <summary>
     /// Provides an ILoggerFactory based on System.Diagnostics.TraceSource.
@@ -16,7 +17,7 @@ namespace Microsoft.Framework.Logging
         private readonly SourceSwitch _rootSourceSwitch;
         private readonly TraceListener _rootTraceListener;
 
-        private readonly ConcurrentDictionary<string, TraceSource> _sources = new ConcurrentDictionary<string, TraceSource>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, DiagnosticsTraceSource> _sources = new ConcurrentDictionary<string, DiagnosticsTraceSource>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TraceSourceLoggerProvider"/> class.
@@ -39,14 +40,14 @@ namespace Microsoft.Framework.Logging
             return new TraceSourceLogger(GetOrAddTraceSource(name));
         }
 
-        private TraceSource GetOrAddTraceSource(string name)
+        private DiagnosticsTraceSource GetOrAddTraceSource(string name)
         {
             return _sources.GetOrAdd(name, InitializeTraceSource);
         }
 
-        private TraceSource InitializeTraceSource(string traceSourceName)
+        private DiagnosticsTraceSource InitializeTraceSource(string traceSourceName)
         {
-            var traceSource = new TraceSource(traceSourceName);
+            var traceSource = new DiagnosticsTraceSource(traceSourceName);
             string parentSourceName = ParentSourceName(traceSourceName);
 
             if (string.IsNullOrEmpty(parentSourceName))
@@ -65,14 +66,14 @@ namespace Microsoft.Framework.Logging
             {
                 if (HasDefaultListeners(traceSource))
                 {
-                    TraceSource parentTraceSource = GetOrAddTraceSource(parentSourceName);
+                    DiagnosticsTraceSource parentTraceSource = GetOrAddTraceSource(parentSourceName);
                     traceSource.Listeners.Clear();
                     traceSource.Listeners.AddRange(parentTraceSource.Listeners);
                 }
 
                 if (HasDefaultSwitch(traceSource))
                 {
-                    TraceSource parentTraceSource = GetOrAddTraceSource(parentSourceName);
+                    DiagnosticsTraceSource parentTraceSource = GetOrAddTraceSource(parentSourceName);
                     traceSource.Switch = parentTraceSource.Switch;
                 }
             }
@@ -86,12 +87,12 @@ namespace Microsoft.Framework.Logging
             return indexOfLastDot == -1 ? null : traceSourceName.Substring(0, indexOfLastDot);
         }
 
-        private static bool HasDefaultListeners(TraceSource traceSource)
+        private static bool HasDefaultListeners(DiagnosticsTraceSource traceSource)
         {
             return traceSource.Listeners.Count == 1 && traceSource.Listeners[0] is DefaultTraceListener;
         }
 
-        private static bool HasDefaultSwitch(TraceSource traceSource)
+        private static bool HasDefaultSwitch(DiagnosticsTraceSource traceSource)
         {
             return string.IsNullOrEmpty(traceSource.Switch.DisplayName) == string.IsNullOrEmpty(traceSource.Name) &&
                 traceSource.Switch.Level == SourceLevels.Off;
