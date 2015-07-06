@@ -5,10 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.Framework.Configuration.Json;
 using Newtonsoft.Json;
 
-namespace Microsoft.Framework.Configuration
+namespace Microsoft.Framework.Configuration.Json
 {
     /// <summary>
     /// A JSON file based <see cref="ConfigurationSource"/>.
