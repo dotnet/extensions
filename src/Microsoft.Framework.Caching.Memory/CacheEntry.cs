@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Framework.Caching.Memory
 {
@@ -151,7 +151,7 @@ namespace Microsoft.Framework.Caching.Memory
             PostEvictionCallbacks = null;
             if (callbacks != null)
             {
-                ThreadPool.QueueUserWorkItem(InvokeCallbacks, callbacks);
+                Task.Factory.StartNew(InvokeCallbacks, callbacks);
             }
         }
 

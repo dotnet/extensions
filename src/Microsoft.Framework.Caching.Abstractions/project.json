@@ -10,7 +10,6 @@
             "dependencies": {
                 "System.Collections": "4.0.10-beta-*",
                 "System.Threading": "4.0.10-beta-*",
-                "System.Threading.ThreadPool": "4.0.10-beta-*",
                 "System.Threading.Tasks": "4.0.10-beta-*"
             }
         }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
@@ -290,11 +291,11 @@ namespace Microsoft.Framework.Caching.Memory
             if (_expirationScanFrequency < now - _lastExpirationScan)
             {
                 _lastExpirationScan = now;
-                ThreadPool.QueueUserWorkItem(ScanForExpiredItems);
+                Task.Factory.StartNew(ScanForExpiredItems);
             }
         }
 
-        private void ScanForExpiredItems(object state)
+        private void ScanForExpiredItems()
         {
             List<CacheEntry> expiredEntries = new List<CacheEntry>();
 
