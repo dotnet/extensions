@@ -4,12 +4,12 @@
 using System;
 using System.Diagnostics;
 
-namespace Microsoft.Framework.Logging.TraceSource.Internal
+namespace Microsoft.Framework.Logging.TraceSource
 {
     /// <summary>
     /// Provides an IDisposable that represents a logical operation scope based on System.Diagnostics LogicalOperationStack
     /// </summary>
-    public class TraceSourceScope : IDisposable
+    internal class TraceSourceScope : IDisposable
     {
         // To detect redundant calls
         private bool _isDisposed;
