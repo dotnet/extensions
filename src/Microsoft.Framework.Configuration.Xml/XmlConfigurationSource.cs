@@ -6,9 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using Microsoft.Framework.Configuration.Xml;
 
-namespace Microsoft.Framework.Configuration
+namespace Microsoft.Framework.Configuration.Xml
 {
     /// <summary>
     /// An XML file based <see cref="ConfigurationSource"/>.

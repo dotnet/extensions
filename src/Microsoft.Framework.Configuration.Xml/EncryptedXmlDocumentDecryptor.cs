@@ -6,7 +6,7 @@ using System;
 using System.Security.Cryptography.Xml;
 using System.Xml;
 
-namespace Microsoft.Framework.Configuration
+namespace Microsoft.Framework.Configuration.Xml
 {
     /// <summary>
     /// A decryptor that uses the EncryptedXml class in the desktop CLR.
