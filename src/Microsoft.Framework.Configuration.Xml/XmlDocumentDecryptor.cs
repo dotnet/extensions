@@ -4,9 +4,8 @@
 using System;
 using System.IO;
 using System.Xml;
-using Microsoft.Framework.Configuration.Xml;
 
-namespace Microsoft.Framework.Configuration
+namespace Microsoft.Framework.Configuration.Xml
 {
     internal class XmlDocumentDecryptor
     {
