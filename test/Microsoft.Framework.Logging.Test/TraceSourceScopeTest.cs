@@ -6,7 +6,6 @@ using Xunit;
 #if DNX451
 using Moq;
 #endif
-using Microsoft.Framework.Logging.TraceSource.Internal;
 
 namespace Microsoft.Framework.Logging.Test
 {
@@ -20,10 +19,14 @@ namespace Microsoft.Framework.Logging.Test
             var baseState = "base";
             Trace.CorrelationManager.StartLogicalOperation(baseState);
             var state = "1337state7331";
+            
+            var factory = new LoggerFactory();
+            var logger = factory.CreateLogger("Test");
+            factory.AddTraceSource(new SourceSwitch("TestSwitch"), new ConsoleTraceListener());
 
             // Act
             var a = Trace.CorrelationManager.LogicalOperationStack.Peek();
-            var scope = new TraceSourceScope(state);
+            var scope = logger.BeginScopeImpl(state);
             var b = Trace.CorrelationManager.LogicalOperationStack.Peek();
             scope.Dispose();
             var c = Trace.CorrelationManager.LogicalOperationStack.Peek();

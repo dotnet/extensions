@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using Microsoft.Framework.Logging.TraceSource.Internal;
 using DiagnosticsTraceSource = System.Diagnostics.TraceSource;
 
 namespace Microsoft.Framework.Logging.TraceSource
