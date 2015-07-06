@@ -9,7 +9,7 @@
     },
     "dependencies": {
         "Microsoft.Framework.TestAdapter": "1.0.0-*",
-        "Microsoft.Framework.CommandLineUtils.Sources": "1.0.0-*",
+        "Microsoft.Framework.CommandLineUtils.Sources": { "version": "1.0.0-*", "type": "build" },
         "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Framework.Runtime": "1.0.0-*",
         "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*",
