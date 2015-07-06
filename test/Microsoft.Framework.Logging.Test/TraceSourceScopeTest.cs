@@ -3,9 +3,6 @@
 
 using System.Diagnostics;
 using Xunit;
-#if DNX451
-using Moq;
-#endif
 
 namespace Microsoft.Framework.Logging.Test
 {
