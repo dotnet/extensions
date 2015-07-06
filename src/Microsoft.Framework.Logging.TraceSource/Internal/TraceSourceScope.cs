@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Microsoft.Framework.Logging.Internal
+namespace Microsoft.Framework.Logging.TraceSource.Internal
 {
     /// <summary>
     /// Provides an IDisposable that represents a logical operation scope based on System.Diagnostics LogicalOperationStack

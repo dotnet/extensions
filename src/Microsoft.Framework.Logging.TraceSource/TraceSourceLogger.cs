@@ -3,15 +3,16 @@
 
 using System;
 using System.Diagnostics;
-using Microsoft.Framework.Logging.Internal;
+using Microsoft.Framework.Logging.TraceSource.Internal;
+using DiagnosticsTraceSource = System.Diagnostics.TraceSource;
 
-namespace Microsoft.Framework.Logging
+namespace Microsoft.Framework.Logging.TraceSource
 {
     internal class TraceSourceLogger : ILogger
     {
-        private readonly TraceSource _traceSource;
+        private readonly DiagnosticsTraceSource _traceSource;
 
-        public TraceSourceLogger(TraceSource traceSource)
+        public TraceSourceLogger(DiagnosticsTraceSource traceSource)
         {
             _traceSource = traceSource;
         }
