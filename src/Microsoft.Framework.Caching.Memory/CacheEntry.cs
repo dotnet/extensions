@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Framework.Caching.Memory
@@ -147,27 +148,30 @@ namespace Microsoft.Framework.Caching.Memory
         // TODO: Ensure a thread safe way to prevent these from being invoked more than once;
         internal void InvokeEvictionCallbacks()
         {
-            var callbacks = PostEvictionCallbacks;
-            PostEvictionCallbacks = null;
-            if (callbacks != null)
+            if (PostEvictionCallbacks != null)
             {
-                Task.Factory.StartNew(InvokeCallbacks, callbacks);
+                Task.Factory.StartNew(state => InvokeCallbacks((CacheEntry)state), this,
+                    CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
             }
         }
 
-        private void InvokeCallbacks(object state)
+        private static void InvokeCallbacks(CacheEntry entry)
         {
-            var callbackRegistrations = (IList<PostEvictionCallbackRegistration>)state;
+            var callbackRegistrations = entry.PostEvictionCallbacks;
+            entry.PostEvictionCallbacks = null;
+
+            if (callbackRegistrations == null)
+            {
+                return;
+            }
+
             for (int i = 0; i < callbackRegistrations.Count; i++)
             {
                 var registration = callbackRegistrations[i];
 
                 try
                 {
-                    if (registration.EvictionCallback != null)
-                    {
-                        registration.EvictionCallback(Key, Value, EvictionReason, registration.State);
-                    }
+                    registration.EvictionCallback?.Invoke(entry.Key, entry.Value, entry.EvictionReason, registration.State);
                 }
                 catch (Exception)
                 {

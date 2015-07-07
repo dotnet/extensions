@@ -13,7 +13,7 @@ namespace Microsoft.Framework.Caching.Memory
 {
     public class MemoryCache : IMemoryCache
     {
-        private readonly IDictionary<string, CacheEntry> _entries;
+        private readonly Dictionary<string, CacheEntry> _entries;
         private readonly ReaderWriterLockSlim _entryLock;
         private bool _disposed;
 
@@ -249,7 +249,7 @@ namespace Microsoft.Framework.Caching.Memory
             entry.InvokeEvictionCallbacks();
         }
 
-        private void RemoveEntries(IEnumerable<CacheEntry> entries)
+        private void RemoveEntries(List<CacheEntry> entries)
         {
             _entryLock.EnterWriteLock();
             try
@@ -291,19 +291,20 @@ namespace Microsoft.Framework.Caching.Memory
             if (_expirationScanFrequency < now - _lastExpirationScan)
             {
                 _lastExpirationScan = now;
-                Task.Factory.StartNew(ScanForExpiredItems);
+                Task.Factory.StartNew(state => ScanForExpiredItems((MemoryCache)state), this,
+                    CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
             }
         }
 
-        private void ScanForExpiredItems()
+        private static void ScanForExpiredItems(MemoryCache cache)
         {
             List<CacheEntry> expiredEntries = new List<CacheEntry>();
 
-            _entryLock.EnterReadLock();
+            cache._entryLock.EnterReadLock();
             try
             {
-                var now = _clock.UtcNow;
-                foreach (var entry in _entries.Values)
+                var now = cache._clock.UtcNow;
+                foreach (var entry in cache._entries.Values)
                 {
                     if (entry.CheckExpired(now))
                     {
@@ -313,10 +314,10 @@ namespace Microsoft.Framework.Caching.Memory
             }
             finally
             {
-                _entryLock.ExitReadLock();
+                cache._entryLock.ExitReadLock();
             }
 
-            RemoveEntries(expiredEntries);
+            cache.RemoveEntries(expiredEntries);
         }
 
         /// This is called after a Gen2 garbage collection. We assume this means there was memory pressure.
