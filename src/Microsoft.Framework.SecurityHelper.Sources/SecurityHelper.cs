@@ -9,7 +9,7 @@ namespace Microsoft.Framework.Internal
     /// <summary>
     /// Helper code used when implementing authentication middleware
     /// </summary>
-    public static class SecurityHelper
+    internal static class SecurityHelper
     {
         /// <summary>
         /// Add all ClaimsIdenities from an additional ClaimPrincipal to the ClaimsPrincipal
