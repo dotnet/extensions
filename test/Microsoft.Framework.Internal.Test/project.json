@@ -10,6 +10,7 @@
         "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Framework.PropertyActivator.Sources": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Framework.PropertyHelper.Sources": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Framework.SecurityHelper.Sources": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Framework.TypeNameHelper.Sources": { "type": "build", "version": "1.0.0-*" },
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
