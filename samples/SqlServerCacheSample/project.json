@@ -6,7 +6,6 @@
         "Microsoft.Framework.Caching.SqlServer": "1.0.0-*",
         "Microsoft.Framework.Configuration.EnvironmentVariables": "1.0.0-*",
         "Microsoft.Framework.Configuration.Json": "1.0.0-*",
-        "Microsoft.Framework.ConfigurationModel": "1.0.0-*",
         "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*"
     },
     "frameworks": {
