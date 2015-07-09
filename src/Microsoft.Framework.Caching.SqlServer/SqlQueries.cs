@@ -56,8 +56,6 @@ namespace Microsoft.Framework.Caching.SqlServer
 
         public SqlQueries(string schemaName, string tableName)
         {
-            //TODO: sanitize schema and table name
-
             var tableNameWithSchema = string.Format(
                 "{0}.{1}", DelimitIdentifier(schemaName), DelimitIdentifier(tableName));
 
