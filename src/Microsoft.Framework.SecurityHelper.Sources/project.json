@@ -10,6 +10,11 @@
             "dependencies": {
                 "System.Runtime": "4.0.20-*"
             }
+        },
+        "dotnet": {
+            "dependencies": {
+                "System.Runtime": "4.0.20-*"
+            } 
         }
     }
 }
