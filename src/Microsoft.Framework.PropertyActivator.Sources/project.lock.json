@@ -1,0 +1,38 @@
+{
+  "locked": true,
+  "version": 1,
+  "targets": {
+    ".NETFramework,Version=v4.5": {},
+    "DNX,Version=v4.5.1": {},
+    "DNXCore,Version=v5.0": {
+      "System.Runtime/4.0.20.0": {
+        "compile": {
+          "lib/contract/System.Runtime.dll": {}
+        },
+        "runtime": {
+          "lib/aspnetcore50/System.Runtime.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "System.Runtime/4.0.20.0": {
+      "sha512": "mKeVIcXozI9BvOA9M9MTDv0G14Z1pQRoSGuAfSQz9VfEBsNUpaGTRUInyeKb7QmIQUKSZ5RPYwRFDKqA1F/Ksw==",
+      "files": [
+        "lib/aspnetcore50/System.Runtime.dll",
+        "lib/contract/System.Runtime.dll",
+        "System.Runtime.4.0.20.nupkg",
+        "System.Runtime.4.0.20.nupkg.sha512",
+        "System.Runtime.nuspec"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "": [],
+    ".NETFramework,Version=v4.5": [],
+    "DNX,Version=v4.5.1": [],
+    "DNXCore,Version=v5.0": [
+      "System.Runtime >= 4.0.20-*"
+    ]
+  }
+}

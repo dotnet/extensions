@@ -1,0 +1,95 @@
+{
+  "locked": true,
+  "version": 1,
+  "targets": {
+    ".NETFramework,Version=v4.5": {
+      "Microsoft.Framework.NotNullAttribute.Sources/1.0.0-beta5": {
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/net45/Microsoft.Framework.NotNullAttribute.Sources.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Microsoft.Framework.NotNullAttribute.Sources.dll": {}
+        }
+      }
+    },
+    "DNX,Version=v4.5.1": {
+      "Microsoft.Framework.NotNullAttribute.Sources/1.0.0-beta5": {
+        "frameworkAssemblies": [
+          "Microsoft.CSharp",
+          "mscorlib",
+          "System",
+          "System.Core"
+        ],
+        "compile": {
+          "lib/dnx451/Microsoft.Framework.NotNullAttribute.Sources.dll": {}
+        },
+        "runtime": {
+          "lib/dnx451/Microsoft.Framework.NotNullAttribute.Sources.dll": {}
+        }
+      }
+    },
+    ".NETPlatform,Version=v5.0": {
+      "Microsoft.Framework.NotNullAttribute.Sources/1.0.0-beta5": {
+        "dependencies": {
+          "System.Runtime": "4.0.20-beta-23019"
+        },
+        "compile": {
+          "lib/dotnet/Microsoft.Framework.NotNullAttribute.Sources.dll": {}
+        },
+        "runtime": {
+          "lib/dotnet/Microsoft.Framework.NotNullAttribute.Sources.dll": {}
+        }
+      },
+      "System.Runtime/4.0.20-beta-23019": {
+        "compile": {
+          "ref/dotnet/System.Runtime.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Microsoft.Framework.NotNullAttribute.Sources/1.0.0-beta5": {
+      "sha512": "hgETnks4ovIE4ySkFs6mQ+QN195kOIM+3IxgIqQFYtuF9tfNdw1/xkkwm9ip7vUifJlNC4O5d9o7CJ2ou46GyA==",
+      "files": [
+        "lib/dnx451/Microsoft.Framework.NotNullAttribute.Sources.dll",
+        "lib/dnx451/Microsoft.Framework.NotNullAttribute.Sources.xml",
+        "lib/dotnet/Microsoft.Framework.NotNullAttribute.Sources.dll",
+        "lib/dotnet/Microsoft.Framework.NotNullAttribute.Sources.xml",
+        "lib/net45/Microsoft.Framework.NotNullAttribute.Sources.dll",
+        "lib/net45/Microsoft.Framework.NotNullAttribute.Sources.xml",
+        "Microsoft.Framework.NotNullAttribute.Sources.1.0.0-beta5.nupkg",
+        "Microsoft.Framework.NotNullAttribute.Sources.1.0.0-beta5.nupkg.sha512",
+        "Microsoft.Framework.NotNullAttribute.Sources.nuspec",
+        "shared/NotNullAttribute.cs"
+      ]
+    },
+    "System.Runtime/4.0.20-beta-23019": {
+      "sha512": "74Ba0KeqUX4ziLuALD5zSDWbYFg2Hw8IloKILkm8UHe5vkFCzHIb9tARXLClDjTxXQ/G/hyXgV8N0YlKHX7dAA==",
+      "files": [
+        "lib/DNXCore50/System.Runtime.dll",
+        "lib/net46/_._",
+        "lib/netcore50/System.Runtime.dll",
+        "ref/dotnet/System.Runtime.dll",
+        "ref/net46/_._",
+        "runtimes/win8-aot/lib/netcore50/System.Runtime.dll",
+        "System.Runtime.4.0.20-beta-23019.nupkg",
+        "System.Runtime.4.0.20-beta-23019.nupkg.sha512",
+        "System.Runtime.nuspec"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "": [],
+    ".NETFramework,Version=v4.5": [],
+    "DNX,Version=v4.5.1": [],
+    ".NETPlatform,Version=v5.0": [
+      "System.Runtime >= 4.0.20-beta-23019"
+    ]
+  }
+}
