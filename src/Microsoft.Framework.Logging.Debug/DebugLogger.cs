@@ -9,7 +9,7 @@ namespace Microsoft.Framework.Logging.Debug
     /// <summary>
     /// A logger that writes messages in the debug output window only when a debugger is attached.
     /// </summary>
-    public class DebugLogger : ILogger
+    public partial class DebugLogger : ILogger
     {
         private readonly Func<string, LogLevel, bool> _filter;
         private readonly string _name;
@@ -83,7 +83,7 @@ namespace Microsoft.Framework.Logging.Debug
             }
 
             message = $"{ logLevel }: {message}";
-            System.Diagnostics.Debug.WriteLine(message, _name);
+            DebugWriteLine(message, _name);
         }
     }
 }
