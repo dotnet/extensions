@@ -19,7 +19,7 @@ namespace Microsoft.Framework.Caching.SqlServer
         private static readonly TimeSpan DefaultExpiredItemsDeletionInterval = TimeSpan.FromMinutes(30);
 
         private readonly IDatabaseOperations _dbOperations;
-        private readonly ISystemClock _systemCock;
+        private readonly ISystemClock _systemClock;
         private readonly TimeSpan _expiredItemsDeletionInterval;
         private DateTimeOffset _lastExpirationScan;
         private readonly Action _deleteExpiredCachedItemsDelegate;
@@ -51,7 +51,7 @@ namespace Microsoft.Framework.Caching.SqlServer
                     $"value of {MinimumExpiredItemsDeletionInterval.TotalMinutes} minutes.");
             }
 
-            _systemCock = cacheOptions.SystemClock ?? new SystemClock();
+            _systemClock = cacheOptions.SystemClock ?? new SystemClock();
             _expiredItemsDeletionInterval =
                 cacheOptions.ExpiredItemsDeletionInterval ?? DefaultExpiredItemsDeletionInterval;
             _deleteExpiredCachedItemsDelegate = DeleteExpiredCacheItems;
@@ -65,7 +65,7 @@ namespace Microsoft.Framework.Caching.SqlServer
                     cacheOptions.ConnectionString,
                     cacheOptions.SchemaName,
                     cacheOptions.TableName,
-                    _systemCock);
+                    _systemClock);
             }
             else
             {
@@ -73,7 +73,7 @@ namespace Microsoft.Framework.Caching.SqlServer
                     cacheOptions.ConnectionString,
                     cacheOptions.SchemaName,
                     cacheOptions.TableName,
-                    _systemCock);
+                    _systemClock);
             }
         }
 
@@ -156,7 +156,7 @@ namespace Microsoft.Framework.Caching.SqlServer
         // If sufficient time has elapsed then a scan is initiated on a background task.
         private void ScanForExpiredItemsIfRequired()
         {
-            var utcNow = _systemCock.UtcNow;
+            var utcNow = _systemClock.UtcNow;
             // TODO: Multiple threads could trigger this scan which leads to multiple calls to database.
             if ((utcNow - _lastExpirationScan) > _expiredItemsDeletionInterval)
             {
