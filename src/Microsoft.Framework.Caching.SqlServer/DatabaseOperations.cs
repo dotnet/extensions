@@ -175,7 +175,7 @@ namespace Microsoft.Framework.Caching.SqlServer
                     }
                     else
                     {
-                        throw ex;
+                        throw;
                     }
                 }
             }
@@ -213,7 +213,7 @@ namespace Microsoft.Framework.Caching.SqlServer
                     }
                     else
                     {
-                        throw ex;
+                        throw;
                     }
                 }
             }
