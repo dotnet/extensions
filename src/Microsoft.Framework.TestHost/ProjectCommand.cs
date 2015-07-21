@@ -11,6 +11,7 @@ using Microsoft.Framework.Runtime.Common.DependencyInjection;
 using Microsoft.Framework.Runtime.CommandParsing;
 using Microsoft.Framework.Runtime.Common;
 using Microsoft.Framework.Runtime.Infrastructure;
+using Microsoft.Framework.Runtime.Compilation;
 
 namespace Microsoft.Framework.TestHost
 {
@@ -55,7 +56,7 @@ namespace Microsoft.Framework.TestHost
             }
             if (string.Equals(key, "env:Version", StringComparison.OrdinalIgnoreCase))
             {
-                return environment.Version;
+                return environment.ApplicationVersion;
             }
             if (string.Equals(key, "env:TargetFramework", StringComparison.OrdinalIgnoreCase))
             {

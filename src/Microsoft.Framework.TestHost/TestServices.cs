@@ -26,8 +26,8 @@ namespace Microsoft.Framework.TestHost
             loggerFactory.AddProvider(new TestHostLoggerProvider(channel));
             services.Add(typeof(ILoggerFactory), loggerFactory);
 
-            var libraryManager = applicationServices.GetRequiredService<ILibraryManager>();
-            var export = libraryManager.GetLibraryExport(project.Name);
+            var libraryExporter = applicationServices.GetRequiredService<ILibraryExporter>();
+            var export = libraryExporter.GetLibraryExport(project.Name);
 
             var projectReference = export.MetadataReferences
                 .OfType<IMetadataProjectReference>()
