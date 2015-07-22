@@ -76,7 +76,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
                 {"Boolean", "TRUe"},
                 {"Nested:Integer", "11"}
             };
-            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
             var config = builder.Build();
             var options = ConfigurationBinder.Bind<ComplexOptions>(config);
             Assert.True(options.Boolean);
@@ -94,7 +94,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
                 {"Nested:Integer", "11"},
                 {"Virtual","Sup"}
             };
-            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
             var config = builder.Build();
             var options = ConfigurationBinder.Bind<DerivedOptions>(config);
             Assert.True(options.Boolean);
@@ -110,7 +110,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             {
                 {"StaticProperty", "stuff"},
             };
-            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
             var config = builder.Build();
             var options = ConfigurationBinder.Bind<ComplexOptions>(config);
             Assert.Equal("stuff", ComplexOptions.StaticProperty);
@@ -127,7 +127,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             {
                 {property, "stuff"},
             };
-            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
             var config = builder.Build();
             var options = ConfigurationBinder.Bind<ComplexOptions>(config);
             Assert.Null(options.GetType().GetProperty(property).GetValue(options));
@@ -141,7 +141,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             {
                 {"Message", "!"},
             };
-            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
             var config = builder.Build();
             services.Configure<FakeOptions>(o => o.Message += "Igetstomped", -100000);
             services.Configure<FakeOptions>(config);
@@ -184,7 +184,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
             {
                 {"Message", "!"},
             };
-            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
             var config = builder.Build();
 
             services.ConfigureOptions(new FakeOptionsSetupB { Name = "2" });
@@ -301,7 +301,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
         {
             // Arrange
             var services = new ServiceCollection().AddOptions();
-            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(configValues));
+            var builder = new ConfigurationBuilder().AddInMemoryCollection(configValues);
             var config = builder.Build();
             services.Configure<NullableOptions>(config);
 
@@ -364,7 +364,7 @@ namespace Microsoft.Framework.OptionsModel.Tests
         {
             // Arrange
             var services = new ServiceCollection().AddOptions();
-            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(configValues));
+            var builder = new ConfigurationBuilder().AddInMemoryCollection(configValues);
             var config = builder.Build();
             services.Configure<EnumOptions>(config);
 
