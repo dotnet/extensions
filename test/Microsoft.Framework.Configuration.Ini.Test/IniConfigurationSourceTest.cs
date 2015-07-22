@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Framework.Configuration.Ini.Test
 {
-    public class IniFileConfigurationSourceTest
+    public class IniConfigurationSourceTest
     {
         [Fact]
         public void LoadKeyValuePairsFromValidIniFile()
@@ -19,7 +19,7 @@ Provider=SqlClient
 [Data:Inventory]
 ConnectionString=AnotherTestConnectionString
 SubHeader:Provider=MySql";
-            var iniConfigSrc = new IniFileConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var iniConfigSrc = new IniConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
 
             iniConfigSrc.Load(TestStreamHelpers.StringToStream(ini));
 
@@ -33,7 +33,7 @@ SubHeader:Provider=MySql";
         public void LoadMethodCanHandleEmptyValue()
         {
             var ini = @"DefaultKey=";
-            var iniConfigSrc = new IniFileConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var iniConfigSrc = new IniConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
 
             iniConfigSrc.Load(TestStreamHelpers.StringToStream(ini));
 
@@ -49,7 +49,7 @@ SubHeader:Provider=MySql";
                       "[Data:Inventory]\n" +
                       "ConnectionString=\"AnotherTestConnectionString\"\n" +
                       "Provider=\"MySql\"";
-            var iniConfigSrc = new IniFileConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var iniConfigSrc = new IniConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
 
             iniConfigSrc.Load(TestStreamHelpers.StringToStream(ini));
 
@@ -65,7 +65,7 @@ SubHeader:Provider=MySql";
             var ini = "[ConnectionString]\n" +
                       "DefaultConnection=\"TestConnectionString\n" +
                       "Provider=SqlClient\"";
-            var iniConfigSrc = new IniFileConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var iniConfigSrc = new IniConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
 
             iniConfigSrc.Load(TestStreamHelpers.StringToStream(ini));
 
@@ -79,7 +79,7 @@ SubHeader:Provider=MySql";
             var ini = "[ConnectionString]\n" +
                       "DefaultConnection=Test\"Connection\"String\n" +
                       "Provider=Sql\"Client";
-            var iniConfigSrc = new IniFileConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var iniConfigSrc = new IniConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
 
             iniConfigSrc.Load(TestStreamHelpers.StringToStream(ini));
 
@@ -96,7 +96,7 @@ SubHeader:Provider=MySql";
             Data:Inventory:ConnectionString=AnotherTestConnectionString
             Data:Inventory:Provider=MySql
             ";
-            var iniConfigSrc = new IniFileConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var iniConfigSrc = new IniConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
 
             iniConfigSrc.Load(TestStreamHelpers.StringToStream(ini));
 
@@ -120,7 +120,7 @@ SubHeader:Provider=MySql";
             ConnectionString=AnotherTestConnectionString
             Provider=MySql
             ";
-            var iniConfigSrc = new IniFileConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var iniConfigSrc = new IniConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
 
             iniConfigSrc.Load(TestStreamHelpers.StringToStream(ini));
 
@@ -136,7 +136,7 @@ SubHeader:Provider=MySql";
             var ini = @"
 ConnectionString
             ";
-            var iniConfigSrc = new IniFileConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var iniConfigSrc = new IniConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
             var expectedMsg = Resources.FormatError_UnrecognizedLineFormat("ConnectionString");
 
             var exception = Assert.Throws<FormatException>(() => iniConfigSrc.Load(TestStreamHelpers.StringToStream(ini)));
@@ -151,7 +151,7 @@ ConnectionString
 [ConnectionString
 DefaultConnection=TestConnectionString
             ";
-            var iniConfigSrc = new IniFileConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var iniConfigSrc = new IniConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
             var expectedMsg = Resources.FormatError_UnrecognizedLineFormat("[ConnectionString");
 
             var exception = Assert.Throws<FormatException>(() => iniConfigSrc.Load(TestStreamHelpers.StringToStream(ini)));
@@ -164,7 +164,7 @@ DefaultConnection=TestConnectionString
         {
             var expectedMsg = new ArgumentException(Resources.Error_InvalidFilePath, "path").Message;
 
-            var exception = Assert.Throws<ArgumentException>(() => new IniFileConfigurationSource(null));
+            var exception = Assert.Throws<ArgumentException>(() => new IniConfigurationSource(null));
 
             Assert.Equal(expectedMsg, exception.Message);
         }
@@ -174,7 +174,7 @@ DefaultConnection=TestConnectionString
         {
             var expectedMsg = new ArgumentException(Resources.Error_InvalidFilePath, "path").Message;
 
-            var exception = Assert.Throws<ArgumentException>(() => new IniFileConfigurationSource(string.Empty));
+            var exception = Assert.Throws<ArgumentException>(() => new IniConfigurationSource(string.Empty));
 
             Assert.Equal(expectedMsg, exception.Message);
         }
@@ -190,7 +190,7 @@ DefaultConnection=TestConnectionString
             DefaultConnection:ConnectionString=AnotherTestConnectionString
             Provider=MySql
             ";
-            var iniConfigSrc = new IniFileConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var iniConfigSrc = new IniConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
             var expectedMsg = Resources.FormatError_KeyIsDuplicated("Data:DefaultConnection:ConnectionString");
 
             var exception = Assert.Throws<FormatException>(() => iniConfigSrc.Load(TestStreamHelpers.StringToStream(ini)));
@@ -201,7 +201,7 @@ DefaultConnection=TestConnectionString
         [Fact]
         public void IniConfiguration_Throws_On_Missing_Configuration_File()
         {
-            var configSource = new IniFileConfigurationSource("NotExistingConfig.ini", optional: false);
+            var configSource = new IniConfigurationSource("NotExistingConfig.ini", optional: false);
             Assert.Throws<FileNotFoundException>(() =>
             {
                 try
@@ -219,7 +219,7 @@ DefaultConnection=TestConnectionString
         [Fact]
         public void IniConfiguration_Does_Not_Throw_On_Optional_Configuration()
         {
-            var configSource = new IniFileConfigurationSource("NotExistingConfig.ini", optional: true);
+            var configSource = new IniConfigurationSource("NotExistingConfig.ini", optional: true);
             configSource.Load();
             Assert.Throws<InvalidOperationException>(() => configSource.Get("key"));
         }

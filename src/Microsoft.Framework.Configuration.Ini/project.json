@@ -1,6 +1,6 @@
 ﻿{
     "version": "1.0.0-*",
-    "description": "Ini configuration source for the Configuration package.",
+    "description": "INI configuration source for the Configuration package.",
     "repository": {
         "type": "git",
         "url": "https://github.com/aspnet/configuration"

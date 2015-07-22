@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Framework.Configuration.Memory;
 using Xunit;
 
 namespace Microsoft.Framework.Configuration.Binder.Test

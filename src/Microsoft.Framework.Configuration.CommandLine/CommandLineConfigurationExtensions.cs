@@ -6,7 +6,7 @@ using Microsoft.Framework.Configuration.CommandLine;
 
 namespace Microsoft.Framework.Configuration
 {
-    public static class CommandLineConfigurationExtension
+    public static class CommandLineConfigurationExtensions
     {
         public static IConfigurationBuilder AddCommandLine(this IConfigurationBuilder configuration, string[] args)
         {

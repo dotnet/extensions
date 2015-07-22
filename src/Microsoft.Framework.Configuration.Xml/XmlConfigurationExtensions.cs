@@ -12,7 +12,7 @@ namespace Microsoft.Framework.Configuration
     /// <summary>
     /// Extension methods for adding <see cref="XmlConfigurationSource"/>.
     /// </summary>
-    public static class XmlConfigurationExtension
+    public static class XmlConfigurationExtensions
     {
         /// <summary>
         /// Adds the XML configuration source at <paramref name="path"/> to <paramref name="configuraton"/>.

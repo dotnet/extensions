@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.Framework.Configuration.Memory;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.Configuration
 {
-    public static class MemoryConfigurationExtension
+    public static class MemoryConfigurationExtensions
     {
         /// <summary>
         /// Adds the memory configuration source to <paramref name="configuraton"/>.

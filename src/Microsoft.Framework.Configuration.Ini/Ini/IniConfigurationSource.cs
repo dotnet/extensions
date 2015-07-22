@@ -19,23 +19,23 @@ namespace Microsoft.Framework.Configuration.Ini
     /// # comment
     /// / comment
     /// </examples>
-    public class IniFileConfigurationSource : ConfigurationSource
+    public class IniConfigurationSource : ConfigurationSource
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="IniFileConfigurationSource"/>.
+        /// Initializes a new instance of <see cref="IniConfigurationSource"/>.
         /// </summary>
         /// <param name="path">Absolute path of the INI configuration file.</param>
-        public IniFileConfigurationSource(string path)
+        public IniConfigurationSource(string path)
             : this(path, optional: false)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="IniFileConfigurationSource"/>.
+        /// Initializes a new instance of <see cref="IniConfigurationSource"/>.
         /// </summary>
         /// <param name="path">Absolute path of the INI configuration file.</param>
         /// <param name="optional">Determines if the configuration is optional.</param>
-        public IniFileConfigurationSource(string path, bool optional)
+        public IniConfigurationSource(string path, bool optional)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -47,12 +47,12 @@ namespace Microsoft.Framework.Configuration.Ini
         }
 
         /// <summary>
-        /// Gets a value that determines if this instance of <see cref="IniFileConfigurationSource"/> is optional.
+        /// Gets a value that determines if this instance of <see cref="IniConfigurationSource"/> is optional.
         /// </summary>
         public bool Optional { get; }
 
         /// <summary>
-        /// The absolute path of the file backing this instance of <see cref="IniFileConfigurationSource"/>.
+        /// The absolute path of the file backing this instance of <see cref="IniConfigurationSource"/>.
         /// </summary>
         public string Path { get; }
 

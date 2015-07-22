@@ -1,6 +1,6 @@
 ﻿{
   "version": "1.0.0-*",
-  "description": "Binder configuration source for the Configuration package.",
+  "description": "Functionality to bind an object to data in configuration sources.",
   "repository": {
       "type": "git",
       "url": "https://github.com/aspnet/configuration"

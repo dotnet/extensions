@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Framework.Configuration.Json
 {
-    public class JsonConfigurationExtensionTest
+    public class JsonConfigurationExtensionsTest
     {
         [Theory]
         [InlineData(null)]
@@ -18,7 +18,7 @@ namespace Microsoft.Framework.Configuration.Json
             var builder = new ConfigurationBuilder();
 
             // Act and Assert
-            var ex = Assert.Throws<ArgumentException>(() => JsonConfigurationExtension.AddJsonFile(builder, path));
+            var ex = Assert.Throws<ArgumentException>(() => JsonConfigurationExtensions.AddJsonFile(builder, path));
             Assert.Equal("path", ex.ParamName);
             Assert.StartsWith("File path must be a non-empty string.", ex.Message);
         }
@@ -31,7 +31,7 @@ namespace Microsoft.Framework.Configuration.Json
             var builder = new ConfigurationBuilder();
 
             // Act and Assert
-            var ex = Assert.Throws<FileNotFoundException>(() => JsonConfigurationExtension.AddJsonFile(builder, path));
+            var ex = Assert.Throws<FileNotFoundException>(() => JsonConfigurationExtensions.AddJsonFile(builder, path));
             Assert.Equal($"The configuration file '{path}' was not found and is not optional.", ex.Message);
         }
     }

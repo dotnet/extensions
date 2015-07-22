@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Framework.Configuration.Ini.Test
 {
-    public class IniConfigurationExtensionTest
+    public class IniConfigurationExtensionsTest
     {
         [Theory]
         [InlineData(null)]
@@ -19,7 +19,7 @@ namespace Microsoft.Framework.Configuration.Ini.Test
 
             // Act and Assert
             var ex = Assert.Throws<ArgumentException>(
-                () => IniConfigurationExtension.AddIniFile(builder, path));
+                () => IniConfigurationExtensions.AddIniFile(builder, path));
             Assert.Equal("path", ex.ParamName);
             Assert.StartsWith("File path must be a non-empty string.", ex.Message);
         }
@@ -33,7 +33,7 @@ namespace Microsoft.Framework.Configuration.Ini.Test
 
             // Act and Assert
             var ex = Assert.Throws<FileNotFoundException>(
-                () => IniConfigurationExtension.AddIniFile(builder, path));
+                () => IniConfigurationExtensions.AddIniFile(builder, path));
             Assert.Equal($"The configuration file '{path}' was not found and is not optional.", ex.Message);
         }
     }

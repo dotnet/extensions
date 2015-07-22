@@ -4,7 +4,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.Framework.Configuration
+namespace Microsoft.Framework.Configuration.Memory
 {
     public class MemoryConfigurationSource : 
         ConfigurationSource, 

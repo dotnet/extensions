@@ -5,7 +5,7 @@ using Microsoft.Framework.Configuration.EnvironmentVariables;
 
 namespace Microsoft.Framework.Configuration
 {
-    public static class EnvironmentVariablesExtension
+    public static class EnvironmentVariablesExtensions
     {
         public static IConfigurationBuilder AddEnvironmentVariables(this IConfigurationBuilder configuration)
         {

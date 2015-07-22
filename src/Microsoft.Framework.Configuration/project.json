@@ -1,6 +1,6 @@
 {
     "version": "1.0.0-*",
-    "description": "Implementation of key-value pair based configuration. Includes configuration sources for INI, command line, and environment variables.",
+    "description": "Implementation of key-value pair based configuration. Includes the memory configuration source.",
     "dependencies": {
         "Microsoft.Framework.Configuration.Abstractions": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" }

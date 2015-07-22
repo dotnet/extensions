@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Framework.Configuration.Xml.Test
 {
-    public class XmlConfigurationExtensionTest
+    public class XmlConfigurationExtensionsTest
     {
         [Theory]
         [InlineData(null)]
@@ -18,7 +18,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
             var builder = new ConfigurationBuilder();
 
             // Act and Assert
-            var ex = Assert.Throws<ArgumentException>(() => XmlConfigurationExtension.AddXmlFile(builder, path));
+            var ex = Assert.Throws<ArgumentException>(() => XmlConfigurationExtensions.AddXmlFile(builder, path));
             Assert.Equal("path", ex.ParamName);
             Assert.StartsWith("File path must be a non-empty string.", ex.Message);
         }
@@ -31,7 +31,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
             var builder = new ConfigurationBuilder();
 
             // Act and Assert
-            var ex = Assert.Throws<FileNotFoundException>(() => XmlConfigurationExtension.AddXmlFile(builder, path));
+            var ex = Assert.Throws<FileNotFoundException>(() => XmlConfigurationExtensions.AddXmlFile(builder, path));
             Assert.Equal($"The configuration file '{path}' was not found and is not optional.", ex.Message);
         }
     }
