@@ -9,8 +9,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6878D8F1-6
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Internal.Test", "test\Microsoft.Framework.Internal.Test\Microsoft.Framework.Internal.Test.xproj", "{D81EAC23-B515-49FB-B04B-285A9C1C6583}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.BufferEntryCollection.Sources", "src\Microsoft.Framework.BufferEntryCollection.Sources\Microsoft.Framework.BufferEntryCollection.Sources.xproj", "{E65C8677-F890-4B07-AC58-56B51FA7B03C}"
-EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.CopyOnWriteDictionary.Sources", "src\Microsoft.Framework.CopyOnWriteDictionary.Sources\Microsoft.Framework.CopyOnWriteDictionary.Sources.xproj", "{D4BBCB55-914F-4BB3-922F-759FCC8C7728}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.NotNullAttribute.Sources", "src\Microsoft.Framework.NotNullAttribute.Sources\Microsoft.Framework.NotNullAttribute.Sources.xproj", "{F399199B-6ACB-4E17-B1A3-3A3355B87E2E}"
@@ -25,9 +23,11 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.ClosedG
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.ActivatorUtilities.Sources", "src\Microsoft.Framework.ActivatorUtilities.Sources\Microsoft.Framework.ActivatorUtilities.Sources.xproj", "{0BF8866B-A179-4A6E-AAFD-BE487664298B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.SecurityHelper.Sources", "src\Microsoft.Framework.SecurityHelper.Sources\Microsoft.Framework.SecurityHelper.Sources.xproj", "{01770CF7-74F5-4257-BF1E-3F5674B413CF}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.SecurityHelper.Sources", "src\Microsoft.Framework.SecurityHelper.Sources\Microsoft.Framework.SecurityHelper.Sources.xproj", "{B4B564DE-3066-4A31-97F6-077461CDA454}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.HashCodeCombiner.Sources", "src\Microsoft.Framework.HashCodeCombiner.Sources\Microsoft.Framework.HashCodeCombiner.Sources.xproj", "{31D4C34C-436F-48E9-B8E4-641574741887}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.BufferedHtmlContent.Sources", "src\Microsoft.Framework.BufferedHtmlContent.Sources\Microsoft.Framework.BufferedHtmlContent.Sources.xproj", "{B1B2B906-24AE-4C57-AAC5-19B734014504}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,10 +39,6 @@ Global
 		{D81EAC23-B515-49FB-B04B-285A9C1C6583}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D81EAC23-B515-49FB-B04B-285A9C1C6583}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D81EAC23-B515-49FB-B04B-285A9C1C6583}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E65C8677-F890-4B07-AC58-56B51FA7B03C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E65C8677-F890-4B07-AC58-56B51FA7B03C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E65C8677-F890-4B07-AC58-56B51FA7B03C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E65C8677-F890-4B07-AC58-56B51FA7B03C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D4BBCB55-914F-4BB3-922F-759FCC8C7728}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D4BBCB55-914F-4BB3-922F-759FCC8C7728}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4BBCB55-914F-4BB3-922F-759FCC8C7728}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -79,6 +75,10 @@ Global
 		{31D4C34C-436F-48E9-B8E4-641574741887}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{31D4C34C-436F-48E9-B8E4-641574741887}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{31D4C34C-436F-48E9-B8E4-641574741887}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4B564DE-3066-4A31-97F6-077461CDA454}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4B564DE-3066-4A31-97F6-077461CDA454}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4B564DE-3066-4A31-97F6-077461CDA454}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4B564DE-3066-4A31-97F6-077461CDA454}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -95,5 +95,7 @@ Global
 		{0BF8866B-A179-4A6E-AAFD-BE487664298B} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 		{01770CF7-74F5-4257-BF1E-3F5674B413CF} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 		{31D4C34C-436F-48E9-B8E4-641574741887} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
+		{B4B564DE-3066-4A31-97F6-077461CDA454} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
+		{B1B2B906-24AE-4C57-AAC5-19B734014504} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 	EndGlobalSection
 EndGlobal
