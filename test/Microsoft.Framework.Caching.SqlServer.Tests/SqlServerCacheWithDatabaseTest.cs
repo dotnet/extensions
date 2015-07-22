@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text;
@@ -30,16 +31,17 @@ namespace Microsoft.Framework.Caching.SqlServer
         {
             // TODO: Figure how to use config.json which requires resolving IApplicationEnvironment which currently
             // fails.
-            var memoryConfigurationSource = new MemoryConfigurationSource();
-            memoryConfigurationSource.Add(
-                ConnectionStringKey,
-                "Server=localhost;Database=CacheTestDb;Trusted_Connection=True;");
-            memoryConfigurationSource.Add(SchemaNameKey, "dbo");
-            memoryConfigurationSource.Add(TableNameKey, "CacheTest");
+
+            var memoryConfigurationData = new Dictionary<string, string> 
+            { 
+                { ConnectionStringKey, "Server=localhost;Database=CacheTestDb;Trusted_Connection=True;" },
+                { SchemaNameKey, "dbo" },
+                { TableNameKey, "CacheTest" },
+            };  
 
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder
-                .Add(memoryConfigurationSource)
+                .AddInMemoryCollection(memoryConfigurationData)
                 .AddEnvironmentVariables();
 
             var configuration = configurationBuilder.Build();
