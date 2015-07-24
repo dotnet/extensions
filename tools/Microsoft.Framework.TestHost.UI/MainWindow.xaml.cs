@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Windows;
-using Microsoft.Framework.TestHost.Client;
+using Microsoft.Dnx.TestHost.Client;
 
-namespace Microsoft.Framework.TestHost.UI
+namespace Microsoft.Dnx.TestHost.UI
 {
     public partial class MainWindow : Window
     {

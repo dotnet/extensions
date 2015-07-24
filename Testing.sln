@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22823.1
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5525B6EA-8BBB-4437-BD09-419AE380BBA8}"
 EndProject
@@ -15,11 +15,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KCop.Runner", "src\StyleCop
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "StyleCop.KRules", "src\StyleCop.KRules\StyleCop.KRules.xproj", "{657EB507-EE7A-451F-90A4-196F6FCD66E5}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.TestHost", "src\Microsoft.Framework.TestHost\Microsoft.Framework.TestHost.xproj", "{F003F228-2AE2-4E9D-877B-93EB773B5061}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Dnx.TestHost", "src\Microsoft.Dnx.TestHost\Microsoft.Dnx.TestHost.xproj", "{F003F228-2AE2-4E9D-877B-93EB773B5061}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.TestAdapter", "src\Microsoft.Framework.TestAdapter\Microsoft.Framework.TestAdapter.xproj", "{71C2F8AA-05E6-47DB-9A1A-D2760CEF7DC1}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Dnx.TestAdapter", "src\Microsoft.Dnx.TestAdapter\Microsoft.Dnx.TestAdapter.xproj", "{71C2F8AA-05E6-47DB-9A1A-D2760CEF7DC1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.TestHost.Tests", "test\Microsoft.Framework.TestHost.Tests\Microsoft.Framework.TestHost.Tests.xproj", "{25D18D0C-119C-4AB4-BCA6-AC06179335FA}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Dnx.TestHost.Tests", "test\Microsoft.Dnx.TestHost.Tests\Microsoft.Dnx.TestHost.Tests.xproj", "{25D18D0C-119C-4AB4-BCA6-AC06179335FA}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Testing", "src\Microsoft.Framework.Logging.Testing\Microsoft.Framework.Logging.Testing.xproj", "{379AA56B-E1A6-4133-9A45-7F70385F39FB}"
 EndProject
@@ -33,7 +33,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.WebEnco
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.WebEncoders.Testing.Tests", "test\Microsoft.Framework.WebEncoders.Testing.Tests\Microsoft.Framework.WebEncoders.Testing.Tests.xproj", "{F6958E64-32E4-4697-BFA8-0A78B7AB4CEA}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.TestHost.Client.Sources", "src\Microsoft.Framework.TestHost.Client.Sources\Microsoft.Framework.TestHost.Client.Sources.xproj", "{90C1A9CE-E402-4206-8194-03A844435FC3}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Dnx.TestHost.Client.Sources", "src\Microsoft.Dnx.TestHost.Client.Sources\Microsoft.Dnx.TestHost.Client.Sources.xproj", "{90C1A9CE-E402-4206-8194-03A844435FC3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
