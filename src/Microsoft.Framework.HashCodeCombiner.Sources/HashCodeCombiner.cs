@@ -59,7 +59,8 @@ namespace Microsoft.Framework.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public HashCodeCombiner Add(string s)
         {
-            return Add(s.GetHashCode());
+            var hashCode = (s != null) ? s.GetHashCode() : 0;
+            return Add(hashCode);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
