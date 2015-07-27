@@ -102,14 +102,19 @@ namespace Microsoft.Framework.DependencyInjection.Abstractions.Tests
             Assert.NotNull(instance);
         }
 
+        public static IEnumerable<object[]> TypesWithNonPublicConstructorData =>
+            CreateInstanceFuncs.Zip(
+                    new[] { typeof(ClassWithPrivateCtor), typeof(ClassWithInternalConstructor), typeof(ClassWithProtectedConstructor) },
+                    (a, b) => new object[] { a[0], b });
+
         [Theory]
-        [MemberData(nameof(CreateInstanceFuncs))]
-        public void TypeActivatorRequiresPublicConstructor(CreateInstanceFunc createFunc)
+        [MemberData(nameof(TypesWithNonPublicConstructorData))]
+        public void TypeActivatorRequiresPublicConstructor(CreateInstanceFunc createFunc, Type type)
         {
             var ex = Assert.Throws<InvalidOperationException>(() =>
-                CreateInstance<ClassWithPrivateCtor>(createFunc, provider: null));
+                createFunc(provider: null, type: type, args: new object[0]));
 
-            Assert.Equal(Resources.FormatNoConstructorMatch(typeof(ClassWithPrivateCtor)), ex.Message);
+            Assert.Equal(Resources.FormatNoConstructorMatch(type), ex.Message);
         }
 
         [Theory]
