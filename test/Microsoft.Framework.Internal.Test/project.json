@@ -3,16 +3,40 @@
         "warningsAsErrors": "true"
     },
     "dependencies": {
-        "Microsoft.AspNet.Testing": "1.0.0-*",
-        "Microsoft.Framework.BufferEntryCollection.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.ClosedGenericMatcher.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.CopyOnWriteDictionary.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.PropertyActivator.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.PropertyHelper.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.SecurityHelper.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.TypeNameHelper.Sources": { "type": "build", "version": "1.0.0-*" },
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+        "Microsoft.AspNet.Testing": "1.0.0-beta6",
+        "Microsoft.Framework.BufferEntryCollection.Sources": {
+            "type": "build",
+            "version": "1.0.0-beta6"
+        },
+        "Microsoft.Framework.ClosedGenericMatcher.Sources": {
+            "type": "build",
+            "version": "1.0.0-beta6"
+        },
+        "Microsoft.Framework.CopyOnWriteDictionary.Sources": {
+            "type": "build",
+            "version": "1.0.0-beta6"
+        },
+        "Microsoft.Framework.NotNullAttribute.Sources": {
+            "type": "build",
+            "version": "1.0.0-beta6"
+        },
+        "Microsoft.Framework.PropertyActivator.Sources": {
+            "type": "build",
+            "version": "1.0.0-beta6"
+        },
+        "Microsoft.Framework.PropertyHelper.Sources": {
+            "type": "build",
+            "version": "1.0.0-beta6"
+        },
+        "Microsoft.Framework.SecurityHelper.Sources": {
+            "type": "build",
+            "version": "1.0.0-beta6"
+        },
+        "Microsoft.Framework.TypeNameHelper.Sources": {
+            "type": "build",
+            "version": "1.0.0-beta6"
+        },
+        "xunit.runner.aspnet": "2.0.0-aspnet-beta6"
     },
     "commands": {
         "test": "xunit.runner.aspnet"
@@ -23,6 +47,6 @@
                 "Moq": "4.2.1312.1622"
             }
         },
-        "dnxcore50": { }
+        "dnxcore50": {}
     }
 }
