@@ -12,13 +12,48 @@ namespace Microsoft.Framework.DependencyInjection
     public class ServiceProviderExtensionsTest
     {
         [Fact]
-        public void GetRequiredServices_Returns_AllServices()
+        public void GetService_Returns_CorrectService()
+        {
+            // Arrange
+            var serviceProvider = CreateTestServiceProvider(1);
+
+            // Act
+            var service = serviceProvider.GetService<IFoo>();
+
+            // Assert
+            Assert.IsType<Foo1>(service);
+        }
+
+        [Fact]
+        public void GetRequiredService_Throws_WhenNoServiceRegistered()
+        {
+            // Arrange
+            var serviceProvider = CreateTestServiceProvider(0);
+
+            // Act + Assert
+            ExceptionAssert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredService<IFoo>(),
+                $"No service for type '{typeof(IFoo)}' has been registered.");
+        }
+
+        [Fact]
+        public void NonGeneric_GetRequiredService_Throws_WhenNoServiceRegistered()
+        {
+            // Arrange
+            var serviceProvider = CreateTestServiceProvider(0);
+
+            // Act + Assert
+            ExceptionAssert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredService(typeof(IFoo)),
+                $"No service for type '{typeof(IFoo)}' has been registered.");
+        }
+
+        [Fact]
+        public void GetServices_Returns_AllServices()
         {
             // Arrange
             var serviceProvider = CreateTestServiceProvider(2);
 
             // Act
-            var services = serviceProvider.GetRequiredServices<IFoo>();
+            var services = serviceProvider.GetServices<IFoo>();
 
             // Assert
             Assert.Contains(services, item => item is Foo1);
@@ -27,13 +62,13 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         [Fact]
-        public void NonGeneric_GetRequiredServices_Returns_AllServices()
+        public void NonGeneric_GetServices_Returns_AllServices()
         {
             // Arrange
             var serviceProvider = CreateTestServiceProvider(2);
 
             // Act
-            var services = serviceProvider.GetRequiredServices(typeof(IFoo));
+            var services = serviceProvider.GetServices(typeof(IFoo));
 
             // Assert
             Assert.Contains(services, item => item is Foo1);
@@ -42,13 +77,13 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         [Fact]
-        public void GetRequiredServices_Returns_SingleService()
+        public void GetServices_Returns_SingleService()
         {
             // Arrange
             var serviceProvider = CreateTestServiceProvider(1);
 
             // Act
-            var services = serviceProvider.GetRequiredServices<IFoo>();
+            var services = serviceProvider.GetServices<IFoo>();
 
             // Assert
             var item = Assert.Single(services);
@@ -56,13 +91,13 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         [Fact]
-        public void NonGeneric_GetRequiredServices_Returns_SingleService()
+        public void NonGeneric_GetServices_Returns_SingleService()
         {
             // Arrange
             var serviceProvider = CreateTestServiceProvider(1);
 
             // Act
-            var services = serviceProvider.GetRequiredServices(typeof(IFoo));
+            var services = serviceProvider.GetServices(typeof(IFoo));
 
             // Assert
             var item = Assert.Single(services);
@@ -70,73 +105,83 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         [Fact]
-        public void GetRequiredServices_Returns_CorrectTypes()
+        public void GetServices_Returns_CorrectTypes()
         {
             // Arrange
             var serviceProvider = CreateTestServiceProvider(4);
 
             // Act
-            var services = serviceProvider.GetRequiredServices(typeof(IAnotherFoo));
+            var services = serviceProvider.GetServices(typeof(IBar));
 
             // Assert
             foreach (var service in services)
             {
-                Assert.IsAssignableFrom<IAnotherFoo>(service);
+                Assert.IsAssignableFrom<IBar>(service);
             }
             Assert.Equal(2, services.Count());
         }
 
         [Fact]
-        public void Throws_WhenNo_Services_AreRegistered()
+        public void GetServices_Returns_EmptyArray_WhenNoServicesAvailable()
         {
             // Arrange
             var serviceProvider = CreateTestServiceProvider(0);
 
-            // Act + Assert
-            ExceptionAssert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredServices<IFoo>(),
-                $"No service for type '{typeof(IFoo)}' has been registered.");
+            // Act
+            var services = serviceProvider.GetServices<IFoo>();
+
+            // Assert
+            Assert.Empty(services);
+            Assert.IsType<IFoo[]>(services);
         }
 
         [Fact]
-        public void Throws_WhenNo_Services_AreRegistered_NonGeneric()
+        public void NonGeneric_GetServices_Returns_EmptyArray_WhenNoServicesAvailable()
         {
             // Arrange
             var serviceProvider = CreateTestServiceProvider(0);
 
-            // Act + Assert
-            ExceptionAssert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredServices(typeof(IFoo)),
-                $"No service for type '{typeof(IFoo)}' has been registered.");
+            // Act
+            var services = serviceProvider.GetServices(typeof(IFoo));
+
+            // Assert
+            Assert.Empty(services);
+            Assert.IsType<IFoo[]>(services);
         }
 
         [Fact]
-        public void Throws_WhenNo_Services_AreAvailable()
+        public void GetServices_WithBuildServiceProvider_Returns_EmptyList_WhenNoServicesAvailable()
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddInstance<IEnumerable<IFoo>>(new List<IFoo>());
-
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            // Act + Assert
-            ExceptionAssert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredServices<IFoo>(),
-                $"No service for type '{typeof(IFoo)}' has been registered.");
+            // Act
+            var services = serviceProvider.GetServices<IFoo>();
+
+            // Assert
+            Assert.Empty(services);
+            Assert.IsType<List<IFoo>>(services);
         }
 
         [Fact]
-        public void Throws_WhenNo_Services_AreAvailable_NonGeneric()
+        public void NonGeneric_GetServices_WithBuildServiceProvider_Returns_EmptyList_WhenNoServicesAvailable()
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddInstance<IEnumerable<IFoo>>(new List<IFoo>());
-
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            // Act + Assert
-            ExceptionAssert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredServices(typeof(IFoo)),
-                $"No service for type '{typeof(IFoo)}' has been registered.");
+            // Act
+            var services = serviceProvider.GetServices(typeof(IFoo));
+
+            // Assert
+            Assert.Empty(services);
+            Assert.IsType<List<IFoo>>(services);
         }
 
-        private IServiceProvider CreateTestServiceProvider(int count)
+        private static IServiceProvider CreateTestServiceProvider(int count)
         {
             var serviceCollection = new ServiceCollection();
 
@@ -152,12 +197,12 @@ namespace Microsoft.Framework.DependencyInjection
 
             if (count > 2)
             {
-                serviceCollection.AddTransient<IAnotherFoo, AnotherFoo1>();
+                serviceCollection.AddTransient<IBar, Bar1>();
             }
 
             if (count > 3)
             {
-                serviceCollection.AddTransient<IAnotherFoo, AnotherFoo2>();
+                serviceCollection.AddTransient<IBar, Bar2>();
             }
 
             return serviceCollection.BuildServiceProvider();
@@ -169,10 +214,10 @@ namespace Microsoft.Framework.DependencyInjection
 
         public class Foo2 : IFoo { }
 
-        public interface IAnotherFoo { }
+        public interface IBar { }
 
-        public class AnotherFoo1 : IAnotherFoo { }
+        public class Bar1 : IBar { }
 
-        public class AnotherFoo2 : IAnotherFoo { }
+        public class Bar2 : IBar { }
     }
 }

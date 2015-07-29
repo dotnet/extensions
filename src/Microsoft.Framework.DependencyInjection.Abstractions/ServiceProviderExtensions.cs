@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Framework.DependencyInjection.Abstractions;
 using Microsoft.Framework.Internal;
 
@@ -12,7 +11,7 @@ namespace Microsoft.Framework.DependencyInjection
     public static class ServiceProviderExtensions
     {
         /// <summary>
-        /// Get service of type <typeparamref name="T"/> from the IServiceProvider.
+        /// Get service of type <typeparamref name="T"/> from the <see cref="IServiceProvider"/>.
         /// </summary>
         /// <typeparam name="T">The type of service object to get.</typeparam>
         /// <param name="provider">The <see cref="IServiceProvider"/> to retrieve the service object from.</param>
@@ -23,7 +22,7 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         /// <summary>
-        /// Get service of type <paramref name="serviceType"/> from the IServiceProvider.
+        /// Get service of type <paramref name="serviceType"/> from the <see cref="IServiceProvider"/>.
         /// </summary>
         /// <param name="provider">The <see cref="IServiceProvider"/> to retrieve the service object from.</param>
         /// <param name="serviceType">An object that specifies the type of service object to get.</param>
@@ -42,7 +41,7 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         /// <summary>
-        /// Get service of type <typeparamref name="T"/> from the IServiceProvider.
+        /// Get service of type <typeparamref name="T"/> from the <see cref="IServiceProvider"/>.
         /// </summary>
         /// <typeparam name="T">The type of service object to get.</typeparam>
         /// <param name="provider">The <see cref="IServiceProvider"/> to retrieve the service object from.</param>
@@ -54,42 +53,26 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         /// <summary>
-        /// Get an enumeration of services of type <typeparamref name="T"/> from the IServiceProvider.
+        /// Get an enumeration of services of type <typeparamref name="T"/> from the <see cref="IServiceProvider"/>.
         /// </summary>
         /// <typeparam name="T">The type of service object to get.</typeparam>
         /// <param name="provider">The <see cref="IServiceProvider"/> to retrieve the services from.</param>
         /// <returns>An enumeration of services of type <typeparamref name="T"/>.</returns>
-        /// <exception cref="System.InvalidOperationException">There is no service of type <typeparamref name="T"/>.</exception>
-        public static IEnumerable<T> GetRequiredServices<T>([NotNull] this IServiceProvider provider)
+        public static IEnumerable<T> GetServices<T>([NotNull] this IServiceProvider provider)
         {
-            var providers = provider.GetRequiredService<IEnumerable<T>>();
-
-            if (!providers.Any())
-            {
-                throw new InvalidOperationException(Resources.FormatNoServiceRegistered(typeof(T)));
-            }
-
-            return providers;
+            return provider.GetRequiredService<IEnumerable<T>>();
         }
 
         /// <summary>
-        /// Get an enumeration of services of type <paramref name="serviceType"/> from the IServiceProvider.
+        /// Get an enumeration of services of type <paramref name="serviceType"/> from the <see cref="IServiceProvider"/>.
         /// </summary>
         /// <param name="provider">The <see cref="IServiceProvider"/> to retrieve the services from.</param>
         /// <param name="serviceType">An object that specifies the type of service object to get.</param>
         /// <returns>An enumeration of services of type <paramref name="serviceType"/>.</returns>
-        /// <exception cref="System.InvalidOperationException">There is no service of type <paramref name="serviceType"/>.</exception>
-        public static IEnumerable<object> GetRequiredServices([NotNull] this IServiceProvider provider, [NotNull] Type serviceType)
+        public static IEnumerable<object> GetServices([NotNull] this IServiceProvider provider, [NotNull] Type serviceType)
         {
-            var genericEnumerable = typeof(IEnumerable<>).MakeGenericType(new [] { serviceType });
-            var providers = (IEnumerable<object>)provider.GetRequiredService(genericEnumerable);
-            
-            if (!providers.Any())
-            {
-                throw new InvalidOperationException(Resources.FormatNoServiceRegistered(serviceType));
-            }
-
-            return providers;
+            var genericEnumerable = typeof(IEnumerable<>).MakeGenericType(serviceType);
+            return (IEnumerable<object>)provider.GetRequiredService(genericEnumerable);
         }
     }
 }
