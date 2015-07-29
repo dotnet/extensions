@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Microsoft.Framework.Logging
@@ -29,9 +30,28 @@ namespace Microsoft.Framework.Logging
         {
             if (logLevel >= _loggerFactory.MinimumLevel)
             {
+                List<Exception> exceptions = null;
                 foreach (var logger in _loggers)
                 {
-                    logger.Log(logLevel, eventId, state, exception, formatter);
+                    try
+                    {
+                        logger.Log(logLevel, eventId, state, exception, formatter);
+                    }
+                    catch (Exception ex)
+                    {
+                        if (exceptions == null)
+                        {
+                            exceptions = new List<Exception>();
+                        }
+
+                        exceptions.Add(ex);
+                    }
+                }
+
+                if (exceptions != null && exceptions.Count > 0)
+                {
+                    throw new AggregateException(
+                        message: "An error occurred while writing to logger(s).", innerExceptions: exceptions);
                 }
             }
         }
@@ -42,13 +62,35 @@ namespace Microsoft.Framework.Logging
             {
                 return false;
             }
+
+            List<Exception> exceptions = null;
             foreach (var logger in _loggers)
             {
-                if (logger.IsEnabled(logLevel))
+                try
                 {
-                    return true;
+                    if (logger.IsEnabled(logLevel))
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (exceptions == null)
+                    {
+                        exceptions = new List<Exception>();
+                    }
+
+                    exceptions.Add(ex);
                 }
             }
+
+            if (exceptions != null && exceptions.Count > 0)
+            {
+                throw new AggregateException(
+                    message: "An error occurred while writing to logger(s).",
+                    innerExceptions: exceptions);
+            }
+
             return false;
         }
 
@@ -56,10 +98,31 @@ namespace Microsoft.Framework.Logging
         {
             var loggers = _loggers;
             var scope = new Scope(loggers.Length);
+            List<Exception> exceptions = null;
             for (var index = 0; index != loggers.Length; index++)
             {
-                scope.SetDisposable(index, loggers[index].BeginScopeImpl(state));
+                try
+                {
+                    var disposable = loggers[index].BeginScopeImpl(state);
+                    scope.SetDisposable(index, disposable);
+                }
+                catch (Exception ex)
+                {
+                    if (exceptions == null)
+                    {
+                        exceptions = new List<Exception>();
+                    }
+
+                    exceptions.Add(ex);
+                }
             }
+
+            if (exceptions != null && exceptions.Count > 0)
+            {
+                throw new AggregateException(
+                    message: "An error occurred while writing to logger(s).", innerExceptions: exceptions);
+            }
+
             return scope;
         }
 
