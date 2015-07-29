@@ -17,3 +17,5 @@ This project is part of ASP.NET 5. You can find samples, documentation and getti
 Community projects adapt _Microsoft.Framework.Logging_ for use with different back-ends.
 
  * [Serilog](https://github.com/serilog/serilog-framework-logging) - provider for the Serilog library
+ * [elmah.io](https://github.com/elmahio/Elmah.Io.Framework.Logging) - provider for the elmah.io service
+ 
