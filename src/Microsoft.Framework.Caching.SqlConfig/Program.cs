@@ -5,7 +5,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using Microsoft.Framework.Logging;
-using Microsoft.Framework.Runtime.Common.CommandLine;
+using Microsoft.Dnx.Runtime.Common.CommandLine;
 
 namespace Microsoft.Framework.Caching.SqlConfig
 {
