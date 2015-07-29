@@ -33,5 +33,21 @@ namespace Microsoft.Framework.DependencyInjection.Tests
 
             Assert.Throws<MissingMethodException>(() => provider.GetService<AbstractClass>());
         }
+
+        [Fact]
+        public void ConsumingServiceThatDependsOnServiceWithoutAnImplementationThrows()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient<IServiceWithoutImplementation>();
+            serviceCollection.AddTransient<DependsOnServiceWithoutImplementation>();
+            var provider = serviceCollection.BuildServiceProvider();
+
+            // Act and Assert
+            var exception = Assert.Throws<MissingMethodException>(
+                () => provider.GetService<DependsOnServiceWithoutImplementation>());
+
+            Assert.Equal("Cannot create an instance of an interface.", exception.Message);
+        }
     }
 }
