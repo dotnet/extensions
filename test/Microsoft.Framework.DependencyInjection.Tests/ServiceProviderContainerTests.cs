@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Framework.DependencyInjection.Tests.Fakes;
 using Xunit;
 
@@ -48,6 +49,18 @@ namespace Microsoft.Framework.DependencyInjection.Tests
                 () => provider.GetService<DependsOnServiceWithoutImplementation>());
 
             Assert.Equal("Cannot create an instance of an interface.", exception.Message);
+        }
+
+        [Fact]
+        public void ConsumingAServiceWithAnOpenGenericImplementationTypeThrows()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient(typeof(IList<int>), typeof(List<>));
+            var provider = serviceCollection.BuildServiceProvider();
+
+            // Act and Assert
+            Assert.Throws<ArgumentException>(() => provider.GetService<IList<int>>());
         }
     }
 }

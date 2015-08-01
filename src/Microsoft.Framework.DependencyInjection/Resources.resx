@@ -125,4 +125,7 @@
     <value>A circular dependency was detected for the service of type '{0}'.</value>
     <comment>{0} = service type with circular dependency</comment>
   </data>
+  <data name="OpenGenericServiceRequiresOpenGenericImplementation" xml:space="preserve">
+    <value>Open generic service type '{0}' requires registering an open generic implementation type.</value>
+  </data>
 </root>

@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Reflection;
 using Microsoft.Framework.DependencyInjection.Abstractions;
 using Microsoft.Framework.Internal;
 

@@ -42,6 +42,22 @@ namespace Microsoft.Framework.DependencyInjection
             return string.Format(CultureInfo.CurrentCulture, GetString("CircularDependencyException"), p0);
         }
 
+        /// <summary>
+        /// Open generic service type '{0}' requires registering an open generic implementation type.
+        /// </summary>
+        internal static string OpenGenericServiceRequiresOpenGenericImplementation
+        {
+            get { return GetString("OpenGenericServiceRequiresOpenGenericImplementation"); }
+        }
+
+        /// <summary>
+        /// Open generic service type '{0}' requires registering an open generic implementation type.
+        /// </summary>
+        internal static string FormatOpenGenericServiceRequiresOpenGenericImplementation(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("OpenGenericServiceRequiresOpenGenericImplementation"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

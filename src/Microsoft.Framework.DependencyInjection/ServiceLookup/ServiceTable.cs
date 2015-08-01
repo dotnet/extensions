@@ -26,6 +26,15 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
                 var serviceTypeInfo = descriptor.ServiceType.GetTypeInfo();
                 if (serviceTypeInfo.IsGenericTypeDefinition)
                 {
+                    if (descriptor.ImplementationType == null ||
+                        !descriptor.ImplementationType.GetTypeInfo().IsGenericTypeDefinition)
+                    {
+                        throw new ArgumentException(
+                            Resources.FormatOpenGenericServiceRequiresOpenGenericImplementation(
+                                descriptor.ServiceType),
+                            nameof(descriptors));
+                    }
+
                     Add(descriptor.ServiceType, new GenericService(descriptor));
                 }
                 else if (descriptor.ImplementationInstance != null)
