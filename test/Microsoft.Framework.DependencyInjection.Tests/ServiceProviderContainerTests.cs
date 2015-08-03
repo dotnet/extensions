@@ -21,7 +21,6 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddTransient<ClassWithThrowingEmptyCtor>();
             serviceCollection.AddTransient<ClassWithThrowingCtor>();
-            serviceCollection.AddTransient<AbstractClass>();
             serviceCollection.AddTransient<IFakeService, FakeService>();
 
             var provider = serviceCollection.BuildServiceProvider();
@@ -31,34 +30,35 @@ namespace Microsoft.Framework.DependencyInjection.Tests
 
             var ex2 = Assert.Throws<Exception>(() => provider.GetService<ClassWithThrowingCtor>());
             Assert.Equal(nameof(ClassWithThrowingCtor), ex2.Message);
-
-            Assert.Throws<MissingMethodException>(() => provider.GetService<AbstractClass>());
         }
 
-        [Fact]
-        public void ConsumingServiceThatDependsOnServiceWithoutAnImplementationThrows()
+        [Theory]
+        // GenericTypeDefintion, Abstract GenericTypeDefintion
+        [InlineData(typeof(IFakeOpenGenericService<>), typeof(AbstractFakeOpenGenericService<>))]
+        // GenericTypeDefintion, Interface GenericTypeDefintion
+        [InlineData(typeof(ICollection<>), typeof(IList<>))]
+        // Implementation type is GenericTypeDefintion
+        [InlineData(typeof(IList<int>), typeof(List<>))]
+        // Implementation type is Abstract
+        [InlineData(typeof(IFakeService), typeof(AbstractClass))]
+        // Implementation type is Interface
+        [InlineData(typeof(IFakeEveryService), typeof(IFakeService))]
+        public void CreatingServiceProviderWithUnresolvableTypesThrows(Type serviceType, Type implementationType)
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddTransient<IServiceWithoutImplementation>();
-            serviceCollection.AddTransient<DependsOnServiceWithoutImplementation>();
-            var provider = serviceCollection.BuildServiceProvider();
+            serviceCollection.AddTransient(serviceType, implementationType);
 
             // Act and Assert
-            Assert.Throws<MissingMethodException>(
-                () => provider.GetService<DependsOnServiceWithoutImplementation>());
+            var exception = Assert.Throws<ArgumentException>(() => serviceCollection.BuildServiceProvider());
+            Assert.Equal(
+                $"Cannot instantiate implementation type '{implementationType}' for service type '{serviceType}'.",
+                exception.Message);
         }
 
-        [Fact]
-        public void ConsumingAServiceWithAnOpenGenericImplementationTypeThrows()
+        private abstract class AbstractFakeOpenGenericService<T> : IFakeOpenGenericService<T>
         {
-            // Arrange
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddTransient(typeof(IList<int>), typeof(List<>));
-            var provider = serviceCollection.BuildServiceProvider();
-
-            // Act and Assert
-            Assert.Throws<ArgumentException>(() => provider.GetService<IList<int>>());
+            public abstract T SimpleMethod();
         }
     }
 }

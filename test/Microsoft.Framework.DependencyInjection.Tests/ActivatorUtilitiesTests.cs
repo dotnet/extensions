@@ -238,22 +238,5 @@ namespace Microsoft.Framework.DependencyInjection.Abstractions.Tests
             Assert.Equal(Resources.FormatCannotResolveService(typeof(IFakeService), typeof(CreationCountFakeService)),
                 ex.Message);
         }
-
-        [Theory]
-        [MemberData(nameof(CreateInstanceFuncs))]
-        public void TypeActivatorThrowsIfTypeDependsOnServiceWithoutImplementation(CreateInstanceFunc createFunc)
-        {
-            // Arrange
-            var serviceProvider = new ServiceCollection()
-                .AddTransient<IServiceWithoutImplementation>()
-                .BuildServiceProvider();
-
-            // Act and Assert
-            Assert.Throws<MissingMethodException>(
-                () => createFunc(
-                    serviceProvider,
-                    typeof(DependsOnServiceWithoutImplementation),
-                    args: new object[0]));
-        }
     }
 }

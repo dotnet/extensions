@@ -3,10 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.ExceptionServices;
 
 namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 {
@@ -28,132 +27,133 @@ namespace Microsoft.Framework.DependencyInjection.ServiceLookup
 
         public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
         {
-            ConstructorInfo[] constructors = _descriptor.ImplementationType.GetTypeInfo()
+            var constructors = _descriptor.ImplementationType.GetTypeInfo()
                 .DeclaredConstructors
-                .Where(IsInjectable)
+                .Where(constructor => constructor.IsPublic)
                 .ToArray();
 
-            // TODO: actual service-fulfillment constructor selection
-            if (constructors.Length == 1)
+            IServiceCallSite[] parameterCallSites = null;
+
+            if (constructors.Length == 0)
             {
-                ParameterInfo[] parameters = constructors[0].GetParameters();
-                IServiceCallSite[] parameterCallSites = new IServiceCallSite[parameters.Length];
-                for (var index = 0; index != parameters.Length; ++index)
+                return new CreateInstanceCallSite(_descriptor);
+            }
+            else if (constructors.Length == 1)
+            {
+                var constructor = constructors[0];
+                var parameters = constructor.GetParameters();
+                if (parameters.Length == 0)
                 {
-                    parameterCallSites[index] = provider.GetServiceCallSite(parameters[index].ParameterType, callSiteChain);
-                
-                    if (parameterCallSites[index] == null && parameters[index].HasDefaultValue)
+                    return new CreateInstanceCallSite(_descriptor);
+                }
+
+                parameterCallSites = PopulateCallSites(
+                    provider,
+                    callSiteChain,
+                    parameters,
+                    throwIfCallSiteNotFound: true);
+
+                return new ConstructorCallSite(constructor, parameterCallSites);
+            }
+
+            Array.Sort(constructors,
+                (a, b) => b.GetParameters().Length.CompareTo(a.GetParameters().Length));
+
+            ConstructorInfo bestConstructor = null;
+            HashSet<Type> bestConstructorParameterTypes = null;
+            for (var i = 0; i < constructors.Length; i++)
+            {
+                var parameters = constructors[i].GetParameters();
+
+                var currentParameterCallSites = PopulateCallSites(
+                    provider,
+                    callSiteChain,
+                    parameters,
+                    throwIfCallSiteNotFound: false);
+
+                if (currentParameterCallSites != null)
+                {
+                    if (bestConstructor == null)
                     {
-                        parameterCallSites[index] = new ConstantCallSite(parameters[index].DefaultValue);
+                        bestConstructor = constructors[i];
+                        parameterCallSites = currentParameterCallSites;
                     }
-                    if (parameterCallSites[index] == null)
+                    else
+                    {
+                        // Since we're visiting constructors in decreasing order of number of parameters,
+                        // we'll only see ambiguities or supersets once we've seen a 'bestConstructor'.
+
+                        if (bestConstructorParameterTypes == null)
+                        {
+                            bestConstructorParameterTypes = new HashSet<Type>(
+                                bestConstructor.GetParameters().Select(p => p.ParameterType));
+                        }
+
+                        if (!bestConstructorParameterTypes.IsSupersetOf(parameters.Select(p => p.ParameterType)))
+                        {
+                            // Ambigious match exception
+                            var message = string.Join(
+                                Environment.NewLine,
+                                Resources.FormatAmbigiousConstructorException(_descriptor.ImplementationType),
+                                bestConstructor,
+                                constructors[i]);
+                            throw new InvalidOperationException(message);
+                        }
+                    }
+                }
+            }
+
+            if (bestConstructor == null)
+            {
+                throw new InvalidOperationException(
+                    Resources.FormatUnableToActivateTypeException(_descriptor.ImplementationType));
+            }
+            else
+            {
+                Debug.Assert(parameterCallSites != null);
+                return parameterCallSites.Length == 0 ?
+                    (IServiceCallSite)new CreateInstanceCallSite(_descriptor) :
+                    new ConstructorCallSite(bestConstructor, parameterCallSites);
+            }
+        }
+
+        private bool IsSuperset(IEnumerable<Type> left, IEnumerable<Type> right)
+        {
+            return new HashSet<Type>(left).IsSupersetOf(right);
+        }
+
+        private IServiceCallSite[] PopulateCallSites(
+            ServiceProvider provider,
+            ISet<Type> callSiteChain,
+            ParameterInfo[] parameters,
+            bool throwIfCallSiteNotFound)
+        {
+            var parameterCallSites = new IServiceCallSite[parameters.Length];
+            for (var index = 0; index < parameters.Length; index++)
+            {
+                var callSite = provider.GetServiceCallSite(parameters[index].ParameterType, callSiteChain);
+
+                if (callSite == null && parameters[index].HasDefaultValue)
+                {
+                    callSite = new ConstantCallSite(parameters[index].DefaultValue);
+                }
+
+                if (callSite == null)
+                {
+                    if (throwIfCallSiteNotFound)
                     {
                         throw new InvalidOperationException(Resources.FormatCannotResolveService(
-                                parameters[index].ParameterType, 
-                                _descriptor.ImplementationType));
+                            parameters[index].ParameterType,
+                            _descriptor.ImplementationType));
                     }
-                }
-                return new ConstructorCallSite(constructors[0], parameterCallSites);
-            }
 
-            return new CreateInstanceCallSite(_descriptor);
-        }
-
-        private static bool IsInjectable(ConstructorInfo constructor)
-        {
-            return constructor.IsPublic && constructor.GetParameters().Length != 0;
-        }
-
-        private class ConstantCallSite : IServiceCallSite
-        {
-            private readonly object _defaultValue;
-
-            public ConstantCallSite(object defaultValue)
-            {
-                _defaultValue = defaultValue;
-            }
-
-            public object Invoke(ServiceProvider provider)
-            {
-                return _defaultValue;
-            }
-
-            public Expression Build(Expression provider)
-            {
-                return Expression.Constant(_defaultValue);
-            }
-        }
-
-        private class ConstructorCallSite : IServiceCallSite
-        {
-            private readonly ConstructorInfo _constructorInfo;
-            private readonly IServiceCallSite[] _parameterCallSites;
-
-            public ConstructorCallSite(ConstructorInfo constructorInfo, IServiceCallSite[] parameterCallSites)
-            {
-                _constructorInfo = constructorInfo;
-                _parameterCallSites = parameterCallSites;
-            }
-
-            public object Invoke(ServiceProvider provider)
-            {
-                object[] parameterValues = new object[_parameterCallSites.Length];
-                for (var index = 0; index != parameterValues.Length; ++index)
-                {
-                    parameterValues[index] = _parameterCallSites[index].Invoke(provider);
+                    return null;
                 }
 
-                try
-                {
-                    return _constructorInfo.Invoke(parameterValues);
-                }
-                catch (Exception ex) when (ex.InnerException != null)
-                {
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                    // The above line will always throw, but the compiler requires we throw explicitly.
-                    throw;
-                }
+                parameterCallSites[index] = callSite;
             }
 
-            public Expression Build(Expression provider)
-            {
-                var parameters = _constructorInfo.GetParameters();
-                return Expression.New(
-                    _constructorInfo,
-                    _parameterCallSites.Select((callSite, index) =>
-                        Expression.Convert(
-                            callSite.Build(provider),
-                            parameters[index].ParameterType)));
-            }
-        }
-
-        private class CreateInstanceCallSite : IServiceCallSite
-        {
-            private readonly ServiceDescriptor _descriptor;
-
-            public CreateInstanceCallSite(ServiceDescriptor descriptor)
-            {
-                _descriptor = descriptor;
-            }
-
-            public object Invoke(ServiceProvider provider)
-            {
-                try
-                {
-                    return Activator.CreateInstance(_descriptor.ImplementationType);
-                }
-                catch (Exception ex) when (ex.InnerException != null)
-                {
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                    // The above line will always throw, but the compiler requires we throw explicitly.
-                    throw;
-                }
-            }
-
-            public Expression Build(Expression provider)
-            {
-                return Expression.New(_descriptor.ImplementationType);
-            }
+            return parameterCallSites;
         }
     }
 }

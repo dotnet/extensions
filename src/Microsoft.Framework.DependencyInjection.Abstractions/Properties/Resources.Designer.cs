@@ -75,6 +75,22 @@ namespace Microsoft.Framework.DependencyInjection.Abstractions
         }
 
         /// <summary>
+        /// Service type '{0}' has been registered without an implementation type.
+        /// </summary>
+        internal static string NoImplementation
+        {
+            get { return GetString("NoImplementation"); }
+        }
+
+        /// <summary>
+        /// Service type '{0}' has been registered without an implementation type.
+        /// </summary>
+        internal static string FormatNoImplementation(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("NoImplementation"), p0);
+        }
+
+        /// <summary>
         /// No service for type '{0}' has been registered.
         /// </summary>
         internal static string NoServiceRegistered
@@ -104,22 +120,6 @@ namespace Microsoft.Framework.DependencyInjection.Abstractions
         internal static string FormatTryAddIndistinguishableTypeToEnumerable(object p0, object p1)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("TryAddIndistinguishableTypeToEnumerable"), p0, p1);
-        }
-
-        /// <summary>
-        /// Service type '{0}' has been registered without an implementation type.
-        /// </summary>
-        internal static string NoImplementation
-        {
-            get { return GetString("NoImplementation"); }
-        }
-
-        /// <summary>
-        /// Service type '{0}' has been registered without an implementation type.
-        /// </summary>
-        internal static string FormatNoImplementation(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("NoImplementation"), p0);
         }
 
         private static string GetString(string name, params string[] formatterNames)

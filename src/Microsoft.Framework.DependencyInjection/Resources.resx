@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AmbigiousConstructorException" xml:space="preserve">
+    <value>Unable to activate type '{0}'. The following constructors are ambigious:</value>
+  </data>
   <data name="CannotResolveService" xml:space="preserve">
     <value>Unable to resolve service for type '{0}' while attempting to activate '{1}'.</value>
     <comment>{0} = service which cannot be resolved, {1} = service being activated</comment>
@@ -125,7 +128,13 @@
     <value>A circular dependency was detected for the service of type '{0}'.</value>
     <comment>{0} = service type with circular dependency</comment>
   </data>
+  <data name="UnableToActivateTypeException" xml:space="preserve">
+    <value>No constructor for type '{0}' can be instantiated using services from the service container and default values.</value>
+  </data>
   <data name="OpenGenericServiceRequiresOpenGenericImplementation" xml:space="preserve">
     <value>Open generic service type '{0}' requires registering an open generic implementation type.</value>
+  </data>
+  <data name="TypeCannotBeActivated" xml:space="preserve">
+    <value>Cannot instantiate implementation type '{0}' for service type '{1}'.</value>
   </data>
 </root>

@@ -11,6 +11,22 @@ namespace Microsoft.Framework.DependencyInjection
             = new ResourceManager("Microsoft.Framework.DependencyInjection.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Unable to activate type '{0}'. The following constructors are ambigious:
+        /// </summary>
+        internal static string AmbigiousConstructorException
+        {
+            get { return GetString("AmbigiousConstructorException"); }
+        }
+
+        /// <summary>
+        /// Unable to activate type '{0}'. The following constructors are ambigious:
+        /// </summary>
+        internal static string FormatAmbigiousConstructorException(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AmbigiousConstructorException"), p0);
+        }
+
+        /// <summary>
         /// Unable to resolve service for type '{0}' while attempting to activate '{1}'.
         /// </summary>
         internal static string CannotResolveService
@@ -43,6 +59,22 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         /// <summary>
+        /// No constructor for type '{0}' can be instantiated using services from the service container and default values.
+        /// </summary>
+        internal static string UnableToActivateTypeException
+        {
+            get { return GetString("UnableToActivateTypeException"); }
+        }
+
+        /// <summary>
+        /// No constructor for type '{0}' can be instantiated using services from the service container and default values.
+        /// </summary>
+        internal static string FormatUnableToActivateTypeException(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("UnableToActivateTypeException"), p0);
+        }
+
+        /// <summary>
         /// Open generic service type '{0}' requires registering an open generic implementation type.
         /// </summary>
         internal static string OpenGenericServiceRequiresOpenGenericImplementation
@@ -56,6 +88,22 @@ namespace Microsoft.Framework.DependencyInjection
         internal static string FormatOpenGenericServiceRequiresOpenGenericImplementation(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("OpenGenericServiceRequiresOpenGenericImplementation"), p0);
+        }
+
+        /// <summary>
+        /// Cannot instantiate implementation type '{0}' for service type '{1}'.
+        /// </summary>
+        internal static string TypeCannotBeActivated
+        {
+            get { return GetString("TypeCannotBeActivated"); }
+        }
+
+        /// <summary>
+        /// Cannot instantiate implementation type '{0}' for service type '{1}'.
+        /// </summary>
+        internal static string FormatTypeCannotBeActivated(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TypeCannotBeActivated"), p0, p1);
         }
 
         private static string GetString(string name, params string[] formatterNames)
