@@ -17,7 +17,7 @@
         "dotnet": {
             "dependencies": {
                 "System.Linq": "4.0.0-*",
-                "System.Threading": "4.0.10-beta-*"
+                "System.Threading": "4.0.11-beta-*"
             }
         }
     }
