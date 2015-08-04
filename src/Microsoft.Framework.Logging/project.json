@@ -17,7 +17,7 @@
     "frameworks": {
         "net45": {
             "frameworkAssemblies": {
-                "System.Collections.Concurrent": ""
+                "System.Collections.Concurrent": { "version": "", "type": "build" }
             }
         },
         "dnx451": {
