@@ -1,10 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
-#if DNXCORE50
-using System.Reflection;
-#endif
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.Framework.WebEncoders;
 using Microsoft.Framework.WebEncoders.Testing;
@@ -25,7 +23,36 @@ namespace Microsoft.Framework.Internal
 
             // Assert
             var result = Assert.Single(content.Entries);
-            Assert.IsType(typeof(string), result);
+            Assert.IsType<string>(result);
+        }
+
+        [Fact]
+        public void AppendLine_AppendsLineAfterString()
+        {
+            // Arrange
+            var content = new BufferedHtmlContent();
+
+            // Act
+            content.AppendLine("Hello");
+
+            // Assert
+            Assert.Equal(new [] { "Hello", Environment.NewLine }, content.Entries);
+        }
+
+        [Fact]
+        public void AppendLine_AppendsLineAfterHtmlContent()
+        {
+            // Arrange
+            var content = new BufferedHtmlContent();
+            var expected = new TestHtmlContent("hello");
+
+            // Act
+            content.AppendLine(expected);
+
+            // Assert
+            Assert.Equal(2, content.Entries.Count);
+            Assert.Same(expected, content.Entries[0]);
+            Assert.Equal(Environment.NewLine, content.Entries[1]);
         }
 
         [Fact]
@@ -39,7 +66,7 @@ namespace Microsoft.Framework.Internal
 
             // Assert
             var result = Assert.Single(content.Entries);
-            Assert.IsType(typeof(string), result);
+            Assert.IsType<string>(result);
         }
 
         [Fact]
@@ -108,21 +135,16 @@ namespace Microsoft.Framework.Internal
         }
 
         [Fact]
-        public void CanIterateThroughItems()
+        public void ToString_StringifiesAllContents()
         {
             // Arrange
             var content = new BufferedHtmlContent();
-            var writer = new StringWriter();
             content.Append(new TestHtmlContent("Hello"));
             content.Append("Test");
 
             // Act & Assert
-            foreach (var item in content)
-            {
-                Assert.True(
-                    typeof(IHtmlContent).IsAssignableFrom(item.GetType()) ||
-                    typeof(string).IsAssignableFrom(item.GetType()));
-            }
+            Assert.Equal(2, content.Entries.Count);
+            Assert.Equal("Written from TestHtmlContent: HelloTest", content.ToString());
         }
 
         private class TestHtmlContent : IHtmlContent

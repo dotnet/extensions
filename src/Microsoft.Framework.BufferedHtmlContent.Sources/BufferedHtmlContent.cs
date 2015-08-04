@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.Html.Abstractions;
@@ -13,7 +12,7 @@ namespace Microsoft.Framework.Internal
     /// <summary>
     /// Enumerable object collection which knows how to write itself.
     /// </summary>
-    internal class BufferedHtmlContent : IHtmlContent, IEnumerable<object>
+    internal class BufferedHtmlContent : IHtmlContent
     {
         private const int MaxCharToStringLength = 1024;
 
@@ -23,9 +22,10 @@ namespace Microsoft.Framework.Internal
         internal List<object> Entries { get; } = new List<object>();
 
         /// <summary>
-        /// Appends the string to the collection.
+        /// Appends the <see cref="string"/> to the collection.
         /// </summary>
         /// <param name="value">The <c>string</c> to be appended.</param>
+        /// <returns>A reference to this instance after the Append operation has completed.</returns>
         public BufferedHtmlContent Append(string value)
         {
             Entries.Add(value);
@@ -38,6 +38,7 @@ namespace Microsoft.Framework.Internal
         /// <param name="value">The character array to be appended.</param>
         /// <param name="index">The index from which the character array must be read.</param>
         /// <param name="count">The count till which the character array must be read.</param>
+        /// <returns>A reference to this instance after the Append operation has completed.</returns>
         /// <remarks>
         /// Splits the character array into strings of 1KB length and appends them.
         /// </remarks>
@@ -73,6 +74,7 @@ namespace Microsoft.Framework.Internal
         /// Appends a <see cref="IHtmlContent"/> to the collection.
         /// </summary>
         /// <param name="htmlContent">The <see cref="IHtmlContent"/> to be appended.</param>
+        /// <returns>A reference to this instance after the Append operation has completed.</returns>
         public BufferedHtmlContent Append(IHtmlContent htmlContent)
         {
             Entries.Add(htmlContent);
@@ -80,8 +82,33 @@ namespace Microsoft.Framework.Internal
         }
 
         /// <summary>
+        /// Appends a new line after appending the <see cref="string"/> to the collection.
+        /// </summary>
+        /// <param name="value">The <c>string</c> to be appended.</param>
+        /// <returns>A reference to this instance after the AppendLine operation has completed.</returns>
+        public BufferedHtmlContent AppendLine(string value)
+        {
+            Append(value);
+            Append(Environment.NewLine);
+            return this;
+        }
+
+        /// <summary>
+        /// Appends a new line after appending the <see cref="IHtmlContent"/> to the collection.
+        /// </summary>
+        /// <param name="htmlContent"></param>
+        /// <returns>A reference to this instance after the AppendLine operation has completed.</returns>
+        public BufferedHtmlContent AppendLine(IHtmlContent htmlContent)
+        {
+            Append(htmlContent);
+            Append(Environment.NewLine);
+            return this;
+        }
+
+        /// <summary>
         /// Removes all the entries from the collection.
         /// </summary>
+        /// <returns>A reference to this instance after the Clear operation has completed.</returns>
         public BufferedHtmlContent Clear()
         {
             Entries.Clear();
@@ -116,21 +143,9 @@ namespace Microsoft.Framework.Internal
         {
             using (var writer = new StringWriter())
             {
-                WriteTo(writer, new HtmlEncoder());
+                WriteTo(writer, HtmlEncoder.Default);
                 return writer.ToString();
             }
-        }
-
-        /// <inheritdoc />
-        public IEnumerator<object> GetEnumerator()
-        {
-            return Entries.GetEnumerator();
-        }
-
-        /// <inheritdoc />
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }
