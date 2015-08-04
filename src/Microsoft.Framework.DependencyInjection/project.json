@@ -14,10 +14,10 @@
         "dnx451": { },
         "dotnet": {
             "dependencies": {
-                "System.Collections": "4.0.10-beta-*",
-                "System.Collections.Concurrent": "4.0.10-beta-*",
-                "System.Threading": "4.0.10-beta-*",
-                "System.Threading.Tasks": "4.0.10-beta-*"
+                "System.Collections": "4.0.11-beta-*",
+                "System.Collections.Concurrent": "4.0.11-beta-*",
+                "System.Threading": "4.0.11-beta-*",
+                "System.Threading.Tasks": "4.0.11-beta-*"
             }
         }
     }
