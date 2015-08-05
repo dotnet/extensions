@@ -249,12 +249,11 @@ namespace Microsoft.Framework.DependencyInjection.Abstractions.Tests
                 .BuildServiceProvider();
 
             // Act and Assert
-            var exception = Assert.Throws<MissingMethodException>(
+            Assert.Throws<MissingMethodException>(
                 () => createFunc(
-                        serviceProvider,
-                        typeof(DependsOnServiceWithoutImplementation),
-                        args: new object[0]));
-            Assert.Equal("Cannot create an instance of an interface.", exception.Message);
+                    serviceProvider,
+                    typeof(DependsOnServiceWithoutImplementation),
+                    args: new object[0]));
         }
     }
 }

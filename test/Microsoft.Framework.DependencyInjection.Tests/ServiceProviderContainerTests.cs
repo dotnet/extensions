@@ -45,10 +45,8 @@ namespace Microsoft.Framework.DependencyInjection.Tests
             var provider = serviceCollection.BuildServiceProvider();
 
             // Act and Assert
-            var exception = Assert.Throws<MissingMethodException>(
+            Assert.Throws<MissingMethodException>(
                 () => provider.GetService<DependsOnServiceWithoutImplementation>());
-
-            Assert.Equal("Cannot create an instance of an interface.", exception.Message);
         }
 
         [Fact]
