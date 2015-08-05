@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.DependencyInjection.Extensions;
 using Microsoft.Framework.DependencyInjection.Tests.Fakes;
 using Xunit;
 
