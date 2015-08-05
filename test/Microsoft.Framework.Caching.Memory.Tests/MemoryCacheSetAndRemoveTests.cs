@@ -120,7 +120,7 @@ namespace Microsoft.Framework.Caching.Memory
             });
             result = cache.Set(key, value2, options2);
             Assert.Same(value2, result);
-            Assert.True(callback1Invoked.WaitOne(500), "Callback1");
+            Assert.True(callback1Invoked.WaitOne(1000), "Callback1");
             Assert.False(callback2Invoked.WaitOne(0), "Callback2");
 
             result = cache.Get(key);
@@ -169,7 +169,7 @@ namespace Microsoft.Framework.Caching.Memory
             Assert.Same(value, result);
 
             cache.Remove(key);
-            Assert.True(callbackInvoked.WaitOne(100), "Callback");
+            Assert.True(callbackInvoked.WaitOne(1000), "Callback");
 
             result = cache.Get(key);
             Assert.Null(result);
@@ -203,7 +203,7 @@ namespace Microsoft.Framework.Caching.Memory
             Assert.Same(value, result);
 
             cache.Remove(key);
-            Assert.True(callbackInvoked.WaitOne(100), "Callback");
+            Assert.True(callbackInvoked.WaitOne(1000), "Callback");
 
             result = cache.Get(key);
             Assert.Same(obj2, result);
