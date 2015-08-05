@@ -111,7 +111,7 @@ namespace Microsoft.Framework.Logging.Console
 
         public IDisposable BeginScopeImpl(object state)
         {
-            return null;
+            return new NoopDisposable();
         }
 
         private void FormatLogValues(StringBuilder builder, ILogValues logValues, int level, bool bullet)
@@ -190,6 +190,13 @@ namespace Microsoft.Framework.Logging.Console
                     return "critical";
                 default:
                     return "unknown ";
+            }
+        }
+
+        private class NoopDisposable : IDisposable
+        {
+            public void Dispose()
+            {
             }
         }
     }

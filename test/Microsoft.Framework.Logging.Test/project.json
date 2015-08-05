@@ -2,6 +2,8 @@
     "dependencies": {
         "Microsoft.Framework.Logging": "1.0.0-*",
         "Microsoft.Framework.Logging.Console": "1.0.0-*",
+        "Microsoft.Framework.Logging.Debug": "1.0.0-*",
+        "Microsoft.Framework.Logging.EventLog": "1.0.0-*",
         "Microsoft.Framework.Logging.TraceSource": "1.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },

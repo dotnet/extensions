@@ -35,13 +35,13 @@ namespace Microsoft.Framework.Logging.Debug
         }
 
 
-        /// <inheritdoc /> 
+        /// <inheritdoc />
         public IDisposable BeginScopeImpl(object state)
         {
-            return null;
+            return new NoopDisposable();
         }
 
-        /// <inheritdoc /> 
+        /// <inheritdoc />
         public bool IsEnabled(LogLevel logLevel)
         {
             // If the filter is null, everything is enabled
@@ -50,7 +50,7 @@ namespace Microsoft.Framework.Logging.Debug
                 (_filter == null || _filter(_name, logLevel));
         }
 
-        /// <inheritdoc /> 
+        /// <inheritdoc />
         public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
             if (!IsEnabled(logLevel))
@@ -84,6 +84,13 @@ namespace Microsoft.Framework.Logging.Debug
 
             message = $"{ logLevel }: {message}";
             DebugWriteLine(message, _name);
+        }
+
+        private class NoopDisposable : IDisposable
+        {
+            public void Dispose()
+            {
+            }
         }
     }
 }

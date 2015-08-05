@@ -413,6 +413,39 @@ namespace Microsoft.Framework.Logging.Test
             Assert.Equal(getMessage("debug   ", ex), sink.Writes[5].Message);
         }
 
+        [Fact]
+        public void CallingBeginScopeOnLogger_AlwaysReturnsNewDisposableInstance()
+        {
+            // Arrange
+            var t = SetUp(null);
+            var logger = t.Item1;
+            var sink = t.Item2;
+
+            // Act
+            var disposable1 = logger.BeginScopeImpl("Scope1");
+            var disposable2 = logger.BeginScopeImpl("Scope2");
+
+            // Assert
+            Assert.NotNull(disposable1);
+            Assert.NotNull(disposable2);
+            Assert.NotSame(disposable1, disposable2);
+        }
+
+        [Fact]
+        public void CallingBeginScopeOnLogger_ReturnsNonNullableInstance()
+        {
+            // Arrange
+            var t = SetUp(null);
+            var logger = t.Item1;
+            var sink = t.Item2;
+
+            // Act
+            var disposable = logger.BeginScopeImpl("Scope1");
+
+            // Assert
+            Assert.NotNull(disposable);
+        }
+
         private string getMessage(string logLevelString, Exception exception)
         {
             return $"{logLevelString}: [{_name}] {TheMessageAndError(_state, exception)}";

@@ -9,6 +9,7 @@
     "frameworks": {
         "dnx451": {
             "dependencies": {
+                "Microsoft.Framework.Logging.EventLog": "1.0.0-*",
                 "Microsoft.Framework.Logging.NLog": "1.0.0-*"
             }
         },
