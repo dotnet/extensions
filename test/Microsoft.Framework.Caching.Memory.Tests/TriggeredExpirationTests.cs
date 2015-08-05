@@ -182,7 +182,7 @@ namespace Microsoft.Framework.Caching.Memory
             Assert.True(trigger.IsExpiredWasCalled);
             Assert.False(trigger.ActiveExpirationCallbacksWasCalled);
             Assert.Null(trigger.Registration);
-            Assert.True(callbackInvoked.WaitOne(100), "Callback");
+            Assert.True(callbackInvoked.WaitOne(500), "Callback");
 
             result = cache.Get(key);
             Assert.Null(result); // It wasn't cached

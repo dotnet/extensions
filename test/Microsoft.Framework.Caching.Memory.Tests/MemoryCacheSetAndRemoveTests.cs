@@ -120,7 +120,7 @@ namespace Microsoft.Framework.Caching.Memory
             });
             result = cache.Set(key, value2, options2);
             Assert.Same(value2, result);
-            Assert.True(callback1Invoked.WaitOne(100), "Callback1");
+            Assert.True(callback1Invoked.WaitOne(500), "Callback1");
             Assert.False(callback2Invoked.WaitOne(0), "Callback2");
 
             result = cache.Get(key);
