@@ -13,7 +13,7 @@
         "dnx451": { },
         "dnxcore50": {
             "dependencies": {
-                "System.Linq": "4.0.0-beta-*"
+                "System.Linq": "4.0.1-beta-*"
             }
         }
     }
