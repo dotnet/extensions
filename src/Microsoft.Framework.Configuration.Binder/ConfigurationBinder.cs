@@ -39,7 +39,7 @@ namespace Microsoft.Framework.Configuration
 
         private static void BindProperty(PropertyInfo property, object propertyOwner, IConfiguration configuration)
         {
-            configuration = configuration.GetConfigurationSection(property.Name);
+            configuration = configuration.GetSection(property.Name);
 
             if (property.GetMethod == null || !property.GetMethod.IsPublic || property.GetMethod.GetParameters().Length > 0)
             {
@@ -70,18 +70,25 @@ namespace Microsoft.Framework.Configuration
 
         private static object BindType(Type type, object typeInstance, IConfiguration configuration)
         {
-            var configValue = configuration.Get(null);
+            string configValue = null;
+            IConfigurationSection configurationSection = null;
+
             var typeInfo = type.GetTypeInfo();
+
+            if (configuration is IConfigurationSection)
+            {
+                configurationSection = (IConfigurationSection)configuration;
+                configValue = configurationSection.Value;
+            }
 
             if (configValue != null)
             {
                 // Leaf nodes are always reinitialized
-                return CreateValueFromConfiguration(type, configValue, configuration);
+                return CreateValueFromSection(type, configValue, configurationSection);
             }
             else
             {
-                var subkeys = configuration.GetConfigurationSections();
-                if (subkeys.Count() != 0)
+                if (configuration.GetChildren().Count() != 0)
                 {
                     if (typeInstance == null)
                     {
@@ -147,19 +154,23 @@ namespace Microsoft.Framework.Configuration
             }
 
             var addMethod = iDictionaryTypeInfo.GetDeclaredMethod("Add");
-            var subkeys = configuration.GetConfigurationSections().ToList();
 
-            foreach (var keyProperty in subkeys)
+            foreach (var configurationSection in configuration.GetChildren())
             {
-                var keyConfiguration = keyProperty.Value;
-
                 var item = BindType(
                     type: valueType,
                     typeInstance: null,
-                    configuration: keyConfiguration);
+                    configuration: configurationSection);
                 if (item != null)
                 {
-                    addMethod.Invoke(dictionary, new[] { keyProperty.Key, item });
+                    var key = configurationSection.Key;
+                    if (configuration is IConfigurationSection)
+                    {
+                        // Remove the parent key and : delimiter to get the configurationSection's key
+                        key = key.Substring((configuration as IConfigurationSection).Key.Length + 1);
+                    }
+
+                    addMethod.Invoke(dictionary, new[] { key, item });
                 }
             }
         }
@@ -173,18 +184,15 @@ namespace Microsoft.Framework.Configuration
             var itemType = iCollectionTypeInfo.GenericTypeArguments[0];
 
             var addMethod = iCollectionTypeInfo.GetDeclaredMethod("Add");
-            var subkeys = configuration.GetConfigurationSections().ToList();
 
-            foreach (var keyProperty in subkeys)
+            foreach (var configurationSection in configuration.GetChildren())
             {
-                var keyConfiguration = keyProperty.Value;
-
                 try
                 {
                     var item = BindType(
                         type: itemType,
                         typeInstance: null,
-                        configuration: keyConfiguration);
+                        configuration: configurationSection);
                     if (item != null)
                     {
                         addMethod.Invoke(collection, new[] { item });
@@ -196,16 +204,16 @@ namespace Microsoft.Framework.Configuration
             }
         }
 
-        private static object CreateValueFromConfiguration(Type type, string value, IConfiguration configuration)
+        private static object CreateValueFromSection(Type type, string value, IConfigurationSection configuration)
         {
             var typeInfo = type.GetTypeInfo();
 
             if (typeInfo.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
-                return CreateValueFromConfiguration(Nullable.GetUnderlyingType(type), value, configuration);
+                return CreateValueFromSection(Nullable.GetUnderlyingType(type), value, configuration);
             }
 
-            var configurationValue = configuration.Get(key: null);
+            var configurationValue = configuration.Value;
 
             try
             {

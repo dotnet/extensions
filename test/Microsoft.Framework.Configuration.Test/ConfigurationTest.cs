@@ -61,27 +61,18 @@ namespace Microsoft.Framework.Configuration.Test
 
             var config = builder.Build();
 
-            memRet1 = config.TryGet("mem1:keyinmem1", out memVal1);
-            memRet2 = config.TryGet("Mem2:KeyInMem2", out memVal2);
-            memRet3 = config.TryGet("MEM3:KEYINMEM3", out memVal3);
+            memVal1 = config["mem1:keyinmem1"];
+            memVal2 = config["Mem2:KeyInMem2"];
+            memVal3 = config["MEM3:KEYINMEM3"];
 
             // Assert
             Assert.Contains(memConfigSrc1, builder.Sources);
             Assert.Contains(memConfigSrc2, builder.Sources);
             Assert.Contains(memConfigSrc3, builder.Sources);
 
-            Assert.True(memRet1);
-            Assert.True(memRet2);
-            Assert.True(memRet3);
-
             Assert.Equal("ValueInMem1", memVal1);
             Assert.Equal("ValueInMem2", memVal2);
             Assert.Equal("ValueInMem3", memVal3);
-
-            Assert.Equal("ValueInMem1", config.Get("mem1:keyinmem1"));
-            Assert.Equal("ValueInMem2", config.Get("Mem2:KeyInMem2"));
-            Assert.Equal("ValueInMem3", config.Get("MEM3:KEYINMEM3"));
-            Assert.Null(config.Get("NotExist"));
 
             Assert.Equal("ValueInMem1", config["mem1:keyinmem1"]);
             Assert.Equal("ValueInMem2", config["Mem2:KeyInMem2"]);
@@ -113,7 +104,7 @@ namespace Microsoft.Framework.Configuration.Test
             var config = builder.Build();
 
             // Assert
-            Assert.Equal("ValueInMem2", config.Get("Key1:Key2"));
+            Assert.Equal("ValueInMem2", config["Key1:Key2"]);
         }
 
         [Fact]
@@ -138,11 +129,11 @@ namespace Microsoft.Framework.Configuration.Test
             var config = builder.Build();
 
             // Act
-            config.Set("Key1", "NewValue1");
+            config["Key1"] =  "NewValue1";
             config["Key2"] = "NewValue2";
 
             // Assert
-            Assert.Equal("NewValue1", config.Get("Key1"));
+            Assert.Equal("NewValue1", config["Key1"]);
             Assert.Equal("NewValue1", memConfigSrc1.Get("Key1"));
             Assert.Equal("NewValue1", memConfigSrc2.Get("Key1"));
             Assert.Equal("NewValue1", memConfigSrc3.Get("Key1"));
@@ -181,39 +172,26 @@ namespace Microsoft.Framework.Configuration.Test
             var config = builder.Build();
 
             string memVal1, memVal2, memVal3, memVal4, memVal5;
-            bool memRet1, memRet2, memRet3, memRet4, memRet5;
 
             // Act
-            var configFocus = config.GetConfigurationSection("Data");
+            var configFocus = config.GetSection("Data");
 
-            memRet1 = configFocus.TryGet("DB1:Connection1", out memVal1);
-            memRet2 = configFocus.TryGet("DB1:Connection2", out memVal2);
-            memRet3 = configFocus.TryGet("DB2:Connection", out memVal3);
-            memRet4 = configFocus.TryGet("Source:DB2:Connection", out memVal4);
-            memRet5 = configFocus.TryGet(null, out memVal5);
+            memVal1 = configFocus["DB1:Connection1"];
+            memVal2 = configFocus["DB1:Connection2"];
+            memVal3 = configFocus["DB2:Connection"];
+            memVal4 = configFocus["Source:DB2:Connection"];
+            memVal5 = configFocus.Value;
 
             // Assert
-            Assert.True(memRet1);
-            Assert.True(memRet2);
-            Assert.False(memRet3);
-            Assert.False(memRet4);
-            Assert.True(memRet5);
-
             Assert.Equal("MemVal1", memVal1);
             Assert.Equal("MemVal2", memVal2);
             Assert.Equal("MemVal4", memVal5);
-
-            Assert.Equal("MemVal1", configFocus.Get("DB1:Connection1"));
-            Assert.Equal("MemVal2", configFocus.Get("DB1:Connection2"));
-            Assert.Null(configFocus.Get("DB2:Connection"));
-            Assert.Null(configFocus.Get("Source:DB2:Connection"));
-            Assert.Equal("MemVal4", configFocus.Get(null));
 
             Assert.Equal("MemVal1", configFocus["DB1:Connection1"]);
             Assert.Equal("MemVal2", configFocus["DB1:Connection2"]);
             Assert.Null(configFocus["DB2:Connection"]);
             Assert.Null(configFocus["Source:DB2:Connection"]);
-            Assert.Equal("MemVal4", configFocus[null]);
+            Assert.Equal("MemVal4", configFocus.Value);
         }
 
         [Fact]
@@ -245,16 +223,15 @@ namespace Microsoft.Framework.Configuration.Test
             var config = builder.Build();
 
             // Act
-            var configFocusList = config.GetConfigurationSections("Data");
-            var configurationSectionsSet = configFocusList.ToDictionary(e => e.Key, e => e.Value);
+            var configSections = config.GetSection("Data").GetChildren().ToList();
 
             // Assert
-            Assert.Equal(2, configFocusList.Count());
-            Assert.Equal("MemVal1", configurationSectionsSet["DB1"].Get("Connection1"));
-            Assert.Equal("MemVal2", configurationSectionsSet["DB1"].Get("Connection2"));
-            Assert.Equal("MemVal3", configurationSectionsSet["DB2Connection"].Get(null));
-            Assert.False(configurationSectionsSet.ContainsKey("DB3"));
-            Assert.False(configurationSectionsSet.ContainsKey("Source:DB3"));
+            Assert.Equal(2, configSections.Count());
+            Assert.Equal("MemVal1", configSections.FirstOrDefault(c => c.Key == "Data:DB1")["Connection1"]);
+            Assert.Equal("MemVal2", configSections.FirstOrDefault(c => c.Key == "Data:DB1")["Connection2"]);
+            Assert.Equal("MemVal3", configSections.FirstOrDefault(c => c.Key == "Data:DB2Connection").Value);
+            Assert.False(configSections.Exists(c => c.Key == "Data:DB3"));
+            Assert.False(configSections.Exists(c => c.Key == "Source:DB3"));
         }
 
         [Fact]
@@ -347,7 +324,7 @@ namespace Microsoft.Framework.Configuration.Test
             var expectedMsg = Resources.Error_NoSources;
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => config.Set("Title", "Welcome"));
+            var ex = Assert.Throws<InvalidOperationException>(() => config["Title"] = "Welcome");
 
             // Assert
             Assert.Equal(expectedMsg, ex.Message);

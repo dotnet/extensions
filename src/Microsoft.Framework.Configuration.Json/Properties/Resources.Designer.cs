@@ -75,7 +75,7 @@ namespace Microsoft.Framework.Configuration.Json
         }
 
         /// <summary>
-        /// Could not parse the JSON file. Error on line number '{0}' : '{1}'.
+        /// Could not parse the JSON file. Error on line number '{0}': '{1}'.
         /// </summary>
         internal static string Error_JSONParseError
         {
@@ -83,7 +83,7 @@ namespace Microsoft.Framework.Configuration.Json
         }
 
         /// <summary>
-        /// Could not parse the JSON file. Error on line number '{0}' : '{1}'.
+        /// Could not parse the JSON file. Error on line number '{0}': '{1}'.
         /// </summary>
         internal static string FormatError_JSONParseError(object p0, object p1)
         {

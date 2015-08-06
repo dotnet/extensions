@@ -13,6 +13,6 @@ namespace Microsoft.Framework.Configuration
 
         IConfigurationBuilder Add(IConfigurationSource configurationSource);
 
-        IConfiguration Build();
+        IConfigurationRoot Build();
     }
 }

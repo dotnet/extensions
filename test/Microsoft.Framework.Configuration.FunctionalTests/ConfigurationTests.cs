@@ -89,23 +89,23 @@ CommonKey3:CommonKey4=IniValue6";
             var config = builder.Build();
 
             // Assert
-            Assert.Equal("IniValue1", config.Get("IniKey1"));
-            Assert.Equal("IniValue2", config.Get("IniKey2:IniKey3"));
-            Assert.Equal("IniValue3", config.Get("IniKey2:IniKey4"));
-            Assert.Equal("IniValue4", config.Get("IniKey2:IniKey5:IniKey6"));
-            Assert.Equal("IniValue5", config.Get("CommonKey1:CommonKey2:IniKey7"));
+            Assert.Equal("IniValue1", config["IniKey1"]);
+            Assert.Equal("IniValue2", config["IniKey2:IniKey3"]);
+            Assert.Equal("IniValue3", config["IniKey2:IniKey4"]);
+            Assert.Equal("IniValue4", config["IniKey2:IniKey5:IniKey6"]);
+            Assert.Equal("IniValue5", config["CommonKey1:CommonKey2:IniKey7"]);
 
-            Assert.Equal("JsonValue1", config.Get("JsonKey1"));
-            Assert.Equal("JsonValue2", config.Get("Json.Key2:JsonKey3"));
-            Assert.Equal("JsonValue3", config.Get("Json.Key2:Json.Key4"));
-            Assert.Equal("JsonValue4", config.Get("Json.Key2:JsonKey5:JsonKey6"));
-            Assert.Equal("JsonValue5", config.Get("CommonKey1:CommonKey2:JsonKey7"));
+            Assert.Equal("JsonValue1", config["JsonKey1"]);
+            Assert.Equal("JsonValue2", config["Json.Key2:JsonKey3"]);
+            Assert.Equal("JsonValue3", config["Json.Key2:Json.Key4"]);
+            Assert.Equal("JsonValue4", config["Json.Key2:JsonKey5:JsonKey6"]);
+            Assert.Equal("JsonValue5", config["CommonKey1:CommonKey2:JsonKey7"]);
 
-            Assert.Equal("XmlValue1", config.Get("XmlKey1"));
-            Assert.Equal("XmlValue2", config.Get("XmlKey2:XmlKey3"));
-            Assert.Equal("XmlValue3", config.Get("XmlKey2:XmlKey4"));
-            Assert.Equal("XmlValue4", config.Get("XmlKey2:XmlKey5:XmlKey6"));
-            Assert.Equal("XmlValue5", config.Get("CommonKey1:CommonKey2:XmlKey7"));
+            Assert.Equal("XmlValue1", config["XmlKey1"]);
+            Assert.Equal("XmlValue2", config["XmlKey2:XmlKey3"]);
+            Assert.Equal("XmlValue3", config["XmlKey2:XmlKey4"]);
+            Assert.Equal("XmlValue4", config["XmlKey2:XmlKey5:XmlKey6"]);
+            Assert.Equal("XmlValue5", config["CommonKey1:CommonKey2:XmlKey7"]);
 
             Assert.Equal("MemValue1", config["MemKey1"]);
             Assert.Equal("MemValue2", config["MemKey2:MemKey3"]);
@@ -125,19 +125,19 @@ CommonKey3:CommonKey4=IniValue6";
             // Act & Assert
             builder.AddIniFile(_iniConfigFilePath);
             var config = builder.Build();
-            Assert.Equal("IniValue6", config.Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
+            Assert.Equal("IniValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
 
             builder.AddJsonFile(_jsonConfigFilePath);
             config = builder.Build();
-            Assert.Equal("JsonValue6", config.Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
+            Assert.Equal("JsonValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
 
             builder.AddXmlFile(_xmlConfigFilePath);
             config = builder.Build();
-            Assert.Equal("XmlValue6", config.Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
+            Assert.Equal("XmlValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
 
             builder.AddInMemoryCollection(_memConfigContent);
             config = builder.Build();
-            Assert.Equal("MemValue6", config.Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
+            Assert.Equal("MemValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
         }
 
         [Fact]
@@ -152,8 +152,8 @@ CommonKey3:CommonKey4=IniValue6";
             var config = builder.Build();
 
             // Act & Assert
-            // Set value with Set() method
-            config.Set("CommonKey1:CommonKey2:CommonKey3:CommonKey4", "NewValue");
+            // Set value
+            config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"] = "NewValue";
 
             // All config sources must be updated
             foreach (var src in builder.Sources)
@@ -165,7 +165,7 @@ CommonKey3:CommonKey4=IniValue6";
             // Recover values by reloading
             config.Reload();
 
-            Assert.Equal("XmlValue6", config.Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
+            Assert.Equal("XmlValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
 
             // Set value with indexer
             config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"] = "NewValue";

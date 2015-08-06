@@ -9,23 +9,8 @@ namespace Microsoft.Framework.Configuration
     {
         string this[string key] { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="key">A case insensitive name.</param>
-        /// <returns>The value associated with the given key, or null if none is found.</returns>
-        string Get(string key);
+        IConfigurationSection GetSection(string key);
 
-        bool TryGet(string key, out string value);
-
-        IConfiguration GetConfigurationSection(string key);
-
-        IEnumerable<KeyValuePair<string, IConfiguration>> GetConfigurationSections();
-
-        IEnumerable<KeyValuePair<string, IConfiguration>> GetConfigurationSections(string key);
-
-        void Set(string key, string value);
-
-        void Reload();
+        IEnumerable<IConfigurationSection> GetChildren();
     }
 }

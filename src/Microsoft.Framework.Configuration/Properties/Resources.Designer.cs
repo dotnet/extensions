@@ -11,6 +11,22 @@ namespace Microsoft.Framework.Configuration
             = new ResourceManager("Microsoft.Framework.Configuration.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Empty key is not allowed. 
+        /// </summary>
+        internal static string Error_EmptyKey
+        {
+            get { return GetString("Error_EmptyKey"); }
+        }
+
+        /// <summary>
+        /// Empty key is not allowed. 
+        /// </summary>
+        internal static string FormatError_EmptyKey()
+        {
+            return GetString("Error_EmptyKey");
+        }
+
+        /// <summary>
         /// Reload can only be called on top-level configuration element
         /// </summary>
         internal static string Error_InvalidReload

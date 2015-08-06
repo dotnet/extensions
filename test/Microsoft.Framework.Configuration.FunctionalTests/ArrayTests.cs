@@ -58,18 +58,18 @@ i=ini_i.i.i.i
 
             var config = builder.Build();
 
-            var configurationSection = config.GetConfigurationSection("address");
-            var indexConfigurationSections = configurationSection.GetConfigurationSections().ToArray();
+            var configurationSection = config.GetSection("address");
+            var indexConfigurationSections = configurationSection.GetChildren().ToArray();
 
             Assert.Equal(8, indexConfigurationSections.Length);
-            Assert.Equal("0", indexConfigurationSections[0].Key);
-            Assert.Equal("1", indexConfigurationSections[1].Key);
-            Assert.Equal("2", indexConfigurationSections[2].Key);
-            Assert.Equal("3", indexConfigurationSections[3].Key);
-            Assert.Equal("4", indexConfigurationSections[4].Key);
-            Assert.Equal("i", indexConfigurationSections[5].Key);
-            Assert.Equal("j", indexConfigurationSections[6].Key);
-            Assert.Equal("x", indexConfigurationSections[7].Key);
+            Assert.Equal("address:0", indexConfigurationSections[0].Key);
+            Assert.Equal("address:1", indexConfigurationSections[1].Key);
+            Assert.Equal("address:2", indexConfigurationSections[2].Key);
+            Assert.Equal("address:3", indexConfigurationSections[3].Key);
+            Assert.Equal("address:4", indexConfigurationSections[4].Key);
+            Assert.Equal("address:i", indexConfigurationSections[5].Key);
+            Assert.Equal("address:j", indexConfigurationSections[6].Key);
+            Assert.Equal("address:x", indexConfigurationSections[7].Key);
         }
 
         [Fact]
@@ -84,14 +84,14 @@ i=ini_i.i.i.i
 
             var config = builder.Build();
 
-            Assert.Equal("json_0.0.0.0", config.Get("address:0"));
-            Assert.Equal("xml_1.1.1.1", config.Get("address:1"));
-            Assert.Equal("ini_2.2.2.2", config.Get("address:2"));
-            Assert.Equal("json_3.3.3.3", config.Get("address:3"));
-            Assert.Equal("xml_4.4.4.4", config.Get("address:4"));
-            Assert.Equal("ini_i.i.i.i", config.Get("address:i"));
-            Assert.Equal("json_j.j.j.j", config.Get("address:j"));
-            Assert.Equal("xml_x.x.x.x", config.Get("address:x"));
+            Assert.Equal("json_0.0.0.0", config["address:0"]);
+            Assert.Equal("xml_1.1.1.1", config["address:1"]);
+            Assert.Equal("ini_2.2.2.2", config["address:2"]);
+            Assert.Equal("json_3.3.3.3", config["address:3"]);
+            Assert.Equal("xml_4.4.4.4", config["address:4"]);
+            Assert.Equal("ini_i.i.i.i", config["address:i"]);
+            Assert.Equal("json_j.j.j.j", config["address:j"]);
+            Assert.Equal("xml_x.x.x.x", config["address:x"]);
         }
 
         public ArrayTests()

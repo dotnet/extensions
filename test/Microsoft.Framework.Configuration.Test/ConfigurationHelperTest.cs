@@ -80,22 +80,12 @@ namespace Microsoft.Framework.Configuration.Test
                 throw new NotImplementedException();
             }
 
-            public string Get(string key)
+            public IConfiguration GetSection(string key)
             {
                 throw new NotImplementedException();
             }
 
-            public IConfiguration GetConfigurationSection(string key)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IEnumerable<KeyValuePair<string, IConfiguration>> GetConfigurationSections()
-            {
-                throw new NotImplementedException();
-            }
-
-            public IEnumerable<KeyValuePair<string, IConfiguration>> GetConfigurationSections(string key)
+            public IEnumerable<KeyValuePair<string, IConfiguration>> GetChildren()
             {
                 throw new NotImplementedException();
             }
@@ -105,17 +95,7 @@ namespace Microsoft.Framework.Configuration.Test
                 throw new NotImplementedException();
             }
 
-            public void Set(string key, string value)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool TryGet(string key, out string value)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IConfiguration Build()
+            public IConfigurationRoot Build()
             {
                 throw new NotImplementedException();
             }

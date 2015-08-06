@@ -68,9 +68,9 @@ namespace Microsoft.Framework.Configuration
             return this;
         }
 
-        public IConfiguration Build()
+        public IConfigurationRoot Build()
         {
-            return new ConfigurationSection(_sources);
+            return new ConfigurationRoot(_sources);
         }
     }
 }

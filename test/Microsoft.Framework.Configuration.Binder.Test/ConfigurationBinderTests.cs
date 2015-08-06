@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using Microsoft.Framework.Configuration.Memory;
 using Xunit;
@@ -101,12 +102,13 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             };
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
             var config = builder.Build();
+
             var optionsType = typeof(GenericOptions<>).MakeGenericType(type);
             var options = Activator.CreateInstance(optionsType);
             var expectedValue = TypeDescriptor.GetConverter(type).ConvertFromInvariantString(value);
 
             // act
-            ConfigurationBinder.Bind(options, config);            
+            ConfigurationBinder.Bind(options, config);
             var optionsValue = options.GetType().GetProperty("Value").GetValue(options);
             
             // assert            
@@ -142,6 +144,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             };
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
             var config = builder.Build();
+
             var optionsType = typeof(GenericOptions<>).MakeGenericType(type);
             var options = Activator.CreateInstance(optionsType);
             
@@ -175,6 +178,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             };
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
             var config = builder.Build();
+
             var options = ConfigurationBinder.Bind<ComplexOptions>(config);
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
@@ -193,6 +197,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             };
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
             var config = builder.Build();
+
             var options = ConfigurationBinder.Bind<DerivedOptions>(config);
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
@@ -209,6 +214,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             };
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
             var config = builder.Build();
+
             var options = ConfigurationBinder.Bind<ComplexOptions>(config);
             Assert.Equal("stuff", ComplexOptions.StaticProperty);
         }
@@ -226,6 +232,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             };
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
             var config = builder.Build();
+
             var options = ConfigurationBinder.Bind<ComplexOptions>(config);
             Assert.Null(options.GetType().GetTypeInfo().GetDeclaredProperty(property).GetValue(options));
         }
@@ -298,6 +305,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
 
             var exception = Assert.Throws<InvalidOperationException>(
                 () => ConfigurationBinder.Bind<TestOptions>(config));
+
             Assert.Equal(
                 Resources.FormatError_CannotActivateAbstractOrInterface(typeof(ISomeInterface)),
                 exception.Message);
