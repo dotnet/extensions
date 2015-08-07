@@ -84,7 +84,7 @@ namespace Microsoft.Dnx.TestHost
 
         public void SendError(Exception ex)
         {
-            SendError(ex.Message);
+            SendError(ex.ToString());
         }
 
         private void ReadMessages()

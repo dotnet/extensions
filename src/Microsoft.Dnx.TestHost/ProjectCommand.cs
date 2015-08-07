@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Dnx.Runtime.CommandParsing;
 using Microsoft.Dnx.Runtime.Common;
@@ -67,24 +65,7 @@ namespace Microsoft.Dnx.TestHost
 
         private static Task<int> ExecuteMain(IServiceProvider services, string entryPoint, string[] args)
         {
-            Assembly assembly = null;
-
-            try
-            {
-                assembly = Assembly.Load(new AssemblyName(entryPoint));
-            }
-            catch (FileNotFoundException ex) when (new AssemblyName(ex.FileName).Name == entryPoint)
-            {
-                if (ex.InnerException is ICompilationException)
-                {
-                    throw ex.InnerException;
-                }
-
-                throw new InvalidOperationException(
-                    $"Unable to load application or execute command '{entryPoint}'.",
-                    ex.InnerException);
-            }
-
+            var assembly = Assembly.Load(new AssemblyName(entryPoint));
             return EntryPointExecutor.Execute(assembly, args, services);
         }
     }
