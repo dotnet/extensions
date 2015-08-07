@@ -79,7 +79,7 @@ namespace Microsoft.Dnx.TestHost.Client
                 arguments.Add("--debug");
             }
 
-            var allArgs = ". Microsoft.Dnx.TestHost " + string.Join(" ", arguments.Select(Quote));
+            var allArgs = "Microsoft.Dnx.TestHost " + string.Join(" ", arguments.Select(Quote));
             if (DTHPort != null)
             {
                 allArgs = "--port " + DTHPort + " " + allArgs;
