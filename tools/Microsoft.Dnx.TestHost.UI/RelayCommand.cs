@@ -4,7 +4,7 @@
 using System;
 using System.Windows.Input;
 
-namespace Microsoft.Framework.TestHost.UI
+namespace Microsoft.Dnx.TestHost.UI
 {
     public class RelayCommand : ICommand
     {

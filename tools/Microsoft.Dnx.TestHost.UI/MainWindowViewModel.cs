@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Microsoft.Framework.TestHost.Client;
+using Microsoft.Dnx.TestHost.Client;
 using Microsoft.Win32;
 
-namespace Microsoft.Framework.TestHost.UI
+namespace Microsoft.Dnx.TestHost.UI
 {
     public class MainWindowViewModel : INotifyPropertyChanged
     {
@@ -165,7 +165,7 @@ namespace Microsoft.Framework.TestHost.UI
                 CheckFileExists = true,
                 DefaultExt = ".exe",
                 Filter = "dnx Executable (dnx.exe)|dnx.exe",
-                InitialDirectory = string.IsNullOrEmpty(DNX) ? Client.DNX.FindDnxDirectory() : Path.GetDirectoryName(DNX),
+                InitialDirectory = string.IsNullOrEmpty(DNX) ? Dnx.TestHost.Client.DNX.FindDnxDirectory() : Path.GetDirectoryName(DNX),
                 Title = "DNX"
             };
 

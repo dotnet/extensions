@@ -7,8 +7,8 @@
     <ProjectGuid>{2A16C1BE-8777-473A-A581-02E10D82C49D}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Framework.TestHost.UI</RootNamespace>
-    <AssemblyName>Microsoft.Framework.TestHost.UI</AssemblyName>
+    <RootNamespace>Microsoft.Dnx.TestHost.UI</RootNamespace>
+    <AssemblyName>Microsoft.Dnx.TestHost.UI</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -58,19 +58,19 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="..\..\src\Microsoft.Framework.TestHost.Client.Sources\DNX.cs">
+    <Compile Include="..\..\src\Microsoft.Dnx.TestHost.Client.Sources\DNX.cs">
       <Link>DNX.cs</Link>
     </Compile>
-    <Compile Include="..\..\src\Microsoft.Framework.TestHost.Client.Sources\TestHostWrapper.cs">
+    <Compile Include="..\..\src\Microsoft.Dnx.TestHost.Client.Sources\TestHostWrapper.cs">
       <Link>TestHostWrapper.cs</Link>
     </Compile>
-    <Compile Include="..\..\src\Microsoft.Framework.TestHost\Messages\Message.cs">
+    <Compile Include="..\..\src\Microsoft.Dnx.TestHost\Messages\Message.cs">
       <Link>Message.cs</Link>
     </Compile>
-    <Compile Include="..\..\src\Microsoft.Framework.TestHost\Messages\ProtocolVersionMessage.cs">
+    <Compile Include="..\..\src\Microsoft.Dnx.TestHost\Messages\ProtocolVersionMessage.cs">
       <Link>ProtocolVersionMessage.cs</Link>
     </Compile>
-    <Compile Include="..\..\src\Microsoft.Framework.TestHost\Messages\RunTestsMessage.cs">
+    <Compile Include="..\..\src\Microsoft.Dnx.TestHost\Messages\RunTestsMessage.cs">
       <Link>RunTestsMessage.cs</Link>
     </Compile>
     <Compile Include="RelayCommand.cs" />
