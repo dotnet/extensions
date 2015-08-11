@@ -27,9 +27,9 @@ namespace Microsoft.Framework.Logging.NLog
         {
             if (!_disposed)
             {
+                _disposed = true;
                 _logFactory.Flush();
                 _logFactory.Dispose();
-                _disposed = true;
             }
         }
 

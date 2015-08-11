@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.Framework.Logging.EventLog
 {
     /// <summary>
@@ -31,6 +33,10 @@ namespace Microsoft.Framework.Logging.EventLog
         public ILogger CreateLogger(string name)
         {
             return new EventLogLogger(name, _settings ?? new EventLogSettings());
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

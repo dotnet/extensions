@@ -104,9 +104,9 @@ namespace Microsoft.Framework.Logging.TraceSource
         {
             if (!_disposed)
             {
+                _disposed = true;
                 _rootTraceListener.Flush();
                 _rootTraceListener.Dispose();
-                _disposed = true;
             }
         }
     }
