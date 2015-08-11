@@ -4,6 +4,7 @@
 using System;
 using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.Caching.SqlServer;
+using Microsoft.Framework.DependencyInjection.Extensions;
 using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection

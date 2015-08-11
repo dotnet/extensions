@@ -3,6 +3,7 @@
 
 using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.Caching.Memory;
+using Microsoft.Framework.DependencyInjection.Extensions;
 
 namespace Microsoft.Framework.DependencyInjection
 {
