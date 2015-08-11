@@ -35,7 +35,7 @@ namespace Microsoft.Dnx.TestHost.TestAdapter
             _logger = logger;
         }
 
-        public SourceInformation GetSourceInformation(string className, string methodName)
+        public SourceInformation GetSourceInformation(MethodInfo method)
         {
             if (!EnsureInitialized())
             {
@@ -57,12 +57,10 @@ namespace Microsoft.Dnx.TestHost.TestAdapter
             // Note that this doesn't deal gracefully with overloaded methods. Symbol APIs don't provide
             // a way to match overloads. We'd really need MetadataTokens to do this correctly (missing in
             // CoreCLR).
-            var method = ResolveBestMethodInfo(className, methodName);
-            if (method != null)
-            {
-                className = method.DeclaringType.FullName;
-                methodName = method.Name;
-            }
+            method = ResolveBestMethodInfo(method);
+
+            var className = method.DeclaringType.FullName;
+            var methodName = method.Name;
 
             // The DIA code doesn't include a + for nested classes, just a dot.
             var symbolId = FindMethodSymbolId(className.Replace('+', '.'), methodName);
@@ -83,21 +81,9 @@ namespace Microsoft.Dnx.TestHost.TestAdapter
             }
         }
 
-        private MethodInfo ResolveBestMethodInfo(string className, string methodName)
+        private MethodInfo ResolveBestMethodInfo(MethodInfo method)
         {
             Debug.Assert(_isInitialized == true);
-
-            var @class = _assembly.GetType(className);
-            if (@class == null)
-            {
-                return null;
-            }
-
-            var method = @class.GetMethods().Where(m => m.Name == methodName).FirstOrDefault();
-            if (method == null)
-            {
-                return null;
-            }
 
             // If a method has a StateMachineAttribute, then all of the user code will show up 
             // in the symbols associated with the compiler-generated code. So, we need to look

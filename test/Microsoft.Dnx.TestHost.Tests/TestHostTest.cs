@@ -53,14 +53,13 @@ namespace Microsoft.Dnx.TestHost
             var fullMessageDiagnostics = string.Format("Full output: \n{0}", string.Join("\n", host.Output));
             var testOutput = host.Output.Where(message => message.MessageType != "Log");
 
-            Assert.True(10 == testOutput.Count(), "Output count is not 8. \n" + fullMessageDiagnostics);
+            Assert.True(10 == testOutput.Count(), "Number of messages is not right. \n" + fullMessageDiagnostics);
             Assert.Single(host.Output, m => TestFound(m, "SampleTest.True_is_true"));
             Assert.Single(host.Output, m => TestFound(m, "SampleTest.TheoryTest1(x: 1)"));
             Assert.Single(host.Output, m => TestFound(m, "SampleTest.TheoryTest1(x: 2)"));
             Assert.Single(host.Output, m => TestFound(m, "SampleTest.TheoryTest1(x: 3)"));
             Assert.Single(host.Output, m => TestFound(m, "SampleTest.TheoryTest2(x: 1, s: \"Hi\")"));
             Assert.Single(host.Output, m => TestFound(m, "SampleTest.TheoryTest2(x: 2, s: \"Hi\")"));
-            Assert.Single(host.Output, m => TestFound(m, "SampleTest.TheoryTest2(x: 3, s: \"Hi\")"));
             Assert.Single(host.Output, m => TestFound(m, "SampleTest.TheoryTest2(x: 3, s: \"Hi\")"));
             Assert.Single(host.Output, m => TestFound(m, "SampleTest.SampleAsyncTest"));
             Assert.Single(host.Output, m => TestFound(m, "DerivedTest.ThisGetsInherited"));
