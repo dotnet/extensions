@@ -78,20 +78,21 @@ namespace Microsoft.Framework.Configuration.EnvironmentVariables
             }
             else
             {
+                entry.Key = key.Replace("__", ":");
                 yield return entry;
                 yield break;
             }
 
             // Return the key-value pair for connection string
             yield return new DictionaryEntry(
-                string.Format(ConnStrKeyFormat, key.Substring(prefix.Length)),
+                string.Format(ConnStrKeyFormat, key.Substring(prefix.Length).Replace("__", ":")),
                 entry.Value);
 
             if (!string.IsNullOrEmpty(provider))
             {
                 // Return the key-value pair for provider name
                 yield return new DictionaryEntry(
-                    string.Format(ProviderKeyFormat, key.Substring(prefix.Length)),
+                    string.Format(ProviderKeyFormat, key.Substring(prefix.Length).Replace("__", ":")),
                     provider);
             }
         }

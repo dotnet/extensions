@@ -133,5 +133,21 @@ namespace Microsoft.Framework.Configuration.EnvironmentVariables.Test
             Assert.True(!string.IsNullOrEmpty(envConfigSrc.Get("cOMMonEnv")));
             Assert.True(!string.IsNullOrEmpty(envConfigSrc.Get("CommonEnv")));
         }
+
+        [Fact]
+        public void ReplaceDoubleUnderscoreInEnvironmentVariables()
+        {
+            var dict = new Hashtable()
+                {
+                    {"data__ConnectionString", "connection"},
+                    {"SQLCONNSTR__db1", "connStr"}
+                };
+            var envConfigSrc = new EnvironmentVariablesConfigurationSource();
+
+            envConfigSrc.Load(dict);
+
+            Assert.Equal("connection", envConfigSrc.Get("data:ConnectionString"));
+            Assert.Equal("System.Data.SqlClient", envConfigSrc.Get("Data:_db1:ProviderName"));
+        }
     }
 }
