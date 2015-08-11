@@ -21,6 +21,10 @@ namespace Microsoft.Dnx.TestHost
             return new TestHostLogger(name, _channel);
         }
 
+        public void Dispose()
+        {
+        }
+
         private class TestHostLogger : ILogger
         {
             private readonly string _name;

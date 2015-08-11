@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.Framework.Logging.Testing
 {
     public class NullLoggerFactory : ILoggerFactory
@@ -15,6 +17,10 @@ namespace Microsoft.Framework.Logging.Testing
         }
 
         public void AddProvider(ILoggerProvider provider)
+        {
+        }
+
+        public void Dispose()
         {
         }
     }
