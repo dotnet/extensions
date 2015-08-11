@@ -59,12 +59,21 @@ namespace Microsoft.Dnx.TestHost
             {
                 try
                 {
-                    Trace.TraceInformation("[ReportingChannel]: Send({0})", message);
+                    TestHostTracing.Source.TraceEvent(
+                        TraceEventType.Verbose,
+                        0,
+                        "[ReportingChannel]: Send({0})", 
+                        message);
+
                     _writer.Write(JsonConvert.SerializeObject(message));
                 }
                 catch (Exception ex)
                 {
-                    Trace.TraceInformation("[ReportingChannel]: Error sending {0}", ex);
+                    TestHostTracing.Source.TraceEvent(
+                        TraceEventType.Error,
+                        0,
+                        "[ReportingChannel]: Error sending {0}",
+                        ex);
                     throw;
                 }
             }
@@ -105,7 +114,11 @@ namespace Microsoft.Dnx.TestHost
                 }
                 catch (Exception ex)
                 {
-                    Trace.TraceInformation("[ReportingChannel]: Waiting for message failed {0}", ex);
+                    TestHostTracing.Source.TraceEvent(
+                        TraceEventType.Error,
+                        0,
+                        "[ReportingChannel]: Waiting for message failed {0}",
+                        ex);
                     throw;
                 }
             }
@@ -121,11 +134,14 @@ namespace Microsoft.Dnx.TestHost
 
             if (_ackWaitHandle.Wait(TimeSpan.FromSeconds(10)))
             {
-                Trace.TraceInformation("[ReportingChannel]: Received for ack from test host");
+                TestHostTracing.Source.TraceInformation("[ReportingChannel]: Received for ack from test host");
             }
             else
             {
-                Trace.TraceInformation("[ReportingChannel]: Timed out waiting for ack from test host");
+                TestHostTracing.Source.TraceEvent(
+                    TraceEventType.Error,
+                    0, 
+                    "[ReportingChannel]: Timed out waiting for ack from test host");
             }
 
             Socket.Dispose();

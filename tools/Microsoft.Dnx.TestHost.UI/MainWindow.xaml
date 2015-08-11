@@ -67,7 +67,7 @@
       <RowDefinition
         MinHeight="200" />
       <RowDefinition
-        Height="Auto"/>
+        Height="Auto" />
     </Grid.RowDefinitions>
     <Border
       Grid.Row="0"
@@ -146,10 +146,10 @@
           Orientation="Horizontal">
           <Button
             Content="Start"
-            Command="{Binding StartTestHost}"/>
+            Command="{Binding StartTestHost}" />
           <Button
             Content="Stop"
-            Command="{Binding StopTestHost}"/>
+            Command="{Binding StopTestHost}" />
           <Label
             Content="Process:" />
           <TextBox
@@ -173,12 +173,12 @@
             Content="DTH Port:" />
           <TextBox
             Text="{Binding DTHPort}"
-            Width="60"/>
+            Width="60" />
           <Label
             Target="{x:Reference _debug}"
             Content="Debug TestHost"
             VerticalAlignment="Center"
-            Margin="5 5 -5 5"/>
+            Margin="5 5 -5 5" />
           <CheckBox
             x:Name="_debug"
             IsChecked="{Binding Debug}"
@@ -212,20 +212,30 @@
       Grid.Row="2"
       HorizontalAlignment="Stretch"
       Height="5"
-      Background="LightGray"/>
+      Background="LightGray" />
     <Grid
       Grid.Row="3">
-      <ScrollViewer>
-        <TextBox
-          x:Name="_consoleBuffer"
-          IsReadOnly="True"
-          TextWrapping="Wrap" />
-      </ScrollViewer>
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Label
+          Grid.Row="0" 
+          Content="Console Output:"/>
+        <ScrollViewer
+          Grid.Row="1">
+          <TextBox
+            x:Name="_consoleBuffer"
+            IsReadOnly="True"
+            TextWrapping="Wrap" />
+        </ScrollViewer>
+      </Grid>
     </Grid>
     <StatusBar
       Grid.Row="4">
       <StatusBarItem>
-        <Label 
+        <Label
           Content="{Binding Status}" />
       </StatusBarItem>
     </StatusBar>

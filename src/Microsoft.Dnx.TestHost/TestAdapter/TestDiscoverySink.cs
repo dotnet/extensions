@@ -18,7 +18,6 @@ namespace Microsoft.Dnx.TestHost
 
         public void SendTest(Test test)
         {
-            Trace.TraceInformation("[TestDiscoverySink]: OnTransmit(TestDiscovery.TestFound)");
             _channel.Send(new Message
             {
                 MessageType = "TestDiscovery.TestFound",

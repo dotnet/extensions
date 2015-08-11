@@ -97,6 +97,8 @@ namespace Microsoft.Dnx.TestHost.Client
                 WorkingDirectory = project,
             };
 
+            Process.StartInfo.EnvironmentVariables.Add("DNX_TESTHOST_TRACE", "1");
+
             Process.OutputDataReceived += Process_OutputDataReceived;
             Process.ErrorDataReceived += Process_OutputDataReceived;
 

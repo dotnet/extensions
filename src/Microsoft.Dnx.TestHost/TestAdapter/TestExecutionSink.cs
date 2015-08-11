@@ -18,7 +18,6 @@ namespace Microsoft.Dnx.TestHost
 
         public void RecordResult(TestResult testResult)
         {
-            Trace.TraceInformation("[TestExecutionSink]: OnTransmit(TestExecution.TestResult)");
             _channel.Send(new Message
             {
                 MessageType = "TestExecution.TestResult",
@@ -28,7 +27,6 @@ namespace Microsoft.Dnx.TestHost
 
         public void RecordStart(Test test)
         {
-            Trace.TraceInformation("[TestExecutionSink]: OnTransmit(TestExecution.TestStarted)");
             _channel.Send(new Message
             {
                 MessageType = "TestExecution.TestStarted",

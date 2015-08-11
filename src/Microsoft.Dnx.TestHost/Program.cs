@@ -70,7 +70,7 @@ namespace Microsoft.Dnx.TestHost
                         if (testCommand == null)
                         {
                             // No test command means no tests.
-                            Trace.TraceInformation("[ReportingChannel]: OnTransmit(ExecuteTests)");
+                            TestHostTracing.Source.TraceEvent(TraceEventType.Error, 0, "Project has no test command.");
                             channel.Send(new Message()
                             {
                                 MessageType = "TestExecution.Response",
@@ -86,7 +86,7 @@ namespace Microsoft.Dnx.TestHost
                         {
                             var version = message.Payload?.ToObject<ProtocolVersionMessage>().Version;
                             var supportedVersion = 1;
-                            Trace.TraceInformation(
+                            TestHostTracing.Source.TraceInformation(
                                 "[ReportingChannel]: Requested Version: {0} - Using Version: {1}",
                                 version,
                                 supportedVersion);
@@ -106,6 +106,7 @@ namespace Microsoft.Dnx.TestHost
 
                         if (message.MessageType == "TestDiscovery.Start")
                         {
+                            TestHostTracing.Source.TraceInformation("Starting Discovery");
                             var commandArgs = new string[]
                             {
                                 "--list",
@@ -114,16 +115,18 @@ namespace Microsoft.Dnx.TestHost
 
                             var testServices = TestServices.CreateTestServices(_services, project, channel);
                             await ProjectCommand.Execute(testServices, project, "test", commandArgs);
-
-                            Trace.TraceInformation("[ReportingChannel]: OnTransmit(DiscoverTests)");
+                            
                             channel.Send(new Message()
                             {
                                 MessageType = "TestDiscovery.Response",
                             });
+
+                            TestHostTracing.Source.TraceInformation("Completed Discovery");
                             return 0;
                         }
                         else if (message.MessageType == "TestExecution.Start")
                         {
+                            TestHostTracing.Source.TraceInformation("Starting Execution");
                             var commandArgs = new List<string>()
                             {
                                 "--designtime"
@@ -141,191 +144,33 @@ namespace Microsoft.Dnx.TestHost
 
                             var testServices = TestServices.CreateTestServices(_services, project, channel);
                             await ProjectCommand.Execute(testServices, project, "test", commandArgs.ToArray());
-
-                            Trace.TraceInformation("[ReportingChannel]: OnTransmit(ExecuteTests)");
+                            
                             channel.Send(new Message()
                             {
                                 MessageType = "TestExecution.Response",
                             });
+
+                            TestHostTracing.Source.TraceInformation("Completed Execution");
                             return 0;
                         }
                         else
                         {
                             var error = string.Format("Unexpected message type: '{0}'.", message.MessageType);
-                            Trace.TraceError(error);
+                            TestHostTracing.Source.TraceEvent(TraceEventType.Error, 0, error);
                             channel.SendError(error);
                             return -1;
                         }
                     }
                     catch (Exception ex)
                     {
-                        Trace.TraceError(ex.ToString());
+                        TestHostTracing.Source.TraceEvent(TraceEventType.Error, 0, ex.ToString());
                         channel.SendError(ex);
                         return -2;
                     }
                 }
             });
 
-            application.Command("list", command =>
-            {
-                command.Name = "list";
-                command.Description = "Lists all available tests.";
-
-                command.OnExecute(async () =>
-                {
-                    if (debugOption.HasValue())
-                    {
-                        Debugger.Launch();
-                    }
-
-                    if (waitOption.HasValue())
-                    {
-                        Thread.Sleep(10 * 1000);
-                    }
-
-                    var projectPath = projectOption.Value() ?? env.ApplicationBasePath;
-                    var port = int.Parse(portOption.Value());
-
-                    return await DiscoverTests(port, projectPath);
-                });
-            });
-
-            application.Command("run", command =>
-            {
-                command.Name = "run";
-                command.Description = "Runs specified tests.";
-
-                var tests = command.Option("--test <test>", "test to run", CommandOptionType.MultipleValue);
-
-                command.OnExecute(async () =>
-                {
-                    if (debugOption.HasValue())
-                    {
-                        Debugger.Launch();
-                    }
-
-                    if (waitOption.HasValue())
-                    {
-                        Thread.Sleep(10 * 1000);
-                    }
-
-                    var projectPath = projectOption.Value() ?? env.ApplicationBasePath;
-                    var port = int.Parse(portOption.Value());
-
-                    return await ExecuteTests(port, projectPath, tests.Values);
-                });
-
-            });
-
             return application.Execute(args);
-        }
-
-        private async Task<int> ExecuteTests(int port, string projectPath, IList<string> tests)
-        {
-            Console.WriteLine("Listening on port {0}", port);
-            using (var channel = await ReportingChannel.ListenOn(port))
-            {
-                Console.WriteLine("Client accepted {0}", channel.Socket.LocalEndPoint);
-
-                try
-                {
-                    string testCommand = null;
-                    Project project = null;
-                    if (Project.TryGetProject(projectPath, out project, diagnostics: null))
-                    {
-                        project.Commands.TryGetValue("test", out testCommand);
-                    }
-
-                    if (testCommand == null)
-                    {
-                        // No test command means no tests.
-                        Trace.TraceInformation("[ReportingChannel]: OnTransmit(ExecuteTests)");
-                        channel.Send(new Message()
-                        {
-                            MessageType = "TestExecution.Response",
-                        });
-                        return -1;
-                    }
-
-                    var args = new List<string>()
-                    {
-                        "--designtime"
-                    };
-
-                    if (tests != null)
-                    {
-                        foreach (var test in tests)
-                        {
-                            args.Add("--test");
-                            args.Add(test);
-                        }
-                    }
-
-                    var testServices = TestServices.CreateTestServices(_services, project, channel);
-                    await ProjectCommand.Execute(testServices, project, "test", args.ToArray());
-                }
-                catch (Exception ex)
-                {
-                    Trace.TraceError(ex.ToString());
-                    channel.SendError(ex);
-                    return -2;
-                }
-
-                Trace.TraceInformation("[ReportingChannel]: OnTransmit(ExecuteTests)");
-                channel.Send(new Message()
-                {
-                    MessageType = "TestExecution.Response",
-                });
-                return 0;
-            }
-        }
-
-        private async Task<int> DiscoverTests(int port, string projectPath)
-        {
-            Console.WriteLine("Listening on port {0}", port);
-            using (var channel = await ReportingChannel.ListenOn(port))
-            {
-                Console.WriteLine("Client accepted {0}", channel.Socket.LocalEndPoint);
-
-                try
-                {
-                    string testCommand = null;
-                    Project project = null;
-                    if (Project.TryGetProject(projectPath, out project, diagnostics: null))
-                    {
-                        project.Commands.TryGetValue("test", out testCommand);
-                    }
-
-                    if (testCommand == null)
-                    {
-                        // No test command means no tests.
-                        Trace.TraceInformation("[ReportingChannel]: OnTransmit(DiscoverTests)");
-                        channel.Send(new Message()
-                        {
-                            MessageType = "TestDiscovery.Response",
-                        });
-                        return -1;
-                    }
-
-                    var args = new string[] { "--list", "--designtime" };
-
-                    var testServices = TestServices.CreateTestServices(_services, project, channel);
-                    await ProjectCommand.Execute(testServices, project, "test", args);
-                }
-                catch (Exception ex)
-                {
-                    Trace.TraceError(ex.ToString());
-                    channel.SendError(ex);
-                    return -2;
-                }
-
-                Trace.TraceInformation("[ReportingChannel]: OnTransmit(DiscoverTests)");
-                channel.Send(new Message()
-                {
-                    MessageType = "TestDiscovery.Response",
-                });
-                return 0;
-            }
         }
     }
 }
