@@ -28,7 +28,10 @@ namespace Microsoft.AspNet.FileProviders
                 if (_searchRegex == null)
                 {
                     // Perf: Compile this as this may be used multiple times.
-                    _searchRegex = new Regex('^' + Pattern + '$', RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
+                    _searchRegex = new Regex(
+                        '^' + Pattern + '$',
+                        RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
+                        Constants.RegexMatchTimeout);
                 }
 
                 return _searchRegex;
