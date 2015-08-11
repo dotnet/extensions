@@ -10,6 +10,7 @@ using Microsoft.Dnx.Runtime.Infrastructure;
 using Microsoft.Dnx.TestAdapter;
 using Microsoft.Dnx.TestHost.Client;
 using Xunit;
+using System.Collections.Generic;
 
 namespace Microsoft.Dnx.TestHost
 {
@@ -52,7 +53,7 @@ namespace Microsoft.Dnx.TestHost
             var fullMessageDiagnostics = string.Format("Full output: \n{0}", string.Join("\n", host.Output));
             var testOutput = host.Output.Where(message => message.MessageType != "Log");
 
-            Assert.True(8 == testOutput.Count(), "Output count is not 8. \n" + fullMessageDiagnostics);
+            Assert.True(10 == testOutput.Count(), "Output count is not 8. \n" + fullMessageDiagnostics);
             Assert.Single(host.Output, m => TestFound(m, "SampleTest.True_is_true"));
             Assert.Single(host.Output, m => TestFound(m, "SampleTest.TheoryTest1(x: 1)"));
             Assert.Single(host.Output, m => TestFound(m, "SampleTest.TheoryTest1(x: 2)"));
@@ -60,7 +61,54 @@ namespace Microsoft.Dnx.TestHost
             Assert.Single(host.Output, m => TestFound(m, "SampleTest.TheoryTest2(x: 1, s: \"Hi\")"));
             Assert.Single(host.Output, m => TestFound(m, "SampleTest.TheoryTest2(x: 2, s: \"Hi\")"));
             Assert.Single(host.Output, m => TestFound(m, "SampleTest.TheoryTest2(x: 3, s: \"Hi\")"));
+            Assert.Single(host.Output, m => TestFound(m, "SampleTest.TheoryTest2(x: 3, s: \"Hi\")"));
+            Assert.Single(host.Output, m => TestFound(m, "SampleTest.SampleAsyncTest"));
+            Assert.Single(host.Output, m => TestFound(m, "DerivedTest.ThisGetsInherited"));
             Assert.Equal("TestDiscovery.Response", host.Output[host.Output.Count - 1].MessageType);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public async Task ListTest_AsyncMethod_Symbols()
+        {
+            // Arrange
+            var host = new TestHostWrapper(_testProject);
+
+            await host.StartAsync();
+
+            // Act
+            var result = await host.ListTestsAsync();
+
+            // Assert
+            Assert.Equal(0, result);
+
+            var test = GetTest(host.Output, "SampleTest.SampleAsyncTest");
+            Assert.NotNull(test);
+
+            Assert.EndsWith("SampleTest.cs", test.CodeFilePath);
+            Assert.Equal(35, test.LineNumber);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public async Task ListTest_InheritedMethod_Symbols()
+        {
+            // Arrange
+            var host = new TestHostWrapper(_testProject);
+
+            await host.StartAsync();
+
+            // Act
+            var result = await host.ListTestsAsync();
+
+            // Assert
+            Assert.Equal(0, result);
+
+            var test = GetTest(host.Output, "DerivedTest.ThisGetsInherited");
+            Assert.NotNull(test);
+
+            Assert.EndsWith("BaseTest.cs", test.CodeFilePath);
+            Assert.Equal(12, test.LineNumber);
         }
 
         [ConditionalFact]
@@ -78,7 +126,7 @@ namespace Microsoft.Dnx.TestHost
             // Assert
             Assert.Equal(0, result);
 
-            Assert.Equal(15, host.Output.Count);
+            Assert.Equal(19, host.Output.Count);
             Assert.Single(host.Output, m => TestStarted(m, "SampleTest.True_is_true"));
             Assert.Single(host.Output, m => TestPassed(m, "SampleTest.True_is_true"));
             Assert.Single(host.Output, m => TestStarted(m, "SampleTest.TheoryTest1(x: 1)"));
@@ -93,6 +141,11 @@ namespace Microsoft.Dnx.TestHost
             Assert.Single(host.Output, m => TestPassed(m, "SampleTest.TheoryTest2(x: 2, s: \"Hi\")"));
             Assert.Single(host.Output, m => TestStarted(m, "SampleTest.TheoryTest2(x: 3, s: \"Hi\")"));
             Assert.Single(host.Output, m => TestPassed(m, "SampleTest.TheoryTest2(x: 3, s: \"Hi\")"));
+            Assert.Single(host.Output, m => TestStarted(m, "SampleTest.SampleAsyncTest"));
+            Assert.Single(host.Output, m => TestPassed(m, "SampleTest.SampleAsyncTest"));
+            Assert.Single(host.Output, m => TestStarted(m, "DerivedTest.ThisGetsInherited"));
+            Assert.Single(host.Output, m => TestPassed(m, "DerivedTest.ThisGetsInherited"));
+
             Assert.Equal("TestExecution.Response", host.Output[host.Output.Count - 1].MessageType);
         }
 
@@ -254,6 +307,23 @@ namespace Microsoft.Dnx.TestHost
             }
 
             return true;
+        }
+
+        private static Test GetTest(IEnumerable<Message> messages, string name)
+        {
+            foreach (var message in messages)
+            {
+                if (string.Equals("TestDiscovery.TestFound", message.MessageType))
+                {
+                    var test = message.Payload.ToObject<Test>();
+                    if (string.Equals(name, test.DisplayName))
+                    {
+                        return test;
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

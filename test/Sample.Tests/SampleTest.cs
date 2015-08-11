@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Sample.Tests
@@ -27,6 +28,12 @@ namespace Sample.Tests
         [InlineData(3, "Hi")]
         public void TheoryTest2(int x, string s)
         {
+        }
+
+        [Fact]
+        public async Task SampleAsyncTest()
+        {
+            await Task.Delay(01);
         }
     }
 }
