@@ -94,6 +94,8 @@ namespace Microsoft.Framework.Logging.EventLog
                 return;
             }
 
+            message = _name + Environment.NewLine + message;
+
             // category '0' translates to 'None' in event log
             _eventLog.WriteEntry(message, GetEventLogEntryType(logLevel), eventId, category: 0);
         }
