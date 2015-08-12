@@ -27,7 +27,7 @@ namespace Microsoft.Dnx.TestHost
             services.Add(typeof(ILoggerFactory), loggerFactory);
 
             var libraryExporter = applicationServices.GetRequiredService<ILibraryExporter>();
-            var export = libraryExporter.GetLibraryExport(project.Name);
+            var export = libraryExporter.GetExport(project.Name);
 
             var projectReference = export.MetadataReferences
                 .OfType<IMetadataProjectReference>()
