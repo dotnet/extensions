@@ -41,9 +41,9 @@ namespace Microsoft.Framework.Configuration
         {
             configuration = configuration.GetConfigurationSection(property.Name);
 
-            if (property.GetMethod == null || !property.GetMethod.IsPublic)
+            if (property.GetMethod == null || !property.GetMethod.IsPublic || property.GetMethod.GetParameters().Length > 0)
             {
-                // We don't support set only properties
+                // We don't support set only properties or indexers
                 return;
             }
 

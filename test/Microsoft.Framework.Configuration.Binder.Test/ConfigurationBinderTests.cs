@@ -157,6 +157,14 @@ namespace Microsoft.Framework.Configuration.Binder.Test
         }
 
         [Fact]
+        public void BinderIgnoresIndexerProperties()
+        {
+            var builder = new ConfigurationBuilder();
+            var config = builder.Build();
+            Assert.NotNull(ConfigurationBinder.Bind<List<string>>(config));
+        }
+
+        [Fact]
         public void CanReadComplexProperties()
         {
             var dic = new Dictionary<string, string>
