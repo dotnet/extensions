@@ -12,42 +12,28 @@ namespace Microsoft.Framework.Configuration
 {
     public static class ConfigurationBinder
     {
-        public static TModel Bind<TModel>(IConfiguration configuration) where TModel : new()
+        public static void Bind(this IConfiguration configuration, object model)
         {
-            var model = new TModel();
-            Bind(model, configuration);
-            return model;
+            if (model != null)
+            {
+                foreach (var property in GetAllProperties(model.GetType().GetTypeInfo()))
+                {
+                    BindProperty(property, model, configuration);
+                }
+            }
         }
 
-        public static void Bind(object model, IConfiguration configuration)
+        private static void BindProperty(PropertyInfo property, object instance, IConfiguration config)
         {
-            if (model == null)
+            // We don't support set only, non public, or indexer properties
+            if (property.GetMethod == null || 
+                !property.GetMethod.IsPublic || 
+                property.GetMethod.GetParameters().Length > 0)
             {
                 return;
             }
 
-            BindObjectProperties(model, configuration);
-        }
-
-        private static void BindObjectProperties(object obj, IConfiguration configuration)
-        {
-            foreach (var property in GetAllProperties(obj.GetType().GetTypeInfo()))
-            {
-                BindProperty(property, obj, configuration);
-            }
-        }
-
-        private static void BindProperty(PropertyInfo property, object propertyOwner, IConfiguration configuration)
-        {
-            configuration = configuration.GetSection(property.Name);
-
-            if (property.GetMethod == null || !property.GetMethod.IsPublic || property.GetMethod.GetParameters().Length > 0)
-            {
-                // We don't support set only properties or indexers
-                return;
-            }
-
-            var propertyValue = property.GetValue(propertyOwner);
+            var propertyValue = property.GetValue(instance);
             var hasPublicSetter = property.SetMethod != null && property.SetMethod.IsPublic;
 
             if (propertyValue == null && !hasPublicSetter)
@@ -57,55 +43,43 @@ namespace Microsoft.Framework.Configuration
                 return;
             }
 
-            propertyValue = BindType(
-                property.PropertyType,
-                propertyValue,
-                configuration);
-
+            propertyValue = BindInstance(property.PropertyType, propertyValue, config.GetSection(property.Name));
             if (propertyValue != null && hasPublicSetter)
             {
-                property.SetValue(propertyOwner, propertyValue);
+                property.SetValue(instance, propertyValue);
             }
         }
 
-        private static object BindType(Type type, object typeInstance, IConfiguration configuration)
+        private static object BindInstance(Type type, object instance, IConfiguration config)
         {
-            string configValue = null;
-            IConfigurationSection configurationSection = null;
-
-            var typeInfo = type.GetTypeInfo();
-
-            if (configuration is IConfigurationSection)
-            {
-                configurationSection = (IConfigurationSection)configuration;
-                configValue = configurationSection.Value;
-            }
-
+            var section = config as IConfigurationSection;
+            var configValue = section?.Value;
             if (configValue != null)
             {
                 // Leaf nodes are always reinitialized
-                return CreateValueFromSection(type, configValue, configurationSection);
+                return ReadValue(type, configValue, section);
             }
             else
             {
-                if (configuration.GetChildren().Count() != 0)
+                if (config.GetChildren().Count() != 0)
                 {
-                    if (typeInstance == null)
+                    if (instance == null)
                     {
+                        var typeInfo = type.GetTypeInfo();
                         if (typeInfo.IsInterface || typeInfo.IsAbstract)
                         {
                             throw new InvalidOperationException(Resources.FormatError_CannotActivateAbstractOrInterface(type));
                         }
 
-                        bool hasParameterlessConstructor = typeInfo.DeclaredConstructors.Any(ctor => ctor.IsPublic && ctor.GetParameters().Length == 0);
-                        if (!hasParameterlessConstructor)
+                        var hasDefaultConstructor = typeInfo.DeclaredConstructors.Any(ctor => ctor.IsPublic && ctor.GetParameters().Length == 0);
+                        if (!hasDefaultConstructor)
                         {
                             throw new InvalidOperationException(Resources.FormatError_MissingParameterlessConstructor(type));
                         }
 
                         try
                         {
-                            typeInstance = Activator.CreateInstance(type);
+                            instance = Activator.CreateInstance(type);
                         }
                         catch (Exception ex)
                         {
@@ -113,39 +87,38 @@ namespace Microsoft.Framework.Configuration
                         }
                     }
 
-                    var collectionInterface = GetGenericOpenInterfaceImplementation(typeof(IDictionary<,>), type);
+                    // See if its a Dictionary
+                    var collectionInterface = FindOpenGenericInterface(typeof(IDictionary<,>), type);
                     if (collectionInterface != null)
                     {
-                        // Dictionary
-                        BindDictionary(typeInstance, collectionInterface, configuration);
+                        BindDictionary(instance, collectionInterface, config);
                     }
                     else
                     {
-                        collectionInterface = GetGenericOpenInterfaceImplementation(typeof(ICollection<>), type);
+                        // See if its an ICollection
+                        collectionInterface = FindOpenGenericInterface(typeof(ICollection<>), type);
                         if (collectionInterface != null)
                         {
-                            // ICollection
-                            BindCollection(typeInstance, collectionInterface, configuration);
+                            BindCollection(instance, collectionInterface, config);
                         }
+                        // Something else
                         else
                         {
-                            // Something else
-                            BindObjectProperties(typeInstance, configuration);
+                            Bind(config, instance);
                         }
                     }
                 }
-                return typeInstance;
+                return instance;
             }
         }
 
-        private static void BindDictionary(object dictionary, Type iDictionaryType, IConfiguration configuration)
+        private static void BindDictionary(object dictionary, Type dictionaryType, IConfiguration config)
         {
-            var iDictionaryTypeInfo = iDictionaryType.GetTypeInfo();
+            var typeInfo = dictionaryType.GetTypeInfo();
 
-            // It is guaranteed to have a two and only two parameters
-            // because this is an IDictionary<K,V>
-            var keyType = iDictionaryTypeInfo.GenericTypeArguments[0];
-            var valueType = iDictionaryTypeInfo.GenericTypeArguments[1];
+            // IDictionary<K,V> is guaranteed to have exactly two parameters
+            var keyType = typeInfo.GenericTypeArguments[0];
+            var valueType = typeInfo.GenericTypeArguments[1];
 
             if (keyType != typeof(string))
             {
@@ -153,21 +126,21 @@ namespace Microsoft.Framework.Configuration
                 return;
             }
 
-            var addMethod = iDictionaryTypeInfo.GetDeclaredMethod("Add");
-
-            foreach (var configurationSection in configuration.GetChildren())
+            var addMethod = typeInfo.GetDeclaredMethod("Add");
+            foreach (var child in config.GetChildren())
             {
-                var item = BindType(
+                var item = BindInstance(
                     type: valueType,
-                    typeInstance: null,
-                    configuration: configurationSection);
+                    instance: null,
+                    config: child);
                 if (item != null)
                 {
-                    var key = configurationSection.Key;
-                    if (configuration is IConfigurationSection)
+                    var key = child.Key;
+                    var section = config as IConfigurationSection;
+                    if (section != null)
                     {
                         // Remove the parent key and : delimiter to get the configurationSection's key
-                        key = key.Substring((configuration as IConfigurationSection).Key.Length + 1);
+                        key = key.Substring(section.Key.Length + 1);
                     }
 
                     addMethod.Invoke(dictionary, new[] { key, item });
@@ -175,24 +148,22 @@ namespace Microsoft.Framework.Configuration
             }
         }
 
-        private static void BindCollection(object collection, Type iCollectionType, IConfiguration configuration)
+        private static void BindCollection(object collection, Type collectionType, IConfiguration config)
         {
-            var iCollectionTypeInfo = iCollectionType.GetTypeInfo();
+            var typeInfo = collectionType.GetTypeInfo();
 
-            // It is guaranteed to have a one and only one parameter
-            // because this is an ICollection<T>
-            var itemType = iCollectionTypeInfo.GenericTypeArguments[0];
+            // ICollection<T> is guaranteed to have exacly one parameter
+            var itemType = typeInfo.GenericTypeArguments[0];
+            var addMethod = typeInfo.GetDeclaredMethod("Add");
 
-            var addMethod = iCollectionTypeInfo.GetDeclaredMethod("Add");
-
-            foreach (var configurationSection in configuration.GetChildren())
+            foreach (var section in config.GetChildren())
             {
                 try
                 {
-                    var item = BindType(
+                    var item = BindInstance(
                         type: itemType,
-                        typeInstance: null,
-                        configuration: configurationSection);
+                        instance: null,
+                        config: section);
                     if (item != null)
                     {
                         addMethod.Invoke(collection, new[] { item });
@@ -204,39 +175,34 @@ namespace Microsoft.Framework.Configuration
             }
         }
 
-        private static object CreateValueFromSection(Type type, string value, IConfigurationSection configuration)
+        private static object ReadValue(Type type, string value, IConfigurationSection config)
         {
-            var typeInfo = type.GetTypeInfo();
-
-            if (typeInfo.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            if (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
-                return CreateValueFromSection(Nullable.GetUnderlyingType(type), value, configuration);
+                return ReadValue(Nullable.GetUnderlyingType(type), value, config);
             }
-
-            var configurationValue = configuration.Value;
 
             try
             {
-                return TypeDescriptor.GetConverter(type).ConvertFromInvariantString(configurationValue);
+                return TypeDescriptor.GetConverter(type).ConvertFromInvariantString(config.Value);
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException(Resources.FormatError_FailedBinding(configurationValue, type), ex);
+                throw new InvalidOperationException(Resources.FormatError_FailedBinding(config.Value, type), ex);
             }
         }
 
-        private static Type GetGenericOpenInterfaceImplementation(Type expectedOpenGeneric, Type actual)
+        private static Type FindOpenGenericInterface(Type expected, Type actual)
         {
             var interfaces = actual.GetTypeInfo().ImplementedInterfaces;
             foreach (var interfaceType in interfaces)
             {
                 if (interfaceType.GetTypeInfo().IsGenericType &&
-                    interfaceType.GetGenericTypeDefinition() == expectedOpenGeneric)
+                    interfaceType.GetGenericTypeDefinition() == expected)
                 {
                     return interfaceType;
                 }
             }
-
             return null;
         }
 
