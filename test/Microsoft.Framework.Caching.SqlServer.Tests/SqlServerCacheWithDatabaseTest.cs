@@ -45,9 +45,9 @@ namespace Microsoft.Framework.Caching.SqlServer
                 .AddEnvironmentVariables();
 
             var configuration = configurationBuilder.Build();
-            _tableName = configuration.Get(TableNameKey);
-            _schemaName = configuration.Get(SchemaNameKey);
-            _connectionString = configuration.Get(ConnectionStringKey);
+            _tableName = configuration[TableNameKey];
+            _schemaName = configuration[SchemaNameKey];
+            _connectionString = configuration[ConnectionStringKey];
         }
 
         [Fact]

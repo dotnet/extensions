@@ -47,9 +47,9 @@ namespace SqlServerCacheConcurrencySample
                 new CacheOptions(
                 new SqlServerCacheOptions()
                 {
-                    ConnectionString = Configuration.Get("ConnectionString"),
-                    SchemaName = Configuration.Get("SchemaName"),
-                    TableName = Configuration.Get("TableName")
+                    ConnectionString = Configuration["ConnectionString"],
+                    SchemaName = Configuration["SchemaName"],
+                    TableName = Configuration["TableName"]
                 }));
             cache.Connect();
 

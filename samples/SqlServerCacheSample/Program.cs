@@ -49,9 +49,9 @@ namespace SqlServerCacheSample
                 new CacheOptions(
                 new SqlServerCacheOptions()
                 {
-                    ConnectionString = Configuration.Get("ConnectionString"),
-                    SchemaName = Configuration.Get("SchemaName"),
-                    TableName = Configuration.Get("TableName")
+                    ConnectionString = Configuration["ConnectionString"],
+                    SchemaName = Configuration["SchemaName"],
+                    TableName = Configuration["TableName"]
                 }));
             await cache.ConnectAsync();
 
