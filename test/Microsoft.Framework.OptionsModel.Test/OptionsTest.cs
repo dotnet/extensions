@@ -78,7 +78,8 @@ namespace Microsoft.Framework.OptionsModel.Tests
             };
             var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
             var config = builder.Build();
-            var options = ConfigurationBinder.Bind<ComplexOptions>(config);
+            var options = new ComplexOptions();
+            ConfigurationBinder.Bind(config, options);
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
             Assert.Equal(11, options.Nested.Integer);
@@ -96,7 +97,8 @@ namespace Microsoft.Framework.OptionsModel.Tests
             };
             var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
             var config = builder.Build();
-            var options = ConfigurationBinder.Bind<DerivedOptions>(config);
+            var options = new DerivedOptions();
+            ConfigurationBinder.Bind(config, options);
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
             Assert.Equal(11, options.Nested.Integer);
@@ -112,7 +114,8 @@ namespace Microsoft.Framework.OptionsModel.Tests
             };
             var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
             var config = builder.Build();
-            var options = ConfigurationBinder.Bind<ComplexOptions>(config);
+            var options = new ComplexOptions();
+            ConfigurationBinder.Bind(config, options);
             Assert.Equal("stuff", ComplexOptions.StaticProperty);
         }
 
@@ -129,7 +132,8 @@ namespace Microsoft.Framework.OptionsModel.Tests
             };
             var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
             var config = builder.Build();
-            var options = ConfigurationBinder.Bind<ComplexOptions>(config);
+            var options = new ComplexOptions();
+            ConfigurationBinder.Bind(config, options);
             Assert.Null(options.GetType().GetProperty(property).GetValue(options));
         }
 

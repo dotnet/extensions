@@ -9,7 +9,7 @@ namespace Microsoft.Framework.OptionsModel
     public class ConfigureFromConfigurationOptions<TOptions> : ConfigureOptions<TOptions>
     {
         public ConfigureFromConfigurationOptions([NotNull] IConfiguration config)
-            : base(options => ConfigurationBinder.Bind(options, config))
+            : base(options => ConfigurationBinder.Bind(config, options))
         {
         }
     }
