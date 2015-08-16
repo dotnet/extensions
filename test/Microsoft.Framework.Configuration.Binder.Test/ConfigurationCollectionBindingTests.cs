@@ -309,6 +309,138 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             Assert.Equal(0, options.NonStringKeyDictionary.Count);
         }
 
+        [Fact]
+        public void StringArrayBinding()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"StringArray:0", "val0"},
+                {"StringArray:1", "val1"},
+                {"StringArray:2", "val2"},
+                {"StringArray:x", "valx"}
+            };
+
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
+            var options = new OptionsWithArrays();
+            config.Bind(options);
+
+            var array = options.StringArray;
+
+            Assert.Equal(4, array.Length);
+
+            Assert.Equal("val0", array[0]);
+            Assert.Equal("val1", array[1]);
+            Assert.Equal("val2", array[2]);
+            Assert.Equal("valx", array[3]);
+        }
+        
+        [Fact]
+        public void AlreadyInitializedArrayBinding()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"AlreadyInitializedArray:0", "val0"},
+                {"AlreadyInitializedArray:1", "val1"},
+                {"AlreadyInitializedArray:2", "val2"},
+                {"AlreadyInitializedArray:x", "valx"}
+            };
+
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
+
+            var options = new OptionsWithArrays();
+            config.Bind(options);
+
+            var array = options.AlreadyInitializedArray;
+
+            Assert.Equal(7, array.Length);
+
+            Assert.Equal(OptionsWithArrays.InitialValue, array[0]);
+            Assert.Equal(null, array[1]);
+            Assert.Equal(null, array[2]);
+            Assert.Equal("val0", array[3]);
+            Assert.Equal("val1", array[4]);
+            Assert.Equal("val2", array[5]);
+            Assert.Equal("valx", array[6]);
+        }
+                
+        [Fact]
+        public void ArrayInNestedOptionBinding()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"ObjectArray:0:ArrayInNestedOption:0", "0"},
+                {"ObjectArray:0:ArrayInNestedOption:1", "1"},
+                {"ObjectArray:1:ArrayInNestedOption:0", "10"},
+                {"ObjectArray:1:ArrayInNestedOption:1", "11"},
+                {"ObjectArray:1:ArrayInNestedOption:2", "12"},
+            };
+
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
+            var options = new OptionsWithArrays();
+            config.Bind(options);
+
+            Assert.Equal(2, options.ObjectArray.Length);
+            Assert.Equal(2, options.ObjectArray[0].ArrayInNestedOption.Length);
+            Assert.Equal(3, options.ObjectArray[1].ArrayInNestedOption.Length);
+
+            Assert.Equal(0, options.ObjectArray[0].ArrayInNestedOption[0]);
+            Assert.Equal(1, options.ObjectArray[0].ArrayInNestedOption[1]);
+            Assert.Equal(10, options.ObjectArray[1].ArrayInNestedOption[0]);
+            Assert.Equal(11, options.ObjectArray[1].ArrayInNestedOption[1]);
+            Assert.Equal(12, options.ObjectArray[1].ArrayInNestedOption[2]);
+        }
+        
+        [Fact]
+        public void UnsupportedMultidimensionalArrays()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"DimensionalArray:0:0", "a"},
+                {"DimensionalArray:0:1", "b"}
+            };
+
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
+            var options = new OptionsWithArrays();
+
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => config.Bind(options));
+            Assert.Equal(
+                Resources.FormatError_UnsupportedMultidimensionalArray(typeof(string[,])),
+                exception.Message);
+        }
+
+        [Fact]
+        public void JaggedArrayBinding()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"JaggedArray:0:0", "00"},
+                {"JaggedArray:0:1", "01"},
+                {"JaggedArray:1:0", "10"},
+                {"JaggedArray:1:1", "11"},
+                {"JaggedArray:1:2", "12"},
+            };
+
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
+            var options = new OptionsWithArrays();
+            config.Bind(options);
+
+            Assert.Equal(2, options.JaggedArray.Length);
+            Assert.Equal(2, options.JaggedArray[0].Length);
+            Assert.Equal(3, options.JaggedArray[1].Length);
+
+            Assert.Equal("00", options.JaggedArray[0][0]);
+            Assert.Equal("01", options.JaggedArray[0][1]);
+            Assert.Equal("10", options.JaggedArray[1][0]);
+            Assert.Equal("11", options.JaggedArray[1][1]);
+            Assert.Equal("12", options.JaggedArray[1][2]);
+        }
+
         private class CustomList : List<string>
         {
             // Add an overload, just to make sure binding picks the right Add method
@@ -326,6 +458,29 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             public int Integer { get; set; }
 
             public List<string> ListInNestedOption { get; set; }
+
+            public int[] ArrayInNestedOption { get; set; }
+        }
+
+        private class OptionsWithArrays
+        {
+            public const string InitialValue = "This was here before";
+
+            public OptionsWithArrays()
+            {
+                AlreadyInitializedArray = new string[] { InitialValue, null, null };
+            }
+
+            public string[] AlreadyInitializedArray { get; set; }
+            
+            public string[] StringArray { get; set; }
+
+            // this should throw becase we do not support multidimensional arrays
+            public string[,] DimensionalArray { get; set; }
+
+            public string[][] JaggedArray { get; set; }
+
+            public NestedOptions[] ObjectArray { get; set; }
         }
 
         private class OptionsWithLists

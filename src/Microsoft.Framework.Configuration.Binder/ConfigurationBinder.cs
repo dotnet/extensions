@@ -26,8 +26,8 @@ namespace Microsoft.Framework.Configuration
         private static void BindProperty(PropertyInfo property, object instance, IConfiguration config)
         {
             // We don't support set only, non public, or indexer properties
-            if (property.GetMethod == null || 
-                !property.GetMethod.IsPublic || 
+            if (property.GetMethod == null ||
+                !property.GetMethod.IsPublic ||
                 property.GetMethod.GetParameters().Length > 0)
             {
                 return;
@@ -59,56 +59,75 @@ namespace Microsoft.Framework.Configuration
                 // Leaf nodes are always reinitialized
                 return ReadValue(type, configValue, section);
             }
-            else
+
+            if (config.GetChildren().Any())
             {
-                if (config.GetChildren().Count() != 0)
+                if (instance == null)
                 {
-                    if (instance == null)
-                    {
-                        var typeInfo = type.GetTypeInfo();
-                        if (typeInfo.IsInterface || typeInfo.IsAbstract)
-                        {
-                            throw new InvalidOperationException(Resources.FormatError_CannotActivateAbstractOrInterface(type));
-                        }
+                    instance = CreateInstance(type);
+                }
 
-                        var hasDefaultConstructor = typeInfo.DeclaredConstructors.Any(ctor => ctor.IsPublic && ctor.GetParameters().Length == 0);
-                        if (!hasDefaultConstructor)
-                        {
-                            throw new InvalidOperationException(Resources.FormatError_MissingParameterlessConstructor(type));
-                        }
-
-                        try
-                        {
-                            instance = Activator.CreateInstance(type);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new InvalidOperationException(Resources.FormatError_FailedToActivate(type), ex);
-                        }
-                    }
-
-                    // See if its a Dictionary
-                    var collectionInterface = FindOpenGenericInterface(typeof(IDictionary<,>), type);
+                // See if its a Dictionary
+                var collectionInterface = FindOpenGenericInterface(typeof(IDictionary<,>), type);
+                if (collectionInterface != null)
+                {
+                    BindDictionary(instance, collectionInterface, config);
+                }
+                else if (type.IsArray)
+                {
+                    instance = BindArray((Array)instance, config);
+                }
+                else
+                {
+                    // See if its an ICollection
+                    collectionInterface = FindOpenGenericInterface(typeof(ICollection<>), type);
                     if (collectionInterface != null)
                     {
-                        BindDictionary(instance, collectionInterface, config);
+                        BindCollection(instance, collectionInterface, config);
                     }
+                    // Something else
                     else
                     {
-                        // See if its an ICollection
-                        collectionInterface = FindOpenGenericInterface(typeof(ICollection<>), type);
-                        if (collectionInterface != null)
-                        {
-                            BindCollection(instance, collectionInterface, config);
-                        }
-                        // Something else
-                        else
-                        {
-                            Bind(config, instance);
-                        }
+                        Bind(config, instance);
                     }
                 }
-                return instance;
+            }
+
+            return instance;
+        }
+
+        private static object CreateInstance(Type type)
+        {
+            var typeInfo = type.GetTypeInfo();
+            
+            if (typeInfo.IsInterface || typeInfo.IsAbstract)
+            {
+                throw new InvalidOperationException(Resources.FormatError_CannotActivateAbstractOrInterface(type));
+            }
+
+            if (typeInfo.IsArray)
+            {
+                if (typeInfo.GetArrayRank() > 1)
+                {
+                    throw new InvalidOperationException(Resources.FormatError_UnsupportedMultidimensionalArray(type));
+                }
+
+                return Array.CreateInstance(typeInfo.GetElementType(), 0);
+            }
+            
+            var hasDefaultConstructor = typeInfo.DeclaredConstructors.Any(ctor => ctor.IsPublic && ctor.GetParameters().Length == 0);
+            if (!hasDefaultConstructor)
+            {
+                throw new InvalidOperationException(Resources.FormatError_MissingParameterlessConstructor(type));
+            }
+
+            try
+            {
+                return Activator.CreateInstance(type);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(Resources.FormatError_FailedToActivate(type), ex);
             }
         }
 
@@ -173,6 +192,40 @@ namespace Microsoft.Framework.Configuration
                 {
                 }
             }
+        }
+
+        private static Array BindArray(Array source, IConfiguration config)
+        {
+            var children = config.GetChildren().ToArray();
+            var arrayLength = source.Length;
+            var elementType = source.GetType().GetElementType();
+            var newArray = Array.CreateInstance(elementType, arrayLength + children.Length);
+
+            // binding to array has to preserve already initialized arrays with values
+            if (arrayLength > 0)
+            {
+                Array.Copy(source, newArray, arrayLength);
+            }
+
+            for(int i = 0; i < children.Length; i++)
+            {
+                try
+                {
+                    var item = BindInstance(
+                        type: elementType,
+                        instance: null,
+                        config: children[i]);
+                    if (item != null)
+                    {
+                        newArray.SetValue(item, arrayLength + i);
+                    }
+                }
+                catch
+                {
+                }
+            }
+
+            return newArray;
         }
 
         private static object ReadValue(Type type, string value, IConfigurationSection config)

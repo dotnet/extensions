@@ -74,6 +74,22 @@ namespace Microsoft.Framework.Configuration.Binder
             return string.Format(CultureInfo.CurrentCulture, GetString("Error_MissingParameterlessConstructor"), p0);
         }
 
+        /// <summary>
+        /// Cannot create instance of type '{0}' because multidimensional arrays are not supported.
+        /// </summary>
+        internal static string Error_UnsupportedMultidimensionalArray
+        {
+            get { return GetString("Error_UnsupportedMultidimensionalArray"); }
+        }
+
+        /// <summary>
+        /// Cannot create instance of type '{0}' because multidimensional arrays are not supported.
+        /// </summary>
+        internal static string FormatError_UnsupportedMultidimensionalArray(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_UnsupportedMultidimensionalArray"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
