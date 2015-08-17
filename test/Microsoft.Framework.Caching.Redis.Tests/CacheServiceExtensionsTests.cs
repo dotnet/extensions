@@ -4,17 +4,17 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.DependencyInjection;
 using Xunit;
+
 namespace Microsoft.Framework.Caching.Redis
 {
     public class CacheServiceExtensionsTests
     {
-        
-
         [Fact]
-        public void AddRedisCache_RegistersDistributedCacheAsTransient()
+        public void AddRedisCache_RegistersDistributedCacheAsSingleton()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -26,7 +26,7 @@ namespace Microsoft.Framework.Caching.Redis
             var distributedCache = services.FirstOrDefault(desc => desc.ServiceType == typeof(IDistributedCache));
 
             Assert.NotNull(distributedCache);
-            Assert.Equal(ServiceLifetime.Transient, distributedCache.Lifetime);
+            Assert.Equal(ServiceLifetime.Singleton, distributedCache.Lifetime);
         }
 
         [Fact]
@@ -37,7 +37,7 @@ namespace Microsoft.Framework.Caching.Redis
             services.AddScoped<IDistributedCache, TestDistributedCache>();
 
             // Act
-            services.AddCaching();
+            services.AddRedisCache();
 
             // Assert
             var serviceProvider = services.BuildServiceProvider();
@@ -49,10 +49,24 @@ namespace Microsoft.Framework.Caching.Redis
             Assert.IsType<TestDistributedCache>(serviceProvider.GetRequiredService<IDistributedCache>());
         }
 
-
         private class TestDistributedCache : IDistributedCache
         {
             public void Connect()
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ConnectAsync()
+            {
+                throw new NotImplementedException();
+            }
+
+            public byte[] Get(string key)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<byte[]> GetAsync(string key)
             {
                 throw new NotImplementedException();
             }
@@ -62,12 +76,27 @@ namespace Microsoft.Framework.Caching.Redis
                 throw new NotImplementedException();
             }
 
+            public Task RefreshAsync(string key)
+            {
+                throw new NotImplementedException();
+            }
+
             public void Remove(string key)
             {
                 throw new NotImplementedException();
             }
 
-            public Stream Set(string key, object state, Action<ICacheContext> create)
+            public Task RemoveAsync(string key)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options)
             {
                 throw new NotImplementedException();
             }
