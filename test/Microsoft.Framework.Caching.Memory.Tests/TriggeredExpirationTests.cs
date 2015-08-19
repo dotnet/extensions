@@ -78,7 +78,7 @@ namespace Microsoft.Framework.Caching.Memory
             var found = cache.TryGetValue(key, out value);
             Assert.False(found);
 
-            Assert.True(callbackInvoked.WaitOne(1000), "Callback");
+            Assert.True(callbackInvoked.WaitOne(TimeSpan.FromSeconds(30)), "Callback");
         }
 
         [Fact]
@@ -106,7 +106,7 @@ namespace Microsoft.Framework.Caching.Memory
             found = cache.TryGetValue(key, out value);
             Assert.False(found);
 
-            Assert.True(callbackInvoked.WaitOne(1000), "Callback");
+            Assert.True(callbackInvoked.WaitOne(TimeSpan.FromSeconds(30)), "Callback");
         }
 
         [Fact]
@@ -132,7 +132,7 @@ namespace Microsoft.Framework.Caching.Memory
             clock.Add(TimeSpan.FromMinutes(2));
             trigger.IsExpired = true;
             var ignored = cache.Get("otherKey"); // Background expiration checks are triggered by misc cache activity.
-            Assert.True(callbackInvoked.WaitOne(1000), "Callback");
+            Assert.True(callbackInvoked.WaitOne(TimeSpan.FromSeconds(30)), "Callback");
 
             found = cache.TryGetValue(key, out value);
             Assert.False(found);
@@ -158,7 +158,7 @@ namespace Microsoft.Framework.Caching.Memory
 
             Assert.NotNull(trigger.Registration);
             Assert.True(trigger.Registration.Disposed);
-            Assert.True(callbackInvoked.WaitOne(1000), "Callback");
+            Assert.True(callbackInvoked.WaitOne(TimeSpan.FromSeconds(30)), "Callback");
         }
 
         [Fact]
@@ -182,7 +182,7 @@ namespace Microsoft.Framework.Caching.Memory
             Assert.True(trigger.IsExpiredWasCalled);
             Assert.False(trigger.ActiveExpirationCallbacksWasCalled);
             Assert.Null(trigger.Registration);
-            Assert.True(callbackInvoked.WaitOne(1000), "Callback");
+            Assert.True(callbackInvoked.WaitOne(TimeSpan.FromSeconds(30)), "Callback");
 
             result = cache.Get(key);
             Assert.Null(result); // It wasn't cached
