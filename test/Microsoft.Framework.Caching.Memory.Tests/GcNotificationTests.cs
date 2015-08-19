@@ -21,7 +21,7 @@ namespace Microsoft.Framework.Caching.Memory
             }, null);
 
             GC.Collect(2, GCCollectionMode.Forced, blocking: true);
-            Assert.True(callbackInvoked.WaitOne(1000));
+            Assert.True(callbackInvoked.WaitOne(TimeSpan.FromSeconds(30)));
         }
 
         [Fact]
@@ -41,20 +41,20 @@ namespace Microsoft.Framework.Caching.Memory
             }, null);
 
             GC.Collect(2, GCCollectionMode.Forced, blocking: true);
-            Assert.True(callbackInvoked.WaitOne(1000));
+            Assert.True(callbackInvoked.WaitOne(TimeSpan.FromSeconds(30)));
             Assert.Equal(1, callbackCount);
 
             callbackInvoked.Reset();
 
             GC.Collect(2, GCCollectionMode.Forced, blocking: true);
-            Assert.True(callbackInvoked.WaitOne(1000));
+            Assert.True(callbackInvoked.WaitOne(TimeSpan.FromSeconds(30)));
             Assert.Equal(2, callbackCount);
 
             callbackInvoked.Reset();
 
             // No callback expected the 3rd time
             GC.Collect(2, GCCollectionMode.Forced, blocking: true);
-            Assert.False(callbackInvoked.WaitOne(1000));
+            Assert.False(callbackInvoked.WaitOne(TimeSpan.FromSeconds(30)));
             Assert.Equal(2, callbackCount);
         }
     }
