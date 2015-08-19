@@ -5,6 +5,9 @@
         "type": "git",
         "url": "git://github.com/aspnet/dependencyinjection"
     },
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
     "dependencies": {
         "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
         "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" }
