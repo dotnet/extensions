@@ -110,7 +110,7 @@ namespace Microsoft.Framework.Configuration.Ini
                     if (line[0] == '[' && line[line.Length - 1] == ']')
                     {
                         // remove the brackets
-                        sectionPrefix = line.Substring(1, line.Length - 2) + ":";
+                        sectionPrefix = line.Substring(1, line.Length - 2) + Constants.KeyDelimiter;
                         continue;
                     }
 

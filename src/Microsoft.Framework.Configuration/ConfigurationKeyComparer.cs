@@ -8,14 +8,14 @@ namespace Microsoft.Framework.Configuration
 {
     public class ConfigurationKeyComparer : IComparer<string>
     {
-        private const char Separator = ':';
-
+        private static readonly string[] _keyDelimiterArray = new[] { Constants.KeyDelimiter };
+        
         public static ConfigurationKeyComparer Instance { get; } = new ConfigurationKeyComparer();
 
         public int Compare(string x, string y)
         {
-            var xParts = x?.Split(Separator) ?? new string[0];
-            var yParts = y?.Split(Separator) ?? new string[0];
+            var xParts = x?.Split(_keyDelimiterArray, StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
+            var yParts = y?.Split(_keyDelimiterArray, StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
 
             // Compare each part until we get two parts that are not equal
             for (int i = 0; i < Math.Min(xParts.Length, yParts.Length); i++)
