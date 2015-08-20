@@ -404,7 +404,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
             directoryPath = Path.Combine(_context.RootPath, directoryPath);
             var results = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(directoryPath)));
 
-            var actual = results.Files.Select(relativePath => Path.GetFullPath(Path.Combine(_context.RootPath, directoryPath, relativePath)));
+            var actual = results.Files.Select(match => Path.GetFullPath(Path.Combine(_context.RootPath, directoryPath, match.Path)));
             var expect = expectFiles.Select(relativePath => Path.GetFullPath(Path.Combine(_context.RootPath, relativePath)));
 
             AssertHelpers.SortAndEqual(expect, actual, StringComparer.OrdinalIgnoreCase);

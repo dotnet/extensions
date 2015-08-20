@@ -80,7 +80,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.PatternContexts
 
             var result = context.Test(new FakeFileInfo(filename));
 
-            Assert.Equal(expectResult, result);
+            Assert.Equal(expectResult, result.IsSuccessful);
         }
 
         [Theory]
@@ -96,7 +96,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.PatternContexts
 
             var result = context.Test(new FakeFileInfo(filename));
 
-            Assert.Equal(expectResult, result);
+            Assert.Equal(expectResult, result.IsSuccessful);
         }
 
         [Theory]

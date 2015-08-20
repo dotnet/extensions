@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility;
 using Xunit;
 
@@ -350,6 +351,118 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
                 .Execute();
 
             scenario.AssertExact("1.txt", "2.txt", "../sibling/1.txt", "../sibling/inc/1.txt");
+        }
+
+        [Fact]
+        public void MultipleRecursiveWildcardStemMatch()
+        {
+            var matcher = new Matcher();
+            var scenario = new FileSystemGlobbingTestContext(@"c:\files\", matcher)
+                .Include("sub/**/bar/**/*.txt")
+                .Files("root.txt", "sub/one.txt", "sub/two.txt", "sub/sub2/bar/baz/three.txt", "sub/sub3/sub4/bar/three.txt")
+                .Execute();
+
+            // Check the stem of the matched items
+            Assert.Equal(new[] {
+                new FilePatternMatch(path: "sub/sub2/bar/baz/three.txt", stem: "sub2/bar/baz/three.txt"),
+                new FilePatternMatch(path: "sub/sub3/sub4/bar/three.txt", stem: "sub3/sub4/bar/three.txt")
+            }, scenario.Result.Files.ToArray());
+        }
+
+        [Fact]
+        public void RecursiveWildcardStemMatch()
+        {
+            var matcher = new Matcher();
+            var scenario = new FileSystemGlobbingTestContext(@"c:\files\", matcher)
+                .Include("sub/**/*.txt")
+                .Files("root.txt", "sub/one.txt", "sub/two.txt", "sub/sub2/three.txt")
+                .Execute();
+
+            // Check the stem of the matched items
+            Assert.Equal(new[] {
+                new FilePatternMatch(path: "sub/one.txt", stem: "one.txt"),
+                new FilePatternMatch(path: "sub/two.txt", stem: "two.txt"),
+                new FilePatternMatch(path: "sub/sub2/three.txt", stem: "sub2/three.txt")
+            }, scenario.Result.Files.ToArray());
+        }
+
+        [Fact]
+        public void WildcardMidSegmentMatch()
+        {
+            var matcher = new Matcher();
+            var scenario = new FileSystemGlobbingTestContext(@"c:\files\", matcher)
+                .Include("sub/w*.txt")
+                .Files("root.txt", "sub/woah.txt", "sub/wow.txt", "sub/blah.txt")
+                .Execute();
+
+            // Check the stem of the matched items
+            Assert.Equal(new[] {
+                new FilePatternMatch(path: "sub/woah.txt", stem: "woah.txt"),
+                new FilePatternMatch(path: "sub/wow.txt", stem: "wow.txt")
+            }, scenario.Result.Files.ToArray());
+        }
+
+        [Fact]
+        public void StemMatchOnExactFile()
+        {
+            var matcher = new Matcher();
+            var scenario = new FileSystemGlobbingTestContext(@"c:\files\", matcher)
+                .Include("sub/sub/three.txt")
+                .Files("root.txt", "sub/one.txt", "sub/two.txt", "sub/sub/three.txt")
+                .Execute();
+
+            // Check the stem of the matched items
+            Assert.Equal(new[] {
+                new FilePatternMatch(path: "sub/sub/three.txt", stem: "three.txt"),
+            }, scenario.Result.Files.ToArray());
+        }
+
+        [Fact]
+        public void SimpleStemMatching()
+        {
+            var matcher = new Matcher();
+            var scenario = new FileSystemGlobbingTestContext(@"c:\files\", matcher)
+                .Include("sub/*")
+                .Files("root.txt", "sub/one.txt", "sub/two.txt", "sub/sub/three.txt")
+                .Execute();
+
+            // Check the stem of the matched items
+            Assert.Equal(new[] {
+                new FilePatternMatch(path: "sub/one.txt", stem: "one.txt"),
+                new FilePatternMatch(path: "sub/two.txt", stem: "two.txt")
+            }, scenario.Result.Files.ToArray());
+        }
+
+        [Fact]
+        public void StemMatchingWithFileExtension()
+        {
+            var matcher = new Matcher();
+            var scenario = new FileSystemGlobbingTestContext(@"c:\files\", matcher)
+                .Include("sub/*.txt")
+                .Files("root.txt", "sub/one.txt", "sub/two.txt", "sub/three.dat")
+                .Execute();
+
+            // Check the stem of the matched items
+            Assert.Equal(new[] {
+                new FilePatternMatch(path: "sub/one.txt", stem: "one.txt"),
+                new FilePatternMatch(path: "sub/two.txt", stem: "two.txt")
+            }, scenario.Result.Files.ToArray());
+        }
+
+        [Fact]
+        public void StemMatchingWithParentDir()
+        {
+            var matcher = new Matcher();
+            var scenario = new FileSystemGlobbingTestContext(@"c:\files\", matcher)
+                .Include("../files/sub/*.txt")
+                .Files("root.txt", "sub/one.txt", "sub/two.txt", "sub/three.dat")
+                .Execute();
+
+            // Check the stem of the matched items
+            Assert.Equal(new[] {
+                new FilePatternMatch(path: "../files/sub/one.txt", stem: "one.txt"),
+                new FilePatternMatch(path: "../files/sub/two.txt", stem: "two.txt")
+            }, scenario.Result.Files.ToArray());
         }
 
         // exclude: **/.*/**

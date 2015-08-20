@@ -20,6 +20,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.PatternContexts
             Value = value;
         }
 
+        public bool CanProduceStem { get { return false; } }
+
         public string Value { get; }
 
         public bool Match(string value)

@@ -12,7 +12,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal
 
         bool Test(DirectoryInfoBase directory);
 
-        bool Test(FileInfoBase file);
+        PatternTestResult Test(FileInfoBase file);
 
         void PushDirectory(DirectoryInfoBase directory);
 

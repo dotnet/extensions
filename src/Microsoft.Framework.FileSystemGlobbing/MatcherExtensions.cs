@@ -35,8 +35,8 @@ namespace Microsoft.Framework.FileSystemGlobbing
 
         public static IEnumerable<string> GetResultsInFullPath(this Matcher matcher, string directoryPath)
         {
-            var relativePaths = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(directoryPath))).Files;
-            var result = relativePaths.Select(path => Path.GetFullPath(Path.Combine(directoryPath, path))).ToArray();
+            var matches = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(directoryPath))).Files;
+            var result = matches.Select(match => Path.GetFullPath(Path.Combine(directoryPath, match.Path))).ToArray();
 
             return result;
         }

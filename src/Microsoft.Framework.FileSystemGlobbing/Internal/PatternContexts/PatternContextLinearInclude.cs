@@ -17,7 +17,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PatternContexts
         {
             if (IsStackEmpty())
             {
-                throw new InvalidOperationException("Can't declare path segment before enters any directory.");
+                throw new InvalidOperationException("Can't declare path segment before entering a directory.");
             }
 
             if (Frame.IsNotApplicable)
@@ -31,26 +31,11 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PatternContexts
             }
         }
 
-        public override bool Test(FileInfoBase file)
-        {
-            if (IsStackEmpty())
-            {
-                throw new InvalidOperationException("Can't test file before enters any directory.");
-            }
-
-            if (Frame.IsNotApplicable)
-            {
-                return false;
-            }
-
-            return IsLastSegment() && TestMatchingSegment(file.Name);
-        }
-
         public override bool Test(DirectoryInfoBase directory)
         {
             if (IsStackEmpty())
             {
-                throw new InvalidOperationException("Can't test directory before enters any directory.");
+                throw new InvalidOperationException("Can't test directory before entering a directory.");
             }
 
             if (Frame.IsNotApplicable)

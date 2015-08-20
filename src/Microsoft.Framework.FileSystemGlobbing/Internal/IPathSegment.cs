@@ -5,6 +5,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal
 {
     public interface IPathSegment
     {
+        bool CanProduceStem { get; }
+
         bool Match(string value);
     }
 }

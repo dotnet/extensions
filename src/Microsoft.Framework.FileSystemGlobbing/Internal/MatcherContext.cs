@@ -15,7 +15,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal
         private readonly DirectoryInfoBase _root;
         private readonly IList<IPatternContext> _includePatternContexts;
         private readonly IList<IPatternContext> _excludePatternContexts;
-        private readonly IList<string> _files;
+        private readonly IList<FilePatternMatch> _files;
 
         private readonly HashSet<string> _declaredLiteralFolderSegmentInString;
         private readonly HashSet<LiteralPathSegment> _declaredLiteralFolderSegments = new HashSet<LiteralPathSegment>();
@@ -32,7 +32,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal
                               StringComparison comparison)
         {
             _root = directoryInfo;
-            _files = new List<string>();
+            _files = new List<FilePatternMatch>();
             _comparisonType = comparison;
 
             _includePatternContexts = includePatterns.Select(pattern => pattern.CreatePatternContextForInclude()).ToList();
@@ -85,9 +85,12 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal
                 var fileInfo = entity as FileInfoBase;
                 if (fileInfo != null)
                 {
-                    if (MatchPatternContexts(fileInfo, (pattern, file) => pattern.Test(file)))
+                    var result = MatchPatternContexts(fileInfo, (pattern, file) => pattern.Test(file));
+                    if (result.IsSuccessful)
                     {
-                        _files.Add(CombinePath(parentRelativePath, fileInfo.Name));
+                        _files.Add(new FilePatternMatch(
+                            path: CombinePath(parentRelativePath, fileInfo.Name),
+                            stem: result.Stem));
                     }
 
                     continue;
@@ -155,7 +158,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal
             }
         }
 
-        private string CombinePath(string left, string right)
+        internal static string CombinePath(string left, string right)
         {
             if (string.IsNullOrEmpty(left))
             {
@@ -167,36 +170,55 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal
             }
         }
 
+        // Used to adapt Test(DirectoryInfoBase) for the below overload
         private bool MatchPatternContexts<TFileInfoBase>(TFileInfoBase fileinfo, Func<IPatternContext, TFileInfoBase, bool> test)
         {
-            var found = false;
+            return MatchPatternContexts(
+                fileinfo,
+                (ctx, file) =>
+                {
+                    if (test(ctx, file))
+                    {
+                        return PatternTestResult.Success(stem: string.Empty);
+                    }
+                    else
+                    {
+                        return PatternTestResult.Failed;
+                    }
+                }).IsSuccessful;
+        }
+
+        private PatternTestResult MatchPatternContexts<TFileInfoBase>(TFileInfoBase fileinfo, Func<IPatternContext, TFileInfoBase, PatternTestResult> test)
+        {
+            var result = PatternTestResult.Failed;
 
             // If the given file/directory matches any including pattern, continues to next step.
             foreach (var context in _includePatternContexts)
             {
-                if (test(context, fileinfo))
+                var localResult = test(context, fileinfo);
+                if (localResult.IsSuccessful)
                 {
-                    found = true;
+                    result = localResult;
                     break;
                 }
             }
 
             // If the given file/directory doesn't match any of the including pattern, returns false.
-            if (!found)
+            if (!result.IsSuccessful)
             {
-                return false;
+                return PatternTestResult.Failed;
             }
 
             // If the given file/directory matches any excluding pattern, returns false.
             foreach (var context in _excludePatternContexts)
             {
-                if (test(context, fileinfo))
+                if (test(context, fileinfo).IsSuccessful)
                 {
-                    return false;
+                    return PatternTestResult.Failed;
                 }
             }
 
-            return true;
+            return result;
         }
 
         private void PopDirectory()

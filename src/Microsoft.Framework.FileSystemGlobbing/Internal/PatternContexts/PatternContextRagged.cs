@@ -14,6 +14,20 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PatternContexts
             Pattern = pattern;
         }
 
+        public override PatternTestResult Test(FileInfoBase file)
+        {
+            if (IsStackEmpty())
+            {
+                throw new InvalidOperationException("Can't test file before entering a directory.");
+            }
+
+            if(!Frame.IsNotApplicable && IsEndingGroup() && TestMatchingGroup(file))
+            {
+                return PatternTestResult.Success(CalculateStem(file));
+            }
+            return PatternTestResult.Failed;
+        }
+
         public sealed override void PushDirectory(DirectoryInfoBase directory)
         {
             // copy the current frame
@@ -58,6 +72,11 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PatternContexts
                 frame.BacktrackAvailable += 1;
             }
 
+            if (frame.InStem)
+            {
+                frame.StemItems.Add(directory.Name);
+            }
+
             while (
                 frame.SegmentIndex == frame.SegmentGroup.Count &&
                 frame.SegmentGroupIndex != Pattern.Contains.Count)
@@ -72,6 +91,9 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PatternContexts
                 {
                     frame.SegmentGroup = Pattern.EndsWith;
                 }
+
+                // We now care about the stem
+                frame.InStem = true;
             }
 
             PushDataFrame(frame);
@@ -88,6 +110,20 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PatternContexts
             public int BacktrackAvailable;
 
             public int SegmentIndex;
+
+            public bool InStem;
+
+            private IList<string> _stemItems;
+
+            public IList<string> StemItems
+            {
+                get { return _stemItems ?? (_stemItems = new List<string>()); }
+            }
+
+            public string Stem
+            {
+                get { return _stemItems == null ? null : string.Join("/", _stemItems); }
+            }
         }
 
         protected IRaggedPattern Pattern { get; }
@@ -131,6 +167,11 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PatternContexts
                 scan = scan.ParentDirectory;
             }
             return true;
+        }
+
+        protected string CalculateStem(FileInfoBase matchedFile)
+        {
+            return MatcherContext.CombinePath(Frame.Stem, matchedFile.Name);
         }
     }
 }

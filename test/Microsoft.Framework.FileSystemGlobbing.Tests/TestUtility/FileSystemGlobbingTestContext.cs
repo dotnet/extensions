@@ -13,7 +13,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
         private readonly Matcher _patternMatching;
 
         private MockDirectoryInfo _directoryInfo;
-        private PatternMatchingResult _result;
+
+        public PatternMatchingResult Result { get; private set; }
 
         public FileSystemGlobbingTestContext(string basePath, Matcher matcher)
         {
@@ -63,14 +64,14 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
 
         public FileSystemGlobbingTestContext Execute()
         {
-            _result = _patternMatching.Execute(_directoryInfo);
+            Result = _patternMatching.Execute(_directoryInfo);
 
             return this;
         }
 
         public FileSystemGlobbingTestContext AssertExact(params string[] files)
         {
-            Assert.Equal(files.OrderBy(file => file), _result.Files.OrderBy(file => file));
+            Assert.Equal(files.OrderBy(file => file), Result.Files.OrderBy(file => file.Path).Select(file => file.Path));
 
             return this;
         }

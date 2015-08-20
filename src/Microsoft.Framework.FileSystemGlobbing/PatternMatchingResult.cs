@@ -7,11 +7,11 @@ namespace Microsoft.Framework.FileSystemGlobbing
 {
     public class PatternMatchingResult
     {
-        public PatternMatchingResult(IEnumerable<string> files)
+        public PatternMatchingResult(IEnumerable<FilePatternMatch> files)
         {
             Files = files;
         }
 
-        public IEnumerable<string> Files { get; set; }
+        public IEnumerable<FilePatternMatch> Files { get; set; }
     }
 }

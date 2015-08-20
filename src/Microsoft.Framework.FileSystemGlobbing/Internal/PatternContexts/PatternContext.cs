@@ -14,7 +14,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PatternContexts
 
         public virtual void Declare(Action<IPathSegment, bool> declare) { }
 
-        public abstract bool Test(FileInfoBase file);
+        public abstract PatternTestResult Test(FileInfoBase file);
 
         public abstract bool Test(DirectoryInfoBase directory);
 

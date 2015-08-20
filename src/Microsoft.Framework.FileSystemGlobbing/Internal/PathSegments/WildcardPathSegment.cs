@@ -23,6 +23,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments
             _comparisonType = comparisonType;
         }
 
+        public bool CanProduceStem { get { return true; } }
+
         public string BeginsWith { get; }
 
         public List<string> Contains { get; }

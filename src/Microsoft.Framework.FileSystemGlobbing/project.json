@@ -6,6 +6,7 @@
         "url": "git://github.com/aspnet/filesystem"
     },
     "dependencies": {
+        "Microsoft.Framework.HashCodeCombiner.Sources": { "version": "1.0.0-*", "type": "build" }
     },
     "frameworks": {
         "net45": { },

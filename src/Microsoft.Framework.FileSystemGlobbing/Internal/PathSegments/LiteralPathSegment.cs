@@ -10,6 +10,8 @@ namespace Microsoft.Framework.FileSystemGlobbing.Internal.PathSegments
     {
         private readonly StringComparison _comparisonType;
 
+        public bool CanProduceStem { get { return false; } }
+
         public LiteralPathSegment(string value, StringComparison comparisonType)
         {
             if (value == null)
