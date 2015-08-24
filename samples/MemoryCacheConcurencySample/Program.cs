@@ -45,7 +45,7 @@ namespace MemoryCacheSample
                 .RegisterPostEvictionCallback(AfterEvicted, state: null);
         }
 
-        private void AfterEvicted(string key, object value, EvictionReason reason, object state)
+        private void AfterEvicted(object key, object value, EvictionReason reason, object state)
         {
             Console.WriteLine("Evicted. Value: " + value + ", Reason: " + reason);
         }

@@ -13,7 +13,7 @@ namespace Microsoft.Framework.Caching.Memory
 {
     public class MemoryCache : IMemoryCache
     {
-        private readonly Dictionary<string, CacheEntry> _entries;
+        private readonly Dictionary<object, CacheEntry> _entries;
         private readonly ReaderWriterLockSlim _entryLock;
         private bool _disposed;
 
@@ -31,7 +31,7 @@ namespace Microsoft.Framework.Caching.Memory
         public MemoryCache([NotNull] IOptions<MemoryCacheOptions> optionsAccessor)
         {
             var options = optionsAccessor.Options;
-            _entries = new Dictionary<string, CacheEntry>(StringComparer.Ordinal);
+            _entries = new Dictionary<object, CacheEntry>();
             _entryLock = new ReaderWriterLockSlim();
             _entryExpirationNotification = EntryExpired;
             _clock = options.Clock ?? new SystemClock();
@@ -64,7 +64,7 @@ namespace Microsoft.Framework.Caching.Memory
             return EntryLinkHelpers.CreateLinkingScope();
         }
 
-        public object Set([NotNull] string key, object value, MemoryCacheEntryOptions cacheEntryOptions)
+        public object Set([NotNull] object key, object value, MemoryCacheEntryOptions cacheEntryOptions)
         {
             CheckDisposed();
             CacheEntry priorEntry = null;
@@ -147,7 +147,7 @@ namespace Microsoft.Framework.Caching.Memory
             return value;
         }
 
-        public bool TryGetValue([NotNull] string key, out object value)
+        public bool TryGetValue([NotNull] object key, out object value)
         {
             value = null;
             CacheEntry expiredEntry = null;
@@ -203,7 +203,7 @@ namespace Microsoft.Framework.Caching.Memory
             return found;
         }
 
-        public void Remove([NotNull] string key)
+        public void Remove([NotNull] object key)
         {
             CheckDisposed();
             CacheEntry entry;

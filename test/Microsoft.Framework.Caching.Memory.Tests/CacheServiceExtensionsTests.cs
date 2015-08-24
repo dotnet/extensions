@@ -81,17 +81,17 @@ namespace Microsoft.Framework.Caching.Distributed
                 throw new NotImplementedException();
             }
 
-            public void Remove(string key)
+            public void Remove(object key)
             {
                 throw new NotImplementedException();
             }
 
-            public object Set(string key, object value, MemoryCacheEntryOptions cacheEntryOptions)
+            public object Set(object key, object value, MemoryCacheEntryOptions cacheEntryOptions)
             {
                 throw new NotImplementedException();
             }
 
-            public bool TryGetValue(string key, out object value)
+            public bool TryGetValue(object key, out object value)
             {
                 throw new NotImplementedException();
             }

@@ -10,5 +10,5 @@ namespace Microsoft.Framework.Caching.Memory
     /// <param name="value"></param>
     /// <param name="reason">The <see cref="EvictionReason"/>.</param>
     /// <param name="state">The information that was passed when registering the callback.</param>
-    public delegate void PostEvictionDelegate(string key, object value, EvictionReason reason, object state);
+    public delegate void PostEvictionDelegate(object key, object value, EvictionReason reason, object state);
 }

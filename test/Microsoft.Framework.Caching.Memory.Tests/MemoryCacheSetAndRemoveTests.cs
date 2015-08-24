@@ -209,5 +209,29 @@ namespace Microsoft.Framework.Caching.Memory
             result = cache.Get(key);
             Assert.Same(obj2, result);
         }
+
+        [Fact]
+        public void SetGetAndRemoveWorks_WithNonStringKeys()
+        {
+            var cache = CreateCache();
+            var obj = new object();
+            var key = new Person { Id = 10, Name = "Mike" };
+
+            var result = cache.Set(key, obj);
+            Assert.Same(obj, result);
+
+            result = cache.Get(key);
+            Assert.Same(obj, result);
+
+            cache.Remove(key);
+            result = cache.Get(key);
+            Assert.Null(result);
+        }
+
+        private class Person
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+        }
     }
 }

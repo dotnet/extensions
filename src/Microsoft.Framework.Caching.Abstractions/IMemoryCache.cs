@@ -16,24 +16,24 @@ namespace Microsoft.Framework.Caching.Memory
         /// <summary>
         /// Create or overwrite an entry in the cache.
         /// </summary>
-        /// <param name="key">A string identifying the entry. This is case sensitive.</param>
+        /// <param name="key">An object identifying the entry.</param>
         /// <param name="value">The value to be cached.</param>
         /// <param name="options">The <see cref="MemoryCacheEntryOptions"/>.</param>
         /// <returns>The object that was cached.</returns>
-        object Set(string key, object value, MemoryCacheEntryOptions options);
+        object Set(object key, object value, MemoryCacheEntryOptions options);
 
         /// <summary>
         /// Gets the item associated with this key if present.
         /// </summary>
-        /// <param name="key">A string identifying the requested entry.</param>
+        /// <param name="key">An object identifying the requested entry.</param>
         /// <param name="value">The located value or null.</param>
         /// <returns>True if the key was found.</returns>
-        bool TryGetValue(string key, out object value);
+        bool TryGetValue(object key, out object value);
 
         /// <summary>
         /// Removes the object associated with the given key.
         /// </summary>
-        /// <param name="key">A string identifying the entry. This is case sensitive.</param>
-        void Remove(string key);
+        /// <param name="key">An object identifying the entry.</param>
+        void Remove(object key);
     }
 }

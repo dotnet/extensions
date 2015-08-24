@@ -17,7 +17,7 @@ namespace Microsoft.Framework.Caching.Memory
         private readonly DateTimeOffset? _absoluteExpiration;
 
         internal CacheEntry(
-            string key,
+            object key,
             object value,
             DateTimeOffset utcNow,
             DateTimeOffset? absoluteExpiration,
@@ -35,7 +35,7 @@ namespace Microsoft.Framework.Caching.Memory
 
         internal MemoryCacheEntryOptions Options { get; private set; }
 
-        internal string Key { get; private set; }
+        internal object Key { get; private set; }
 
         internal object Value { get; private set; }
 
