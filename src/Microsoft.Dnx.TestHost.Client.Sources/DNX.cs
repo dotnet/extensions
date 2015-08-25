@@ -23,7 +23,9 @@ namespace Microsoft.Dnx.TestHost.Client
 
             process.Start();
             process.WaitForExit();
-            return process.StandardOutput.ReadToEnd().TrimEnd('\r', '\n');
+            // Get the first result only. Workaround for multiple results until IRuntimeEnvironment
+            // exposes the path to DNX
+            return process.StandardOutput.ReadLine().TrimEnd('\r', '\n');
         }
 
         public static string FindDnxDirectory()
