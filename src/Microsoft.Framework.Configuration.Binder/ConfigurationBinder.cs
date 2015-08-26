@@ -12,13 +12,60 @@ namespace Microsoft.Framework.Configuration
 {
     public static class ConfigurationBinder
     {
-        public static void Bind(this IConfiguration configuration, object model)
+        public static void Bind(this IConfiguration configuration, object instance)
         {
-            if (model != null)
+            if (configuration == null)
             {
-                foreach (var property in GetAllProperties(model.GetType().GetTypeInfo()))
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            if (instance != null)
+            {
+                BindInstance(instance.GetType(), instance, configuration);
+            }
+        }
+
+        public static T Get<T>(this IConfiguration configuration)
+        {
+            var value = Get(configuration, typeof(T));
+            if (value == null)
+            {
+                return default(T);
+            }
+
+            return (T)value;
+        }
+
+        public static T Get<T>(this IConfiguration configuration, string key)
+        {
+            return Get<T>(configuration.GetSection(key));
+        }
+
+        public static object Get(this IConfiguration configuration, Type type)
+        {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            return BindInstance(
+                type: type,
+                instance: null,
+                config: configuration);
+        }
+
+        public static object Get(this IConfiguration configuration, Type type, string key)
+        {
+            return Get(configuration.GetSection(key), type);
+        }
+
+        private static void BindNonScalar(this IConfiguration configuration, object instance)
+        {
+            if (instance != null)
+            {
+                foreach (var property in GetAllProperties(instance.GetType().GetTypeInfo()))
                 {
-                    BindProperty(property, model, configuration);
+                    BindProperty(property, instance, configuration);
                 }
             }
         }
@@ -60,7 +107,7 @@ namespace Microsoft.Framework.Configuration
                 return ReadValue(type, configValue, section);
             }
 
-            if (config.GetChildren().Any())
+            if (config != null && config.GetChildren().Any())
             {
                 if (instance == null)
                 {
@@ -88,7 +135,7 @@ namespace Microsoft.Framework.Configuration
                     // Something else
                     else
                     {
-                        Bind(config, instance);
+                        BindNonScalar(config, instance);
                     }
                 }
             }
@@ -99,7 +146,7 @@ namespace Microsoft.Framework.Configuration
         private static object CreateInstance(Type type)
         {
             var typeInfo = type.GetTypeInfo();
-            
+
             if (typeInfo.IsInterface || typeInfo.IsAbstract)
             {
                 throw new InvalidOperationException(Resources.FormatError_CannotActivateAbstractOrInterface(type));
@@ -114,7 +161,7 @@ namespace Microsoft.Framework.Configuration
 
                 return Array.CreateInstance(typeInfo.GetElementType(), 0);
             }
-            
+
             var hasDefaultConstructor = typeInfo.DeclaredConstructors.Any(ctor => ctor.IsPublic && ctor.GetParameters().Length == 0);
             if (!hasDefaultConstructor)
             {
@@ -207,7 +254,7 @@ namespace Microsoft.Framework.Configuration
                 Array.Copy(source, newArray, arrayLength);
             }
 
-            for(int i = 0; i < children.Length; i++)
+            for (int i = 0; i < children.Length; i++)
             {
                 try
                 {

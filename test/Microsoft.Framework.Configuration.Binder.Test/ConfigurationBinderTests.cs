@@ -20,6 +20,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 Nested = new NestedOptions();
                 Virtual = "complex";
             }
+
             public NestedOptions Nested { get; set; }
             public int Integer { get; set; }
             public bool Boolean { get; set; }
@@ -73,6 +74,72 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             public T Value { get; set; }
         }
 
+        [Fact]
+        public void GetScalarNullable()
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {"Integer", "-2"},
+                {"Boolean", "TRUe"},
+                {"Nested:Integer", "11"}
+            };
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
+
+            Assert.True(config.Get<bool?>("Boolean"));
+            Assert.Equal(-2, config.Get<int?>("Integer"));
+            Assert.Equal(11, config.Get<int?>("Nested:Integer"));
+        }
+
+        [Fact]
+        public void GetNullValue()
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {"Integer", null},
+                {"Boolean", null},
+                {"Nested:Integer", null},
+                {"Object", null }
+            };
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
+
+            Assert.False(config.Get<bool>("Boolean"));
+            Assert.Equal(0, config.Get<int>("Integer"));
+            Assert.Equal(0, config.Get<int>("Nested:Integer"));
+            Assert.Null(config.Get<ComplexOptions>("Object"));
+        }
+
+        [Fact]
+        public void GetDefaultsWhenDataDoesNotExist()
+        {
+            var dic = new Dictionary<string, string>
+            {
+            };
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
+
+            Assert.False(config.Get<bool>("Boolean"));
+            Assert.Equal(0, config.Get<int>("Integer"));
+            Assert.Equal(0, config.Get<int>("Nested:Integer"));
+            Assert.Null(config.Get<ComplexOptions>("Object"));
+        }
+
+        [Fact]
+        public void GetUri()
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {"AnUri", "http://www.bing.com"}
+            };
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
+
+            var uri = config.Get<Uri>("AnUri");
+
+            Assert.Equal("http://www.bing.com", uri.OriginalString);
+        }
+        
         [Theory]
         [InlineData("2147483647", typeof(int))]
         [InlineData("4294967295", typeof(uint))]
@@ -90,6 +157,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
         [InlineData("2015-12-24T07:34:42-5:00", typeof(DateTime))]
         [InlineData("12/24/2015 13:44:55 +4", typeof(DateTimeOffset))]
         [InlineData("99.22:22:22.1234567", typeof(TimeSpan))]
+        [InlineData("http://www.bing.com", typeof(Uri))]
         // enum test
         [InlineData("Constructor", typeof(AttributeTargets))]
         [InlineData("CA761232-ED42-11CE-BACD-00AA0057B223", typeof(Guid))]
@@ -110,9 +178,11 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             // act
             config.Bind(options);
             var optionsValue = options.GetType().GetProperty("Value").GetValue(options);
-            
-            // assert            
+            var getValue = config.Get(type, "Value");
+
+            // assert
             Assert.Equal(expectedValue, optionsValue);
+            Assert.Equal(expectedValue, getValue);
         }
 
         [Theory]
@@ -147,16 +217,23 @@ namespace Microsoft.Framework.Configuration.Binder.Test
 
             var optionsType = typeof(GenericOptions<>).MakeGenericType(type);
             var options = Activator.CreateInstance(optionsType);
-            
+
             // act
             var exception = Assert.Throws<InvalidOperationException>(
                 () => config.Bind(options));
 
+            var getException = Assert.Throws<InvalidOperationException>(
+                () => config.Get(type, "Value"));
+
             // assert
             Assert.NotNull(exception.InnerException);
+            Assert.NotNull(getException.InnerException);
             Assert.Equal(
                 Resources.FormatError_FailedBinding(IncorrectValue, type),
                 exception.Message);
+            Assert.Equal(
+                Resources.FormatError_FailedBinding(IncorrectValue, type),
+                getException.Message);
         }
 
         [Fact]
@@ -168,7 +245,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
         }
 
         [Fact]
-        public void CanReadComplexProperties()
+        public void BindCanReadComplexProperties()
         {
             var dic = new Dictionary<string, string>
             {
@@ -178,15 +255,36 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             };
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
             var config = builder.Build();
-            var options = new ComplexOptions();
-            config.Bind(options);
+            
+            var instance = new ComplexOptions();
+            config.Bind(instance);
+            
+            Assert.True(instance.Boolean);
+            Assert.Equal(-2, instance.Integer);
+            Assert.Equal(11, instance.Nested.Integer);
+        }
+
+        [Fact]
+        public void GetCanReadComplexProperties()
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {"Integer", "-2"},
+                {"Boolean", "TRUe"},
+                {"Nested:Integer", "11"}
+            };
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
+
+            var options = config.Get<ComplexOptions>();
+
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
             Assert.Equal(11, options.Nested.Integer);
         }
 
         [Fact]
-        public void CanReadInheritedProperties()
+        public void BindCanReadInheritedProperties()
         {
             var dic = new Dictionary<string, string>
             {
@@ -197,8 +295,31 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             };
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
             var config = builder.Build();
-            var options = new DerivedOptions();
-            config.Bind(options);
+            
+            var instance = new DerivedOptions();
+            config.Bind(instance);
+            
+            Assert.True(instance.Boolean);
+            Assert.Equal(-2, instance.Integer);
+            Assert.Equal(11, instance.Nested.Integer);
+            Assert.Equal("Derived:Sup", instance.Virtual);
+        }
+
+        [Fact]
+        public void GetCanReadInheritedProperties()
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {"Integer", "-2"},
+                {"Boolean", "TRUe"},
+                {"Nested:Integer", "11"},
+                {"Virtual", "Sup"}
+            };
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
+
+            var options = config.Get<DerivedOptions>();
+
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
             Assert.Equal(11, options.Nested.Integer);
@@ -206,7 +327,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
         }
 
         [Fact]
-        public void CanReadStaticProperty()
+        public void GetCanReadStaticProperty()
         {
             var dic = new Dictionary<string, string>
             {
@@ -214,9 +335,26 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             };
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
             var config = builder.Build();
-            var options = new ComplexOptions();
-            config.Bind(options);
+
+            var options = config.Get<ComplexOptions>();
+
             Assert.Equal("stuff", ComplexOptions.StaticProperty);
+        }
+
+        [Fact]
+        public void BindCanReadStaticProperty()
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {"StaticProperty", "other stuff"},
+            };
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
+
+            var instance = new ComplexOptions();
+            config.Bind(instance);
+
+            Assert.Equal("other stuff", ComplexOptions.StaticProperty);
         }
 
         [Theory]
@@ -224,7 +362,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
         [InlineData("PrivateSetter")]
         [InlineData("ProtectedSetter")]
         [InlineData("InternalSetter")]
-        public void ShouldBeIgnoredTests(string property)
+        public void GetIgnoresTests(string property)
         {
             var dic = new Dictionary<string, string>
             {
@@ -232,8 +370,28 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             };
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
             var config = builder.Build();
+
+            var options = config.Get<ComplexOptions>();
+            Assert.Null(options.GetType().GetTypeInfo().GetDeclaredProperty(property).GetValue(options));
+        }
+
+        [Theory]
+        [InlineData("ReadOnly")]
+        [InlineData("PrivateSetter")]
+        [InlineData("ProtectedSetter")]
+        [InlineData("InternalSetter")]
+        public void BindIgnoresTests(string property)
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {property, "stuff"},
+            };
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(dic));
+            var config = builder.Build();
+
             var options = new ComplexOptions();
             config.Bind(options);
+
             Assert.Null(options.GetType().GetTypeInfo().GetDeclaredProperty(property).GetValue(options));
         }
 
@@ -249,7 +407,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             var config = builder.Build();
 
             var exception = Assert.Throws<InvalidOperationException>(
-                () => config.Bind(new TestOptions()));
+                () => config.Get<TestOptions>());
             Assert.Equal(
                 Resources.FormatError_CannotActivateAbstractOrInterface(typeof(ISomeInterface)),
                 exception.Message);
@@ -267,7 +425,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             var config = builder.Build();
 
             var exception = Assert.Throws<InvalidOperationException>(
-                () => config.Bind(new TestOptions()));
+                () => config.Get<TestOptions>());
             Assert.Equal(
                 Resources.FormatError_MissingParameterlessConstructor(typeof(ClassWithoutPublicConstructor)),
                 exception.Message);
@@ -285,7 +443,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             var config = builder.Build();
 
             var exception = Assert.Throws<InvalidOperationException>(
-                () => config.Bind(new TestOptions()));
+                () => config.Get<TestOptions>());
             Assert.NotNull(exception.InnerException);
             Assert.Equal(
                 Resources.FormatError_FailedToActivate(typeof(ThrowsWhenActivated)),
@@ -304,7 +462,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             var config = builder.Build();
 
             var exception = Assert.Throws<InvalidOperationException>(
-                () => config.Bind(new TestOptions()));
+                () => config.Get<TestOptions>());
             Assert.Equal(
                 Resources.FormatError_CannotActivateAbstractOrInterface(typeof(ISomeInterface)),
                 exception.Message);

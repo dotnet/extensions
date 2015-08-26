@@ -12,7 +12,173 @@ namespace Microsoft.Framework.Configuration.Binder.Test
     public class ConfigurationCollectionBinding
     {
         [Fact]
-        public void StringListBinding()
+        public void GetList()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"StringList:0", "val0"},
+                {"StringList:1", "val1"},
+                {"StringList:2", "val2"},
+                {"StringList:x", "valx"}
+            };
+
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
+            var list = config.Get<List<string>>("StringList");
+
+            Assert.Equal(4, list.Count);
+
+            Assert.Equal("val0", list[0]);
+            Assert.Equal("val1", list[1]);
+            Assert.Equal("val2", list[2]);
+            Assert.Equal("valx", list[3]);
+        }
+        
+        [Fact]
+        public void GetListNullValues()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"StringList:0", null},
+                {"StringList:1", null},
+                {"StringList:2", null},
+                {"StringList:x", null}
+            };
+
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
+            var list = config.Get<List<string>>("StringList");
+
+            Assert.Equal(0, list.Count);
+        }
+
+        [Fact]
+        public void GetListInvalidValues()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"InvalidList:0", "true"},
+                {"InvalidList:1", "invalid"},
+            };
+
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
+            var list = config.Get<List<bool>>("InvalidList");
+
+            Assert.Equal(1, list.Count);
+            Assert.Equal(true, list[0]);
+        }
+
+        [Fact]
+        public void GetListDataDoesNotExist()
+        {
+            var input = new Dictionary<string, string>
+            {
+            };
+
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
+            var list = config.Get<List<string>>("StringList");
+
+            Assert.Null(list);
+        }
+
+        [Fact]
+        public void BindList()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"StringList:0", "val0"},
+                {"StringList:1", "val1"},
+                {"StringList:2", "val2"},
+                {"StringList:x", "valx"}
+            };
+
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
+
+            var list = new List<string>();
+            config.GetSection("StringList").Bind(list);
+
+            Assert.Equal(4, list.Count);
+
+            Assert.Equal("val0", list[0]);
+            Assert.Equal("val1", list[1]);
+            Assert.Equal("val2", list[2]);
+            Assert.Equal("valx", list[3]);
+        }
+
+        [Fact]
+        public void GetObjectList()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"ObjectList:0:Integer", "30"},
+                {"ObjectList:1:Integer", "31"},
+                {"ObjectList:2:Integer", "32"},
+            };
+
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
+
+            var options = config.Get<List<NestedOptions>>("ObjectList");
+
+            Assert.Equal(3, options.Count);
+
+            Assert.Equal(30, options[0].Integer);
+            Assert.Equal(31, options[1].Integer);
+            Assert.Equal(32, options[2].Integer);
+        }
+
+        [Fact]
+        public void GetStringDictionary()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"StringDictionary:abc", "val_1"},
+                {"StringDictionary:def", "val_2"},
+                {"StringDictionary:ghi", "val_3"}
+            };
+
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
+
+            var options = config.Get<Dictionary<string, string>>("StringDictionary");
+
+            Assert.Equal(3, options.Count);
+
+            Assert.Equal("val_1", options["abc"]);
+            Assert.Equal("val_2", options["def"]);
+            Assert.Equal("val_3", options["ghi"]);
+        }
+
+        [Fact]
+        public void GetStringList()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"StringList:0", "val0"},
+                {"StringList:1", "val1"},
+                {"StringList:2", "val2"},
+                {"StringList:x", "valx"}
+            };
+
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
+            var options = config.Get<OptionsWithLists>();
+
+            var list = options.StringList;
+
+            Assert.Equal(4, list.Count);
+
+            Assert.Equal("val0", list[0]);
+            Assert.Equal("val1", list[1]);
+            Assert.Equal("val2", list[2]);
+            Assert.Equal("valx", list[3]);
+        }
+
+        [Fact]
+        public void BindStringList()
         {
             var input = new Dictionary<string, string>
             {
@@ -38,7 +204,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
         }
 
         [Fact]
-        public void IntListBinding()
+        public void GetIntList()
         {
             var input = new Dictionary<string, string>
             {
@@ -51,6 +217,32 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
             var config = builder.Build();
 
+            var options = config.Get<OptionsWithLists>();
+
+            var list = options.IntList;
+
+            Assert.Equal(4, list.Count);
+
+            Assert.Equal(42, list[0]);
+            Assert.Equal(43, list[1]);
+            Assert.Equal(44, list[2]);
+            Assert.Equal(45, list[3]);
+        }
+
+        [Fact]
+        public void BindIntList()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"IntList:0", "42"},
+                {"IntList:1", "43"},
+                {"IntList:2", "44"},
+                {"IntList:x", "45"}
+            };
+
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
+            
             var options = new OptionsWithLists();
             config.Bind(options);
 
@@ -78,8 +270,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
             var config = builder.Build();
 
-            var options = new OptionsWithLists();
-            config.Bind(options);
+            var options = config.Get<OptionsWithLists>();
 
             var list = options.AlreadyInitializedList;
 
@@ -106,8 +297,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
             var config = builder.Build();
 
-            var options = new OptionsWithLists();
-            config.Bind(options);
+            var options = config.Get<OptionsWithLists>();
 
             var list = options.CustomList;
 
@@ -131,8 +321,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
 
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
             var config = builder.Build();
-            var options = new OptionsWithLists();
-            config.Bind(options);
+
+            var options = config.Get<OptionsWithLists>();
 
             Assert.Equal(3, options.ObjectList.Count);
 
@@ -155,8 +345,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
 
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
             var config = builder.Build();
-            var options = new OptionsWithLists();
-            config.Bind(options);
+
+            var options = config.Get<OptionsWithLists>();
 
             Assert.Equal(2, options.NestedLists.Count);
             Assert.Equal(2, options.NestedLists[0].Count);
@@ -181,8 +371,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
 
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
             var config = builder.Build();
-            var options = new OptionsWithDictionary();
-            config.Bind(options);
+
+            var options = config.Get<OptionsWithDictionary>();
 
             Assert.Equal(3, options.StringDictionary.Count);
 
@@ -203,8 +393,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
 
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
             var config = builder.Build();
-            var options = new OptionsWithDictionary();
-            config.Bind(options);
+
+            var options = config.Get<OptionsWithDictionary>();
 
             Assert.Equal(3, options.IntDictionary.Count);
 
@@ -225,8 +415,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
 
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
             var config = builder.Build();
-            var options = new OptionsWithDictionary();
-            config.Bind(options);
+
+            var options = config.Get<OptionsWithDictionary>();
 
             Assert.Equal(3, options.ObjectDictionary.Count);
 
@@ -249,8 +439,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
 
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
             var config = builder.Build();
-            var options = new OptionsWithDictionary();
-            config.Bind(options);
+
+            var options = config.Get<OptionsWithDictionary>();
 
             Assert.Equal(2, options.ListDictionary.Count);
             Assert.Equal(2, options.ListDictionary["abc"].Count);
@@ -277,8 +467,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
 
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
             var config = builder.Build();
-            var options = new OptionsWithLists();
-            config.Bind(options);
+
+            var options = config.Get<OptionsWithLists>();
 
             Assert.Equal(2, options.ObjectList.Count);
             Assert.Equal(2, options.ObjectList[0].ListInNestedOption.Count);
@@ -303,14 +493,14 @@ namespace Microsoft.Framework.Configuration.Binder.Test
 
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
             var config = builder.Build();
-            var options = new OptionsWithDictionary();
-            config.Bind(options);
+
+            var options = config.Get<OptionsWithDictionary>();
 
             Assert.Equal(0, options.NonStringKeyDictionary.Count);
         }
 
         [Fact]
-        public void StringArrayBinding()
+        public void GetStringArray()
         {
             var input = new Dictionary<string, string>
             {
@@ -322,8 +512,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
 
             var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
             var config = builder.Build();
-            var options = new OptionsWithArrays();
-            config.Bind(options);
+
+            var options = config.Get<OptionsWithArrays>();
 
             var array = options.StringArray;
 
@@ -334,9 +524,65 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             Assert.Equal("val2", array[2]);
             Assert.Equal("valx", array[3]);
         }
-        
+
+
         [Fact]
-        public void AlreadyInitializedArrayBinding()
+        public void BindStringArray()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"StringArray:0", "val0"},
+                {"StringArray:1", "val1"},
+                {"StringArray:2", "val2"},
+                {"StringArray:x", "valx"}
+            };
+
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
+            
+            var instance = new OptionsWithArrays();
+            config.Bind(instance);
+            
+            var array = instance.StringArray;
+
+            Assert.Equal(4, array.Length);
+
+            Assert.Equal("val0", array[0]);
+            Assert.Equal("val1", array[1]);
+            Assert.Equal("val2", array[2]);
+            Assert.Equal("valx", array[3]);
+        }
+
+        [Fact]
+        public void GetAlreadyInitializedArray()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"AlreadyInitializedArray:0", "val0"},
+                {"AlreadyInitializedArray:1", "val1"},
+                {"AlreadyInitializedArray:2", "val2"},
+                {"AlreadyInitializedArray:x", "valx"}
+            };
+
+            var builder = new ConfigurationBuilder(new MemoryConfigurationSource(input));
+            var config = builder.Build();
+
+            var options = config.Get<OptionsWithArrays>();
+            var array = options.AlreadyInitializedArray;
+
+            Assert.Equal(7, array.Length);
+
+            Assert.Equal(OptionsWithArrays.InitialValue, array[0]);
+            Assert.Equal(null, array[1]);
+            Assert.Equal(null, array[2]);
+            Assert.Equal("val0", array[3]);
+            Assert.Equal("val1", array[4]);
+            Assert.Equal("val2", array[5]);
+            Assert.Equal("valx", array[6]);
+        }
+
+        [Fact]
+        public void BindAlreadyInitializedArray()
         {
             var input = new Dictionary<string, string>
             {
@@ -364,7 +610,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             Assert.Equal("val2", array[5]);
             Assert.Equal("valx", array[6]);
         }
-                
+
         [Fact]
         public void ArrayInNestedOptionBinding()
         {
@@ -392,7 +638,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             Assert.Equal(11, options.ObjectArray[1].ArrayInNestedOption[1]);
             Assert.Equal(12, options.ObjectArray[1].ArrayInNestedOption[2]);
         }
-        
+
         [Fact]
         public void UnsupportedMultidimensionalArrays()
         {
@@ -472,7 +718,7 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             }
 
             public string[] AlreadyInitializedArray { get; set; }
-            
+
             public string[] StringArray { get; set; }
 
             // this should throw becase we do not support multidimensional arrays
