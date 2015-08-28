@@ -19,6 +19,7 @@ namespace Microsoft.Framework.DependencyInjection
     {
         private readonly object _sync = new object();
 
+        private readonly Func<Type, Func<ServiceProvider, object>> _createServiceAccessor;
         private readonly ServiceProvider _root;
         private readonly ServiceTable _table;
 
@@ -33,6 +34,9 @@ namespace Microsoft.Framework.DependencyInjection
             _table.Add(typeof(IServiceProvider), new ServiceProviderService());
             _table.Add(typeof(IServiceScopeFactory), new ServiceScopeService());
             _table.Add(typeof(IEnumerable<>), new OpenIEnumerableService(_table));
+
+            // Caching to avoid allocating a Func<,> object per call to GetService
+            _createServiceAccessor = CreateServiceAccessor;
         }
 
         // This constructor is called exclusively to create a child scope from the parent
@@ -40,6 +44,9 @@ namespace Microsoft.Framework.DependencyInjection
         {
             _root = parent._root;
             _table = parent._table;
+
+            // Caching to avoid allocating a Func<,> object per call to GetService
+            _createServiceAccessor = CreateServiceAccessor;
         }
 
         /// <summary>
@@ -49,17 +56,19 @@ namespace Microsoft.Framework.DependencyInjection
         /// <returns></returns>
         public object GetService(Type serviceType)
         {
-            var realizedService = _table.RealizedServices.GetOrAdd(serviceType, key =>
-            {
-                var callSite = GetServiceCallSite(key, new HashSet<Type>());
-                if (callSite != null)
-                {
-                    return RealizeService(_table, key, callSite);
-                }
-                return _ => null;
-            });
-
+            var realizedService = _table.RealizedServices.GetOrAdd(serviceType, _createServiceAccessor);
             return realizedService.Invoke(this);
+        }
+
+        private Func<ServiceProvider, object> CreateServiceAccessor(Type serviceType)
+        {
+            var callSite = GetServiceCallSite(serviceType, new HashSet<Type>());
+            if (callSite != null)
+            {
+                return RealizeService(_table, serviceType, callSite);
+            }
+
+            return _ => null;
         }
 
         internal static Func<ServiceProvider, object> RealizeService(ServiceTable table, Type serviceType, IServiceCallSite callSite)
