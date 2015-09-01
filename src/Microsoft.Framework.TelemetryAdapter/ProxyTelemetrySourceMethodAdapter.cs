@@ -6,9 +6,9 @@
 using System;
 using System.Reflection;
 
-namespace Microsoft.Framework.Notification
+namespace Microsoft.Framework.TelemetryAdapter
 {
-    public class ProxyNotifierMethodAdapter : INotifierMethodAdapter
+    public class ProxyTelemetrySourceMethodAdapter : ITelemetrySourceMethodAdapter
     {
         public Func<object, object, bool> Adapt(MethodInfo method, Type inputType)
         {

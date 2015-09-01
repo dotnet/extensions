@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Framework.Internal;
 
-namespace Microsoft.Framework.Notification.Internal
+namespace Microsoft.Framework.TelemetryAdapter.Internal
 {
     public class ProxyList<TSourceElement, TTargetElement> : IReadOnlyList<TTargetElement>
     {

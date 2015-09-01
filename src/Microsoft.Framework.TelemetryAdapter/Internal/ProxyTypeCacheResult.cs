@@ -4,7 +4,7 @@
 using System;
 using System.Reflection;
 
-namespace Microsoft.Framework.Notification.Internal
+namespace Microsoft.Framework.TelemetryAdapter.Internal
 {
     public class ProxyTypeCacheResult
     {

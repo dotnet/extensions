@@ -10,9 +10,9 @@
 using System;
 using System.Reflection;
 
-namespace Microsoft.Framework.Notification
+namespace Microsoft.Framework.TelemetryAdapter
 {
-    public class ReflectionNotifierMethodAdapter : INotifierMethodAdapter
+    public class ReflectionTelemetrySourceMethodAdapter : ITelemetrySourceMethodAdapter
     {
         public Func<object, object, bool> Adapt(MethodInfo method, Type inputType)
         {

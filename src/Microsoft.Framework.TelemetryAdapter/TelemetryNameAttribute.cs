@@ -3,11 +3,11 @@
 
 using System;
 
-namespace Microsoft.Framework.Notification
+namespace Microsoft.Framework.TelemetryAdapter
 {
-    public class NotificationNameAttribute : Attribute
+    public class TelemetryNameAttribute : Attribute
     {
-        public NotificationNameAttribute(string name)
+        public TelemetryNameAttribute(string name)
         {
             Name = name;
         }

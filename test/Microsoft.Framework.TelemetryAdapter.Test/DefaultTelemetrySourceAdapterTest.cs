@@ -3,7 +3,7 @@
 
 using Xunit;
 
-namespace Microsoft.Framework.Notification
+namespace Microsoft.Framework.TelemetryAdapter
 {
     public class NotifierTest
     {
@@ -11,7 +11,7 @@ namespace Microsoft.Framework.Notification
         {
             public int OneCallCount { get; private set; }
 
-            [NotificationName("One")]
+            [TelemetryName("One")]
             public void One()
             {
                 ++OneCallCount;
@@ -23,13 +23,13 @@ namespace Microsoft.Framework.Notification
         {
             var notifier = CreateNotifier();
 
-            Assert.False(notifier.ShouldNotify("One"));
-            Assert.False(notifier.ShouldNotify("Two"));
+            Assert.False(notifier.IsEnabled("One"));
+            Assert.False(notifier.IsEnabled("Two"));
 
             notifier.EnlistTarget(new OneTarget());
 
-            Assert.True(notifier.ShouldNotify("One"));
-            Assert.False(notifier.ShouldNotify("Two"));
+            Assert.True(notifier.IsEnabled("One"));
+            Assert.False(notifier.IsEnabled("Two"));
         }
 
         [Fact]
@@ -41,7 +41,7 @@ namespace Microsoft.Framework.Notification
             notifier.EnlistTarget(target);
 
             Assert.Equal(0, target.OneCallCount);
-            notifier.Notify("One", new { });
+            notifier.WriteTelemetry("One", new { });
             Assert.Equal(1, target.OneCallCount);
         }
 
@@ -54,7 +54,7 @@ namespace Microsoft.Framework.Notification
             notifier.EnlistTarget(target);
 
             Assert.Equal(0, target.OneCallCount);
-            notifier.Notify("Two", new { });
+            notifier.WriteTelemetry("Two", new { });
             Assert.Equal(0, target.OneCallCount);
         }
 
@@ -64,7 +64,7 @@ namespace Microsoft.Framework.Notification
             public string Beta { get; private set; }
             public int Delta { get; private set; }
 
-            [NotificationName("Two")]
+            [TelemetryName("Two")]
             public void Two(string alpha, string beta, int delta)
             {
                 Alpha = alpha;
@@ -81,7 +81,7 @@ namespace Microsoft.Framework.Notification
 
             notifier.EnlistTarget(target);
 
-            notifier.Notify("Two", new { alpha = "ALPHA", beta = "BETA", delta = -1 });
+            notifier.WriteTelemetry("Two", new { alpha = "ALPHA", beta = "BETA", delta = -1 });
 
             Assert.Equal("ALPHA", target.Alpha);
             Assert.Equal("BETA", target.Beta);
@@ -96,7 +96,7 @@ namespace Microsoft.Framework.Notification
 
             notifier.EnlistTarget(target);
 
-            notifier.Notify("Two", new { alpha = "ALPHA", beta = "BETA", delta = -1, extra = this });
+            notifier.WriteTelemetry("Two", new { alpha = "ALPHA", beta = "BETA", delta = -1, extra = this });
 
             Assert.Equal("ALPHA", target.Alpha);
             Assert.Equal("BETA", target.Beta);
@@ -110,7 +110,7 @@ namespace Microsoft.Framework.Notification
             var target = new TwoTarget();
 
             notifier.EnlistTarget(target);
-            notifier.Notify("Two", new { alpha = "ALPHA", delta = -1 });
+            notifier.WriteTelemetry("Two", new { alpha = "ALPHA", delta = -1 });
 
             Assert.Equal("ALPHA", target.Alpha);
             Assert.Null(target.Beta);
@@ -124,7 +124,7 @@ namespace Microsoft.Framework.Notification
             var target = new ThreeTarget();
 
             notifier.EnlistTarget(target);
-            notifier.Notify("Three", new
+            notifier.WriteTelemetry("Three", new
             {
                 person = new Person
                 {
@@ -148,7 +148,7 @@ namespace Microsoft.Framework.Notification
         {
             public IPerson Person { get; private set; }
 
-            [NotificationName("Three")]
+            [TelemetryName("Three")]
             public void Three(IPerson person)
             {
                 Person = person;
@@ -198,9 +198,9 @@ namespace Microsoft.Framework.Notification
             public int Value { get; private set; }
         }
 
-        private static INotifier CreateNotifier()
+        private static TelemetrySourceAdapter CreateNotifier()
         {
-            return new Notifier(new ProxyNotifierMethodAdapter());
+            return new DefaultTelemetrySourceAdapter(new ProxyTelemetrySourceMethodAdapter());
         }
     }
 }

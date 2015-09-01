@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 
-namespace Microsoft.Framework.Notification.Internal
+namespace Microsoft.Framework.TelemetryAdapter.Internal
 {
     public class ProxyTypeCache : ConcurrentDictionary<Tuple<Type, Type>, ProxyTypeCacheResult>
     {

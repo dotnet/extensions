@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Framework.Notification.Internal
+namespace Microsoft.Framework.TelemetryAdapter.Internal
 {
     public abstract class ProxyBase
     {

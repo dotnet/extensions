@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.Framework.Notification.Internal
+namespace Microsoft.Framework.TelemetryAdapter.Internal
 {
     public class ProxyEnumerable<TSourceElement, TTargetElement> : IEnumerable<TTargetElement>
     {

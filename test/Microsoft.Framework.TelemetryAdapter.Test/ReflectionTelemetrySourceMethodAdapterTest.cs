@@ -6,15 +6,15 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Xunit;
 
-namespace Microsoft.Framework.Notification
+namespace Microsoft.Framework.TelemetryAdapter
 {
-    public class ProxyNotifierMethodAdapterTest
+    public class ReflectionTelemetrySourceMethodAdapterTest
     {
         [Fact]
         public void Adapt_ReturnsTrueForTypeMatch()
         {
             // Arrange
-            var adapter = new ProxyNotifierMethodAdapter();
+            var adapter = new ReflectionTelemetrySourceMethodAdapter();
 
             var listener = new Listener1();
             var method = GetMethodInfo<Listener1>(l => l.Listen());
@@ -30,7 +30,7 @@ namespace Microsoft.Framework.Notification
         public void Adapt_ReturnsFalseForTypeNotMatching()
         {
             // Arrange
-            var adapter = new ProxyNotifierMethodAdapter();
+            var adapter = new ReflectionTelemetrySourceMethodAdapter();
 
             var listener = new Listener1();
             var method = GetMethodInfo<Listener1>(l => l.Listen());
@@ -46,7 +46,7 @@ namespace Microsoft.Framework.Notification
         public void Adapt_SplatsParameters()
         {
             // Arrange
-            var adapter = new ProxyNotifierMethodAdapter();
+            var adapter = new ReflectionTelemetrySourceMethodAdapter();
 
             var listener = new Listener2();
             var value = new { id = 17, name = "Bill" };
@@ -65,7 +65,7 @@ namespace Microsoft.Framework.Notification
         public void Adapt_SplatsParameters_ExtraEventDataIgnored()
         {
             // Arrange
-            var adapter = new ProxyNotifierMethodAdapter();
+            var adapter = new ReflectionTelemetrySourceMethodAdapter();
 
             var listener = new Listener2();
             var value = new { id = 17, name = "Bill", ignored = "hi" };
@@ -84,7 +84,7 @@ namespace Microsoft.Framework.Notification
         public void Adapt_SplatsParameters_ExtraParametersGetDefaultValues()
         {
             // Arrange
-            var adapter = new ProxyNotifierMethodAdapter();
+            var adapter = new ReflectionTelemetrySourceMethodAdapter();
 
             var listener = new Listener2();
             var value = new { };
@@ -100,10 +100,10 @@ namespace Microsoft.Framework.Notification
         }
 
         [Fact]
-        public void Adapt_SplatsParameters_WithProxy()
+        public void Adapt_SplatsParameters_CannotCreateProxy()
         {
             // Arrange
-            var adapter = new ProxyNotifierMethodAdapter();
+            var adapter = new ReflectionTelemetrySourceMethodAdapter();
 
             var listener = new Listener3();
             var value = new { id = 17, person = new Person() { Name = "Bill" } };
@@ -115,7 +115,7 @@ namespace Microsoft.Framework.Notification
             // Assert
             Assert.True(func(listener, value));
             Assert.Equal(17, listener.Id);
-            Assert.Equal("Bill", listener.Name);
+            Assert.Null(listener.Name);
         }
 
         private MethodInfo GetMethodInfo<T>(Expression<Action<T>> expression)

@@ -4,9 +4,9 @@
 using System;
 using System.Reflection;
 
-namespace Microsoft.Framework.Notification
+namespace Microsoft.Framework.TelemetryAdapter
 {
-    public interface INotifierMethodAdapter
+    public interface ITelemetrySourceMethodAdapter
     {
         Func<object, object, bool> Adapt(MethodInfo method, Type inputType);
     }

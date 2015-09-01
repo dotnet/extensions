@@ -6,20 +6,20 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace Microsoft.Framework.Notification
+namespace Microsoft.Framework.TelemetryAdapter
 {
-    public class Notifier : INotifier
+    public class DefaultTelemetrySourceAdapter : TelemetrySourceAdapter
     {
-        private readonly NotificationListenerCache _listeners = new NotificationListenerCache();
+        private readonly ListenerCache _listeners = new ListenerCache();
         
-        private readonly INotifierMethodAdapter _methodAdapter;
+        private readonly ITelemetrySourceMethodAdapter _methodAdapter;
 
-        public Notifier(INotifierMethodAdapter methodAdapter)
+        public DefaultTelemetrySourceAdapter(ITelemetrySourceMethodAdapter methodAdapter)
         {
             _methodAdapter = methodAdapter;
         }
 
-        public void EnlistTarget(object target)
+        public override void EnlistTarget(object target)
         {
             var typeInfo = target.GetType().GetTypeInfo();
 
@@ -27,7 +27,7 @@ namespace Microsoft.Framework.Notification
 
             foreach (var methodInfo in methodInfos)
             {
-                var notificationNameAttribute = methodInfo.GetCustomAttribute<NotificationNameAttribute>();
+                var notificationNameAttribute = methodInfo.GetCustomAttribute<TelemetryNameAttribute>();
                 if (notificationNameAttribute != null)
                 {
                     Enlist(notificationNameAttribute.Name, target, methodInfo);
@@ -44,12 +44,17 @@ namespace Microsoft.Framework.Notification
             entries.Add(new ListenerEntry(target, methodInfo));
         }
 
-        public bool ShouldNotify(string notificationName)
+        public override bool IsEnabled(string telemetryName)
         {
-            return _listeners.ContainsKey(notificationName);
+            if (_listeners.Count == 0)
+            {
+                return false;
+            }
+
+            return _listeners.ContainsKey(telemetryName);
         }
 
-        public void Notify(string notificationName, object parameters)
+        public override void WriteTelemetry(string telemetryName, object parameters)
         {
             if (parameters == null)
             {
@@ -57,7 +62,7 @@ namespace Microsoft.Framework.Notification
             }
 
             ConcurrentBag<ListenerEntry> entries;
-            if (_listeners.TryGetValue(notificationName, out entries))
+            if (_listeners.TryGetValue(telemetryName, out entries))
             {
                 foreach (var entry in entries)
                 {
@@ -83,9 +88,9 @@ namespace Microsoft.Framework.Notification
             }
         }
 
-        private class NotificationListenerCache : ConcurrentDictionary<string, ConcurrentBag<ListenerEntry>>
+        private class ListenerCache : ConcurrentDictionary<string, ConcurrentBag<ListenerEntry>>
         {
-            public NotificationListenerCache()
+            public ListenerCache()
                 : base(StringComparer.Ordinal)
             {
             }

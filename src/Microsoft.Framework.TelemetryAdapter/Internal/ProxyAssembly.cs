@@ -7,7 +7,7 @@ using System;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Microsoft.Framework.Notification.Internal
+namespace Microsoft.Framework.TelemetryAdapter.Internal
 {
     public static class ProxyAssembly
     {
@@ -18,11 +18,11 @@ namespace Microsoft.Framework.Notification.Internal
 
         static ProxyAssembly()
         {
-            var assemblyName = new AssemblyName("Microsoft.Framework.Notification.ProxyAssembly");
+            var assemblyName = new AssemblyName("Microsoft.Framework.TelemetryAdapter.ProxyAssembly");
             var access = AssemblyBuilderAccess.Run;
 
             AssemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, access);
-            ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Microsoft.Framework.Notification.ProxyAssembly.dll");
+            ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Microsoft.Framework.TelemetryAdapter.ProxyAssembly.dll");
         }
 
         public static TypeBuilder DefineType(
