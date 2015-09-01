@@ -211,7 +211,7 @@ namespace Microsoft.Framework.Caching.Memory
         }
 
         [Fact]
-        public void SetGetAndRemoveWorks_WithNonStringKeys()
+        public void SetGetAndRemoveWorksWithNonStringKeys()
         {
             var cache = CreateCache();
             var obj = new object();
@@ -232,6 +232,30 @@ namespace Microsoft.Framework.Caching.Memory
         {
             public int Id { get; set; }
             public string Name { get; set; }
+        }
+
+        [Fact]
+        public void SetGetAndRemoveWorksWithObjectKeysWhenDifferentReferences()
+        {
+            var cache = CreateCache();
+            var obj = new object();
+
+            var result = cache.Set(new TestKey(), obj);
+            Assert.Same(obj, result);
+
+            result = cache.Get(new TestKey());
+            Assert.Same(obj, result);
+
+            var key = new TestKey(); 
+            cache.Remove(key);
+            result = cache.Get(key);
+            Assert.Null(result);
+        }
+
+        private class TestKey
+        {
+            public override bool Equals(object obj) => true;
+            public override int GetHashCode() => 0;
         }
     }
 }
