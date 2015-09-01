@@ -7,11 +7,15 @@
     },
     "dependencies": {
         "Microsoft.Framework.Caching.Abstractions": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Framework.NotNullAttribute.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        },
         "Microsoft.Framework.OptionsModel": "1.0.0-*",
         "StackExchange.Redis": "1.0.333"
     },
-  "frameworks": {
-    "dnx451": {}
-  }
+    "frameworks": {
+        "dnx451": { },
+        "net45": { }
+    }
 }

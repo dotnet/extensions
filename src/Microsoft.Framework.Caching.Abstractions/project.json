@@ -2,7 +2,7 @@
     "dependencies": {
         "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" }
     },
-    "description": "ASP.NET 5 in memory cache abstractions.",
+    "description": "ASP.NET 5 caching abstractions.",
     "frameworks": {
         "net45": { },
         "dnx451": { },
