@@ -204,9 +204,10 @@ namespace Microsoft.Dnx.TestHost.TestAdapter
             try
             {
                 var context = new CapturingLoadContext();
-                _project.Load(context);
+                var assemblyName = new AssemblyName(_project.Name);
+                _project.Load(assemblyName, context);
 
-                _assembly = Assembly.Load(new AssemblyName(_project.Name));
+                _assembly = Assembly.Load(assemblyName);
 
                 _diaDataSource.loadDataFromIStream(new StreamWrapper(context.Symbols));
                 _diaDataSource.openSession(out _diaSession);
