@@ -5,7 +5,6 @@ namespace Microsoft.Framework.OptionsModel
 {
     public interface IOptions<out TOptions> where TOptions : class,new()
     {
-        TOptions Options { get; }
-        TOptions GetNamedOptions(string name);
+        TOptions Value { get; }
     }
 }

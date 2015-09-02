@@ -15,16 +15,9 @@ namespace Microsoft.Framework.OptionsModel
 
         public Action<TOptions> Action { get; private set; }
 
-        public string Name { get; set; } = "";
-        public virtual int Order { get; set; } = OptionsConstants.DefaultOrder;
-
-        public virtual void Configure([NotNull]TOptions options, string name = "")
+        public virtual void Configure([NotNull]TOptions options)
         {
-            // Always invoke the action if no Name was specified, otherwise only if it was the requested name
-            if (string.IsNullOrEmpty(Name) || string.Equals(name, Name, StringComparison.OrdinalIgnoreCase))
-            {
-                Action.Invoke(options);
-            }
+            Action.Invoke(options);
         }
     }
 }

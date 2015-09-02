@@ -67,41 +67,16 @@ namespace Microsoft.Framework.DependencyInjection
         }
 
         public static IServiceCollection Configure<TOptions>([NotNull]this IServiceCollection services,
-            [NotNull] Action<TOptions> setupAction,
-            string optionsName)
+            [NotNull] Action<TOptions> setupAction)
         {
-            return services.Configure(setupAction, OptionsConstants.DefaultOrder, optionsName);
-        }
-
-        public static IServiceCollection Configure<TOptions>([NotNull]this IServiceCollection services,
-            [NotNull] Action<TOptions> setupAction,
-            int order = OptionsConstants.DefaultOrder,
-            string optionsName = "")
-        {
-            services.ConfigureOptions(new ConfigureOptions<TOptions>(setupAction)
-            {
-                Name = optionsName,
-                Order = order
-            });
+            services.ConfigureOptions(new ConfigureOptions<TOptions>(setupAction));
             return services;
         }
 
         public static IServiceCollection Configure<TOptions>([NotNull]this IServiceCollection services,
-            [NotNull] IConfiguration config, string optionsName)
+            [NotNull] IConfiguration config)
         {
-            return services.Configure<TOptions>(config, OptionsConstants.ConfigurationOrder, optionsName);
-        }
-
-        public static IServiceCollection Configure<TOptions>([NotNull]this IServiceCollection services,
-            [NotNull] IConfiguration config,
-            int order = OptionsConstants.ConfigurationOrder, 
-            string optionsName = "")
-        {
-            services.ConfigureOptions(new ConfigureFromConfigurationOptions<TOptions>(config)
-            {
-                Name = optionsName,
-                Order = order
-            });
+            services.ConfigureOptions(new ConfigureFromConfigurationOptions<TOptions>(config));
             return services;
         }
     }

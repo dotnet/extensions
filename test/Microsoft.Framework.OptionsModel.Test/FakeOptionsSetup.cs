@@ -7,7 +7,6 @@ namespace Microsoft.Framework.OptionsModel.Tests
     {
         public FakeOptionsSetupA() : base(o => o.Message += "A")
         {
-            Order = -1;
         }
     }
 
@@ -15,7 +14,6 @@ namespace Microsoft.Framework.OptionsModel.Tests
     {
         public FakeOptionsSetupB() : base(o => o.Message += "B")
         {
-            Order = 10;
         }
     }
 
@@ -23,7 +21,6 @@ namespace Microsoft.Framework.OptionsModel.Tests
     {
         public FakeOptionsSetupC() : base(o => o.Message += "C")
         {
-            Order = 1000;
         }
     }
 }
