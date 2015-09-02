@@ -15,14 +15,9 @@ namespace Microsoft.Framework.Caching.Memory
 
         public TimeSpan ExpirationScanFrequency { get; set; } = TimeSpan.FromMinutes(1);
 
-        MemoryCacheOptions IOptions<MemoryCacheOptions>.Options
+        MemoryCacheOptions IOptions<MemoryCacheOptions>.Value
         {
             get { return this; }
-        }
-
-        MemoryCacheOptions IOptions<MemoryCacheOptions>.GetNamedOptions(string name)
-        {
-            return this;
         }
     }
 }

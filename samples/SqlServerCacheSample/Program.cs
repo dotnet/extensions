@@ -107,17 +107,12 @@ namespace SqlServerCacheSample
                 _innerOptions = innerOptions;
             }
 
-            public SqlServerCacheOptions Options
+            public SqlServerCacheOptions Value
             {
                 get
                 {
                     return _innerOptions;
                 }
-            }
-
-            public SqlServerCacheOptions GetNamedOptions(string name)
-            {
-                return _innerOptions;
             }
         }
     }

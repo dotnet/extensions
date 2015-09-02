@@ -26,7 +26,7 @@ namespace Microsoft.Framework.Caching.SqlServer
 
         public SqlServerCache(IOptions<SqlServerCacheOptions> options)
         {
-            var cacheOptions = options.Options;
+            var cacheOptions = options.Value;
 
             if (string.IsNullOrEmpty(cacheOptions.ConnectionString))
             {

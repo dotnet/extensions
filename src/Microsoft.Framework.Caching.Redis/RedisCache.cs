@@ -37,7 +37,7 @@ namespace Microsoft.Framework.Caching.Redis
 
         public RedisCache([NotNull] IOptions<RedisCacheOptions> optionsAccessor)
         {
-            _options = optionsAccessor.Options;
+            _options = optionsAccessor.Value;
 
             // This allows partitioning a single backend cache for use with multiple apps/services.
             _instance = _options.InstanceName ?? string.Empty;

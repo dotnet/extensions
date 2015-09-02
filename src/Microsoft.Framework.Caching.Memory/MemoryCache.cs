@@ -30,7 +30,7 @@ namespace Microsoft.Framework.Caching.Memory
         /// <param name="listenForMemoryPressure"></param>
         public MemoryCache([NotNull] IOptions<MemoryCacheOptions> optionsAccessor)
         {
-            var options = optionsAccessor.Options;
+            var options = optionsAccessor.Value;
             _entries = new Dictionary<object, CacheEntry>();
             _entryLock = new ReaderWriterLockSlim();
             _entryExpirationNotification = EntryExpired;

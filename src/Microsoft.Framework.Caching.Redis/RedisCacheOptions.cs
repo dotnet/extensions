@@ -11,14 +11,9 @@ namespace Microsoft.Framework.Caching.Redis
 
         public string InstanceName { get; set; }
 
-        RedisCacheOptions IOptions<RedisCacheOptions>.Options
+        RedisCacheOptions IOptions<RedisCacheOptions>.Value
         {
             get { return this; }
-        }
-
-        RedisCacheOptions IOptions<RedisCacheOptions>.GetNamedOptions(string name)
-        {
-            return this;
         }
     }
 }
