@@ -1,20 +1,19 @@
 {
-    "version": "1.0.0-*",
+    "version": "1.0.0-beta7",
     "shared": "*.cs",
-    "dependencies": {
-    },
+    "dependencies": {},
     "frameworks": {
-        "net45": { },
-        "dnx451": { },
+        "net45": {},
+        "dnx451": {},
         "dnxcore50": {
             "dependencies": {
-                "System.Runtime": "4.0.21-beta-*"
+                "System.Runtime": "4.0.21-beta-23225"
             }
         },
         "dotnet": {
             "dependencies": {
-                "System.Runtime": "4.0.21-beta-*"
-            } 
+                "System.Runtime": "4.0.21-beta-23225"
+            }
         }
     }
 }
