@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.Framework.TelemetryAdapter
 {
-    public class NotifierTest
+    public class DefaultTelemetrySourceAdapterTest
     {
         public class OneTarget
         {
@@ -19,42 +19,48 @@ namespace Microsoft.Framework.TelemetryAdapter
         }
 
         [Fact]
-        public void ShouldNotifyBecomesTrueAfterEnlisting()
+        public void IsEnabledBecomesTrueAfterEnlisting()
         {
-            var notifier = CreateNotifier();
+            // Arrange
+            var adapter = CreateAdapter();
 
-            Assert.False(notifier.IsEnabled("One"));
-            Assert.False(notifier.IsEnabled("Two"));
+            // Act & Assert
+            Assert.False(adapter.IsEnabled("One"));
+            Assert.False(adapter.IsEnabled("Two"));
 
-            notifier.EnlistTarget(new OneTarget());
+            adapter.EnlistTarget(new OneTarget());
 
-            Assert.True(notifier.IsEnabled("One"));
-            Assert.False(notifier.IsEnabled("Two"));
+            Assert.True(adapter.IsEnabled("One"));
+            Assert.False(adapter.IsEnabled("Two"));
         }
 
         [Fact]
-        public void CallingNotifyWillInvokeMethod()
+        public void CallingWriteTelemetryWillInvokeMethod()
         {
-            var notifier = CreateNotifier();
+            // Arrange
+            var adapter = CreateAdapter();
             var target = new OneTarget();
 
-            notifier.EnlistTarget(target);
+            adapter.EnlistTarget(target);
 
+            // Act & Assert
             Assert.Equal(0, target.OneCallCount);
-            notifier.WriteTelemetry("One", new { });
+            adapter.WriteTelemetry("One", new { });
             Assert.Equal(1, target.OneCallCount);
         }
 
         [Fact]
-        public void CallingNotifyForNonEnlistedNameIsHarmless()
+        public void CallingWriteTelemetryForNonEnlistedNameIsHarmless()
         {
-            var notifier = CreateNotifier();
+            // Arrange
+            var adapter = CreateAdapter();
             var target = new OneTarget();
 
-            notifier.EnlistTarget(target);
+            adapter.EnlistTarget(target);
 
+            // Act & Assert
             Assert.Equal(0, target.OneCallCount);
-            notifier.WriteTelemetry("Two", new { });
+            adapter.WriteTelemetry("Two", new { });
             Assert.Equal(0, target.OneCallCount);
         }
 
@@ -76,13 +82,16 @@ namespace Microsoft.Framework.TelemetryAdapter
         [Fact]
         public void ParametersWillSplatFromObjectByName()
         {
-            var notifier = CreateNotifier();
+            // Arrange
+            var adapter = CreateAdapter();
             var target = new TwoTarget();
 
-            notifier.EnlistTarget(target);
+            adapter.EnlistTarget(target);
 
-            notifier.WriteTelemetry("Two", new { alpha = "ALPHA", beta = "BETA", delta = -1 });
+            // Act
+            adapter.WriteTelemetry("Two", new { alpha = "ALPHA", beta = "BETA", delta = -1 });
 
+            // Assert
             Assert.Equal("ALPHA", target.Alpha);
             Assert.Equal("BETA", target.Beta);
             Assert.Equal(-1, target.Delta);
@@ -91,13 +100,16 @@ namespace Microsoft.Framework.TelemetryAdapter
         [Fact]
         public void ExtraParametersAreHarmless()
         {
-            var notifier = CreateNotifier();
+            // Arrange
+            var adapter = CreateAdapter();
             var target = new TwoTarget();
 
-            notifier.EnlistTarget(target);
+            adapter.EnlistTarget(target);
 
-            notifier.WriteTelemetry("Two", new { alpha = "ALPHA", beta = "BETA", delta = -1, extra = this });
+            // Act
+            adapter.WriteTelemetry("Two", new { alpha = "ALPHA", beta = "BETA", delta = -1, extra = this });
 
+            // Assert
             Assert.Equal("ALPHA", target.Alpha);
             Assert.Equal("BETA", target.Beta);
             Assert.Equal(-1, target.Delta);
@@ -106,25 +118,32 @@ namespace Microsoft.Framework.TelemetryAdapter
         [Fact]
         public void MissingParametersArriveAsNull()
         {
-            var notifier = CreateNotifier();
+            // Arrange
+            var adapter = CreateAdapter();
             var target = new TwoTarget();
 
-            notifier.EnlistTarget(target);
-            notifier.WriteTelemetry("Two", new { alpha = "ALPHA", delta = -1 });
+            adapter.EnlistTarget(target);
 
+            // Act
+            adapter.WriteTelemetry("Two", new { alpha = "ALPHA", delta = -1 });
+
+            // Assert
             Assert.Equal("ALPHA", target.Alpha);
             Assert.Null(target.Beta);
             Assert.Equal(-1, target.Delta);
         }
 
         [Fact]
-        public void NotificationCanDuckType()
+        public void WriteTelemetryCanDuckType()
         {
-            var notifier = CreateNotifier();
+            // Arrange
+            var adapter = CreateAdapter();
             var target = new ThreeTarget();
 
-            notifier.EnlistTarget(target);
-            notifier.WriteTelemetry("Three", new
+            adapter.EnlistTarget(target);
+
+            // Act
+            adapter.WriteTelemetry("Three", new
             {
                 person = new Person
                 {
@@ -138,6 +157,7 @@ namespace Microsoft.Framework.TelemetryAdapter
                 }
             });
 
+            // Assert
             Assert.Equal("Alpha", target.Person.FirstName);
             Assert.Equal("Beta", target.Person.Address.City);
             Assert.Equal("Gamma", target.Person.Address.State);
@@ -198,7 +218,7 @@ namespace Microsoft.Framework.TelemetryAdapter
             public int Value { get; private set; }
         }
 
-        private static TelemetrySourceAdapter CreateNotifier()
+        private static TelemetrySourceAdapter CreateAdapter()
         {
             return new DefaultTelemetrySourceAdapter(new ProxyTelemetrySourceMethodAdapter());
         }

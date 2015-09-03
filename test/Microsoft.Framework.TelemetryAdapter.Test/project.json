@@ -3,7 +3,7 @@
         "Microsoft.Framework.TelemetryAdapter": "1.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
-    "compile": "..\\..\\src\\Microsoft.Framework.TelemetryAdapter\\ReflectionTelemetrySourceMethodAdapter.cs",
+    "compile": "../../src/Microsoft.Framework.TelemetryAdapter/ReflectionTelemetrySourceMethodAdapter.cs",
     "compilationOptions": {"define": ["TEST"]},
     "commands": {
         "run": "xunit.runner.aspnet",
