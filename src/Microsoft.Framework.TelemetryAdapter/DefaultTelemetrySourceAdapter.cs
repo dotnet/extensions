@@ -3,12 +3,13 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 
 namespace Microsoft.Framework.TelemetryAdapter
 {
-    public class DefaultTelemetrySourceAdapter : TelemetrySourceAdapter
+    public class DefaultTelemetrySourceAdapter : TelemetrySourceAdapter, IObserver<KeyValuePair<string, object>>
     {
         private readonly ListenerCache _listeners = new ListenerCache();
         
@@ -86,6 +87,21 @@ namespace Microsoft.Framework.TelemetryAdapter
                     }
                 }
             }
+        }
+
+        void IObserver<KeyValuePair<string, object>>.OnNext(KeyValuePair<string, object> value)
+        {
+            WriteTelemetry(value.Key, value.Value);
+        }
+
+        void IObserver<KeyValuePair<string, object>>.OnError(Exception error)
+        {
+            // Do nothing
+        }
+
+        void IObserver<KeyValuePair<string, object>>.OnCompleted()
+        {
+            // Do nothing
         }
 
         private class ListenerCache : ConcurrentDictionary<string, ConcurrentBag<ListenerEntry>>
