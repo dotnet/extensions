@@ -15,6 +15,8 @@ If you're using xUnit, make sure that you're using a versions of `xunit` and `xu
 For dnx 1.0.0-beta7: reference `xunit 2.1.0-rc1-*` and `xunit.runner.dnx 2.1.0-beta5-*`.
 For dnx 1.0.0-beta8: reference `xunit 2.1.0-*` and `xunit.runner.dnx 2.1.0-*`.
 
+To use nightly builds of xUnit packages, use feed:https://www.myget.org/F/xunit/api/v2/
+
 If you're having trouble running tests in Visual Studio, try at the commandline first:
 ```
 cd <project directory>
