@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Framework.TelemetryAdapter.Internal
@@ -255,7 +256,8 @@ namespace Microsoft.Framework.TelemetryAdapter.Internal
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void Adapt_ListWithProxy_ToReadOnlyList()
         {
             // Arrange
@@ -275,7 +277,8 @@ namespace Microsoft.Framework.TelemetryAdapter.Internal
             Assert.Equal("Joe", proxy[1].FirstName);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void Adapt_ListWithProxy_ToReadOnlyList_Enumerator()
         {
             // Arrange
@@ -439,7 +442,8 @@ namespace Microsoft.Framework.TelemetryAdapter.Internal
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void Adapt_ListPropertyWithProxy_ToReadOnlyList()
         {
             // Arrange
@@ -462,7 +466,8 @@ namespace Microsoft.Framework.TelemetryAdapter.Internal
             Assert.Equal("Joe", proxy.ListProperty[1].FirstName);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void Adapt_ListPropertyWithProxy_ToReadOnlyList_Enumerator()
         {
             // Arrange
@@ -488,7 +493,8 @@ namespace Microsoft.Framework.TelemetryAdapter.Internal
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void Adapt_NestedList()
         {
             // Arrange
