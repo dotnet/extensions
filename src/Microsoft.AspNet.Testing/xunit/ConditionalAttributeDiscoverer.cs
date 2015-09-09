@@ -25,9 +25,11 @@ namespace Microsoft.AspNet.Testing.xunit
         {
             var skipReason = EvaluateSkipConditions(testMethod);
 
+            var isTheory = false;
             IXunitTestCaseDiscoverer innerDiscoverer;
             if (testMethod.Method.GetCustomAttributes(typeof(TheoryAttribute)).Any())
             {
+                isTheory = true;
                 innerDiscoverer = new TheoryDiscoverer(_diagnosticMessageSink);
             }
             else
@@ -35,9 +37,11 @@ namespace Microsoft.AspNet.Testing.xunit
                 innerDiscoverer = new FactDiscoverer(_diagnosticMessageSink);
             }
 
-            var res = innerDiscoverer.Discover(discoveryOptions, testMethod, factAttribute)
-                      .Select(testCase => new SkipReasonTestCase(skipReason, testCase));
-            return res;
+            var testCases = innerDiscoverer
+                .Discover(discoveryOptions, testMethod, factAttribute)
+                .Select(testCase => new SkipReasonTestCase(isTheory, skipReason, testCase));
+
+            return testCases;
         }
 
         private string EvaluateSkipConditions(ITestMethod testMethod)

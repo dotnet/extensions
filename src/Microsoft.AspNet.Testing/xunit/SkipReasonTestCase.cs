@@ -11,11 +11,13 @@ namespace Microsoft.AspNet.Testing.xunit
 {
     internal class SkipReasonTestCase : IXunitTestCase
     {
+        private readonly bool _isTheory;
         private readonly string _skipReason;
         private readonly IXunitTestCase _wrappedTestCase;
 
-        public SkipReasonTestCase(string skipReason, IXunitTestCase wrappedTestCase)
+        public SkipReasonTestCase(bool isTheory, string skipReason, IXunitTestCase wrappedTestCase)
         {
+            _isTheory = isTheory;
             _skipReason = wrappedTestCase.SkipReason ?? skipReason;
             _wrappedTestCase = wrappedTestCase;
         }
@@ -100,7 +102,33 @@ namespace Microsoft.AspNet.Testing.xunit
             ExceptionAggregator aggregator,
             CancellationTokenSource cancellationTokenSource)
         {
-            return new XunitTestCaseRunner(this, DisplayName, _skipReason, constructorArguments, TestMethodArguments, messageBus, aggregator, cancellationTokenSource).RunAsync();
+            TestCaseRunner<IXunitTestCase> runner;
+            if (_isTheory)
+            {
+                runner = new XunitTheoryTestCaseRunner(
+                    this,
+                    DisplayName,
+                    _skipReason,
+                    constructorArguments,
+                    diagnosticMessageSink,
+                    messageBus,
+                    aggregator,
+                    cancellationTokenSource);
+            }
+            else
+            {
+                runner = new XunitTestCaseRunner(
+                    this,
+                    DisplayName,
+                    _skipReason,
+                    constructorArguments,
+                    TestMethodArguments,
+                    messageBus,
+                    aggregator,
+                    cancellationTokenSource);
+            }
+
+            return runner.RunAsync();
         }
 
         public void Serialize(IXunitSerializationInfo info)

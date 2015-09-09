@@ -6,7 +6,7 @@
     },
     "dependencies": {
         "Microsoft.Framework.WebEncoders": "1.0.0-*",
-        "xunit.assert": "2.0.0-rc3-*"
+        "xunit.assert": "2.1.0-*"
     },
     "frameworks": {
         "net45": {
