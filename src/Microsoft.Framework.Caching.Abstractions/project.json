@@ -9,6 +9,7 @@
         "dotnet": {
             "dependencies": {
                 "System.Collections": "4.0.11-beta-*",
+                "System.Resources.ResourceManager": "4.0.1-beta-*",
                 "System.Threading": "4.0.11-beta-*",
                 "System.Threading.Tasks": "4.0.11-beta-*"
             }
