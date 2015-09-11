@@ -26,12 +26,5 @@ namespace Microsoft.Framework.DependencyInjection
         {
             services.TryAdd(ServiceDescriptor.Singleton<IDistributedCache, SqlServerCache>());
         }
-
-        public static void ConfigureSqlServerCache(
-            [NotNull] this IServiceCollection services,
-            [NotNull] Action<SqlServerCacheOptions> options)
-        {
-            services.Configure(options);
-        }
     }
 }
