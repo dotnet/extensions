@@ -6,8 +6,8 @@
   },
   "dependencies": {
     "Microsoft.Framework.NotNullAttribute.Sources": {
-      "type": "build",
-      "version": "1.0.0-*"
+        "type": "build",
+        "version": "1.0.0-*"
     }
   },
   "frameworks": {
@@ -16,6 +16,7 @@
       "dependencies": {
         "System.Collections": "4.0.11-beta-*",
         "System.Reflection": "4.0.11-beta-*",
+        "System.Resources.ResourceManager": "4.0.1-beta-*",
         "System.Runtime": "4.0.21-beta-*",
         "System.Runtime.Extensions": "4.0.11-beta-*"
       }
