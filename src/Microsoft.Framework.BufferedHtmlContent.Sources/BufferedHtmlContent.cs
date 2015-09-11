@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.Framework.WebEncoders;
@@ -12,10 +13,9 @@ namespace Microsoft.Framework.Internal
     /// <summary>
     /// Enumerable object collection which knows how to write itself.
     /// </summary>
+    [DebuggerDisplay("{DebuggerToString()}")]
     internal class BufferedHtmlContent : IHtmlContent
     {
-        private const int MaxCharToStringLength = 1024;
-
         // This is not List<IHtmlContent> because that would lead to wrapping all strings to IHtmlContent
         // which is not space performant.
         // internal for testing.
@@ -33,44 +33,6 @@ namespace Microsoft.Framework.Internal
         }
 
         /// <summary>
-        /// Appends a character array to the collection.
-        /// </summary>
-        /// <param name="value">The character array to be appended.</param>
-        /// <param name="index">The index from which the character array must be read.</param>
-        /// <param name="count">The count till which the character array must be read.</param>
-        /// <returns>A reference to this instance after the Append operation has completed.</returns>
-        /// <remarks>
-        /// Splits the character array into strings of 1KB length and appends them.
-        /// </remarks>
-        public BufferedHtmlContent Append([NotNull] char[] value, int index, int count)
-        {
-            if (index < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(index));
-            }
-            if (count < 0 || value.Length - index < count)
-            {
-                throw new ArgumentOutOfRangeException(nameof(count));
-            }
-
-            while (count > 0)
-            {
-                // Split large char arrays into 1KB strings.
-                var currentCount = count;
-                if (MaxCharToStringLength < currentCount)
-                {
-                    currentCount = MaxCharToStringLength;
-                }
-
-                Append(new string(value, index, currentCount));
-                index += currentCount;
-                count -= currentCount;
-            }
-
-            return this;
-        }
-
-        /// <summary>
         /// Appends a <see cref="IHtmlContent"/> to the collection.
         /// </summary>
         /// <param name="htmlContent">The <see cref="IHtmlContent"/> to be appended.</param>
@@ -82,6 +44,17 @@ namespace Microsoft.Framework.Internal
         }
 
         /// <summary>
+        /// Appends the HTML encoded <see cref="string"/> to the collection.
+        /// </summary>
+        /// <param name="value">The HTML encoded <c>string</c> to be appended.</param>
+        /// <returns>A reference to this instance after the Append operation has completed.</returns>
+        public BufferedHtmlContent AppendEncoded(string value)
+        {
+            Entries.Add(new HtmlEncodedString(value));
+            return this;
+        }
+
+        /// <summary>
         /// Appends a new line after appending the <see cref="string"/> to the collection.
         /// </summary>
         /// <param name="value">The <c>string</c> to be appended.</param>
@@ -89,7 +62,7 @@ namespace Microsoft.Framework.Internal
         public BufferedHtmlContent AppendLine(string value)
         {
             Append(value);
-            Append(Environment.NewLine);
+            Append(HtmlEncodedString.NewLine);
             return this;
         }
 
@@ -101,7 +74,7 @@ namespace Microsoft.Framework.Internal
         public BufferedHtmlContent AppendLine(IHtmlContent htmlContent)
         {
             Append(htmlContent);
-            Append(Environment.NewLine);
+            Append(HtmlEncodedString.NewLine);
             return this;
         }
 
@@ -128,7 +101,7 @@ namespace Microsoft.Framework.Internal
                 var entryAsString = entry as string;
                 if (entryAsString != null)
                 {
-                    writer.Write(entryAsString);
+                    encoder.HtmlEncode(entryAsString, writer);
                 }
                 else
                 {
@@ -137,14 +110,30 @@ namespace Microsoft.Framework.Internal
                 }
             }
         }
-
-        /// <inheritdoc />
-        public override string ToString()
+        
+        private string DebuggerToString()
         {
             using (var writer = new StringWriter())
             {
                 WriteTo(writer, HtmlEncoder.Default);
                 return writer.ToString();
+            }
+        }
+
+        private class HtmlEncodedString : IHtmlContent
+        {
+            public static readonly IHtmlContent NewLine = new HtmlEncodedString(Environment.NewLine);
+
+            private readonly string _value;
+
+            public HtmlEncodedString(string value)
+            {
+                _value = value;
+            }
+
+            public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+            {
+                writer.Write(_value);
             }
         }
     }
