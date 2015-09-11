@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.Configuration
 {
@@ -12,9 +11,19 @@ namespace Microsoft.Framework.Configuration
     {
         private readonly string _key;
 
-        public ConfigurationSection([NotNull] IList<IConfigurationSource> sources, [NotNull] string key)
-            : base (sources)
+        public ConfigurationSection(IList<IConfigurationSource> sources, string key)
+            : base(sources)
         {
+            if (sources == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
+            }
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             if (string.IsNullOrEmpty(key))
             {
                 throw new InvalidOperationException(Resources.Error_EmptyKey);

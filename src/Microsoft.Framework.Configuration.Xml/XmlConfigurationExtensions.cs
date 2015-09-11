@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using Microsoft.Framework.Configuration.Helper;
 using Microsoft.Framework.Configuration.Xml;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.Configuration
 {
@@ -21,8 +20,13 @@ namespace Microsoft.Framework.Configuration
         /// <param name="path">Absolute path or path relative to <see cref="IConfigurationBuilder.BasePath"/> of
         /// <paramref name="configuration"/>.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
-        public static IConfigurationBuilder AddXmlFile([NotNull] this IConfigurationBuilder configuration, string path)
+        public static IConfigurationBuilder AddXmlFile(this IConfigurationBuilder configuration, string path)
         {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
             return AddXmlFile(configuration, path, optional: false);
         }
 
@@ -38,10 +42,15 @@ namespace Microsoft.Framework.Configuration
         /// <exception cref="FileNotFoundException">If <paramref name="optional"/> is <c>false</c> and the file cannot
         /// be resolved.</exception>
         public static IConfigurationBuilder AddXmlFile(
-            [NotNull] this IConfigurationBuilder configuration,
+            this IConfigurationBuilder configuration,
             string path,
             bool optional)
         {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
             if (string.IsNullOrEmpty(path))
             {
                 throw new ArgumentException(Resources.Error_InvalidFilePath, nameof(path));
