@@ -7,15 +7,19 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection.Extensions;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.Framework.DependencyInjection
 {
     public static class OptionsServiceCollectionExtensions
     {
-        public static IServiceCollection AddOptions([NotNull]this IServiceCollection services)
+        public static IServiceCollection AddOptions(this IServiceCollection services)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptions<>), typeof(OptionsManager<>)));
             return services;
         }
@@ -41,8 +45,13 @@ namespace Microsoft.Framework.DependencyInjection
             return serviceTypes;
         }
 
-        public static IServiceCollection ConfigureOptions([NotNull]this IServiceCollection services, Type configureType)
+        public static IServiceCollection ConfigureOptions(this IServiceCollection services, Type configureType)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             var serviceTypes = FindIConfigureOptions(configureType);
             foreach (var serviceType in serviceTypes)
             {
@@ -51,13 +60,28 @@ namespace Microsoft.Framework.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection ConfigureOptions<TSetup>([NotNull]this IServiceCollection services)
+        public static IServiceCollection ConfigureOptions<TSetup>(this IServiceCollection services)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             return services.ConfigureOptions(typeof(TSetup));
         }
 
-        public static IServiceCollection ConfigureOptions([NotNull]this IServiceCollection services, [NotNull]object configureInstance)
+        public static IServiceCollection ConfigureOptions(this IServiceCollection services, object configureInstance)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (configureInstance == null)
+            {
+                throw new ArgumentNullException(nameof(configureInstance));
+            }
+
             var serviceTypes = FindIConfigureOptions(configureInstance.GetType());
             foreach (var serviceType in serviceTypes)
             {
@@ -66,16 +90,40 @@ namespace Microsoft.Framework.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection Configure<TOptions>([NotNull]this IServiceCollection services,
-            [NotNull] Action<TOptions> setupAction)
+        public static IServiceCollection Configure<TOptions>(
+            this IServiceCollection services,
+            Action<TOptions> setupAction)
+            where TOptions : class
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (setupAction == null)
+            {
+                throw new ArgumentNullException(nameof(setupAction));
+            }
+
             services.ConfigureOptions(new ConfigureOptions<TOptions>(setupAction));
             return services;
         }
 
-        public static IServiceCollection Configure<TOptions>([NotNull]this IServiceCollection services,
-            [NotNull] IConfiguration config)
+        public static IServiceCollection Configure<TOptions>(
+            this IServiceCollection services,
+            IConfiguration config)
+            where TOptions : class
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (config == null)
+            {
+                throw new ArgumentNullException(nameof(config));
+            }
+
             services.ConfigureOptions(new ConfigureFromConfigurationOptions<TOptions>(config));
             return services;
         }

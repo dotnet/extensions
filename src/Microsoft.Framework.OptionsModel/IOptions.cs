@@ -3,7 +3,7 @@
 
 namespace Microsoft.Framework.OptionsModel
 {
-    public interface IOptions<out TOptions> where TOptions : class,new()
+    public interface IOptions<out TOptions> where TOptions : class, new()
     {
         TOptions Value { get; }
     }

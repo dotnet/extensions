@@ -3,7 +3,7 @@
 
 namespace Microsoft.Framework.OptionsModel
 {
-    public interface IConfigureOptions<in TOptions>
+    public interface IConfigureOptions<in TOptions> where TOptions : class
     {
         void Configure(TOptions options);
     }

@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Microsoft.Framework.OptionsModel
 {
-    public class OptionsManager<TOptions> : IOptions<TOptions> where TOptions : class,new()
+    public class OptionsManager<TOptions> : IOptions<TOptions> where TOptions : class, new()
     {
         private TOptions _options;
         private IEnumerable<IConfigureOptions<TOptions>> _setups;
