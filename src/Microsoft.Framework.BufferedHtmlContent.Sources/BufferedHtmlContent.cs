@@ -89,7 +89,7 @@ namespace Microsoft.Framework.Internal
         public BufferedHtmlContent AppendLine(string value)
         {
             Append(value);
-            Append(Environment.NewLine);
+            Append(NewLine.Instance);
             return this;
         }
 
@@ -101,7 +101,7 @@ namespace Microsoft.Framework.Internal
         public BufferedHtmlContent AppendLine(IHtmlContent htmlContent)
         {
             Append(htmlContent);
-            Append(Environment.NewLine);
+            Append(NewLine.Instance);
             return this;
         }
 
@@ -128,7 +128,7 @@ namespace Microsoft.Framework.Internal
                 var entryAsString = entry as string;
                 if (entryAsString != null)
                 {
-                    writer.Write(entryAsString);
+                    encoder.HtmlEncode(entryAsString, writer);
                 }
                 else
                 {
@@ -145,6 +145,17 @@ namespace Microsoft.Framework.Internal
             {
                 WriteTo(writer, HtmlEncoder.Default);
                 return writer.ToString();
+            }
+        }
+
+        // Avoid encoding newline characters
+        private class NewLine : IHtmlContent
+        {
+            public static readonly IHtmlContent Instance = new NewLine();
+
+            public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+            {
+                writer.Write(Environment.NewLine);
             }
         }
     }
