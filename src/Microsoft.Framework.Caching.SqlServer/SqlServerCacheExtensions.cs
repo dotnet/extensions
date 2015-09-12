@@ -9,8 +9,18 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
-    public static class SqlServerCacheExtensions
+    /// <summary>
+    /// Extension methods for setting up Microsoft SQL Server distributed cache related services in an
+    /// <see cref="IServiceCollection" />.
+    /// </summary>
+    public static class SqlServerCachingServicesExtensions
     {
+        /// <summary>
+        /// Adds Microsoft SQL Server distributed caching services to the specified <see cref="IServiceCollection" />.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        /// <param name="options">An action callback to configure a <see cref="SqlServerCacheOptions" /> instance.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns> 
         public static IServiceCollection AddSqlServerCache(
             [NotNull] this IServiceCollection services,
             [NotNull] Action<SqlServerCacheOptions> options)

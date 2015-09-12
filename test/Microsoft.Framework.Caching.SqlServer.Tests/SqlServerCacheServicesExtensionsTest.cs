@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Framework.Caching.SqlServer
 {
-    public class SqlServerCacheTest
+    public class SqlServerCacheServicesExtensionsTest
     {
         [Fact]
         public void AddSqlServerCache_AddsAsSingleRegistrationService()
@@ -16,8 +16,8 @@ namespace Microsoft.Framework.Caching.SqlServer
             var services = new ServiceCollection();
 
             // Act
-            SqlServerCacheExtensions.AddSqlServerCacheServices(services);
-            SqlServerCacheExtensions.AddSqlServerCacheServices(services);
+            SqlServerCachingServicesExtensions.AddSqlServerCacheServices(services);
+            SqlServerCachingServicesExtensions.AddSqlServerCacheServices(services);
 
             // Assert
             Assert.Equal(1, services.Count);
