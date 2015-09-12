@@ -8,20 +8,24 @@ namespace Microsoft.Framework.Logging.Test.Console
 {
     public class TestConsole : IConsole
     {
+        public const ConsoleColor DefaultBackgroundColor = ConsoleColor.Black;
+        public const ConsoleColor DefaultForegroundColor = ConsoleColor.Gray;
+
         private ConsoleSink _sink;
-        
+
         public TestConsole(ConsoleSink sink)
         {
             _sink = sink;
         }
 
-        public ConsoleColor BackgroundColor { get; set; }
+        public ConsoleColor BackgroundColor { get; set; } = DefaultBackgroundColor;
 
-        public ConsoleColor ForegroundColor { get; set; }
+        public ConsoleColor ForegroundColor { get; set; } = DefaultForegroundColor;
 
         public void ResetColor()
         {
-            System.Console.ResetColor();
+            BackgroundColor = DefaultBackgroundColor;
+            ForegroundColor = DefaultForegroundColor;
         }
 
         public void WriteLine(string message)

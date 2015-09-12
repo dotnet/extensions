@@ -328,7 +328,7 @@ namespace Microsoft.Framework.Logging.Test
             // Assert
             Assert.Equal(1, sink.Writes.Count);
             var write = sink.Writes[0];
-            Assert.Equal(System.Console.BackgroundColor, write.BackgroundColor);
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(ConsoleColor.Red, write.ForegroundColor);
         }
 
@@ -346,7 +346,7 @@ namespace Microsoft.Framework.Logging.Test
             // Assert
             Assert.Equal(1, sink.Writes.Count);
             var write = sink.Writes[0];
-            Assert.Equal(System.Console.BackgroundColor, write.BackgroundColor);
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(ConsoleColor.Yellow, write.ForegroundColor);
         }
 
@@ -364,7 +364,7 @@ namespace Microsoft.Framework.Logging.Test
             // Assert
             Assert.Equal(1, sink.Writes.Count);
             var write = sink.Writes[0];
-            Assert.Equal(System.Console.BackgroundColor, write.BackgroundColor);
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(ConsoleColor.White, write.ForegroundColor);
         }
 
@@ -382,7 +382,7 @@ namespace Microsoft.Framework.Logging.Test
             // Assert
             Assert.Equal(1, sink.Writes.Count);
             var write = sink.Writes[0];
-            Assert.Equal(System.Console.BackgroundColor, write.BackgroundColor);
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
         }
 
