@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.Framework.WebEncoders;
@@ -12,6 +13,7 @@ namespace Microsoft.Framework.Internal
     /// <summary>
     /// Enumerable object collection which knows how to write itself.
     /// </summary>
+    [DebuggerDisplay("{DebuggerToString()}")]
     internal class BufferedHtmlContent : IHtmlContent
     {
         private const int MaxCharToStringLength = 1024;
@@ -82,6 +84,17 @@ namespace Microsoft.Framework.Internal
         }
 
         /// <summary>
+        /// Appends the HTML encoded <see cref="string"/> to the collection.
+        /// </summary>
+        /// <param name="value">The HTML encoded <c>string</c> to be appended.</param>
+        /// <returns>A reference to this instance after the Append operation has completed.</returns>
+        public BufferedHtmlContent AppendEncoded(string value)
+        {
+            Entries.Add(new HtmlEncodedString(value));
+            return this;
+        }
+
+        /// <summary>
         /// Appends a new line after appending the <see cref="string"/> to the collection.
         /// </summary>
         /// <param name="value">The <c>string</c> to be appended.</param>
@@ -89,7 +102,7 @@ namespace Microsoft.Framework.Internal
         public BufferedHtmlContent AppendLine(string value)
         {
             Append(value);
-            Append(NewLine.Instance);
+            Append(HtmlEncodedString.NewLine);
             return this;
         }
 
@@ -101,7 +114,7 @@ namespace Microsoft.Framework.Internal
         public BufferedHtmlContent AppendLine(IHtmlContent htmlContent)
         {
             Append(htmlContent);
-            Append(NewLine.Instance);
+            Append(HtmlEncodedString.NewLine);
             return this;
         }
 
@@ -137,9 +150,8 @@ namespace Microsoft.Framework.Internal
                 }
             }
         }
-
-        /// <inheritdoc />
-        public override string ToString()
+        
+        private string DebuggerToString()
         {
             using (var writer = new StringWriter())
             {
@@ -148,14 +160,20 @@ namespace Microsoft.Framework.Internal
             }
         }
 
-        // Avoid encoding newline characters
-        private class NewLine : IHtmlContent
+        private class HtmlEncodedString : IHtmlContent
         {
-            public static readonly IHtmlContent Instance = new NewLine();
+            public static readonly IHtmlContent NewLine = new HtmlEncodedString(Environment.NewLine);
+
+            private readonly string _value;
+
+            public HtmlEncodedString(string value)
+            {
+                _value = value;
+            }
 
             public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
             {
-                writer.Write(Environment.NewLine);
+                writer.Write(_value);
             }
         }
     }

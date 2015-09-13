@@ -43,6 +43,22 @@ namespace Microsoft.Framework.Internal
         }
 
         [Fact]
+        public void AppendEncoded_DoesNotGetWrittenAsEncoded()
+        {
+            // Arrange
+            var content = new BufferedHtmlContent();
+            content.AppendEncoded("Hello");
+
+            var writer = new StringWriter();
+
+            // Act
+            content.WriteTo(writer, new CommonTestEncoder());
+
+            // Assert
+            Assert.Equal("Hello", writer.ToString());
+        }
+
+        [Fact]
         public void AppendLine_String_NewLineDoesNotGetEncoded()
         {
             // Arrange
@@ -151,21 +167,6 @@ namespace Microsoft.Framework.Internal
             // Assert
             Assert.Equal(2, content.Entries.Count);
             Assert.Equal("Written from TestHtmlContent: HelloHtmlEncode[[Test]]", writer.ToString());
-        }
-
-        // We're purposely avoiding anything here that actually gets encoded. We don't want to take a dependency
-        // on the actual encoder implementation.
-        [Fact]
-        public void ToString_StringifiesAllContents()
-        {
-            // Arrange
-            var content = new BufferedHtmlContent();
-            content.Append(new TestHtmlContent("Hello"));
-            content.Append(new TestHtmlContent("Test"));
-
-            // Act & Assert
-            Assert.Equal(2, content.Entries.Count);
-            Assert.Equal("Written from TestHtmlContent: HelloWritten from TestHtmlContent: Test", content.ToString());
         }
 
         private class TestHtmlContent : IHtmlContent
