@@ -27,32 +27,67 @@ namespace Microsoft.Framework.Internal
         }
 
         [Fact]
-        public void AppendLine_AppendsLineAfterString()
+        public void AppendString_WrittenAsEncoded()
         {
             // Arrange
             var content = new BufferedHtmlContent();
+            content.Append("Hello");
+
+            var writer = new StringWriter();
 
             // Act
-            content.AppendLine("Hello");
+            content.WriteTo(writer, new CommonTestEncoder());
 
             // Assert
-            Assert.Equal(new [] { "Hello", Environment.NewLine }, content.Entries);
+            Assert.Equal("HtmlEncode[[Hello]]", writer.ToString());
         }
 
         [Fact]
-        public void AppendLine_AppendsLineAfterHtmlContent()
+        public void AppendEncoded_DoesNotGetWrittenAsEncoded()
         {
             // Arrange
             var content = new BufferedHtmlContent();
-            var expected = new TestHtmlContent("hello");
+            content.AppendEncoded("Hello");
+
+            var writer = new StringWriter();
 
             // Act
-            content.AppendLine(expected);
+            content.WriteTo(writer, new CommonTestEncoder());
 
             // Assert
-            Assert.Equal(2, content.Entries.Count);
-            Assert.Same(expected, content.Entries[0]);
-            Assert.Equal(Environment.NewLine, content.Entries[1]);
+            Assert.Equal("Hello", writer.ToString());
+        }
+
+        [Fact]
+        public void AppendLine_String_NewLineDoesNotGetEncoded()
+        {
+            // Arrange
+            var content = new BufferedHtmlContent();
+            content.AppendLine("Hello");
+
+            var writer = new StringWriter();
+
+            // Act
+            content.WriteTo(writer, new CommonTestEncoder());
+
+            // Assert
+            Assert.Equal("HtmlEncode[[Hello]]" + Environment.NewLine, writer.ToString());
+        }
+
+        [Fact]
+        public void AppendLine_HtmlContent_NewLineDoesNotGetEncoded()
+        {
+            // Arrange
+            var content = new BufferedHtmlContent();
+            content.AppendLine(new TestHtmlContent("hello"));
+
+            var writer = new StringWriter();
+
+            // Act
+            content.WriteTo(writer, new CommonTestEncoder());
+
+            // Assert
+            Assert.Equal("Written from TestHtmlContent: hello" + Environment.NewLine, writer.ToString());
         }
 
         [Fact]
@@ -131,20 +166,7 @@ namespace Microsoft.Framework.Internal
 
             // Assert
             Assert.Equal(2, content.Entries.Count);
-            Assert.Equal("Written from TestHtmlContent: HelloTest", writer.ToString());
-        }
-
-        [Fact]
-        public void ToString_StringifiesAllContents()
-        {
-            // Arrange
-            var content = new BufferedHtmlContent();
-            content.Append(new TestHtmlContent("Hello"));
-            content.Append("Test");
-
-            // Act & Assert
-            Assert.Equal(2, content.Entries.Count);
-            Assert.Equal("Written from TestHtmlContent: HelloTest", content.ToString());
+            Assert.Equal("Written from TestHtmlContent: HelloHtmlEncode[[Test]]", writer.ToString());
         }
 
         private class TestHtmlContent : IHtmlContent
