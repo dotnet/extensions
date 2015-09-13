@@ -6,10 +6,13 @@ using Microsoft.Framework.TelemetryAdapter;
 
 namespace Microsoft.Framework.DependencyInjection
 {
+    /// <summary>
+    /// Extension methods for setting up telemetry source adapter related services in an <see cref="IServiceCollection" />.
+    /// </summary>
     public static class TelemetrySourceAdapterServiceCollectionExtensions
     {
         /// <summary>
-        /// Extension methods for setting up telemetry source adapter related services in an <see cref="IServiceCollection" />.
+        /// Adds telemetry source adapter services to the specified <see cref="IServiceCollection" />. 
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
