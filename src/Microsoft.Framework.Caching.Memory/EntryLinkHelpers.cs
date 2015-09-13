@@ -23,7 +23,7 @@ namespace Microsoft.Framework.Caching.Memory
             set { _contextLink.Value = value; }
         }
 #else
-        private const string ContextLinkDataName = "klr.host.EntryLinkHelpers.ContextLink";
+        private const string ContextLinkDataName = "EntryLinkHelpers.ContextLink";
 
         public static EntryLink ContextLink
         {
