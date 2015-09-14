@@ -12,9 +12,20 @@ namespace Microsoft.Framework.Internal
         private readonly Func<TContext, object> _valueAccessor;
         private readonly Action<object, object> _fastPropertySetter;
 
-        public PropertyActivator([NotNull] PropertyInfo propertyInfo,
-                                 [NotNull] Func<TContext, object> valueAccessor)
+        public PropertyActivator(
+            PropertyInfo propertyInfo,
+            Func<TContext, object> valueAccessor)
         {
+            if (propertyInfo == null)
+            {
+                throw new ArgumentNullException(nameof(propertyInfo));
+            }
+
+            if (valueAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(valueAccessor));
+            }
+
             PropertyInfo = propertyInfo;
             _valueAccessor = valueAccessor;
             _fastPropertySetter = PropertyHelper.MakeFastPropertySetter(propertyInfo);
@@ -22,27 +33,62 @@ namespace Microsoft.Framework.Internal
 
         public PropertyInfo PropertyInfo { get; private set; }
 
-        public object Activate([NotNull] object view, [NotNull] TContext context)
+        public object Activate(object instance, TContext context)
         {
+            if (instance == null)
+            {
+                throw new ArgumentNullException(nameof(instance));
+            }
+
             var value = _valueAccessor(context);
-            _fastPropertySetter(view, value);
+            _fastPropertySetter(instance, value);
             return value;
         }
 
         public static PropertyActivator<TContext>[] GetPropertiesToActivate(
-            [NotNull] Type type,
-            [NotNull] Type activateAttributeType,
-            [NotNull] Func<PropertyInfo, PropertyActivator<TContext>> createActivateInfo)
+            Type type,
+            Type activateAttributeType,
+            Func<PropertyInfo, PropertyActivator<TContext>> createActivateInfo)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (activateAttributeType == null)
+            {
+                throw new ArgumentNullException(nameof(activateAttributeType));
+            }
+
+            if (createActivateInfo == null)
+            {
+                throw new ArgumentNullException(nameof(createActivateInfo));
+            }
+
             return GetPropertiesToActivate(type, activateAttributeType, createActivateInfo, includeNonPublic: false);
         }
 
         public static PropertyActivator<TContext>[] GetPropertiesToActivate(
-            [NotNull] Type type,
-            [NotNull] Type activateAttributeType,
-            [NotNull] Func<PropertyInfo, PropertyActivator<TContext>> createActivateInfo,
+            Type type,
+            Type activateAttributeType,
+            Func<PropertyInfo, PropertyActivator<TContext>> createActivateInfo,
             bool includeNonPublic)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (activateAttributeType == null)
+            {
+                throw new ArgumentNullException(nameof(activateAttributeType));
+            }
+
+            if (createActivateInfo == null)
+            {
+                throw new ArgumentNullException(nameof(createActivateInfo));
+            }
+
             var properties = type.GetRuntimeProperties()
                 .Where((property) =>
                 {

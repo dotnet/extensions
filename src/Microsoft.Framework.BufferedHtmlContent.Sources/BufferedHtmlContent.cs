@@ -42,8 +42,12 @@ namespace Microsoft.Framework.Internal
         /// <remarks>
         /// Splits the character array into strings of 1KB length and appends them.
         /// </remarks>
-        public BufferedHtmlContent Append([NotNull] char[] value, int index, int count)
+        public BufferedHtmlContent Append(char[] value, int index, int count)
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
             if (index < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
@@ -116,8 +120,18 @@ namespace Microsoft.Framework.Internal
         }
 
         /// <inheritdoc />
-        public void WriteTo([NotNull] TextWriter writer, [NotNull] IHtmlEncoder encoder)
+        public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (encoder == null)
+            {
+                throw new ArgumentNullException(nameof(encoder));
+            }
+
             foreach (var entry in Entries)
             {
                 if (entry == null)

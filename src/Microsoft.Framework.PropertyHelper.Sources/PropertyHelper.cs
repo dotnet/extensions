@@ -43,8 +43,13 @@ namespace Microsoft.Framework.Internal
         /// Initializes a fast <see cref="PropertyHelper"/>.
         /// This constructor does not cache the helper. For caching, use <see cref="GetProperties(object)"/>.
         /// </summary>
-        public PropertyHelper([NotNull] PropertyInfo property)
+        public PropertyHelper(PropertyInfo property)
         {
+            if (property == null)
+            {
+                throw new ArgumentNullException(nameof(property));
+            }
+
             Property = property;
             Name = property.Name;
             ValueGetter = MakeFastPropertyGetter(property);
@@ -81,7 +86,6 @@ namespace Microsoft.Framework.Internal
                 return _valueSetter;
             }
         }
-
 
         /// <summary>
         /// Returns the property value for the specified <paramref name="instance"/>.
