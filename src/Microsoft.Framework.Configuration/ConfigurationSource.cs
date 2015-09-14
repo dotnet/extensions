@@ -32,9 +32,15 @@ namespace Microsoft.Framework.Configuration
        
         public virtual IEnumerable<string> ProduceConfigurationSections(
             IEnumerable<string> earlierKeys,
-            string prefix,
+            string parentPath,
             string delimiter)
         {
+            var prefix = parentPath;
+            if (prefix != string.Empty)
+            {
+                prefix = parentPath + delimiter;
+            }
+
             return Data
                 .Where(kv => kv.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                 .Select(kv => Segment(kv.Key, prefix, delimiter))

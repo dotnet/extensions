@@ -17,17 +17,20 @@ namespace Microsoft.Framework.Configuration
             }
         }
 
+        public override string Path
+        {
+            get
+            {
+                return string.Empty;
+            }
+        }
+
         public void Reload()
         {
             foreach (var src in Sources)
             {
                 src.Load();
             }
-        }
-
-        protected override string GetPrefix()
-        {
-            return string.Empty;
         }
     }
 }

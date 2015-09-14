@@ -189,7 +189,7 @@ namespace Microsoft.Framework.Configuration.Test
         }
 
         [Fact]
-        public void CanGetConfigurationSections()
+        public void CanGetConfigurationChildren()
         {
             // Arrange
             var dic1 = new Dictionary<string, string>()
@@ -221,11 +221,11 @@ namespace Microsoft.Framework.Configuration.Test
 
             // Assert
             Assert.Equal(2, configSections.Count());
-            Assert.Equal("MemVal1", configSections.FirstOrDefault(c => c.Key == "Data:DB1")["Connection1"]);
-            Assert.Equal("MemVal2", configSections.FirstOrDefault(c => c.Key == "Data:DB1")["Connection2"]);
-            Assert.Equal("MemVal3", configSections.FirstOrDefault(c => c.Key == "Data:DB2Connection").Value);
-            Assert.False(configSections.Exists(c => c.Key == "Data:DB3"));
-            Assert.False(configSections.Exists(c => c.Key == "Source:DB3"));
+            Assert.Equal("MemVal1", configSections.FirstOrDefault(c => c.Key == "DB1")["Connection1"]);
+            Assert.Equal("MemVal2", configSections.FirstOrDefault(c => c.Key == "DB1")["Connection2"]);
+            Assert.Equal("MemVal3", configSections.FirstOrDefault(c => c.Key == "DB2Connection").Value);
+            Assert.False(configSections.Exists(c => c.Key == "DB3"));
+            Assert.False(configSections.Exists(c => c.Key == "DB3"));
         }
 
         [Fact]

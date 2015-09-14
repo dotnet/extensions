@@ -233,12 +233,12 @@ namespace Microsoft.Framework.Configuration.Json.Test
             var indexConfigurationSections = configurationSection.GetChildren().ToArray();
 
             Assert.Equal(6, indexConfigurationSections.Count());
-            Assert.Equal("setting:4", indexConfigurationSections[0].Key);
-            Assert.Equal("setting:10", indexConfigurationSections[1].Key);
-            Assert.Equal("setting:42", indexConfigurationSections[2].Key);
-            Assert.Equal("setting:1text", indexConfigurationSections[3].Key);
-            Assert.Equal("setting:bob", indexConfigurationSections[4].Key);
-            Assert.Equal("setting:hello", indexConfigurationSections[5].Key);
+            Assert.Equal("4", indexConfigurationSections[0].Key);
+            Assert.Equal("10", indexConfigurationSections[1].Key);
+            Assert.Equal("42", indexConfigurationSections[2].Key);
+            Assert.Equal("1text", indexConfigurationSections[3].Key);
+            Assert.Equal("bob", indexConfigurationSections[4].Key);
+            Assert.Equal("hello", indexConfigurationSections[5].Key);
         }
     }
 }

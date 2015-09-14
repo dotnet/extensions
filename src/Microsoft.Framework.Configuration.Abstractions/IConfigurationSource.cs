@@ -15,7 +15,7 @@ namespace Microsoft.Framework.Configuration
 
         IEnumerable<string> ProduceConfigurationSections(
             IEnumerable<string> earlierKeys,
-            string prefix,
+            string parentPath,
             string delimiter);
     }
 }

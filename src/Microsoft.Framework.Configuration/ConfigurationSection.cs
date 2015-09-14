@@ -10,26 +10,30 @@ namespace Microsoft.Framework.Configuration
     public class ConfigurationSection : ConfigurationBase, IConfigurationSection
     {
         private readonly string _key;
+        private readonly string _path;
 
-        public ConfigurationSection(IList<IConfigurationSource> sources, string key)
+        public ConfigurationSection(IList<IConfigurationSource> sources, string parentPath, string key)
             : base(sources)
         {
-            if (sources == null)
+            if (parentPath == null)
             {
-                throw new ArgumentNullException(nameof(sources));
-            }
-
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
+                throw new ArgumentNullException(nameof(parentPath));
             }
 
             if (string.IsNullOrEmpty(key))
             {
-                throw new InvalidOperationException(Resources.Error_EmptyKey);
+                throw new ArgumentException(Resources.Error_EmptyKey);
             }
 
             _key = key;
+            if (!string.Equals(parentPath, string.Empty))
+            {
+                _path = parentPath + Constants.KeyDelimiter + key;
+            }
+            else
+            {
+                _path = key;
+            }
         }
 
         public string Key
@@ -37,6 +41,14 @@ namespace Microsoft.Framework.Configuration
             get
             {
                 return _key;
+            }
+        }
+
+        public override string Path
+        {
+            get
+            {
+                return _path;
             }
         }
 
@@ -48,7 +60,7 @@ namespace Microsoft.Framework.Configuration
                 {
                     string value = null;
 
-                    if (src.TryGet(_key, out value))
+                    if (src.TryGet(Path, out value))
                     {
                         return value;
                     }
@@ -65,14 +77,9 @@ namespace Microsoft.Framework.Configuration
 
                 foreach (var src in Sources)
                 {
-                    src.Set(Key, value);
+                    src.Set(Path, value);
                 }
             }
-        }
-
-        protected override string GetPrefix()
-        {
-            return _key + Constants.KeyDelimiter;
         }
     }
 }

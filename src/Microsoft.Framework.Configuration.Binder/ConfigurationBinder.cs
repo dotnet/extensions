@@ -202,13 +202,6 @@ namespace Microsoft.Framework.Configuration
                 if (item != null)
                 {
                     var key = child.Key;
-                    var section = config as IConfigurationSection;
-                    if (section != null)
-                    {
-                        // Remove the parent key and : delimiter to get the configurationSection's key
-                        key = key.Substring(section.Key.Length + 1);
-                    }
-
                     addMethod.Invoke(dictionary, new[] { key, item });
                 }
             }

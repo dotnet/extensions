@@ -21,41 +21,17 @@ namespace Microsoft.Framework.Configuration
             _sources = sources;
         }
 
+        public abstract string Path { get; }
+
         public string this[string key]
         {
             get
             {
-                if (string.IsNullOrEmpty(key))
-                {
-                    throw new InvalidOperationException(Resources.Error_EmptyKey);
-                }
-
-                // If a key in the newly added configuration source is identical to a key in a
-                // formerly added configuration source, the new one overrides the former one.
-                // So we search in reverse order, starting with latest configuration source.
-                foreach (var src in _sources.Reverse())
-                {
-                    string value = null;
-
-                    if (src.TryGet(GetPrefix() + key, out value))
-                    {
-                        return value;
-                    }
-                }
-
-                return null;
+                return GetSection(key).Value;
             }
             set
             {
-                if (!Sources.Any())
-                {
-                    throw new InvalidOperationException(Resources.Error_NoSources);
-                }
-
-                foreach (var src in Sources)
-                {
-                    src.Set(GetPrefix() + key, value);
-                }
+                GetSection(key).Value = value;
             }
         }
 
@@ -69,29 +45,20 @@ namespace Microsoft.Framework.Configuration
 
         public IEnumerable<IConfigurationSection> GetChildren()
         {
-            var prefix = GetPrefix();
-
             var segments = Sources.Aggregate(
                 Enumerable.Empty<string>(),
-                (seed, source) => source.ProduceConfigurationSections(seed, prefix, Constants.KeyDelimiter));
+                (seed, source) => source.ProduceConfigurationSections(seed, Path, Constants.KeyDelimiter));
 
             var distinctSegments = segments.Distinct();
             return distinctSegments.Select(segment =>
             {
-                return new ConfigurationSection(Sources, prefix + segment);
+                return new ConfigurationSection(Sources, Path, segment);
             });
         }
 
         public IConfigurationSection GetSection(string key)
         {
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new InvalidOperationException(Resources.Error_EmptyKey);
-            }
-
-            return new ConfigurationSection(Sources, GetPrefix() + key);
+            return new ConfigurationSection(Sources, Path, key);
         }
-
-        protected abstract string GetPrefix();
     }
 }
