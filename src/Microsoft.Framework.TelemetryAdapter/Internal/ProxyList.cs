@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.TelemetryAdapter.Internal
 {
@@ -13,13 +12,18 @@ namespace Microsoft.Framework.TelemetryAdapter.Internal
         private readonly IList<TSourceElement> _source;
         private readonly Type _proxyType;
 
-        public ProxyList([NotNull] IList<TSourceElement> source)
+        public ProxyList(IList<TSourceElement> source)
             : this(source, null)
         {
         }
 
-        protected ProxyList([NotNull] IList<TSourceElement> source, Type proxyType)
+        protected ProxyList(IList<TSourceElement> source, Type proxyType)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             _source = source;
             _proxyType = proxyType;
         }

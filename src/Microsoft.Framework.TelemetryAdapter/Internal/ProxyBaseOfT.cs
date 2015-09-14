@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.Internal;
+using System;
 
 namespace Microsoft.Framework.TelemetryAdapter.Internal
 {
@@ -10,9 +10,14 @@ namespace Microsoft.Framework.TelemetryAdapter.Internal
         // Used by reflection, don't rename.
         public readonly T Instance;
 
-        public ProxyBase([NotNull] T instance)
+        public ProxyBase(T instance)
             : base(typeof(T))
         {
+            if (instance == null)
+            {
+                throw new ArgumentNullException(nameof(instance));
+            }
+
             Instance = instance;
         }
 
