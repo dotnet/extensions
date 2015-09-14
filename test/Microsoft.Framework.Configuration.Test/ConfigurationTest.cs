@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Framework.Configuration.Memory;
@@ -51,9 +50,6 @@ namespace Microsoft.Framework.Configuration.Test
 
             var builder = new ConfigurationBuilder();
 
-            string memVal1, memVal2, memVal3;
-            bool memRet1, memRet2, memRet3;
-
             // Act
             builder.Add(memConfigSrc1, load: false);
             builder.Add(memConfigSrc2, load: false);
@@ -61,9 +57,9 @@ namespace Microsoft.Framework.Configuration.Test
 
             var config = builder.Build();
 
-            memVal1 = config["mem1:keyinmem1"];
-            memVal2 = config["Mem2:KeyInMem2"];
-            memVal3 = config["MEM3:KEYINMEM3"];
+            var memVal1 = config["mem1:keyinmem1"];
+            var memVal2 = config["Mem2:KeyInMem2"];
+            var memVal3 = config["MEM3:KEYINMEM3"];
 
             // Assert
             Assert.Contains(memConfigSrc1, builder.Sources);
@@ -129,7 +125,7 @@ namespace Microsoft.Framework.Configuration.Test
             var config = builder.Build();
 
             // Act
-            config["Key1"] =  "NewValue1";
+            config["Key1"] = "NewValue1";
             config["Key2"] = "NewValue2";
 
             // Assert
@@ -171,16 +167,14 @@ namespace Microsoft.Framework.Configuration.Test
 
             var config = builder.Build();
 
-            string memVal1, memVal2, memVal3, memVal4, memVal5;
-
             // Act
             var configFocus = config.GetSection("Data");
 
-            memVal1 = configFocus["DB1:Connection1"];
-            memVal2 = configFocus["DB1:Connection2"];
-            memVal3 = configFocus["DB2:Connection"];
-            memVal4 = configFocus["Source:DB2:Connection"];
-            memVal5 = configFocus.Value;
+            var memVal1 = configFocus["DB1:Connection1"];
+            var memVal2 = configFocus["DB1:Connection2"];
+            var memVal3 = configFocus["DB2:Connection"];
+            var memVal4 = configFocus["Source:DB2:Connection"];
+            var memVal5 = configFocus.Value;
 
             // Assert
             Assert.Equal("MemVal1", memVal1);
@@ -235,23 +229,23 @@ namespace Microsoft.Framework.Configuration.Test
         }
 
         [Fact]
-        public void CanIterateWithGenericEnumerator()
+        public void SourcesReturnsAddedConfigurationSources()
         {
             // Arrange
             var dict = new Dictionary<string, string>()
-                {
-                    {"Mem:KeyInMem", "MemVal"}
-                };
+            {
+                {"Mem:KeyInMem", "MemVal"}
+            };
             var memConfigSrc1 = new MemoryConfigurationSource(dict);
             var memConfigSrc2 = new MemoryConfigurationSource(dict);
             var memConfigSrc3 = new MemoryConfigurationSource(dict);
 
             var srcSet = new HashSet<IConfigurationSource>()
-                {
-                    memConfigSrc1,
-                    memConfigSrc2,
-                    memConfigSrc3
-                };
+            {
+                memConfigSrc1,
+                memConfigSrc2,
+                memConfigSrc3
+            };
 
             var builder = new ConfigurationBuilder();
 
@@ -263,55 +257,7 @@ namespace Microsoft.Framework.Configuration.Test
             var config = builder.Build();
 
             // Assert
-            var enumerator = builder.Sources.GetEnumerator();
-            int srcCount = 0;
-            while (enumerator.MoveNext())
-            {
-                Assert.Contains(enumerator.Current, srcSet);
-                ++srcCount;
-            }
-
-            Assert.Equal(3, srcCount);
-        }
-
-        [Fact]
-        public void CanIterateAfterCastedToIEnumerable()
-        {
-            // Arrange
-            var dict = new Dictionary<string, string>()
-                {
-                    {"Mem:KeyInMem", "MemVal"}
-                };
-            var memConfigSrc1 = new MemoryConfigurationSource(dict);
-            var memConfigSrc2 = new MemoryConfigurationSource(dict);
-            var memConfigSrc3 = new MemoryConfigurationSource(dict);
-
-            var srcSet = new HashSet<IConfigurationSource>()
-                {
-                    memConfigSrc1,
-                    memConfigSrc2,
-                    memConfigSrc3
-                };
-
-            var builder = new ConfigurationBuilder();
-
-            // Act
-            builder.Add(memConfigSrc1, load: false);
-            builder.Add(memConfigSrc2, load: false);
-            builder.Add(memConfigSrc3, load: false);
-
-            var enumerable = builder as IEnumerable;
-
-            // Assert
-            var enumerator = builder.Sources.GetEnumerator();
-            int srcCount = 0;
-            while (enumerator.MoveNext())
-            {
-                Assert.Contains(enumerator.Current, srcSet);
-                ++srcCount;
-            }
-
-            Assert.Equal(3, srcCount);
+            Assert.Equal(new[] { memConfigSrc1, memConfigSrc2, memConfigSrc3 }, builder.Sources);
         }
 
         [Fact]

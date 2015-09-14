@@ -1,19 +1,22 @@
 {
-  "dependencies": {
-    "Microsoft.Framework.Configuration": "1.0.0-*",
-    "Microsoft.Framework.Configuration.Test.Common": "1.0.0-*",
-    "xunit.runner.aspnet": "2.0.0-aspnet-*"
-  },
-  "frameworks": {
-    "dnx451": {
+    "compilationOptions": {
+        "warningsAsErrors": true
     },
-    "dnxcore50": {
-      "dependencies": {
-        "System.Collections.NonGeneric": "4.0.1-beta-*"
-      }
+    "dependencies": {
+        "Microsoft.Framework.Configuration": "1.0.0-*",
+        "Microsoft.Framework.Configuration.Test.Common": "1.0.0-*",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    },
+    "frameworks": {
+        "dnx451": {
+        },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Collections.NonGeneric": "4.0.1-beta-*"
+            }
+        }
+    },
+    "commands": {
+        "test": "xunit.runner.aspnet"
     }
-  },
-  "commands": {
-    "test": "xunit.runner.aspnet"
-  }
 }
