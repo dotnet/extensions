@@ -20,19 +20,13 @@ namespace Microsoft.Framework.Internal
         /// <param name="identity"></param>
         public static ClaimsPrincipal MergeUserPrincipal(ClaimsPrincipal existingPrincipal, ClaimsPrincipal additionalPrincipal)
         {
-            if (existingPrincipal == null)
-            {
-                throw new ArgumentNullException(nameof(existingPrincipal));
-            }
-
-            if (additionalPrincipal == null)
-            {
-                throw new ArgumentNullException(nameof(additionalPrincipal));
-            }
-
             var newPrincipal = new ClaimsPrincipal();
+
             // New principal identities go first
-            newPrincipal.AddIdentities(additionalPrincipal.Identities);
+            if (additionalPrincipal != null)
+            {
+                newPrincipal.AddIdentities(additionalPrincipal.Identities);
+            }
 
             // Then add any existing non empty or authenticated identities
             if (existingPrincipal != null)
