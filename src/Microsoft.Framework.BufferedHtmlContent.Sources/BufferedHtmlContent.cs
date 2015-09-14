@@ -89,8 +89,18 @@ namespace Microsoft.Framework.Internal
         }
 
         /// <inheritdoc />
-        public void WriteTo([NotNull] TextWriter writer, [NotNull] IHtmlEncoder encoder)
+        public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (encoder == null)
+            {
+                throw new ArgumentNullException(nameof(encoder));
+            }
+
             foreach (var entry in Entries)
             {
                 if (entry == null)

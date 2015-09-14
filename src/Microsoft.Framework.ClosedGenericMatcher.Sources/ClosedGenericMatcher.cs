@@ -28,8 +28,18 @@ namespace Microsoft.Framework.Internal
         /// <c>typeof(KeyValuePair{,})</c>, and <paramref name="queryType"/> is
         /// <c>typeof(KeyValuePair{string, object})</c>.
         /// </remarks>
-        public static Type ExtractGenericInterface([NotNull] Type queryType, [NotNull] Type interfaceType)
+        public static Type ExtractGenericInterface(Type queryType, Type interfaceType)
         {
+            if (queryType == null)
+            {
+                throw new ArgumentNullException(nameof(queryType));
+            }
+
+            if (interfaceType == null)
+            {
+                throw new ArgumentNullException(nameof(interfaceType));
+            }
+
             Func<Type, bool> matchesInterface =
                 type => type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == interfaceType;
             if (matchesInterface(queryType))

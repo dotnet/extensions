@@ -13,9 +13,20 @@ namespace Microsoft.Framework.Internal
         private readonly IEqualityComparer<TKey> _comparer;
         private IDictionary<TKey, TValue> _innerDictionary;
 
-        public CopyOnWriteDictionary([NotNull] IDictionary<TKey, TValue> sourceDictionary,
-                                     [NotNull] IEqualityComparer<TKey> comparer)
+        public CopyOnWriteDictionary(
+            IDictionary<TKey, TValue> sourceDictionary,
+            IEqualityComparer<TKey> comparer)
         {
+            if (sourceDictionary == null)
+            {
+                throw new ArgumentNullException(nameof(sourceDictionary));
+            }
+
+            if (comparer == null)
+            {
+                throw new ArgumentNullException(nameof(comparer));
+            }
+
             _sourceDictionary = sourceDictionary;
             _comparer = comparer;
         }
@@ -74,7 +85,7 @@ namespace Microsoft.Framework.Internal
             }
         }
 
-        public virtual TValue this[[NotNull] TKey key]
+        public virtual TValue this[TKey key]
         {
             get
             {
@@ -86,22 +97,22 @@ namespace Microsoft.Framework.Internal
             }
         }
 
-        public virtual bool ContainsKey([NotNull] TKey key)
+        public virtual bool ContainsKey(TKey key)
         {
             return ReadDictionary.ContainsKey(key);
         }
 
-        public virtual void Add([NotNull] TKey key, TValue value)
+        public virtual void Add(TKey key, TValue value)
         {
             WriteDictionary.Add(key, value);
         }
 
-        public virtual bool Remove([NotNull] TKey key)
+        public virtual bool Remove(TKey key)
         {
             return WriteDictionary.Remove(key);
         }
 
-        public virtual bool TryGetValue([NotNull] TKey key, out TValue value)
+        public virtual bool TryGetValue(TKey key, out TValue value)
         {
             return ReadDictionary.TryGetValue(key, out value);
         }
@@ -121,7 +132,7 @@ namespace Microsoft.Framework.Internal
             return ReadDictionary.Contains(item);
         }
 
-        public virtual void CopyTo([NotNull] KeyValuePair<TKey, TValue>[] array, int arrayIndex)
+        public virtual void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
             ReadDictionary.CopyTo(array, arrayIndex);
         }

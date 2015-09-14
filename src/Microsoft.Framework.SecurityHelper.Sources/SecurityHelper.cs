@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Security.Claims;
 
@@ -17,8 +18,18 @@ namespace Microsoft.Framework.Internal
         /// any empty unauthenticated identities from context.User
         /// </summary>
         /// <param name="identity"></param>
-        public static ClaimsPrincipal MergeUserPrincipal([NotNull] ClaimsPrincipal existingPrincipal, [NotNull] ClaimsPrincipal additionalPrincipal)
+        public static ClaimsPrincipal MergeUserPrincipal(ClaimsPrincipal existingPrincipal, ClaimsPrincipal additionalPrincipal)
         {
+            if (existingPrincipal == null)
+            {
+                throw new ArgumentNullException(nameof(existingPrincipal));
+            }
+
+            if (additionalPrincipal == null)
+            {
+                throw new ArgumentNullException(nameof(additionalPrincipal));
+            }
+
             var newPrincipal = new ClaimsPrincipal();
             // New principal identities go first
             newPrincipal.AddIdentities(additionalPrincipal.Identities);
