@@ -15,7 +15,7 @@ namespace Microsoft.Dnx.TestHost
     public static class ProjectCommand
     {
         public static async Task<int> Execute(
-            IServiceProvider services, 
+            IServiceProvider services,
             Project project,
             string command,
             string[] args)
@@ -23,7 +23,7 @@ namespace Microsoft.Dnx.TestHost
             var environment = (IApplicationEnvironment)services.GetService(typeof(IApplicationEnvironment));
             var commandText = project.Commands[command];
             var replacementArgs = CommandGrammar.Process(
-                commandText, 
+                commandText,
                 (key) => GetVariable(environment, key),
                 preserveSurroundingQuotes: false)
                 .ToArray();
@@ -34,7 +34,7 @@ namespace Microsoft.Dnx.TestHost
             if (string.IsNullOrEmpty(entryPoint) ||
                 string.Equals(entryPoint, "run", StringComparison.Ordinal))
             {
-                entryPoint = project.EntryPoint ?? project.Name;
+                entryPoint = project.Name;
             }
 
             CallContextServiceLocator.Locator.ServiceProvider = services;

@@ -1,46 +1,50 @@
 {
-  "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/testing"
-  },
-  "compilationOptions": {
-    "warningsAsErrors": true
-  },
-  "dependencies": {
-    "Microsoft.Framework.CommandLineUtils.Sources": {
-      "version": "1.0.0-*",
-      "type": "build"
+    "version": "1.0.0-*",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/testing"
     },
-    "Microsoft.Framework.Logging": "1.0.0-*",
-    "Microsoft.Dnx.TestAdapter": "1.0.0-*",
-    "Microsoft.Dnx.Runtime": "1.0.0-*",
-    "Microsoft.Dnx.Compilation.Abstractions": "1.0.0-*",
-    "Microsoft.Dnx.Runtime.CommandParsing.Sources": {
-      "version": "1.0.0-*",
-      "type": "build"
+    "compilationOptions": {
+        "warningsAsErrors": true
     },
-    "Microsoft.Dnx.Runtime.Sources": {
-      "version": "1.0.0-*",
-      "type": "build"
+    "dependencies": {
+        "Microsoft.Dnx.Compilation.Abstractions": "1.0.0-*",
+        "Microsoft.Dnx.Runtime.CommandParsing.Sources": {
+            "version": "1.0.0-*",
+            "type": "build"
+        },
+        "Microsoft.Dnx.Runtime.Sources": {
+            "version": "1.0.0-*",
+            "type": "build"
+        },
+        "Microsoft.Dnx.TestAdapter": "1.0.0-*",
+        "Microsoft.Framework.CommandLineUtils.Sources": {
+            "version": "1.0.0-*",
+            "type": "build"
+        },
+        "Microsoft.Framework.Logging": "1.0.0-*",
+        "Newtonsoft.Json": "6.0.6"
     },
-    "Newtonsoft.Json": "6.0.6"
-  },
-  "commands": {
-    "run": "run"
-  },
-  "frameworks": {
-    "dnx451": { },
-    "dnxcore50": {
-      "dependencies": {
-        "System.Console": "4.0.0-beta-*",
-        "System.Diagnostics.Process": "4.0.0-beta-*",
-        "System.Diagnostics.TraceSource": "4.0.0-beta-*",
-        "System.Diagnostics.TextWriterTraceListener": "4.0.0-beta-*",
-        "System.Net.Primitives": "4.0.11-beta-*",
-        "System.Net.Sockets": "4.0.10-beta-*",
-        "System.Reflection.Extensions": "4.0.1-beta-*"
-      }
+    "commands": {
+        "run": "run"
+    },
+    "frameworks": {
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.Runtime": "4.0.0.0",
+                "System.Threading.Tasks": "4.0.0.0"
+            }
+        },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Console": "4.0.0-beta-*",
+                "System.Diagnostics.Process": "4.0.0-beta-*",
+                "System.Diagnostics.TraceSource": "4.0.0-beta-*",
+                "System.Diagnostics.TextWriterTraceListener": "4.0.0-beta-*",
+                "System.Net.Primitives": "4.0.11-beta-*",
+                "System.Net.Sockets": "4.0.10-beta-*",
+                "System.Reflection.Extensions": "4.0.1-beta-*"
+            }
+        }
     }
-  }
 }

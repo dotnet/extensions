@@ -4,10 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Dnx.TestHost
@@ -62,7 +64,7 @@ namespace Microsoft.Dnx.TestHost
                     {
                         string testCommand = null;
                         Project project = null;
-                        if (Project.TryGetProject(projectPath, out project, diagnostics: null))
+                        if (Project.TryGetProject(projectPath, out project))
                         {
                             project.Commands.TryGetValue("test", out testCommand);
                         }
@@ -115,7 +117,7 @@ namespace Microsoft.Dnx.TestHost
 
                             var testServices = TestServices.CreateTestServices(_services, project, channel);
                             await ProjectCommand.Execute(testServices, project, "test", commandArgs);
-                            
+
                             channel.Send(new Message()
                             {
                                 MessageType = "TestDiscovery.Response",
@@ -144,7 +146,7 @@ namespace Microsoft.Dnx.TestHost
 
                             var testServices = TestServices.CreateTestServices(_services, project, channel);
                             await ProjectCommand.Execute(testServices, project, "test", commandArgs.ToArray());
-                            
+
                             channel.Send(new Message()
                             {
                                 MessageType = "TestExecution.Response",
