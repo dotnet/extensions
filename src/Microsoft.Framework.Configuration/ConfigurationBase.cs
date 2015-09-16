@@ -1,10 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.Configuration
 {
@@ -12,12 +11,17 @@ namespace Microsoft.Framework.Configuration
     {
         private readonly IList<IConfigurationSource> _sources = new List<IConfigurationSource>();
 
-        public ConfigurationBase ([NotNull] IList<IConfigurationSource> sources)
+        public ConfigurationBase(IList<IConfigurationSource> sources)
         {
+            if (sources == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
+            }
+
             _sources = sources;
         }
 
-        public string this[[NotNull] string key]
+        public string this[string key]
         {
             get
             {
