@@ -59,38 +59,6 @@ namespace Microsoft.Framework.Internal
         }
 
         [Fact]
-        public void AppendLine_String_NewLineDoesNotGetEncoded()
-        {
-            // Arrange
-            var content = new BufferedHtmlContent();
-            content.AppendLine("Hello");
-
-            var writer = new StringWriter();
-
-            // Act
-            content.WriteTo(writer, new CommonTestEncoder());
-
-            // Assert
-            Assert.Equal("HtmlEncode[[Hello]]" + Environment.NewLine, writer.ToString());
-        }
-
-        [Fact]
-        public void AppendLine_HtmlContent_NewLineDoesNotGetEncoded()
-        {
-            // Arrange
-            var content = new BufferedHtmlContent();
-            content.AppendLine(new TestHtmlContent("hello"));
-
-            var writer = new StringWriter();
-
-            // Act
-            content.WriteTo(writer, new CommonTestEncoder());
-
-            // Assert
-            Assert.Equal("Written from TestHtmlContent: hello" + Environment.NewLine, writer.ToString());
-        }
-
-        [Fact]
         public void AppendIHtmlContent_AppendsAsIs()
         {
             // Arrange

@@ -14,7 +14,7 @@ namespace Microsoft.Framework.Internal
     /// Enumerable object collection which knows how to write itself.
     /// </summary>
     [DebuggerDisplay("{DebuggerToString()}")]
-    internal class BufferedHtmlContent : IHtmlContent
+    internal class BufferedHtmlContent : IHtmlContentBuilder
     {
         // This is not List<IHtmlContent> because that would lead to wrapping all strings to IHtmlContent
         // which is not space performant.
@@ -26,7 +26,7 @@ namespace Microsoft.Framework.Internal
         /// </summary>
         /// <param name="value">The <c>string</c> to be appended.</param>
         /// <returns>A reference to this instance after the Append operation has completed.</returns>
-        public BufferedHtmlContent Append(string value)
+        public IHtmlContentBuilder Append(string value)
         {
             Entries.Add(value);
             return this;
@@ -37,7 +37,7 @@ namespace Microsoft.Framework.Internal
         /// </summary>
         /// <param name="htmlContent">The <see cref="IHtmlContent"/> to be appended.</param>
         /// <returns>A reference to this instance after the Append operation has completed.</returns>
-        public BufferedHtmlContent Append(IHtmlContent htmlContent)
+        public IHtmlContentBuilder Append(IHtmlContent htmlContent)
         {
             Entries.Add(htmlContent);
             return this;
@@ -48,44 +48,18 @@ namespace Microsoft.Framework.Internal
         /// </summary>
         /// <param name="value">The HTML encoded <c>string</c> to be appended.</param>
         /// <returns>A reference to this instance after the Append operation has completed.</returns>
-        public BufferedHtmlContent AppendEncoded(string value)
+        public IHtmlContentBuilder AppendEncoded(string value)
         {
             Entries.Add(new HtmlEncodedString(value));
             return this;
         }
-
-        /// <summary>
-        /// Appends a new line after appending the <see cref="string"/> to the collection.
-        /// </summary>
-        /// <param name="value">The <c>string</c> to be appended.</param>
-        /// <returns>A reference to this instance after the AppendLine operation has completed.</returns>
-        public BufferedHtmlContent AppendLine(string value)
-        {
-            Append(value);
-            Append(HtmlEncodedString.NewLine);
-            return this;
-        }
-
-        /// <summary>
-        /// Appends a new line after appending the <see cref="IHtmlContent"/> to the collection.
-        /// </summary>
-        /// <param name="htmlContent"></param>
-        /// <returns>A reference to this instance after the AppendLine operation has completed.</returns>
-        public BufferedHtmlContent AppendLine(IHtmlContent htmlContent)
-        {
-            Append(htmlContent);
-            Append(HtmlEncodedString.NewLine);
-            return this;
-        }
-
         /// <summary>
         /// Removes all the entries from the collection.
         /// </summary>
         /// <returns>A reference to this instance after the Clear operation has completed.</returns>
-        public BufferedHtmlContent Clear()
+        public void Clear()
         {
             Entries.Clear();
-            return this;
         }
 
         /// <inheritdoc />
