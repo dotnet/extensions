@@ -17,30 +17,40 @@ namespace Microsoft.AspNet.Testing
     {
         private const string _defaultCultureName = "en-GB";
         private const string _defaultUICultureName = "en-US";
-        private static readonly CultureInfo _defaultCulture = new CultureInfo(_defaultCultureName);
         private CultureInfo _originalCulture;
         private CultureInfo _originalUICulture;
 
-        public ReplaceCultureAttribute()
+        /// <summary>
+        /// Replaces the current culture and UI culture to en-GB and en-US respectively.
+        /// </summary>
+        public ReplaceCultureAttribute() :
+            this(_defaultCultureName, _defaultUICultureName)
         {
-            Culture = _defaultCulture;
-            UICulture = _defaultCulture;
         }
 
         /// <summary>
-        /// Sets <see cref="Thread.CurrentCulture"/> for the test. Defaults to en-GB.
+        /// Replaces the current culture and UI culture based on specified values.
+        /// </summary>
+        public ReplaceCultureAttribute(string currentCulture, string currentUICulture)
+        {
+            Culture = new CultureInfo(currentCulture);
+            UICulture = new CultureInfo(currentUICulture);
+        }
+
+        /// <summary>
+        /// The <see cref="Thread.CurrentCulture"/> for the test. Defaults to en-GB.
         /// </summary>
         /// <remarks>
         /// en-GB is used here as the default because en-US is equivalent to the InvariantCulture. We
         /// want to be able to find bugs where we're accidentally relying on the Invariant instead of the
         /// user's culture.
         /// </remarks>
-        public CultureInfo Culture { get; set; }
+        public CultureInfo Culture { get; }
 
         /// <summary>
-        /// Sets <see cref="Thread.CurrentUICulture"/> for the test. Defaults to en-US.
+        /// The <see cref="Thread.CurrentUICulture"/> for the test. Defaults to en-US.
         /// </summary>
-        public CultureInfo UICulture { get; set; }
+        public CultureInfo UICulture { get; }
 
         public override void Before(MethodInfo methodUnderTest)
         {
