@@ -112,6 +112,16 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         }
 
         [Fact]
+        public void SelfResolveThenDispose()
+        {
+            var container = CreateContainer();
+
+            var serviceProvider = container.GetServices<IServiceProvider>();
+
+            (container as IDisposable)?.Dispose();
+        }
+
+        [Fact]
         public void SingletonServicesComeFromRootContainer()
         {
             var container = CreateContainer();

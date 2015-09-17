@@ -158,6 +158,11 @@ namespace Microsoft.Framework.DependencyInjection
                 // a struct enumerator
                 foreach (var entry in _resolvedServices)
                 {
+                    if (entry.Value == this)
+                    {
+                        continue;
+                    }
+
                     (entry.Value as IDisposable)?.Dispose();
                 }
 
