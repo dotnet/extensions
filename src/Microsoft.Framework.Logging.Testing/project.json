@@ -6,7 +6,6 @@
     },
     "dependencies": {
         "Microsoft.Framework.Logging.Abstractions": "1.0.0-*",
-        "Microsoft.Framework.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" },
         "xunit.assert": "2.1.0-*"
     },
     "frameworks": {

@@ -3,14 +3,18 @@
 
 using System;
 using System.Collections.ObjectModel;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Dnx.TestAdapter
 {
     public sealed class TestResult
     {
-        public TestResult([NotNull] Test test)
+        public TestResult(Test test)
         {
+            if (test == null)
+            {
+                throw new ArgumentNullException(nameof(test));
+            }
+
             Test = test;
             Messages = new Collection<string>();
         }
@@ -25,7 +29,7 @@ namespace Microsoft.Dnx.TestAdapter
 
         public string DisplayName { get; set; }
 
-        public Collection<string> Messages { get;  private set; }
+        public Collection<string> Messages { get; private set; }
 
         public string ComputerName { get; set; }
 

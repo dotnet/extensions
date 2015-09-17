@@ -36,9 +36,19 @@ namespace Microsoft.Framework.Logging.Testing
         /// In case no comparer is provided, a default comparer is used.
         /// </param>
         public static void Contains(
-            [NotNull] IEnumerable<KeyValuePair<string, object>> expectedValues,
-            [NotNull] IEnumerable<KeyValuePair<string, object>> actualValues)
+            IEnumerable<KeyValuePair<string, object>> expectedValues,
+            IEnumerable<KeyValuePair<string, object>> actualValues)
         {
+            if (expectedValues == null)
+            {
+                throw new ArgumentNullException(nameof(expectedValues));
+            }
+
+            if (actualValues == null)
+            {
+                throw new ArgumentNullException(nameof(actualValues));
+            }
+
             var comparer = new LogValueComparer();
 
             foreach (var expectedPair in expectedValues)

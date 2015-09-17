@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using dia2;
@@ -37,6 +36,11 @@ namespace Microsoft.Dnx.TestHost.TestAdapter
 
         public SourceInformation GetSourceInformation(MethodInfo method)
         {
+            if (method == null)
+            {
+                throw new ArgumentNullException(nameof(method));
+            }
+
             if (!EnsureInitialized())
             {
                 // Unable to load DIA or we had a failure reading the symbols.
