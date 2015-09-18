@@ -64,7 +64,7 @@ namespace Microsoft.Framework.Logging.Console
                 SetConsoleColor(logLevel);
                 try
                 {
-                    Console.WriteLine(FormatMessage(logLevel, message));
+                    Console.WriteLine(FormatMessage(logLevel, _name, message));
                 }
                 finally
                 {
@@ -73,10 +73,10 @@ namespace Microsoft.Framework.Logging.Console
             }
         }
 
-        private string FormatMessage(LogLevel logLevel, string message)
+        public virtual string FormatMessage(LogLevel logLevel, string logName, string message)
         {
             var logLevelString = GetRightPaddedLogLevelString(logLevel);
-            return $"{logLevelString}: [{_name}] {message}";
+            return $"{logLevelString}: [{logName}] {message}";
         }
 
         public bool IsEnabled(LogLevel logLevel)
