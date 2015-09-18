@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.Caching.Memory
 {
@@ -28,8 +27,13 @@ namespace Microsoft.Framework.Caching.Memory
         /// <param name="trigger"></param>
         public static MemoryCacheEntryOptions AddExpirationTrigger(
             this MemoryCacheEntryOptions options,
-            [NotNull] IExpirationTrigger trigger)
+            IExpirationTrigger trigger)
         {
+            if (trigger == null)
+            {
+                throw new ArgumentNullException(nameof(trigger));
+            }
+
             options.Triggers.Add(trigger);
             return options;
         }
@@ -82,8 +86,13 @@ namespace Microsoft.Framework.Caching.Memory
         /// <param name="state"></param>
         public static MemoryCacheEntryOptions RegisterPostEvictionCallback(
             this MemoryCacheEntryOptions options,
-            [NotNull] PostEvictionDelegate callback)
+            PostEvictionDelegate callback)
         {
+            if (callback == null)
+            {
+                throw new ArgumentNullException(nameof(callback));
+            }
+
             return options.RegisterPostEvictionCallback(callback, state: null);
         }
 
@@ -95,9 +104,14 @@ namespace Microsoft.Framework.Caching.Memory
         /// <param name="state"></param>
         public static MemoryCacheEntryOptions RegisterPostEvictionCallback(
             this MemoryCacheEntryOptions options,
-            [NotNull] PostEvictionDelegate callback,
+            PostEvictionDelegate callback,
             object state)
         {
+            if (callback == null)
+            {
+                throw new ArgumentNullException(nameof(callback));
+            }
+
             options.PostEvictionCallbacks.Add(new PostEvictionCallbackRegistration()
             {
                 EvictionCallback = callback,

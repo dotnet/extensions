@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Framework.Caching.Distributed;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.OptionsModel;
 using StackExchange.Redis;
 
@@ -35,8 +34,13 @@ namespace Microsoft.Framework.Caching.Redis
         private readonly RedisCacheOptions _options;
         private readonly string _instance;
 
-        public RedisCache([NotNull] IOptions<RedisCacheOptions> optionsAccessor)
+        public RedisCache(IOptions<RedisCacheOptions> optionsAccessor)
         {
+            if (optionsAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(optionsAccessor));
+            }
+
             _options = optionsAccessor.Value;
 
             // This allows partitioning a single backend cache for use with multiple apps/services.
@@ -61,18 +65,33 @@ namespace Microsoft.Framework.Caching.Redis
             }
         }
 
-        public byte[] Get([NotNull] string key)
+        public byte[] Get(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             return GetAndRefresh(key, getData: true);
         }
 
-        public async Task<byte[]> GetAsync([NotNull] string key)
+        public async Task<byte[]> GetAsync(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             return await GetAndRefreshAsync(key, getData: true);
         }
 
-        public void Set([NotNull] string key, byte[] value, DistributedCacheEntryOptions options)
+        public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             Connect();
 
             var creationTime = DateTimeOffset.UtcNow;
@@ -87,8 +106,13 @@ namespace Microsoft.Framework.Caching.Redis
                 });
         }
 
-        public async Task SetAsync([NotNull] string key, byte[] value, DistributedCacheEntryOptions options)
+        public async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             await ConnectAsync();
 
             var creationTime = DateTimeOffset.UtcNow;
@@ -103,18 +127,33 @@ namespace Microsoft.Framework.Caching.Redis
                 });
         }
 
-        public void Refresh([NotNull] string key)
+        public void Refresh(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             GetAndRefresh(key, getData: false);
         }
 
-        public async Task RefreshAsync([NotNull] string key)
+        public async Task RefreshAsync(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             await GetAndRefreshAsync(key, getData: false);
         }
 
-        private byte[] GetAndRefresh([NotNull] string key, bool getData)
+        private byte[] GetAndRefresh(string key, bool getData)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             Connect();
 
             // This also resets the LRU status as desired.
@@ -148,8 +187,13 @@ namespace Microsoft.Framework.Caching.Redis
             return null;
         }
 
-        private async Task<byte[]> GetAndRefreshAsync([NotNull] string key, bool getData)
+        private async Task<byte[]> GetAndRefreshAsync(string key, bool getData)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             await ConnectAsync();
 
             // This also resets the LRU status as desired.
@@ -183,16 +227,26 @@ namespace Microsoft.Framework.Caching.Redis
             return null;
         }
 
-        public void Remove([NotNull] string key)
+        public void Remove(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             Connect();
 
             _cache.KeyDelete(_instance + key);
             // TODO: Error handling
         }
 
-        public async Task RemoveAsync([NotNull] string key)
+        public async Task RemoveAsync(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             await ConnectAsync();
 
             await _cache.KeyDeleteAsync(_instance + key);
@@ -215,8 +269,13 @@ namespace Microsoft.Framework.Caching.Redis
             }
         }
 
-        private void Refresh([NotNull] string key, DateTimeOffset? absExpr, TimeSpan? sldExpr)
+        private void Refresh(string key, DateTimeOffset? absExpr, TimeSpan? sldExpr)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             // Note Refresh has no effect if there is just an absolute expiration (or neither).
             TimeSpan? expr = null;
             if (sldExpr.HasValue)
@@ -235,8 +294,13 @@ namespace Microsoft.Framework.Caching.Redis
             }
         }
 
-        private async Task RefreshAsync([NotNull] string key, DateTimeOffset? absExpr, TimeSpan? sldExpr)
+        private async Task RefreshAsync(string key, DateTimeOffset? absExpr, TimeSpan? sldExpr)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             // Note Refresh has no effect if there is just an absolute expiration (or neither).
             TimeSpan? expr = null;
             if (sldExpr.HasValue)

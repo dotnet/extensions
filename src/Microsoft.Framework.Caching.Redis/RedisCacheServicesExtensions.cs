@@ -1,10 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.Caching.Redis;
 using Microsoft.Framework.DependencyInjection.Extensions;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -19,8 +19,13 @@ namespace Microsoft.Framework.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns> 
-        public static IServiceCollection AddRedisCache([NotNull] this IServiceCollection services)
+        public static IServiceCollection AddRedisCache(this IServiceCollection services)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
             services.AddOptions();
             services.TryAdd(ServiceDescriptor.Singleton<IDistributedCache, RedisCache>());
             return services;

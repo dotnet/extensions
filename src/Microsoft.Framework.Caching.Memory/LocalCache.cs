@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Framework.Caching.Memory;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.Caching.Distributed
 {
@@ -14,8 +13,13 @@ namespace Microsoft.Framework.Caching.Distributed
 
         private readonly IMemoryCache _memCache;
 
-        public LocalCache([NotNull] IMemoryCache memoryCache)
+        public LocalCache(IMemoryCache memoryCache)
         {
+            if (memoryCache == null)
+            {
+                throw new ArgumentNullException(nameof(memoryCache));
+            }
+
             _memCache = memoryCache;
         }
 
@@ -28,18 +32,33 @@ namespace Microsoft.Framework.Caching.Distributed
             return CompletedTask;
         }
 
-        public byte[] Get([NotNull] string key)
+        public byte[] Get(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             return (byte[])_memCache.Get(key);
         }
 
-        public Task<byte[]> GetAsync([NotNull] string key)
+        public Task<byte[]> GetAsync(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             return Task.FromResult(Get(key));
         }
 
-        public void Set([NotNull] string key, byte[] value, DistributedCacheEntryOptions options)
+        public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             var memoryCacheEntryOptions = new MemoryCacheEntryOptions();
             memoryCacheEntryOptions.AbsoluteExpiration = options.AbsoluteExpiration;
             memoryCacheEntryOptions.AbsoluteExpirationRelativeToNow = options.AbsoluteExpirationRelativeToNow;
@@ -48,31 +67,56 @@ namespace Microsoft.Framework.Caching.Distributed
             _memCache.Set(key, value, memoryCacheEntryOptions);
         }
 
-        public Task SetAsync([NotNull] string key, byte[] value, DistributedCacheEntryOptions options)
+        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             Set(key, value, options);
             return CompletedTask;
         }
 
-        public void Refresh([NotNull] string key)
+        public void Refresh(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             object value;
             _memCache.TryGetValue(key, out value);
         }
 
-        public Task RefreshAsync([NotNull] string key)
+        public Task RefreshAsync(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             Refresh(key);
             return CompletedTask;
         }
 
-        public void Remove([NotNull] string key)
+        public void Remove(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             _memCache.Remove(key);
         }
 
-        public Task RemoveAsync([NotNull] string key)
+        public Task RemoveAsync(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             Remove(key);
             return CompletedTask;
         }

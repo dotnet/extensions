@@ -5,7 +5,6 @@ using System;
 using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.Caching.SqlServer;
 using Microsoft.Framework.DependencyInjection.Extensions;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.Framework.DependencyInjection
 {
@@ -22,9 +21,19 @@ namespace Microsoft.Framework.DependencyInjection
         /// <param name="options">An action callback to configure a <see cref="SqlServerCacheOptions" /> instance.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns> 
         public static IServiceCollection AddSqlServerCache(
-            [NotNull] this IServiceCollection services,
-            [NotNull] Action<SqlServerCacheOptions> options)
+            this IServiceCollection services,
+            Action<SqlServerCacheOptions> options)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             services.AddOptions();
             AddSqlServerCacheServices(services);
             services.Configure(options);

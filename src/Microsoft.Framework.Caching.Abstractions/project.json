@@ -1,6 +1,6 @@
 {
-    "dependencies": {
-        "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" }
+    "compilationOptions": {
+        "warningsAsErrors": true
     },
     "description": "ASP.NET 5 caching abstractions.",
     "frameworks": {

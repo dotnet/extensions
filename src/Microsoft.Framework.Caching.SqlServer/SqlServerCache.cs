@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.Internal;
@@ -89,8 +88,13 @@ namespace Microsoft.Framework.Caching.SqlServer
             await _dbOperations.GetTableSchemaAsync();
         }
 
-        public byte[] Get([NotNull] string key)
+        public byte[] Get(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             var value = _dbOperations.GetCacheItem(key);
 
             ScanForExpiredItemsIfRequired();
@@ -98,8 +102,13 @@ namespace Microsoft.Framework.Caching.SqlServer
             return value;
         }
 
-        public async Task<byte[]> GetAsync([NotNull] string key)
+        public async Task<byte[]> GetAsync(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             var value = await _dbOperations.GetCacheItemAsync(key);
 
             ScanForExpiredItemsIfRequired();
@@ -107,46 +116,96 @@ namespace Microsoft.Framework.Caching.SqlServer
             return value;
         }
 
-        public void Refresh([NotNull] string key)
+        public void Refresh(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             _dbOperations.RefreshCacheItem(key);
 
             ScanForExpiredItemsIfRequired();
         }
 
-        public async Task RefreshAsync([NotNull] string key)
+        public async Task RefreshAsync(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             await _dbOperations.RefreshCacheItemAsync(key);
 
             ScanForExpiredItemsIfRequired();
         }
 
-        public void Remove([NotNull] string key)
+        public void Remove(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             _dbOperations.DeleteCacheItem(key);
 
             ScanForExpiredItemsIfRequired();
         }
 
-        public async Task RemoveAsync([NotNull] string key)
+        public async Task RemoveAsync(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             await _dbOperations.DeleteCacheItemAsync(key);
 
             ScanForExpiredItemsIfRequired();
         }
 
-        public void Set([NotNull] string key, [NotNull] byte[] value, [NotNull] DistributedCacheEntryOptions options)
+        public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             _dbOperations.SetCacheItem(key, value, options);
 
             ScanForExpiredItemsIfRequired();
         }
 
         public async Task SetAsync(
-            [NotNull] string key,
-            [NotNull] byte[] value,
-            [NotNull] DistributedCacheEntryOptions options)
+            string key,
+            byte[] value,
+            DistributedCacheEntryOptions options)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             await _dbOperations.SetCacheItemAsync(key, value, options);
 
             ScanForExpiredItemsIfRequired();

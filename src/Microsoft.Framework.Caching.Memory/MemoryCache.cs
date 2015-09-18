@@ -28,8 +28,13 @@ namespace Microsoft.Framework.Caching.Memory
         /// </summary>
         /// <param name="clock"></param>
         /// <param name="listenForMemoryPressure"></param>
-        public MemoryCache([NotNull] IOptions<MemoryCacheOptions> optionsAccessor)
+        public MemoryCache(IOptions<MemoryCacheOptions> optionsAccessor)
         {
+            if (optionsAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(optionsAccessor));
+            }
+
             var options = optionsAccessor.Value;
             _entries = new Dictionary<object, CacheEntry>();
             _entryLock = new ReaderWriterLockSlim();
@@ -64,8 +69,13 @@ namespace Microsoft.Framework.Caching.Memory
             return EntryLinkHelpers.CreateLinkingScope();
         }
 
-        public object Set([NotNull] object key, object value, MemoryCacheEntryOptions cacheEntryOptions)
+        public object Set(object key, object value, MemoryCacheEntryOptions cacheEntryOptions)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             CheckDisposed();
             CacheEntry priorEntry = null;
             var utcNow = _clock.UtcNow;
@@ -147,8 +157,13 @@ namespace Microsoft.Framework.Caching.Memory
             return value;
         }
 
-        public bool TryGetValue([NotNull] object key, out object value)
+        public bool TryGetValue(object key, out object value)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             value = null;
             CacheEntry expiredEntry = null;
             bool found = false;
@@ -203,8 +218,13 @@ namespace Microsoft.Framework.Caching.Memory
             return found;
         }
 
-        public void Remove([NotNull] object key)
+        public void Remove(object key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             CheckDisposed();
             CacheEntry entry;
             _entryLock.EnterReadLock();
