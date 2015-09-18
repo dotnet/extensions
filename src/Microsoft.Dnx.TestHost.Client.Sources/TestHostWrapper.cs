@@ -52,6 +52,8 @@ namespace Microsoft.Dnx.TestHost.Client
 
         public IList<Message> Output { get; }
 
+        public int? ParentProcessId { get; set; }
+
         public async Task StartAsync()
         {
             if (Process != null)
@@ -77,6 +79,12 @@ namespace Microsoft.Dnx.TestHost.Client
             if (Debug)
             {
                 arguments.Add("--debug");
+            }
+
+            if (ParentProcessId.HasValue)
+            {
+                arguments.Add("--parentProcessId");
+                arguments.Add(ParentProcessId.Value.ToString());
             }
 
             var allArgs = "Microsoft.Dnx.TestHost " + string.Join(" ", arguments.Select(Quote));

@@ -4,12 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Dnx.TestHost
@@ -32,16 +30,67 @@ namespace Microsoft.Dnx.TestHost
 
             var env = (IApplicationEnvironment)_services.GetService(typeof(IApplicationEnvironment));
 
-            var portOption = application.Option("--port", "Port number to listen for a connection.", CommandOptionType.SingleValue);
-            var projectOption = application.Option("--project", "Path to a project file.", CommandOptionType.SingleValue);
+            var portOption = application.Option(
+                "--port",
+                "Port number to listen for a connection.",
+                CommandOptionType.SingleValue);
+
+            var projectOption = application.Option(
+                "--project",
+                "Path to a project file.",
+                CommandOptionType.SingleValue);
 
             var debugOption = application.Option("--debug", "Launch the debugger", CommandOptionType.NoValue);
 
             var waitOption = application.Option("--wait", "Wait for attach", CommandOptionType.NoValue);
 
+            var parentProcessIdOption = application.Option(
+                "--parentProcessId",
+                "Process id of the parent which launched this process",
+                CommandOptionType.SingleValue);
+
             // If no command was specified at the commandline, then wait for a command via message.
             application.OnExecute(async () =>
             {
+                // Register for parent process's exit event
+                var parentProcessId = parentProcessIdOption.Value();
+                if (!string.IsNullOrEmpty(parentProcessId))
+                {
+                    int id;
+                    if (!Int32.TryParse(parentProcessId, out id))
+                    {
+                        TestHostTracing.Source.TraceEvent(
+                            TraceEventType.Error,
+                            0,
+                            $"Invalid process id '{id}'. Process id must be an integer.");
+                        return -1;
+                    }
+
+                    var parentProcess = Process.GetProcesses().FirstOrDefault(p => p.Id == id);
+
+                    if (parentProcess != null)
+                    {
+                        parentProcess.EnableRaisingEvents = true;
+                        parentProcess.Exited += (sender, eventArgs) =>
+                        {
+                            TestHostTracing.Source.TraceEvent(
+                                TraceEventType.Information,
+                                0,
+                                "Killing the current process as parent process has exited.");
+
+                            Process.GetCurrentProcess().Kill();
+                        };
+                    }
+                    else
+                    {
+                        TestHostTracing.Source.TraceEvent(
+                            TraceEventType.Information,
+                            0,
+                            "Failed to register for parent process's exit event. " +
+                            $"Parent process with id '{id}' was not found.");
+                    }
+                }
+
                 if (debugOption.HasValue())
                 {
                     Debugger.Launch();

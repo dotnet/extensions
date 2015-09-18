@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,7 +13,6 @@ using Microsoft.Dnx.Runtime.Infrastructure;
 using Microsoft.Dnx.TestAdapter;
 using Microsoft.Dnx.TestHost.Client;
 using Xunit;
-using System.Collections.Generic;
 
 namespace Microsoft.Dnx.TestHost
 {
@@ -42,7 +44,7 @@ namespace Microsoft.Dnx.TestHost
             Assert.Equal(0, result);
 
             /* Following message will be sent when test is running in an environment missing DIA.
-               Should it exists, it will be extracted from the message list. 
+               Should it exists, it will be extracted from the message list.
                {
                    "Name": "Microsoft.Dnx.TestHost.TestAdapter.SourceInformationProvider",
                    "EventId": 0,
@@ -257,6 +259,42 @@ namespace Microsoft.Dnx.TestHost
             Assert.Equal("TestExecution.Response", host.Output[host.Output.Count - 1].MessageType);
         }
 
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public async Task TestHostExits_WhenParentProcessExits()
+        {
+            // Arrange
+            var parentProcess = new Process();
+            parentProcess.StartInfo.FileName = "cmd";
+            parentProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            var testHost = new TestHostWrapper(_testProject);
+            int testHostProcessId;
+
+            try
+            {
+                parentProcess.Start();
+                testHost.ParentProcessId = parentProcess.Id;
+
+                // Act
+                await testHost.StartAsync();
+                testHostProcessId = testHost.Process.Id;
+            }
+            finally
+            {
+                parentProcess.Kill();
+            }
+
+            // Assert
+            // By this time the test host process could have been killed and if not wait for 5 seconds
+            // before doing a check again.
+            var testHostProcess = GetProcessById(testHostProcessId);
+            if (testHostProcess != null)
+            {
+                testHostProcess.WaitForExit(5 * 1000);
+                testHostProcess = GetProcessById(testHostProcessId);
+            }
+            Assert.Null(testHostProcess);
+        }
         private static bool TestFound(Message message, string name)
         {
             if (!string.Equals("TestDiscovery.TestFound", message.MessageType))
@@ -323,6 +361,11 @@ namespace Microsoft.Dnx.TestHost
             }
 
             return null;
+        }
+
+        private Process GetProcessById(int id)
+        {
+            return Process.GetProcesses().FirstOrDefault(p => p.Id == id);
         }
     }
 }

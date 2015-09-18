@@ -219,6 +219,7 @@ namespace Microsoft.Dnx.TestHost.UI
                 host.DTHPort = dthPort;
             }
 
+            host.ParentProcessId = Process.GetCurrentProcess().Id;
             host.ConsoleOutputReceived += TestHost_ConsoleOutputReceived;
             host.MessageReceived += TestHost_MessageReceived;
 
