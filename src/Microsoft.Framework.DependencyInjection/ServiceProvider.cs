@@ -19,6 +19,7 @@ namespace Microsoft.Framework.DependencyInjection
     {
         private readonly ServiceProvider _root;
         private readonly ServiceTable _table;
+        private bool _disposeCalled;
 
         private readonly Dictionary<IService, object> _resolvedServices = new Dictionary<IService, object>();
         private List<IDisposable> _transientDisposables;
@@ -143,6 +144,13 @@ namespace Microsoft.Framework.DependencyInjection
         {
             lock (SyncObject)
             {
+                if (_disposeCalled)
+                {
+                    return;
+                }
+
+                _disposeCalled = true;
+
                 if (_transientDisposables != null)
                 {
                     foreach (var disposable in _transientDisposables)
@@ -158,11 +166,6 @@ namespace Microsoft.Framework.DependencyInjection
                 // a struct enumerator
                 foreach (var entry in _resolvedServices)
                 {
-                    if (entry.Value == this)
-                    {
-                        continue;
-                    }
-
                     (entry.Value as IDisposable)?.Dispose();
                 }
 

@@ -38,6 +38,7 @@ namespace Microsoft.Framework.DependencyInjection.Tests.Fakes
                     FakeService = fakeService,
                 };
             });
+            services.AddScoped<ClassWithNestedReferencesToProvider>();
 
             services.AddTransient<ServiceAcceptingFactoryService, ServiceAcceptingFactoryService>();
             return services;

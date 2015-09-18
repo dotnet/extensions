@@ -122,6 +122,16 @@ namespace Microsoft.Framework.DependencyInjection.Tests
         }
 
         [Fact]
+        public void SafelyDisposeNestedProviderReferences()
+        {
+            var container = CreateContainer();
+
+            var nester = container.GetService<ClassWithNestedReferencesToProvider>();
+
+            nester.Dispose();
+        }
+
+        [Fact]
         public void SingletonServicesComeFromRootContainer()
         {
             var container = CreateContainer();
