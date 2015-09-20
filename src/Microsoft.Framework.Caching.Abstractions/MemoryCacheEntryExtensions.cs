@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.Framework.Caching.Memory
 {
     public static class MemoryCacheEntryExtensions
     {
         /// <summary>
-        /// Sets the priority for keeping the cache entry in the cache during a memory pressure triggered cleanup.
+        /// Sets the priority for keeping the cache entry in the cache during a memory pressure tokened cleanup.
         /// </summary>
         /// <param name="options"></param>
         /// <param name="priority"></param>
@@ -21,20 +22,20 @@ namespace Microsoft.Framework.Caching.Memory
         }
 
         /// <summary>
-        /// Expire the cache entry if the given event occurs.
+        /// Expire the cache entry if the given <see cref="IChangeToken"/> expires.
         /// </summary>
-        /// <param name="options"></param>
-        /// <param name="trigger"></param>
-        public static MemoryCacheEntryOptions AddExpirationTrigger(
+        /// <param name="options">The <see cref="MemoryCacheEntryOptions"/>.</param>
+        /// <param name="expirationToken">The <see cref="IChangeToken"/> that causes the cache entry to expire.</param>
+        public static MemoryCacheEntryOptions AddExpirationToken(
             this MemoryCacheEntryOptions options,
-            IExpirationTrigger trigger)
+            IChangeToken expirationToken)
         {
-            if (trigger == null)
+            if (expirationToken == null)
             {
-                throw new ArgumentNullException(nameof(trigger));
+                throw new ArgumentNullException(nameof(expirationToken));
             }
 
-            options.Triggers.Add(trigger);
+            options.ExpirationTokens.Add(expirationToken);
             return options;
         }
 
@@ -121,14 +122,14 @@ namespace Microsoft.Framework.Caching.Memory
         }
 
         /// <summary>
-        /// Adds inherited trigger and absolute expiration information.
+        /// Adds inherited token and absolute expiration information.
         /// </summary>
         /// <param name="link"></param>
         public static MemoryCacheEntryOptions AddEntryLink(this MemoryCacheEntryOptions options, IEntryLink link)
         {
-            foreach (var trigger in link.Triggers)
+            foreach (var expirationToken in link.ExpirationTokens)
             {
-                options.AddExpirationTrigger(trigger);
+                options.AddExpirationToken(expirationToken);
             }
 
             if (link.AbsoluteExpiration.HasValue)

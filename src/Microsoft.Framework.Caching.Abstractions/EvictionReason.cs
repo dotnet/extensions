@@ -25,7 +25,7 @@ namespace Microsoft.Framework.Caching.Memory
         /// <summary>
         /// Event
         /// </summary>
-        Triggered,
+        TokenExpired,
 
         /// <summary>
         /// GC, overflow

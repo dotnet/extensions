@@ -10,7 +10,7 @@ namespace Microsoft.Framework.Caching.Memory
 {
     internal class CacheEntry
     {
-        private static readonly Action<object> ExpirationCallback = TriggerExpired;
+        private static readonly Action<object> ExpirationCallback = ExpirationTokensExpired;
 
         private readonly Action<CacheEntry> _notifyCacheOfExpiration;
 
@@ -43,7 +43,7 @@ namespace Microsoft.Framework.Caching.Memory
 
         internal EvictionReason EvictionReason { get; private set; }
 
-        internal IList<IDisposable> TriggerRegistrations { get; set; }
+        internal IList<IDisposable> ExpirationTokenRegistrations { get; set; }
 
         internal IList<PostEvictionCallbackRegistration> PostEvictionCallbacks { get; set; }
 
@@ -51,7 +51,7 @@ namespace Microsoft.Framework.Caching.Memory
 
         internal bool CheckExpired(DateTimeOffset now)
         {
-            return IsExpired || CheckForExpiredTime(now) || CheckForExpiredTriggers();
+            return IsExpired || CheckForExpiredTime(now) || CheckForExpiredTokens();
         }
 
         internal void SetExpired(EvictionReason reason)
@@ -61,7 +61,7 @@ namespace Microsoft.Framework.Caching.Memory
             {
                 EvictionReason = reason;
             }
-            DetachTriggers();
+            DetachTokens();
         }
 
         private bool CheckForExpiredTime(DateTimeOffset now)
@@ -82,17 +82,17 @@ namespace Microsoft.Framework.Caching.Memory
             return false;
         }
 
-        internal bool CheckForExpiredTriggers()
+        internal bool CheckForExpiredTokens()
         {
-            var triggers = Options.Triggers;
-            if (triggers != null)
+            var expiredTokens = Options.ExpirationTokens;
+            if (expiredTokens != null)
             {
-                for (int i = 0; i < triggers.Count; i++)
+                for (int i = 0; i < expiredTokens.Count; i++)
                 {
-                    var trigger = triggers[i];
-                    if (trigger.IsExpired)
+                    var expiredToken = expiredTokens[i];
+                    if (expiredToken.HasChanged)
                     {
-                        SetExpired(EvictionReason.Triggered);
+                        SetExpired(EvictionReason.TokenExpired);
                         return true;
                     }
                 }
@@ -100,43 +100,43 @@ namespace Microsoft.Framework.Caching.Memory
             return false;
         }
 
-        // TODO: There's a possible race between AttachTriggers and DetachTriggers if a trigger fires almost immediately.
+        // TODO: There's a possible race between AttachTokens and DetachTokens if a token fires almost immediately.
         // This may result in some registrations not getting disposed.
-        internal void AttachTriggers()
+        internal void AttachTokens()
         {
-            var triggers = Options.Triggers;
-            if (triggers != null)
+            var expirationTokens = Options.ExpirationTokens;
+            if (expirationTokens != null)
             {
-                for (int i = 0; i < triggers.Count; i++)
+                for (int i = 0; i < expirationTokens.Count; i++)
                 {
-                    var trigger = triggers[i];
-                    if (trigger.ActiveExpirationCallbacks)
+                    var expirationToken = expirationTokens[i];
+                    if (expirationToken.ActiveChangeCallbacks)
                     {
-                        if (TriggerRegistrations == null)
+                        if (ExpirationTokenRegistrations == null)
                         {
-                            TriggerRegistrations = new List<IDisposable>(1);
+                            ExpirationTokenRegistrations = new List<IDisposable>(1);
                         }
-                        var registration = trigger.RegisterExpirationCallback(ExpirationCallback, this);
-                        TriggerRegistrations.Add(registration);
+                        var registration = expirationToken.RegisterChangeCallback(ExpirationCallback, this);
+                        ExpirationTokenRegistrations.Add(registration);
                     }
                 }
             }
         }
 
-        private static void TriggerExpired(object obj)
+        private static void ExpirationTokensExpired(object obj)
         {
             var entry = (CacheEntry)obj;
-            entry.SetExpired(EvictionReason.Triggered);
+            entry.SetExpired(EvictionReason.TokenExpired);
             entry._notifyCacheOfExpiration(entry);
         }
 
         // TODO: Thread safety
-        private void DetachTriggers()
+        private void DetachTokens()
         {
-            var registrations = TriggerRegistrations;
+            var registrations = ExpirationTokenRegistrations;
             if (registrations != null)
             {
-                TriggerRegistrations = null;
+                ExpirationTokenRegistrations = null;
                 for (int i = 0; i < registrations.Count; i++)
                 {
                     var registration = registrations[i];

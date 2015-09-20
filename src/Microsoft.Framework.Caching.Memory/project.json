@@ -8,7 +8,6 @@
     "compilationOptions": {
         "warningsAsErrors": true
     },
-
     "dependencies": {
         "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
         "Microsoft.Framework.Caching.Abstractions": "1.0.0-*",

@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Framework.Caching.Memory.Infrastructure
 {
-    public class TriggerCallbackRegistration : IDisposable
+    public class TokenCallbackRegistration : IDisposable
     {
         public Action<object> RegisteredCallback { get; set; }
 

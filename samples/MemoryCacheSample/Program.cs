@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using Microsoft.Framework.Caching;
 using Microsoft.Framework.Caching.Memory;
+using Microsoft.Framework.Primitives;
 
 namespace MemoryCacheSample
 {
@@ -77,10 +78,10 @@ namespace MemoryCacheSample
                 });
             result = cache.Set(key, new object(), options);
 
-            // Remove on trigger
+            // Remove on token expiration
             var cts = new CancellationTokenSource();
             options = new MemoryCacheEntryOptions()
-                .AddExpirationTrigger(new CancellationTokenTrigger(cts.Token))
+                .AddExpirationToken(new CancellationChangeToken(cts.Token))
                 .RegisterPostEvictionCallback(
                 (echoKey, value, reason, substate) =>
                 {
@@ -88,7 +89,7 @@ namespace MemoryCacheSample
                 });
             result = cache.Set(key, new object(), options);
 
-            // Fire the trigger to see the registered callback being invoked
+            // Fire the token to see the registered callback being invoked
             cts.Cancel();
 
             // Expire an entry if the dependent entry expires
@@ -96,7 +97,7 @@ namespace MemoryCacheSample
             {
                 cts = new CancellationTokenSource();
                 cache.Set("key1", "value1", new MemoryCacheEntryOptions()
-                    .AddExpirationTrigger(new CancellationTokenTrigger(cts.Token)));
+                    .AddExpirationToken(new CancellationChangeToken(cts.Token)));
 
                 // expire this entry if the entry with key "key1" expires.
                 cache.Set("key2", "value2", new MemoryCacheEntryOptions()
@@ -108,7 +109,7 @@ namespace MemoryCacheSample
                     }));
             }
 
-            // Fire the trigger to see the registered callback being invoked
+            // Fire the token to see the registered callback being invoked
             cts.Cancel();
         }
     }

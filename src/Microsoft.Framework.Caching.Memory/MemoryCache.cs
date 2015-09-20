@@ -109,11 +109,11 @@ namespace Microsoft.Framework.Caching.Memory
             var link = EntryLinkHelpers.ContextLink;
             if (link != null)
             {
-                // Copy triggers and AbsoluteExpiration to the link.
-                // We do this regardless of it gets cached because the triggers are associated with the value we'll return.
-                if (entry.Options.Triggers != null)
+                // Copy expiration tokens and AbsoluteExpiration to the link.
+                // We do this regardless of it gets cached because the tokens are associated with the value we'll return.
+                if (entry.Options.ExpirationTokens != null)
                 {
-                    link.AddExpirationTriggers(entry.Options.Triggers);
+                    link.AddExpirationTokens(entry.Options.ExpirationTokens);
                 }
                 if (absoluteExpiration.HasValue)
                 {
@@ -135,7 +135,7 @@ namespace Microsoft.Framework.Caching.Memory
                 if (!entry.CheckExpired(utcNow))
                 {
                     _entries[key] = entry;
-                    entry.AttachTriggers();
+                    entry.AttachTokens();
                     added = true;
                 }
             }
@@ -174,7 +174,7 @@ namespace Microsoft.Framework.Caching.Memory
                 CacheEntry entry;
                 if (_entries.TryGetValue(key, out entry))
                 {
-                    // Check if expired due to triggers, timers, etc. and if so, remove it.
+                    // Check if expired due to expiration tokens, timers, etc. and if so, remove it.
                     if (entry.CheckExpired(_clock.UtcNow))
                     {
                         expiredEntry = entry;
@@ -189,10 +189,10 @@ namespace Microsoft.Framework.Caching.Memory
                         var link = EntryLinkHelpers.ContextLink;
                         if (link != null)
                         {
-                            // Copy triggers and AbsoluteExpiration to the link
-                            if (entry.Options.Triggers != null)
+                            // Copy expiration tokens and AbsoluteExpiration to the link
+                            if (entry.Options.ExpirationTokens != null)
                             {
-                                link.AddExpirationTriggers(entry.Options.Triggers);
+                                link.AddExpirationTokens(entry.Options.ExpirationTokens);
                             }
                             if (entry.Options.AbsoluteExpiration.HasValue)
                             {

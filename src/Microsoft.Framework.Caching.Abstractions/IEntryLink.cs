@@ -3,12 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.Framework.Caching.Memory
 {
     /// <summary>
-    /// Used to flow expiration information from one entry to another. Triggers and minimum absolute expiration will
-    /// be copied from the dependent entry to the parent entry. The parent entry will not expire if the
+    /// Used to flow expiration information from one entry to another. <see cref="IChangeToken"/> instances and minimum absolute
+    /// expiration will be copied from the dependent entry to the parent entry. The parent entry will not expire if the
     /// dependent entry is removed manually, removed due to memory pressure, or expires due to sliding expiration.
     /// </summary>
     public interface IEntryLink : IDisposable
@@ -19,15 +20,15 @@ namespace Microsoft.Framework.Caching.Memory
         DateTimeOffset? AbsoluteExpiration { get; }
 
         /// <summary>
-        /// Gets all the triggers from the dependent entries.
+        /// Gets all the <see cref="IChangeToken"/> instances from the dependent entries.
         /// </summary>
-        IEnumerable<IExpirationTrigger> Triggers { get; }
+        IEnumerable<IChangeToken> ExpirationTokens { get; }
 
         /// <summary>
-        /// Adds triggers from a dependent entries.
+        /// Adds <see cref="IChangeToken"/> instances from a dependent entries.
         /// </summary>
-        /// <param name="triggers"></param>
-        void AddExpirationTriggers(IList<IExpirationTrigger> triggers);
+        /// <param name="expirationTokens"><see cref="IChangeToken"/> instances from dependent entries.</param>
+        void AddExpirationTokens(IList<IChangeToken> expirationTokens);
 
         /// <summary>
         /// Sets the absolute expiration for from a dependent entry. The minimum value across all dependent entries
