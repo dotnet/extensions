@@ -23,27 +23,21 @@ namespace Microsoft.AspNet.Testing.xunit
             }
         }
 
-        public string SkipReason
-        {
-            get
-            {
-                return "Test cannot run on this operating system.";
-            }
-        }
+        public string SkipReason { get; set; } = "Test cannot run on this operating system.";
 
-        private bool CanRunOnThisOS(OperatingSystems excludedOperatingSystems)
+        private static bool CanRunOnThisOS(OperatingSystems excludedOperatingSystems)
         {
             if (excludedOperatingSystems == OperatingSystems.None)
             {
                 return true;
             }
 
-            switch (TestPlatformHelper.RuntimeEnvironment.OperatingSystem)
+            switch (TestPlatformHelper.RuntimeEnvironment.OperatingSystem.ToLowerInvariant())
             {
-                case "Windows":
+                case "windows":
                     var osVersion = new Version(TestPlatformHelper.RuntimeEnvironment.OperatingSystemVersion);
 
-                    // The GetVersion API has a back compat feature: for apps that are not manifested 
+                    // The GetVersion API has a back compat feature: for apps that are not manifested
                     // and run on Windows 8.1, it returns version 6.2 rather than 6.3. See this:
                     // http://msdn.microsoft.com/en-us/library/windows/desktop/ms724439(v=vs.85).aspx
                     if (osVersion.Major == 6)
@@ -56,13 +50,13 @@ namespace Microsoft.AspNet.Testing.xunit
                         }
                     }
                     break;
-                case "Linux":
+                case "linux":
                     if (excludedOperatingSystems.HasFlag(OperatingSystems.Linux))
                     {
                         return false;
                     }
                     break;
-                case "Darwin":
+                case "darwin":
                     if (excludedOperatingSystems.HasFlag(OperatingSystems.MacOSX))
                     {
                         return false;

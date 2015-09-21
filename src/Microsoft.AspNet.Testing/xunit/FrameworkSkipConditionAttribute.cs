@@ -23,15 +23,9 @@ namespace Microsoft.AspNet.Testing.xunit
             }
         }
 
-        public string SkipReason
-        {
-            get
-            {
-                return "Test cannot run on this runtime framework.";
-            }
-        }
+        public string SkipReason { get; set; } = "Test cannot run on this runtime framework.";
 
-        private bool CanRunOnThisFramework(RuntimeFrameworks excludedFrameworks)
+        private static bool CanRunOnThisFramework(RuntimeFrameworks excludedFrameworks)
         {
             if (excludedFrameworks == RuntimeFrameworks.None)
             {

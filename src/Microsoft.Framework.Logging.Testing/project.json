@@ -11,12 +11,12 @@
     "frameworks": {
         "net45": {
             "frameworkAssemblies": {
-                "System.Runtime": "4.0.0.0"
+                "System.Runtime": ""
             }
         },
         "dnx451": {
             "frameworkAssemblies": {
-                "System.Runtime": "4.0.0.0"
+                "System.Runtime": ""
             }
         },
         "dnxcore50": { }

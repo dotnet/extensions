@@ -31,8 +31,8 @@
     "frameworks": {
         "dnx451": {
             "frameworkAssemblies": {
-                "System.Runtime": "4.0.0.0",
-                "System.Threading.Tasks": "4.0.0.0"
+                "System.Runtime": "",
+                "System.Threading.Tasks": ""
             }
         },
         "dnxcore50": {
