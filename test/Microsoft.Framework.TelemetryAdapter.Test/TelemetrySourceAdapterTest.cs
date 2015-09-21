@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.Framework.TelemetryAdapter
 {
-    public class DefaultTelemetrySourceAdapterTest
+    public class TelemetrySourceAdapterTest
     {
         public class OneTarget
         {
@@ -220,7 +220,7 @@ namespace Microsoft.Framework.TelemetryAdapter
 
         private static TelemetrySourceAdapter CreateAdapter()
         {
-            return new DefaultTelemetrySourceAdapter(new ProxyTelemetrySourceMethodAdapter());
+            return new TelemetrySourceAdapter(new ProxyTelemetrySourceMethodAdapter());
         }
     }
 }
