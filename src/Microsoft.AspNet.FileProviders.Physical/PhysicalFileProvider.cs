@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.Framework.Caching;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.FileProviders
 {
@@ -172,11 +172,11 @@ namespace Microsoft.AspNet.FileProviders
             return new NotFoundDirectoryContents();
         }
 
-        public IExpirationTrigger Watch(string filter)
+        public IChangeToken Watch(string filter)
         {
             if (filter == null)
             {
-                return NoopTrigger.Singleton;
+                return NoopChangeToken.Singleton;
             }
 
             // Relative paths starting with a leading slash okay
@@ -188,10 +188,10 @@ namespace Microsoft.AspNet.FileProviders
             // Absolute paths not permitted.
             if (Path.IsPathRooted(filter))
             {
-                return NoopTrigger.Singleton;
+                return NoopChangeToken.Singleton;
             }
 
-            return _filesWatcher.CreateFileChangeTrigger(filter);
+            return _filesWatcher.CreateFileChangeToken(filter);
         }
 
         private class PhysicalFileInfo : IFileInfo
@@ -242,7 +242,12 @@ namespace Microsoft.AspNet.FileProviders
             public Stream CreateReadStream()
             {
                 // Note: Buffer size must be greater than zero, even if the file size is zero.
-                return new FileStream(PhysicalPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1024 * 64,
+                return new FileStream(
+                    PhysicalPath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.ReadWrite,
+                    1024 * 64,
                     FileOptions.Asynchronous | FileOptions.SequentialScan);
             }
         }

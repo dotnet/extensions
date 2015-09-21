@@ -6,7 +6,7 @@
         "url": "git://github.com/aspnet/filesystem"
     },
     "dependencies": {
-        "Microsoft.Framework.Caching.Abstractions": "1.0.0-*"
+        "Microsoft.Framework.Primitives": "1.0.0-*"
     },
     "frameworks": {
         "net45": { },

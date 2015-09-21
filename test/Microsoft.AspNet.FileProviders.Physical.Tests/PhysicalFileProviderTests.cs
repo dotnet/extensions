@@ -7,14 +7,14 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Framework.Caching;
+using Microsoft.Framework.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.FileProviders
 {
     public class PhysicalFileProviderTests
     {
-        private const int WAIT_TIME_FOR_TRIGGER_TO_FIRE = 2 * 100;
+        private const int WaitTimeForTokenToFire = 2 * 100;
 
         [Fact]
         public void ExistingFilesReturnTrue()
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.FileProviders
         }
 
         [Fact]
-        public async Task ModifyContent_And_Delete_File_Succeeds_And_Callsback_Registered_Triggers()
+        public async Task ModifyContent_And_Delete_File_Succeeds_And_Callsback_RegisteredTokens()
         {
             var fileName = Guid.NewGuid().ToString();
             var fileLocation = Path.Combine(Path.GetTempPath(), fileName);
@@ -40,53 +40,54 @@ namespace Microsoft.AspNet.FileProviders
             Assert.Equal(new FileInfo(fileInfo.PhysicalPath).Length, fileInfo.Length);
             Assert.True(fileInfo.Exists);
 
-            IExpirationTrigger trigger3 = null, trigger4 = null;
-            var trigger1 = provider.Watch(fileName);
-            var trigger2 = provider.Watch(fileName);
+            var token1 = provider.Watch(fileName);
+            var token2 = provider.Watch(fileName);
 
-            // Valid trigger1 created.
-            Assert.NotNull(trigger1);
-            Assert.False(trigger1.IsExpired);
-            Assert.True(trigger1.ActiveExpirationCallbacks);
+            // Valid token1 created.
+            Assert.NotNull(token1);
+            Assert.False(token1.HasChanged);
+            Assert.True(token1.ActiveChangeCallbacks);
 
-            // Valid trigger2 created.
-            Assert.NotNull(trigger2);
-            Assert.False(trigger2.IsExpired);
-            Assert.True(trigger2.ActiveExpirationCallbacks);
+            // Valid token2 created.
+            Assert.NotNull(token2);
+            Assert.False(token2.HasChanged);
+            Assert.True(token2.ActiveChangeCallbacks);
 
-            // Trigger is the same for a specific file.
-            Assert.Equal(trigger2, trigger1);
+            // token is the same for a specific file.
+            Assert.Equal(token2, token1);
 
-            trigger1.RegisterExpirationCallback(state =>
+            IChangeToken token3 = null;
+            IChangeToken token4 = null;
+            token1.RegisterChangeCallback(state =>
             {
                 var infoFromState = state as IFileInfo;
-                trigger3 = provider.Watch(infoFromState.Name);
-                Assert.NotNull(trigger3);
-                trigger3.RegisterExpirationCallback(_ => { }, null);
-                Assert.False(trigger3.IsExpired);
+                token3 = provider.Watch(infoFromState.Name);
+                Assert.NotNull(token3);
+                token3.RegisterChangeCallback(_ => { }, null);
+                Assert.False(token3.HasChanged);
             }, state: fileInfo);
 
-            trigger2.RegisterExpirationCallback(state =>
+            token2.RegisterChangeCallback(state =>
             {
                 var infoFromState = state as IFileInfo;
-                trigger4 = provider.Watch(infoFromState.Name);
-                Assert.NotNull(trigger4);
-                trigger4.RegisterExpirationCallback(_ => { }, null);
-                Assert.False(trigger4.IsExpired);
+                token4 = provider.Watch(infoFromState.Name);
+                Assert.NotNull(token4);
+                token4.RegisterChangeCallback(_ => { }, null);
+                Assert.False(token4.HasChanged);
             }, state: fileInfo);
 
             // Write new content.
             File.WriteAllText(fileLocation, "OldContent + NewContent");
             Assert.True(fileInfo.Exists);
             // Wait for callbacks to be fired.
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.True(trigger1.IsExpired);
-            Assert.True(trigger2.IsExpired);
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.True(token1.HasChanged);
+            Assert.True(token2.HasChanged);
 
-            // Trigger is the same for a specific file.
-            Assert.Equal(trigger4, trigger3);
-            // A new trigger is created.
-            Assert.NotEqual(trigger1, trigger3);
+            // token is the same for a specific file.
+            Assert.Same(token4, token3);
+            // A new token is created.
+            Assert.NotEqual(token1, token3);
 
             // Delete the file and verify file info is updated.
             File.Delete(fileLocation);
@@ -95,9 +96,9 @@ namespace Microsoft.AspNet.FileProviders
             Assert.False(new FileInfo(fileLocation).Exists);
 
             // Wait for callbacks to be fired.
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.True(trigger3.IsExpired);
-            Assert.True(trigger4.IsExpired);
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.True(token3.HasChanged);
+            Assert.True(token4.HasChanged);
         }
 
         [Fact]
@@ -224,7 +225,7 @@ namespace Microsoft.AspNet.FileProviders
         }
 
         [Fact]
-        public async Task Createdtrigger_Same_For_A_File_And_Callsback_AllRegisteredTriggers_OnChange()
+        public async Task CreatedToken_Same_For_A_File_And_Callsback_AllRegisteredTokens_OnChange()
         {
             var fileName = Guid.NewGuid().ToString();
             var fileLocation = Path.Combine(Path.GetTempPath(), fileName);
@@ -233,18 +234,18 @@ namespace Microsoft.AspNet.FileProviders
 
             var count = 10;
             var tasks = new List<Task>(count);
-            var triggers = new IExpirationTrigger[count];
+            var tokens = new IChangeToken[count];
             var callbackResults = new bool[count];
 
             for (int i = 0; i < count; i++)
             {
                 tasks.Add(new Task(index =>
                 {
-                    var expirationTrigger = provider.Watch(fileName);
-                    triggers[(int)index] = expirationTrigger;
-                    Assert.NotNull(expirationTrigger);
-                    Assert.False(expirationTrigger.IsExpired);
-                    expirationTrigger.RegisterExpirationCallback(_ => { callbackResults[(int)index] = true; }, index);
+                    var changeToken = provider.Watch(fileName);
+                    tokens[(int)index] = changeToken;
+                    Assert.NotNull(changeToken);
+                    Assert.False(changeToken.HasChanged);
+                    changeToken.RegisterChangeCallback(_ => { callbackResults[(int)index] = true; }, index);
                 }, state: i));
             }
 
@@ -254,11 +255,11 @@ namespace Microsoft.AspNet.FileProviders
             File.AppendAllText(fileLocation, "UpdatedContent");
 
             // Some warm up time for the callbacks to be fired.
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
+            await Task.Delay(WaitTimeForTokenToFire);
 
             for (int index = 1; index < count; index++)
             {
-                Assert.Equal(triggers[index - 1], triggers[index]);
+                Assert.Equal(tokens[index - 1], tokens[index]);
             }
 
             Assert.True(callbackResults.All(c => c));
@@ -267,16 +268,16 @@ namespace Microsoft.AspNet.FileProviders
         }
 
         [Fact]
-        public async Task FileTrigger_NotTriggered_After_Expiry()
+        public async Task FileChangeToken_NotNotified_After_Expiry()
         {
             var fileName = Guid.NewGuid().ToString();
             var fileLocation = Path.Combine(Path.GetTempPath(), fileName);
             File.WriteAllText(fileLocation, "Content");
             var provider = new PhysicalFileProvider(Path.GetTempPath());
 
-            var expirationTrigger = provider.Watch(fileName);
+            var changeToken = provider.Watch(fileName);
             int invocationCount = 0;
-            expirationTrigger.RegisterExpirationCallback(_ => { invocationCount++; }, null);
+            changeToken.RegisterChangeCallback(_ => { invocationCount++; }, null);
 
             // Callback expected for this change.
             File.AppendAllText(fileLocation, "UpdatedContent1");
@@ -285,7 +286,7 @@ namespace Microsoft.AspNet.FileProviders
             File.AppendAllText(fileLocation, "UpdatedContent2");
 
             // Wait for callbacks to be fired.
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
+            await Task.Delay(WaitTimeForTokenToFire);
 
             Assert.Equal(1, invocationCount);
 
@@ -293,22 +294,22 @@ namespace Microsoft.AspNet.FileProviders
         }
 
         [Fact]
-        public void Trigger_Is_FileName_Case_Insensitive()
+        public void Token_Is_FileName_Case_Insensitive()
         {
             var fileName = Guid.NewGuid().ToString() + 'A';
             var fileLocation = Path.Combine(Path.GetTempPath(), fileName);
             File.WriteAllText(fileLocation, "Content");
             var provider = new PhysicalFileProvider(Path.GetTempPath());
 
-            var expirationTrigger = provider.Watch(fileName);
-            var lowerCaseExpirationTrigger = provider.Watch(fileName.ToLowerInvariant());
-            Assert.Equal(lowerCaseExpirationTrigger, expirationTrigger);
+            var changeToken = provider.Watch(fileName);
+            var lowerCaseChangeToken = provider.Watch(fileName.ToLowerInvariant());
+            Assert.Equal(lowerCaseChangeToken, changeToken);
 
             File.Delete(fileLocation);
         }
 
         [Fact]
-        public async Task Trigger_With_MultipleFiles()
+        public async Task Token_With_MultipleFiles()
         {
             var fileName1 = Guid.NewGuid().ToString();
             var fileName2 = Guid.NewGuid().ToString();
@@ -319,50 +320,50 @@ namespace Microsoft.AspNet.FileProviders
             var provider = new PhysicalFileProvider(Path.GetTempPath());
 
             int invocationCount1 = 0, invocationCount2 = 0;
-            var trigger1 = provider.Watch(fileName1);
-            trigger1.RegisterExpirationCallback(_ => { invocationCount1++; }, null);
-            var trigger2 = provider.Watch(fileName2);
-            trigger2.RegisterExpirationCallback(_ => { invocationCount2++; }, null);
+            var token1 = provider.Watch(fileName1);
+            token1.RegisterChangeCallback(_ => { invocationCount1++; }, null);
+            var token2 = provider.Watch(fileName2);
+            token2.RegisterChangeCallback(_ => { invocationCount2++; }, null);
 
-            Assert.NotNull(trigger1);
-            Assert.False(trigger1.IsExpired);
-            Assert.True(trigger1.ActiveExpirationCallbacks);
+            Assert.NotNull(token1);
+            Assert.False(token1.HasChanged);
+            Assert.True(token1.ActiveChangeCallbacks);
 
-            Assert.NotNull(trigger2);
-            Assert.False(trigger2.IsExpired);
-            Assert.True(trigger2.ActiveExpirationCallbacks);
+            Assert.NotNull(token2);
+            Assert.False(token2.HasChanged);
+            Assert.True(token2.ActiveChangeCallbacks);
 
-            Assert.NotEqual(trigger2, trigger1);
+            Assert.NotEqual(token2, token1);
 
             File.AppendAllText(fileLocation1, "Update1");
             File.AppendAllText(fileLocation2, "Update2");
 
             // Wait for callbacks to be fired.
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
+            await Task.Delay(WaitTimeForTokenToFire);
 
             Assert.Equal(1, invocationCount1);
             Assert.Equal(1, invocationCount2);
-            Assert.True(trigger1.IsExpired);
-            Assert.True(trigger2.IsExpired);
+            Assert.True(token1.HasChanged);
+            Assert.True(token2.HasChanged);
 
             File.Delete(fileLocation1);
             File.Delete(fileLocation2);
 
-            // Callbacks not invoked on expired triggers.
+            // Callbacks not invoked on changed tokens.
             Assert.Equal(1, invocationCount1);
             Assert.Equal(1, invocationCount2);
         }
 
         [Fact]
-        public async Task Trigger_Callbacks_Are_Async_And_TriggerNotAffected_By_Exceptions()
+        public async Task Token_Callbacks_Are_Async_And_TokenNotAffected_By_Exceptions()
         {
             var fileName = Guid.NewGuid().ToString();
             var fileLocation = Path.Combine(Path.GetTempPath(), fileName);
             File.WriteAllText(fileLocation, "Content");
             var provider = new PhysicalFileProvider(Path.GetTempPath());
 
-            var expirationTrigger = provider.Watch(fileName);
-            expirationTrigger.RegisterExpirationCallback(async _ =>
+            var changeToken = provider.Watch(fileName);
+            changeToken.RegisterChangeCallback(async _ =>
             {
                 await Task.Delay(10 * 1000);
                 throw new Exception("Callback throwing exception");
@@ -370,18 +371,18 @@ namespace Microsoft.AspNet.FileProviders
 
             File.AppendAllText(fileLocation, "UpdatedContent");
             // Wait for callback to be fired.
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.True(expirationTrigger.IsExpired);
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.True(changeToken.HasChanged);
 
             // Verify file system watcher is stable.
             int callbackCount = 0;
-            var expirationTriggerAfterCallbackException = provider.Watch(fileName);
-            expirationTriggerAfterCallbackException.RegisterExpirationCallback(_ => { callbackCount++; }, null);
+            var changeTokenAfterCallbackException = provider.Watch(fileName);
+            changeTokenAfterCallbackException.RegisterChangeCallback(_ => { callbackCount++; }, null);
             File.AppendAllText(fileLocation, "UpdatedContent");
 
             // Wait for callback to be fired.
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.True(expirationTrigger.IsExpired);
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.True(changeToken.HasChanged);
             Assert.Equal(1, callbackCount);
 
             File.Delete(fileLocation);
@@ -389,129 +390,129 @@ namespace Microsoft.AspNet.FileProviders
 
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        public void Trigger_For_Null_Empty_Whitespace_Filters()
+        public void Token_For_Null_Empty_Whitespace_Filters()
         {
             var provider = new PhysicalFileProvider(Path.GetTempPath());
 
-            var trigger = provider.Watch(null);
-            Assert.False(trigger.IsExpired);
-            Assert.False(trigger.ActiveExpirationCallbacks);
+            var token = provider.Watch(null);
+            Assert.False(token.HasChanged);
+            Assert.False(token.ActiveChangeCallbacks);
 
-            trigger = provider.Watch(string.Empty);
-            Assert.False(trigger.IsExpired);
-            Assert.True(trigger.ActiveExpirationCallbacks);
+            token = provider.Watch(string.Empty);
+            Assert.False(token.HasChanged);
+            Assert.True(token.ActiveChangeCallbacks);
 
             // White space.
-            trigger = provider.Watch("  ");
-            Assert.False(trigger.IsExpired);
-            Assert.True(trigger.ActiveExpirationCallbacks);
+            token = provider.Watch("  ");
+            Assert.False(token.HasChanged);
+            Assert.True(token.ActiveChangeCallbacks);
 
             // Absolute path.
-            trigger = provider.Watch(Path.Combine(Path.GetTempPath() + "filename"));
-            Assert.False(trigger.IsExpired);
-            Assert.False(trigger.ActiveExpirationCallbacks);
+            token = provider.Watch(Path.Combine(Path.GetTempPath() + "filename"));
+            Assert.False(token.HasChanged);
+            Assert.False(token.ActiveChangeCallbacks);
         }
 
         [Fact]
-        public async Task Trigger_Fired_For_File_Or_Directory_Create_And_Delete()
+        public async Task Token_Fired_For_File_Or_Directory_Create_And_Delete()
         {
             var root = Path.GetTempPath();
             var provider = new PhysicalFileProvider(root);
             string fileName = Guid.NewGuid().ToString();
             string directoryName = Guid.NewGuid().ToString();
 
-            int triggerCount = 0;
-            var fileTrigger = provider.Watch(fileName);
-            fileTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
-            var directoryTrigger = provider.Watch(directoryName);
-            directoryTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
+            int tokenCount = 0;
+            var filetoken = provider.Watch(fileName);
+            filetoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
+            var directorytoken = provider.Watch(directoryName);
+            directorytoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
 
-            Assert.NotEqual(directoryTrigger, fileTrigger);
+            Assert.NotEqual(directorytoken, filetoken);
 
             File.WriteAllText(Path.Combine(root, fileName), "Content");
             Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), directoryName));
 
-            // Wait for triggers to fire.
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
+            // Wait for tokens to fire.
+            await Task.Delay(WaitTimeForTokenToFire);
 
-            Assert.Equal(2, triggerCount);
+            Assert.Equal(2, tokenCount);
 
-            Assert.True(fileTrigger.IsExpired);
-            Assert.True(directoryTrigger.IsExpired);
+            Assert.True(filetoken.HasChanged);
+            Assert.True(directorytoken.HasChanged);
 
-            fileTrigger = provider.Watch(fileName);
-            fileTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
-            directoryTrigger = provider.Watch(directoryName);
-            directoryTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
+            filetoken = provider.Watch(fileName);
+            filetoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
+            directorytoken = provider.Watch(directoryName);
+            directorytoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
 
             File.Delete(Path.Combine(root, fileName));
             Directory.Delete(Path.Combine(Path.GetTempPath(), directoryName));
 
-            // Wait for triggers to fire.
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.Equal(4, triggerCount);
+            // Wait for tokens to fire.
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.Equal(4, tokenCount);
         }
 
         [Fact]
-        public async Task Triggers_With_Path_Ending_With_Slash()
+        public async Task Tokens_With_Path_Ending_With_Slash()
         {
             var provider = new PhysicalFileProvider(Path.GetTempPath());
             string fileName = Guid.NewGuid().ToString();
             string folderName = Guid.NewGuid().ToString();
 
-            int triggerCount = 0;
-            var fileTrigger = provider.Watch("/" + folderName + "/");
-            fileTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
+            int tokenCount = 0;
+            var filetoken = provider.Watch("/" + folderName + "/");
+            filetoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
 
             var folderPath = Path.Combine(Path.GetTempPath(), folderName);
             Directory.CreateDirectory(folderPath);
             File.WriteAllText(Path.Combine(folderPath, fileName), "Content");
 
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.Equal(1, triggerCount);
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.Equal(1, tokenCount);
 
-            fileTrigger = provider.Watch("/" + folderName + "/");
-            fileTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
+            filetoken = provider.Watch("/" + folderName + "/");
+            filetoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
 
             File.AppendAllText(Path.Combine(folderPath, fileName), "UpdatedContent");
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.Equal(2, triggerCount);
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.Equal(2, tokenCount);
 
-            fileTrigger = provider.Watch("/" + folderName + "/");
-            fileTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
+            filetoken = provider.Watch("/" + folderName + "/");
+            filetoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
 
             File.Delete(Path.Combine(folderPath, fileName));
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.Equal(3, triggerCount);
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.Equal(3, tokenCount);
         }
 
         [Fact]
-        public async Task Triggers_With_Path_Not_Ending_With_Slash()
+        public async Task Tokens_With_Path_Not_Ending_With_Slash()
         {
             var provider = new PhysicalFileProvider(Path.GetTempPath());
             string directoryName = Guid.NewGuid().ToString();
             string fileName = Guid.NewGuid().ToString();
 
-            int triggerCount = 0;
+            int tokenCount = 0;
             // Matches file/directory with this name.
-            var fileTrigger = provider.Watch("/" + directoryName);
-            fileTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
+            var filetoken = provider.Watch("/" + directoryName);
+            filetoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
 
             Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), directoryName));
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.Equal(1, triggerCount);
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.Equal(1, tokenCount);
 
             // Matches file/directory with this name.
-            fileTrigger = provider.Watch("/" + fileName);
-            fileTrigger.RegisterExpirationCallback(_ => { triggerCount++; }, null);
+            filetoken = provider.Watch("/" + fileName);
+            filetoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
 
             File.WriteAllText(Path.Combine(Path.GetTempPath(), fileName), "Content");
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.Equal(2, triggerCount);
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.Equal(2, tokenCount);
         }
 
         [Fact]
-        public async Task Triggers_With_Regular_Expressions()
+        public async Task Tokens_With_Regular_Expressions()
         {
             var pattern1 = "**/*";
             var pattern2 = "*.cshtml";
@@ -520,38 +521,38 @@ namespace Microsoft.AspNet.FileProviders
             var subFolder = Path.Combine(root, Guid.NewGuid().ToString());
             Directory.CreateDirectory(subFolder);
 
-            int pattern1TriggerCount = 0, pattern2TriggerCount = 0;
-            Action<object> callback1 = _ => { pattern1TriggerCount++; };
-            Action<object> callback2 = _ => { pattern2TriggerCount++; };
+            int pattern1tokenCount = 0, pattern2tokenCount = 0;
+            Action<object> callback1 = _ => { pattern1tokenCount++; };
+            Action<object> callback2 = _ => { pattern2tokenCount++; };
 
             var provider = new PhysicalFileProvider(root);
-            var trigger1 = provider.Watch(pattern1);
-            trigger1.RegisterExpirationCallback(callback1, null);
-            var trigger2 = provider.Watch(pattern2);
-            trigger2.RegisterExpirationCallback(callback2, null);
+            var token1 = provider.Watch(pattern1);
+            token1.RegisterChangeCallback(callback1, null);
+            var token2 = provider.Watch(pattern2);
+            token2.RegisterChangeCallback(callback2, null);
 
             File.WriteAllText(Path.Combine(root, fileName + ".cshtml"), "Content");
 
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.Equal(1, pattern1TriggerCount);
-            Assert.Equal(1, pattern2TriggerCount);
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.Equal(1, pattern1tokenCount);
+            Assert.Equal(1, pattern2tokenCount);
 
-            trigger1 = provider.Watch(pattern1);
-            trigger1.RegisterExpirationCallback(callback1, null);
-            trigger2 = provider.Watch(pattern2);
-            trigger2.RegisterExpirationCallback(callback2, null);
+            token1 = provider.Watch(pattern1);
+            token1.RegisterChangeCallback(callback1, null);
+            token2 = provider.Watch(pattern2);
+            token2.RegisterChangeCallback(callback2, null);
             File.WriteAllText(Path.Combine(subFolder, fileName + ".txt"), "Content");
 
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.Equal(2, pattern1TriggerCount);
-            Assert.Equal(1, pattern2TriggerCount);
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.Equal(2, pattern1tokenCount);
+            Assert.Equal(1, pattern2tokenCount);
 
             Directory.Delete(subFolder, true);
             File.Delete(Path.Combine(root, fileName + ".cshtml"));
         }
 
         [Fact]
-        public async Task Triggers_With_Regular_Expression_Filters()
+        public async Task Tokens_With_Regular_Expression_Filters()
         {
             var pattern1 = "**/*";
             var pattern2 = "*.cshtml";
@@ -560,38 +561,38 @@ namespace Microsoft.AspNet.FileProviders
             var subFolder = Path.Combine(root, Guid.NewGuid().ToString());
             Directory.CreateDirectory(subFolder);
 
-            int pattern1TriggerCount = 0, pattern2TriggerCount = 0;
-            Action<object> callback1 = _ => { pattern1TriggerCount++; };
-            Action<object> callback2 = _ => { pattern2TriggerCount++; };
+            int pattern1tokenCount = 0, pattern2tokenCount = 0;
+            Action<object> callback1 = _ => { pattern1tokenCount++; };
+            Action<object> callback2 = _ => { pattern2tokenCount++; };
 
             var provider = new PhysicalFileProvider(root);
-            var trigger1 = provider.Watch(pattern1);
-            trigger1.RegisterExpirationCallback(callback1, null);
-            var trigger2 = provider.Watch(pattern2);
-            trigger2.RegisterExpirationCallback(callback2, null);
+            var token1 = provider.Watch(pattern1);
+            token1.RegisterChangeCallback(callback1, null);
+            var token2 = provider.Watch(pattern2);
+            token2.RegisterChangeCallback(callback2, null);
 
             File.WriteAllText(Path.Combine(root, fileName + ".cshtml"), "Content");
 
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.Equal(1, pattern1TriggerCount);
-            Assert.Equal(1, pattern2TriggerCount);
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.Equal(1, pattern1tokenCount);
+            Assert.Equal(1, pattern2tokenCount);
 
-            trigger1 = provider.Watch(pattern1);
-            trigger1.RegisterExpirationCallback(callback1, null);
-            trigger2 = provider.Watch(pattern2);
-            trigger2.RegisterExpirationCallback(callback2, null);
+            token1 = provider.Watch(pattern1);
+            token1.RegisterChangeCallback(callback1, null);
+            token2 = provider.Watch(pattern2);
+            token2.RegisterChangeCallback(callback2, null);
             File.WriteAllText(Path.Combine(subFolder, fileName + ".txt"), "Content");
 
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.Equal(2, pattern1TriggerCount);
-            Assert.Equal(1, pattern2TriggerCount);
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.Equal(2, pattern1tokenCount);
+            Assert.Equal(1, pattern2tokenCount);
 
             Directory.Delete(subFolder, true);
             File.Delete(Path.Combine(root, fileName + ".cshtml"));
         }
 
         [Fact]
-        public async Task Triggers_With_Regular_Expression_Pointing_To_SubFolder()
+        public async Task Tokens_With_Regular_Expression_Pointing_To_SubFolder()
         {
             var subFolderName = Guid.NewGuid().ToString();
             var pattern1 = "**/*";
@@ -601,58 +602,58 @@ namespace Microsoft.AspNet.FileProviders
             var subFolder = Path.Combine(root, subFolderName);
             Directory.CreateDirectory(subFolder);
 
-            int pattern1TriggerCount = 0, pattern2TriggerCount = 0;
+            int pattern1tokenCount = 0, pattern2tokenCount = 0;
             var provider = new PhysicalFileProvider(root);
-            var trigger1 = provider.Watch(pattern1);
-            trigger1.RegisterExpirationCallback(_ => { pattern1TriggerCount++; }, null);
-            var trigger2 = provider.Watch(pattern2);
-            trigger2.RegisterExpirationCallback(_ => { pattern2TriggerCount++; }, null);
+            var token1 = provider.Watch(pattern1);
+            token1.RegisterChangeCallback(_ => { pattern1tokenCount++; }, null);
+            var token2 = provider.Watch(pattern2);
+            token2.RegisterChangeCallback(_ => { pattern2tokenCount++; }, null);
 
             File.WriteAllText(Path.Combine(root, fileName + ".cshtml"), "Content");
 
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.Equal(1, pattern1TriggerCount);
-            Assert.Equal(0, pattern2TriggerCount);
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.Equal(1, pattern1tokenCount);
+            Assert.Equal(0, pattern2tokenCount);
 
-            trigger1 = provider.Watch(pattern1);
-            trigger1.RegisterExpirationCallback(_ => { pattern1TriggerCount++; }, null);
-            // Register this trigger again.
-            var trigger3 = provider.Watch(pattern2);
-            trigger3.RegisterExpirationCallback(_ => { pattern2TriggerCount++; }, null);
-            Assert.Equal(trigger2, trigger3);
+            token1 = provider.Watch(pattern1);
+            token1.RegisterChangeCallback(_ => { pattern1tokenCount++; }, null);
+            // Register this token again.
+            var token3 = provider.Watch(pattern2);
+            token3.RegisterChangeCallback(_ => { pattern2tokenCount++; }, null);
+            Assert.Equal(token2, token3);
             File.WriteAllText(Path.Combine(subFolder, fileName + ".cshtml"), "Content");
 
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.Equal(2, pattern1TriggerCount);
-            Assert.Equal(2, pattern2TriggerCount);
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.Equal(2, pattern1tokenCount);
+            Assert.Equal(2, pattern2tokenCount);
 
             Directory.Delete(subFolder, true);
             File.Delete(Path.Combine(root, fileName + ".cshtml"));
         }
 
         [Fact]
-        public void Triggers_With_Forward_And_Backward_Slash()
+        public void Tokens_With_Forward_And_Backward_Slash()
         {
             var provider = new PhysicalFileProvider(Path.GetTempPath());
-            var trigger1 = provider.Watch("/a/b");
-            var trigger2 = provider.Watch("a/b");
-            var trigger3 = provider.Watch(@"a\b");
+            var token1 = provider.Watch("/a/b");
+            var token2 = provider.Watch("a/b");
+            var token3 = provider.Watch(@"a\b");
 
-            Assert.Equal(trigger2, trigger1);
-            Assert.Equal(trigger3, trigger2);
+            Assert.Equal(token2, token1);
+            Assert.Equal(token3, token2);
 
-            Assert.True(trigger1.ActiveExpirationCallbacks);
-            Assert.True(trigger2.ActiveExpirationCallbacks);
-            Assert.True(trigger3.ActiveExpirationCallbacks);
+            Assert.True(token1.ActiveChangeCallbacks);
+            Assert.True(token2.ActiveChangeCallbacks);
+            Assert.True(token3.ActiveChangeCallbacks);
 
-            Assert.False(trigger1.IsExpired);
-            Assert.False(trigger2.IsExpired);
-            Assert.False(trigger3.IsExpired);
+            Assert.False(token1.HasChanged);
+            Assert.False(token2.HasChanged);
+            Assert.False(token3.HasChanged);
         }
 
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        public async Task Trigger_Fired_On_Directory_Name_Change()
+        public async Task Token_Fired_On_Directory_Name_Change()
         {
             var provider = new PhysicalFileProvider(Path.GetTempPath());
             var oldDirectoryName = Guid.NewGuid().ToString();
@@ -661,53 +662,53 @@ namespace Microsoft.AspNet.FileProviders
             var newDirectoryFullPath = Path.Combine(Path.GetTempPath(), newDirectoryName);
 
             Directory.CreateDirectory(oldDirectoryFullPath);
-            var oldDirectoryTrigger = provider.Watch("**/" + oldDirectoryName);
-            var newDirectoryTrigger = provider.Watch("**/" + newDirectoryName);
-            var oldTriggers = new List<IExpirationTrigger>();
-            var newTriggers = new List<IExpirationTrigger>();
+            var oldDirectorytoken = provider.Watch("**/" + oldDirectoryName);
+            var newDirectorytoken = provider.Watch("**/" + newDirectoryName);
+            var oldtokens = new List<IChangeToken>();
+            var newtokens = new List<IChangeToken>();
 
-            oldTriggers.Add(provider.Watch(Path.Combine("**", oldDirectoryName, "*.txt")));
-            newTriggers.Add(provider.Watch(Path.Combine("**", newDirectoryName, "*.txt")));
+            oldtokens.Add(provider.Watch(Path.Combine("**", oldDirectoryName, "*.txt")));
+            newtokens.Add(provider.Watch(Path.Combine("**", newDirectoryName, "*.txt")));
 
             for (int i = 0; i < 5; i++)
             {
                 var fileName = string.Format("test{0}.txt", i);
                 File.WriteAllText(Path.Combine(oldDirectoryFullPath, fileName), "test content");
-                oldTriggers.Add(provider.Watch(Path.Combine("**", oldDirectoryName, fileName)));
-                newTriggers.Add(provider.Watch(Path.Combine("**", newDirectoryName, fileName)));
+                oldtokens.Add(provider.Watch(Path.Combine("**", oldDirectoryName, fileName)));
+                newtokens.Add(provider.Watch(Path.Combine("**", newDirectoryName, fileName)));
             }
 
             await Task.Delay(2 * 100); // Give it a while before trying rename.
             Directory.Move(oldDirectoryFullPath, newDirectoryFullPath);
 
-            // Wait for triggers to fire.
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.True(oldDirectoryTrigger.IsExpired);
-            Assert.True(newDirectoryTrigger.IsExpired);
-            oldTriggers.ForEach(t => Assert.True(t.IsExpired));
-            newTriggers.ForEach(t => Assert.True(t.IsExpired));
+            // Wait for tokens to fire.
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.True(oldDirectorytoken.HasChanged);
+            Assert.True(newDirectorytoken.HasChanged);
+            oldtokens.ForEach(t => Assert.True(t.HasChanged));
+            newtokens.ForEach(t => Assert.True(t.HasChanged));
 
-            newDirectoryTrigger = provider.Watch(newDirectoryName);
-            newTriggers = new List<IExpirationTrigger>();
+            newDirectorytoken = provider.Watch(newDirectoryName);
+            newtokens = new List<IChangeToken>();
 
-            newTriggers.Add(provider.Watch(Path.Combine("**", newDirectoryName, "*.txt")));
+            newtokens.Add(provider.Watch(Path.Combine("**", newDirectoryName, "*.txt")));
             for (int i = 0; i < 5; i++)
             {
                 var fileName = string.Format("test{0}.txt", i);
-                newTriggers.Add(provider.Watch(Path.Combine("**", newDirectoryName, fileName)));
+                newtokens.Add(provider.Watch(Path.Combine("**", newDirectoryName, fileName)));
             }
 
             Directory.Delete(newDirectoryFullPath, true);
 
-            // Wait for triggers to fire.
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
-            Assert.True(newDirectoryTrigger.IsExpired);
-            newTriggers.ForEach(t => Assert.True(t.IsExpired));
+            // Wait for tokens to fire.
+            await Task.Delay(WaitTimeForTokenToFire);
+            Assert.True(newDirectorytoken.HasChanged);
+            newtokens.ForEach(t => Assert.True(t.HasChanged));
         }
 
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        public async Task Triggers_NotFired_For_FileNames_Starting_With_Period_And_Hidden_Files()
+        public async Task Tokens_NotFired_For_FileNames_Starting_With_Period_And_Hidden_Files()
         {
             var root = Path.GetTempPath();
             var hiddenFileName = Path.Combine(root, Guid.NewGuid().ToString());
@@ -722,24 +723,24 @@ namespace Microsoft.AspNet.FileProviders
             File.SetAttributes(systemFileName, fileInfo.Attributes | FileAttributes.System);
 
             var provider = new PhysicalFileProvider(Path.GetTempPath());
-            var hiddenFileTrigger = provider.Watch(Path.GetFileName(hiddenFileName));
-            var triggerFileNameStartingPeriod = provider.Watch(Path.GetFileName(fileNameStartingWithPeriod));
-            var systemFileTrigger = provider.Watch(Path.GetFileName(systemFileName));
+            var hiddenFiletoken = provider.Watch(Path.GetFileName(hiddenFileName));
+            var tokenFileNameStartingPeriod = provider.Watch(Path.GetFileName(fileNameStartingWithPeriod));
+            var systemFiletoken = provider.Watch(Path.GetFileName(systemFileName));
 
-            Assert.False(hiddenFileTrigger.IsExpired);
-            Assert.False(triggerFileNameStartingPeriod.IsExpired);
-            Assert.False(systemFileTrigger.IsExpired);
+            Assert.False(hiddenFiletoken.HasChanged);
+            Assert.False(tokenFileNameStartingPeriod.HasChanged);
+            Assert.False(systemFiletoken.HasChanged);
 
             File.AppendAllText(hiddenFileName, "Appending text");
             File.WriteAllText(fileNameStartingWithPeriod, "Updated Contents");
             File.AppendAllText(systemFileName, "Appending text");
 
-            // Wait for triggers to fire.
-            await Task.Delay(WAIT_TIME_FOR_TRIGGER_TO_FIRE);
+            // Wait for tokens to fire.
+            await Task.Delay(WaitTimeForTokenToFire);
 
-            Assert.False(hiddenFileTrigger.IsExpired);
-            Assert.False(triggerFileNameStartingPeriod.IsExpired);
-            Assert.False(systemFileTrigger.IsExpired);
+            Assert.False(hiddenFiletoken.HasChanged);
+            Assert.False(tokenFileNameStartingPeriod.HasChanged);
+            Assert.False(systemFiletoken.HasChanged);
         }
     }
 }

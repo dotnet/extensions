@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Microsoft.Framework.Caching;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.FileProviders
 {
@@ -118,9 +118,9 @@ namespace Microsoft.AspNet.FileProviders
             return new EnumerableDirectoryContents(entries);
         }
 
-        public IExpirationTrigger Watch(string pattern)
+        public IChangeToken Watch(string pattern)
         {
-            return NoopTrigger.Singleton;
+            return NoopChangeToken.Singleton;
         }
 
         private class EmbeddedResourceFileInfo : IFileInfo

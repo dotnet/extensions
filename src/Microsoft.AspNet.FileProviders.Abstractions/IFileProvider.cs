@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Framework.Caching;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.FileProviders
 {
@@ -25,10 +25,10 @@ namespace Microsoft.AspNet.FileProviders
         IDirectoryContents GetDirectoryContents(string subpath);
 
         /// <summary>
-        /// Creates a change trigger with the specified filter.
+        /// Creates a <see cref="IChangeToken"/> for the specified <paramref name="filter"/>.
         /// </summary>
         /// <param name="filter">Filter string used to determine what files or folders to monitor. Example: **/*.cs, *.*, subFolder/**/*.cshtml.</param>
-        /// <returns>An <see cref="IExpirationTrigger"/> that is triggered when a file matching <paramref name="filter"/> is added, modified or deleted.</returns>
-        IExpirationTrigger Watch(string filter);
+        /// <returns>An <see cref="IChangeToken"/> that is notified when a file matching <paramref name="filter"/> is added, modified or deleted.</returns>
+        IChangeToken Watch(string filter);
     }
 }

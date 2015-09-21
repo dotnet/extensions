@@ -107,10 +107,10 @@ namespace Microsoft.AspNet.FileProviders.Embedded.Tests
         public void Trigger_ShouldNot_Support_Registering_Callbacks()
         {
             var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, Namespace);
-            var trigger = provider.Watch("Resources/File.txt");
-            Assert.NotNull(trigger);
-            Assert.False(trigger.ActiveExpirationCallbacks);
-            Assert.False(trigger.IsExpired);
+            var token = provider.Watch("Resources/File.txt");
+            Assert.NotNull(token);
+            Assert.False(token.ActiveChangeCallbacks);
+            Assert.False(token.HasChanged);
         }
     }
 }

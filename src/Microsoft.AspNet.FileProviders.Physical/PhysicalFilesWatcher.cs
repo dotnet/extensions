@@ -2,18 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.Framework.Caching;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.FileProviders
 {
     internal class PhysicalFilesWatcher
     {
-        private readonly ConcurrentDictionary<string, FileChangeTrigger> _triggerCache =
-            new ConcurrentDictionary<string, FileChangeTrigger>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, FileChangeToken> _tokenCache =
+            new ConcurrentDictionary<string, FileChangeToken>(StringComparer.OrdinalIgnoreCase);
 
         private readonly FileSystemWatcher _fileWatcher;
 
@@ -33,18 +33,18 @@ namespace Microsoft.AspNet.FileProviders
             _fileWatcher.Error += OnError;
         }
 
-        internal IExpirationTrigger CreateFileChangeTrigger(string filter)
+        internal IChangeToken CreateFileChangeToken(string filter)
         {
             filter = NormalizeFilter(filter);
             var pattern = WildcardToRegexPattern(filter);
 
-            FileChangeTrigger expirationTrigger;
-            if (!_triggerCache.TryGetValue(pattern, out expirationTrigger))
+            FileChangeToken changeToken;
+            if (!_tokenCache.TryGetValue(pattern, out changeToken))
             {
-                expirationTrigger = _triggerCache.GetOrAdd(pattern, new FileChangeTrigger(pattern));
+                changeToken = _tokenCache.GetOrAdd(pattern, new FileChangeToken(pattern));
                 lock (_lockObject)
                 {
-                    if (_triggerCache.Count > 0 && !_fileWatcher.EnableRaisingEvents)
+                    if (_tokenCache.Count > 0 && !_fileWatcher.EnableRaisingEvents)
                     {
                         // Perf: Turn on the file monitoring if there is something to monitor.
                         _fileWatcher.EnableRaisingEvents = true;
@@ -52,18 +52,18 @@ namespace Microsoft.AspNet.FileProviders
                 }
             }
 
-            return expirationTrigger;
+            return changeToken;
         }
 
         private void OnRenamed(object sender, RenamedEventArgs e)
         {
-            // For a file name change or a directory's name change raise a trigger.
+            // For a file name change or a directory's name change notify registered tokens.
             OnFileSystemEntryChange(e.OldFullPath);
             OnFileSystemEntryChange(e.FullPath);
 
             if (Directory.Exists(e.FullPath))
             {
-                // If the renamed entity is a directory then raise trigger for every sub item.
+                // If the renamed entity is a directory then notify tokens for every sub item.
                 foreach (var newLocation in Directory.EnumerateFileSystemEntries(e.FullPath, "*", SearchOption.AllDirectories))
                 {
                     // Calculated previous path of this moved item.
@@ -81,10 +81,10 @@ namespace Microsoft.AspNet.FileProviders
 
         private void OnError(object sender, ErrorEventArgs e)
         {
-            // Trigger all the cache entries on error.
-            foreach (var trigger in _triggerCache.Values)
+            // Notify all cache entries on error.
+            foreach (var token in _tokenCache.Values)
             {
-                ReportChangeForMatchedEntries(trigger.Pattern);
+                ReportChangeForMatchedEntries(token.Pattern);
             }
         }
 
@@ -97,30 +97,30 @@ namespace Microsoft.AspNet.FileProviders
             }
 
             var relativePath = fullPath.Substring(_root.Length);
-            if (_triggerCache.ContainsKey(relativePath))
+            if (_tokenCache.ContainsKey(relativePath))
             {
                 ReportChangeForMatchedEntries(relativePath);
             }
             else
             {
-                foreach (var trigger in _triggerCache.Values.Where(t => t.IsMatch(relativePath)))
+                foreach (var token in _tokenCache.Values.Where(t => t.IsMatch(relativePath)))
                 {
-                    ReportChangeForMatchedEntries(trigger.Pattern);
+                    ReportChangeForMatchedEntries(token.Pattern);
                 }
             }
         }
 
         private void ReportChangeForMatchedEntries(string pattern)
         {
-            FileChangeTrigger expirationTrigger;
-            if (_triggerCache.TryRemove(pattern, out expirationTrigger))
+            FileChangeToken changeToken;
+            if (_tokenCache.TryRemove(pattern, out changeToken))
             {
-                expirationTrigger.Changed();
-                if (_triggerCache.Count == 0)
+                changeToken.Changed();
+                if (_tokenCache.Count == 0)
                 {
                     lock (_lockObject)
                     {
-                        if (_triggerCache.Count == 0 && _fileWatcher.EnableRaisingEvents)
+                        if (_tokenCache.Count == 0 && _fileWatcher.EnableRaisingEvents)
                         {
                             // Perf: Turn off the file monitoring if no files to monitor.
                             _fileWatcher.EnableRaisingEvents = false;

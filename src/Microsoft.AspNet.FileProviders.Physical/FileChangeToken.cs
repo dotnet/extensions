@@ -2,32 +2,32 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Text.RegularExpressions;
-using Microsoft.Framework.Caching;
+using Microsoft.Framework.Primitives;
 
 namespace Microsoft.AspNet.FileProviders
 {
-    internal class FileChangeTrigger : IExpirationTrigger
+    internal class FileChangeToken : IChangeToken
     {
-        private CancellationTokenSource TokenSource { get; set; } = new CancellationTokenSource();
+        private Regex _searchRegex;
 
-        public FileChangeTrigger(string pattern)
+        public FileChangeToken(string pattern)
         {
             Pattern = pattern;
         }
 
-        public string Pattern { get; private set; }
+        public string Pattern { get; }
 
-        private Regex _searchRegex;
+        private CancellationTokenSource TokenSource { get; } = new CancellationTokenSource();
+
         private Regex SearchRegex
         {
             get
             {
                 if (_searchRegex == null)
                 {
-                    // Perf: Compile this as this may be used multiple times.
                     _searchRegex = new Regex(
                         '^' + Pattern + '$',
                         RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture,
@@ -38,17 +38,11 @@ namespace Microsoft.AspNet.FileProviders
             }
         }
 
-        public bool ActiveExpirationCallbacks
-        {
-            get { return true; }
-        }
+        public bool ActiveChangeCallbacks => true;
 
-        public bool IsExpired
-        {
-            get { return TokenSource.Token.IsCancellationRequested; }
-        }
+        public bool HasChanged => TokenSource.Token.IsCancellationRequested;
 
-        public IDisposable RegisterExpirationCallback(Action<object> callback, object state)
+        public IDisposable RegisterChangeCallback(Action<object> callback, object state)
         {
             return TokenSource.Token.Register(callback, state);
         }
