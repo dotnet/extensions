@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using Xunit;
 
 namespace Microsoft.Framework.Internal
@@ -11,17 +10,30 @@ namespace Microsoft.Framework.Internal
         [Fact]
         public void GivenTheSameInputs_ItProducesTheSameOutput()
         {
-            var hashCode1 = HashCodeCombiner.Start().Add(42).Add("foo").CombinedHash;
-            var hashCode2 = HashCodeCombiner.Start().Add(42).Add("foo").CombinedHash;
-            Assert.Equal(hashCode1, hashCode2);
+            var hashCode1 = new HashCodeCombiner();
+            var hashCode2 = new HashCodeCombiner();
+
+            hashCode1.Add(42);
+            hashCode1.Add("foo");
+            hashCode2.Add(42);
+            hashCode2.Add("foo");
+
+            Assert.Equal(hashCode1.CombinedHash, hashCode2.CombinedHash);
         }
 
         [Fact]
         public void HashCode_Is_OrderSensitive()
         {
-            var hashCode1 = HashCodeCombiner.Start().Add(42).Add("foo").CombinedHash;
-            var hashCode2 = HashCodeCombiner.Start().Add("foo").Add(42).CombinedHash;
-            Assert.NotEqual(hashCode1, hashCode2);
+            var hashCode1 = HashCodeCombiner.Start();
+            var hashCode2 = HashCodeCombiner.Start();
+
+            hashCode1.Add(42);
+            hashCode1.Add("foo");
+
+            hashCode2.Add("foo");
+            hashCode2.Add(42);
+
+            Assert.NotEqual(hashCode1.CombinedHash, hashCode2.CombinedHash);
         }
     }
 }

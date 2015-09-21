@@ -24,7 +24,7 @@ namespace Microsoft.Framework.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public HashCodeCombiner Add(IEnumerable e)
+        public void Add(IEnumerable e)
         {
             if (e == null)
             {
@@ -40,7 +40,6 @@ namespace Microsoft.Framework.Internal
                 }
                 Add(count);
             }
-            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -50,31 +49,30 @@ namespace Microsoft.Framework.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public HashCodeCombiner Add(int i)
+        public void Add(int i)
         {
             _combinedHash64 = ((_combinedHash64 << 5) + _combinedHash64) ^ i;
-            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public HashCodeCombiner Add(string s)
+        public void Add(string s)
         {
             var hashCode = (s != null) ? s.GetHashCode() : 0;
-            return Add(hashCode);
+            Add(hashCode);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public HashCodeCombiner Add(object o)
+        public void Add(object o)
         {
             var hashCode = (o != null) ? o.GetHashCode() : 0;
-            return Add(hashCode);
+            Add(hashCode);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public HashCodeCombiner Add<TValue>(TValue value, IEqualityComparer<TValue> comparer)
+        public void Add<TValue>(TValue value, IEqualityComparer<TValue> comparer)
         {
             var hashCode = value != null ? comparer.GetHashCode(value) : 0;
-            return Add(hashCode);
+            Add(hashCode);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
