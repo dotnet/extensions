@@ -12,23 +12,6 @@ namespace Microsoft.Framework.Configuration.Test
     public class ConfigurationTest
     {
         [Fact]
-        public void SetBasePathThroughConstructor()
-        {
-            var expectedBasePath = @"C:\ExamplePath";
-            var builder = new ConfigurationBuilder(basePath: expectedBasePath);
-
-            Assert.Equal(expectedBasePath, builder.BasePath);
-        }
-
-        [Fact]
-        public void DefaultBasePathIsNull()
-        {
-            var builder = new ConfigurationBuilder();
-
-            Assert.Null(builder.BasePath);
-        }
-
-        [Fact]
         public void LoadAndCombineKeyValuePairsFromDifferentConfigurationSources()
         {
             // Arrange

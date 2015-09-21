@@ -4,6 +4,7 @@
     },
     "dependencies": {
         "Microsoft.Framework.Configuration": "1.0.0-*",
+        "Microsoft.Framework.Configuration.FileExtensions": "1.0.0-*",
         "Microsoft.Framework.Configuration.Test.Common": "1.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },

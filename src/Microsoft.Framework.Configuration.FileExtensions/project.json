@@ -1,13 +1,12 @@
 ﻿{
     "version": "1.0.0-*",
-    "description": "INI configuration source for the Configuration package.",
+    "description": "File based provider configuration extensions for the Configuration package.",
     "repository": {
         "type": "git",
         "url": "https://github.com/aspnet/configuration"
     },
     "dependencies": {
-        "Microsoft.Framework.Configuration": "1.0.0-*",
-        "Microsoft.Framework.Configuration.FileExtensions": "1.0.0-*"
+        "Microsoft.Framework.Configuration": "1.0.0-*"
     },
     "frameworks": {
     "net45": { },

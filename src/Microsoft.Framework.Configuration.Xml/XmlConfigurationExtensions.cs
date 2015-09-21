@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using Microsoft.Framework.Configuration.Helper;
 using Microsoft.Framework.Configuration.Xml;
 
 namespace Microsoft.Framework.Configuration
@@ -16,39 +15,39 @@ namespace Microsoft.Framework.Configuration
         /// <summary>
         /// Adds the XML configuration source at <paramref name="path"/> to <paramref name="configuraton"/>.
         /// </summary>
-        /// <param name="configuration">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
         /// <param name="path">Absolute path or path relative to <see cref="IConfigurationBuilder.BasePath"/> of
-        /// <paramref name="configuration"/>.</param>
+        /// <paramref name="configurationBuilder"/>.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
-        public static IConfigurationBuilder AddXmlFile(this IConfigurationBuilder configuration, string path)
+        public static IConfigurationBuilder AddXmlFile(this IConfigurationBuilder configurationBuilder, string path)
         {
-            if (configuration == null)
+            if (configurationBuilder == null)
             {
-                throw new ArgumentNullException(nameof(configuration));
+                throw new ArgumentNullException(nameof(configurationBuilder));
             }
 
-            return AddXmlFile(configuration, path, optional: false);
+            return AddXmlFile(configurationBuilder, path, optional: false);
         }
 
         /// <summary>
-        /// Adds the XML configuration source at <paramref name="path"/> to <paramref name="configuraton"/>.
+        /// Adds the XML configuration source at <paramref name="path"/> to <paramref name="configurationBuilder"/>.
         /// </summary>
-        /// <param name="configuration">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
         /// <param name="path">Absolute path or path relative to <see cref="IConfigurationBuilder.BasePath"/> of
-        /// <paramref name="configuration"/>.</param>
+        /// <paramref name="configurationBuilder"/>.</param>
         /// <param name="optional">Determines if loading the configuration source is optional.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         /// <exception cref="ArgumentException">If <paramref name="path"/> is null or empty.</exception>
         /// <exception cref="FileNotFoundException">If <paramref name="optional"/> is <c>false</c> and the file cannot
         /// be resolved.</exception>
         public static IConfigurationBuilder AddXmlFile(
-            this IConfigurationBuilder configuration,
+            this IConfigurationBuilder configurationBuilder,
             string path,
             bool optional)
         {
-            if (configuration == null)
+            if (configurationBuilder == null)
             {
-                throw new ArgumentNullException(nameof(configuration));
+                throw new ArgumentNullException(nameof(configurationBuilder));
             }
 
             if (string.IsNullOrEmpty(path))
@@ -56,16 +55,16 @@ namespace Microsoft.Framework.Configuration
                 throw new ArgumentException(Resources.Error_InvalidFilePath, nameof(path));
             }
 
-            var fullPath = ConfigurationHelper.ResolveConfigurationFilePath(configuration, path);
+            var fullPath = Path.Combine(configurationBuilder.GetBasePath(), path);
 
             if (!optional && !File.Exists(fullPath))
             {
                 throw new FileNotFoundException(Resources.FormatError_FileNotFound(fullPath), fullPath);
             }
 
-            configuration.Add(new XmlConfigurationSource(fullPath, optional: optional));
+            configurationBuilder.Add(new XmlConfigurationSource(fullPath, optional: optional));
 
-            return configuration;
+            return configurationBuilder;
         }
     }
 }

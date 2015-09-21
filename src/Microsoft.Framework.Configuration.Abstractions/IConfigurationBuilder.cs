@@ -7,7 +7,7 @@ namespace Microsoft.Framework.Configuration
 {
     public interface IConfigurationBuilder
     {
-        string BasePath { get; }
+        Dictionary<string, object> Properties { get; }
 
         IEnumerable<IConfigurationSource> Sources { get; }
 

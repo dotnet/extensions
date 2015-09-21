@@ -10,11 +10,6 @@ namespace Microsoft.Framework.Configuration
         private readonly IList<IConfigurationSource> _sources = new List<IConfigurationSource>();
 
         public ConfigurationBuilder(params IConfigurationSource[] sources)
-            : this(null, sources)
-        {
-        }
-
-        public ConfigurationBuilder(string basePath, params IConfigurationSource[] sources)
         {
             if (sources != null)
             {
@@ -23,8 +18,6 @@ namespace Microsoft.Framework.Configuration
                     Add(singleSource);
                 }
             }
-
-            BasePath = basePath;
         }
 
         public IEnumerable<IConfigurationSource> Sources
@@ -35,10 +28,7 @@ namespace Microsoft.Framework.Configuration
             }
         }
 
-        public string BasePath
-        {
-            get;
-        }
+        public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Adds a new configuration source.
