@@ -12,7 +12,6 @@
   },
   "frameworks": {
     "net45": {
-      "compilationOptions": { "define": [ "PROXY_SUPPORT" ] },
       "frameworkAssemblies": {
         "System.Collections.Concurrent": "",
         "System.Linq": "",
@@ -20,7 +19,6 @@
       }
     },
     "dotnet": {
-      "compilationOptions": { "define": [ "PROXY_SUPPORT" ] },
       "dependencies": {
         "System.ComponentModel": "4.0.1-beta-*",
         "System.Collections.Concurrent": "4.0.11-beta-*",
@@ -33,24 +31,6 @@
         "System.Reflection": "4.0.11-beta-*",
         "System.Reflection.Emit": "4.0.1-beta-*",
         "System.Reflection.Emit.Lightweight": "4.0.1-beta-*",
-        "System.Reflection.Extensions": "4.0.1-beta-*",
-        "System.Reflection.TypeExtensions": "4.0.1-beta-*",
-        "System.Resources.ResourceManager": "4.0.1-beta-*",
-        "System.Runtime": "4.0.21-beta-*",
-        "System.Runtime.Extensions": "4.0.11-beta-*"
-      }
-    },
-    "netcore50": {
-      "dependencies": {
-        "System.ComponentModel": "4.0.1-beta-*",
-        "System.Collections.Concurrent": "4.0.11-beta-*",
-        "System.Collections": "4.0.11-beta-*",
-        "System.Diagnostics.Debug": "4.0.11-beta-*",
-        "System.Globalization": "4.0.11-beta-*",
-        "System.Linq": "4.0.1-beta-*",
-        "System.Linq.Expressions": "4.0.11-beta-*",
-        "System.Threading": "4.0.11-beta-*",
-        "System.Reflection": "4.0.11-beta-*",
         "System.Reflection.Extensions": "4.0.1-beta-*",
         "System.Reflection.TypeExtensions": "4.0.1-beta-*",
         "System.Resources.ResourceManager": "4.0.1-beta-*",
