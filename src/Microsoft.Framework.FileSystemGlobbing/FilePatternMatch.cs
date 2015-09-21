@@ -30,10 +30,11 @@ namespace Microsoft.Framework.FileSystemGlobbing
 
         public override int GetHashCode()
         {
-            return HashCodeCombiner.Start()
-                .Add(Path)
-                .Add(Stem)
-                .CombinedHash;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(Path, StringComparer.OrdinalIgnoreCase);
+            hashCodeCombiner.Add(Stem, StringComparer.OrdinalIgnoreCase);
+
+            return hashCodeCombiner;
         }
     }
 }
