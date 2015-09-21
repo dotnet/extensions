@@ -19,18 +19,22 @@ namespace Microsoft.Framework.TelemetryAdapter
         }
 
         [Fact]
-        public void IsEnabledBecomesTrueAfterEnlisting()
+        public void IsEnabled_TrueForEnlistedEvent()
         {
             // Arrange
-            var adapter = CreateAdapter();
+            var adapter = CreateAdapter(new OneTarget());
 
             // Act & Assert
-            Assert.False(adapter.IsEnabled("One"));
-            Assert.False(adapter.IsEnabled("Two"));
-
-            adapter.EnlistTarget(new OneTarget());
-
             Assert.True(adapter.IsEnabled("One"));
+        }
+
+        [Fact]
+        public void IsEnabled_FalseForNonenlistedEvent()
+        {
+            // Arrange
+            var adapter = CreateAdapter(new OneTarget());
+
+            // Act & Assert
             Assert.False(adapter.IsEnabled("Two"));
         }
 
@@ -38,10 +42,8 @@ namespace Microsoft.Framework.TelemetryAdapter
         public void CallingWriteTelemetryWillInvokeMethod()
         {
             // Arrange
-            var adapter = CreateAdapter();
             var target = new OneTarget();
-
-            adapter.EnlistTarget(target);
+            var adapter = CreateAdapter(target);
 
             // Act & Assert
             Assert.Equal(0, target.OneCallCount);
@@ -53,10 +55,8 @@ namespace Microsoft.Framework.TelemetryAdapter
         public void CallingWriteTelemetryForNonEnlistedNameIsHarmless()
         {
             // Arrange
-            var adapter = CreateAdapter();
             var target = new OneTarget();
-
-            adapter.EnlistTarget(target);
+            var adapter = CreateAdapter(target);
 
             // Act & Assert
             Assert.Equal(0, target.OneCallCount);
@@ -83,10 +83,8 @@ namespace Microsoft.Framework.TelemetryAdapter
         public void ParametersWillSplatFromObjectByName()
         {
             // Arrange
-            var adapter = CreateAdapter();
             var target = new TwoTarget();
-
-            adapter.EnlistTarget(target);
+            var adapter = CreateAdapter(target);
 
             // Act
             adapter.WriteTelemetry("Two", new { alpha = "ALPHA", beta = "BETA", delta = -1 });
@@ -101,10 +99,8 @@ namespace Microsoft.Framework.TelemetryAdapter
         public void ExtraParametersAreHarmless()
         {
             // Arrange
-            var adapter = CreateAdapter();
             var target = new TwoTarget();
-
-            adapter.EnlistTarget(target);
+            var adapter = CreateAdapter(target);
 
             // Act
             adapter.WriteTelemetry("Two", new { alpha = "ALPHA", beta = "BETA", delta = -1, extra = this });
@@ -119,10 +115,8 @@ namespace Microsoft.Framework.TelemetryAdapter
         public void MissingParametersArriveAsNull()
         {
             // Arrange
-            var adapter = CreateAdapter();
             var target = new TwoTarget();
-
-            adapter.EnlistTarget(target);
+            var adapter = CreateAdapter(target);
 
             // Act
             adapter.WriteTelemetry("Two", new { alpha = "ALPHA", delta = -1 });
@@ -137,10 +131,8 @@ namespace Microsoft.Framework.TelemetryAdapter
         public void WriteTelemetryCanDuckType()
         {
             // Arrange
-            var adapter = CreateAdapter();
             var target = new ThreeTarget();
-
-            adapter.EnlistTarget(target);
+            var adapter = CreateAdapter(target);
 
             // Act
             adapter.WriteTelemetry("Three", new
@@ -218,9 +210,9 @@ namespace Microsoft.Framework.TelemetryAdapter
             public int Value { get; private set; }
         }
 
-        private static TelemetrySourceAdapter CreateAdapter()
+        private static TelemetrySourceAdapter CreateAdapter(object target)
         {
-            return new TelemetrySourceAdapter(new ProxyTelemetrySourceMethodAdapter());
+            return new TelemetrySourceAdapter(target, new ProxyTelemetrySourceMethodAdapter());
         }
     }
 }

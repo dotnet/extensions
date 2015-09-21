@@ -11,48 +11,48 @@ namespace Microsoft.Framework.TelemetryAdapter
 {
     public class TelemetrySourceAdapter : IObserver<KeyValuePair<string, object>>
     {
-        private readonly ListenerCache _listeners = new ListenerCache();
-        
+        private readonly Listener _listener;
         private readonly ITelemetrySourceMethodAdapter _methodAdapter;
 
-        public TelemetrySourceAdapter(ITelemetrySourceMethodAdapter methodAdapter)
+        public TelemetrySourceAdapter(object listener)
+            : this(listener, new ProxyTelemetrySourceMethodAdapter())
         {
-            _methodAdapter = methodAdapter;
         }
 
-        public void EnlistTarget(object target)
+        public TelemetrySourceAdapter(object target, ITelemetrySourceMethodAdapter methodAdapter)
         {
+            _methodAdapter = methodAdapter;
+
+            _listener = EnlistTarget(target);
+        }
+
+        private static Listener EnlistTarget(object target)
+        {
+            var listener = new Listener(target);
+
             var typeInfo = target.GetType().GetTypeInfo();
-
             var methodInfos = typeInfo.DeclaredMethods;
-
             foreach (var methodInfo in methodInfos)
             {
                 var notificationNameAttribute = methodInfo.GetCustomAttribute<TelemetryNameAttribute>();
                 if (notificationNameAttribute != null)
                 {
-                    Enlist(notificationNameAttribute.Name, target, methodInfo);
+                    var subscription = new Subscription(methodInfo);
+                    listener.Subscriptions.Add(notificationNameAttribute.Name, subscription);
                 }
             }
-        }
 
-        private void Enlist(string notificationName, object target, MethodInfo methodInfo)
-        {
-            var entries = _listeners.GetOrAdd(
-                notificationName,
-                _ => new ConcurrentBag<ListenerEntry>());
-
-            entries.Add(new ListenerEntry(target, methodInfo));
+            return listener;
         }
 
         public bool IsEnabled(string telemetryName)
         {
-            if (_listeners.Count == 0)
+            if (_listener.Subscriptions.Count == 0)
             {
                 return false;
             }
 
-            return _listeners.ContainsKey(telemetryName);
+            return _listener.Subscriptions.ContainsKey(telemetryName);
         }
 
         public void WriteTelemetry(string telemetryName, object parameters)
@@ -62,29 +62,26 @@ namespace Microsoft.Framework.TelemetryAdapter
                 return;
             }
 
-            ConcurrentBag<ListenerEntry> entries;
-            if (_listeners.TryGetValue(telemetryName, out entries))
+            Subscription subscription;
+            if (_listener.Subscriptions.TryGetValue(telemetryName, out subscription))
             {
-                foreach (var entry in entries)
+                var succeeded = false;
+                foreach (var adapter in subscription.Adapters)
                 {
-                    var succeeded = false;
-                    foreach (var adapter in entry.Adapters)
+                    if (adapter(_listener.Target, parameters))
                     {
-                        if (adapter(entry.Target, parameters))
-                        {
-                            succeeded = true;
-                            break;
-                        }
+                        succeeded = true;
+                        break;
                     }
+                }
 
-                    if (!succeeded)
-                    {
-                        var newAdapter = _methodAdapter.Adapt(entry.MethodInfo, parameters.GetType());
-                        succeeded = newAdapter(entry.Target, parameters);
-                        Debug.Assert(succeeded);
+                if (!succeeded)
+                {
+                    var newAdapter = _methodAdapter.Adapt(subscription.MethodInfo, parameters.GetType());
+                    succeeded = newAdapter(_listener.Target, parameters);
+                    Debug.Assert(succeeded);
 
-                        entry.Adapters.Add(newAdapter);
-                    }
+                    subscription.Adapters.Add(newAdapter);
                 }
             }
         }
@@ -104,19 +101,24 @@ namespace Microsoft.Framework.TelemetryAdapter
             // Do nothing
         }
 
-        private class ListenerCache : ConcurrentDictionary<string, ConcurrentBag<ListenerEntry>>
+        private class Listener
         {
-            public ListenerCache()
-                : base(StringComparer.Ordinal)
-            {
-            }
-        }
-
-        private class ListenerEntry
-        {
-            public ListenerEntry(object target, MethodInfo methodInfo)
+            public Listener(object target)
             {
                 Target = target;
+
+                Subscriptions = new Dictionary<string, Subscription>(StringComparer.Ordinal);
+            }
+
+            public object Target { get; }
+
+            public Dictionary<string, Subscription> Subscriptions { get; }
+        }
+
+        private class Subscription
+        {
+            public Subscription(MethodInfo methodInfo)
+            {
                 MethodInfo = methodInfo;
 
                 Adapters = new ConcurrentBag<Func<object, object, bool>>();
@@ -125,8 +127,6 @@ namespace Microsoft.Framework.TelemetryAdapter
             public ConcurrentBag<Func<object, object, bool>> Adapters { get; }
 
             public MethodInfo MethodInfo { get; }
-
-            public object Target { get; }
         }
     }
 }

@@ -9,8 +9,7 @@ namespace System.Diagnostics.Tracing
     {
         public static IDisposable SubscribeWithAdapter(this TelemetryListener telemetry, object target)
         {
-            var adapter = new TelemetrySourceAdapter(new ProxyTelemetrySourceMethodAdapter());
-            adapter.EnlistTarget(target);
+            var adapter = new TelemetrySourceAdapter(target);
             return telemetry.Subscribe(adapter, adapter.IsEnabled);
         }
     }
