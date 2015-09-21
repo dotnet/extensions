@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
-using Microsoft.Dnx.TestAdapter;
+using Microsoft.Dnx.Testing.Abstractions;
 using Microsoft.Dnx.TestHost.TestAdapter;
 using Microsoft.Dnx.Runtime.Common.DependencyInjection;
 using Microsoft.Dnx.Runtime;

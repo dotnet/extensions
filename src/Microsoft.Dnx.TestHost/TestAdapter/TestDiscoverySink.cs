@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Dnx.TestAdapter;
+using Microsoft.Dnx.Testing.Abstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Dnx.TestHost

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Dnx.Runtime.Infrastructure;
-using Microsoft.Dnx.TestAdapter;
+using Microsoft.Dnx.Testing.Abstractions;
 using Microsoft.Dnx.TestHost.Client;
 using Xunit;
 

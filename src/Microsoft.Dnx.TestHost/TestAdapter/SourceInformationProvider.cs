@@ -11,7 +11,7 @@ using dia2;
 using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Logging;
-using Microsoft.Dnx.TestAdapter;
+using Microsoft.Dnx.Testing.Abstractions;
 
 namespace Microsoft.Dnx.TestHost.TestAdapter
 {
