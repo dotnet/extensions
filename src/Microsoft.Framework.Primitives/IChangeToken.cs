@@ -16,7 +16,7 @@ namespace Microsoft.Framework.Primitives
         bool HasChanged { get; }
 
         /// <summary>
-        /// Indicates if this token will pro-actively trigger callbacks. Callbacks are still guaranteed to fire, eventually.
+        /// Indicates if this token will pro-actively raise callbacks. Callbacks are still guaranteed to fire, eventually.
         /// </summary>
         bool ActiveChangeCallbacks { get; }
 
