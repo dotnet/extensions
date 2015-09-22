@@ -14,21 +14,29 @@ namespace Microsoft.Framework.TelemetryAdapter
         private readonly Listener _listener;
         private readonly ITelemetrySourceMethodAdapter _methodAdapter;
 
-        public TelemetrySourceAdapter(object listener)
-            : this(listener, new ProxyTelemetrySourceMethodAdapter())
+        public TelemetrySourceAdapter(object target)
+            : this(target, null, new ProxyTelemetrySourceMethodAdapter())
         {
         }
 
-        public TelemetrySourceAdapter(object target, ITelemetrySourceMethodAdapter methodAdapter)
+        public TelemetrySourceAdapter(object target, Func<string, bool> isEnabled)
+            : this(target, isEnabled: null, methodAdapter: new ProxyTelemetrySourceMethodAdapter())
+        {
+        }
+
+        public TelemetrySourceAdapter(
+            object target,
+            Func<string, bool> isEnabled,
+            ITelemetrySourceMethodAdapter methodAdapter)
         {
             _methodAdapter = methodAdapter;
 
-            _listener = EnlistTarget(target);
+            _listener = EnlistTarget(target, isEnabled);
         }
 
-        private static Listener EnlistTarget(object target)
+        private static Listener EnlistTarget(object target, Func<string, bool> isEnabled)
         {
-            var listener = new Listener(target);
+            var listener = new Listener(target, isEnabled);
 
             var typeInfo = target.GetType().GetTypeInfo();
             var methodInfos = typeInfo.DeclaredMethods;
@@ -52,7 +60,9 @@ namespace Microsoft.Framework.TelemetryAdapter
                 return false;
             }
 
-            return _listener.Subscriptions.ContainsKey(telemetryName);
+            return
+                _listener.Subscriptions.ContainsKey(telemetryName) &&
+                (_listener.IsEnabled == null || _listener.IsEnabled(telemetryName));
         }
 
         public void WriteTelemetry(string telemetryName, object parameters)
@@ -63,26 +73,33 @@ namespace Microsoft.Framework.TelemetryAdapter
             }
 
             Subscription subscription;
-            if (_listener.Subscriptions.TryGetValue(telemetryName, out subscription))
+            if (!_listener.Subscriptions.TryGetValue(telemetryName, out subscription))
             {
-                var succeeded = false;
-                foreach (var adapter in subscription.Adapters)
-                {
-                    if (adapter(_listener.Target, parameters))
-                    {
-                        succeeded = true;
-                        break;
-                    }
-                }
+                return;
+            }
 
-                if (!succeeded)
-                {
-                    var newAdapter = _methodAdapter.Adapt(subscription.MethodInfo, parameters.GetType());
-                    succeeded = newAdapter(_listener.Target, parameters);
-                    Debug.Assert(succeeded);
+            if (_listener.IsEnabled != null && !_listener.IsEnabled(telemetryName))
+            {
+                return;
+            }
 
-                    subscription.Adapters.Add(newAdapter);
+            var succeeded = false;
+            foreach (var adapter in subscription.Adapters)
+            {
+                if (adapter(_listener.Target, parameters))
+                {
+                    succeeded = true;
+                    break;
                 }
+            }
+
+            if (!succeeded)
+            {
+                var newAdapter = _methodAdapter.Adapt(subscription.MethodInfo, parameters.GetType());
+                succeeded = newAdapter(_listener.Target, parameters);
+                Debug.Assert(succeeded);
+
+                subscription.Adapters.Add(newAdapter);
             }
         }
 
@@ -103,12 +120,16 @@ namespace Microsoft.Framework.TelemetryAdapter
 
         private class Listener
         {
-            public Listener(object target)
+
+            public Listener(object target, Func<string, bool> isEnabled)
             {
                 Target = target;
+                IsEnabled = isEnabled;
 
                 Subscriptions = new Dictionary<string, Subscription>(StringComparer.Ordinal);
             }
+
+            public Func<string, bool> IsEnabled { get; }
 
             public object Target { get; }
 

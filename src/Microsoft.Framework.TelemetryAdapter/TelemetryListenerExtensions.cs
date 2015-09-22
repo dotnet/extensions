@@ -12,5 +12,14 @@ namespace System.Diagnostics.Tracing
             var adapter = new TelemetrySourceAdapter(target);
             return telemetry.Subscribe(adapter, adapter.IsEnabled);
         }
+
+        public static IDisposable SubscribeWithAdapter(
+            this TelemetryListener telemetry,
+            object target,
+            Func<string, bool> isEnabled)
+        {
+            var adapter = new TelemetrySourceAdapter(target);
+            return telemetry.Subscribe(adapter, adapter.IsEnabled);
+        }
     }
 }

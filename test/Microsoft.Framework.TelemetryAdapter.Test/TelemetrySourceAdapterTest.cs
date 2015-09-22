@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Xunit;
 
 namespace Microsoft.Framework.TelemetryAdapter
@@ -26,6 +27,44 @@ namespace Microsoft.Framework.TelemetryAdapter
 
             // Act & Assert
             Assert.True(adapter.IsEnabled("One"));
+        }
+
+        [Fact]
+        public void IsEnabled_True_PredicateCalledForIsEnabled()
+        {
+            // Arrange
+            var callCount = 0;
+            Func<string, bool> isEnabled = (name) =>
+            {
+                Assert.Equal("One", name);
+                callCount++;
+                return true;
+            };
+            
+            var adapter = CreateAdapter(new OneTarget(), isEnabled);
+
+            // Act & Assert
+            Assert.True(adapter.IsEnabled("One"));
+            Assert.Equal(1, callCount);
+        }
+
+        [Fact]
+        public void IsEnabled_False_PredicateCalledForIsEnabled()
+        {
+            // Arrange
+            var callCount = 0;
+            Func<string, bool> isEnabled = (name) =>
+            {
+                Assert.Equal("One", name);
+                callCount++;
+                return false;
+            };
+
+            var adapter = CreateAdapter(new OneTarget(), isEnabled);
+
+            // Act & Assert
+            Assert.False(adapter.IsEnabled("One"));
+            Assert.Equal(1, callCount);
         }
 
         [Fact]
@@ -61,6 +100,52 @@ namespace Microsoft.Framework.TelemetryAdapter
             // Act & Assert
             Assert.Equal(0, target.OneCallCount);
             adapter.WriteTelemetry("Two", new { });
+            Assert.Equal(0, target.OneCallCount);
+        }
+
+        [Fact]
+        public void WriteTelemetry_True_CallsIsEnabled()
+        {
+            // Arrange
+            var callCount = 0;
+            Func<string, bool> isEnabled = (name) =>
+            {
+                Assert.Equal("One", name);
+                callCount++;
+                return true;
+            };
+
+            var target = new OneTarget();
+            var adapter = CreateAdapter(target, isEnabled);
+
+            // Act
+            adapter.WriteTelemetry("One", new { });
+
+            // Assert
+            Assert.Equal(1, callCount);
+            Assert.Equal(1, target.OneCallCount);
+        }
+
+        [Fact]
+        public void WriteTelemetry_False_CallsIsEnabled()
+        {
+            // Arrange
+            var callCount = 0;
+            Func<string, bool> isEnabled = (name) =>
+            {
+                Assert.Equal("One", name);
+                callCount++;
+                return false;
+            };
+
+            var target = new OneTarget();
+            var adapter = CreateAdapter(target, isEnabled);
+
+            // Act
+            adapter.WriteTelemetry("One", new { });
+
+            // Assert
+            Assert.Equal(1, callCount);
             Assert.Equal(0, target.OneCallCount);
         }
 
@@ -210,9 +295,9 @@ namespace Microsoft.Framework.TelemetryAdapter
             public int Value { get; private set; }
         }
 
-        private static TelemetrySourceAdapter CreateAdapter(object target)
+        private static TelemetrySourceAdapter CreateAdapter(object target, Func<string, bool> isEnabled = null)
         {
-            return new TelemetrySourceAdapter(target, new ProxyTelemetrySourceMethodAdapter());
+            return new TelemetrySourceAdapter(target, isEnabled, new ProxyTelemetrySourceMethodAdapter());
         }
     }
 }
