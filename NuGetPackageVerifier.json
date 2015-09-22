@@ -1,0 +1,35 @@
+{
+    "adx": { // Packages written by the ADX team and that ship on NuGet.org
+        "rules": [
+            "AssemblyHasDocumentFileRule",
+            "AssemblyHasVersionAttributesRule",
+            "AssemblyHasServicingAttributeRule",
+            "AssemblyHasNeutralResourcesLanguageAttributeRule",
+            "SatellitePackageRule",
+            "StrictSemanticVersionValidationRule"
+        ],
+        "packages": {
+            "Microsoft.AspNet.Testing": { },
+            "Microsoft.Dnx.TestHost": { },
+            "Microsoft.Dnx.Testing.Abstractions": { },
+            "Microsoft.Framework.Logging.Testing": { },
+            "Microsoft.Framework.WebEncoders.Testing": { }
+        }
+    },
+    "adx-nonshipping": {
+        "rules": [],
+        "packages": {
+            "Microsoft.Dnx.TestHost.Client.Sources": { }
+        }
+    },
+    "Default": { // Rules to run for packages not listed in any other set.
+        "rules": [
+            "AssemblyHasDocumentFileRule",
+            "AssemblyHasVersionAttributesRule",
+            "AssemblyHasServicingAttributeRule",
+            "AssemblyHasNeutralResourcesLanguageAttributeRule",
+            "SatellitePackageRule",
+            "StrictSemanticVersionValidationRule"
+        ]
+    }
+}
