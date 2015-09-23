@@ -270,6 +270,40 @@ namespace Microsoft.Framework.Internal
         }
 
         [Fact]
+        public void PropertyHelper_ForInterface_ReturnsExpectedProperties()
+        {
+            // Arrange
+            var expectedNames = new[] { "Count", "IsReadOnly" };
+
+            // Act
+            var helpers = PropertyHelper.GetProperties(typeof(ICollection<string>));
+
+            // Assert
+            Assert.Collection(
+                helpers.OrderBy(helper => helper.Name, StringComparer.Ordinal),
+                helper => { Assert.Equal(expectedNames[0], helper.Name, StringComparer.Ordinal); },
+                helper => { Assert.Equal(expectedNames[1], helper.Name, StringComparer.Ordinal); });
+        }
+
+        [Fact]
+        public void PropertyHelper_ForDerivedInterface_ReturnsAllProperties()
+        {
+            // Arrange
+            var expectedNames = new[] { "Count", "IsReadOnly", "Keys", "Values" };
+
+            // Act
+            var helpers = PropertyHelper.GetProperties(typeof(IDictionary<string, string>));
+
+            // Assert
+            Assert.Collection(
+                helpers.OrderBy(helper => helper.Name, StringComparer.Ordinal),
+                helper => { Assert.Equal(expectedNames[0], helper.Name, StringComparer.Ordinal); },
+                helper => { Assert.Equal(expectedNames[1], helper.Name, StringComparer.Ordinal); },
+                helper => { Assert.Equal(expectedNames[2], helper.Name, StringComparer.Ordinal); },
+                helper => { Assert.Equal(expectedNames[3], helper.Name, StringComparer.Ordinal); });
+        }
+
+        [Fact]
         public void GetProperties_ExcludesIndexersAndPropertiesWithoutPublicGetters()
         {
             // Arrange
