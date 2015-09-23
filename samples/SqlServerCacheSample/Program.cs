@@ -69,7 +69,7 @@ namespace SqlServerCacheSample
             value = await cache.GetAsync(key);
             if (value != null)
             {
-                Console.WriteLine("Retrieved: " + Encoding.UTF8.GetString(value));
+                Console.WriteLine("Retrieved: " + Encoding.UTF8.GetString(value, 0, value.Length));
             }
             else
             {
@@ -88,7 +88,7 @@ namespace SqlServerCacheSample
             value = await cache.GetAsync(key);
             if (value != null)
             {
-                Console.WriteLine("Retrieved: " + Encoding.UTF8.GetString(value));
+                Console.WriteLine("Retrieved: " + Encoding.UTF8.GetString(value, 0, value.Length));
             }
             else
             {
