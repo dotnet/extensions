@@ -483,19 +483,31 @@ namespace Microsoft.Framework.Internal
             PropertyHelper[] helpers;
             if (!cache.TryGetValue(type, out helpers))
             {
-                // We avoid loading indexed properties using the where statement.
-                // Indexed properties are not useful (or valid) for grabbing properties off an object.
-                var properties = type.GetRuntimeProperties().Where(
-                    prop => prop.GetIndexParameters().Length == 0 &&
-                    prop.GetMethod != null &&
-                    prop.GetMethod.IsPublic &&
-                    !prop.GetMethod.IsStatic);
+                // We avoid loading indexed properties using the Where statement.
+                var properties = type.GetRuntimeProperties().Where(IsInterestingProperty);
+
+                var typeInfo = type.GetTypeInfo();
+                if (typeInfo.IsInterface)
+                {
+                    // Reflection does not return information about inherited properties on the interface itself.
+                    properties = properties.Concat(typeInfo.ImplementedInterfaces.SelectMany(
+                        interfaceType => interfaceType.GetRuntimeProperties().Where(IsInterestingProperty)));
+                }
 
                 helpers = properties.Select(p => createPropertyHelper(p)).ToArray();
                 cache.TryAdd(type, helpers);
             }
 
             return helpers;
+        }
+
+        // Indexed properties are not useful (or valid) for grabbing properties off an object.
+        private static bool IsInterestingProperty(PropertyInfo property)
+        {
+            return property.GetIndexParameters().Length == 0 &&
+                property.GetMethod != null &&
+                property.GetMethod.IsPublic &&
+                !property.GetMethod.IsStatic;
         }
     }
 }
