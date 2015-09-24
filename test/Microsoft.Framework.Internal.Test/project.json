@@ -23,7 +23,9 @@
     "frameworks": {
         "dnx451": {
             "dependencies": {
-                "Moq": "4.2.1312.1622"
+                "Moq": "4.2.1312.1622",
+                "System.Security.Claims": "4.0.1-beta-*",
+                "System.Security.Principal": "4.0.1-beta-*"
             }
         },
         "dnxcore50": { }
