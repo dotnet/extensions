@@ -5,15 +5,42 @@
     "dependencies": {
         "Microsoft.AspNet.Testing": "1.0.0-*",
         "Microsoft.AspNet.Html.Abstractions": "1.0.0-*",
-        "Microsoft.Framework.BufferedHtmlContent.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.ClosedGenericMatcher.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.CopyOnWriteDictionary.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.HashCodeCombiner.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.PropertyActivator.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.PropertyHelper.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.SecurityHelper.Sources": { "type": "build", "version": "1.0.0-*" },
-        "Microsoft.Framework.TypeNameHelper.Sources": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Framework.BufferedHtmlContent.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        },
+        "Microsoft.Framework.ClosedGenericMatcher.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        },
+        "Microsoft.Framework.CopyOnWriteDictionary.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        },
+        "Microsoft.Framework.HashCodeCombiner.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        },
+        "Microsoft.Framework.NotNullAttribute.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        },
+        "Microsoft.Framework.PropertyActivator.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        },
+        "Microsoft.Framework.PropertyHelper.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        },
+        "Microsoft.Framework.SecurityHelper.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        },
+        "Microsoft.Framework.TypeNameHelper.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        },
         "Microsoft.Framework.WebEncoders.Testing": "1.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
@@ -23,11 +50,14 @@
     "frameworks": {
         "dnx451": {
             "dependencies": {
-                "Moq": "4.2.1312.1622",
+                "Moq": "4.2.1312.1622"
+            }
+        },
+        "dnxcore50": {
+            "dependencies": {
                 "System.Security.Claims": "4.0.1-beta-*",
                 "System.Security.Principal": "4.0.1-beta-*"
             }
-        },
-        "dnxcore50": { }
+        }
     }
 }
