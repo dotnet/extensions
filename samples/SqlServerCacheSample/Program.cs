@@ -25,9 +25,11 @@ namespace SqlServerCacheSample
     {
         public Program(IApplicationEnvironment appEnv)
         {
-            var configurationBuilder = new ConfigurationBuilder(appEnv.ApplicationBasePath);
-            configurationBuilder.AddJsonFile("config.json")
-                        .AddEnvironmentVariables();
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder
+                .SetBasePath(appEnv.ApplicationBasePath)
+                .AddJsonFile("config.json")
+                .AddEnvironmentVariables();
             Configuration = configurationBuilder.Build();
         }
 
