@@ -6,15 +6,15 @@ using System.Collections.Generic;
 
 namespace Microsoft.Framework.Configuration.Memory
 {
-    public class MemoryConfigurationSource : 
-        ConfigurationSource, 
+    public class MemoryConfigurationProvider : 
+        ConfigurationProvider, 
         IEnumerable<KeyValuePair<string,string>>
     {
-        public MemoryConfigurationSource()
+        public MemoryConfigurationProvider()
         {
         }
 
-        public MemoryConfigurationSource(IEnumerable<KeyValuePair<string, string>> initialData)
+        public MemoryConfigurationProvider(IEnumerable<KeyValuePair<string, string>> initialData)
         {
             foreach (var pair in initialData)
             {

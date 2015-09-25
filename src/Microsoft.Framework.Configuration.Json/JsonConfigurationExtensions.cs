@@ -8,7 +8,7 @@ using Microsoft.Framework.Configuration.Json;
 namespace Microsoft.Framework.Configuration
 {
     /// <summary>
-    /// Extension methods for adding <see cref="JsonConfigurationSource"/>.
+    /// Extension methods for adding <see cref="JsonConfigurationProvider"/>.
     /// </summary>
     public static class JsonConfigurationExtensions
     {
@@ -64,7 +64,7 @@ namespace Microsoft.Framework.Configuration
                 throw new FileNotFoundException(Resources.FormatError_FileNotFound(fullPath), fullPath);
             }
 
-            configurationBuilder.Add(new JsonConfigurationSource(fullPath, optional: optional));
+            configurationBuilder.Add(new JsonConfigurationProvider(fullPath, optional: optional));
 
             return configurationBuilder;
         }

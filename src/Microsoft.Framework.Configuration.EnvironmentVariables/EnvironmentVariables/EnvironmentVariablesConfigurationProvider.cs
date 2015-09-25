@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Microsoft.Framework.Configuration.EnvironmentVariables
 {
-    public class EnvironmentVariablesConfigurationSource : ConfigurationSource
+    public class EnvironmentVariablesConfigurationProvider : ConfigurationProvider
     {
         private const string MySqlServerPrefix = "MYSQLCONNSTR_";
         private const string SqlAzureServerPrefix = "SQLAZURECONNSTR_";
@@ -20,12 +20,12 @@ namespace Microsoft.Framework.Configuration.EnvironmentVariables
 
         private readonly string _prefix;
 
-        public EnvironmentVariablesConfigurationSource(string prefix)
+        public EnvironmentVariablesConfigurationProvider(string prefix)
         {
             _prefix = prefix;
         }
 
-        public EnvironmentVariablesConfigurationSource()
+        public EnvironmentVariablesConfigurationProvider()
         {
             _prefix = string.Empty;
         }

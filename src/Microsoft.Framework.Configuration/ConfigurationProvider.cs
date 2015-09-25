@@ -7,9 +7,9 @@ using System.Linq;
 
 namespace Microsoft.Framework.Configuration
 {
-    public abstract class ConfigurationSource : IConfigurationSource
+    public abstract class ConfigurationProvider : IConfigurationProvider
     {
-        protected ConfigurationSource()
+        protected ConfigurationProvider()
         {
             Data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
@@ -30,7 +30,7 @@ namespace Microsoft.Framework.Configuration
         {
         }
        
-        public virtual IEnumerable<string> ProduceConfigurationSections(
+        public virtual IEnumerable<string> GetChildKeys(
             IEnumerable<string> earlierKeys,
             string parentPath,
             string delimiter)

@@ -59,7 +59,7 @@ namespace Microsoft.Framework.Configuration
                 throw new FileNotFoundException(Resources.FormatError_FileNotFound(fullPath), fullPath);
             }
 
-            configurationBuilder.Add(new IniConfigurationSource(fullPath, optional: optional));
+            configurationBuilder.Add(new IniConfigurationProvider(fullPath, optional: optional));
             return configurationBuilder;
         }
     }

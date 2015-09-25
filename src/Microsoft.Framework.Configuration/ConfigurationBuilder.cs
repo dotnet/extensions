@@ -7,24 +7,24 @@ namespace Microsoft.Framework.Configuration
 {
     public class ConfigurationBuilder : IConfigurationBuilder
     {
-        private readonly IList<IConfigurationSource> _sources = new List<IConfigurationSource>();
+        private readonly IList<IConfigurationProvider> _providers = new List<IConfigurationProvider>();
 
-        public ConfigurationBuilder(params IConfigurationSource[] sources)
+        public ConfigurationBuilder(params IConfigurationProvider[] providers)
         {
-            if (sources != null)
+            if (providers != null)
             {
-                foreach (var singleSource in sources)
+                foreach (var provider in providers)
                 {
-                    Add(singleSource);
+                    Add(provider);
                 }
             }
         }
 
-        public IEnumerable<IConfigurationSource> Sources
+        public IEnumerable<IConfigurationProvider> Providers
         {
             get
             {
-                return _sources;
+                return _providers;
             }
         }
 
@@ -33,34 +33,34 @@ namespace Microsoft.Framework.Configuration
         /// <summary>
         /// Adds a new configuration source.
         /// </summary>
-        /// <param name="configurationSource">The configuration source to add.</param>
+        /// <param name="configurationProvider">The configuration source to add.</param>
         /// <returns>The same configuration source.</returns>
-        public IConfigurationBuilder Add(IConfigurationSource configurationSource)
+        public IConfigurationBuilder Add(IConfigurationProvider configurationProvider)
         {
-            return Add(configurationSource, load: true);
+            return Add(configurationProvider, load: true);
         }
 
         /// <summary>
         /// Adds a new configuration source.
         /// </summary>
-        /// <param name="configurationSource">The configuration source to add.</param>
-        /// <param name="load">If true, the configuration source's <see cref="IConfigurationSource.Load"/> method will
+        /// <param name="configurationProvider">The configuration source to add.</param>
+        /// <param name="load">If true, the configuration source's <see cref="IConfigurationProvider.Load"/> method will
         ///  be called.</param>
         /// <returns>The same configuration source.</returns>
         /// <remarks>This method is intended only for test scenarios.</remarks>
-        public IConfigurationBuilder Add(IConfigurationSource configurationSource, bool load)
+        public IConfigurationBuilder Add(IConfigurationProvider configurationProvider, bool load)
         {
             if (load)
             {
-                configurationSource.Load();
+                configurationProvider.Load();
             }
-            _sources.Add(configurationSource);
+            _providers.Add(configurationProvider);
             return this;
         }
 
         public IConfigurationRoot Build()
         {
-            return new ConfigurationRoot(_sources);
+            return new ConfigurationRoot(_providers);
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Microsoft.Framework.Configuration
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            configuration.Add(new MemoryConfigurationSource());
+            configuration.Add(new MemoryConfigurationProvider());
             return configuration;
         }
 
@@ -40,7 +40,7 @@ namespace Microsoft.Framework.Configuration
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            configuration.Add(new MemoryConfigurationSource(initialData));
+            configuration.Add(new MemoryConfigurationProvider(initialData));
             return configuration;
         }
     }

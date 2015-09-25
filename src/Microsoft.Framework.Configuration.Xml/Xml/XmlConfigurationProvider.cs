@@ -10,34 +10,34 @@ using System.Xml;
 namespace Microsoft.Framework.Configuration.Xml
 {
     /// <summary>
-    /// An XML file based <see cref="ConfigurationSource"/>.
+    /// An XML file based <see cref="ConfigurationProvider"/>.
     /// </summary>
-    public class XmlConfigurationSource : ConfigurationSource
+    public class XmlConfigurationProvider : ConfigurationProvider
     {
         private const string NameAttributeKey = "Name";
 
         private readonly XmlDocumentDecryptor _xmlDocumentDecryptor;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="XmlConfigurationSource"/>.
+        /// Initializes a new instance of <see cref="XmlConfigurationProvider"/>.
         /// </summary>
         /// <param name="path">Absolute path of the XML configuration file.</param>
-        public XmlConfigurationSource(string path)
+        public XmlConfigurationProvider(string path)
             : this(path, null, optional: false)
         {
         }
 
-        public XmlConfigurationSource(string path, bool optional)
+        public XmlConfigurationProvider(string path, bool optional)
             : this(path, null, optional: optional)
         {
         }
 
-        internal XmlConfigurationSource(string path, XmlDocumentDecryptor xmlDocumentDecryptor)
+        internal XmlConfigurationProvider(string path, XmlDocumentDecryptor xmlDocumentDecryptor)
             : this(path, xmlDocumentDecryptor, optional: false)
         {
         }
 
-        internal XmlConfigurationSource(string path, XmlDocumentDecryptor xmlDocumentDecryptor, bool optional)
+        internal XmlConfigurationProvider(string path, XmlDocumentDecryptor xmlDocumentDecryptor, bool optional)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -51,12 +51,12 @@ namespace Microsoft.Framework.Configuration.Xml
         }
 
         /// <summary>
-        /// Gets a value that determines if this instance of <see cref="XmlConfigurationSource"/> is optional.
+        /// Gets a value that determines if this instance of <see cref="XmlConfigurationProvider"/> is optional.
         /// </summary>
         public bool Optional { get; }
 
         /// <summary>
-        /// The absolute path of the file backing this instance of <see cref="XmlConfigurationSource"/>.
+        /// The absolute path of the file backing this instance of <see cref="XmlConfigurationProvider"/>.
         /// </summary>
         public string Path { get; }
 

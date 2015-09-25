@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Framework.Configuration
 {
-    public interface IConfigurationSource
+    public interface IConfigurationProvider
     {
         bool TryGet(string key, out string value);
 
@@ -13,7 +13,7 @@ namespace Microsoft.Framework.Configuration
 
         void Load();
 
-        IEnumerable<string> ProduceConfigurationSections(
+        IEnumerable<string> GetChildKeys(
             IEnumerable<string> earlierKeys,
             string parentPath,
             string delimiter);

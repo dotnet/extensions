@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.Framework.Configuration.Xml.Test
 {
-    public partial class XmlConfigurationSourceTest
+    public partial class XmlConfigurationTest
     {
         [Fact]
         public void LoadKeyValuePairsFromValidEncryptedXml_ThrowsPlatformNotSupported()
@@ -46,7 +46,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
                 </settings>";
 
             // Arrange
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationProvider(ArbitraryFilePath);
 
             // Act & assert
             var ex = Assert.Throws<PlatformNotSupportedException>(() => xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml)));

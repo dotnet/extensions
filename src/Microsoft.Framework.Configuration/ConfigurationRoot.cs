@@ -8,12 +8,12 @@ namespace Microsoft.Framework.Configuration
 {
     public class ConfigurationRoot : ConfigurationBase, IConfigurationRoot
     {
-        public ConfigurationRoot(IList<IConfigurationSource> sources)
-            : base(sources)
+        public ConfigurationRoot(IList<IConfigurationProvider> providers)
+            : base(providers)
         {
-            if (sources == null)
+            if (providers == null)
             {
-                throw new ArgumentNullException(nameof(sources));
+                throw new ArgumentNullException(nameof(providers));
             }
         }
 
@@ -27,9 +27,9 @@ namespace Microsoft.Framework.Configuration
 
         public void Reload()
         {
-            foreach (var src in Sources)
+            foreach (var provider in Providers)
             {
-                src.Load();
+                provider.Load();
             }
         }
     }

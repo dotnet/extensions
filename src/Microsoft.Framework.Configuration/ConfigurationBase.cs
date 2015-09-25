@@ -9,16 +9,16 @@ namespace Microsoft.Framework.Configuration
 {
     public abstract class ConfigurationBase : IConfiguration
     {
-        private readonly IList<IConfigurationSource> _sources = new List<IConfigurationSource>();
+        private readonly IList<IConfigurationProvider> _providers = new List<IConfigurationProvider>();
 
-        public ConfigurationBase(IList<IConfigurationSource> sources)
+        public ConfigurationBase(IList<IConfigurationProvider> providers)
         {
-            if (sources == null)
+            if (providers == null)
             {
-                throw new ArgumentNullException(nameof(sources));
+                throw new ArgumentNullException(nameof(providers));
             }
 
-            _sources = sources;
+            _providers = providers;
         }
 
         public abstract string Path { get; }
@@ -35,30 +35,26 @@ namespace Microsoft.Framework.Configuration
             }
         }
 
-        public IList<IConfigurationSource> Sources
+        public IList<IConfigurationProvider> Providers
         {
             get
             {
-                return _sources;
+                return _providers;
             }
         }
 
         public IEnumerable<IConfigurationSection> GetChildren()
         {
-            var segments = Sources.Aggregate(
-                Enumerable.Empty<string>(),
-                (seed, source) => source.ProduceConfigurationSections(seed, Path, Constants.KeyDelimiter));
-
-            var distinctSegments = segments.Distinct();
-            return distinctSegments.Select(segment =>
-            {
-                return new ConfigurationSection(Sources, Path, segment);
-            });
+            return Providers
+                .Aggregate(Enumerable.Empty<string>(),
+                    (seed, source) => source.GetChildKeys(seed, Path, Constants.KeyDelimiter))
+                .Distinct()
+                .Select(GetSection);
         }
 
         public IConfigurationSection GetSection(string key)
         {
-            return new ConfigurationSection(Sources, Path, key);
+            return new ConfigurationSection(Providers, Path, key);
         }
     }
 }

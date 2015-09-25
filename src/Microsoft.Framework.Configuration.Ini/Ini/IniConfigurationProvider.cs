@@ -8,7 +8,7 @@ using System.IO;
 namespace Microsoft.Framework.Configuration.Ini
 {
     /// <summary>
-    /// An INI file based <see cref="ConfigurationSource"/>.
+    /// An INI file based <see cref="ConfigurationProvider"/>.
     /// Files are simple line structures (<a href="http://en.wikipedia.org/wiki/INI_file">INI Files on Wikipedia</a>)
     /// </summary>
     /// <examples>
@@ -19,23 +19,23 @@ namespace Microsoft.Framework.Configuration.Ini
     /// # comment
     /// / comment
     /// </examples>
-    public class IniConfigurationSource : ConfigurationSource
+    public class IniConfigurationProvider : ConfigurationProvider
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="IniConfigurationSource"/>.
+        /// Initializes a new instance of <see cref="IniConfigurationProvider"/>.
         /// </summary>
         /// <param name="path">Absolute path of the INI configuration file.</param>
-        public IniConfigurationSource(string path)
+        public IniConfigurationProvider(string path)
             : this(path, optional: false)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="IniConfigurationSource"/>.
+        /// Initializes a new instance of <see cref="IniConfigurationProvider"/>.
         /// </summary>
         /// <param name="path">Absolute path of the INI configuration file.</param>
         /// <param name="optional">Determines if the configuration is optional.</param>
-        public IniConfigurationSource(string path, bool optional)
+        public IniConfigurationProvider(string path, bool optional)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -47,12 +47,12 @@ namespace Microsoft.Framework.Configuration.Ini
         }
 
         /// <summary>
-        /// Gets a value that determines if this instance of <see cref="IniConfigurationSource"/> is optional.
+        /// Gets a value that determines if this instance of <see cref="IniConfigurationProvider"/> is optional.
         /// </summary>
         public bool Optional { get; }
 
         /// <summary>
-        /// The absolute path of the file backing this instance of <see cref="IniConfigurationSource"/>.
+        /// The absolute path of the file backing this instance of <see cref="IniConfigurationProvider"/>.
         /// </summary>
         public string Path { get; }
 

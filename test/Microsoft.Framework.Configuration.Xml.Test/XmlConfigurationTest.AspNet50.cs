@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Microsoft.Framework.Configuration.Xml.Test
 {
-    public partial class XmlConfigurationSourceTest
+    public partial class XmlConfigurationTest
     {
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
@@ -51,7 +51,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
             Assert.Null(xmlDocument.SelectSingleNode("//Inventory"));
 
             // Arrange
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath, new EncryptedXmlDocumentDecryptor(doc =>
+            var xmlConfigSrc = new XmlConfigurationProvider(ArbitraryFilePath, new EncryptedXmlDocumentDecryptor(doc =>
             {
                 var innerEncryptedXml = new EncryptedXml(doc);
                 innerEncryptedXml.AddKeyNameMapping("myKey", aes);

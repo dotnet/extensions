@@ -8,7 +8,7 @@ using Microsoft.Framework.Configuration.Xml;
 namespace Microsoft.Framework.Configuration
 {
     /// <summary>
-    /// Extension methods for adding <see cref="XmlConfigurationSource"/>.
+    /// Extension methods for adding <see cref="XmlConfigurationProvider"/>.
     /// </summary>
     public static class XmlConfigurationExtensions
     {
@@ -62,7 +62,7 @@ namespace Microsoft.Framework.Configuration
                 throw new FileNotFoundException(Resources.FormatError_FileNotFound(fullPath), fullPath);
             }
 
-            configurationBuilder.Add(new XmlConfigurationSource(fullPath, optional: optional));
+            configurationBuilder.Add(new XmlConfigurationProvider(fullPath, optional: optional));
 
             return configurationBuilder;
         }

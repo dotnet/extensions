@@ -20,7 +20,7 @@ namespace Microsoft.Framework.Configuration.Json.Test
                 ]
             }";
 
-            var jsonConfigSource = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSource = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
             
             Assert.Equal("1.2.3.4", jsonConfigSource.Get("ip:0"));
@@ -44,7 +44,7 @@ namespace Microsoft.Framework.Configuration.Json.Test
                 ]
             }";
 
-            var jsonConfigSource = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSource = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
 
             Assert.Equal("1.2.3.4", jsonConfigSource.Get("ip:0:address"));
@@ -69,7 +69,7 @@ namespace Microsoft.Framework.Configuration.Json.Test
                 ]
             }";
 
-            var jsonConfigSource = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSource = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
 
             Assert.Equal("1.2.3.4", jsonConfigSource.Get("ip:0:0"));
@@ -95,10 +95,10 @@ namespace Microsoft.Framework.Configuration.Json.Test
                 ]
             }";
 
-            var jsonConfigSource1 = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSource1 = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource1.Load(TestStreamHelpers.StringToStream(json1));
 
-            var jsonConfigSource2 = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSource2 = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource2.Load(TestStreamHelpers.StringToStream(json2));
 
             var builder = new ConfigurationBuilder();
@@ -129,10 +129,10 @@ namespace Microsoft.Framework.Configuration.Json.Test
                 }
             }";
 
-            var jsonConfigSource1 = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSource1 = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource1.Load(TestStreamHelpers.StringToStream(json1));
 
-            var jsonConfigSource2 = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSource2 = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource2.Load(TestStreamHelpers.StringToStream(json2));
 
             var builder = new ConfigurationBuilder();
@@ -163,10 +163,10 @@ namespace Microsoft.Framework.Configuration.Json.Test
                 }
             }";
 
-            var jsonConfigSource1 = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSource1 = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource1.Load(TestStreamHelpers.StringToStream(json1));
 
-            var jsonConfigSource2 = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSource2 = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource2.Load(TestStreamHelpers.StringToStream(json2));
 
             var builder = new ConfigurationBuilder();
@@ -192,7 +192,7 @@ namespace Microsoft.Framework.Configuration.Json.Test
                 ]
             }";
 
-            var jsonConfigSource = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSource = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
 
             var builder = new ConfigurationBuilder();
@@ -222,7 +222,7 @@ namespace Microsoft.Framework.Configuration.Json.Test
                 }
             }";
 
-            var jsonConfigSource = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSource = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
 
             var builder = new ConfigurationBuilder();

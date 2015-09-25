@@ -10,25 +10,25 @@ using Newtonsoft.Json;
 namespace Microsoft.Framework.Configuration.Json
 {
     /// <summary>
-    /// A JSON file based <see cref="ConfigurationSource"/>.
+    /// A JSON file based <see cref="ConfigurationProvider"/>.
     /// </summary>
-    public class JsonConfigurationSource : ConfigurationSource
+    public class JsonConfigurationProvider : ConfigurationProvider
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="JsonConfigurationSource"/>.
+        /// Initializes a new instance of <see cref="JsonConfigurationProvider"/>.
         /// </summary>
         /// <param name="path">Absolute path of the JSON configuration file.</param>
-        public JsonConfigurationSource(string path)
+        public JsonConfigurationProvider(string path)
             : this(path, optional: false)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="JsonConfigurationSource"/>.
+        /// Initializes a new instance of <see cref="JsonConfigurationProvider"/>.
         /// </summary>
         /// <param name="path">Absolute path of the JSON configuration file.</param>
         /// <param name="optional">Determines if the configuration is optional.</param>
-        public JsonConfigurationSource(string path, bool optional)
+        public JsonConfigurationProvider(string path, bool optional)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -40,12 +40,12 @@ namespace Microsoft.Framework.Configuration.Json
         }
 
         /// <summary>
-        /// Gets a value that determines if this instance of <see cref="JsonConfigurationSource"/> is optional.
+        /// Gets a value that determines if this instance of <see cref="JsonConfigurationProvider"/> is optional.
         /// </summary>
         public bool Optional { get; }
 
         /// <summary>
-        /// The absolute path of the file backing this instance of <see cref="JsonConfigurationSource"/>.
+        /// The absolute path of the file backing this instance of <see cref="JsonConfigurationProvider"/>.
         /// </summary>
         public string Path { get; }
 

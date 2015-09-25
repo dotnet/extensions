@@ -6,11 +6,11 @@ using System.Collections.Generic;
 
 namespace Microsoft.Framework.Configuration.CommandLine
 {
-    public class CommandLineConfigurationSource : ConfigurationSource
+    public class CommandLineConfigurationProvider : ConfigurationProvider
     {
         private readonly Dictionary<string, string> _switchMappings;
 
-        public CommandLineConfigurationSource(IEnumerable<string> args, IDictionary<string, string> switchMappings = null)
+        public CommandLineConfigurationProvider(IEnumerable<string> args, IDictionary<string, string> switchMappings = null)
         {
             if (args == null)
             {

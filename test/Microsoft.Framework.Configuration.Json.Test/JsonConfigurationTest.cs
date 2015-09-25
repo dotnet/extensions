@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.Framework.Configuration
 {
-    public class JsonConfigurationSourceTest
+    public class JsonConfigurationTest
     {
         [Fact]
         public void LoadKeyValuePairsFromValidJson()
@@ -24,7 +24,7 @@ namespace Microsoft.Framework.Configuration
             'zipcode': '12345'
         }
 }";
-            var jsonConfigSrc = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSrc = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
 
             jsonConfigSrc.Load(TestStreamHelpers.StringToStream(json));
 
@@ -41,7 +41,7 @@ namespace Microsoft.Framework.Configuration
 {
     'name': ''
 }";
-            var jsonConfigSrc = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSrc = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
 
             jsonConfigSrc.Load(TestStreamHelpers.StringToStream(json));
 
@@ -52,7 +52,7 @@ namespace Microsoft.Framework.Configuration
         public void NonObjectRootIsInvalid()
         {
             var json = @"'test'";
-            var jsonConfigSource = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSource = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
           
             var exception = Assert.Throws<FormatException>(
                 () => jsonConfigSource.Load(TestStreamHelpers.StringToStream(json)));
@@ -71,7 +71,7 @@ namespace Microsoft.Framework.Configuration
                     ""zipcode"": ""12345""
                 }
             }";
-            var jsonConfigSrc = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSrc = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
 
             jsonConfigSrc.Load(TestStreamHelpers.StringToStream(json));
 
@@ -90,7 +90,7 @@ namespace Microsoft.Framework.Configuration
                     'zipcode': '12345'
                 }
             /* Missing a right brace here*/";
-            var jsonConfigSource = new JsonConfigurationSource(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSource = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
            
             var exception = Assert.Throws<FormatException>(
                 () => jsonConfigSource.Load(TestStreamHelpers.StringToStream(json)));
@@ -102,7 +102,7 @@ namespace Microsoft.Framework.Configuration
         {
             var expectedMsg = new ArgumentException(Resources.Error_InvalidFilePath, "path").Message;
 
-            var exception = Assert.Throws<ArgumentException>(() => new JsonConfigurationSource(null));
+            var exception = Assert.Throws<ArgumentException>(() => new JsonConfigurationProvider(null));
 
             Assert.Equal(expectedMsg, exception.Message);
         }
@@ -112,7 +112,7 @@ namespace Microsoft.Framework.Configuration
         {
             var expectedMsg = new ArgumentException(Resources.Error_InvalidFilePath, "path").Message;
 
-            var exception = Assert.Throws<ArgumentException>(() => new JsonConfigurationSource(string.Empty));
+            var exception = Assert.Throws<ArgumentException>(() => new JsonConfigurationProvider(string.Empty));
 
             Assert.Equal(expectedMsg, exception.Message);
         }
@@ -120,7 +120,7 @@ namespace Microsoft.Framework.Configuration
         [Fact]
         public void JsonConfiguration_Throws_On_Missing_Configuration_File()
         {
-            var configSource = new JsonConfigurationSource("NotExistingConfig.json", optional: false);
+            var configSource = new JsonConfigurationProvider("NotExistingConfig.json", optional: false);
             var exception = Assert.Throws<FileNotFoundException>(() => configSource.Load());
 
             // Assert
@@ -130,7 +130,7 @@ namespace Microsoft.Framework.Configuration
         [Fact]
         public void JsonConfiguration_Does_Not_Throw_On_Optional_Configuration()
         {
-            var configSource = new JsonConfigurationSource("NotExistingConfig.json", optional: true);
+            var configSource = new JsonConfigurationProvider("NotExistingConfig.json", optional: true);
             configSource.Load();
             Assert.Throws<InvalidOperationException>(() => configSource.Get("key"));
         }

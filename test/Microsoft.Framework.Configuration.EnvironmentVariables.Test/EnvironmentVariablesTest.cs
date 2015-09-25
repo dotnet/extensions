@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Framework.Configuration.EnvironmentVariables.Test
 {
-    public class EnvironmentVariablesConfigurationSourceTest
+    public class EnvironmentVariablesTest
     {
         [Fact]
         public void LoadKeyValuePairsFromEnvironmentDictionary()
@@ -20,7 +20,7 @@ namespace Microsoft.Framework.Configuration.EnvironmentVariables.Test
                     {"Inventory:ConnectionString", "AnotherTestConnectionString"},
                     {"Inventory:Provider", "MySql"}
                 };
-            var envConfigSrc = new EnvironmentVariablesConfigurationSource();
+            var envConfigSrc = new EnvironmentVariablesConfigurationProvider();
 
             envConfigSrc.Load(dict);
 
@@ -40,7 +40,7 @@ namespace Microsoft.Framework.Configuration.EnvironmentVariables.Test
                     {"Inventory:ConnectionString", "AnotherTestConnectionString"},
                     {"Inventory:Provider", "MySql"}
                 };
-            var envConfigSrc = new EnvironmentVariablesConfigurationSource("DefaultConnection:");
+            var envConfigSrc = new EnvironmentVariablesConfigurationProvider("DefaultConnection:");
 
             envConfigSrc.Load(dict);
 
@@ -60,7 +60,7 @@ namespace Microsoft.Framework.Configuration.EnvironmentVariables.Test
                     {"SQLAZURECONNSTR_db4", "SQLAzureConnStr"},
                     {"CommonEnv", "CommonEnvValue"},
                 };
-            var envConfigSrc = new EnvironmentVariablesConfigurationSource();
+            var envConfigSrc = new EnvironmentVariablesConfigurationProvider();
 
             envConfigSrc.Load(dict);
 
@@ -88,7 +88,7 @@ namespace Microsoft.Framework.Configuration.EnvironmentVariables.Test
                     {"SQLAZURECONNSTR_db4", "SQLAzureConnStr"},
                     {"CommonEnv", "CommonEnvValue"},
                 };
-            var envConfigSrc = new EnvironmentVariablesConfigurationSource("Data:");
+            var envConfigSrc = new EnvironmentVariablesConfigurationProvider("Data:");
 
             envConfigSrc.Load(dict);
 
@@ -109,7 +109,7 @@ namespace Microsoft.Framework.Configuration.EnvironmentVariables.Test
                     {"Data:db2:ConnectionString", "CommonEnvValue"},
                     {"SQLCONNSTR_db2", "SQLConnStr"},
                 };
-            var envConfigSrc = new EnvironmentVariablesConfigurationSource();
+            var envConfigSrc = new EnvironmentVariablesConfigurationProvider();
 
             envConfigSrc.Load(dict);
 
@@ -126,7 +126,7 @@ namespace Microsoft.Framework.Configuration.EnvironmentVariables.Test
                     {"commonenv", "commonenvValue2"},
                     {"cOMMonEnv", "commonenvValue3"},
                 };
-            var envConfigSrc = new EnvironmentVariablesConfigurationSource();
+            var envConfigSrc = new EnvironmentVariablesConfigurationProvider();
 
             envConfigSrc.Load(dict);
 
@@ -142,7 +142,7 @@ namespace Microsoft.Framework.Configuration.EnvironmentVariables.Test
                     {"data__ConnectionString", "connection"},
                     {"SQLCONNSTR__db1", "connStr"}
                 };
-            var envConfigSrc = new EnvironmentVariablesConfigurationSource();
+            var envConfigSrc = new EnvironmentVariablesConfigurationProvider();
 
             envConfigSrc.Load(dict);
 

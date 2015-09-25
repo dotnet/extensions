@@ -9,7 +9,7 @@ namespace Microsoft.Framework.Configuration
     {
         public static IConfigurationBuilder AddEnvironmentVariables(this IConfigurationBuilder configuration)
         {
-            configuration.Add(new EnvironmentVariablesConfigurationSource());
+            configuration.Add(new EnvironmentVariablesConfigurationProvider());
             return configuration;
         }
 
@@ -17,7 +17,7 @@ namespace Microsoft.Framework.Configuration
             this IConfigurationBuilder configuration,
             string prefix)
         {
-            configuration.Add(new EnvironmentVariablesConfigurationSource(prefix));
+            configuration.Add(new EnvironmentVariablesConfigurationProvider(prefix));
             return configuration;
         }
     }

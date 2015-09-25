@@ -12,8 +12,8 @@ namespace Microsoft.Framework.Configuration
         private readonly string _key;
         private readonly string _path;
 
-        public ConfigurationSection(IList<IConfigurationSource> sources, string parentPath, string key)
-            : base(sources)
+        public ConfigurationSection(IList<IConfigurationProvider> providers, string parentPath, string key)
+            : base(providers)
         {
             if (parentPath == null)
             {
@@ -56,11 +56,11 @@ namespace Microsoft.Framework.Configuration
         {
             get
             {
-                foreach (var src in Sources.Reverse())
+                foreach (var provider in Providers.Reverse())
                 {
                     string value = null;
 
-                    if (src.TryGet(Path, out value))
+                    if (provider.TryGet(Path, out value))
                     {
                         return value;
                     }
@@ -70,14 +70,14 @@ namespace Microsoft.Framework.Configuration
             }
             set
             {
-                if (!Sources.Any())
+                if (!Providers.Any())
                 {
                     throw new InvalidOperationException(Resources.Error_NoSources);
                 }
 
-                foreach (var src in Sources)
+                foreach (var provider in Providers)
                 {
-                    src.Set(Path, value);
+                    provider.Set(Path, value);
                 }
             }
         }

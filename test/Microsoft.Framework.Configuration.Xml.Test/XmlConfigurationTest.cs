@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.Framework.Configuration.Xml.Test
 {
-    public partial class XmlConfigurationSourceTest
+    public partial class XmlConfigurationTest
     {
         private static readonly string ArbitraryFilePath = "Unit tests do not touch file system";
 
@@ -29,7 +29,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
                         </Inventory>
                     </Data.Setting>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationProvider(ArbitraryFilePath);
 
             xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
@@ -49,7 +49,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
     <Key1></Key1>
     <Key2 Key3="""" />
 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationProvider(ArbitraryFilePath);
 
             xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
@@ -71,7 +71,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
             Provider=""MySql""/>
     </Data>
 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationProvider(ArbitraryFilePath);
 
             xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
@@ -96,7 +96,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
                         </Inventory>
                     </Data>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationProvider(ArbitraryFilePath);
 
             xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
@@ -121,7 +121,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
                         <Provider>MySql</Provider>
                     </Data>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationProvider(ArbitraryFilePath);
 
             xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
@@ -145,7 +145,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
                         <Provider>MySql</Provider>
                     </Inventory>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationProvider(ArbitraryFilePath);
 
             xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
@@ -167,7 +167,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
                           <Provider>MySql</Provider>
                     </Data>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationProvider(ArbitraryFilePath);
 
             xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
@@ -188,7 +188,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
                         </Inventory>
                     </Data>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationProvider(ArbitraryFilePath);
 
             xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
@@ -211,7 +211,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
                         </Inventory>
                     </Data>
                 </settings><!-- Comments -->";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationProvider(ArbitraryFilePath);
 
             xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
@@ -238,7 +238,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
                         </Inventory>
                     </Data>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationProvider(ArbitraryFilePath);
 
             xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
@@ -267,7 +267,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
                             </Inventory>
                         </Data>
                     </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationProvider(ArbitraryFilePath);
 
             xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
@@ -299,7 +299,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
                         </Inventory>
                     </Data>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationProvider(ArbitraryFilePath);
             var isMono = Type.GetType("Mono.Runtime") != null;
             var expectedMsg = isMono ? "Document Type Declaration (DTD) is prohibited in this XML.  Line 1, position 10." : "For security reasons DTD is prohibited in this XML document. "
                 + "To enable DTD processing set the DtdProcessing property on XmlReaderSettings "
@@ -326,7 +326,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
                         </Inventory>
                     </MyNameSpace:Data>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationProvider(ArbitraryFilePath);
             var expectedMsg = Resources.FormatError_NamespaceIsNotSupported(Resources.FormatMsg_LineInfo(1, 11));
 
             var exception = Assert.Throws<FormatException>(() => xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml)));
@@ -339,7 +339,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
         {
             var expectedMsg = new ArgumentException(Resources.Error_InvalidFilePath, "path").Message;
 
-            var exception = Assert.Throws<ArgumentException>(() => new XmlConfigurationSource(null));
+            var exception = Assert.Throws<ArgumentException>(() => new XmlConfigurationProvider(null));
 
             Assert.Equal(expectedMsg, exception.Message);
         }
@@ -349,7 +349,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
         {
             var expectedMsg = new ArgumentException(Resources.Error_InvalidFilePath, "path").Message;
 
-            var exception = Assert.Throws<ArgumentException>(() => new XmlConfigurationSource(string.Empty));
+            var exception = Assert.Throws<ArgumentException>(() => new XmlConfigurationProvider(string.Empty));
 
             Assert.Equal(expectedMsg, exception.Message);
         }
@@ -369,7 +369,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
                         <Provider>NewProvider</Provider>
                     </Data>
                 </settings>";
-            var xmlConfigSrc = new XmlConfigurationSource(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationProvider(ArbitraryFilePath);
             var expectedMsg = Resources.FormatError_KeyIsDuplicated("Data:DefaultConnection:ConnectionString",
                 Resources.FormatMsg_LineInfo(8, 52));
 
@@ -381,7 +381,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
         [Fact]
         public void XmlConfiguration_Throws_On_Missing_Configuration_File()
         {
-            var configSource = new XmlConfigurationSource("NotExistingConfig.xml", optional: false);
+            var configSource = new XmlConfigurationProvider("NotExistingConfig.xml", optional: false);
             Assert.Throws<FileNotFoundException>(() =>
             {
                 try
@@ -399,7 +399,7 @@ namespace Microsoft.Framework.Configuration.Xml.Test
         [Fact]
         public void XmlConfiguration_Does_Not_Throw_On_Optional_Configuration()
         {
-            var configSource = new XmlConfigurationSource("NotExistingConfig.xml", optional: true);
+            var configSource = new XmlConfigurationProvider("NotExistingConfig.xml", optional: true);
             configSource.Load();
             Assert.Throws<InvalidOperationException>(() => configSource.Get("key"));
         }

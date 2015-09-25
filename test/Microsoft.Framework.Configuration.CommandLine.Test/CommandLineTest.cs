@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Framework.Configuration.CommandLine.Test
 {
-    public class CommandLineConfigurationSourceTest
+    public class CommandLineTest
     {
         [Fact]
         public void LoadKeyValuePairsFromCommandLineArgumentsWithoutSwitchMappings()
@@ -21,7 +21,7 @@ namespace Microsoft.Framework.Configuration.CommandLine.Test
                     "--Key4", "Value4",
                     "/Key5", "Value5"
                 };
-            var cmdLineConfig = new CommandLineConfigurationSource(args);
+            var cmdLineConfig = new CommandLineConfigurationProvider(args);
 
             cmdLineConfig.Load();
 
@@ -50,7 +50,7 @@ namespace Microsoft.Framework.Configuration.CommandLine.Test
                     { "--Key2", "SuperLongKey2" },
                     { "--Key6", "SuchALongKey6"}
                 };
-            var cmdLineConfig = new CommandLineConfigurationSource(args, switchMappings);
+            var cmdLineConfig = new CommandLineConfigurationProvider(args, switchMappings);
 
             cmdLineConfig.Load();
 
@@ -101,7 +101,7 @@ namespace Microsoft.Framework.Configuration.CommandLine.Test
 
             // Act
             var exception = Assert.Throws<ArgumentException>(
-                () => new CommandLineConfigurationSource(args, switchMappings));
+                () => new CommandLineConfigurationProvider(args, switchMappings));
 
             // Assert
             Assert.Equal(expectedMsg, exception.Message);
@@ -128,7 +128,7 @@ namespace Microsoft.Framework.Configuration.CommandLine.Test
                 "switchMappings").Message;
 
             var exception = Assert.Throws<ArgumentException>(
-                () => new CommandLineConfigurationSource(args, switchMappings));
+                () => new CommandLineConfigurationProvider(args, switchMappings));
 
             Assert.Equal(expectedMsg, exception.Message);
         }
@@ -139,7 +139,7 @@ namespace Microsoft.Framework.Configuration.CommandLine.Test
             string[] args = null;
             var expectedMsg = new ArgumentNullException("args").Message;
 
-            var exception = Assert.Throws<ArgumentNullException>(() => new CommandLineConfigurationSource(args));
+            var exception = Assert.Throws<ArgumentNullException>(() => new CommandLineConfigurationProvider(args));
 
             Assert.Equal(expectedMsg, exception.Message);
         }
@@ -152,7 +152,7 @@ namespace Microsoft.Framework.Configuration.CommandLine.Test
                     "/Key1=Value1",
                     "--Key1=Value2"
                 };
-            var cmdLineConfig = new CommandLineConfigurationSource(args);
+            var cmdLineConfig = new CommandLineConfigurationProvider(args);
 
             cmdLineConfig.Load();
 
@@ -168,7 +168,7 @@ namespace Microsoft.Framework.Configuration.CommandLine.Test
                     "/Key2" /* The value for Key2 is missing here */
                 };
             var expectedMsg = new FormatException(Resources.FormatError_ValueIsMissing("/Key2")).Message;
-            var cmdLineConfig = new CommandLineConfigurationSource(args);
+            var cmdLineConfig = new CommandLineConfigurationProvider(args);
 
             var exception = Assert.Throws<FormatException>(() => cmdLineConfig.Load());
 
@@ -184,7 +184,7 @@ namespace Microsoft.Framework.Configuration.CommandLine.Test
                 };
             var expectedMsg = new FormatException(
                 Resources.FormatError_UnrecognizedArgumentFormat("ArgWithoutPrefixAndEqualSign")).Message;
-            var cmdLineConfig = new CommandLineConfigurationSource(args);
+            var cmdLineConfig = new CommandLineConfigurationProvider(args);
 
             var exception = Assert.Throws<FormatException>(() => cmdLineConfig.Load());
 
@@ -203,7 +203,7 @@ namespace Microsoft.Framework.Configuration.CommandLine.Test
                     { "-Key2", "LongKey2" }
                 };
             var expectedMsg = new FormatException(Resources.FormatError_ShortSwitchNotDefined("-Key1")).Message;
-            var cmdLineConfig = new CommandLineConfigurationSource(args, switchMappings);
+            var cmdLineConfig = new CommandLineConfigurationProvider(args, switchMappings);
 
             var exception = Assert.Throws<FormatException>(() => cmdLineConfig.Load());
 

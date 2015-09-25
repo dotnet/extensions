@@ -9,9 +9,9 @@ namespace Microsoft.Framework.Configuration
     {
         Dictionary<string, object> Properties { get; }
 
-        IEnumerable<IConfigurationSource> Sources { get; }
+        IEnumerable<IConfigurationProvider> Providers { get; }
 
-        IConfigurationBuilder Add(IConfigurationSource configurationSource);
+        IConfigurationBuilder Add(IConfigurationProvider provider);
 
         IConfigurationRoot Build();
     }

@@ -12,7 +12,7 @@ namespace Microsoft.Framework.Configuration.Test
     public class ConfigurationTest
     {
         [Fact]
-        public void LoadAndCombineKeyValuePairsFromDifferentConfigurationSources()
+        public void LoadAndCombineKeyValuePairsFromDifferentConfigurationProviders()
         {
             // Arrange
             var dic1 = new Dictionary<string, string>()
@@ -27,9 +27,9 @@ namespace Microsoft.Framework.Configuration.Test
                 {
                     {"Mem3:KeyInMem3", "ValueInMem3"}
                 };
-            var memConfigSrc1 = new MemoryConfigurationSource(dic1);
-            var memConfigSrc2 = new MemoryConfigurationSource(dic2);
-            var memConfigSrc3 = new MemoryConfigurationSource(dic3);
+            var memConfigSrc1 = new MemoryConfigurationProvider(dic1);
+            var memConfigSrc2 = new MemoryConfigurationProvider(dic2);
+            var memConfigSrc3 = new MemoryConfigurationProvider(dic3);
 
             var builder = new ConfigurationBuilder();
 
@@ -45,9 +45,9 @@ namespace Microsoft.Framework.Configuration.Test
             var memVal3 = config["MEM3:KEYINMEM3"];
 
             // Assert
-            Assert.Contains(memConfigSrc1, builder.Sources);
-            Assert.Contains(memConfigSrc2, builder.Sources);
-            Assert.Contains(memConfigSrc3, builder.Sources);
+            Assert.Contains(memConfigSrc1, builder.Providers);
+            Assert.Contains(memConfigSrc2, builder.Providers);
+            Assert.Contains(memConfigSrc3, builder.Providers);
 
             Assert.Equal("ValueInMem1", memVal1);
             Assert.Equal("ValueInMem2", memVal2);
@@ -60,7 +60,7 @@ namespace Microsoft.Framework.Configuration.Test
         }
 
         [Fact]
-        public void NewConfigurationSourceOverridesOldOneWhenKeyIsDuplicated()
+        public void NewConfigurationProviderOverridesOldOneWhenKeyIsDuplicated()
         {
             // Arrange
             var dic1 = new Dictionary<string, string>()
@@ -71,8 +71,8 @@ namespace Microsoft.Framework.Configuration.Test
                 {
                     {"Key1:Key2", "ValueInMem2"}
                 };
-            var memConfigSrc1 = new MemoryConfigurationSource(dic1);
-            var memConfigSrc2 = new MemoryConfigurationSource(dic2);
+            var memConfigSrc1 = new MemoryConfigurationProvider(dic1);
+            var memConfigSrc2 = new MemoryConfigurationProvider(dic2);
 
             var builder = new ConfigurationBuilder();
 
@@ -87,7 +87,7 @@ namespace Microsoft.Framework.Configuration.Test
         }
 
         [Fact]
-        public void SettingValueUpdatesAllConfigurationSources()
+        public void SettingValueUpdatesAllConfigurationProviders()
         {
             // Arrange
             var dict = new Dictionary<string, string>()
@@ -95,9 +95,9 @@ namespace Microsoft.Framework.Configuration.Test
                     {"Key1", "Value1"},
                     {"Key2", "Value2"}
                 };
-            var memConfigSrc1 = new MemoryConfigurationSource(dict);
-            var memConfigSrc2 = new MemoryConfigurationSource(dict);
-            var memConfigSrc3 = new MemoryConfigurationSource(dict);
+            var memConfigSrc1 = new MemoryConfigurationProvider(dict);
+            var memConfigSrc2 = new MemoryConfigurationProvider(dict);
+            var memConfigSrc3 = new MemoryConfigurationProvider(dict);
 
             var builder = new ConfigurationBuilder();
 
@@ -139,9 +139,9 @@ namespace Microsoft.Framework.Configuration.Test
                 {
                     {"Data", "MemVal4"}
                 };
-            var memConfigSrc1 = new MemoryConfigurationSource(dic1);
-            var memConfigSrc2 = new MemoryConfigurationSource(dic2);
-            var memConfigSrc3 = new MemoryConfigurationSource(dic3);
+            var memConfigSrc1 = new MemoryConfigurationProvider(dic1);
+            var memConfigSrc2 = new MemoryConfigurationProvider(dic2);
+            var memConfigSrc3 = new MemoryConfigurationProvider(dic3);
 
             var builder = new ConfigurationBuilder();
             builder.Add(memConfigSrc1, load: false);
@@ -188,9 +188,9 @@ namespace Microsoft.Framework.Configuration.Test
                 {
                     {"DataSource:DB3:Connection", "MemVal4"}
                 };
-            var memConfigSrc1 = new MemoryConfigurationSource(dic1);
-            var memConfigSrc2 = new MemoryConfigurationSource(dic2);
-            var memConfigSrc3 = new MemoryConfigurationSource(dic3);
+            var memConfigSrc1 = new MemoryConfigurationProvider(dic1);
+            var memConfigSrc2 = new MemoryConfigurationProvider(dic2);
+            var memConfigSrc3 = new MemoryConfigurationProvider(dic3);
 
             var builder = new ConfigurationBuilder();
             builder.Add(memConfigSrc1, load: false);
@@ -212,18 +212,18 @@ namespace Microsoft.Framework.Configuration.Test
         }
 
         [Fact]
-        public void SourcesReturnsAddedConfigurationSources()
+        public void SourcesReturnsAddedConfigurationProviders()
         {
             // Arrange
             var dict = new Dictionary<string, string>()
             {
                 {"Mem:KeyInMem", "MemVal"}
             };
-            var memConfigSrc1 = new MemoryConfigurationSource(dict);
-            var memConfigSrc2 = new MemoryConfigurationSource(dict);
-            var memConfigSrc3 = new MemoryConfigurationSource(dict);
+            var memConfigSrc1 = new MemoryConfigurationProvider(dict);
+            var memConfigSrc2 = new MemoryConfigurationProvider(dict);
+            var memConfigSrc3 = new MemoryConfigurationProvider(dict);
 
-            var srcSet = new HashSet<IConfigurationSource>()
+            var srcSet = new HashSet<IConfigurationProvider>()
             {
                 memConfigSrc1,
                 memConfigSrc2,
@@ -240,7 +240,7 @@ namespace Microsoft.Framework.Configuration.Test
             var config = builder.Build();
 
             // Assert
-            Assert.Equal(new[] { memConfigSrc1, memConfigSrc2, memConfigSrc3 }, builder.Sources);
+            Assert.Equal(new[] { memConfigSrc1, memConfigSrc2, memConfigSrc3 }, builder.Providers);
         }
 
         [Fact]

@@ -75,7 +75,7 @@ CommonKey3:CommonKey4=IniValue6";
         }
 
         [Fact]
-        public void LoadAndCombineKeyValuePairsFromDifferentConfigurationSources()
+        public void LoadAndCombineKeyValuePairsFromDifferentConfigurationProviders()
         {
             // Arrange
             var builder = new ConfigurationBuilder();
@@ -117,7 +117,7 @@ CommonKey3:CommonKey4=IniValue6";
         }
 
         [Fact]
-        public void CanOverrideValuesWithNewConfigurationSource()
+        public void CanOverrideValuesWithNewConfigurationProvider()
         {
             // Arrange
             var builder = new ConfigurationBuilder();
@@ -156,10 +156,10 @@ CommonKey3:CommonKey4=IniValue6";
             config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"] = "NewValue";
 
             // All config sources must be updated
-            foreach (var src in builder.Sources)
+            foreach (var provider in builder.Providers)
             {
                 Assert.Equal("NewValue",
-                    (src as ConfigurationSource).Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
+                    (provider as ConfigurationProvider).Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
             }
 
             // Recover values by reloading
@@ -171,10 +171,10 @@ CommonKey3:CommonKey4=IniValue6";
             config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"] = "NewValue";
 
             // All config sources must be updated
-            foreach (var src in builder.Sources)
+            foreach (var provider in builder.Providers)
             {
                 Assert.Equal("NewValue",
-                    (src as ConfigurationSource).Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
+                    (provider as ConfigurationProvider).Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
             }
 
             // Recover values by reloading
