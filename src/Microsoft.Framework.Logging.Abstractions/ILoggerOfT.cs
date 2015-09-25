@@ -9,7 +9,7 @@ namespace Microsoft.Framework.Logging
     /// A generic interface for logging where the category name is taken from the specified TCategoryName.
     /// For enabling activation of named ILogger from DI.
     /// </summary>
-    public interface ILogger<TCategoryName> : ILogger
+    public interface ILogger<out TCategoryName> : ILogger
     {
         
     }
