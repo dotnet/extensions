@@ -20,7 +20,7 @@ namespace Microsoft.Framework.TelemetryAdapter
         }
 
         public TelemetrySourceAdapter(object target, Func<string, bool> isEnabled)
-            : this(target, isEnabled: null, methodAdapter: new ProxyTelemetrySourceMethodAdapter())
+            : this(target, isEnabled, methodAdapter: new ProxyTelemetrySourceMethodAdapter())
         {
         }
 

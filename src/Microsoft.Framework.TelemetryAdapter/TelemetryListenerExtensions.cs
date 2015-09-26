@@ -18,7 +18,7 @@ namespace System.Diagnostics.Tracing
             object target,
             Func<string, bool> isEnabled)
         {
-            var adapter = new TelemetrySourceAdapter(target);
+            var adapter = new TelemetrySourceAdapter(target, isEnabled);
             return telemetry.Subscribe(adapter, adapter.IsEnabled);
         }
     }
