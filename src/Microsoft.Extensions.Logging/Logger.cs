@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.Extensions.Logging
 {
@@ -11,7 +10,7 @@ namespace Microsoft.Extensions.Logging
     {
         private readonly LoggerFactory _loggerFactory;
         private readonly string _name;
-        private ILogger[] _loggers = new ILogger[0];
+        private ILogger[] _loggers;
 
         public Logger(LoggerFactory loggerFactory, string name)
         {
@@ -19,15 +18,23 @@ namespace Microsoft.Extensions.Logging
             _name = name;
 
             var providers = loggerFactory.GetProviders();
-            _loggers = new ILogger[providers.Length];
-            for (var index = 0; index != providers.Length; index++)
+            if (providers.Length > 0)
             {
-                _loggers[index] = providers[index].CreateLogger(name);
+                _loggers = new ILogger[providers.Length];
+                for (var index = 0; index < providers.Length; index++)
+                {
+                    _loggers[index] = providers[index].CreateLogger(name);
+                }
             }
         }
 
         public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
+            if (_loggers == null)
+            {
+                return;
+            }
+
             if (logLevel >= _loggerFactory.MinimumLevel)
             {
                 List<Exception> exceptions = null;
@@ -58,6 +65,11 @@ namespace Microsoft.Extensions.Logging
 
         public bool IsEnabled(LogLevel logLevel)
         {
+            if (_loggers == null)
+            {
+                return false;
+            }
+
             if (logLevel < _loggerFactory.MinimumLevel)
             {
                 return false;
@@ -96,10 +108,16 @@ namespace Microsoft.Extensions.Logging
 
         public IDisposable BeginScopeImpl(object state)
         {
+            if (_loggers == null)
+            {
+                return null;
+            }
+
             var loggers = _loggers;
+
             var scope = new Scope(loggers.Length);
             List<Exception> exceptions = null;
-            for (var index = 0; index != loggers.Length; index++)
+            for (var index = 0; index < loggers.Length; index++)
             {
                 try
                 {
@@ -129,7 +147,18 @@ namespace Microsoft.Extensions.Logging
         internal void AddProvider(ILoggerProvider provider)
         {
             var logger = provider.CreateLogger(_name);
-            _loggers = _loggers.Concat(new[] { logger }).ToArray();
+            int logIndex;
+            if (_loggers == null)
+            {
+                logIndex = 0;
+                _loggers = new ILogger[1];
+            }
+            else
+            {
+                logIndex = _loggers.Length;
+                Array.Resize(ref _loggers, logIndex + 1);
+            }
+            _loggers[logIndex] = logger;
         }
 
         private class Scope : IDisposable
