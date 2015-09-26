@@ -57,7 +57,7 @@ namespace Microsoft.Framework.Internal
         /// Removes all the entries from the collection.
         /// </summary>
         /// <returns>A reference to this instance after the Clear operation has completed.</returns>
-        public IHtmlContent Clear()
+        public IHtmlContentBuilder Clear()
         {
             Entries.Clear();
             return this;
