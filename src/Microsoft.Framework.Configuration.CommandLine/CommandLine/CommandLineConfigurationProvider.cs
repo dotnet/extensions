@@ -121,7 +121,7 @@ namespace Microsoft.Framework.Configuration.CommandLine
         private Dictionary<string, string> GetValidatedSwitchMappingsCopy(IDictionary<string, string> switchMappings)
         {
             // The dictionary passed in might be constructed with a case-sensitive comparer
-            // However, the keys in configuration sources are all case-insensitive
+            // However, the keys in configuration providers are all case-insensitive
             // So we check whether the given switch mappings contain duplicated keys with case-insensitive comparer
             var switchMappingsCopy = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var mapping in switchMappings)

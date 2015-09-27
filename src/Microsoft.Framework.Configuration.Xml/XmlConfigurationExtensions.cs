@@ -13,7 +13,7 @@ namespace Microsoft.Framework.Configuration
     public static class XmlConfigurationExtensions
     {
         /// <summary>
-        /// Adds the XML configuration source at <paramref name="path"/> to <paramref name="configuraton"/>.
+        /// Adds the XML configuration provider at <paramref name="path"/> to <paramref name="configuraton"/>.
         /// </summary>
         /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
         /// <param name="path">Absolute path or path relative to <see cref="IConfigurationBuilder.BasePath"/> of
@@ -30,12 +30,12 @@ namespace Microsoft.Framework.Configuration
         }
 
         /// <summary>
-        /// Adds the XML configuration source at <paramref name="path"/> to <paramref name="configurationBuilder"/>.
+        /// Adds the XML configuration provider at <paramref name="path"/> to <paramref name="configurationBuilder"/>.
         /// </summary>
         /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
         /// <param name="path">Absolute path or path relative to <see cref="IConfigurationBuilder.BasePath"/> of
         /// <paramref name="configurationBuilder"/>.</param>
-        /// <param name="optional">Determines if loading the configuration source is optional.</param>
+        /// <param name="optional">Determines if loading the configuration provider is optional.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         /// <exception cref="ArgumentException">If <paramref name="path"/> is null or empty.</exception>
         /// <exception cref="FileNotFoundException">If <paramref name="optional"/> is <c>false</c> and the file cannot

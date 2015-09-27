@@ -59,7 +59,7 @@ namespace Microsoft.Framework.Configuration
         }
 
         /// <summary>
-        /// A configuration source is not registered. Please register one before setting a value.
+        /// A configuration provider is not registered. Please register one before setting a value.
         /// </summary>
         internal static string Error_NoSources
         {
@@ -67,7 +67,7 @@ namespace Microsoft.Framework.Configuration
         }
 
         /// <summary>
-        /// A configuration source is not registered. Please register one before setting a value.
+        /// A configuration provider is not registered. Please register one before setting a value.
         /// </summary>
         internal static string FormatError_NoSources()
         {

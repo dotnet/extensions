@@ -127,6 +127,6 @@
     <value>Unable to resolve path '{0}'; construct this {1} with a non-null {2}.</value>
   </data>
   <data name="Error_NoSources" xml:space="preserve">
-    <value>A configuration source is not registered. Please register one before setting a value.</value>
+    <value>A configuration provider is not registered. Please register one before setting a value.</value>
   </data>
 </root>

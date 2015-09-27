@@ -31,22 +31,22 @@ namespace Microsoft.Framework.Configuration
         public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// Adds a new configuration source.
+        /// Adds a new configuration provider.
         /// </summary>
-        /// <param name="configurationProvider">The configuration source to add.</param>
-        /// <returns>The same configuration source.</returns>
+        /// <param name="configurationProvider">The configuration provider to add.</param>
+        /// <returns>The same configuration provider.</returns>
         public IConfigurationBuilder Add(IConfigurationProvider configurationProvider)
         {
             return Add(configurationProvider, load: true);
         }
 
         /// <summary>
-        /// Adds a new configuration source.
+        /// Adds a new configuration provider.
         /// </summary>
-        /// <param name="configurationProvider">The configuration source to add.</param>
-        /// <param name="load">If true, the configuration source's <see cref="IConfigurationProvider.Load"/> method will
+        /// <param name="configurationProvider">The configuration provider to add.</param>
+        /// <param name="load">If true, the configuration provider's <see cref="IConfigurationProvider.Load"/> method will
         ///  be called.</param>
-        /// <returns>The same configuration source.</returns>
+        /// <returns>The same configuration provider.</returns>
         /// <remarks>This method is intended only for test scenarios.</remarks>
         public IConfigurationBuilder Add(IConfigurationProvider configurationProvider, bool load)
         {

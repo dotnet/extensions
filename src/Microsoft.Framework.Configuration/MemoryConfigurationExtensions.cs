@@ -10,7 +10,7 @@ namespace Microsoft.Framework.Configuration
     public static class MemoryConfigurationExtensions
     {
         /// <summary>
-        /// Adds the memory configuration source to <paramref name="configuraton"/>.
+        /// Adds the memory configuration provider to <paramref name="configuraton"/>.
         /// </summary>
         /// <param name="configuration">The <see cref="IConfigurationBuilder"/> to add to.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
@@ -26,10 +26,10 @@ namespace Microsoft.Framework.Configuration
         }
 
         /// <summary>
-        /// Adds the memory configuration source to <paramref name="configuraton"/>.
+        /// Adds the memory configuration provider to <paramref name="configuraton"/>.
         /// </summary>
         /// <param name="configuration">The <see cref="IConfigurationBuilder"/> to add to.</param>
-        /// <param name="initialData">The data to add to memory configuration source.</param>
+        /// <param name="initialData">The data to add to memory configuration provider.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         public static IConfigurationBuilder AddInMemoryCollection(
             this IConfigurationBuilder configuration,
