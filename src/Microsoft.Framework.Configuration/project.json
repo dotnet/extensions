@@ -1,6 +1,6 @@
 {
     "version": "1.0.0-*",
-    "description": "Implementation of key-value pair based configuration. Includes the memory configuration source.",
+    "description": "Implementation of key-value pair based configuration. Includes the memory configuration provider.",
     "dependencies": {
         "Microsoft.Framework.Configuration.Abstractions": "1.0.0-*"
     },
