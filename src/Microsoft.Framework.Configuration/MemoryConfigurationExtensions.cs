@@ -12,36 +12,36 @@ namespace Microsoft.Framework.Configuration
         /// <summary>
         /// Adds the memory configuration provider to <paramref name="configuraton"/>.
         /// </summary>
-        /// <param name="configuration">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
-        public static IConfigurationBuilder AddInMemoryCollection(this IConfigurationBuilder configuration)
+        public static IConfigurationBuilder AddInMemoryCollection(this IConfigurationBuilder configurationBuilder)
         {
-            if (configuration == null)
+            if (configurationBuilder == null)
             {
-                throw new ArgumentNullException(nameof(configuration));
+                throw new ArgumentNullException(nameof(configurationBuilder));
             }
 
-            configuration.Add(new MemoryConfigurationProvider());
-            return configuration;
+            configurationBuilder.Add(new MemoryConfigurationProvider());
+            return configurationBuilder;
         }
 
         /// <summary>
         /// Adds the memory configuration provider to <paramref name="configuraton"/>.
         /// </summary>
-        /// <param name="configuration">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
         /// <param name="initialData">The data to add to memory configuration provider.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         public static IConfigurationBuilder AddInMemoryCollection(
-            this IConfigurationBuilder configuration,
+            this IConfigurationBuilder configurationBuilder,
             IEnumerable<KeyValuePair<string, string>> initialData)
         {
-            if (configuration == null)
+            if (configurationBuilder == null)
             {
-                throw new ArgumentNullException(nameof(configuration));
+                throw new ArgumentNullException(nameof(configurationBuilder));
             }
 
-            configuration.Add(new MemoryConfigurationProvider(initialData));
-            return configuration;
+            configurationBuilder.Add(new MemoryConfigurationProvider(initialData));
+            return configurationBuilder;
         }
     }
 }

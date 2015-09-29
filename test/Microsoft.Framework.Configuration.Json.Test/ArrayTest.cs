@@ -101,10 +101,10 @@ namespace Microsoft.Framework.Configuration.Json.Test
             var jsonConfigSource2 = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource2.Load(TestStreamHelpers.StringToStream(json2));
 
-            var builder = new ConfigurationBuilder();
-            builder.Add(jsonConfigSource1, load: false);
-            builder.Add(jsonConfigSource2, load: false);
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.Add(jsonConfigSource1, load: false);
+            configurationBuilder.Add(jsonConfigSource2, load: false);
+            var config = configurationBuilder.Build();
 
             Assert.Equal(3, config.GetSection("ip").GetChildren().Count());
             Assert.Equal("15.16.17.18", config["ip:0"]);
@@ -135,10 +135,10 @@ namespace Microsoft.Framework.Configuration.Json.Test
             var jsonConfigSource2 = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource2.Load(TestStreamHelpers.StringToStream(json2));
 
-            var builder = new ConfigurationBuilder();
-            builder.Add(jsonConfigSource1, load: false);
-            builder.Add(jsonConfigSource2, load: false);
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.Add(jsonConfigSource1, load: false);
+            configurationBuilder.Add(jsonConfigSource2, load: false);
+            var config = configurationBuilder.Build();
 
             Assert.Equal(3, config.GetSection("ip").GetChildren().Count());
             Assert.Equal("1.2.3.4", config["ip:0"]);
@@ -169,10 +169,10 @@ namespace Microsoft.Framework.Configuration.Json.Test
             var jsonConfigSource2 = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource2.Load(TestStreamHelpers.StringToStream(json2));
 
-            var builder = new ConfigurationBuilder();
-            builder.Add(jsonConfigSource1, load: false);
-            builder.Add(jsonConfigSource2, load: false);
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.Add(jsonConfigSource1, load: false);
+            configurationBuilder.Add(jsonConfigSource2, load: false);
+            var config = configurationBuilder.Build();
 
             Assert.Equal(4, config.GetSection("ip").GetChildren().Count());
             Assert.Equal("1.2.3.4", config["ip:0"]);
@@ -195,9 +195,9 @@ namespace Microsoft.Framework.Configuration.Json.Test
             var jsonConfigSource = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
 
-            var builder = new ConfigurationBuilder();
-            builder.Add(jsonConfigSource, load: false);
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.Add(jsonConfigSource, load: false);
+            var config = configurationBuilder.Build();
 
             var configurationSection = config.GetSection("setting");
             var indexConfigurationSections = configurationSection.GetChildren().ToArray();
@@ -225,9 +225,9 @@ namespace Microsoft.Framework.Configuration.Json.Test
             var jsonConfigSource = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
             jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
 
-            var builder = new ConfigurationBuilder();
-            builder.Add(jsonConfigSource, load: false);
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.Add(jsonConfigSource, load: false);
+            var config = configurationBuilder.Build();
 
             var configurationSection = config.GetSection("setting");
             var indexConfigurationSections = configurationSection.GetChildren().ToArray();

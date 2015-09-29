@@ -15,10 +15,10 @@ namespace Microsoft.Framework.Configuration.Xml.Test
         public void AddXmlFile_ThrowsIfFilePathIsNullOrEmpty(string path)
         {
             // Arrange
-            var builder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder();
 
             // Act and Assert
-            var ex = Assert.Throws<ArgumentException>(() => XmlConfigurationExtensions.AddXmlFile(builder, path));
+            var ex = Assert.Throws<ArgumentException>(() => XmlConfigurationExtensions.AddXmlFile(configurationBuilder, path));
             Assert.Equal("path", ex.ParamName);
             Assert.StartsWith("File path must be a non-empty string.", ex.Message);
         }
@@ -28,10 +28,10 @@ namespace Microsoft.Framework.Configuration.Xml.Test
         {
             // Arrange
             var path = Path.Combine(Directory.GetCurrentDirectory(), "file-does-not-exist.xml");
-            var builder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder();
 
             // Act and Assert
-            var ex = Assert.Throws<FileNotFoundException>(() => XmlConfigurationExtensions.AddXmlFile(builder, path));
+            var ex = Assert.Throws<FileNotFoundException>(() => XmlConfigurationExtensions.AddXmlFile(configurationBuilder, path));
             Assert.Equal($"The configuration file '{path}' was not found and is not optional.", ex.Message);
         }
     }

@@ -13,10 +13,10 @@ namespace Microsoft.Framework.Configuration.Json
         public void SetBasePath_ThrowsIfBasePathIsNull()
         {
             // Arrange
-            var builder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder();
 
             // Act and Assert
-            var ex = Assert.Throws<ArgumentNullException>(() => builder.SetBasePath(null));
+            var ex = Assert.Throws<ArgumentNullException>(() => configurationBuilder.SetBasePath(null));
             Assert.Equal("basePath", ex.ParamName);
         }
 
@@ -24,10 +24,10 @@ namespace Microsoft.Framework.Configuration.Json
         public void SetBasePath_CheckPropertiesValueOnBuilder()
         {
             var expectedBasePath = @"C:\ExamplePath";
-            var builder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder();
 
-            builder.SetBasePath(expectedBasePath);
-            Assert.Equal(expectedBasePath, builder.Properties["BasePath"]);
+            configurationBuilder.SetBasePath(expectedBasePath);
+            Assert.Equal(expectedBasePath, configurationBuilder.Properties["BasePath"]);
         }
 
         [Fact]
@@ -35,11 +35,11 @@ namespace Microsoft.Framework.Configuration.Json
         {
             // Arrange
             var testDir = Path.GetDirectoryName(Path.GetTempFileName());
-            var builder = new ConfigurationBuilder();
-            builder.SetBasePath(testDir);
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.SetBasePath(testDir);
 
             // Act
-            var actualPath = builder.GetBasePath();
+            var actualPath = configurationBuilder.GetBasePath();
 
             // Assert
             Assert.Equal(testDir, actualPath);
@@ -49,10 +49,10 @@ namespace Microsoft.Framework.Configuration.Json
         public void GetBasePath_ReturnEmptyIfNotSet()
         {
             // Arrange
-            var builder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder();
 
             // Act
-            var actualPath = builder.GetBasePath();
+            var actualPath = configurationBuilder.GetBasePath();
 
             // Assert
             Assert.Equal(string.Empty, actualPath);

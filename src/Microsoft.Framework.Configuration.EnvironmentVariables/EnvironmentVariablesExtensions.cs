@@ -7,18 +7,18 @@ namespace Microsoft.Framework.Configuration
 {
     public static class EnvironmentVariablesExtensions
     {
-        public static IConfigurationBuilder AddEnvironmentVariables(this IConfigurationBuilder configuration)
+        public static IConfigurationBuilder AddEnvironmentVariables(this IConfigurationBuilder configurationBuilder)
         {
-            configuration.Add(new EnvironmentVariablesConfigurationProvider());
-            return configuration;
+            configurationBuilder.Add(new EnvironmentVariablesConfigurationProvider());
+            return configurationBuilder;
         }
 
         public static IConfigurationBuilder AddEnvironmentVariables(
-            this IConfigurationBuilder configuration,
+            this IConfigurationBuilder configurationBuilder,
             string prefix)
         {
-            configuration.Add(new EnvironmentVariablesConfigurationProvider(prefix));
-            return configuration;
+            configurationBuilder.Add(new EnvironmentVariablesConfigurationProvider(prefix));
+            return configurationBuilder;
         }
     }
 }

@@ -78,15 +78,15 @@ CommonKey3:CommonKey4=IniValue6";
         public void LoadAndCombineKeyValuePairsFromDifferentConfigurationProviders()
         {
             // Arrange
-            var builder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder();
 
             // Act
-            builder.AddIniFile(_iniConfigFilePath);
-            builder.AddJsonFile(_jsonConfigFilePath);
-            builder.AddXmlFile(_xmlConfigFilePath);
-            builder.AddInMemoryCollection(_memConfigContent);
+            configurationBuilder.AddIniFile(_iniConfigFilePath);
+            configurationBuilder.AddJsonFile(_jsonConfigFilePath);
+            configurationBuilder.AddXmlFile(_xmlConfigFilePath);
+            configurationBuilder.AddInMemoryCollection(_memConfigContent);
 
-            var config = builder.Build();
+            var config = configurationBuilder.Build();
 
             // Assert
             Assert.Equal("IniValue1", config["IniKey1"]);
@@ -120,23 +120,23 @@ CommonKey3:CommonKey4=IniValue6";
         public void CanOverrideValuesWithNewConfigurationProvider()
         {
             // Arrange
-            var builder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder();
 
             // Act & Assert
-            builder.AddIniFile(_iniConfigFilePath);
-            var config = builder.Build();
+            configurationBuilder.AddIniFile(_iniConfigFilePath);
+            var config = configurationBuilder.Build();
             Assert.Equal("IniValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
 
-            builder.AddJsonFile(_jsonConfigFilePath);
-            config = builder.Build();
+            configurationBuilder.AddJsonFile(_jsonConfigFilePath);
+            config = configurationBuilder.Build();
             Assert.Equal("JsonValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
 
-            builder.AddXmlFile(_xmlConfigFilePath);
-            config = builder.Build();
+            configurationBuilder.AddXmlFile(_xmlConfigFilePath);
+            config = configurationBuilder.Build();
             Assert.Equal("XmlValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
 
-            builder.AddInMemoryCollection(_memConfigContent);
-            config = builder.Build();
+            configurationBuilder.AddInMemoryCollection(_memConfigContent);
+            config = configurationBuilder.Build();
             Assert.Equal("MemValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
         }
 
@@ -144,19 +144,19 @@ CommonKey3:CommonKey4=IniValue6";
         public void CanSetValuesAndReloadValues()
         {
             // Arrange
-            var builder = new ConfigurationBuilder();
-            builder.AddIniFile(_iniConfigFilePath);
-            builder.AddJsonFile(_jsonConfigFilePath);
-            builder.AddXmlFile(_xmlConfigFilePath);
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddIniFile(_iniConfigFilePath);
+            configurationBuilder.AddJsonFile(_jsonConfigFilePath);
+            configurationBuilder.AddXmlFile(_xmlConfigFilePath);
 
-            var config = builder.Build();
+            var config = configurationBuilder.Build();
 
             // Act & Assert
             // Set value
             config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"] = "NewValue";
 
             // All config sources must be updated
-            foreach (var provider in builder.Providers)
+            foreach (var provider in configurationBuilder.Providers)
             {
                 Assert.Equal("NewValue",
                     (provider as ConfigurationProvider).Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
@@ -171,7 +171,7 @@ CommonKey3:CommonKey4=IniValue6";
             config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"] = "NewValue";
 
             // All config sources must be updated
-            foreach (var provider in builder.Providers)
+            foreach (var provider in configurationBuilder.Providers)
             {
                 Assert.Equal("NewValue",
                     (provider as ConfigurationProvider).Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
@@ -209,17 +209,17 @@ CommonKey3:CommonKey4=IniValue6";
         public void SetBasePathCalledMultipleTimesForEachSource()
         {
             // Arrange
-            var builder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder();
             _jsonConfigFilePath = Path.Combine(Directory.GetCurrentDirectory(), "test.json");
             File.WriteAllText(_jsonConfigFilePath, _jsonConfigFileContent);
 
             // Act
-            builder.SetBasePath(Path.GetDirectoryName(_xmlConfigFilePath))
+            configurationBuilder.SetBasePath(Path.GetDirectoryName(_xmlConfigFilePath))
                 .AddXmlFile(Path.GetFileName(_xmlConfigFilePath))
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("test.json");
 
-            var config = builder.Build();
+            var config = configurationBuilder.Build();
 
             // Assert
             Assert.Equal("JsonValue1", config["JsonKey1"]);

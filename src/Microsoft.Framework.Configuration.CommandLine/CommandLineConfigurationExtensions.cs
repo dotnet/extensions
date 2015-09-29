@@ -8,19 +8,19 @@ namespace Microsoft.Framework.Configuration
 {
     public static class CommandLineConfigurationExtensions
     {
-        public static IConfigurationBuilder AddCommandLine(this IConfigurationBuilder configuration, string[] args)
+        public static IConfigurationBuilder AddCommandLine(this IConfigurationBuilder configurationBuilder, string[] args)
         {
-            configuration.Add(new CommandLineConfigurationProvider(args));
-            return configuration;
+            configurationBuilder.Add(new CommandLineConfigurationProvider(args));
+            return configurationBuilder;
         }
 
         public static IConfigurationBuilder AddCommandLine(
-            this IConfigurationBuilder configuration,
+            this IConfigurationBuilder configurationBuilder,
             string[] args,
             IDictionary<string, string> switchMappings)
         {
-            configuration.Add(new CommandLineConfigurationProvider(args, switchMappings));
-            return configuration;
+            configurationBuilder.Add(new CommandLineConfigurationProvider(args, switchMappings));
+            return configurationBuilder;
         }
     }
 }

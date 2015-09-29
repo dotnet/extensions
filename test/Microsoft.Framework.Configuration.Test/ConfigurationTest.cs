@@ -31,23 +31,23 @@ namespace Microsoft.Framework.Configuration.Test
             var memConfigSrc2 = new MemoryConfigurationProvider(dic2);
             var memConfigSrc3 = new MemoryConfigurationProvider(dic3);
 
-            var builder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder();
 
             // Act
-            builder.Add(memConfigSrc1, load: false);
-            builder.Add(memConfigSrc2, load: false);
-            builder.Add(memConfigSrc3, load: false);
+            configurationBuilder.Add(memConfigSrc1, load: false);
+            configurationBuilder.Add(memConfigSrc2, load: false);
+            configurationBuilder.Add(memConfigSrc3, load: false);
 
-            var config = builder.Build();
+            var config = configurationBuilder.Build();
 
             var memVal1 = config["mem1:keyinmem1"];
             var memVal2 = config["Mem2:KeyInMem2"];
             var memVal3 = config["MEM3:KEYINMEM3"];
 
             // Assert
-            Assert.Contains(memConfigSrc1, builder.Providers);
-            Assert.Contains(memConfigSrc2, builder.Providers);
-            Assert.Contains(memConfigSrc3, builder.Providers);
+            Assert.Contains(memConfigSrc1, configurationBuilder.Providers);
+            Assert.Contains(memConfigSrc2, configurationBuilder.Providers);
+            Assert.Contains(memConfigSrc3, configurationBuilder.Providers);
 
             Assert.Equal("ValueInMem1", memVal1);
             Assert.Equal("ValueInMem2", memVal2);
@@ -74,13 +74,13 @@ namespace Microsoft.Framework.Configuration.Test
             var memConfigSrc1 = new MemoryConfigurationProvider(dic1);
             var memConfigSrc2 = new MemoryConfigurationProvider(dic2);
 
-            var builder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder();
 
             // Act
-            builder.Add(memConfigSrc1, load: false);
-            builder.Add(memConfigSrc2, load: false);
+            configurationBuilder.Add(memConfigSrc1, load: false);
+            configurationBuilder.Add(memConfigSrc2, load: false);
 
-            var config = builder.Build();
+            var config = configurationBuilder.Build();
 
             // Assert
             Assert.Equal("ValueInMem2", config["Key1:Key2"]);
@@ -99,13 +99,13 @@ namespace Microsoft.Framework.Configuration.Test
             var memConfigSrc2 = new MemoryConfigurationProvider(dict);
             var memConfigSrc3 = new MemoryConfigurationProvider(dict);
 
-            var builder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder();
 
-            builder.Add(memConfigSrc1, load: false);
-            builder.Add(memConfigSrc2, load: false);
-            builder.Add(memConfigSrc3, load: false);
+            configurationBuilder.Add(memConfigSrc1, load: false);
+            configurationBuilder.Add(memConfigSrc2, load: false);
+            configurationBuilder.Add(memConfigSrc3, load: false);
 
-            var config = builder.Build();
+            var config = configurationBuilder.Build();
 
             // Act
             config["Key1"] = "NewValue1";
@@ -143,12 +143,12 @@ namespace Microsoft.Framework.Configuration.Test
             var memConfigSrc2 = new MemoryConfigurationProvider(dic2);
             var memConfigSrc3 = new MemoryConfigurationProvider(dic3);
 
-            var builder = new ConfigurationBuilder();
-            builder.Add(memConfigSrc1, load: false);
-            builder.Add(memConfigSrc2, load: false);
-            builder.Add(memConfigSrc3, load: false);
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.Add(memConfigSrc1, load: false);
+            configurationBuilder.Add(memConfigSrc2, load: false);
+            configurationBuilder.Add(memConfigSrc3, load: false);
 
-            var config = builder.Build();
+            var config = configurationBuilder.Build();
 
             // Act
             var configFocus = config.GetSection("Data");
@@ -192,12 +192,12 @@ namespace Microsoft.Framework.Configuration.Test
             var memConfigSrc2 = new MemoryConfigurationProvider(dic2);
             var memConfigSrc3 = new MemoryConfigurationProvider(dic3);
 
-            var builder = new ConfigurationBuilder();
-            builder.Add(memConfigSrc1, load: false);
-            builder.Add(memConfigSrc2, load: false);
-            builder.Add(memConfigSrc3, load: false);
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.Add(memConfigSrc1, load: false);
+            configurationBuilder.Add(memConfigSrc2, load: false);
+            configurationBuilder.Add(memConfigSrc3, load: false);
 
-            var config = builder.Build();
+            var config = configurationBuilder.Build();
 
             // Act
             var configSections = config.GetSection("Data").GetChildren().ToList();
@@ -230,25 +230,25 @@ namespace Microsoft.Framework.Configuration.Test
                 memConfigSrc3
             };
 
-            var builder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder();
 
             // Act
-            builder.Add(memConfigSrc1, load: false);
-            builder.Add(memConfigSrc2, load: false);
-            builder.Add(memConfigSrc3, load: false);
+            configurationBuilder.Add(memConfigSrc1, load: false);
+            configurationBuilder.Add(memConfigSrc2, load: false);
+            configurationBuilder.Add(memConfigSrc3, load: false);
 
-            var config = builder.Build();
+            var config = configurationBuilder.Build();
 
             // Assert
-            Assert.Equal(new[] { memConfigSrc1, memConfigSrc2, memConfigSrc3 }, builder.Providers);
+            Assert.Equal(new[] { memConfigSrc1, memConfigSrc2, memConfigSrc3 }, configurationBuilder.Providers);
         }
 
         [Fact]
         public void SetValueThrowsExceptionNoSourceRegistered()
         {
             // Arrange
-            var builder = new ConfigurationBuilder();
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder();
+            var config = configurationBuilder.Build();
 
             var expectedMsg = Resources.Error_NoSources;
 

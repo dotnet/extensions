@@ -50,13 +50,13 @@ i=ini_i.i.i.i
         [Fact]
         public void DifferentConfigSources_Merged_KeysAreSorted()
         {
-            var builder = new ConfigurationBuilder();
-            builder.AddJsonFile(_json1ConfigFilePath);
-            builder.AddIniFile(_iniConfigFilePath);
-            builder.AddJsonFile(_json2ConfigFilePath);
-            builder.AddXmlFile(_xmlConfigFilePath);
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddJsonFile(_json1ConfigFilePath);
+            configurationBuilder.AddIniFile(_iniConfigFilePath);
+            configurationBuilder.AddJsonFile(_json2ConfigFilePath);
+            configurationBuilder.AddXmlFile(_xmlConfigFilePath);
 
-            var config = builder.Build();
+            var config = configurationBuilder.Build();
 
             var configurationSection = config.GetSection("address");
             var indexConfigurationSections = configurationSection.GetChildren().ToArray();
@@ -84,14 +84,14 @@ i=ini_i.i.i.i
         [Fact]
         public void DifferentConfigSources_Merged_WithOverwrites()
         {
-            var builder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder();
 
-            builder.AddJsonFile(_json1ConfigFilePath);
-            builder.AddIniFile(_iniConfigFilePath);
-            builder.AddJsonFile(_json2ConfigFilePath);
-            builder.AddXmlFile(_xmlConfigFilePath);
+            configurationBuilder.AddJsonFile(_json1ConfigFilePath);
+            configurationBuilder.AddIniFile(_iniConfigFilePath);
+            configurationBuilder.AddJsonFile(_json2ConfigFilePath);
+            configurationBuilder.AddXmlFile(_xmlConfigFilePath);
 
-            var config = builder.Build();
+            var config = configurationBuilder.Build();
 
             Assert.Equal("json_0.0.0.0", config["address:0"]);
             Assert.Equal("xml_1.1.1.1", config["address:1"]);

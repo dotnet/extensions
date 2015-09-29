@@ -15,10 +15,10 @@ namespace Microsoft.Framework.Configuration.Json
         public void AddJsonFile_ThrowsIfFilePathIsNullOrEmpty(string path)
         {
             // Arrange
-            var builder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder();
 
             // Act and Assert
-            var ex = Assert.Throws<ArgumentException>(() => JsonConfigurationExtensions.AddJsonFile(builder, path));
+            var ex = Assert.Throws<ArgumentException>(() => JsonConfigurationExtensions.AddJsonFile(configurationBuilder, path));
             Assert.Equal("path", ex.ParamName);
             Assert.StartsWith("File path must be a non-empty string.", ex.Message);
         }
@@ -28,10 +28,10 @@ namespace Microsoft.Framework.Configuration.Json
         {
             // Arrange
             var path = Path.Combine(Directory.GetCurrentDirectory(), "file-does-not-exist.json");
-            var builder = new ConfigurationBuilder();
+            var configurationBuilder = new ConfigurationBuilder();
 
             // Act and Assert
-            var ex = Assert.Throws<FileNotFoundException>(() => JsonConfigurationExtensions.AddJsonFile(builder, path));
+            var ex = Assert.Throws<FileNotFoundException>(() => JsonConfigurationExtensions.AddJsonFile(configurationBuilder, path));
             Assert.Equal($"The configuration file '{path}' was not found and is not optional.", ex.Message);
         }
     }

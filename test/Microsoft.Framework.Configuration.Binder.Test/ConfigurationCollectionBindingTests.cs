@@ -22,8 +22,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"StringList:x", "valx"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
             var list = config.Get<List<string>>("StringList");
 
             Assert.Equal(4, list.Count);
@@ -45,8 +45,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"StringList:x", null}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
             var list = config.Get<List<string>>("StringList");
 
             Assert.Equal(0, list.Count);
@@ -61,8 +61,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"InvalidList:1", "invalid"},
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
             var list = config.Get<List<bool>>("InvalidList");
 
             Assert.Equal(1, list.Count);
@@ -76,8 +76,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             {
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
             var list = config.Get<List<string>>("StringList");
 
             Assert.Null(list);
@@ -94,8 +94,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"StringList:x", "valx"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
 
             var list = new List<string>();
             config.GetSection("StringList").Bind(list);
@@ -118,8 +118,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"ObjectList:2:Integer", "32"},
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
 
             var options = config.Get<List<NestedOptions>>("ObjectList");
 
@@ -140,8 +140,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"StringDictionary:ghi", "val_3"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
 
             var options = config.Get<Dictionary<string, string>>("StringDictionary");
 
@@ -163,8 +163,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"StringList:x", "valx"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
             var options = config.Get<OptionsWithLists>();
 
             var list = options.StringList;
@@ -188,8 +188,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"StringList:x", "valx"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
             var options = new OptionsWithLists();
             config.Bind(options);
 
@@ -214,8 +214,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"IntList:x", "45"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
 
             var options = config.Get<OptionsWithLists>();
 
@@ -240,8 +240,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"IntList:x", "45"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
             
             var options = new OptionsWithLists();
             config.Bind(options);
@@ -267,8 +267,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"AlreadyInitializedList:x", "valx"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
 
             var options = config.Get<OptionsWithLists>();
 
@@ -294,8 +294,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"CustomList:x", "valx"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
 
             var options = config.Get<OptionsWithLists>();
 
@@ -319,8 +319,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"ObjectList:2:Integer", "32"},
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
 
             var options = config.Get<OptionsWithLists>();
 
@@ -343,8 +343,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"NestedLists:1:2", "val12"},
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
 
             var options = config.Get<OptionsWithLists>();
 
@@ -369,8 +369,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"StringDictionary:ghi", "val_3"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
 
             var options = config.Get<OptionsWithDictionary>();
 
@@ -391,8 +391,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"IntDictionary:ghi", "44"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
 
             var options = config.Get<OptionsWithDictionary>();
 
@@ -413,8 +413,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"ObjectDictionary:ghi:Integer", "3"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
 
             var options = config.Get<OptionsWithDictionary>();
 
@@ -437,8 +437,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"ListDictionary:def:2", "def_2"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
 
             var options = config.Get<OptionsWithDictionary>();
 
@@ -465,8 +465,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"ObjectList:1:ListInNestedOption:2", "12"},
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
 
             var options = config.Get<OptionsWithLists>();
 
@@ -491,8 +491,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"NonStringKeyDictionary:ghi", "val_3"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
 
             var options = config.Get<OptionsWithDictionary>();
 
@@ -510,8 +510,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"StringArray:x", "valx"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
 
             var options = config.Get<OptionsWithArrays>();
 
@@ -537,8 +537,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"StringArray:x", "valx"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
             
             var instance = new OptionsWithArrays();
             config.Bind(instance);
@@ -564,8 +564,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"AlreadyInitializedArray:x", "valx"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
 
             var options = config.Get<OptionsWithArrays>();
             var array = options.AlreadyInitializedArray;
@@ -592,8 +592,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"AlreadyInitializedArray:x", "valx"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
 
             var options = new OptionsWithArrays();
             config.Bind(options);
@@ -623,8 +623,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"ObjectArray:1:ArrayInNestedOption:2", "12"},
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
             var options = new OptionsWithArrays();
             config.Bind(options);
 
@@ -648,8 +648,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"DimensionalArray:0:1", "b"}
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
             var options = new OptionsWithArrays();
 
             var exception = Assert.Throws<InvalidOperationException>(
@@ -671,8 +671,8 @@ namespace Microsoft.Framework.Configuration.Binder.Test
                 {"JaggedArray:1:2", "12"},
             };
 
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
-            var config = builder.Build();
+            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var config = configurationBuilder.Build();
             var options = new OptionsWithArrays();
             config.Bind(options);
 
