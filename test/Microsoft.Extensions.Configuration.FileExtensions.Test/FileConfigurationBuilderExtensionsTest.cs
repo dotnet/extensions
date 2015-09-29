@@ -46,7 +46,7 @@ namespace Microsoft.Extensions.Configuration.Json
         }
 
         [Fact]
-        public void GetBasePath_ReturnEmptyIfNotSet()
+        public void GetBasePath_ReturnBaseDirectoryIfNotSet()
         {
             // Arrange
             var configurationBuilder = new ConfigurationBuilder();
@@ -54,8 +54,17 @@ namespace Microsoft.Extensions.Configuration.Json
             // Act
             var actualPath = configurationBuilder.GetBasePath();
 
+            string expectedPath = string.Empty;
+
+#if DNXCORE50
+             expectedPath = AppContext.BaseDirectory;
+#else
+            expectedPath = AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
+                AppDomain.CurrentDomain.BaseDirectory ?? string.Empty;
+#endif
+
             // Assert
-            Assert.Equal(string.Empty, actualPath);
+            Assert.Equal(expectedPath, actualPath);
         }
     }
 }

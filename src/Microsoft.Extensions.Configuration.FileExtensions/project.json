@@ -11,6 +11,10 @@
     "frameworks": {
     "net45": { },
     "dnx451": { },
-    "dotnet": { }
+    "dotnet": {
+        "dependencies": {
+          "System.AppContext": "4.0.0-*"
+        }
+      }
     }
 }
