@@ -10,8 +10,15 @@
         "Microsoft.Framework.Configuration.FileExtensions": "1.0.0-*"
     },
     "frameworks": {
-    "net45": { },
-    "dnx451": { },
-    "dotnet": { }
+        "net45": { },
+        "dnx451": { },
+        "dnxcore50": { },
+        "dotnet": {
+            "dependencies": {
+                "System.IO": "4.0.10",
+                "System.IO.FileSystem": "4.0.0",
+                "System.IO.FileSystem.Primitives": "4.0.0"
+            }
+        }
     }
 }
