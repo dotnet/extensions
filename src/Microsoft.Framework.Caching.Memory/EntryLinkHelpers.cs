@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-#if DOTNET
+#if DOTNET || DNXCORE50
 using System.Threading;
 #else
 using System.Runtime.Remoting;
@@ -14,7 +14,7 @@ namespace Microsoft.Framework.Caching.Memory
 {
     internal static class EntryLinkHelpers
     {
-#if DOTNET
+#if DOTNET || DNXCORE50
         private static readonly AsyncLocal<EntryLink> _contextLink = new AsyncLocal<EntryLink>();
 
         public static EntryLink ContextLink
