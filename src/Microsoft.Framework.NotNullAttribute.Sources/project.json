@@ -6,9 +6,14 @@
     "frameworks": {
         "net45": { },
         "dnx451": { },
-        "dotnet": {
+        "dnxcore50": {
             "dependencies": {
                 "System.Runtime": "4.0.21-beta-*"
+            }
+        },
+        "dotnet": {
+            "dependencies": {
+                "System.Runtime": "4.0.20"
             }
         }
     }

@@ -13,7 +13,9 @@
         },
         "dotnet": {
             "dependencies": {
-                "System.Runtime": "4.0.21-beta-*"
+                "System.Collections": "4.0.10",
+                "System.Reflection": "4.0.10",
+                "System.Runtime": "4.0.20"
             } 
         }
     }
