@@ -13,12 +13,13 @@
         },
         "dnx451": {
         },
-        "dotnet": {
+        "dnxcore50": {
             "dependencies": {
                 "System.Collections": "4.0.11-beta-*",
                 "System.Globalization": "4.0.11-beta-*",
                 "System.Linq": "4.0.1-beta-*"
             }
-        }
+        },
+        "dotnet": { }
     }
 }
