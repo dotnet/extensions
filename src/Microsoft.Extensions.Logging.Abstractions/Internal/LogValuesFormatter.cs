@@ -18,6 +18,7 @@ namespace Microsoft.Extensions.Logging.Internal
         private readonly List<string> _valueNames = new List<string>();
 
         public string OriginalFormat { get; private set; }
+        public List<string> ValueNames => _valueNames;
 
         public LogValuesFormatter(string format)
         {

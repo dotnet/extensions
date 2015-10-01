@@ -7,6 +7,7 @@ namespace SampleApp
     public class Program
     {
         private readonly ILogger _logger;
+        private readonly CaptureData _capture = new CaptureData();
 
         public Program()
         {
@@ -14,7 +15,7 @@ namespace SampleApp
             var factory = new LoggerFactory();
 
             // getting the logger immediately using the class's name is conventional
-            _logger = factory.CreateLogger(typeof(Program).FullName);
+            _logger = factory.CreateLogger<Program>();
 
             // providers may be added to an ILoggerFactory at any time, existing ILoggers are updated
 #if !DNXCORE50
@@ -22,7 +23,7 @@ namespace SampleApp
             factory.AddEventLog();
 #endif
             factory.AddConsole();
-            factory.AddConsole((category, logLevel) => logLevel >= LogLevel.Critical && category.Equals(typeof(Program).FullName));
+            factory.AddProvider(_capture);
         }
 
         public void Main(string[] args)
@@ -31,6 +32,8 @@ namespace SampleApp
 
             var startTime = DateTimeOffset.UtcNow;
             _logger.LogInformation(1, "Started at '{StartTime}' and 0x{Hello:X} is hex of 42", startTime, 42);
+            // or
+            _logger.Starting(startTime, 42);
 
             try
             {
@@ -39,9 +42,6 @@ namespace SampleApp
             catch (Exception ex)
             {
                 _logger.LogCritical("Unexpected critical error starting application", ex);
-                _logger.Log(LogLevel.Critical, 0, "Unexpected critical error", ex, null);
-                // This write should not log anything
-                _logger.Log(LogLevel.Critical, 0, null, null, null);
                 _logger.LogError("Unexpected error", ex);
                 _logger.LogWarning("Unexpected warning", ex);
             }
@@ -56,13 +56,13 @@ namespace SampleApp
 
             var endTime = DateTimeOffset.UtcNow;
             _logger.LogInformation(2, "Stopping at '{StopTime}'", endTime);
+            // or
+            _logger.Stopping(endTime);
+
 
             _logger.LogInformation("Stopping");
 
-            _logger.LogInformation(Environment.NewLine);
-            _logger.LogInformation("{Result,-10}{StartTime,15}{EndTime,15}{Duration,15}", "RESULT", "START TIME", "END TIME", "DURATION(ms)");
-            _logger.LogInformation("{Result,-10}{StartTime,15}{EndTime,15}{Duration,15}", "------", "----- ----", "--- ----", "------------");
-            _logger.LogInformation("{Result,-10}{StartTime,15:mm:s tt}{EndTime,15:mm:s tt}{Duration,15}", "SUCCESS", startTime, endTime, (endTime - startTime).TotalMilliseconds);
+            _capture.Rewrite(Console.Out);
         }
     }
 }
