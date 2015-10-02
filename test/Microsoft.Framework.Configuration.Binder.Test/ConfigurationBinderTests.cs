@@ -122,6 +122,11 @@ namespace Microsoft.Framework.Configuration.Binder.Test
             Assert.Equal(0, config.Get<int>("Integer"));
             Assert.Equal(0, config.Get<int>("Nested:Integer"));
             Assert.Null(config.Get<ComplexOptions>("Object"));
+            Assert.True(config.Get("Boolean", true));
+            Assert.Equal(3, config.Get("Integer", 3));
+            Assert.Equal(1, config.Get("Nested:Integer", 1));
+            var foo = new ComplexOptions();
+            Assert.Same(config.Get("Object", foo), foo);
         }
 
 #if !DNXCORE50 // TypeConverter doesn't support this on DNXCORE

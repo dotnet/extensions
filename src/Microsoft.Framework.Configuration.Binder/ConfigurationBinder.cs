@@ -25,20 +25,30 @@ namespace Microsoft.Framework.Configuration
             }
         }
 
-        public static T Get<T>(this IConfiguration configuration)
+        public static T Get<T>(this IConfiguration configuration, T defaultValue)
         {
-            var value = Get(configuration, typeof(T));
+            var value = configuration.Get(typeof(T));
             if (value == null)
             {
-                return default(T);
+                return defaultValue;
             }
 
             return (T)value;
         }
 
+        public static T Get<T>(this IConfiguration configuration)
+        {
+            return configuration.Get(default(T));
+        }
+
         public static T Get<T>(this IConfiguration configuration, string key)
         {
-            return Get<T>(configuration.GetSection(key));
+            return Get(configuration.GetSection(key), default(T));
+        }
+
+        public static T Get<T>(this IConfiguration configuration, string key, T defaultValue)
+        {
+            return Get<T>(configuration.GetSection(key), defaultValue);
         }
 
         public static object Get(this IConfiguration configuration, Type type)
