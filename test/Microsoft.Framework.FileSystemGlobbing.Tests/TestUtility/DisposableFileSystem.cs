@@ -9,14 +9,9 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
 {
     public class DisposableFileSystem : IDisposable
     {
-        private readonly bool _automaticCleanup;
-
-        public DisposableFileSystem(bool automaticCleanup = true)
+        public DisposableFileSystem()
         {
-            _automaticCleanup = automaticCleanup;
-
-            RootPath = Path.GetTempFileName();
-            File.Delete(RootPath);
+            RootPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(RootPath);
             DirectoryInfo = new DirectoryInfoWrapper(new DirectoryInfo(RootPath));
         }
@@ -46,7 +41,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
 
                 File.WriteAllText(
                     fullPath,
-                    string.Format("Automatically generated for testing on {0:yyyy}/{0:MM}/{0:dd} {0:hh}:{0:mm}:{0:ss}", DateTime.Now));
+                    string.Format("Automatically generated for testing on {0:yyyy}/{0:MM}/{0:dd} {0:hh}:{0:mm}:{0:ss}", DateTime.UtcNow));
             }
 
             return this;
@@ -54,9 +49,13 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests.TestUtility
 
         public void Dispose()
         {
-            if (_automaticCleanup)
+            try
             {
                 Directory.Delete(RootPath, true);
+            }
+            catch
+            {
+                // Don't throw if this fails.
             }
         }
     }

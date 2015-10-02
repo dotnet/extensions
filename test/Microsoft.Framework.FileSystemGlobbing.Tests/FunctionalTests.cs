@@ -12,7 +12,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
 {
     public class FunctionalTests : IDisposable
     {
-        private DisposableFileSystem _context;
+        private readonly DisposableFileSystem _context;
 
         public FunctionalTests()
         {
@@ -21,10 +21,7 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
 
         public void Dispose()
         {
-            if (_context != null)
-            {
-                _context.Dispose();
-            }
+            _context.Dispose();
         }
 
         [Theory]
@@ -78,11 +75,11 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
                                                                                     "sub/preprocess-source2.cs",
                                                                                     "sub/sub/preprocess-source3.cs",
                                                                                     "sub/sub/preprocess-source3.txt" })]
-        [InlineData("src/project/compiler/preprocess/", "preprocess-source1.cs", new string[] { 
+        [InlineData("src/project/compiler/preprocess/", "preprocess-source1.cs", new string[] {
                                                                                     "sub/preprocess-source2.cs",
                                                                                     "sub/sub/preprocess-source3.cs",
                                                                                     "sub/sub/preprocess-source3.txt" })]
-        [InlineData("src/project/compiler/preprocess/", "preprocesS-source1.cs", new string[] { 
+        [InlineData("src/project/compiler/preprocess/", "preprocesS-source1.cs", new string[] {
                                                                                     "preprocess-source1.cs",
                                                                                     "sub/preprocess-source2.cs",
                                                                                     "sub/sub/preprocess-source3.cs",
@@ -118,11 +115,11 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
                                                                                     "sub/preprocess-source2.cs",
                                                                                     "sub/sub/preprocess-source3.cs",
                                                                                     "sub/sub/preprocess-source3.txt" })]
-        [InlineData("src/project/compiler/preprocess/", "preprocess-source1.cs", new string[] { 
+        [InlineData("src/project/compiler/preprocess/", "preprocess-source1.cs", new string[] {
                                                                                     "sub/preprocess-source2.cs",
                                                                                     "sub/sub/preprocess-source3.cs",
                                                                                     "sub/sub/preprocess-source3.txt" })]
-        [InlineData("src/project/compiler/preprocess/", "preprocesS-source1.cs", new string[] { 
+        [InlineData("src/project/compiler/preprocess/", "preprocesS-source1.cs", new string[] {
                                                                                     "sub/preprocess-source2.cs",
                                                                                     "sub/sub/preprocess-source3.cs",
                                                                                     "sub/sub/preprocess-source3.txt" })]
@@ -405,9 +402,12 @@ namespace Microsoft.Framework.FileSystemGlobbing.Tests
             var results = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(directoryPath)));
 
             var actual = results.Files.Select(match => Path.GetFullPath(Path.Combine(_context.RootPath, directoryPath, match.Path)));
-            var expect = expectFiles.Select(relativePath => Path.GetFullPath(Path.Combine(_context.RootPath, relativePath)));
+            var expected = expectFiles.Select(relativePath => Path.GetFullPath(Path.Combine(_context.RootPath, relativePath)));
 
-            AssertHelpers.SortAndEqual(expect, actual, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal(
+                expected.OrderBy(e => e),
+                actual.OrderBy(e => e),
+                StringComparer.OrdinalIgnoreCase);
         }
     }
 }
