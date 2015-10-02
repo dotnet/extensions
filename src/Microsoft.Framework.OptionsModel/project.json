@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "description": "Provides strongly typed way of specifying and accessing settings using dependency injection.",
+  "description": "Provides a strongly typed way of specifying and accessing settings using dependency injection.",
   "dependencies": {
     "Microsoft.Framework.Configuration.Abstractions": "1.0.0-*",
     "Microsoft.Framework.Configuration.Binder": "1.0.0-*",
