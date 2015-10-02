@@ -34,6 +34,7 @@ namespace Microsoft.Framework.MemoryPool
                 segment = new DefaultLeasedArraySegment(new ArraySegment<T>(new T[BlockSize]), this);
             }
 
+            segment.Lease();
             return segment;
         }
 
@@ -69,6 +70,7 @@ namespace Microsoft.Framework.MemoryPool
                 return;
             }
 
+            segment.Return();
             _segments.Enqueue(segment);
         }
 
@@ -85,6 +87,8 @@ namespace Microsoft.Framework.MemoryPool
 
         private class DefaultLeasedArraySegment : LeasedArraySegment<T>
         {
+            private volatile bool _pooled;
+
             public DefaultLeasedArraySegment(ArraySegment<T> data, DefaultArraySegmentPool<T> pool)
                 : base(data, pool)
             {
@@ -94,17 +98,26 @@ namespace Microsoft.Framework.MemoryPool
 
             public void Destroy()
             {
+                _pooled = false;
                 base.Owner = null;
                 Data = default(ArraySegment<T>);
 
                 GC.SuppressFinalize(this);
             }
 
+            public void Lease()
+            {
+                _pooled = false;
+            }
+
+            public void Return()
+            {
+                _pooled = true;
+            }
+
             ~DefaultLeasedArraySegment()
             {
-                // _isDisposed is checked here to handle the race condition where a segment is put into
-                // the queue as Dispose is called on the pool.
-                if (Owner != null && !Owner._isDisposed)
+                if (!_pooled)
                 {
                     throw new InvalidOperationException(
                         $"A {nameof(LeasedArraySegment<T>)} was collected without being returned to the pool. " +
