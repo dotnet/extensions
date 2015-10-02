@@ -35,19 +35,12 @@ namespace Microsoft.AspNet.Testing.xunit
             switch (TestPlatformHelper.RuntimeEnvironment.OperatingSystem.ToLowerInvariant())
             {
                 case "windows":
-                    var osVersion = new Version(TestPlatformHelper.RuntimeEnvironment.OperatingSystemVersion);
+                    var osVersion = TestPlatformHelper.RuntimeEnvironment.OperatingSystemVersion;
 
-                    // The GetVersion API has a back compat feature: for apps that are not manifested
-                    // and run on Windows 8.1, it returns version 6.2 rather than 6.3. See this:
-                    // http://msdn.microsoft.com/en-us/library/windows/desktop/ms724439(v=vs.85).aspx
-                    if (osVersion.Major == 6)
+                    if (osVersion.Equals("7.0", StringComparison.OrdinalIgnoreCase) &&
+                        (excludedOperatingSystems.HasFlag(OperatingSystems.Win7) || excludedOperatingSystems.HasFlag(OperatingSystems.Win2008R2)))
                     {
-                        if (osVersion.Minor == 1 &&
-                            (excludedOperatingSystems.HasFlag(OperatingSystems.Win7) ||
-                            excludedOperatingSystems.HasFlag(OperatingSystems.Win2008R2)))
-                        {
-                            return false;
-                        }
+                        return false;
                     }
                     break;
                 case "linux":
