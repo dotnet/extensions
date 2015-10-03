@@ -1,0 +1,32 @@
+{
+  "version": "1.0.0-*",
+  "description": "Functionality to bind an object to data in configuration providers.",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/aspnet/configuration"
+  },
+  "dependencies": {
+    "Microsoft.Extensions.Configuration": "1.0.0-*"
+  },
+  "frameworks": {
+    "net45": { },
+    "dnx451": { },
+    "dnxcore50": {
+      "dependencies": {
+        "System.ComponentModel.TypeConverter": "4.0.1-beta-*"
+      }
+    },
+    "dotnet": {
+      "dependencies": {
+        "System.Collections": "4.0.10",
+        "System.ComponentModel.TypeConverter": "4.0.0",
+        "System.Diagnostics.Debug": "4.0.10",
+        "System.Globalization": "4.0.10",
+        "System.Linq": "4.0.0",
+        "System.Reflection": "4.0.10",
+        "System.Resources.ResourceManager": "4.0.0",
+        "System.Runtime": "4.0.20"
+      }
+    }
+  }
+}

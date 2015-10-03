@@ -9,14 +9,14 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.Framework.Configuration": { },
-            "Microsoft.Framework.Configuration.Abstractions": { },
-            "Microsoft.Framework.Configuration.Binder": { },
-            "Microsoft.Framework.Configuration.CommandLine": { },
-            "Microsoft.Framework.Configuration.EnvironmentVariables": { },
-            "Microsoft.Framework.Configuration.Ini": { },
-            "Microsoft.Framework.Configuration.Json": { },
-            "Microsoft.Framework.Configuration.Xml": { }
+            "Microsoft.Extensions.Configuration": { },
+            "Microsoft.Extensions.Configuration.Abstractions": { },
+            "Microsoft.Extensions.Configuration.Binder": { },
+            "Microsoft.Extensions.Configuration.CommandLine": { },
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": { },
+            "Microsoft.Extensions.Configuration.Ini": { },
+            "Microsoft.Extensions.Configuration.Json": { },
+            "Microsoft.Extensions.Configuration.Xml": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
