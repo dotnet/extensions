@@ -3,14 +3,14 @@
         "SampleApp": "SampleApp"
     },
     "dependencies": {
-        "Microsoft.Framework.Logging": "1.0.0-*",
-        "Microsoft.Framework.Logging.Console": "1.0.0-*"
+        "Microsoft.Extensions.Logging": "1.0.0-*",
+        "Microsoft.Extensions.Logging.Console": "1.0.0-*"
     },
     "frameworks": {
         "dnx451": {
             "dependencies": {
-                "Microsoft.Framework.Logging.EventLog": "1.0.0-*",
-                "Microsoft.Framework.Logging.NLog": "1.0.0-*"
+                "Microsoft.Extensions.Logging.EventLog": "1.0.0-*",
+                "Microsoft.Extensions.Logging.NLog": "1.0.0-*"
             }
         },
         "dnxcore50": {

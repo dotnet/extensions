@@ -1,0 +1,41 @@
+{
+    "version": "1.0.0-*",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/logging"
+    },
+    "description": "Logging interface definitions.",
+    "dependencies": {
+        "Microsoft.Extensions.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
+        "Microsoft.Extensions.TypeNameHelper.Sources": { "type": "build", "version": "1.0.0-*" }
+    },
+    "frameworks": {
+        "net45": { },
+        "dnx451": { },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Collections": "4.0.11-beta-*",
+                "System.Collections.Concurrent": "4.0.11-beta-*",
+                "System.Linq": "4.0.1-beta-*",
+                "System.Globalization": "4.0.11-beta-*",
+                "System.Reflection": "4.0.11-beta-*",
+                "System.Runtime": "4.0.21-beta-*",
+                "System.Runtime.Extensions": "4.0.11-beta-*",
+                "System.Runtime.InteropServices": "4.0.21-beta-*"
+            }
+        },
+        "dotnet": {
+            "dependencies": {
+                "System.Collections": "4.0.10",
+                "System.Collections.Concurrent": "4.0.10",
+                "System.Diagnostics.Debug": "4.0.10",
+                "System.Globalization": "4.0.10",
+                "System.Linq": "4.0.0",
+                "System.Reflection": "4.0.10",
+                "System.Resources.ResourceManager": "4.0.0",
+                "System.Runtime": "4.0.20",
+                "System.Runtime.Extensions": "4.0.10"
+            }
+        }
+    }
+}

@@ -1,0 +1,16 @@
+{
+    "version": "1.0.0-*",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/logging"
+    },
+    "dependencies": {
+        "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
+        "Microsoft.Extensions.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
+        "NLog": "3.1.0"
+    },
+    "frameworks": {
+        "net45": { },
+        "dnx451": { }
+    }
+}

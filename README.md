@@ -1,9 +1,9 @@
 Logging
 =======
 
-**Package**: `Microsoft.Framework.Logging`  
-NuGet (`master`): [![](http://img.shields.io/nuget/v/Microsoft.Framework.Logging.svg?style=flat-square)](http://www.nuget.org/packages/Microsoft.Framework.Logging) [![](http://img.shields.io/nuget/dt/Microsoft.Framework.Logging.svg?style=flat-square)](http://www.nuget.org/packages/Microsoft.Framework.Logging)  
-MyGet (`dev`): [![](http://img.shields.io/myget/aspnetvnext/v/Microsoft.Framework.Logging.svg?style=flat-square)](https://www.myget.org/gallery/aspnetvnext)  
+**Package**: `Microsoft.Extensions.Logging`  
+NuGet (`master`): [![](http://img.shields.io/nuget/v/Microsoft.Extensions.Logging.svg?style=flat-square)](http://www.nuget.org/packages/Microsoft.Extensions.Logging) [![](http://img.shields.io/nuget/dt/Microsoft.Extensions.Logging.svg?style=flat-square)](http://www.nuget.org/packages/Microsoft.Extensions.Logging)  
+MyGet (`dev`): [![](http://img.shields.io/myget/aspnetvnext/v/Microsoft.Extensions.Logging.svg?style=flat-square)](https://www.myget.org/gallery/aspnetvnext)  
 
 AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/i0hdtuq4m6pwfp2s/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/Logging/branch/dev)  
 Travis:   [![Travis](https://travis-ci.org/aspnet/Logging.svg?branch=dev)](https://travis-ci.org/aspnet/Logging)
@@ -14,7 +14,7 @@ This project is part of ASP.NET 5. You can find samples, documentation and getti
 
 ### Providers
 
-Community projects adapt _Microsoft.Framework.Logging_ for use with different back-ends.
+Community projects adapt _Microsoft.Extensions.Logging_ for use with different back-ends.
 
  * [Serilog](https://github.com/serilog/serilog-framework-logging) - provider for the Serilog library
  * [elmah.io](https://github.com/elmahio/Elmah.Io.Framework.Logging) - provider for the elmah.io service

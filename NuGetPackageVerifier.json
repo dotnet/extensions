@@ -9,18 +9,18 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.Framework.Logging": { },
-            "Microsoft.Framework.Logging.Abstractions": { },
-            "Microsoft.Framework.Logging.Console": { },
-            "Microsoft.Framework.Logging.Debug": { },
-            "Microsoft.Framework.Logging.EventLog": { },
-            "Microsoft.Framework.Logging.TraceSource": { }
+            "Microsoft.Extensions.Logging": { },
+            "Microsoft.Extensions.Logging.Abstractions": { },
+            "Microsoft.Extensions.Logging.Console": { },
+            "Microsoft.Extensions.Logging.Debug": { },
+            "Microsoft.Extensions.Logging.EventLog": { },
+            "Microsoft.Extensions.Logging.TraceSource": { }
         }
     },
     "adx-nonshipping": {
         "rules": [],
         "packages": {
-            "Microsoft.Framework.Logging.NLog": { }
+            "Microsoft.Extensions.Logging.NLog": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
