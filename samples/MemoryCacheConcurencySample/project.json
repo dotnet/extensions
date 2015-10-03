@@ -1,6 +1,6 @@
 {
     "dependencies": {
-        "Microsoft.Framework.Caching.Memory": "1.0.0-*"
+        "Microsoft.Extensions.Caching.Memory": "1.0.0-*"
     },
     "commands": { "MemoryCacheConcurencySample": "MemoryCacheConcurencySample" },
     "frameworks": {

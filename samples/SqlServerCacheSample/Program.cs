@@ -1,20 +1,20 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.Caching.Distributed;
-using Microsoft.Framework.Caching.SqlServer;
-using Microsoft.Framework.Configuration;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.SqlServer;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.OptionsModel;
 
 namespace SqlServerCacheSample
 {
     /// <summary>
     /// This sample requires setting up a Microsoft SQL Server based cache database.
-    /// 1. Install the command globally by doing "dnx commands install Microsoft.Framework.Caching.SqlServer". This
+    /// 1. Install the command globally by doing "dnx commands install Microsoft.Extensions.Caching.SqlServer". This
     ///    installs a command called "sqlservercache".
     /// 2. Create a new database in the SQL Server or use as existing gone.
     /// 3. Run the command "sqlservercache create <connectionstring> <schemName> <tableName>" to setup the table and

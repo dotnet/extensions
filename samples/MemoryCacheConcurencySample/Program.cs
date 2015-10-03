@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Framework.Caching.Memory;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace MemoryCacheSample
 {

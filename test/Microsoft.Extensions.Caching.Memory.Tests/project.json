@@ -1,0 +1,15 @@
+{
+    "dependencies": {
+        "Microsoft.AspNet.Testing": "1.0.0-*",
+        "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
+        "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
+        "xunit": "2.1.0-*",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    },
+    "commands": {
+        "test": "xunit.runner.aspnet"
+    },
+    "frameworks": {
+        "dnx451": { }
+    }
+}

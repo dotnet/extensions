@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Framework.Caching.Memory;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace ProfilingSample
 {

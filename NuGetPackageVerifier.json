@@ -9,11 +9,11 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.Framework.Caching.Abstractions": { },
-            "Microsoft.Framework.Caching.Memory": { },
-            "Microsoft.Framework.Caching.Redis": { },
-            "Microsoft.Framework.Caching.SqlConfig": { },
-            "Microsoft.Framework.Caching.SqlServer": { }
+            "Microsoft.Extensions.Caching.Abstractions": { },
+            "Microsoft.Extensions.Caching.Memory": { },
+            "Microsoft.Extensions.Caching.Redis": { },
+            "Microsoft.Extensions.Caching.SqlConfig": { },
+            "Microsoft.Extensions.Caching.SqlServer": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.

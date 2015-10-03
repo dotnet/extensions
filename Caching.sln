@@ -1,9 +1,9 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.22823.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Caching.Memory", "src\Microsoft.Framework.Caching.Memory\Microsoft.Framework.Caching.Memory.xproj", "{966D16D8-5D4E-4433-9DA7-F53EE44B7EE7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Caching.Memory", "src\Microsoft.Extensions.Caching.Memory\Microsoft.Extensions.Caching.Memory.xproj", "{966D16D8-5D4E-4433-9DA7-F53EE44B7EE7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5A04042D-438D-407B-B239-0CAD6A2BD8C2}"
 EndProject
@@ -13,34 +13,34 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MemoryCacheSample", "sample
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2E14F082-1A04-4E7C-9162-1675119F9A9E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Caching.Memory.Tests", "test\Microsoft.Framework.Caching.Memory.Tests\Microsoft.Framework.Caching.Memory.Tests.xproj", "{1C24C0CE-84B6-4D6C-B484-32741D704FD8}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Caching.Memory.Tests", "test\Microsoft.Extensions.Caching.Memory.Tests\Microsoft.Extensions.Caching.Memory.Tests.xproj", "{1C24C0CE-84B6-4D6C-B484-32741D704FD8}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MemoryCacheConcurencySample", "samples\MemoryCacheConcurencySample\MemoryCacheConcurencySample.xproj", "{FF7C7587-BBCA-4574-95AE-101A6FF63B8F}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ProfilingSample", "samples\ProfilingSample\ProfilingSample.xproj", "{FD9FD44E-50D7-4121-9DAB-87A88191CE9F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Caching.Redis", "src\Microsoft.Framework.Caching.Redis\Microsoft.Framework.Caching.Redis.xproj", "{02E23070-947C-4438-8E50-CC2456D237BA}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Caching.Redis", "src\Microsoft.Extensions.Caching.Redis\Microsoft.Extensions.Caching.Redis.xproj", "{02E23070-947C-4438-8E50-CC2456D237BA}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RedisCacheSample", "samples\RedisCacheSample\RedisCacheSample.xproj", "{4109BDF4-BFF4-4AB6-8ED1-881DE410EA57}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Caching.Redis.Tests", "test\Microsoft.Framework.Caching.Redis.Tests\Microsoft.Framework.Caching.Redis.Tests.xproj", "{D1DCC5A4-3EC1-403B-B069-1F3FCB50E3A5}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Caching.Redis.Tests", "test\Microsoft.Extensions.Caching.Redis.Tests\Microsoft.Extensions.Caching.Redis.Tests.xproj", "{D1DCC5A4-3EC1-403B-B069-1F3FCB50E3A5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FB1086CF-F5C8-4B81-A685-C355F1BA9B97}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Caching.Abstractions", "src\Microsoft.Framework.Caching.Abstractions\Microsoft.Framework.Caching.Abstractions.xproj", "{60AAD8D1-33A3-4943-A4AF-C8A5BA418BC6}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Caching.Abstractions", "src\Microsoft.Extensions.Caching.Abstractions\Microsoft.Extensions.Caching.Abstractions.xproj", "{60AAD8D1-33A3-4943-A4AF-C8A5BA418BC6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Caching.SqlServer", "src\Microsoft.Framework.Caching.SqlServer\Microsoft.Framework.Caching.SqlServer.xproj", "{4301BDAE-CD67-4C1F-B754-D979C7274305}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Caching.SqlServer", "src\Microsoft.Extensions.Caching.SqlServer\Microsoft.Extensions.Caching.SqlServer.xproj", "{4301BDAE-CD67-4C1F-B754-D979C7274305}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SqlServerCacheSample", "samples\SqlServerCacheSample\SqlServerCacheSample.xproj", "{FED2ABB6-D0B3-4AC7-940F-250C9767EACB}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SqlServerCacheConcurrencySample", "samples\SqlServerCacheConcurencySample\SqlServerCacheConcurrencySample.xproj", "{C94F2284-AA7A-4DC6-AC90-EAE0BF0DCFAB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Caching.SqlServer.Tests", "test\Microsoft.Framework.Caching.SqlServer.Tests\Microsoft.Framework.Caching.SqlServer.Tests.xproj", "{38EFEDCC-1076-4E1F-89C5-443C7FCCEE6A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Caching.SqlServer.Tests", "test\Microsoft.Extensions.Caching.SqlServer.Tests\Microsoft.Extensions.Caching.SqlServer.Tests.xproj", "{38EFEDCC-1076-4E1F-89C5-443C7FCCEE6A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Caching.SqlConfig", "src\Microsoft.Framework.Caching.SqlConfig\Microsoft.Framework.Caching.SqlConfig.xproj", "{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Caching.SqlConfig", "src\Microsoft.Extensions.Caching.SqlConfig\Microsoft.Extensions.Caching.SqlConfig.xproj", "{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
