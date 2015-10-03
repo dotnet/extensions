@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Microsoft.Framework.TelemetryAdapter.Internal
+namespace Microsoft.Extensions.TelemetryAdapter.Internal
 {
     public static class ProxyAssembly
     {
@@ -16,11 +16,11 @@ namespace Microsoft.Framework.TelemetryAdapter.Internal
 
         static ProxyAssembly()
         {
-            var assemblyName = new AssemblyName("Microsoft.Framework.TelemetryAdapter.ProxyAssembly");
+            var assemblyName = new AssemblyName("Microsoft.Extensions.TelemetryAdapter.ProxyAssembly");
             var access = AssemblyBuilderAccess.Run;
 
             AssemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, access);
-            ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Microsoft.Framework.TelemetryAdapter.ProxyAssembly.dll");
+            ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Microsoft.Extensions.TelemetryAdapter.ProxyAssembly.dll");
         }
 
         public static TypeBuilder DefineType(

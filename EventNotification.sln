@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
@@ -7,9 +7,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8B66E199-1AF
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D75011A4-DEEE-48DE-BB83-CE042F2AC05B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.TelemetryAdapter", "src\Microsoft.Framework.TelemetryAdapter\Microsoft.Framework.TelemetryAdapter.xproj", "{87808F3C-362E-4261-AA4A-EE40BA39D64E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.TelemetryAdapter", "src\Microsoft.Extensions.TelemetryAdapter\Microsoft.Extensions.TelemetryAdapter.xproj", "{87808F3C-362E-4261-AA4A-EE40BA39D64E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.TelemetryAdapter.Test", "test\Microsoft.Framework.TelemetryAdapter.Test\Microsoft.Framework.TelemetryAdapter.Test.xproj", "{FB993EEE-FF13-4454-BF49-F60DD0A531F7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.TelemetryAdapter.Test", "test\Microsoft.Extensions.TelemetryAdapter.Test\Microsoft.Extensions.TelemetryAdapter.Test.xproj", "{FB993EEE-FF13-4454-BF49-F60DD0A531F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

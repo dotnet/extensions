@@ -2,7 +2,7 @@
   "version": "1.0.0-*",
   "description": "An TelemetryListener implementation which provides duck-typing through generated proxy types.",
   "dependencies": {
-    "Microsoft.Framework.DependencyInjection.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
     "System.Diagnostics.Tracing.Telemetry": "4.0.0-beta-*"
   },
   "compilationOptions": {
