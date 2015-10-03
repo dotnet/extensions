@@ -6,7 +6,7 @@
         "Microsoft.Framework.Caching.SqlServer": "1.0.0-*",
         "Microsoft.Framework.Configuration.EnvironmentVariables": "1.0.0-*",
         "Microsoft.Framework.Configuration.Json": "1.0.0-*",
-        "Microsoft.Framework.Runtime.Abstractions": "1.0.0-*"
+        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*"
     },
     "frameworks": {
         "dnx451": { },

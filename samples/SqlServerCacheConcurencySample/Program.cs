@@ -4,12 +4,12 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Caching.Distributed;
 using Microsoft.Framework.Caching.Memory;
 using Microsoft.Framework.Caching.SqlServer;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.OptionsModel;
-using Microsoft.Framework.Runtime;
 
 namespace SqlServerCacheConcurrencySample
 {
