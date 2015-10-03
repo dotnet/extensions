@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Framework.OptionsModel
+namespace Microsoft.Extensions.OptionsModel
 {
     public class ConfigureOptions<TOptions> : IConfigureOptions<TOptions> where TOptions : class
     {

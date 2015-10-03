@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.Configuration;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.Framework.OptionsModel.Tests
+namespace Microsoft.Extensions.OptionsModel.Tests
 {
     public class OptionsTest
     {

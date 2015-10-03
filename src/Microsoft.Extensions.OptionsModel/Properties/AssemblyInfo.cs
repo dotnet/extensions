@@ -6,5 +6,5 @@ using System.Resources;
 using System.Runtime.CompilerServices;
 
 [assembly: AssemblyMetadata("Serviceable", "True")]
-[assembly: InternalsVisibleTo("Microsoft.Framework.OptionsModel.Test")]
+[assembly: InternalsVisibleTo("Microsoft.Extensions.OptionsModel.Test")]
 [assembly: NeutralResourcesLanguage("en-us")]

@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Framework.OptionsModel
+namespace Microsoft.Extensions.OptionsModel
 {
     public class OptionsManager<TOptions> : IOptions<TOptions> where TOptions : class, new()
     {
