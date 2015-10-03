@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
@@ -7,11 +7,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D26F6F80-63E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{88B347C1-CCEC-4827-9564-FFF07C9BF7C7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.DependencyInjection", "src\Microsoft.Framework.DependencyInjection\Microsoft.Framework.DependencyInjection.xproj", "{07ABDD98-9974-48CB-8265-53D1A8EC9E34}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.DependencyInjection", "src\Microsoft.Extensions.DependencyInjection\Microsoft.Extensions.DependencyInjection.xproj", "{07ABDD98-9974-48CB-8265-53D1A8EC9E34}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.DependencyInjection.Tests", "test\Microsoft.Framework.DependencyInjection.Tests\Microsoft.Framework.DependencyInjection.Tests.xproj", "{20201277-5461-49EF-811B-63ED3CD274EF}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.DependencyInjection.Tests", "test\Microsoft.Extensions.DependencyInjection.Tests\Microsoft.Extensions.DependencyInjection.Tests.xproj", "{20201277-5461-49EF-811B-63ED3CD274EF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.DependencyInjection.Abstractions", "src\Microsoft.Framework.DependencyInjection.Abstractions\Microsoft.Framework.DependencyInjection.Abstractions.xproj", "{4E959D3B-2E0D-4296-B22C-D428DED294F0}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.DependencyInjection.Abstractions", "src\Microsoft.Extensions.DependencyInjection.Abstractions\Microsoft.Extensions.DependencyInjection.Abstractions.xproj", "{4E959D3B-2E0D-4296-B22C-D428DED294F0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

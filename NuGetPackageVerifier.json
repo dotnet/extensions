@@ -9,8 +9,8 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.Framework.DependencyInjection": { },
-            "Microsoft.Framework.DependencyInjection.Abstractions": { }
+            "Microsoft.Extensions.DependencyInjection": { },
+            "Microsoft.Extensions.DependencyInjection.Abstractions": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
