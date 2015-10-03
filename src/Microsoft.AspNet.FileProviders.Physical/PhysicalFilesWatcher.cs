@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.Framework.Primitives;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.FileProviders
 {

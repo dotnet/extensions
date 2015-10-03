@@ -12,7 +12,7 @@
             "Microsoft.AspNet.FileProviders.Abstractions": { },
             "Microsoft.AspNet.FileProviders.Embedded": { },
             "Microsoft.AspNet.FileProviders.Physical": { },
-            "Microsoft.Framework.FileSystemGlobbing": { }
+            "Microsoft.Extensions.FileSystemGlobbing": { }
         }
     },
     "adx-nonshipping": {

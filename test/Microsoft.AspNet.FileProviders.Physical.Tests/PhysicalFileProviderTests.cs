@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Framework.Primitives;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.FileProviders

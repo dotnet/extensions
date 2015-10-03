@@ -5,7 +5,7 @@ using System;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Framework.Primitives;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.FileProviders
 {

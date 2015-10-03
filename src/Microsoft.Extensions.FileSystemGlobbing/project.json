@@ -1,0 +1,27 @@
+{
+    "version": "1.0.0-*",
+    "description": "Implementation of ASP.NET 5 file system globbing.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/filesystem"
+    },
+    "dependencies": {
+        "Microsoft.Extensions.HashCodeCombiner.Sources": { "version": "1.0.0-*", "type": "build" }
+    },
+    "frameworks": {
+        "net45": { },
+        "dnx451": {
+            "dependencies": {
+            }
+        },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Runtime": "4.0.21-beta-*",
+                "System.Collections": "4.0.11-beta-*",
+                "System.IO.FileSystem": "4.0.1-beta-*",
+                "System.Linq": "4.0.1-beta-*",
+                "System.Runtime.Extensions": "4.0.11-beta-*"
+            }
+        }
+    }
+}

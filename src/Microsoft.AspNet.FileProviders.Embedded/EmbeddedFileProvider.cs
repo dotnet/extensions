@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Microsoft.Framework.Primitives;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.FileProviders
 {

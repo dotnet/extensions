@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.22823.1
@@ -14,9 +14,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FileProviders.Abstractions", "src\Microsoft.AspNet.FileProviders.Abstractions\Microsoft.AspNet.FileProviders.Abstractions.xproj", "{DD94B7E8-3A59-4F84-98A0-8139BE259A87}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.FileSystemGlobbing", "src\Microsoft.Framework.FileSystemGlobbing\Microsoft.Framework.FileSystemGlobbing.xproj", "{970449A2-3BBB-4E87-8513-C41F109B1A3E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.FileSystemGlobbing", "src\Microsoft.Extensions.FileSystemGlobbing\Microsoft.Extensions.FileSystemGlobbing.xproj", "{970449A2-3BBB-4E87-8513-C41F109B1A3E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.FileSystemGlobbing.Tests", "test\Microsoft.Framework.FileSystemGlobbing.Tests\Microsoft.Framework.FileSystemGlobbing.Tests.xproj", "{45A5A942-4EFB-4839-AEA3-EB1D2BAB332C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.FileSystemGlobbing.Tests", "test\Microsoft.Extensions.FileSystemGlobbing.Tests\Microsoft.Extensions.FileSystemGlobbing.Tests.xproj", "{45A5A942-4EFB-4839-AEA3-EB1D2BAB332C}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FileProviders.Embedded", "src\Microsoft.AspNet.FileProviders.Embedded\Microsoft.AspNet.FileProviders.Embedded.xproj", "{BD98C115-7FA6-4A78-8198-9650A4706B79}"
 EndProject
