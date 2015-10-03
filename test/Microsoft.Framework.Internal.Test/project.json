@@ -4,11 +4,6 @@
     },
     "dependencies": {
         "Microsoft.AspNet.Testing": "1.0.0-*",
-        "Microsoft.AspNet.Html.Abstractions": "1.0.0-*",
-        "Microsoft.Framework.BufferedHtmlContent.Sources": {
-            "type": "build",
-            "version": "1.0.0-*"
-        },
         "Microsoft.Framework.ClosedGenericMatcher.Sources": {
             "type": "build",
             "version": "1.0.0-*"
@@ -41,7 +36,6 @@
             "type": "build",
             "version": "1.0.0-*"
         },
-        "Microsoft.Framework.WebEncoders.Testing": "1.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
     "commands": {
