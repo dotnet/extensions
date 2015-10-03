@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
@@ -15,15 +15,15 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Dnx.TestHost", "s
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Dnx.TestHost.Tests", "test\Microsoft.Dnx.TestHost.Tests\Microsoft.Dnx.TestHost.Tests.xproj", "{25D18D0C-119C-4AB4-BCA6-AC06179335FA}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Testing", "src\Microsoft.Framework.Logging.Testing\Microsoft.Framework.Logging.Testing.xproj", "{379AA56B-E1A6-4133-9A45-7F70385F39FB}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.Testing", "src\Microsoft.Extensions.Logging.Testing\Microsoft.Extensions.Logging.Testing.xproj", "{379AA56B-E1A6-4133-9A45-7F70385F39FB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Logging.Testing.Tests", "test\Microsoft.Framework.Logging.Testing.Tests\Microsoft.Framework.Logging.Testing.Tests.xproj", "{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.Testing.Tests", "test\Microsoft.Extensions.Logging.Testing.Tests\Microsoft.Extensions.Logging.Testing.Tests.xproj", "{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{57A90243-F8A5-4115-BA05-A1CEEBD8A5CD}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.WebEncoders.Testing", "src\Microsoft.Framework.WebEncoders.Testing\Microsoft.Framework.WebEncoders.Testing.xproj", "{12732002-3304-4741-9914-8FCCB2C28193}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.WebEncoders.Testing", "src\Microsoft.Extensions.WebEncoders.Testing\Microsoft.Extensions.WebEncoders.Testing.xproj", "{12732002-3304-4741-9914-8FCCB2C28193}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.WebEncoders.Testing.Tests", "test\Microsoft.Framework.WebEncoders.Testing.Tests\Microsoft.Framework.WebEncoders.Testing.Tests.xproj", "{F6958E64-32E4-4697-BFA8-0A78B7AB4CEA}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.WebEncoders.Testing.Tests", "test\Microsoft.Extensions.WebEncoders.Testing.Tests\Microsoft.Extensions.WebEncoders.Testing.Tests.xproj", "{F6958E64-32E4-4697-BFA8-0A78B7AB4CEA}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Dnx.TestHost.Client.Sources", "src\Microsoft.Dnx.TestHost.Client.Sources\Microsoft.Dnx.TestHost.Client.Sources.xproj", "{90C1A9CE-E402-4206-8194-03A844435FC3}"
 EndProject

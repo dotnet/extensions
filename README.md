@@ -43,8 +43,8 @@ Unable to start Microsoft.Dnx.TestHost
 Or
 
 ```
-System.MissingMethodException: Method not found: 'Boolean Microsoft.Framework.Runtime.Project.TryGetProject(System.String, Microsoft.Framework.Runtime.Project ByRef, System.Collections.Generic.ICollection1)'. at Microsoft.Framework.TestHost.Program.<>c__DisplayClass2_0.<b__0>d.MoveNext() at System.Runtime.CompilerServices.AsyncTaskMethodBuilder1.StartTStateMachine
-at Microsoft.Framework.TestHost.Program.<>c__DisplayClass2_0.b__0()
+System.MissingMethodException: Method not found: 'Boolean Microsoft.Extensions.Runtime.Project.TryGetProject(System.String, Microsoft.Extensions.Runtime.Project ByRef, System.Collections.Generic.ICollection1)'. at Microsoft.Extensions.TestHost.Program.<>c__DisplayClass2_0.<b__0>d.MoveNext() at System.Runtime.CompilerServices.AsyncTaskMethodBuilder1.StartTStateMachine
+at Microsoft.Extensions.TestHost.Program.<>c__DisplayClass2_0.b__0()
 ```
 
 Then you almost certainly have a compatability problem caused by mixing package versions spanning separate beta releases. Doing a `dnu list` on your project at the commandline will help pin down what version is incompatible.

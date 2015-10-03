@@ -1,12 +1,12 @@
-﻿{
-    "description": "Helpers for writing tests that useMicrosoft.Framework.WebEncoders.",
+{
+    "description": "Helpers for writing tests that use Microsoft.Extensions.Logging.",
     "version": "1.0.0-*",
     "repository": {
         "type": "git",
         "url": "git://github.com/aspnet/testing"
     },
     "dependencies": {
-        "Microsoft.Framework.WebEncoders": "1.0.0-*",
+        "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
         "xunit.assert": "2.1.0-*"
     },
     "frameworks": {

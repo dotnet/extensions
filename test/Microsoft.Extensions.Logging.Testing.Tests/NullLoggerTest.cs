@@ -3,7 +3,7 @@
 
 using Xunit;
 
-namespace Microsoft.Framework.Logging.Testing
+namespace Microsoft.Extensions.Logging.Testing
 {
     public class NullLoggerTest
     {

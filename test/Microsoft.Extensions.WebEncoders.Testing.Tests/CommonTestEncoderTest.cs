@@ -3,15 +3,15 @@
 
 using Xunit;
 
-namespace Microsoft.Framework.WebEncoders.Testing
+namespace Microsoft.Extensions.WebEncoders.Testing
 {
-    public class NullTestEncoderTest
+    public class CommonTestEncoderTest
     {
         [Fact]
-        public void Encode_returnsSameValue()
+        public void Encode_returnsEncodedValue()
         {
             // Arrange
-            var encoder = new NullTestEncoder();
+            var encoder = new CommonTestEncoder();
             var input = "TestValue";
 
             // Act
@@ -20,9 +20,9 @@ namespace Microsoft.Framework.WebEncoders.Testing
             var urlEncodedValue = encoder.UrlEncode(input);
 
             // Assert
-            Assert.Equal(input, htmlEncodedValue);
-            Assert.Equal(input, javaScriptStringEncodedValue);
-            Assert.Equal(input, urlEncodedValue);
+            Assert.Equal($"HtmlEncode[[{input}]]", htmlEncodedValue);
+            Assert.Equal($"JavaScriptStringEncode[[{input}]]", javaScriptStringEncodedValue);
+            Assert.Equal($"UrlEncode[[{input}]]", urlEncodedValue);
         }
     }
 }

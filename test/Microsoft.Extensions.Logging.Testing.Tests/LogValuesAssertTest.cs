@@ -7,7 +7,7 @@ using System.Linq;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Microsoft.Framework.Logging.Testing.Tests
+namespace Microsoft.Extensions.Logging.Testing.Tests
 {
     public class LogValuesAssertTest
     {

@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Framework.Logging.Testing
+namespace Microsoft.Extensions.Logging.Testing
 {
     public class TestSink
     {

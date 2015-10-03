@@ -3,8 +3,8 @@
 
 using System;
 using System.Linq;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Dnx.Testing.Abstractions;
 using Microsoft.Dnx.TestHost.TestAdapter;
 using Microsoft.Dnx.Runtime.Common.DependencyInjection;

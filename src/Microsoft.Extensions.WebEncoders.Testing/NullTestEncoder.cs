@@ -3,7 +3,7 @@
 
 using System.IO;
 
-namespace Microsoft.Framework.WebEncoders.Testing
+namespace Microsoft.Extensions.WebEncoders.Testing
 {
     /// <summary>
     /// Dummy no-op encoder used for unit testing.

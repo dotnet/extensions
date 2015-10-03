@@ -3,17 +3,24 @@
 
 using System;
 
-namespace Microsoft.Framework.Logging.Testing
+namespace Microsoft.Extensions.Logging.Testing
 {
-    public class NullLoggerFactory : ILoggerFactory
+    public class TestLoggerFactory : ILoggerFactory
     {
-        public static readonly NullLoggerFactory Instance = new NullLoggerFactory();
+        private readonly TestSink _sink;
+        private readonly bool _enabled;
+
+        public TestLoggerFactory(TestSink sink, bool enabled)
+        {
+            _sink = sink;
+            _enabled = enabled;
+        }
 
         public LogLevel MinimumLevel { get; set; } = LogLevel.Verbose;
 
         public ILogger CreateLogger(string name)
         {
-            return NullLogger.Instance;
+            return new TestLogger(name, _sink, _enabled);
         }
 
         public void AddProvider(ILoggerProvider provider)

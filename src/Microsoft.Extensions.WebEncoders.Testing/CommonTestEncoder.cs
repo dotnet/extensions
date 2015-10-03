@@ -6,7 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.Framework.WebEncoders.Testing
+namespace Microsoft.Extensions.WebEncoders.Testing
 {
     /// <summary>
     /// Dummy encoder used for unit testing.

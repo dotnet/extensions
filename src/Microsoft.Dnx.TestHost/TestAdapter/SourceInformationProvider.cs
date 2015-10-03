@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 using dia2;
 using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Dnx.Testing.Abstractions;
 
 namespace Microsoft.Dnx.TestHost.TestAdapter

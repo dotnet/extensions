@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Framework.Internal;
+using Microsoft.Extensions.Internal;
 using Xunit.Sdk;
 
-namespace Microsoft.Framework.Logging.Testing
+namespace Microsoft.Extensions.Logging.Testing
 {
     public static class LogValuesAssert
     {
