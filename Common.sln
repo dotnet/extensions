@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
@@ -7,35 +7,35 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FEAA3936-590
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Internal.Test", "test\Microsoft.Framework.Internal.Test\Microsoft.Framework.Internal.Test.xproj", "{D81EAC23-B515-49FB-B04B-285A9C1C6583}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Internal.Test", "test\Microsoft.Extensions.Internal.Test\Microsoft.Extensions.Internal.Test.xproj", "{D81EAC23-B515-49FB-B04B-285A9C1C6583}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.CopyOnWriteDictionary.Sources", "src\Microsoft.Framework.CopyOnWriteDictionary.Sources\Microsoft.Framework.CopyOnWriteDictionary.Sources.xproj", "{D4BBCB55-914F-4BB3-922F-759FCC8C7728}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.CopyOnWriteDictionary.Sources", "src\Microsoft.Extensions.CopyOnWriteDictionary.Sources\Microsoft.Extensions.CopyOnWriteDictionary.Sources.xproj", "{D4BBCB55-914F-4BB3-922F-759FCC8C7728}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.NotNullAttribute.Sources", "src\Microsoft.Framework.NotNullAttribute.Sources\Microsoft.Framework.NotNullAttribute.Sources.xproj", "{F399199B-6ACB-4E17-B1A3-3A3355B87E2E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.NotNullAttribute.Sources", "src\Microsoft.Extensions.NotNullAttribute.Sources\Microsoft.Extensions.NotNullAttribute.Sources.xproj", "{F399199B-6ACB-4E17-B1A3-3A3355B87E2E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.PropertyActivator.Sources", "src\Microsoft.Framework.PropertyActivator.Sources\Microsoft.Framework.PropertyActivator.Sources.xproj", "{7068BBDB-B932-426B-897D-11F24F9FF578}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.PropertyActivator.Sources", "src\Microsoft.Extensions.PropertyActivator.Sources\Microsoft.Extensions.PropertyActivator.Sources.xproj", "{7068BBDB-B932-426B-897D-11F24F9FF578}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.PropertyHelper.Sources", "src\Microsoft.Framework.PropertyHelper.Sources\Microsoft.Framework.PropertyHelper.Sources.xproj", "{A5EAE14C-F682-44BB-9CB0-68E3992534D0}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.PropertyHelper.Sources", "src\Microsoft.Extensions.PropertyHelper.Sources\Microsoft.Extensions.PropertyHelper.Sources.xproj", "{A5EAE14C-F682-44BB-9CB0-68E3992534D0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.TypeNameHelper.Sources", "src\Microsoft.Framework.TypeNameHelper.Sources\Microsoft.Framework.TypeNameHelper.Sources.xproj", "{FDDF8554-7CF6-4920-A16E-1CBE00F035EB}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.TypeNameHelper.Sources", "src\Microsoft.Extensions.TypeNameHelper.Sources\Microsoft.Extensions.TypeNameHelper.Sources.xproj", "{FDDF8554-7CF6-4920-A16E-1CBE00F035EB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.ClosedGenericMatcher.Sources", "src\Microsoft.Framework.ClosedGenericMatcher.Sources\Microsoft.Framework.ClosedGenericMatcher.Sources.xproj", "{FAE634FF-1826-45B6-89B4-92C135E8FBA4}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.ClosedGenericMatcher.Sources", "src\Microsoft.Extensions.ClosedGenericMatcher.Sources\Microsoft.Extensions.ClosedGenericMatcher.Sources.xproj", "{FAE634FF-1826-45B6-89B4-92C135E8FBA4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.ActivatorUtilities.Sources", "src\Microsoft.Framework.ActivatorUtilities.Sources\Microsoft.Framework.ActivatorUtilities.Sources.xproj", "{0BF8866B-A179-4A6E-AAFD-BE487664298B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.ActivatorUtilities.Sources", "src\Microsoft.Extensions.ActivatorUtilities.Sources\Microsoft.Extensions.ActivatorUtilities.Sources.xproj", "{0BF8866B-A179-4A6E-AAFD-BE487664298B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.SecurityHelper.Sources", "src\Microsoft.Framework.SecurityHelper.Sources\Microsoft.Framework.SecurityHelper.Sources.xproj", "{01770CF7-74F5-4257-BF1E-3F5674B413CF}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.SecurityHelper.Sources", "src\Microsoft.Extensions.SecurityHelper.Sources\Microsoft.Extensions.SecurityHelper.Sources.xproj", "{01770CF7-74F5-4257-BF1E-3F5674B413CF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.HashCodeCombiner.Sources", "src\Microsoft.Framework.HashCodeCombiner.Sources\Microsoft.Framework.HashCodeCombiner.Sources.xproj", "{31D4C34C-436F-48E9-B8E4-641574741887}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.HashCodeCombiner.Sources", "src\Microsoft.Extensions.HashCodeCombiner.Sources\Microsoft.Extensions.HashCodeCombiner.Sources.xproj", "{31D4C34C-436F-48E9-B8E4-641574741887}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.BufferedHtmlContent.Sources", "src\Microsoft.Framework.BufferedHtmlContent.Sources\Microsoft.Framework.BufferedHtmlContent.Sources.xproj", "{B1B2B906-24AE-4C57-AAC5-19B734014504}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.BufferedHtmlContent.Sources", "src\Microsoft.Extensions.BufferedHtmlContent.Sources\Microsoft.Extensions.BufferedHtmlContent.Sources.xproj", "{B1B2B906-24AE-4C57-AAC5-19B734014504}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.MemoryPool", "src\Microsoft.Framework.MemoryPool\Microsoft.Framework.MemoryPool.xproj", "{171AB951-D091-4D10-8948-2FDF2DED4B46}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.MemoryPool", "src\Microsoft.Extensions.MemoryPool\Microsoft.Extensions.MemoryPool.xproj", "{171AB951-D091-4D10-8948-2FDF2DED4B46}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.MemoryPool.Test", "test\Microsoft.Framework.MemoryPool.Test\Microsoft.Framework.MemoryPool.Test.xproj", "{E7B38D6C-90EF-4C35-8313-6E05C1DA6354}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.MemoryPool.Test", "test\Microsoft.Extensions.MemoryPool.Test\Microsoft.Extensions.MemoryPool.Test.xproj", "{E7B38D6C-90EF-4C35-8313-6E05C1DA6354}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Primitives", "src\Microsoft.Framework.Primitives\Microsoft.Framework.Primitives.xproj", "{711B5F84-1EDC-49A7-9643-766CE93A0466}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Primitives", "src\Microsoft.Extensions.Primitives\Microsoft.Extensions.Primitives.xproj", "{711B5F84-1EDC-49A7-9643-766CE93A0466}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Framework.Primitives.Tests", "test\Microsoft.Framework.Primitives.Tests\Microsoft.Framework.Primitives.Tests.xproj", "{61F72E92-B3AE-4A10-B838-44F80AED40AE}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Primitives.Tests", "test\Microsoft.Extensions.Primitives.Tests\Microsoft.Extensions.Primitives.Tests.xproj", "{61F72E92-B3AE-4A10-B838-44F80AED40AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -9,22 +9,22 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.Framework.MemoryPool": { },
-            "Microsoft.Framework.Primitives": { }
+            "Microsoft.Extensions.MemoryPool": { },
+            "Microsoft.Extensions.Primitives": { }
         }
     },
     "adx-nonshipping": {
         "rules": [],
         "packages": {
-            "Microsoft.Framework.ActivatorUtilities.Sources": { },
-            "Microsoft.Framework.ClosedGenericMatcher.Sources": { },
-            "Microsoft.Framework.CopyOnWriteDictionary.Sources": { },
-            "Microsoft.Framework.HashCodeCombiner.Sources": { },
-            "Microsoft.Framework.NotNullAttribute.Sources": { },
-            "Microsoft.Framework.PropertyActivator.Sources": { },
-            "Microsoft.Framework.PropertyHelper.Sources": { },
-            "Microsoft.Framework.SecurityHelper.Sources": { },
-            "Microsoft.Framework.TypeNameHelper.Sources": { }
+            "Microsoft.Extensions.ActivatorUtilities.Sources": { },
+            "Microsoft.Extensions.ClosedGenericMatcher.Sources": { },
+            "Microsoft.Extensions.CopyOnWriteDictionary.Sources": { },
+            "Microsoft.Extensions.HashCodeCombiner.Sources": { },
+            "Microsoft.Extensions.NotNullAttribute.Sources": { },
+            "Microsoft.Extensions.PropertyActivator.Sources": { },
+            "Microsoft.Extensions.PropertyHelper.Sources": { },
+            "Microsoft.Extensions.SecurityHelper.Sources": { },
+            "Microsoft.Extensions.TypeNameHelper.Sources": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
