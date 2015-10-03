@@ -17,7 +17,6 @@
         "rules": [],
         "packages": {
             "Microsoft.Framework.ActivatorUtilities.Sources": { },
-            "Microsoft.Framework.BufferedHtmlContent.Sources": { },
             "Microsoft.Framework.ClosedGenericMatcher.Sources": { },
             "Microsoft.Framework.CopyOnWriteDictionary.Sources": { },
             "Microsoft.Framework.HashCodeCombiner.Sources": { },
