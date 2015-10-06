@@ -1,29 +1,35 @@
 {
-    "version": "1.0.0-*",
-    "description": "ASP.NET 5 primitives.",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/aspnet/common"
-    },
-    "compilationOptions": {
-        "warningsAsErrors": true
-    },
-    "frameworks": {
-        "net45": { },
-        "dnx451": { },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Runtime": "4.0.21-*",
-                "System.Resources.ResourceManager": "4.0.1-*"
-            }
-        },
-        "dotnet": {
-            "dependencies": {
-                "System.Diagnostics.Debug": "4.0.10",
-                "System.Resources.ResourceManager": "4.0.0",
-                "System.Runtime": "4.0.20",
-                "System.Threading.Tasks": "4.0.10"
-            }
-        }
+  "version": "1.0.0-*",
+  "description": "ASP.NET 5 primitives.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aspnet/common"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "Microsoft.Extensions.HashCodeCombiner.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
     }
+  },
+  "frameworks": {
+    "net45": { },
+    "dnx451": { },
+    "dnxcore50": {
+      "dependencies": {
+        "System.Runtime": "4.0.21-*",
+        "System.Resources.ResourceManager": "4.0.1-*"
+      }
+    },
+    "dotnet": {
+      "dependencies": {
+        "System.Diagnostics.Debug": "4.0.10",
+        "System.Resources.ResourceManager": "4.0.0",
+        "System.Runtime": "4.0.20",
+        "System.Threading.Tasks": "4.0.10"
+      }
+    }
+  }
 }

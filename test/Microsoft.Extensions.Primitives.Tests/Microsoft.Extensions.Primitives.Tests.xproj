@@ -7,7 +7,7 @@
   <Import Project="$(VSToolsPath)\DNX\Microsoft.DNX.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>61f72e92-b3ae-4a10-b838-44f80aed40ae</ProjectGuid>
-    <RootNamespace>Microsoft.AspNet.Primitives.Tests</RootNamespace>
+    <RootNamespace>Microsoft.Extensions.Primitives.Tests</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">..\..\artifacts\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">..\..\artifacts\bin\$(MSBuildProjectName)\</OutputPath>
   </PropertyGroup>
