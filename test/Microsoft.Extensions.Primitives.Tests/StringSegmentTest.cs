@@ -287,5 +287,15 @@ namespace Microsoft.Extensions.Primitives
             // Act & Assert
             Assert.Throws<ArgumentOutOfRangeException>(() => segment.Subsegment(0, 0));
         }
+
+        [Fact]
+        public void StringSegment_CreateEmptySegment()
+        {
+            // Arrange
+            var segment = new StringSegment("//", 1, 0);
+
+            // Assert
+            Assert.True(segment.HasValue);
+        }
     }
 }

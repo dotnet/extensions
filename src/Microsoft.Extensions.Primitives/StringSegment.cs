@@ -17,12 +17,12 @@ namespace Microsoft.Extensions.Primitives
 
             if (offset < 0 || offset >= buffer.Length)
             {
-                throw new IndexOutOfRangeException(nameof(offset));
+                throw new ArgumentOutOfRangeException(nameof(offset));
             }
 
-            if (length < 0 || offset + length >= buffer.Length)
+            if (length < 0 || offset + length > buffer.Length)
             {
-                throw new IndexOutOfRangeException(nameof(length));
+                throw new ArgumentOutOfRangeException(nameof(length));
             }
 
             Buffer = buffer;
@@ -156,7 +156,7 @@ namespace Microsoft.Extensions.Primitives
                 throw new ArgumentOutOfRangeException(nameof(offset));
             }
 
-            if (length < 0 || Offset + offset + length >= Buffer.Length)
+            if (length < 0 || Offset + offset + length > Buffer.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(length));
             }
@@ -176,7 +176,7 @@ namespace Microsoft.Extensions.Primitives
                 throw new ArgumentOutOfRangeException(nameof(offset));
             }
 
-            if (length < 0 || Offset + offset + length >= Buffer.Length)
+            if (length < 0 || Offset + offset + length > Buffer.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(length));
             }
