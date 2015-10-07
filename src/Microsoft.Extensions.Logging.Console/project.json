@@ -5,6 +5,9 @@
         "url": "git://github.com/aspnet/logging"
     },
     "description": "Console logger implementation.",
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
     "dependencies": {
         "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*"
     },

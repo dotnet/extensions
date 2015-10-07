@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.Logging
 {
@@ -51,8 +50,13 @@ namespace Microsoft.Extensions.Logging
         /// </summary>
         /// <param name="logValues">The <see cref="ILogValues"/> to format.</param>
         /// <returns>A string representation of the given <see cref="ILogValues"/>.</returns>
-        public static string FormatLogValues([NotNull] ILogValues logValues)
+        public static string FormatLogValues(ILogValues logValues)
         {
+            if (logValues == null)
+            {
+                throw new ArgumentNullException(nameof(logValues));
+            }
+
             var builder = new StringBuilder();
             FormatLogValues(logValues, builder);
             return builder.ToString();
@@ -63,14 +67,24 @@ namespace Microsoft.Extensions.Logging
         /// </summary>
         /// <param name="logValues">The <see cref="ILogValues"/> to format.</param>
         /// <param name="builder">The <see cref="StringBuilder"/> to append to.</param>
-        private static void FormatLogValues([NotNull] ILogValues logValues, [NotNull] StringBuilder builder)
+        private static void FormatLogValues(ILogValues logValues, StringBuilder builder)
         {
+            if (logValues == null)
+            {
+                throw new ArgumentNullException(nameof(logValues));
+            }
+
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             var values = logValues.GetValues();
             if (values == null)
             {
                 return;
             }
-            
+
             foreach (var kvp in values)
             {
                 IEnumerable<ILogValues> structureEnumerable;

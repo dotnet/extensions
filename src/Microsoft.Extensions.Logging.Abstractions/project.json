@@ -5,8 +5,10 @@
         "url": "git://github.com/aspnet/logging"
     },
     "description": "Logging interface definitions.",
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
     "dependencies": {
-        "Microsoft.Extensions.NotNullAttribute.Sources": { "type": "build", "version": "1.0.0-*" },
         "Microsoft.Extensions.TypeNameHelper.Sources": { "type": "build", "version": "1.0.0-*" }
     },
     "frameworks": {

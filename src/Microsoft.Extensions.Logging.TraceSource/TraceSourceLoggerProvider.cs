@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using Microsoft.Extensions.Internal;
 using DiagnosticsTraceSource = System.Diagnostics.TraceSource;
 
 namespace Microsoft.Extensions.Logging.TraceSource
@@ -26,8 +25,18 @@ namespace Microsoft.Extensions.Logging.TraceSource
         /// </summary>
         /// <param name="rootSourceSwitch"></param>
         /// <param name="rootTraceListener"></param>
-        public TraceSourceLoggerProvider([NotNull]SourceSwitch rootSourceSwitch, [NotNull]TraceListener rootTraceListener)
+        public TraceSourceLoggerProvider(SourceSwitch rootSourceSwitch, TraceListener rootTraceListener)
         {
+            if (rootSourceSwitch == null)
+            {
+                throw new ArgumentNullException(nameof(rootSourceSwitch));
+            }
+
+            if (rootTraceListener == null)
+            {
+                throw new ArgumentNullException(nameof(rootTraceListener));
+            }
+
             _rootSourceSwitch = rootSourceSwitch;
             _rootTraceListener = rootTraceListener;
         }

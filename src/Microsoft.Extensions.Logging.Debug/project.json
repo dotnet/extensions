@@ -4,10 +4,13 @@
         "type": "git",
         "url": "git://github.com/aspnet/logging"
     },
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
+
     "dependencies": {
         "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*"
     },
-
     "frameworks": {
         "net45": {
         },

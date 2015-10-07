@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Internal;
 using NLog;
 
 namespace Microsoft.Extensions.Logging.NLog
@@ -86,8 +85,13 @@ namespace Microsoft.Extensions.Logging.NLog
                 return global::NLog.LogLevel.Debug;
             }
 
-            public IDisposable BeginScopeImpl([NotNull] object state)
+            public IDisposable BeginScopeImpl(object state)
             {
+                if (state == null)
+                {
+                    throw new ArgumentNullException(nameof(state));
+                }
+
                 return NestedDiagnosticsContext.Push(state.ToString());
             }
         }

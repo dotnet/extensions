@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging.EventLog;
 
 namespace Microsoft.Extensions.Logging
@@ -16,8 +15,13 @@ namespace Microsoft.Extensions.Logging
         /// Adds an event logger that is enabled for <see cref="LogLevel"/>.Information or higher.
         /// </summary>
         /// <param name="factory">The extension method argument.</param>
-        public static ILoggerFactory AddEventLog([NotNull] this ILoggerFactory factory)
+        public static ILoggerFactory AddEventLog(this ILoggerFactory factory)
         {
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
             return AddEventLog(factory, LogLevel.Information);
         }
 
@@ -26,8 +30,13 @@ namespace Microsoft.Extensions.Logging
         /// </summary>
         /// <param name="factory">The extension method argument.</param>
         /// <param name="minLevel">The minimum <see cref="LogLevel"/> to be logged</param>
-        public static ILoggerFactory AddEventLog([NotNull] this ILoggerFactory factory, LogLevel minLevel)
+        public static ILoggerFactory AddEventLog(this ILoggerFactory factory, LogLevel minLevel)
         {
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
             return AddEventLog(factory, new EventLogSettings()
             {
                 Filter = (_, logLevel) => logLevel >= minLevel
@@ -40,9 +49,19 @@ namespace Microsoft.Extensions.Logging
         /// <param name="factory">The extension method argument.</param>
         /// <param name="settings">The <see cref="EventLogSettings"/>.</param>
         public static ILoggerFactory AddEventLog(
-            [NotNull] this ILoggerFactory factory,
-            [NotNull] EventLogSettings settings)
+            this ILoggerFactory factory,
+            EventLogSettings settings)
         {
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             factory.AddProvider(new EventLogLoggerProvider(settings));
             return factory;
         }
