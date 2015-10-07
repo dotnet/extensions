@@ -5,9 +5,10 @@ using System;
 using System.Globalization;
 using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Logging.Test.Console;
+#if MOCK_SUPPORT
 using Moq;
+#endif
 using Xunit;
-using Xunit.Sdk;
 
 namespace Microsoft.Extensions.Logging.Test
 {
@@ -29,6 +30,7 @@ namespace Microsoft.Extensions.Logging.Test
             return new Tuple<ConsoleLogger, ConsoleSink>(logger, sink);
         }
 
+#if MOCK_SUPPORT
         private Tuple<ILoggerFactory, ConsoleSink> SetUpFactory(Func<string, LogLevel, bool> filter)
         {
             var t = SetUp(null);
@@ -95,6 +97,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(enabledDebug, logger.IsEnabled(LogLevel.Debug));
             Assert.Equal(enabledInformation, logger.IsEnabled(LogLevel.Information));
         }
+#endif
 
         [Fact]
         public void ThrowsException_WhenNoMessageAndExceptionAreProvided()

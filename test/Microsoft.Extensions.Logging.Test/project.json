@@ -3,7 +3,6 @@
         "Microsoft.Extensions.Logging": "1.0.0-*",
         "Microsoft.Extensions.Logging.Console": "1.0.0-*",
         "Microsoft.Extensions.Logging.Debug": "1.0.0-*",
-        "Microsoft.Extensions.Logging.EventLog": "1.0.0-*",
         "Microsoft.Extensions.Logging.TraceSource": "1.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
@@ -14,8 +13,13 @@
     "frameworks": {
         "dnx451": {
             "dependencies": {
+                "Microsoft.Extensions.Logging.EventLog": "1.0.0-*",
                 "Moq": "4.2.1312.1622"
+            },
+            "compilationOptions": {
+                "define": [ "MOCK_SUPPORT" ]
             }
-        }
+        },
+        "dnxcore50": { }
     }
 }
