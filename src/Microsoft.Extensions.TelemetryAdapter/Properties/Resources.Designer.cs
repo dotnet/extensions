@@ -74,6 +74,22 @@ namespace Microsoft.Extensions.TelemetryAdapter
             return string.Format(CultureInfo.CurrentCulture, GetString("Converter_TypeMustBeInterface"), p0, p1);
         }
 
+        /// <summary>
+        /// The type '{0}' defines multiple properties with varying casings of '{1}'. This is ambiguous for proxy method generation.
+        /// </summary>
+        internal static string Converter_TypeMustNotHavePropertiesWithDifferentCasing
+        {
+            get { return GetString("Converter_TypeMustNotHavePropertiesWithDifferentCasing"); }
+        }
+
+        /// <summary>
+        /// The type '{0}' defines multiple properties with varying casings of '{1}'. This is ambiguous for proxy method generation.
+        /// </summary>
+        internal static string FormatConverter_TypeMustNotHavePropertiesWithDifferentCasing(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Converter_TypeMustNotHavePropertiesWithDifferentCasing"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -22,20 +23,33 @@ namespace Microsoft.Extensions.TelemetryAdapter.Internal
                 parameterTypes: new Type[] { typeof(object), typeof(object) },
                 restrictedSkipVisibility: true);
 
-            var parameters = method.GetParameters();
-            var mappings = new PropertyInfo[parameters.Length];
-
             var inputTypeInfo = inputType.GetTypeInfo();
+            var parameters = method.GetParameters();
+            var properties = inputTypeInfo.DeclaredProperties.ToArray();
+
+            var mappings = new PropertyInfo[parameters.Length];
             for (var i = 0; i < parameters.Length; i++)
             {
-                var property = inputTypeInfo.GetDeclaredProperty(parameters[i].Name);
-                if (property == null)
+                var parameter = parameters[i];
+                for (var j = 0; j < properties.Length; j++)
                 {
-                    continue;
-                }
-                else
-                {
-                    mappings[i] = property;
+                    var property = properties[j];
+                    if (string.Equals(property.Name, parameter.Name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (mappings[i] == null)
+                        {
+                            mappings[i] = property;
+                        }
+                        else
+                        {
+                            // If the mapping is not-null, we've already found a property matching this parameter name.
+                            // This is an ambiguity that must be caused by properties with different casings.
+                            throw new InvalidOperationException(
+                                Resources.FormatConverter_TypeMustNotHavePropertiesWithDifferentCasing(
+                                    inputType.FullName,
+                                    property.Name.ToLowerInvariant())); // ToLower for testability
+                        }
+                    }
                 }
             }
 

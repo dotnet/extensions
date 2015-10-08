@@ -241,6 +241,35 @@ namespace Microsoft.Extensions.TelemetryAdapter
             Assert.Equal(98028, target.Person.Address.Zip);
         }
 
+        [Fact]
+        public void WriteTelemetry_NominialType()
+        {
+            // Arrange
+            var target = new ThreeTarget();
+            var adapter = CreateAdapter(target);
+
+            // Act
+            adapter.WriteTelemetry("Three", new NominalType()
+            {
+                Person = new Person
+                {
+                    FirstName = "Alpha",
+                    Address = new Address
+                    {
+                        City = "Beta",
+                        State = "Gamma",
+                        Zip = 98028
+                    }
+                }
+            });
+
+            // Assert
+            Assert.Equal("Alpha", target.Person.FirstName);
+            Assert.Equal("Beta", target.Person.Address.City);
+            Assert.Equal("Gamma", target.Person.Address.State);
+            Assert.Equal(98028, target.Person.Address.Zip);
+        }
+
         public class ThreeTarget
         {
             public IPerson Person { get; private set; }
@@ -271,6 +300,11 @@ namespace Microsoft.Extensions.TelemetryAdapter
             public string FirstName { get; set; }
             public string LastName { get; set; }
             public Address Address { get; set; }
+        }
+
+        public class NominalType
+        {
+            public Person Person { get; set; }
         }
 
         public class DerivedPerson : Person

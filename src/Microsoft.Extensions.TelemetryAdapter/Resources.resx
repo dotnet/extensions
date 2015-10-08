@@ -129,4 +129,7 @@
   <data name="Converter_TypeMustBeInterface" xml:space="preserve">
     <value>Type '{0}' must be an interface in order to support proxy generation from source type '{1}'.</value>
   </data>
+  <data name="Converter_TypeMustNotHavePropertiesWithDifferentCasing" xml:space="preserve">
+    <value>The type '{0}' defines multiple properties with varying casings of '{1}'. This is ambiguous for proxy method generation.</value>
+  </data>
 </root>
