@@ -75,19 +75,19 @@ namespace Microsoft.Extensions.TelemetryAdapter
         }
 
         /// <summary>
-        /// The type '{0}' defines multiple properties with varying casings of '{1}'. This is ambiguous for proxy method generation.
+        /// Proxy method generation doesn't support types with properties that vary only by case. The type '{0}' defines multiple properties named '{1}' that vary only by case.
         /// </summary>
-        internal static string Converter_TypeMustNotHavePropertiesWithDifferentCasing
+        internal static string Converter_TypeMustNotHavePropertiesThatVaryByCase
         {
-            get { return GetString("Converter_TypeMustNotHavePropertiesWithDifferentCasing"); }
+            get { return GetString("Converter_TypeMustNotHavePropertiesThatVaryByCase"); }
         }
 
         /// <summary>
-        /// The type '{0}' defines multiple properties with varying casings of '{1}'. This is ambiguous for proxy method generation.
+        /// Proxy method generation doesn't support types with properties that vary only by case. The type '{0}' defines multiple properties named '{1}' that vary only by case.
         /// </summary>
-        internal static string FormatConverter_TypeMustNotHavePropertiesWithDifferentCasing(object p0, object p1)
+        internal static string FormatConverter_TypeMustNotHavePropertiesThatVaryByCase(object p0, object p1)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Converter_TypeMustNotHavePropertiesWithDifferentCasing"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("Converter_TypeMustNotHavePropertiesThatVaryByCase"), p0, p1);
         }
 
         private static string GetString(string name, params string[] formatterNames)

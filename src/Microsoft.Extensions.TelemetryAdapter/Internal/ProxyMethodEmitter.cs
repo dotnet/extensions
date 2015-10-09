@@ -45,7 +45,7 @@ namespace Microsoft.Extensions.TelemetryAdapter.Internal
                             // If the mapping is not-null, we've already found a property matching this parameter name.
                             // This is an ambiguity that must be caused by properties with different casings.
                             throw new InvalidOperationException(
-                                Resources.FormatConverter_TypeMustNotHavePropertiesWithDifferentCasing(
+                                Resources.FormatConverter_TypeMustNotHavePropertiesThatVaryByCase(
                                     inputType.FullName,
                                     property.Name.ToLowerInvariant())); // ToLower for testability
                         }

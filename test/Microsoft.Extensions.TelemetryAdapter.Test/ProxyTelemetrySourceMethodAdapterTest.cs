@@ -27,8 +27,8 @@ namespace Microsoft.Extensions.TelemetryAdapter
 
             // Assert
             Assert.Equal(
-                $"The type '{type.FullName}' defines multiple properties with varying casings of 'id'. " +
-                "This is ambiguous for proxy method generation.",
+                $"Proxy method generation doesn't support types with properties that vary only by case. " +
+                $"The type '{type.FullName}' defines multiple properties named 'id' that vary only by case.",
                 ex.Message);
         }
 
