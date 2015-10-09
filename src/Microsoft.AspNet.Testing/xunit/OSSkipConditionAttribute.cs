@@ -2,62 +2,86 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Dnx.Runtime;
 
 namespace Microsoft.AspNet.Testing.xunit
 {
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class OSSkipConditionAttribute : Attribute, ITestCondition
     {
-        private readonly OperatingSystems _excludedOS;
+        private readonly OperatingSystems _excludedOperatingSystem;
+        private readonly IEnumerable<string> _excludedVersions;
+        private readonly IRuntimeEnvironment _runtimeEnvironment;
 
-        public OSSkipConditionAttribute(OperatingSystems excludedOperatingSystems)
+        public OSSkipConditionAttribute(OperatingSystems operatingSystem, params string[] versions) :
+            this(operatingSystem, TestPlatformHelper.RuntimeEnvironment, versions)
         {
-            _excludedOS = excludedOperatingSystems;
+        }
+
+        // to enable unit testing
+        internal OSSkipConditionAttribute(
+            OperatingSystems operatingSystem, IRuntimeEnvironment runtimeEnvironment, params string[] versions)
+        {
+            _excludedOperatingSystem = operatingSystem;
+            _excludedVersions = versions ?? Enumerable.Empty<string>();
+            _runtimeEnvironment = runtimeEnvironment;
         }
 
         public bool IsMet
         {
             get
             {
-                return CanRunOnThisOS(_excludedOS);
+                var currentOSInfo = GetCurrentOSInfo();
+
+                var skip = (_excludedOperatingSystem == currentOSInfo.OperatingSystem);
+                if (_excludedVersions.Any())
+                {
+                    skip = skip
+                        && _excludedVersions.Contains(currentOSInfo.Version, StringComparer.OrdinalIgnoreCase);
+                }
+
+                // Since a test would be excuted only if 'IsMet' is true, return false if we want to skip
+                return !skip;
             }
         }
 
         public string SkipReason { get; set; } = "Test cannot run on this operating system.";
 
-        private static bool CanRunOnThisOS(OperatingSystems excludedOperatingSystems)
+        private OSInfo GetCurrentOSInfo()
         {
-            if (excludedOperatingSystems == OperatingSystems.None)
-            {
-                return true;
-            }
+            var currentOS = _runtimeEnvironment.OperatingSystem;
+            var currentOSVersion = _runtimeEnvironment.OperatingSystemVersion;
 
-            switch (TestPlatformHelper.RuntimeEnvironment.OperatingSystem.ToLowerInvariant())
+            OperatingSystems os;
+            switch (currentOS.ToLowerInvariant())
             {
                 case "windows":
-                    var osVersion = TestPlatformHelper.RuntimeEnvironment.OperatingSystemVersion;
-
-                    if (osVersion.Equals("7.0", StringComparison.OrdinalIgnoreCase) &&
-                        (excludedOperatingSystems.HasFlag(OperatingSystems.Win7) || excludedOperatingSystems.HasFlag(OperatingSystems.Win2008R2)))
-                    {
-                        return false;
-                    }
+                    os = OperatingSystems.Windows;
                     break;
                 case "linux":
-                    if (excludedOperatingSystems.HasFlag(OperatingSystems.Linux))
-                    {
-                        return false;
-                    }
+                    os = OperatingSystems.Linux;
                     break;
                 case "darwin":
-                    if (excludedOperatingSystems.HasFlag(OperatingSystems.MacOSX))
-                    {
-                        return false;
-                    }
+                    os = OperatingSystems.MacOSX;
                     break;
+                default:
+                    throw new InvalidOperationException($"Unrecognized operating system '{currentOS}'.");
             }
 
-            return true;
+            return new OSInfo()
+            {
+                OperatingSystem = os,
+                Version = currentOSVersion
+            };
+        }
+
+        private class OSInfo
+        {
+            public OperatingSystems OperatingSystem { get; set; }
+
+            public string Version { get; set; }
         }
     }
 }
