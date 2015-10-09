@@ -5,23 +5,30 @@ namespace SampleApp
 {
     internal static class LoggerExtensions
     {
-        private static Action<ILogger, DateTimeOffset, int, Exception> _starting;
-        private static Action<ILogger, DateTimeOffset, Exception> _stopping;
+        private static Func<ILogger, string, IDisposable> _purchaceOrderScope;
+        private static Action<ILogger, DateTimeOffset, int, Exception> _programStarting;
+        private static Action<ILogger, DateTimeOffset, Exception> _programStopping;
 
         static LoggerExtensions()
         {
-            LoggerMessage.Define(out _starting, LogLevel.Information, 1, "Starting", "at '{StartTime}' and 0x{Hello:X} is hex of 42");
-            LoggerMessage.Define(out _stopping, LogLevel.Information, 2, "Stopping", "at '{StopTime}'");
+            LoggerMessage.DefineScope(out _purchaceOrderScope, "PO:{PurchaceOrder}");
+            LoggerMessage.Define(out _programStarting, LogLevel.Information, 1, "Starting", "at '{StartTime}' and 0x{Hello:X} is hex of 42");
+            LoggerMessage.Define(out _programStopping, LogLevel.Information, 2, "Stopping", "at '{StopTime}'");
         }
 
-        public static void Starting(this ILogger logger, DateTimeOffset startTime, int hello, Exception exception = null)
+        public static IDisposable PurchaceOrderScope(this ILogger logger, string purchaceOrder)
         {
-            _starting(logger, startTime, hello, exception);
+            return _purchaceOrderScope(logger, purchaceOrder);
         }
 
-        public static void Stopping(this ILogger logger, DateTimeOffset stopTime, Exception exception = null)
+        public static void ProgramStarting(this ILogger logger, DateTimeOffset startTime, int hello, Exception exception = null)
         {
-            _stopping(logger, stopTime, exception);
+            _programStarting(logger, startTime, hello, exception);
+        }
+
+        public static void ProgramStopping(this ILogger logger, DateTimeOffset stopTime, Exception exception = null)
+        {
+            _programStopping(logger, stopTime, exception);
         }
     }
 }

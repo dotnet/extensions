@@ -33,31 +33,35 @@ namespace SampleApp
             var startTime = DateTimeOffset.UtcNow;
             _logger.LogInformation(1, "Started at '{StartTime}' and 0x{Hello:X} is hex of 42", startTime, 42);
             // or
-            _logger.Starting(startTime, 42);
+            _logger.ProgramStarting(startTime, 42);
 
-            try
+            using (_logger.PurchaceOrderScope("00655321"))
             {
-                throw new Exception("Boom");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogCritical("Unexpected critical error starting application", ex);
-                _logger.LogError("Unexpected error", ex);
-                _logger.LogWarning("Unexpected warning", ex);
-            }
+                try
+                {
+                    throw new Exception("Boom");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogCritical("Unexpected critical error starting application", ex);
+                    _logger.LogError("Unexpected error", ex);
+                    _logger.LogWarning("Unexpected warning", ex);
+                }
 
-            using (_logger.BeginScopeImpl("Main"))
-            {
-                Console.WriteLine("Hello World");
+                using (_logger.BeginScopeImpl("Main"))
+                {
+                    Console.WriteLine("Hello World");
 
-                _logger.LogInformation("Waiting for user input");
-                Console.ReadLine();
+                    _logger.LogInformation("Waiting for user input");
+                    var input = Console.ReadLine();
+                    _logger.LogInformation("User typed '{input}' on the command line", input);
+                }
             }
 
             var endTime = DateTimeOffset.UtcNow;
             _logger.LogInformation(2, "Stopping at '{StopTime}'", endTime);
             // or
-            _logger.Stopping(endTime);
+            _logger.ProgramStopping(endTime);
 
 
             _logger.LogInformation("Stopping");
