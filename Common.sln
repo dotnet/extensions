@@ -34,6 +34,10 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Primit
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Primitives.Tests", "test\Microsoft.Extensions.Primitives.Tests\Microsoft.Extensions.Primitives.Tests.xproj", "{61F72E92-B3AE-4A10-B838-44F80AED40AE}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Globalization.CultureInfoCache.Sources", "src\Microsoft.Extensions.Globalization.CultureInfoCache.Sources\Microsoft.Extensions.Globalization.CultureInfoCache.Sources.xproj", "{248DAAAB-7DF9-4024-BF1E-5366FDC89BD4}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.CultureInfoGenerator.Sources", "src\Microsoft.Extensions.CultureInfoGenerator.Sources\Microsoft.Extensions.CultureInfoGenerator.Sources.xproj", "{41F14B0D-5F94-49C7-A5EA-12EB846C2BDB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -96,6 +100,14 @@ Global
 		{61F72E92-B3AE-4A10-B838-44F80AED40AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61F72E92-B3AE-4A10-B838-44F80AED40AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61F72E92-B3AE-4A10-B838-44F80AED40AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{248DAAAB-7DF9-4024-BF1E-5366FDC89BD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{248DAAAB-7DF9-4024-BF1E-5366FDC89BD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{248DAAAB-7DF9-4024-BF1E-5366FDC89BD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{248DAAAB-7DF9-4024-BF1E-5366FDC89BD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41F14B0D-5F94-49C7-A5EA-12EB846C2BDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41F14B0D-5F94-49C7-A5EA-12EB846C2BDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41F14B0D-5F94-49C7-A5EA-12EB846C2BDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41F14B0D-5F94-49C7-A5EA-12EB846C2BDB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -115,5 +127,7 @@ Global
 		{E7B38D6C-90EF-4C35-8313-6E05C1DA6354} = {6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}
 		{711B5F84-1EDC-49A7-9643-766CE93A0466} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 		{61F72E92-B3AE-4A10-B838-44F80AED40AE} = {6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}
+		{248DAAAB-7DF9-4024-BF1E-5366FDC89BD4} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
+		{41F14B0D-5F94-49C7-A5EA-12EB846C2BDB} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 	EndGlobalSection
 EndGlobal
