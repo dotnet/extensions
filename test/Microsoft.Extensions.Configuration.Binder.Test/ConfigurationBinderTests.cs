@@ -82,7 +82,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
                 {"Boolean", "TRUe"},
                 {"Nested:Integer", "11"}
             };
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(dic));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
             Assert.True(config.Get<bool?>("Boolean"));
@@ -100,7 +101,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
                 {"Nested:Integer", null},
                 {"Object", null }
             };
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(dic));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
             Assert.False(config.Get<bool>("Boolean"));
@@ -115,7 +117,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var dic = new Dictionary<string, string>
             {
             };
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(dic));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
             Assert.False(config.Get<bool>("Boolean"));
@@ -137,7 +140,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             {
                 {"AnUri", "http://www.bing.com"}
             };
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(dic));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
             var uri = config.Get<Uri>("AnUri");
@@ -176,7 +180,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             {
                 {"Value", value}
             };
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(dic));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
             var optionsType = typeof(GenericOptions<>).MakeGenericType(type);
@@ -220,7 +225,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             {
                 {"Value", IncorrectValue}
             };
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(dic));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
             var optionsType = typeof(GenericOptions<>).MakeGenericType(type);
@@ -261,7 +267,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
                 {"Boolean", "TRUe"},
                 {"Nested:Integer", "11"}
             };
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(dic));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
             
             var instance = new ComplexOptions();
@@ -281,7 +288,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
                 {"Boolean", "TRUe"},
                 {"Nested:Integer", "11"}
             };
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(dic));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
             var options = config.Get<ComplexOptions>();
@@ -301,7 +309,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
                 {"Nested:Integer", "11"},
                 {"Virtual", "Sup"}
             };
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(dic));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
             
             var instance = new DerivedOptions();
@@ -323,7 +332,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
                 {"Nested:Integer", "11"},
                 {"Virtual", "Sup"}
             };
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(dic));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
             var options = config.Get<DerivedOptions>();
@@ -341,7 +351,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             {
                 {"StaticProperty", "stuff"},
             };
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(dic));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
             var options = config.Get<ComplexOptions>();
@@ -356,7 +367,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             {
                 {"StaticProperty", "other stuff"},
             };
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(dic));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
             var instance = new ComplexOptions();
@@ -376,7 +388,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             {
                 {property, "stuff"},
             };
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(dic));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
             var options = config.Get<ComplexOptions>();
@@ -394,7 +407,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             {
                 {property, "stuff"},
             };
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(dic));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
             var options = new ComplexOptions();
@@ -411,7 +425,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
                 {"ISomeInterfaceProperty:Subkey", "x"}
             };
 
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
             var exception = Assert.Throws<InvalidOperationException>(
@@ -429,7 +444,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
                 {"ClassWithoutPublicConstructorProperty:Subkey", "x"}
             };
 
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
             var exception = Assert.Throws<InvalidOperationException>(
@@ -447,7 +463,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
                 {"ThrowsWhenActivatedProperty:subkey", "x"}
             };
 
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
             var exception = Assert.Throws<InvalidOperationException>(
@@ -466,7 +483,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
                 {"NestedOptionsProperty:NestedOptions2Property:ISomeInterfaceProperty:subkey", "x"}
             };
 
-            var configurationBuilder = new ConfigurationBuilder(new MemoryConfigurationProvider(input));
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
             var exception = Assert.Throws<InvalidOperationException>(

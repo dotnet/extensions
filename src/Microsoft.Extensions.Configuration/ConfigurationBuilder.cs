@@ -9,17 +9,6 @@ namespace Microsoft.Extensions.Configuration
     {
         private readonly IList<IConfigurationProvider> _providers = new List<IConfigurationProvider>();
 
-        public ConfigurationBuilder(params IConfigurationProvider[] providers)
-        {
-            if (providers != null)
-            {
-                foreach (var provider in providers)
-                {
-                    Add(provider);
-                }
-            }
-        }
-
         public IEnumerable<IConfigurationProvider> Providers
         {
             get
