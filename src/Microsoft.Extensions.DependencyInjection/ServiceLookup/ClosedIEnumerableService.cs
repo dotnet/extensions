@@ -29,9 +29,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
         {
             var list = new List<IServiceCallSite>();
-            for (var service = _serviceEntry.First; service != null; service = service.Next)
+            var service = _serviceEntry.First;
+            while (service != null)
             {
                 list.Add(provider.GetResolveCallSite(service, callSiteChain));
+                service = service.Next;
             }
             return new CallSite(_itemType, list.ToArray());
         }
@@ -50,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             public object Invoke(ServiceProvider provider)
             {
                 var array = Array.CreateInstance(_itemType, _serviceCallSites.Length);
-                for (var index = 0; index != _serviceCallSites.Length; ++index)
+                for (var index = 0; index < _serviceCallSites.Length; index++)
                 {
                     array.SetValue(_serviceCallSites[index].Invoke(provider), index);
                 }

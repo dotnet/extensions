@@ -269,12 +269,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 var applyIndexStart = 0;
                 var applyExactLength = 0;
-                for (var givenIndex = 0; givenIndex != givenParameters.Length; ++givenIndex)
+                for (var givenIndex = 0; givenIndex < givenParameters.Length; givenIndex++)
                 {
                     var givenType = givenParameters[givenIndex] == null ? null : givenParameters[givenIndex].GetType().GetTypeInfo();
                     var givenMatched = false;
 
-                    for (var applyIndex = applyIndexStart; givenMatched == false && applyIndex != _parameters.Length; ++applyIndex)
+                    for (var applyIndex = applyIndexStart; applyIndex < _parameters.Length; applyIndex++)
                     {
                         if (_parameterValuesSet[applyIndex] == false &&
                             _parameters[applyIndex].ParameterType.GetTypeInfo().IsAssignableFrom(givenType))
@@ -290,6 +290,7 @@ namespace Microsoft.Extensions.DependencyInjection
                                     applyExactLength = applyIndex;
                                 }
                             }
+                            break;
                         }
                     }
 
@@ -303,7 +304,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             public object CreateInstance(IServiceProvider provider)
             {
-                for (var index = 0; index != _parameters.Length; ++index)
+                for (var index = 0; index < _parameters.Length; index++)
                 {
                     if (_parameterValuesSet[index] == false)
                     {

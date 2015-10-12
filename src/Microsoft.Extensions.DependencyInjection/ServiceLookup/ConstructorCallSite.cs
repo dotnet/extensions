@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public object Invoke(ServiceProvider provider)
         {
             object[] parameterValues = new object[_parameterCallSites.Length];
-            for (var index = 0; index != parameterValues.Length; ++index)
+            for (var index = 0; index < parameterValues.Length; index++)
             {
                 parameterValues[index] = _parameterCallSites[index].Invoke(provider);
             }
