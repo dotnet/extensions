@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.FileProviders
@@ -60,14 +61,29 @@ namespace Microsoft.AspNet.FileProviders
                 return new NotFoundFileInfo(subpath);
             }
 
+            var builder = new StringBuilder(_baseNamespace.Length + subpath.Length);
+            builder.Append(_baseNamespace);
+
             // Relative paths starting with a leading slash okay
             if (subpath.StartsWith("/", StringComparison.Ordinal))
             {
-                subpath = subpath.Substring(1);
+                builder.Append(subpath, 1, subpath.Length - 1);
+            }
+            else
+            {
+                builder.Append(subpath);
             }
 
-            string resourcePath = _baseNamespace + subpath.Replace('/', '.');
-            string name = Path.GetFileName(subpath);
+            for (var i = _baseNamespace.Length; i < builder.Length; i++)
+            {
+                if (builder[i] == '/' || builder[i] == '\\')
+                {
+                    builder[i] = '.';
+                }
+            }
+
+            var resourcePath = builder.ToString();
+            var name = Path.GetFileName(subpath);
             if (_assembly.GetManifestResourceInfo(resourcePath) == null)
             {
                 return new NotFoundFileInfo(name);
@@ -101,17 +117,20 @@ namespace Microsoft.AspNet.FileProviders
                 return new NotFoundDirectoryContents();
             }
 
-            IList<IFileInfo> entries = new List<IFileInfo>();
+            var entries = new List<IFileInfo>();
 
             // TODO: The list of resources in an assembly isn't going to change. Consider caching.
-            string[] resources = _assembly.GetManifestResourceNames();
-            for (int i = 0; i < resources.Length; i++)
+            var resources = _assembly.GetManifestResourceNames();
+            for (var i = 0; i < resources.Length; i++)
             {
-                string resourceName = resources[i];
+                var resourceName = resources[i];
                 if (resourceName.StartsWith(_baseNamespace))
                 {
                     entries.Add(new EmbeddedResourceFileInfo(
-                        _assembly, resourceName, resourceName.Substring(_baseNamespace.Length), _lastModified));
+                        _assembly,
+                        resourceName,
+                        resourceName.Substring(_baseNamespace.Length),
+                        _lastModified));
                 }
             }
 
@@ -126,24 +145,23 @@ namespace Microsoft.AspNet.FileProviders
         private class EmbeddedResourceFileInfo : IFileInfo
         {
             private readonly Assembly _assembly;
-            private readonly DateTimeOffset _lastModified;
             private readonly string _resourcePath;
-            private readonly string _name;
 
             private long? _length;
 
-            public EmbeddedResourceFileInfo(Assembly assembly, string resourcePath, string name, DateTimeOffset lastModified)
+            public EmbeddedResourceFileInfo(
+                Assembly assembly,
+                string resourcePath,
+                string name,
+                DateTimeOffset lastModified)
             {
                 _assembly = assembly;
-                _lastModified = lastModified;
                 _resourcePath = resourcePath;
-                _name = name;
+                Name = name;
+                LastModified = lastModified;
             }
 
-            public bool Exists
-            {
-                get { return true; }
-            }
+            public bool Exists => true;
 
             public long Length
             {
@@ -151,7 +169,7 @@ namespace Microsoft.AspNet.FileProviders
                 {
                     if (!_length.HasValue)
                     {
-                        using (Stream stream = _assembly.GetManifestResourceStream(_resourcePath))
+                        using (var stream = _assembly.GetManifestResourceStream(_resourcePath))
                         {
                             _length = stream.Length;
                         }
@@ -161,29 +179,17 @@ namespace Microsoft.AspNet.FileProviders
             }
 
             // Not directly accessible.
-            public string PhysicalPath
-            {
-                get { return null; }
-            }
+            public string PhysicalPath => null;
 
-            public string Name
-            {
-                get { return _name; }
-            }
+            public string Name { get; }
 
-            public DateTimeOffset LastModified
-            {
-                get { return _lastModified; }
-            }
+            public DateTimeOffset LastModified { get; }
 
-            public bool IsDirectory
-            {
-                get { return false; }
-            }
+            public bool IsDirectory => false;
 
             public Stream CreateReadStream()
             {
-                Stream stream = _assembly.GetManifestResourceStream(_resourcePath);
+                var stream = _assembly.GetManifestResourceStream(_resourcePath);
                 if (!_length.HasValue)
                 {
                     _length = stream.Length;

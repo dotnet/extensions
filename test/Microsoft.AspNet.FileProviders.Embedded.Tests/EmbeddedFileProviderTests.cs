@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.FileProviders.Embedded.Tests
@@ -14,46 +15,100 @@ namespace Microsoft.AspNet.FileProviders.Embedded.Tests
         private static readonly string Namespace = typeof(EmbeddedFileProviderTests).Namespace;
 
         [Fact]
-        public void When_GetFileInfo_and_resource_does_not_exist_then_should_not_get_file_info()
+        public void GetFileInfo_ReturnsNotFoundFileInfo_IfFileDoesNotExist()
         {
+            // Arrange
             var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, Namespace);
 
+            // Act
             var fileInfo = provider.GetFileInfo("DoesNotExist.Txt");
+
+            // Assert
+            Assert.NotNull(fileInfo);
+            Assert.False(fileInfo.Exists);
+        }
+
+        [Theory]
+        [InlineData("File.txt")]
+        [InlineData("/File.txt")]
+        public void GetFileInfo_ReturnsFilesAtRoot(string filePath)
+        {
+            // Arrange
+            var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, Namespace);
+            var expectedFileLength = new FileInfo("File.txt").Length;
+
+            // Act
+            var fileInfo = provider.GetFileInfo(filePath);
+
+            // Assert
+            Assert.NotNull(fileInfo);
+            Assert.True(fileInfo.Exists);
+            Assert.NotEqual(default(DateTimeOffset), fileInfo.LastModified);
+            Assert.Equal(expectedFileLength, fileInfo.Length);
+            Assert.False(fileInfo.IsDirectory);
+            Assert.Null(fileInfo.PhysicalPath);
+            Assert.Equal("File.txt", fileInfo.Name);
+        }
+
+        [Fact]
+        public void GetFileInfo_ReturnsNotFoundFileInfo_IfFileDoesNotExistUnderSpecifiedNamespace()
+        {
+            // Arrange
+            var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, Namespace + ".SubNamespace");
+            var expectedFileLength = new FileInfo("File.txt").Length;
+
+            // Act
+            var fileInfo = provider.GetFileInfo("File.txt");
+
+            // Assert
             Assert.NotNull(fileInfo);
             Assert.False(fileInfo.Exists);
         }
 
         [Fact]
-        public void When_GetFileInfo_and_resource_exists_in_root_then_should_get_file_info()
+        public void GetFileInfo_ReturnsNotFoundIfPathStartsWithBackSlash()
         {
+            // Arrange
             var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, Namespace);
             var expectedFileLength = new FileInfo("File.txt").Length;
-            var fileInfo = provider.GetFileInfo("File.txt");
-            Assert.NotNull(fileInfo);
-            Assert.True(fileInfo.Exists);
-            Assert.NotEqual(default(DateTimeOffset), fileInfo.LastModified);
-            Assert.Equal(expectedFileLength, fileInfo.Length);
-            Assert.False(fileInfo.IsDirectory);
-            Assert.Null(fileInfo.PhysicalPath);
-            Assert.Equal("File.txt", fileInfo.Name);
 
-            //Passing in a leading slash
-            fileInfo = provider.GetFileInfo("/File.txt");
+            // Act
+            var fileInfo = provider.GetFileInfo("\\File.txt");
+
+            // Assert
             Assert.NotNull(fileInfo);
-            Assert.True(fileInfo.Exists);
-            Assert.NotEqual(default(DateTimeOffset), fileInfo.LastModified);
-            Assert.Equal(expectedFileLength, fileInfo.Length);
-            Assert.False(fileInfo.IsDirectory);
-            Assert.Null(fileInfo.PhysicalPath);
-            Assert.Equal("File.txt", fileInfo.Name);
+            Assert.False(fileInfo.Exists);
         }
 
-        [Fact]
-        public void When_GetFileInfo_and_resource_exists_in_subdirectory_then_should_get_file_info()
+        public static TheoryData GetFileInfo_LocatesFilesUnderSpecifiedNamespaceData
         {
+            get
+            {
+                var theoryData = new TheoryData<string>
+                {
+                    "ResourcesInSubdirectory/File3.txt"
+                };
+
+                if (TestPlatformHelper.IsWindows)
+                {
+                    theoryData.Add("ResourcesInSubdirectory\\File3.txt");
+                }
+
+                return theoryData;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(GetFileInfo_LocatesFilesUnderSpecifiedNamespaceData))]
+        public void GetFileInfo_LocatesFilesUnderSpecifiedNamespace(string path)
+        {
+            // Arrange
             var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, Namespace + ".Resources");
 
-            var fileInfo = provider.GetFileInfo("ResourcesInSubdirectory/File3.txt");
+            // Act
+            var fileInfo = provider.GetFileInfo(path);
+
+            // Assert
             Assert.NotNull(fileInfo);
             Assert.True(fileInfo.Exists);
             Assert.NotEqual(default(DateTimeOffset), fileInfo.LastModified);
@@ -63,12 +118,35 @@ namespace Microsoft.AspNet.FileProviders.Embedded.Tests
             Assert.Equal("File3.txt", fileInfo.Name);
         }
 
-        [Fact]
-        public void When_GetFileInfo_and_resources_in_path_then_should_get_file_infos()
+        public static TheoryData GetFileInfo_LocatesFilesUnderSubDirectoriesData
         {
+            get
+            {
+                var theoryData = new TheoryData<string>
+                {
+                    "Resources/File.txt"
+                };
+
+                if (TestPlatformHelper.IsWindows)
+                {
+                    theoryData.Add("Resources\\File.txt");
+                }
+
+                return theoryData;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(GetFileInfo_LocatesFilesUnderSubDirectoriesData))]
+        public void GetFileInfo_LocatesFilesUnderSubDirectories(string path)
+        {
+            // Arrange
             var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, Namespace);
 
-            var fileInfo = provider.GetFileInfo("Resources/File.txt");
+            // Act
+            var fileInfo = provider.GetFileInfo(path);
+
+            // Assert
             Assert.NotNull(fileInfo);
             Assert.True(fileInfo.Exists);
             Assert.NotEqual(default(DateTimeOffset), fileInfo.LastModified);
@@ -78,14 +156,22 @@ namespace Microsoft.AspNet.FileProviders.Embedded.Tests
             Assert.Equal("File.txt", fileInfo.Name);
         }
 
-        [Fact]
-        public void GetDirectoryContents()
+        [Theory]
+        [InlineData("")]
+        [InlineData("/")]
+        public void GetDirectoryContents_ReturnsAllFilesInFileSystem(string path)
         {
+            // Arrange
             var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, Namespace + ".Resources");
 
-            var files = provider.GetDirectoryContents("");
-            Assert.NotNull(files);
-            Assert.Equal(2, files.Count());
+            // Act
+            var files = provider.GetDirectoryContents(path);
+
+            // Assert
+            Assert.Collection(files.OrderBy(f => f.Name, StringComparer.Ordinal),
+                file => Assert.Equal("File.txt", file.Name),
+                file => Assert.Equal("ResourcesInSubdirectory.File3.txt", file.Name));
+
             Assert.False(provider.GetDirectoryContents("file").Exists);
             Assert.False(provider.GetDirectoryContents("file/").Exists);
             Assert.False(provider.GetDirectoryContents("file.txt").Exists);
@@ -93,24 +179,51 @@ namespace Microsoft.AspNet.FileProviders.Embedded.Tests
         }
 
         [Fact]
-        public void GetDirInfo_with_no_matching_base_namespace()
+        public void GetDirectoryContents_ReturnsEmptySequence_IfResourcesDoNotExistUnderNamespace()
         {
+            // Arrange
             var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "Unknown.Namespace");
 
+            // Act
             var files = provider.GetDirectoryContents(string.Empty);
+
+            // Assert
             Assert.NotNull(files);
             Assert.True(files.Exists);
-            Assert.Equal(0, files.Count());
+            Assert.Empty(files);
+        }
+
+        [Theory]
+        [InlineData("Resources")]
+        [InlineData("/Resources")]
+        public void GetDirectoryContents_ReturnsNotFoundDirectoryContents_IfHierarchicalPathIsSpecified(string path)
+        {
+            // Arrange
+            var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, Namespace);
+
+            // Act
+            var files = provider.GetDirectoryContents(path);
+
+            // Assert
+            Assert.NotNull(files);
+            Assert.False(files.Exists);
+            Assert.Empty(files);
         }
 
         [Fact]
-        public void Trigger_ShouldNot_Support_Registering_Callbacks()
+        public void Watch_ReturnsNoOpTrigger()
         {
+            // Arange
             var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, Namespace);
+
+            // Act
             var token = provider.Watch("Resources/File.txt");
+
+            // Assert
             Assert.NotNull(token);
             Assert.False(token.ActiveChangeCallbacks);
             Assert.False(token.HasChanged);
+            Assert.Throws<NotSupportedException>(() => token.RegisterChangeCallback(_ => { }, new object()));
         }
     }
 }
