@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.Logging.Test
                 Scope = state,
             });
 
-            return null;
+            return new NoopDisposable();
         }
 
         public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
@@ -51,6 +51,13 @@ namespace Microsoft.Extensions.Logging.Test
         public bool IsEnabled(LogLevel logLevel)
         {
             return _enabled;
+        }
+
+        private class NoopDisposable : IDisposable
+        {
+            public void Dispose()
+            {
+            }
         }
     }
 }
