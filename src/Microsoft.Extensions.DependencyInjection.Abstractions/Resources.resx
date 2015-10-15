@@ -133,10 +133,6 @@
     <value>Unable to locate suitable constructor for type '{0}'. Ensure the type is concrete and all parameters are accepted by a constructor.</value>
     <comment>{0} = service type</comment>
   </data>
-  <data name="NoImplementation" xml:space="preserve">
-    <value>Service type '{0}' has been registered without an implementation type.</value>
-    <comment>{0} = service type</comment>
-  </data>
   <data name="NoServiceRegistered" xml:space="preserve">
     <value>No service for type '{0}' has been registered.</value>
     <comment>{0} = service type</comment>

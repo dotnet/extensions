@@ -347,22 +347,6 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
-        public void GetImplementationType_ThrowsForNoImplementationType()
-        {
-            // Arrange
-            var serviceType = typeof(IFakeService);
-            var collection = new ServiceCollection();
-            var descriptor = new ServiceDescriptor(serviceType, null);
-
-            // Act & Assert
-            ExceptionAssert.ThrowsArgument(
-                () => descriptor.GetImplementationType(),
-                null,
-                AbstractionResources.FormatNoImplementation(serviceType));
-        }
-
-
-        [Fact]
         public void AddSequence_AddsServicesToCollection()
         {
             // Arrange

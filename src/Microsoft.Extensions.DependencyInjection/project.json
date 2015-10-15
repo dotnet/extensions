@@ -9,8 +9,7 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-        "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
-        "Microsoft.Extensions.NotNullAttribute.Sources": { "version": "1.0.0-*", "type": "build" }
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*"
     },
     "frameworks": {
         "net45": { },
