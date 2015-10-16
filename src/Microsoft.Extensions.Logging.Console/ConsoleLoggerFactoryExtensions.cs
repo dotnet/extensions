@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Console;
 
 namespace Microsoft.Extensions.Logging
@@ -24,7 +25,7 @@ namespace Microsoft.Extensions.Logging
         /// in the output.</param>
         public static ILoggerFactory AddConsole(this ILoggerFactory factory, bool includeScopes)
         {
-            factory.AddConsole(LogLevel.Information, includeScopes);
+            factory.AddConsole((n, l) => l >= LogLevel.Information, includeScopes);
             return factory;
         }
 
@@ -81,6 +82,20 @@ namespace Microsoft.Extensions.Logging
         {
             factory.AddProvider(new ConsoleLoggerProvider(filter, includeScopes));
             return factory;
+        }
+
+        public static ILoggerFactory AddConsole(
+            this ILoggerFactory factory,
+            IConsoleLoggerSettings settings)
+        {
+            factory.AddProvider(new ConsoleLoggerProvider(settings));
+            return factory;
+        }
+
+        public static ILoggerFactory AddConsole(this ILoggerFactory factory, IConfiguration configuration)
+        {
+            var settings = new ConfigurationConsoleLoggerSettings(configuration);
+            return factory.AddConsole(settings);
         }
     }
 }

@@ -6,6 +6,8 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Logging.Test.Console;
+using Microsoft.Extensions.Primitives;
+using System.Threading;
 #if MOCK_SUPPORT
 using Moq;
 #endif
@@ -652,6 +654,70 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.NotNull(disposable);
         }
 
+        [Fact]
+        public void ConsoleLogger_ReloadSettings_CanChangeLogLevel()
+        {
+            // Arrange
+            var settings = new MockConsoleLoggerSettings()
+            {
+                Cancel = new CancellationTokenSource(),
+                Switches =
+                {
+                    ["Test"] = LogLevel.Information,
+                }
+            };
+
+            var loggerFactory = new LoggerFactory();
+            loggerFactory.AddConsole(settings);
+
+            var logger = loggerFactory.CreateLogger("Test");
+            Assert.False(logger.IsEnabled(LogLevel.Verbose));
+
+            settings.Switches["Test"] = LogLevel.Verbose;
+
+            var cancellationTokenSource = settings.Cancel;
+            settings.Cancel = new CancellationTokenSource();
+
+            // Act
+            cancellationTokenSource.Cancel();
+
+            // Assert
+            Assert.True(logger.IsEnabled(LogLevel.Verbose));
+        }
+
+        [Fact]
+        public void ConsoleLogger_ReloadSettings_CanReloadMultipleTimes()
+        {
+            // Arrange
+            var settings = new MockConsoleLoggerSettings()
+            {
+                Cancel = new CancellationTokenSource(),
+                Switches =
+                {
+                    ["Test"] = LogLevel.Information,
+                }
+            };
+
+            var loggerFactory = new LoggerFactory();
+            loggerFactory.AddConsole(settings);
+
+            var logger = loggerFactory.CreateLogger("Test");
+            Assert.False(logger.IsEnabled(LogLevel.Verbose));
+
+            // Act & Assert
+            for (var i = 0; i < 10; i++)
+            {
+                settings.Switches["Test"] = i % 2 == 0 ? LogLevel.Information : LogLevel.Verbose;
+
+                var cancellationTokenSource = settings.Cancel;
+                settings.Cancel = new CancellationTokenSource();
+
+                cancellationTokenSource.Cancel();
+
+                Assert.Equal(i % 2 == 1, logger.IsEnabled(LogLevel.Verbose));
+            }
+        }
+
         private string GetMessage(string logLevelString, int eventId, Exception exception)
         {
             var loglevelStringWithPadding = $"{logLevelString}: ";
@@ -669,6 +735,27 @@ namespace Microsoft.Extensions.Logging.Test
         private string GetMessage(List<ConsoleContext> contexts)
         {
             return string.Join("", contexts.Select(c => c.Message));
+        }
+
+        private class MockConsoleLoggerSettings : IConsoleLoggerSettings
+        {
+            public CancellationTokenSource Cancel { get; set; }
+
+            public IChangeToken ChangeToken => new CancellationChangeToken(Cancel.Token);
+
+            public IDictionary<string, LogLevel> Switches { get; } = new Dictionary<string, LogLevel>();
+
+            public bool IncludeScopes { get; set; }
+
+            public IConsoleLoggerSettings Reload()
+            {
+                return this;
+            }
+
+            public bool TryGetSwitch(string name, out LogLevel level)
+            {
+                return Switches.TryGetValue(name, out level);
+            }
         }
     }
 }
