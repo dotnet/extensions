@@ -20,7 +20,6 @@
             "Microsoft.Extensions.ClosedGenericMatcher.Sources": { },
             "Microsoft.Extensions.CopyOnWriteDictionary.Sources": { },
             "Microsoft.Extensions.HashCodeCombiner.Sources": { },
-            "Microsoft.Extensions.NotNullAttribute.Sources": { },
             "Microsoft.Extensions.PropertyActivator.Sources": { },
             "Microsoft.Extensions.PropertyHelper.Sources": { },
             "Microsoft.Extensions.SecurityHelper.Sources": { },
