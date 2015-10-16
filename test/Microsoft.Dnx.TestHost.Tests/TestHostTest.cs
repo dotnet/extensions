@@ -29,7 +29,8 @@ namespace Microsoft.Dnx.TestHost
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ListTest()
         {
             // Arrange
@@ -69,7 +70,8 @@ namespace Microsoft.Dnx.TestHost
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ListTest_AsyncMethod_Symbols()
         {
             // Arrange
@@ -91,7 +93,8 @@ namespace Microsoft.Dnx.TestHost
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ListTest_InheritedMethod_Symbols()
         {
             // Arrange
@@ -113,7 +116,8 @@ namespace Microsoft.Dnx.TestHost
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task RunTest_All()
         {
             // Arrange
@@ -151,7 +155,8 @@ namespace Microsoft.Dnx.TestHost
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task RunTest_ByUniqueName()
         {
             // Arrange
@@ -184,7 +189,8 @@ namespace Microsoft.Dnx.TestHost
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task RunTest_ByUniqueName_ProtocolVersion_MatchingVersion()
         {
             // Arrange
@@ -222,7 +228,8 @@ namespace Microsoft.Dnx.TestHost
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task RunTest_ByUniqueName_ProtocolVersion_UnknownVersion()
         {
             // Arrange
@@ -260,7 +267,8 @@ namespace Microsoft.Dnx.TestHost
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task TestHostExits_WhenParentProcessExits()
         {
             // Arrange
@@ -295,6 +303,7 @@ namespace Microsoft.Dnx.TestHost
             }
             Assert.Null(testHostProcess);
         }
+
         private static bool TestFound(Message message, string name)
         {
             if (!string.Equals("TestDiscovery.TestFound", message.MessageType))
