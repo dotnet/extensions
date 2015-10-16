@@ -1,22 +1,21 @@
 {
     "version": "1.0.0-*",
     "shared": "*.cs",
-    "dependencies": {
-    },
+    "dependencies": {},
     "frameworks": {
-        "net45": { },
-        "dnx451": { },
+        "net45": {},
+        "dnx451": {},
         "dnxcore50": {
             "dependencies": {
-                "System.Runtime": "4.0.21-beta-*"
+                "System.Runtime": "4.0.21-beta-23409"
             }
         },
         "dotnet": {
             "dependencies": {
-                "System.Collections": "4.0.10",
-                "System.Reflection": "4.0.10",
-                "System.Runtime": "4.0.20"
-            } 
+                "System.Collections": "4.0.11-beta-23409",
+                "System.Reflection": "4.1.0-beta-23409",
+                "System.Runtime": "4.0.21-beta-23409"
+            }
         }
     }
 }
