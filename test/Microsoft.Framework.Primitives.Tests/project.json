@@ -1,7 +1,7 @@
 {
     "dependencies": {
         "Microsoft.Framework.Primitives": "1.0.0-beta8",
-        "xunit.runner.aspnet": "2.1.0-beta1-build60"
+        "xunit.runner.aspnet": "2.0.0-aspnet-beta8"
     },
     "commands": {
         "test": "xunit.runner.aspnet"
