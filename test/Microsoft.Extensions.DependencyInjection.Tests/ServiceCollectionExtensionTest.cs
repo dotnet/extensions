@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Testing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
+using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Xunit;
 
 using AbstractionResources = Microsoft.Extensions.DependencyInjection.Abstractions.Resources;

@@ -4,17 +4,16 @@
 using System;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
+using Microsoft.Extensions.DependencyInjection.Specification;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
 {
-    public class AutofacContainerTests : ScopingContainerTestBase
+    public class AutofacContainerTests : DependencyInjectionSpecificationTests
     {
-        protected override IServiceProvider CreateContainer()
+        protected override IServiceProvider CreateServiceProvider(IServiceCollection collection)
         {
             var builder = new ContainerBuilder();
-
-            builder.Populate(TestServices.DefaultServices());
+            builder.Populate(collection);
 
             var container = builder.Build();
             return container.Resolve<IServiceProvider>();

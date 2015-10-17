@@ -1,0 +1,24 @@
+﻿{
+  "version": "1.0.0-*",
+  "dependencies": {
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
+    "xunit.assert": "2.1.0",
+    "xunit.extensibility.core": "2.1.0"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Runtime": "",
+        "System.Threading.Tasks": ""
+      }
+    },
+    "dotnet5.4": {
+      "dependencies": {
+        "System.Threading": "4.0.11-beta-*"
+      }
+    }
+  }
+}

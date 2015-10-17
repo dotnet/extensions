@@ -3,12 +3,15 @@
 
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 
-namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
+namespace Microsoft.Extensions.DependencyInjection.Specification.Fakes
 {
-    public class TypeWithParameterizedConstructor
+    public class AnotherClass
     {
-        public TypeWithParameterizedConstructor(IFakeService fakeService)
+        public AnotherClass(IFakeService fakeService)
         {
+            FakeService = fakeService;
         }
+
+        public IFakeService FakeService { get; }
     }
 }

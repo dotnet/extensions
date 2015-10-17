@@ -10,7 +10,8 @@
         ],
         "packages": {
             "Microsoft.Extensions.DependencyInjection": { },
-            "Microsoft.Extensions.DependencyInjection.Abstractions": { }
+            "Microsoft.Extensions.DependencyInjection.Abstractions": { },
+            "Microsoft.Extensions.DependencyInjection.Specification.Tests": { },
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.

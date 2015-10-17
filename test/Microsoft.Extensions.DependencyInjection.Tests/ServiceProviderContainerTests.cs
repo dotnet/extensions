@@ -3,17 +3,17 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection.Specification;
+using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
 {
-    public class ServiceProviderContainerTests : ScopingContainerTestBase
+    public class ServiceProviderContainerTests : DependencyInjectionSpecificationTests
     {
-        protected override IServiceProvider CreateContainer()
-        {
-            return TestServices.DefaultServices().BuildServiceProvider();
-        }
+        protected override IServiceProvider CreateServiceProvider(IServiceCollection collection) =>
+            collection.BuildServiceProvider();
 
         [Fact]
         public void RethrowOriginalExceptionFromConstructor()
@@ -58,7 +58,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
         private abstract class AbstractFakeOpenGenericService<T> : IFakeOpenGenericService<T>
         {
-            public abstract T SimpleMethod();
+            public abstract T Value { get; }
         }
     }
 }
