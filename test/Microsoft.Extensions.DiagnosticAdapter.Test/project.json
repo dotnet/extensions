@@ -1,10 +1,9 @@
 {
   "dependencies": {
     "Microsoft.AspNet.Testing": "1.0.0-*",
-    "Microsoft.Extensions.TelemetryAdapter": "1.0.0-*",
+    "Microsoft.Extensions.DiagnosticAdapter": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
-    "compile": "../../src/Microsoft.Extensions.TelemetryAdapter/ReflectionTelemetrySourceMethodAdapter.cs",
     "compilationOptions": {"define": ["TEST"]},
     "commands": {
         "run": "xunit.runner.aspnet",

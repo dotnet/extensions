@@ -4,15 +4,15 @@
 using System;
 using Xunit;
 
-namespace Microsoft.Extensions.TelemetryAdapter
+namespace Microsoft.Extensions.DiagnosticAdapter
 {
-    public class TelemetrySourceAdapterTest
+    public class DiagnosticSourceAdapterTest
     {
         public class OneTarget
         {
             public int OneCallCount { get; private set; }
 
-            [TelemetryName("One")]
+            [DiagnosticName("One")]
             public void One()
             {
                 ++OneCallCount;
@@ -78,7 +78,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
         }
 
         [Fact]
-        public void CallingWriteTelemetryWillInvokeMethod()
+        public void CallingWriteWillInvokeMethod()
         {
             // Arrange
             var target = new OneTarget();
@@ -86,12 +86,12 @@ namespace Microsoft.Extensions.TelemetryAdapter
 
             // Act & Assert
             Assert.Equal(0, target.OneCallCount);
-            adapter.WriteTelemetry("One", new { });
+            adapter.Write("One", new { });
             Assert.Equal(1, target.OneCallCount);
         }
 
         [Fact]
-        public void CallingWriteTelemetryForNonEnlistedNameIsHarmless()
+        public void CallingWriteForNonEnlistedNameIsHarmless()
         {
             // Arrange
             var target = new OneTarget();
@@ -99,12 +99,12 @@ namespace Microsoft.Extensions.TelemetryAdapter
 
             // Act & Assert
             Assert.Equal(0, target.OneCallCount);
-            adapter.WriteTelemetry("Two", new { });
+            adapter.Write("Two", new { });
             Assert.Equal(0, target.OneCallCount);
         }
 
         [Fact]
-        public void WriteTelemetry_True_CallsIsEnabled()
+        public void Write_True_CallsIsEnabled()
         {
             // Arrange
             var callCount = 0;
@@ -119,7 +119,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
             var adapter = CreateAdapter(target, isEnabled);
 
             // Act
-            adapter.WriteTelemetry("One", new { });
+            adapter.Write("One", new { });
 
             // Assert
             Assert.Equal(1, callCount);
@@ -127,7 +127,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
         }
 
         [Fact]
-        public void WriteTelemetry_False_CallsIsEnabled()
+        public void Write_False_CallsIsEnabled()
         {
             // Arrange
             var callCount = 0;
@@ -142,7 +142,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
             var adapter = CreateAdapter(target, isEnabled);
 
             // Act
-            adapter.WriteTelemetry("One", new { });
+            adapter.Write("One", new { });
 
             // Assert
             Assert.Equal(1, callCount);
@@ -155,7 +155,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
             public string Beta { get; private set; }
             public int Delta { get; private set; }
 
-            [TelemetryName("Two")]
+            [DiagnosticName("Two")]
             public void Two(string alpha, string beta, int delta)
             {
                 Alpha = alpha;
@@ -172,7 +172,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
             var adapter = CreateAdapter(target);
 
             // Act
-            adapter.WriteTelemetry("Two", new { alpha = "ALPHA", beta = "BETA", delta = -1 });
+            adapter.Write("Two", new { alpha = "ALPHA", beta = "BETA", delta = -1 });
 
             // Assert
             Assert.Equal("ALPHA", target.Alpha);
@@ -188,7 +188,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
             var adapter = CreateAdapter(target);
 
             // Act
-            adapter.WriteTelemetry("Two", new { alpha = "ALPHA", beta = "BETA", delta = -1, extra = this });
+            adapter.Write("Two", new { alpha = "ALPHA", beta = "BETA", delta = -1, extra = this });
 
             // Assert
             Assert.Equal("ALPHA", target.Alpha);
@@ -204,7 +204,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
             var adapter = CreateAdapter(target);
 
             // Act
-            adapter.WriteTelemetry("Two", new { alpha = "ALPHA", delta = -1 });
+            adapter.Write("Two", new { alpha = "ALPHA", delta = -1 });
 
             // Assert
             Assert.Equal("ALPHA", target.Alpha);
@@ -213,14 +213,14 @@ namespace Microsoft.Extensions.TelemetryAdapter
         }
 
         [Fact]
-        public void WriteTelemetryCanDuckType()
+        public void WriteCanDuckType()
         {
             // Arrange
             var target = new ThreeTarget();
             var adapter = CreateAdapter(target);
 
             // Act
-            adapter.WriteTelemetry("Three", new
+            adapter.Write("Three", new
             {
                 person = new Person
                 {
@@ -242,14 +242,14 @@ namespace Microsoft.Extensions.TelemetryAdapter
         }
 
         [Fact]
-        public void WriteTelemetry_NominialType()
+        public void Write_NominialType()
         {
             // Arrange
             var target = new ThreeTarget();
             var adapter = CreateAdapter(target);
 
             // Act
-            adapter.WriteTelemetry("Three", new NominalType()
+            adapter.Write("Three", new NominalType()
             {
                 Person = new Person
                 {
@@ -274,7 +274,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
         {
             public IPerson Person { get; private set; }
 
-            [TelemetryName("Three")]
+            [DiagnosticName("Three")]
             public void Three(IPerson person)
             {
                 Person = person;
@@ -329,9 +329,9 @@ namespace Microsoft.Extensions.TelemetryAdapter
             public int Value { get; private set; }
         }
 
-        private static TelemetrySourceAdapter CreateAdapter(object target, Func<string, bool> isEnabled = null)
+        private static DiagnosticSourceAdapter CreateAdapter(object target, Func<string, bool> isEnabled = null)
         {
-            return new TelemetrySourceAdapter(target, isEnabled, new ProxyTelemetrySourceMethodAdapter());
+            return new DiagnosticSourceAdapter(target, isEnabled, new ProxyDiagnosticSourceMethodAdapter());
         }
     }
 }

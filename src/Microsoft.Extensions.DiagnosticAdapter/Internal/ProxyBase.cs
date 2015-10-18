@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.TelemetryAdapter.Internal
+namespace Microsoft.Extensions.DiagnosticAdapter.Internal
 {
     public abstract class ProxyBase
     {

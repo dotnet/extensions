@@ -4,9 +4,9 @@
 using System;
 using System.Reflection;
 
-namespace Microsoft.Extensions.TelemetryAdapter
+namespace Microsoft.Extensions.DiagnosticAdapter
 {
-    public interface ITelemetrySourceMethodAdapter
+    public interface IDiagnosticSourceMethodAdapter
     {
         Func<object, object, bool> Adapt(MethodInfo method, Type inputType);
     }

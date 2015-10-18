@@ -3,11 +3,11 @@
 
 using System;
 
-namespace Microsoft.Extensions.TelemetryAdapter
+namespace Microsoft.Extensions.DiagnosticAdapter
 {
-    public class TelemetryNameAttribute : Attribute
+    public class DiagnosticNameAttribute : Attribute
     {
-        public TelemetryNameAttribute(string name)
+        public DiagnosticNameAttribute(string name)
         {
             Name = name;
         }

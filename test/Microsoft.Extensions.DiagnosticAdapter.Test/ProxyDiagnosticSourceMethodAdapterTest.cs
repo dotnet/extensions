@@ -6,15 +6,15 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Xunit;
 
-namespace Microsoft.Extensions.TelemetryAdapter
+namespace Microsoft.Extensions.DiagnosticAdapter
 {
-    public class ProxyTelemetrySourceMethodAdapterTest
+    public class ProxyTDiagnosticSourceMethodAdapterTest
     {
         [Fact]
         public void Adapt_Throws_ForSameNamedPropertiesWithDifferentCasing()
         {
             // Arrange
-            var adapter = new ProxyTelemetrySourceMethodAdapter();
+            var adapter = new ProxyDiagnosticSourceMethodAdapter();
 
             var listener = new Listener1();
             var method = GetMethodInfo<Listener2>(l => l.Listen(5, "joey"));
@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
         public void Adapt_ReturnsTrueForTypeMatch()
         {
             // Arrange
-            var adapter = new ProxyTelemetrySourceMethodAdapter();
+            var adapter = new ProxyDiagnosticSourceMethodAdapter();
 
             var listener = new Listener1();
             var method = GetMethodInfo<Listener1>(l => l.Listen());
@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
         public void Adapt_ReturnsFalseForTypeNotMatching()
         {
             // Arrange
-            var adapter = new ProxyTelemetrySourceMethodAdapter();
+            var adapter = new ProxyDiagnosticSourceMethodAdapter();
 
             var listener = new Listener1();
             var method = GetMethodInfo<Listener1>(l => l.Listen());
@@ -68,7 +68,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
         public void Adapt_SplatsParameters()
         {
             // Arrange
-            var adapter = new ProxyTelemetrySourceMethodAdapter();
+            var adapter = new ProxyDiagnosticSourceMethodAdapter();
 
             var listener = new Listener2();
             var value = new { id = 17, name = "Bill" };
@@ -87,7 +87,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
         public void Adapt_SplatsParameters_CamelCase()
         {
             // Arrange
-            var adapter = new ProxyTelemetrySourceMethodAdapter();
+            var adapter = new ProxyDiagnosticSourceMethodAdapter();
 
             var listener = new Listener4();
             var value = new { Id = 17, Person = new Person() { Name = "Bill" } };
@@ -106,7 +106,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
         public void Adapt_SplatsParameters_CaseInsensitive()
         {
             // Arrange
-            var adapter = new ProxyTelemetrySourceMethodAdapter();
+            var adapter = new ProxyDiagnosticSourceMethodAdapter();
 
             var listener = new Listener4();
             var value = new { ID = 17, PersOn = new Person() { Name = "Bill" }};
@@ -125,7 +125,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
         public void Adapt_SplatsParameters_ExtraEventDataIgnored()
         {
             // Arrange
-            var adapter = new ProxyTelemetrySourceMethodAdapter();
+            var adapter = new ProxyDiagnosticSourceMethodAdapter();
 
             var listener = new Listener2();
             var value = new { id = 17, name = "Bill", ignored = "hi" };
@@ -144,7 +144,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
         public void Adapt_SplatsParameters_ExtraParametersGetDefaultValues()
         {
             // Arrange
-            var adapter = new ProxyTelemetrySourceMethodAdapter();
+            var adapter = new ProxyDiagnosticSourceMethodAdapter();
 
             var listener = new Listener2();
             var value = new { };
@@ -163,7 +163,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
         public void Adapt_SplatsParameters_WithProxy()
         {
             // Arrange
-            var adapter = new ProxyTelemetrySourceMethodAdapter();
+            var adapter = new ProxyDiagnosticSourceMethodAdapter();
 
             var listener = new Listener3();
             var value = new { id = 17, person = new Person() { Name = "Bill" } };
@@ -182,7 +182,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
         public void Adapt_SplatsParameters_WithNominalType()
         {
             // Arrange
-            var adapter = new ProxyTelemetrySourceMethodAdapter();
+            var adapter = new ProxyDiagnosticSourceMethodAdapter();
 
             var listener = new Listener3();
             var value = new NominalType() { Id = 17, Person = new Person() { Name = "Bill" } };
@@ -207,7 +207,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
             var targetMethodInfo = target.GetType().GetMethod(nameof(Listener5.TargetMethod));
 
             // Act
-            var adapter = new ProxyTelemetrySourceMethodAdapter();
+            var adapter = new ProxyDiagnosticSourceMethodAdapter();
             var callback = adapter.Adapt(targetMethodInfo, source.GetType());
 
             var result = callback(target, source);
@@ -228,7 +228,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
             var targetMethodInfo = target.GetType().GetMethod(nameof(Listener6.Listen));
 
             // Act
-            var adapter = new ProxyTelemetrySourceMethodAdapter();
+            var adapter = new ProxyDiagnosticSourceMethodAdapter();
             var callback = adapter.Adapt(targetMethodInfo, source.GetType());
 
             var result = callback(target, source);

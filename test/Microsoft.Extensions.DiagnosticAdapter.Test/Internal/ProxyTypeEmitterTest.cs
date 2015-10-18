@@ -7,7 +7,7 @@ using System.Linq;
 using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.Extensions.TelemetryAdapter.Internal
+namespace Microsoft.Extensions.DiagnosticAdapter.Internal
 {
     public class ProxyTypeEmitterTest
     {

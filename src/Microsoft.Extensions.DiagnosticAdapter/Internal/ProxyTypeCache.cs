@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 
-namespace Microsoft.Extensions.TelemetryAdapter.Internal
+namespace Microsoft.Extensions.DiagnosticAdapter.Internal
 {
     public class ProxyTypeCache : ConcurrentDictionary<Tuple<Type, Type>, ProxyTypeCacheResult>
     {

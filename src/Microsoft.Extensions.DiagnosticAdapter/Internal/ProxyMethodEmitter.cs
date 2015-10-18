@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Microsoft.Extensions.TelemetryAdapter.Internal
+namespace Microsoft.Extensions.DiagnosticAdapter.Internal
 {
     public static class ProxyMethodEmitter
     {

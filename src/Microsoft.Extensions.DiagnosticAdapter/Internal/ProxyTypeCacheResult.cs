@@ -4,7 +4,7 @@
 using System;
 using System.Reflection;
 
-namespace Microsoft.Extensions.TelemetryAdapter.Internal
+namespace Microsoft.Extensions.DiagnosticAdapter.Internal
 {
     public class ProxyTypeCacheResult
     {

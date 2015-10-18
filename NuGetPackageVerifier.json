@@ -9,7 +9,7 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.Extensions.TelemetryAdapter": { }
+            "Microsoft.Extensions.DiagnosticAdapter": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.

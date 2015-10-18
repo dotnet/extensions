@@ -5,7 +5,7 @@ using System;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Microsoft.Extensions.TelemetryAdapter.Internal
+namespace Microsoft.Extensions.DiagnosticAdapter.Internal
 {
     public static class ProxyAssembly
     {
@@ -16,11 +16,11 @@ namespace Microsoft.Extensions.TelemetryAdapter.Internal
 
         static ProxyAssembly()
         {
-            var assemblyName = new AssemblyName("Microsoft.Extensions.TelemetryAdapter.ProxyAssembly");
+            var assemblyName = new AssemblyName("Microsoft.Extensions.DiagnosticAdapter.ProxyAssembly");
             var access = AssemblyBuilderAccess.Run;
 
             AssemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, access);
-            ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Microsoft.Extensions.TelemetryAdapter.ProxyAssembly.dll");
+            ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Microsoft.Extensions.DiagnosticAdapter.ProxyAssembly.dll");
         }
 
         public static TypeBuilder DefineType(

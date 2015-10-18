@@ -1,9 +1,9 @@
 {
   "version": "1.0.0-*",
-  "description": "An TelemetryListener implementation which provides duck-typing through generated proxy types.",
+  "description": "A DiagnosticListener implementation which provides duck-typing through generated proxy types.",
   "dependencies": {
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
-    "System.Diagnostics.Tracing.Telemetry": "4.0.0-beta-*"
+    "System.Diagnostics.DiagnosticSource": "4.0.0-beta-*"
   },
   "compilationOptions": {
     "define": [

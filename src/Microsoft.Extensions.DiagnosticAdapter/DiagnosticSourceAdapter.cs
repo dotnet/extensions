@@ -7,27 +7,27 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace Microsoft.Extensions.TelemetryAdapter
+namespace Microsoft.Extensions.DiagnosticAdapter
 {
-    public class TelemetrySourceAdapter : IObserver<KeyValuePair<string, object>>
+    public class DiagnosticSourceAdapter : IObserver<KeyValuePair<string, object>>
     {
         private readonly Listener _listener;
-        private readonly ITelemetrySourceMethodAdapter _methodAdapter;
+        private readonly IDiagnosticSourceMethodAdapter _methodAdapter;
 
-        public TelemetrySourceAdapter(object target)
-            : this(target, null, new ProxyTelemetrySourceMethodAdapter())
+        public DiagnosticSourceAdapter(object target)
+            : this(target, null, new ProxyDiagnosticSourceMethodAdapter())
         {
         }
 
-        public TelemetrySourceAdapter(object target, Func<string, bool> isEnabled)
-            : this(target, isEnabled, methodAdapter: new ProxyTelemetrySourceMethodAdapter())
+        public DiagnosticSourceAdapter(object target, Func<string, bool> isEnabled)
+            : this(target, isEnabled, methodAdapter: new ProxyDiagnosticSourceMethodAdapter())
         {
         }
 
-        public TelemetrySourceAdapter(
+        public DiagnosticSourceAdapter(
             object target,
             Func<string, bool> isEnabled,
-            ITelemetrySourceMethodAdapter methodAdapter)
+            IDiagnosticSourceMethodAdapter methodAdapter)
         {
             _methodAdapter = methodAdapter;
 
@@ -42,18 +42,18 @@ namespace Microsoft.Extensions.TelemetryAdapter
             var methodInfos = typeInfo.DeclaredMethods;
             foreach (var methodInfo in methodInfos)
             {
-                var notificationNameAttribute = methodInfo.GetCustomAttribute<TelemetryNameAttribute>();
-                if (notificationNameAttribute != null)
+                var diagnosticNameAttribute = methodInfo.GetCustomAttribute<DiagnosticNameAttribute>();
+                if (diagnosticNameAttribute != null)
                 {
                     var subscription = new Subscription(methodInfo);
-                    listener.Subscriptions.Add(notificationNameAttribute.Name, subscription);
+                    listener.Subscriptions.Add(diagnosticNameAttribute.Name, subscription);
                 }
             }
 
             return listener;
         }
 
-        public bool IsEnabled(string telemetryName)
+        public bool IsEnabled(string diagnosticName)
         {
             if (_listener.Subscriptions.Count == 0)
             {
@@ -61,11 +61,11 @@ namespace Microsoft.Extensions.TelemetryAdapter
             }
 
             return
-                _listener.Subscriptions.ContainsKey(telemetryName) &&
-                (_listener.IsEnabled == null || _listener.IsEnabled(telemetryName));
+                _listener.Subscriptions.ContainsKey(diagnosticName) &&
+                (_listener.IsEnabled == null || _listener.IsEnabled(diagnosticName));
         }
 
-        public void WriteTelemetry(string telemetryName, object parameters)
+        public void Write(string diagnosticName, object parameters)
         {
             if (parameters == null)
             {
@@ -73,12 +73,12 @@ namespace Microsoft.Extensions.TelemetryAdapter
             }
 
             Subscription subscription;
-            if (!_listener.Subscriptions.TryGetValue(telemetryName, out subscription))
+            if (!_listener.Subscriptions.TryGetValue(diagnosticName, out subscription))
             {
                 return;
             }
 
-            if (_listener.IsEnabled != null && !_listener.IsEnabled(telemetryName))
+            if (_listener.IsEnabled != null && !_listener.IsEnabled(diagnosticName))
             {
                 return;
             }
@@ -105,7 +105,7 @@ namespace Microsoft.Extensions.TelemetryAdapter
 
         void IObserver<KeyValuePair<string, object>>.OnNext(KeyValuePair<string, object> value)
         {
-            WriteTelemetry(value.Key, value.Value);
+            Write(value.Key, value.Value);
         }
 
         void IObserver<KeyValuePair<string, object>>.OnError(Exception error)
