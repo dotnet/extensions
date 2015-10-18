@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.Extensions.Internal
@@ -40,16 +39,27 @@ namespace Microsoft.Extensions.Internal
                 throw new ArgumentNullException(nameof(interfaceType));
             }
 
-            Func<Type, bool> matchesInterface =
-                type => type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == interfaceType;
-            if (matchesInterface(queryType))
+            if (MatchesInterface(queryType, interfaceType))
             {
                 // Checked type matches (i.e. is a closed generic type created from) the open generic type.
                 return queryType;
             }
 
             // Otherwise check all interfaces the type implements for a match.
-            return queryType.GetTypeInfo().ImplementedInterfaces.FirstOrDefault(matchesInterface);
+            var types = queryType.GetTypeInfo().ImplementedInterfaces;
+
+            foreach (var type in types)
+            {
+                if (MatchesInterface(type, interfaceType))
+                {
+                    return type;
+                }
+            }
+            return null;
         }
+
+
+        private static Func<Type, Type, bool> MatchesInterface =
+            (type, iType) => type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == iType;
     }
 }
