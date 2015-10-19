@@ -1,0 +1,25 @@
+{
+    "description": "Helpers for writing tests that use Microsoft.Extensions.Logging.",
+    "version": "1.0.0-*",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/logging"
+    },
+    "dependencies": {
+        "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
+        "xunit.assert": "2.1.0-*"
+    },
+    "frameworks": {
+        "net45": {
+            "frameworkAssemblies": {
+                "System.Runtime": ""
+            }
+        },
+        "dnx451": {
+            "frameworkAssemblies": {
+                "System.Runtime": ""
+            }
+        },
+        "dnxcore50": { }
+    }
+}
