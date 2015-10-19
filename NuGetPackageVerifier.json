@@ -12,7 +12,6 @@
             "Microsoft.AspNet.Testing": { },
             "Microsoft.Dnx.TestHost": { },
             "Microsoft.Dnx.Testing.Abstractions": { },
-            "Microsoft.Extensions.Logging.Testing": { },
             "Microsoft.Extensions.WebEncoders.Testing": { }
         }
     },
