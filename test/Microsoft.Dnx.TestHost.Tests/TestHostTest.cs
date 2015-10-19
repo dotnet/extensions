@@ -298,7 +298,7 @@ namespace Microsoft.Dnx.TestHost
             var testHostProcess = GetProcessById(testHostProcessId);
             if (testHostProcess != null)
             {
-                testHostProcess.WaitForExit(5 * 1000);
+                testHostProcess.WaitForExit(10 * 1000);
                 testHostProcess = GetProcessById(testHostProcessId);
             }
             Assert.Null(testHostProcess);
