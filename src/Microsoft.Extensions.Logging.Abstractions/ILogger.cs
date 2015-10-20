@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.Extensions.Logging
 {
     /// <summary>
-    /// A generic interface for logging.
+    /// Represents a type used to perform logging.
     /// </summary>
     public interface ILogger
     {

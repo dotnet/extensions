@@ -6,22 +6,27 @@ using System;
 namespace Microsoft.Extensions.Logging
 {
     /// <summary>
-    /// Used to create logger instances of the given name.
+    /// Represents a type used to configure the logging system and create instances of <see cref="ILogger"/> from
+    /// the registered <see cref="ILoggerProvider"/>s.
     /// </summary>
     public interface ILoggerFactory : IDisposable
     {
         /// <summary>
-        /// The minimum level of log messages sent to registered loggers.
+        /// The minimum level of log messages sent to loggers.
         /// </summary>
         LogLevel MinimumLevel { get; set; }
 
         /// <summary>
-        /// Creates a new ILogger instance of the given name.
+        /// Creates a new <see cref="ILogger"/> instance.
         /// </summary>
-        /// <param name="categoryName"></param>
-        /// <returns></returns>
+        /// <param name="categoryName">The category name for messages produced by the logger.</param>
+        /// <returns>The <see cref="ILogger"/>.</returns>
         ILogger CreateLogger(string categoryName);
 
+        /// <summary>
+        /// Adds an <see cref="ILoggerProvider"/> to the logging system.
+        /// </summary>
+        /// <param name="provider">The <see cref="ILoggerProvider"/>.</param>
         void AddProvider(ILoggerProvider provider);
     }
 }

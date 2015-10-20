@@ -6,15 +6,15 @@ using System;
 namespace Microsoft.Extensions.Logging
 {
     /// <summary>
-    /// Used to create logger instances of the given name.
+    /// Represents a type that can create instances of <see cref="ILogger"/>.
     /// </summary>
     public interface ILoggerProvider : IDisposable
     {
         /// <summary>
-        /// Creates a new ILogger instance of the given name.
+        /// Creates a new <see cref="ILogger"/> instance.
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="categoryName">The category name for messages produced by the logger.</param>
         /// <returns></returns>
-        ILogger CreateLogger(string name);
+        ILogger CreateLogger(string categoryName);
     }
 }
