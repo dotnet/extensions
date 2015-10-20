@@ -9,11 +9,7 @@ namespace Microsoft.AspNet.Testing
 {
     public static class TestPlatformHelper
     {
-        private static Lazy<IRuntimeEnvironment> _runtimeEnv = new Lazy<IRuntimeEnvironment>(() =>
-            (IRuntimeEnvironment)CallContextServiceLocator
-            .Locator
-            .ServiceProvider
-            .GetService(typeof(IRuntimeEnvironment)));
+        private static Lazy<IRuntimeEnvironment> _runtimeEnv = new Lazy<IRuntimeEnvironment>(() => PlatformServices.Default.Runtime);
 
         private static Lazy<bool> _isMono = new Lazy<bool>(() => RuntimeEnvironment.RuntimeType.Equals("Mono", StringComparison.OrdinalIgnoreCase));
         private static Lazy<bool> _isWindows = new Lazy<bool>(() => RuntimeEnvironment.OperatingSystem.Equals("Windows", StringComparison.OrdinalIgnoreCase));

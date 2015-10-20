@@ -22,9 +22,7 @@ namespace Microsoft.Dnx.TestHost
 
         public TestHostTest()
         {
-            var services = CallContextServiceLocator.Locator.ServiceProvider;
-
-            var libraryManager = (ILibraryManager)services.GetService(typeof(ILibraryManager));
+            var libraryManager = PlatformServices.Default.LibraryManager;
             _testProject = Path.GetDirectoryName(libraryManager.GetLibrary("Sample.Tests").Path);
         }
 

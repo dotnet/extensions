@@ -15,10 +15,7 @@ namespace Microsoft.Dnx.TestHost.Tests
         {
             get
             {
-                return (IRuntimeEnvironment)CallContextServiceLocator
-                        .Locator
-                        .ServiceProvider
-                        .GetService(typeof(IRuntimeEnvironment));
+                return PlatformServices.Default.Runtime;
             }
         }
 

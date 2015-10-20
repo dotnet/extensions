@@ -20,9 +20,7 @@ namespace Microsoft.Dnx.TestHost
 
         public ProjectTest()
         {
-            var services = CallContextServiceLocator.Locator.ServiceProvider;
-
-            var libraryManager = (ILibraryManager)services.GetService(typeof(ILibraryManager));
+            var libraryManager = PlatformServices.Default.LibraryManager;
 
             // Example: "C:\github\testing\test\Sample.Tests"
             _testProjectPath = Path.GetDirectoryName(libraryManager.GetLibrary(projectName).Path);

@@ -28,7 +28,7 @@ namespace Microsoft.Dnx.TestHost
             var application = new CommandLineApplication(throwOnUnexpectedArg: false);
             application.HelpOption("-?|-h|--help");
 
-            var env = (IApplicationEnvironment)_services.GetService(typeof(IApplicationEnvironment));
+            var env = PlatformServices.Default.Application;
 
             var portOption = application.Option(
                 "--port",

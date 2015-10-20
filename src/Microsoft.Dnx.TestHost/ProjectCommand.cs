@@ -20,7 +20,7 @@ namespace Microsoft.Dnx.TestHost
             string command,
             string[] args)
         {
-            var environment = (IApplicationEnvironment)services.GetService(typeof(IApplicationEnvironment));
+            var environment = PlatformServices.Default.Application;
             var commandText = project.Commands[command];
             var replacementArgs = CommandGrammar.Process(
                 commandText,
