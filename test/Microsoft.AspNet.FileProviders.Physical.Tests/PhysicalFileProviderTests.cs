@@ -117,7 +117,8 @@ namespace Microsoft.AspNet.FileProviders
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hidden files only make sense on Windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Hidden files only make sense on Windows.")]
         public void Exists_WithHiddenFile_ReturnsFalse()
         {
             // Set stuff up on disk
@@ -388,29 +389,45 @@ namespace Microsoft.AspNet.FileProviders
             File.Delete(fileLocation);
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        public void Token_For_Null_Empty_Whitespace_Filters()
+        [Fact]
+        public void Token_For_Null_Filter()
         {
             var provider = new PhysicalFileProvider(Path.GetTempPath());
-
             var token = provider.Watch(null);
-            Assert.False(token.HasChanged);
-            Assert.False(token.ActiveChangeCallbacks);
 
-            token = provider.Watch(string.Empty);
+            Assert.Same(NoopChangeToken.Singleton, token);
+        }
+
+        [Fact]
+        public void Token_For_Empty_Filter()
+        {
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
+            var token = provider.Watch(string.Empty);
+
             Assert.False(token.HasChanged);
             Assert.True(token.ActiveChangeCallbacks);
+        }
 
-            // White space.
-            token = provider.Watch("  ");
+        [Fact]
+        public void Token_For_Whitespace_Filters()
+        {
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
+            var token = provider.Watch("  ");
+
             Assert.False(token.HasChanged);
             Assert.True(token.ActiveChangeCallbacks);
+        }
 
-            // Absolute path.
-            token = provider.Watch(Path.Combine(Path.GetTempPath() + "filename"));
-            Assert.False(token.HasChanged);
-            Assert.False(token.ActiveChangeCallbacks);
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Skipping until #104 is resolved.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Skipping until #104 is resolved.")]
+        public void Token_For_AbsolutePath_Filters()
+        {
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
+            var path = Path.Combine(Path.GetTempPath(), "filename");
+            var token = provider.Watch(path);
+
+            Assert.Same(NoopChangeToken.Singleton, token);
         }
 
         [Fact]
@@ -706,17 +723,36 @@ namespace Microsoft.AspNet.FileProviders
             newtokens.ForEach(t => Assert.True(t.HasChanged));
         }
 
+        [Fact]
+        public async Task Tokens_NotFired_For_FileNames_Starting_With_Period()
+        {
+            var root = Path.GetTempPath();
+            var fileNameStartingWithPeriod = Path.Combine(root, "." + Guid.NewGuid().ToString());
+            File.WriteAllText(fileNameStartingWithPeriod, "Content");
+
+            var provider = new PhysicalFileProvider(Path.GetTempPath());
+            var tokenFileNameStartingPeriod = provider.Watch(Path.GetFileName(fileNameStartingWithPeriod));
+
+            Assert.False(tokenFileNameStartingPeriod.HasChanged);
+
+            File.WriteAllText(fileNameStartingWithPeriod, "Updated Contents");
+
+            // Wait for tokens to fire.
+            await Task.Delay(WaitTimeForTokenToFire);
+
+            Assert.False(tokenFileNameStartingPeriod.HasChanged);
+        }
+
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        public async Task Tokens_NotFired_For_FileNames_Starting_With_Period_And_Hidden_Files()
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hidden and system files only make sense on Windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Hidden and system files only make sense on Windows.")]
+        public async Task Tokens_NotFired_For_Hidden_And_System_Files()
         {
             var root = Path.GetTempPath();
             var hiddenFileName = Path.Combine(root, Guid.NewGuid().ToString());
             File.WriteAllText(hiddenFileName, "Content");
             var systemFileName = Path.Combine(root, Guid.NewGuid().ToString());
             File.WriteAllText(systemFileName, "Content");
-            var fileNameStartingWithPeriod = Path.Combine(root, "." + Guid.NewGuid().ToString());
-            File.WriteAllText(fileNameStartingWithPeriod, "Content");
             var fileInfo = new FileInfo(hiddenFileName);
             File.SetAttributes(hiddenFileName, fileInfo.Attributes | FileAttributes.Hidden);
             fileInfo = new FileInfo(systemFileName);
@@ -724,23 +760,20 @@ namespace Microsoft.AspNet.FileProviders
 
             var provider = new PhysicalFileProvider(Path.GetTempPath());
             var hiddenFiletoken = provider.Watch(Path.GetFileName(hiddenFileName));
-            var tokenFileNameStartingPeriod = provider.Watch(Path.GetFileName(fileNameStartingWithPeriod));
             var systemFiletoken = provider.Watch(Path.GetFileName(systemFileName));
 
             Assert.False(hiddenFiletoken.HasChanged);
-            Assert.False(tokenFileNameStartingPeriod.HasChanged);
             Assert.False(systemFiletoken.HasChanged);
 
             File.AppendAllText(hiddenFileName, "Appending text");
-            File.WriteAllText(fileNameStartingWithPeriod, "Updated Contents");
             File.AppendAllText(systemFileName, "Appending text");
 
             // Wait for tokens to fire.
             await Task.Delay(WaitTimeForTokenToFire);
 
             Assert.False(hiddenFiletoken.HasChanged);
-            Assert.False(tokenFileNameStartingPeriod.HasChanged);
             Assert.False(systemFiletoken.HasChanged);
         }
+
     }
 }
