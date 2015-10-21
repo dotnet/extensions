@@ -57,16 +57,34 @@ namespace Microsoft.Extensions.Primitives
             }
         }
 
+        public static TheoryData<StringValues, string> FilledStringValuesWithExpectedStrings
+        {
+            get
+            {
+                return new TheoryData<StringValues, string>
+                {
+                    { default(StringValues), (string)null },
+                    { StringValues.Empty, (string)null },
+                    { new StringValues(string.Empty), string.Empty },
+                    { new StringValues("abc"), "abc" }
+                };
+            }
+        }
+
         public static TheoryData<StringValues, string[]> FilledStringValuesWithExpected
         {
             get
             {
                 return new TheoryData<StringValues, string[]>
                 {
+                    { default(StringValues), new string[0] },
+                    { StringValues.Empty, new string[0] },
+                    { new StringValues(string.Empty), new[] { string.Empty } },
                     { new StringValues("abc"), new[] { "abc" } },
                     { new StringValues(new[] { "abc" }), new[] { "abc" } },
                     { new StringValues(new[] { "abc", "bcd" }), new[] { "abc", "bcd" } },
                     { new StringValues(new[] { "abc", "bcd", "foo" }), new[] { "abc", "bcd", "foo" } },
+                    { string.Empty, new[] { string.Empty } },
                     { "abc", new[] { "abc" } },
                     { new[] { "abc" }, new[] { "abc" } },
                     { new[] { "abc", "bcd" }, new[] { "abc", "bcd" } },
@@ -260,16 +278,29 @@ namespace Microsoft.Extensions.Primitives
 
         [Theory]
         [MemberData(nameof(FilledStringValuesWithExpected))]
-        public void CopyTo(StringValues stringValues, string[] expected)
+        public void CopyTo_TooSmall(StringValues stringValues, string[] expected)
         {
             ICollection<string> collection = stringValues;
-
             string[] tooSmall = new string[0];
-            Assert.Throws<ArgumentException>(() => collection.CopyTo(tooSmall, 0));
 
+            if (collection.Count > 0)
+            {
+                Assert.Throws<ArgumentException>(() => collection.CopyTo(tooSmall, 0));
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(FilledStringValuesWithExpected))]
+        public void CopyTo_CorrectSize(StringValues stringValues, string[] expected)
+        {
+            ICollection<string> collection = stringValues;
             string[] actual = new string[expected.Length];
-            Assert.Throws<ArgumentOutOfRangeException>(() => collection.CopyTo(actual, -1));
-            Assert.Throws<ArgumentException>(() => collection.CopyTo(actual, actual.Length + 1));
+
+            if (collection.Count > 0)
+            {
+                Assert.Throws<ArgumentOutOfRangeException>(() => collection.CopyTo(actual, -1));
+                Assert.Throws<ArgumentException>(() => collection.CopyTo(actual, actual.Length + 1));
+            }
             collection.CopyTo(actual, 0);
             Assert.Equal(expected, actual);
         }
@@ -301,6 +332,98 @@ namespace Microsoft.Extensions.Primitives
 
             string[] expectedAppended = filled.Concat(array).ToArray();
             Assert.Equal(expectedAppended, StringValues.Concat(new StringValues(filled), stringValues));
+        }
+
+        [Fact]
+        public void Equals_Operators()
+        {
+            var equalString = "abc";
+            var equalStringArray = new string[] { equalString };
+            var equalStringValues = new StringValues(equalString);
+
+            var notEqualString = "bcd";
+            var notEqualStringArray = new string[] { notEqualString };
+            var notEqualStringValues = new StringValues(notEqualString);
+
+            var stringArray = new string[] { "abc", "bcd" };
+            var stringValuesArray = new StringValues(stringArray);
+
+            Assert.True(equalStringValues == equalStringValues);
+            Assert.True(equalStringValues == equalString);
+            Assert.True(equalString == equalStringValues);
+            Assert.True(equalStringValues == equalStringArray);
+            Assert.True(equalStringArray == equalStringValues);
+
+            Assert.False(equalStringValues != equalStringValues);
+            Assert.True(equalStringValues != notEqualStringValues);
+            Assert.True(equalStringValues != notEqualString);
+            Assert.True(notEqualString != equalStringValues);
+            Assert.True(equalStringValues != notEqualStringArray);
+            Assert.True(notEqualStringArray != equalStringValues);
+        }
+
+        [Fact]
+        public void Equals_Instance()
+        {
+            var equalString = "abc";
+            var equalStringArray = new string[] { "abc" };
+            var equalStringValues = new StringValues(equalString);
+
+            var stringArray = new string[] { "abc", "bcd" };
+            var stringValuesArray = new StringValues(stringArray);
+
+            Assert.True(equalStringValues.Equals(equalStringValues));
+            Assert.True(equalStringValues.Equals(equalString));
+            Assert.True(equalStringValues.Equals(equalStringArray));
+            Assert.True(stringValuesArray.Equals(stringArray));
+        }
+
+        [Fact]
+        public void Equals_Object()
+        {
+            var nullStringValues = default(StringValues);
+
+            var equalString = "abc";
+            var equalStringArray = new string[] { "abc" };
+            var equalStringValues = new StringValues(equalString);
+
+            var stringArray = new string[] { "abc", "bcd" };
+            var stringValuesArray = new StringValues(stringArray);
+            
+            Assert.True(nullStringValues == (object)null);
+            Assert.True((object)null == nullStringValues);
+
+            Assert.True(equalStringValues == (object)equalStringValues);
+            Assert.True((object)equalStringValues == equalStringValues);
+
+            Assert.True(equalStringValues == (object)equalString);
+            Assert.True((object)equalString == equalStringValues);
+
+            Assert.True(equalStringValues == (object)equalStringArray);
+            Assert.True((object)equalStringArray == equalStringValues);
+
+            Assert.True(stringValuesArray == (object)stringArray);
+            Assert.True((object)stringArray == stringValuesArray);
+        }
+
+        [Theory]
+        [MemberData(nameof(FilledStringValuesWithExpectedStrings))]
+        public void Equals_String(StringValues stringValues, string expected)
+        {
+            var notEqual = new StringValues("bcd");
+
+            Assert.True(StringValues.Equals(stringValues, expected));
+            Assert.False(StringValues.Equals(stringValues, notEqual));
+        }
+
+        [Theory]
+        [MemberData(nameof(FilledStringValuesWithExpected))]
+        public void Equals_StringArray(StringValues stringValues, string[] expected)
+        {
+            var notEqual = new StringValues(new[] { "bcd", "abc" });
+
+            Assert.True(StringValues.Equals(stringValues, expected));
+            Assert.False(StringValues.Equals(stringValues, notEqual));
         }
     }
 }

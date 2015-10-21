@@ -4,13 +4,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.Primitives
 {
     /// <summary>
     /// Represents zero/null, one, or many strings in an efficient way.
     /// </summary>
-    public struct StringValues : IList<string>, IReadOnlyList<string>
+    public struct StringValues : IList<string>, IReadOnlyList<string>, IEquatable<StringValues>, IEquatable<string>, IEquatable<string[]>
     {
         private static readonly string[] EmptyArray = new string[0];
         public static readonly StringValues Empty = new StringValues(EmptyArray);
@@ -251,6 +252,170 @@ namespace Microsoft.Extensions.Primitives
             values1.CopyTo(combined, 0);
             values2.CopyTo(combined, count1);
             return new StringValues(combined);
+        }
+
+        public static bool Equals(StringValues left, StringValues right)
+        {
+            var count = left.Count;
+
+            if (count != right.Count)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < count; i++)
+            {
+                if (left[i] != right[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public static bool operator ==(StringValues left, StringValues right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(StringValues left, StringValues right)
+        {
+            return !Equals(left, right);
+        }
+
+        public bool Equals(StringValues other)
+        {
+            return Equals(this, other);
+        }
+
+        public static bool Equals(string left, StringValues right)
+        {
+            return Equals(new StringValues(left), right);
+        }
+
+        public static bool Equals(StringValues left, string right)
+        {
+            return Equals(left, new StringValues(right));
+        }
+
+        public bool Equals(string other)
+        {
+            return Equals(this, new StringValues(other));
+        }
+
+        public static bool Equals(string[] left, StringValues right)
+        {
+            return Equals(new StringValues(left), right);
+        }
+
+        public static bool Equals(StringValues left, string[] right)
+        {
+            return Equals(left, new StringValues(right));
+        }
+
+        public bool Equals(string[] other)
+        {
+            return Equals(this, new StringValues(other));
+        }
+
+        public static bool operator ==(StringValues left, string right)
+        {
+            return Equals(left, new StringValues(right));
+        }
+
+        public static bool operator !=(StringValues left, string right)
+        {
+            return !Equals(left, new StringValues(right));
+        }
+
+        public static bool operator ==(string left, StringValues right)
+        {
+            return Equals(new StringValues(left), right);
+        }
+
+        public static bool operator !=(string left, StringValues right)
+        {
+            return !Equals(new StringValues(left), right);
+        }
+
+        public static bool operator ==(StringValues left, string[] right)
+        {
+            return Equals(left, new StringValues(right));
+        }
+
+        public static bool operator !=(StringValues left, string[] right)
+        {
+            return !Equals(left, new StringValues(right));
+        }
+
+        public static bool operator ==(string[] left, StringValues right)
+        {
+            return Equals(new StringValues(left), right);
+        }
+
+        public static bool operator !=(string[] left, StringValues right)
+        {
+            return !Equals(new StringValues(left), right);
+        }
+
+        public static bool operator ==(StringValues left, object right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(StringValues left, object right)
+        {
+            return !left.Equals(right);
+        }
+        public static bool operator ==(object left, StringValues right)
+        {
+            return right.Equals(left);
+        }
+
+        public static bool operator !=(object left, StringValues right)
+        {
+            return !right.Equals(left);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+            {
+                return Equals(this, StringValues.Empty);
+            }
+
+            if (obj is string)
+            {
+                return Equals(this, (string)obj);
+            }
+            
+            if (obj is string[])
+            {
+                return Equals(this, (string[])obj);
+            }
+
+            if (obj is StringValues)
+            {
+                return Equals(this, (StringValues)obj);
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            if (_values == null)
+            {
+                return _value == null ? 0 : _value.GetHashCode();
+            }
+
+            var hcc = new HashCodeCombiner();
+            for (var i = 0; i < _values.Length; i++)
+            {
+                hcc.Add(_values[i]);
+            }
+            return hcc.CombinedHash;
         }
 
         public struct Enumerator : IEnumerator<string>
