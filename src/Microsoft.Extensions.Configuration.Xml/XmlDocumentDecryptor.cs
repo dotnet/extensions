@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Configuration.Xml
         /// <summary>
         /// Accesses the singleton decryptor instance.
         /// </summary>
-#if DOTNET || DNXCORE50
+#if DOTNET5_4
         public static readonly XmlDocumentDecryptor Instance = new XmlDocumentDecryptor();
 #else
         public static readonly XmlDocumentDecryptor Instance = new EncryptedXmlDocumentDecryptor();
@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.Configuration.Xml
             // us that it did so, so we need to perform a check to see if EncryptedXml
             // will actually do anything. The below check for an encrypted data blob
             // is the same one that EncryptedXml would have performed.
-#if DOTNET || DNXCORE50
+#if DOTNET5_4
             var matchingNodes = document.GetElementsByTagName("EncryptedData", "http://www.w3.org/2001/04/xmlenc#");
             return (matchingNodes != null && matchingNodes.Count > 0);
 #else
