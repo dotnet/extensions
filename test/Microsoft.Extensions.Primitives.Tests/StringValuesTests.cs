@@ -65,8 +65,27 @@ namespace Microsoft.Extensions.Primitives
                 {
                     { default(StringValues), (string)null },
                     { StringValues.Empty, (string)null },
+                    { new StringValues(new string[] { }), (string)null },
                     { new StringValues(string.Empty), string.Empty },
+                    { new StringValues(new string[] { string.Empty }), string.Empty },
                     { new StringValues("abc"), "abc" }
+                };
+            }
+        }
+        
+        public static TheoryData<StringValues, object> FilledStringValuesWithExpectedObjects
+        {
+            get
+            {
+                return new TheoryData<StringValues, object>
+                {
+                    { default(StringValues), (object)null },
+                    { StringValues.Empty, (object)null },
+                    { new StringValues(new string[] { }), (object)null },
+                    { new StringValues("abc"), (object)"abc" },
+                    { new StringValues("abc"), (object)new[] { "abc" } },
+                    { new StringValues(new[] { "abc" }), (object)new[] { "abc" } },
+                    { new StringValues(new[] { "abc", "bcd" }), (object)new[] { "abc", "bcd" } }
                 };
             }
         }
@@ -335,41 +354,65 @@ namespace Microsoft.Extensions.Primitives
         }
 
         [Fact]
-        public void Equals_Operators()
+        public void Equals_OperatorEqual()
         {
             var equalString = "abc";
+
             var equalStringArray = new string[] { equalString };
             var equalStringValues = new StringValues(equalString);
-
-            var notEqualString = "bcd";
-            var notEqualStringArray = new string[] { notEqualString };
-            var notEqualStringValues = new StringValues(notEqualString);
-
-            var stringArray = new string[] { "abc", "bcd" };
+            var stringArray = new string[] { equalString, equalString };
             var stringValuesArray = new StringValues(stringArray);
 
             Assert.True(equalStringValues == equalStringValues);
+
             Assert.True(equalStringValues == equalString);
             Assert.True(equalString == equalStringValues);
+
             Assert.True(equalStringValues == equalStringArray);
             Assert.True(equalStringArray == equalStringValues);
 
+            Assert.True(stringArray == stringValuesArray);
+            Assert.True(stringValuesArray == stringArray);
+
+            Assert.False(stringValuesArray == equalString);
+            Assert.False(stringValuesArray == equalStringArray);
+            Assert.False(stringValuesArray == equalStringValues);
+        }
+
+        [Fact]
+        public void Equals_OperatorNotEqual()
+        {
+            var equalString = "abc";
+
+            var equalStringArray = new string[] { equalString };
+            var equalStringValues = new StringValues(equalString);
+            var stringArray = new string[] { equalString, equalString };
+            var stringValuesArray = new StringValues(stringArray);
+
             Assert.False(equalStringValues != equalStringValues);
-            Assert.True(equalStringValues != notEqualStringValues);
-            Assert.True(equalStringValues != notEqualString);
-            Assert.True(notEqualString != equalStringValues);
-            Assert.True(equalStringValues != notEqualStringArray);
-            Assert.True(notEqualStringArray != equalStringValues);
+
+            Assert.False(equalStringValues != equalString);
+            Assert.False(equalString != equalStringValues);
+
+            Assert.False(equalStringValues != equalStringArray);
+            Assert.False(equalStringArray != equalStringValues);
+
+            Assert.False(stringArray != stringValuesArray);
+            Assert.False(stringValuesArray != stringArray);
+
+            Assert.True(stringValuesArray != equalString);
+            Assert.True(stringValuesArray != equalStringArray);
+            Assert.True(stringValuesArray != equalStringValues);
         }
 
         [Fact]
         public void Equals_Instance()
         {
             var equalString = "abc";
-            var equalStringArray = new string[] { "abc" };
-            var equalStringValues = new StringValues(equalString);
 
-            var stringArray = new string[] { "abc", "bcd" };
+            var equalStringArray = new string[] { equalString };
+            var equalStringValues = new StringValues(equalString);
+            var stringArray = new string[] { equalString, equalString };
             var stringValuesArray = new StringValues(stringArray);
 
             Assert.True(equalStringValues.Equals(equalStringValues));
@@ -378,32 +421,20 @@ namespace Microsoft.Extensions.Primitives
             Assert.True(stringValuesArray.Equals(stringArray));
         }
 
-        [Fact]
-        public void Equals_Object()
+        [Theory]
+        [MemberData(nameof(FilledStringValuesWithExpectedObjects))]
+        public void Equals_ObjectEquals(StringValues stringValues, object obj)
         {
-            var nullStringValues = default(StringValues);
+            Assert.True(stringValues == obj);
+            Assert.True(obj == stringValues);
+        }
 
-            var equalString = "abc";
-            var equalStringArray = new string[] { "abc" };
-            var equalStringValues = new StringValues(equalString);
-
-            var stringArray = new string[] { "abc", "bcd" };
-            var stringValuesArray = new StringValues(stringArray);
-            
-            Assert.True(nullStringValues == (object)null);
-            Assert.True((object)null == nullStringValues);
-
-            Assert.True(equalStringValues == (object)equalStringValues);
-            Assert.True((object)equalStringValues == equalStringValues);
-
-            Assert.True(equalStringValues == (object)equalString);
-            Assert.True((object)equalString == equalStringValues);
-
-            Assert.True(equalStringValues == (object)equalStringArray);
-            Assert.True((object)equalStringArray == equalStringValues);
-
-            Assert.True(stringValuesArray == (object)stringArray);
-            Assert.True((object)stringArray == stringValuesArray);
+        [Theory]
+        [MemberData(nameof(FilledStringValuesWithExpectedObjects))]
+        public void Equals_ObjectNotEquals(StringValues stringValues, object obj)
+        {
+            Assert.False(stringValues != obj);
+            Assert.False(obj != stringValues);
         }
 
         [Theory]
