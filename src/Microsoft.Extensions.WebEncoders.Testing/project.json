@@ -1,25 +1,20 @@
 {
-    "description": "Helpers for writing tests that useMicrosoft.Extensions.WebEncoders.",
-    "version": "1.0.0-*",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/testing"
+  "description": "Helpers for writing tests that useMicrosoft.Extensions.WebEncoders.",
+  "version": "1.0.0-*",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/testing"
+  },
+  "dependencies": {
+    "Microsoft.Extensions.WebEncoders": "1.0.0-*",
+    "xunit.assert": "2.1.0-*"
+  },
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Runtime": ""
+      }
     },
-    "dependencies": {
-        "Microsoft.Extensions.WebEncoders": "1.0.0-*",
-        "xunit.assert": "2.1.0-*"
-    },
-    "frameworks": {
-        "net45": {
-            "frameworkAssemblies": {
-                "System.Runtime": ""
-            }
-        },
-        "dnx451": {
-            "frameworkAssemblies": {
-                "System.Runtime": ""
-            }
-        },
-        "dnxcore50": { }
-    }
+    "dotnet5.4": {}
+  }
 }
