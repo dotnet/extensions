@@ -21,7 +21,7 @@ namespace SampleApp
             factory.AddNLog(new global::NLog.LogFactory());
             factory.AddEventLog();
 #endif
-            factory.AddConsole();
+            factory.AddConsole(includeScopes: true);
         }
 
         public void Main(string[] args)

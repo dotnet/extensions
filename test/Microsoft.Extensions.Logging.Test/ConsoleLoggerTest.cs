@@ -20,12 +20,12 @@ namespace Microsoft.Extensions.Logging.Test
         private const string _state = "This is a test, and {curly braces} are just fine!";
         private readonly Func<object, Exception, string> _theMessageAndError;
 
-        private Tuple<ConsoleLogger, ConsoleSink> SetUp(Func<string, LogLevel, bool> filter)
+        private Tuple<ConsoleLogger, ConsoleSink> SetUp(Func<string, LogLevel, bool> filter, bool includeScopes = false)
         {
             // Arrange
             var sink = new ConsoleSink();
             var console = new TestConsole(sink);
-            var logger = new ConsoleLogger(_loggerName, filter);
+            var logger = new ConsoleLogger(_loggerName, filter, includeScopes);
             logger.Console = console;
             return new Tuple<ConsoleLogger, ConsoleSink>(logger, sink);
         }
@@ -461,6 +461,162 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(GetMessage("info", 0, ex), GetMessage(sink.Writes.GetRange(9, 3)));
             Assert.Equal(GetMessage("verb", 0, ex), GetMessage(sink.Writes.GetRange(12, 3)));
             Assert.Equal(GetMessage("dbug", 0, ex), GetMessage(sink.Writes.GetRange(15, 3)));
+        }
+
+        [Fact]
+        public void NoLogScope_DoesNotWriteAnyScopeContentToOutput()
+        {
+            // Arrange
+            var t = SetUp(filter: null, includeScopes: true);
+            var logger = t.Item1;
+            var sink = t.Item2;
+
+            // Act
+            logger.Log(LogLevel.Warning, 0, _state, null, null);
+
+            // Assert
+            Assert.Equal(3, sink.Writes.Count);
+            var write = sink.Writes[0];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.DarkYellow, write.ForegroundColor);
+            write = sink.Writes[1];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            write = sink.Writes[2];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.White, write.ForegroundColor);
+        }
+
+        [Fact]
+        public void WritingScopes_LogsWithCorrectColors()
+        {
+            // Arrange
+            var t = SetUp(filter: null, includeScopes: true);
+            var logger = t.Item1;
+            var sink = t.Item2;
+            var id = Guid.NewGuid();
+            var scopeMessage = "RequestId: {RequestId}";
+
+            // Act
+            using (logger.BeginScope(scopeMessage, id))
+            {
+                logger.Log(LogLevel.Information, 0, _state, null, null);
+            }
+
+            // Assert
+            Assert.Equal(4, sink.Writes.Count);
+            var write = sink.Writes[0];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.DarkGreen, write.ForegroundColor);
+            write = sink.Writes[1];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            write = sink.Writes[2];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            write = sink.Writes[3];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.White, write.ForegroundColor);
+        }
+
+        [Fact]
+        public void WritingScopes_LogsExpectedMessage()
+        {
+            // Arrange
+            var t = SetUp(filter: null, includeScopes: true);
+            var logger = t.Item1;
+            var sink = t.Item2;
+            var expectedMessage =
+                _paddingString
+                + $"=> RequestId: 100"
+                + Environment.NewLine;
+
+            // Act
+            using (logger.BeginScope("RequestId: {RequestId}", 100))
+            {
+                logger.Log(LogLevel.Information, 0, _state, null, null);
+            }
+
+            // Assert
+            Assert.Equal(4, sink.Writes.Count);
+            // scope
+            var write = sink.Writes[2];
+            Assert.Equal(expectedMessage, write.Message);
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+        }
+
+        [Fact]
+        public void WritingNestedScopes_LogsExpectedMessage()
+        {
+            // Arrange
+            var t = SetUp(filter: null, includeScopes: true);
+            var logger = t.Item1;
+            var sink = t.Item2;
+            var expectedMessage =
+                _paddingString
+                + $"=> RequestId: 100 => Request matched action: Index"
+                + Environment.NewLine;
+
+            // Act
+            using (logger.BeginScope("RequestId: {RequestId}", 100))
+            {
+                using (logger.BeginScope("Request matched action: {ActionName}", "Index"))
+                {
+                    logger.Log(LogLevel.Information, 0, _state, null, null);
+                }
+            }
+
+            // Assert
+            Assert.Equal(4, sink.Writes.Count);
+            // scope
+            var write = sink.Writes[2];
+            Assert.Equal(expectedMessage, write.Message);
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+        }
+
+        [Fact]
+        public void WritingMultipleScopes_LogsExpectedMessage()
+        {
+            // Arrange
+            var t = SetUp(filter: null, includeScopes: true);
+            var logger = t.Item1;
+            var sink = t.Item2;
+            var expectedMessage1 =
+                _paddingString
+                + $"=> RequestId: 100 => Request matched action: Index"
+                + Environment.NewLine;
+            var expectedMessage2 =
+                _paddingString
+                + $"=> RequestId: 100 => Created product: Car"
+                + Environment.NewLine;
+
+            // Act
+            using (logger.BeginScope("RequestId: {RequestId}", 100))
+            {
+                using (logger.BeginScope("Request matched action: {ActionName}", "Index"))
+                {
+                    logger.Log(LogLevel.Information, 0, _state, null, null);
+                }
+
+                using (logger.BeginScope("Created product: {ProductName}", "Car"))
+                {
+                    logger.Log(LogLevel.Information, 0, _state, null, null);
+                }
+            }
+
+            // Assert
+            Assert.Equal(8, sink.Writes.Count);
+            // scope
+            var write = sink.Writes[2];
+            Assert.Equal(expectedMessage1, write.Message);
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            write = sink.Writes[6];
+            Assert.Equal(expectedMessage2, write.Message);
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
         }
 
         [Fact]

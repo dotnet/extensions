@@ -19,6 +19,7 @@ namespace Microsoft.Extensions.Logging.Console
         private const int _indentation = 2;
         private readonly string _name;
         private readonly Func<string, LogLevel, bool> _filter;
+        private readonly bool _includeScopes;
 
         static ConsoleLogger()
         {
@@ -26,10 +27,11 @@ namespace Microsoft.Extensions.Logging.Console
             _messagePadding = new string(' ', logLevelString.Length + _loglevelPadding.Length);
         }
 
-        public ConsoleLogger(string name, Func<string, LogLevel, bool> filter)
+        public ConsoleLogger(string name, Func<string, LogLevel, bool> filter, bool includeScopes)
         {
             _name = name;
             _filter = filter ?? ((category, logLevel) => true);
+            _includeScopes = includeScopes;
             Console = new LogConsole();
         }
 
@@ -103,6 +105,20 @@ namespace Microsoft.Extensions.Logging.Console
                     _loglevelPadding + logName + $"[{eventId}]",
                     newLine: true);
 
+                // scope information
+                if (_includeScopes)
+                {
+                    var scopeInformation = GetScopeInformation();
+                    if (!string.IsNullOrEmpty(scopeInformation))
+                    {
+                        WriteWithColor(
+                            ConsoleColor.Gray,
+                            Console.BackgroundColor,
+                            _messagePadding + scopeInformation,
+                            newLine: true);
+                    }
+                }
+
                 // message
                 WriteWithColor(
                     ConsoleColor.White,
@@ -119,7 +135,12 @@ namespace Microsoft.Extensions.Logging.Console
 
         public IDisposable BeginScopeImpl(object state)
         {
-            return new NoopDisposable();
+            if (state == null)
+            {
+                throw new ArgumentNullException(nameof(state));
+            }
+
+            return ConsoleLogScope.Push(_name, state);
         }
 
         private void FormatLogValues(StringBuilder builder, ILogValues logValues, int level, bool bullet)
@@ -247,6 +268,29 @@ namespace Microsoft.Extensions.Logging.Console
             }
         }
 
+        private string GetScopeInformation()
+        {
+            var current = ConsoleLogScope.Current;
+            var output = new StringBuilder();
+            string scopeLog = string.Empty;
+            while (current != null)
+            {
+                if (output.Length == 0)
+                {
+                    scopeLog = $"=> {current}";
+                }
+                else
+                {
+                    scopeLog = $"=> {current} ";
+                }
+
+                output.Insert(0, scopeLog);
+                current = current.Parent;
+            }
+
+            return output.ToString();
+        }
+
         private struct ConsoleColors
         {
             public ConsoleColors(ConsoleColor foreground, ConsoleColor background)
@@ -257,13 +301,6 @@ namespace Microsoft.Extensions.Logging.Console
             public ConsoleColor Foreground { get; }
 
             public ConsoleColor Background { get; }
-        }
-
-        private class NoopDisposable : IDisposable
-        {
-            public void Dispose()
-            {
-            }
         }
     }
 }

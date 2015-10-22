@@ -13,16 +13,18 @@ namespace Microsoft.Extensions.Logging
         /// </summary>
         public static ILoggerFactory AddConsole(this ILoggerFactory factory)
         {
-            factory.AddProvider(new ConsoleLoggerProvider((category, logLevel) => logLevel >= LogLevel.Information));
-            return factory;
+            return factory.AddConsole(includeScopes: false);
         }
 
         /// <summary>
-        /// Adds a console logger that is enabled as defined by the filter function.
+        /// Adds a console logger that is enabled for <see cref="LogLevel"/>.Information or higher.
         /// </summary>
-        public static ILoggerFactory AddConsole(this ILoggerFactory factory, Func<string, LogLevel, bool> filter)
+        /// <param name="factory"></param>
+        /// <param name="includeScopes">A value which indicates whether log scope information should be displayed
+        /// in the output.</param>
+        public static ILoggerFactory AddConsole(this ILoggerFactory factory, bool includeScopes)
         {
-            factory.AddProvider(new ConsoleLoggerProvider(filter));
+            factory.AddConsole(LogLevel.Information, includeScopes);
             return factory;
         }
 
@@ -32,7 +34,39 @@ namespace Microsoft.Extensions.Logging
         /// <param name="minLevel">The minimum <see cref="LogLevel"/> to be logged</param>
         public static ILoggerFactory AddConsole(this ILoggerFactory factory, LogLevel minLevel)
         {
-            factory.AddProvider(new ConsoleLoggerProvider((category, logLevel) => logLevel >= minLevel));
+            factory.AddConsole(minLevel, includeScopes: false);
+            return factory;
+        }
+
+        /// <summary>
+        /// Adds a console logger that is enabled for <see cref="LogLevel"/>s of minLevel or higher.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="minLevel">The minimum <see cref="LogLevel"/> to be logged</param>
+        /// <param name="includeScopes">A value which indicates whether log scope information should be displayed
+        /// in the output.</param>
+        public static ILoggerFactory AddConsole(
+            this ILoggerFactory factory,
+            LogLevel minLevel,
+            bool includeScopes)
+        {
+            factory.AddConsole((category, logLevel) => logLevel >= minLevel, includeScopes);
+            return factory;
+        }
+
+        /// <summary>
+        /// Adds a console logger that is enabled as defined by the filter function.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="filter"></param>
+        /// <param name="includeScopes">A value which indicates whether log scope information should be displayed
+        /// in the output.</param>
+        public static ILoggerFactory AddConsole(
+            this ILoggerFactory factory,
+            Func<string, LogLevel, bool> filter,
+            bool includeScopes)
+        {
+            factory.AddProvider(new ConsoleLoggerProvider(filter, includeScopes));
             return factory;
         }
     }
