@@ -258,5 +258,80 @@ namespace Microsoft.Extensions.Configuration.Test
             // Assert
             Assert.Equal(expectedMsg, ex.Message);
         }
+
+        [Fact]
+        public void SameReloadTokenIsReturnedRepeatedly()
+        {
+            // Arrange
+            var configurationBuilder = new ConfigurationBuilder();
+            var config = configurationBuilder.Build();
+
+            // Act
+            var token1 = config.GetReloadToken();
+            var token2 = config.GetReloadToken();
+
+            // Assert
+            Assert.Same(token1, token2);
+        }
+
+        [Fact]
+        public void DifferentReloadTokenReturnedAfterReloading()
+        {
+            // Arrange
+            var configurationBuilder = new ConfigurationBuilder();
+            var config = configurationBuilder.Build();
+
+            // Act
+            var token1 = config.GetReloadToken();
+            var token2 = config.GetReloadToken();
+            config.Reload();
+            var token3 = config.GetReloadToken();
+            var token4 = config.GetReloadToken();
+
+            // Assert
+            Assert.Same(token1, token2);
+            Assert.Same(token3, token4);
+            Assert.NotSame(token1, token3);
+        }
+
+        [Fact]
+        public void TokenTriggeredWhenReloadOccurs()
+        {
+            // Arrange
+            var configurationBuilder = new ConfigurationBuilder();
+            var config = configurationBuilder.Build();
+
+            // Act
+            var token1 = config.GetReloadToken();
+            var hasChanged1 = token1.HasChanged;
+            config.Reload();
+            var hasChanged2 = token1.HasChanged;
+
+            // Assert
+            Assert.False(hasChanged1);
+            Assert.True(hasChanged2);
+        }
+
+        [Fact]
+        public void NewTokenAfterReloadIsNotChanged()
+        {
+            // Arrange
+            var configurationBuilder = new ConfigurationBuilder();
+            var config = configurationBuilder.Build();
+
+            // Act
+            var token1 = config.GetReloadToken();
+            var hasChanged1 = token1.HasChanged;
+            config.Reload();
+            var hasChanged2 = token1.HasChanged;
+            var token2 = config.GetReloadToken();
+            var hasChanged3 = token2.HasChanged;
+
+            // Assert
+            Assert.False(hasChanged1);
+            Assert.True(hasChanged2);
+            Assert.False(hasChanged3);
+            Assert.NotSame(token1, token2);
+        }
     }
 }

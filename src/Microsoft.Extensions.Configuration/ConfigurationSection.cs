@@ -4,51 +4,52 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.Configuration
 {
-    public class ConfigurationSection : ConfigurationBase, IConfigurationSection
+    public class ConfigurationSection : IConfigurationSection
     {
-        private readonly string _key;
+        private readonly ConfigurationRoot _root;
         private readonly string _path;
+        private string _key;
 
-        public ConfigurationSection(IList<IConfigurationProvider> providers, string parentPath, string key)
-            : base(providers)
+        public ConfigurationSection(ConfigurationRoot root, string path)
         {
-            if (parentPath == null)
+            if (root == null)
             {
-                throw new ArgumentNullException(nameof(parentPath));
+                throw new ArgumentNullException(nameof(root));
             }
 
-            if (string.IsNullOrEmpty(key))
+            if (path == null)
             {
-                throw new ArgumentException(Resources.Error_EmptyKey);
+                throw new ArgumentNullException(nameof(path));
             }
 
-            _key = key;
-            if (!string.Equals(parentPath, string.Empty))
-            {
-                _path = parentPath + Constants.KeyDelimiter + key;
-            }
-            else
-            {
-                _path = key;
-            }
+            _root = root;
+            _path = path;
         }
+
+        public string Path => _path;
 
         public string Key
         {
             get
             {
+                if (_key == null)
+                {
+                    // Key is calculated lazily as last portion of Path
+                    var lastDelimiterIndex = _path.LastIndexOf(Constants.KeyDelimiter);
+                    if (lastDelimiterIndex == -1)
+                    {
+                        _key = _path;
+                    }
+                    else
+                    {
+                        _key = _path.Substring(lastDelimiterIndex + 1);
+                    }
+                }
                 return _key;
-            }
-        }
-
-        public override string Path
-        {
-            get
-            {
-                return _path;
             }
         }
 
@@ -56,30 +57,31 @@ namespace Microsoft.Extensions.Configuration
         {
             get
             {
-                foreach (var provider in Providers.Reverse())
-                {
-                    string value = null;
-
-                    if (provider.TryGet(Path, out value))
-                    {
-                        return value;
-                    }
-                }
-
-                return null;
+                return _root[Path];
             }
             set
             {
-                if (!Providers.Any())
-                {
-                    throw new InvalidOperationException(Resources.Error_NoSources);
-                }
-
-                foreach (var provider in Providers)
-                {
-                    provider.Set(Path, value);
-                }
+                _root[Path] = value;
             }
         }
+
+        public string this[string key]
+        {
+            get
+            {
+                return _root[Path + Constants.KeyDelimiter + key];
+            }
+
+            set
+            {
+                _root[Path + Constants.KeyDelimiter + key] = value;
+            }
+        }
+
+        public IConfigurationSection GetSection(string key) => _root.GetSection(Path + Constants.KeyDelimiter + key);
+
+        public IEnumerable<IConfigurationSection> GetChildren() => _root.GetChildrenImplementation(Path);
+
+        public IChangeToken GetReloadToken() => _root.GetReloadToken();
     }
 }

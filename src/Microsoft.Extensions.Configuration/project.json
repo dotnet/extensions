@@ -18,7 +18,8 @@
         "System.IO.FileSystem": "4.0.1-beta-*",
         "System.Resources.ResourceManager": "4.0.1-beta-*",
         "System.Runtime.Extensions": "4.0.11-beta-*",
-        "System.Runtime.InteropServices": "4.0.21-beta-*"
+        "System.Runtime.InteropServices": "4.0.21-beta-*",
+        "System.Threading": "4.0.11-beta-*"
       }
     },
     "netcore50": {

@@ -5,19 +5,19 @@
     "type": "git",
     "url": "https://github.com/aspnet/configuration"
   },
-  "dependencies": {},
+  "dependencies": {
+    "Microsoft.Extensions.Primitives": "1.0.0-*"
+  },
   "frameworks": {
-    "net451": {},
+    "net451": { },
+    "netcore50": {
+      "dependencies": {
+        "System.Collections": "4.0.10"
+      }
+    },
     "dotnet5.4": {
       "dependencies": {
         "System.Linq": "4.0.1-beta-*"
-      }
-    },
-    "netcore50": {
-      "dependencies": {
-        "System.Collections": "4.0.10",
-        "System.Resources.ResourceManager": "4.0.0",
-        "System.Runtime": "4.0.20"
       }
     }
   }
