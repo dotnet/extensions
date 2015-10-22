@@ -11,14 +11,14 @@
     ]
   },
   "frameworks": {
-    "net45": {
+    "net451": {
       "frameworkAssemblies": {
         "System.Collections.Concurrent": "",
         "System.Linq": "",
         "System.Runtime": ""
       }
     },
-    "dotnet": {
+    "dotnet5.4": {
       "dependencies": {
         "System.ComponentModel": "4.0.1-beta-*",
         "System.Collections.Concurrent": "4.0.11-beta-*",
