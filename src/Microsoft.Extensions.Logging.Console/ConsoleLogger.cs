@@ -10,10 +10,21 @@ namespace Microsoft.Extensions.Logging.Console
 {
     public class ConsoleLogger : ILogger
     {
+        // Writing to console is not an atomic operation in the current implementation and since multiple logger
+        // instances are created with a different name. Also since Console is global, using a static lock is fine.
+        private static readonly object _lock = new object();
+        private static readonly string _loglevelPadding = ": ";
+        private static readonly string _messagePadding;
+
         private const int _indentation = 2;
         private readonly string _name;
         private readonly Func<string, LogLevel, bool> _filter;
-        private readonly object _lock = new object();
+
+        static ConsoleLogger()
+        {
+            var logLevelString = GetLogLevelString(LogLevel.Information);
+            _messagePadding = new string(' ', logLevelString.Length + _loglevelPadding.Length);
+        }
 
         public ConsoleLogger(string name, Func<string, LogLevel, bool> filter)
         {
@@ -23,6 +34,7 @@ namespace Microsoft.Extensions.Logging.Console
         }
 
         public IConsole Console { get; set; }
+
         protected string Name { get { return _name; } }
 
         public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
@@ -59,54 +71,50 @@ namespace Microsoft.Extensions.Logging.Console
             {
                 return;
             }
-            lock (_lock)
-            {
-                SetConsoleColor(logLevel);
-                try
-                {
-                    Console.WriteLine(FormatMessage(logLevel, _name, message));
-                }
-                finally
-                {
-                    Console.ResetColor();
-                }
-            }
+
+            WriteMessage(logLevel, _name, eventId, message);
         }
 
-        public virtual string FormatMessage(LogLevel logLevel, string logName, string message)
+        public virtual void WriteMessage(LogLevel logLevel, string logName, int eventId, string message)
         {
-            var logLevelString = GetRightPaddedLogLevelString(logLevel);
-            return $"{logLevelString}: [{logName}] {message}";
+            // check if the message has any new line characters in it and provide the padding if necessary
+            message = message.Replace(Environment.NewLine, Environment.NewLine + _messagePadding);
+            var logLevelColors = GetLogLevelConsoleColors(logLevel);
+            var loglevelString = GetLogLevelString(logLevel);
+
+            // Example:
+            // INFO: ConsoleApp.Program[10]
+            //       Request received
+
+            lock (_lock)
+            {
+                // log level string
+                WriteWithColor(
+                    logLevelColors.Foreground,
+                    logLevelColors.Background,
+                    loglevelString,
+                    newLine: false);
+
+                // category and event id
+                // use default colors
+                WriteWithColor(
+                    ConsoleColor.Gray,
+                    Console.BackgroundColor,
+                    _loglevelPadding + logName + $"[{eventId}]",
+                    newLine: true);
+
+                // message
+                WriteWithColor(
+                    ConsoleColor.White,
+                    Console.BackgroundColor,
+                    _messagePadding + message,
+                    newLine: true);
+            }
         }
 
         public bool IsEnabled(LogLevel logLevel)
         {
             return _filter(_name, logLevel);
-        }
-
-        // sets the console text color to reflect the given LogLevel
-        private void SetConsoleColor(LogLevel logLevel)
-        {
-            switch (logLevel)
-            {
-                case LogLevel.Critical:
-                    Console.BackgroundColor = ConsoleColor.Red;
-                    Console.ForegroundColor = ConsoleColor.White;
-                    break;
-                case LogLevel.Error:
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    break;
-                case LogLevel.Warning:
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    break;
-                case LogLevel.Information:
-                    Console.ForegroundColor = ConsoleColor.White;
-                    break;
-                case LogLevel.Verbose:
-                default:
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    break;
-            }
         }
 
         public IDisposable BeginScopeImpl(object state)
@@ -172,25 +180,83 @@ namespace Microsoft.Extensions.Logging.Console
             }
         }
 
-        private static string GetRightPaddedLogLevelString(LogLevel logLevel)
+        private static string GetLogLevelString(LogLevel logLevel)
         {
             switch (logLevel)
             {
                 case LogLevel.Debug:
-                    return "debug   ";
+                    return "dbug";
                 case LogLevel.Verbose:
-                    return "verbose ";
+                    return "verb";
                 case LogLevel.Information:
-                    return "info    ";
+                    return "info";
                 case LogLevel.Warning:
-                    return "warning ";
+                    return "warn";
                 case LogLevel.Error:
-                    return "error   ";
+                    return "fail";
                 case LogLevel.Critical:
-                    return "critical";
+                    return "crit";
                 default:
-                    return "unknown ";
+                    throw new ArgumentOutOfRangeException(nameof(logLevel));
             }
+        }
+
+        private ConsoleColors GetLogLevelConsoleColors(LogLevel logLevel)
+        {
+            // do not change user's background color except for Critical
+            switch (logLevel)
+            {
+                case LogLevel.Critical:
+                    return new ConsoleColors(ConsoleColor.White, ConsoleColor.Red);
+                case LogLevel.Error:
+                    return new ConsoleColors(ConsoleColor.Red, Console.BackgroundColor);
+                case LogLevel.Warning:
+                    return new ConsoleColors(ConsoleColor.DarkYellow, Console.BackgroundColor);
+                case LogLevel.Information:
+                    return new ConsoleColors(ConsoleColor.DarkGreen, Console.BackgroundColor);
+                case LogLevel.Debug:
+                case LogLevel.Verbose:
+                default:
+                    return new ConsoleColors(ConsoleColor.Gray, Console.BackgroundColor);
+            }
+        }
+
+        private void WriteWithColor(
+            ConsoleColor foreground,
+            ConsoleColor background,
+            string message,
+            bool newLine = false)
+        {
+            Console.ForegroundColor = foreground;
+            Console.BackgroundColor = background;
+
+            try
+            {
+                if (newLine)
+                {
+                    Console.WriteLine(message);
+                }
+                else
+                {
+                    Console.Write(message);
+                }
+            }
+            finally
+            {
+                Console.ResetColor();
+            }
+        }
+
+        private struct ConsoleColors
+        {
+            public ConsoleColors(ConsoleColor foreground, ConsoleColor background)
+            {
+                Foreground = foreground;
+                Background = background;
+            }
+            public ConsoleColor Foreground { get; }
+
+            public ConsoleColor Background { get; }
         }
 
         private class NoopDisposable : IDisposable

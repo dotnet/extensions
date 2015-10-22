@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.Logging.Test.Console
             ForegroundColor = DefaultForegroundColor;
         }
 
-        public void WriteLine(string message)
+        public void Write(string message)
         {
             _sink.Write(new ConsoleContext()
             {
@@ -36,6 +36,11 @@ namespace Microsoft.Extensions.Logging.Test.Console
                 BackgroundColor = BackgroundColor,
                 Message = message
             });
+        }
+
+        public void WriteLine(string message)
+        {
+            Write(message + Environment.NewLine);
         }
     }
 }

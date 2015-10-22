@@ -10,6 +10,7 @@ namespace Microsoft.Extensions.Logging.Console.Internal
         ConsoleColor BackgroundColor { get; set; }
         ConsoleColor ForegroundColor { get; set; }
         void ResetColor();
+        void Write(string message);
         void WriteLine(string message);
     }
 }

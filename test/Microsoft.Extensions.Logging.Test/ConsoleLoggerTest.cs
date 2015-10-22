@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
+using System.Linq;
+using System.Collections.Generic;
 using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Logging.Test.Console;
 #if MOCK_SUPPORT
@@ -14,20 +15,26 @@ namespace Microsoft.Extensions.Logging.Test
 {
     public class ConsoleLoggerTest
     {
-        private const string _name = "test";
+        private readonly string _paddingString;
+        private const string _loggerName = "test";
         private const string _state = "This is a test, and {curly braces} are just fine!";
-
-        private static readonly Func<object, Exception, string> TheMessageAndError =
-            (message, error) => string.Format(CultureInfo.CurrentCulture, "{0}\r\n{1}", message, error);
+        private readonly Func<object, Exception, string> _theMessageAndError;
 
         private Tuple<ConsoleLogger, ConsoleSink> SetUp(Func<string, LogLevel, bool> filter)
         {
             // Arrange
             var sink = new ConsoleSink();
             var console = new TestConsole(sink);
-            var logger = new ConsoleLogger(_name, filter);
+            var logger = new ConsoleLogger(_loggerName, filter);
             logger.Console = console;
             return new Tuple<ConsoleLogger, ConsoleSink>(logger, sink);
+        }
+
+        public ConsoleLoggerTest()
+        {
+            var loglevelStringWithPadding = "INFO: ";
+            _paddingString = new string(' ', loglevelStringWithPadding.Length);
+            _theMessageAndError = ((message, error) => message + Environment.NewLine + _paddingString + error);
         }
 
 #if MOCK_SUPPORT
@@ -55,7 +62,7 @@ namespace Microsoft.Extensions.Logging.Test
             var t = SetUpFactory(null);
             var factory = t.Item1;
             var sink = t.Item2;
-            var logger = factory.CreateLogger(_name);
+            var logger = factory.CreateLogger(_loggerName);
 
 
             // act
@@ -64,22 +71,26 @@ namespace Microsoft.Extensions.Logging.Test
 
             // assert
             Assert.Equal(LogLevel.Verbose, factory.MinimumLevel);
-            Assert.Equal(1, sink.Writes.Count);
+            Assert.Equal(3, sink.Writes.Count);
         }
 
         [Theory]
-        [InlineData(LogLevel.Debug, 6, true, true)]
-        [InlineData(LogLevel.Verbose, 5, false, true)]
-        [InlineData(LogLevel.Information, 4, false, true)]
-        [InlineData(LogLevel.Warning, 3, false, false)]
-        [InlineData(LogLevel.Error, 2, false, false)]
-        [InlineData(LogLevel.Critical, 1, false, false)]
-        public void MinimumLogLevelCanBeChanged(LogLevel minimumLevel, int expectedMessageCount, bool enabledDebug, bool enabledInformation)
+        [InlineData(LogLevel.Debug, 18, true, true)]
+        [InlineData(LogLevel.Verbose, 15, false, true)]
+        [InlineData(LogLevel.Information, 12, false, true)]
+        [InlineData(LogLevel.Warning, 9, false, false)]
+        [InlineData(LogLevel.Error, 6, false, false)]
+        [InlineData(LogLevel.Critical, 3, false, false)]
+        public void MinimumLogLevelCanBeChanged(
+            LogLevel minimumLevel,
+            int expectedMessageCount,
+            bool enabledDebug,
+            bool enabledInformation)
         {
             var t = SetUpFactory(null);
             var factory = t.Item1;
             var sink = t.Item2;
-            var logger = factory.CreateLogger(_name);
+            var logger = factory.CreateLogger(_loggerName);
 
             factory.MinimumLevel = minimumLevel;
 
@@ -123,20 +134,21 @@ namespace Microsoft.Extensions.Logging.Test
             var t = SetUp(null);
             var logger = (ILogger)t.Item1;
             var sink = t.Item2;
-            var expectedMessage = "Route with name 'Default' was not found.";
+            var logMessage = "Route with name 'Default' was not found.";
+            var expectedMessage = _paddingString + logMessage + Environment.NewLine;
 
             // Act
-            logger.LogCritical(expectedMessage);
-            logger.LogCritical(expectedMessage, error: null);
-            logger.LogCritical(eventId: 10, message: expectedMessage);
-            logger.LogCritical(eventId: 10, message: expectedMessage, error: null);
+            logger.LogCritical(logMessage);
+            logger.LogCritical(logMessage, error: null);
+            logger.LogCritical(eventId: 10, message: logMessage);
+            logger.LogCritical(eventId: 10, message: logMessage, error: null);
 
             // Assert
-            Assert.Equal(4, sink.Writes.Count);
-            Assert.Equal($"critical: [{_name}] {expectedMessage}", sink.Writes[0].Message);
-            Assert.Equal($"critical: [{_name}] {expectedMessage}", sink.Writes[1].Message);
-            Assert.Equal($"critical: [{_name}] {expectedMessage}", sink.Writes[2].Message);
-            Assert.Equal($"critical: [{_name}] {expectedMessage}", sink.Writes[3].Message);
+            Assert.Equal(12, sink.Writes.Count);
+            Assert.Equal(expectedMessage, sink.Writes[2].Message);
+            Assert.Equal(expectedMessage, sink.Writes[5].Message);
+            Assert.Equal(expectedMessage, sink.Writes[8].Message);
+            Assert.Equal(expectedMessage, sink.Writes[11].Message);
         }
 
         [Theory]
@@ -148,17 +160,20 @@ namespace Microsoft.Extensions.Logging.Test
             var t = SetUp(null);
             var logger = (ILogger)t.Item1;
             var sink = t.Item2;
+            var eventId = 10;
             var exception = new InvalidOperationException("Invalid value");
-            var expectedMessage = $"{message}{Environment.NewLine}{exception}";
+            var expectedMessage =
+                _paddingString + message + Environment.NewLine
+                + _paddingString + ReplaceMessageNewLinesWithPadding(exception.ToString()) + Environment.NewLine;
 
             // Act
             logger.LogCritical(message, exception);
-            logger.LogCritical(10, message, exception);
+            logger.LogCritical(eventId, message, exception);
 
             // Assert
-            Assert.Equal(2, sink.Writes.Count);
-            Assert.Equal($"critical: [{_name}] {expectedMessage}", sink.Writes[0].Message);
-            Assert.Equal($"critical: [{_name}] {expectedMessage}", sink.Writes[1].Message);
+            Assert.Equal(6, sink.Writes.Count);
+            Assert.Equal(expectedMessage, sink.Writes[2].Message);
+            Assert.Equal(expectedMessage, sink.Writes[5].Message);
         }
 
         [Fact]
@@ -169,16 +184,17 @@ namespace Microsoft.Extensions.Logging.Test
             var logger = (ILogger)t.Item1;
             var sink = t.Item2;
             var exception = new InvalidOperationException("Invalid value");
-            var expectedMessage = exception.ToString();
+            var expectedMessage =
+                _paddingString + ReplaceMessageNewLinesWithPadding(exception.ToString()) + Environment.NewLine;
 
             // Act
             logger.LogCritical(state: null, error: exception);
             logger.LogCritical(10, state: null, error: exception);
 
             // Assert
-            Assert.Equal(2, sink.Writes.Count);
-            Assert.Equal($"critical: [{_name}] {expectedMessage}", sink.Writes[0].Message);
-            Assert.Equal($"critical: [{_name}] {expectedMessage}", sink.Writes[1].Message);
+            Assert.Equal(6, sink.Writes.Count);
+            Assert.Equal(expectedMessage, sink.Writes[2].Message);
+            Assert.Equal(expectedMessage, sink.Writes[5].Message);
         }
 
         [Fact]
@@ -193,7 +209,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Information, 0, _state, null, null);
 
             // Assert
-            Assert.Equal(1, sink.Writes.Count);
+            Assert.Equal(3, sink.Writes.Count);
         }
 
         [Fact]
@@ -214,7 +230,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Critical, 0, _state, null, null);
 
             // Assert
-            Assert.Equal(1, sink.Writes.Count);
+            Assert.Equal(3, sink.Writes.Count);
         }
 
         [Fact]
@@ -235,7 +251,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Error, 0, _state, null, null);
 
             // Assert
-            Assert.Equal(1, sink.Writes.Count);
+            Assert.Equal(3, sink.Writes.Count);
         }
 
         [Fact]
@@ -256,7 +272,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Warning, 0, _state, null, null);
 
             // Assert
-            Assert.Equal(1, sink.Writes.Count);
+            Assert.Equal(3, sink.Writes.Count);
         }
 
         [Fact]
@@ -277,7 +293,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Information, 0, _state, null, null);
 
             // Assert
-            Assert.Equal(1, sink.Writes.Count);
+            Assert.Equal(3, sink.Writes.Count);
         }
 
         [Fact]
@@ -296,7 +312,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Verbose, 0, _state, null, null);
 
             // Assert
-            Assert.Equal(5, sink.Writes.Count);
+            Assert.Equal(15, sink.Writes.Count);
         }
 
         [Fact]
@@ -311,9 +327,15 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Critical, 0, _state, null, null);
 
             // Assert
-            Assert.Equal(1, sink.Writes.Count);
+            Assert.Equal(3, sink.Writes.Count);
             var write = sink.Writes[0];
             Assert.Equal(ConsoleColor.Red, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.White, write.ForegroundColor);
+            write = sink.Writes[1];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            write = sink.Writes[2];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(ConsoleColor.White, write.ForegroundColor);
         }
 
@@ -329,10 +351,16 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Error, 0, _state, null, null);
 
             // Assert
-            Assert.Equal(1, sink.Writes.Count);
+            Assert.Equal(3, sink.Writes.Count);
             var write = sink.Writes[0];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(ConsoleColor.Red, write.ForegroundColor);
+            write = sink.Writes[1];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            write = sink.Writes[2];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.White, write.ForegroundColor);
         }
 
         [Fact]
@@ -347,10 +375,16 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Warning, 0, _state, null, null);
 
             // Assert
-            Assert.Equal(1, sink.Writes.Count);
+            Assert.Equal(3, sink.Writes.Count);
             var write = sink.Writes[0];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.Yellow, write.ForegroundColor);
+            Assert.Equal(ConsoleColor.DarkYellow, write.ForegroundColor);
+            write = sink.Writes[1];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            write = sink.Writes[2];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.White, write.ForegroundColor);
         }
 
         [Fact]
@@ -365,8 +399,14 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Information, 0, _state, null, null);
 
             // Assert
-            Assert.Equal(1, sink.Writes.Count);
+            Assert.Equal(3, sink.Writes.Count);
             var write = sink.Writes[0];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.DarkGreen, write.ForegroundColor);
+            write = sink.Writes[1];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(ConsoleColor.White, write.ForegroundColor);
         }
@@ -383,10 +423,16 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Verbose, 0, _state, null, null);
 
             // Assert
-            Assert.Equal(1, sink.Writes.Count);
+            Assert.Equal(3, sink.Writes.Count);
             var write = sink.Writes[0];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            write = sink.Writes[1];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            write = sink.Writes[2];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.White, write.ForegroundColor);
         }
 
         [Fact]
@@ -398,22 +444,23 @@ namespace Microsoft.Extensions.Logging.Test
             var sink = t.Item2;
             var ex = new Exception();
 
+
             // Act
-            logger.Log(LogLevel.Critical, 0, _state, ex, TheMessageAndError);
-            logger.Log(LogLevel.Error, 0, _state, ex, TheMessageAndError);
-            logger.Log(LogLevel.Warning, 0, _state, ex, TheMessageAndError);
-            logger.Log(LogLevel.Information, 0, _state, ex, TheMessageAndError);
-            logger.Log(LogLevel.Verbose, 0, _state, ex, TheMessageAndError);
-            logger.Log(LogLevel.Debug, 0, _state, ex, TheMessageAndError);
+            logger.Log(LogLevel.Critical, 0, _state, ex, _theMessageAndError);
+            logger.Log(LogLevel.Error, 0, _state, ex, _theMessageAndError);
+            logger.Log(LogLevel.Warning, 0, _state, ex, _theMessageAndError);
+            logger.Log(LogLevel.Information, 0, _state, ex, _theMessageAndError);
+            logger.Log(LogLevel.Verbose, 0, _state, ex, _theMessageAndError);
+            logger.Log(LogLevel.Debug, 0, _state, ex, _theMessageAndError);
 
             // Assert
-            Assert.Equal(6, sink.Writes.Count);
-            Assert.Equal(getMessage("critical", ex), sink.Writes[0].Message);
-            Assert.Equal(getMessage("error   ", ex), sink.Writes[1].Message);
-            Assert.Equal(getMessage("warning ", ex), sink.Writes[2].Message);
-            Assert.Equal(getMessage("info    ", ex), sink.Writes[3].Message);
-            Assert.Equal(getMessage("verbose ", ex), sink.Writes[4].Message);
-            Assert.Equal(getMessage("debug   ", ex), sink.Writes[5].Message);
+            Assert.Equal(18, sink.Writes.Count);
+            Assert.Equal(GetMessage("crit", 0, ex), GetMessage(sink.Writes.GetRange(0, 3)));
+            Assert.Equal(GetMessage("fail", 0, ex), GetMessage(sink.Writes.GetRange(3, 3)));
+            Assert.Equal(GetMessage("warn", 0, ex), GetMessage(sink.Writes.GetRange(6, 3)));
+            Assert.Equal(GetMessage("info", 0, ex), GetMessage(sink.Writes.GetRange(9, 3)));
+            Assert.Equal(GetMessage("verb", 0, ex), GetMessage(sink.Writes.GetRange(12, 3)));
+            Assert.Equal(GetMessage("dbug", 0, ex), GetMessage(sink.Writes.GetRange(15, 3)));
         }
 
         [Fact]
@@ -449,10 +496,23 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.NotNull(disposable);
         }
 
-        private string getMessage(string logLevelString, Exception exception)
+        private string GetMessage(string logLevelString, int eventId, Exception exception)
         {
-            return $"{logLevelString}: [{_name}] {TheMessageAndError(_state, exception)}";
+            var loglevelStringWithPadding = $"{logLevelString}: ";
 
+            return
+                loglevelStringWithPadding + $"{_loggerName}[{eventId}]" + Environment.NewLine
+                + _paddingString + ReplaceMessageNewLinesWithPadding(_theMessageAndError(_state, exception)) + Environment.NewLine;
+        }
+
+        private string ReplaceMessageNewLinesWithPadding(string message)
+        {
+            return message.Replace(Environment.NewLine, Environment.NewLine + _paddingString);
+        }
+
+        private string GetMessage(List<ConsoleContext> contexts)
+        {
+            return string.Join("", contexts.Select(c => c.Message));
         }
     }
 }

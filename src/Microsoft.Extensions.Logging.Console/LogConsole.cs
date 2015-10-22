@@ -40,6 +40,11 @@ namespace Microsoft.Extensions.Logging.Console
             System.Console.ResetColor();
         }
 
+        public void Write(string message)
+        {
+            System.Console.Write(message);
+        }
+
         public void WriteLine(string message)
         {
             System.Console.Error.WriteLine(message);
