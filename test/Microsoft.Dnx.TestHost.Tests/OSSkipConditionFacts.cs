@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Dnx.Runtime.Infrastructure;
+using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
 
 namespace Microsoft.Dnx.TestHost.Tests

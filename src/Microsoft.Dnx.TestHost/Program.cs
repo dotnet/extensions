@@ -5,24 +5,22 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Authentication.ExtendedProtection;
 using System.Threading;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
+using Microsoft.Dnx.Runtime.Common.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.Dnx.TestHost
 {
     public class Program
     {
-        private readonly IServiceProvider _services;
-
-        public Program(IServiceProvider services)
+        public static int Main(string[] args)
         {
-            _services = services;
-        }
-
-        public int Main(string[] args)
-        {
+            var services = new ServiceProvider();
             // We want to allow unexpected args, in case future VS needs to pass anything in that we don't current.
             // This will allow us to retain backwards compatibility.
             var application = new CommandLineApplication(throwOnUnexpectedArg: false);
@@ -164,7 +162,7 @@ namespace Microsoft.Dnx.TestHost
                                 "--designtime"
                             };
 
-                            var testServices = TestServices.CreateTestServices(_services, project, channel);
+                            var testServices = TestServices.CreateTestServices(services, project, channel);
                             await ProjectCommand.Execute(testServices, project, "test", commandArgs);
 
                             channel.Send(new Message()
@@ -193,7 +191,7 @@ namespace Microsoft.Dnx.TestHost
                                 }
                             }
 
-                            var testServices = TestServices.CreateTestServices(_services, project, channel);
+                            var testServices = TestServices.CreateTestServices(services, project, channel);
                             await ProjectCommand.Execute(testServices, project, "test", commandArgs.ToArray());
 
                             channel.Send(new Message()

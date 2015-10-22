@@ -9,9 +9,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Dnx.Runtime.Infrastructure;
 using Microsoft.Dnx.Testing.Abstractions;
 using Microsoft.Dnx.TestHost.Client;
+using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
 
 namespace Microsoft.Dnx.TestHost

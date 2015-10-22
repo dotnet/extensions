@@ -9,9 +9,9 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using dia2;
 using Microsoft.Dnx.Compilation;
-using Microsoft.Dnx.Runtime;
 using Microsoft.Extensions.Logging;
 using Microsoft.Dnx.Testing.Abstractions;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.Dnx.TestHost.TestAdapter
 {
@@ -350,6 +350,16 @@ namespace Microsoft.Dnx.TestHost.TestAdapter
                 assemblySymbols.CopyTo(Symbols);
 
                 return null;
+            }
+
+            public IntPtr LoadUnmanagedLibrary(string name)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IntPtr LoadUnmanagedLibraryFromPath(string path)
+            {
+                throw new NotImplementedException();
             }
         }
     }
