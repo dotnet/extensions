@@ -18,7 +18,7 @@
                 "System.Threading.Tasks": ""
             }
         },
-        "dnxcore50": {
+        "dotnet5.4": {
             "dependencies": {
                 "System.Runtime": "4.0.21-beta-*",
                 "System.Runtime.InteropServices": "4.0.21-beta-*",
