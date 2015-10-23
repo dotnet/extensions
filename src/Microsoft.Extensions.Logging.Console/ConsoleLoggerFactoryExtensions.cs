@@ -59,6 +59,19 @@ namespace Microsoft.Extensions.Logging
         /// </summary>
         /// <param name="factory"></param>
         /// <param name="filter"></param>
+        public static ILoggerFactory AddConsole(
+            this ILoggerFactory factory,
+            Func<string, LogLevel, bool> filter)
+        {
+            factory.AddConsole(filter, includeScopes: false);
+            return factory;
+        }
+
+        /// <summary>
+        /// Adds a console logger that is enabled as defined by the filter function.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="filter"></param>
         /// <param name="includeScopes">A value which indicates whether log scope information should be displayed
         /// in the output.</param>
         public static ILoggerFactory AddConsole(
