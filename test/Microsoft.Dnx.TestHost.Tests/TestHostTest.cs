@@ -155,6 +155,32 @@ namespace Microsoft.Dnx.TestHost
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
+        public async Task RunTest_IncludesStartAndEndTime()
+        {
+            // Arrange
+            var host = new TestHostWrapper(_testProject);
+
+            await host.StartAsync();
+
+            // Act
+            var result = await host.RunTestsAsync();
+
+            // Assert
+            Assert.Equal(0, result);
+
+            var results = GetTestResults(host.Output).ToArray();
+            Assert.Equal(9, results.Length);
+
+            foreach (var testResult in results)
+            {
+                Assert.NotEqual(default(DateTimeOffset), testResult.StartTime);
+                Assert.NotEqual(default(DateTimeOffset), testResult.EndTime);
+            }
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task RunTest_ByUniqueName()
         {
             // Arrange
@@ -368,6 +394,18 @@ namespace Microsoft.Dnx.TestHost
             }
 
             return null;
+        }
+
+        private static IEnumerable<TestResult> GetTestResults(IEnumerable<Message> messages)
+        {
+            foreach (var message in messages)
+            {
+                if (string.Equals("TestExecution.TestResult", message.MessageType))
+                {
+                    var result = message.Payload.ToObject<TestResult>();
+                    yield return result;
+                }
+            }
         }
 
         private Process GetProcessById(int id)
