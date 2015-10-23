@@ -6,7 +6,7 @@
     "url": "https://github.com/aspnet/configuration"
   },
   "dependencies": {
-    "Microsoft.Extensions.Configuration": "1.0.0-*"
+    "Microsoft.Extensions.Configuration.Abstractions": "1.0.0-*"
   },
   "frameworks": {
     "net451": { },
@@ -14,6 +14,11 @@
       "dependencies": {
         "System.AppContext": "4.0.0-*"
       }
-    }
+    },
+    "netcore50": {
+        "dependencies": {
+          "System.AppContext": "4.0.0"
+        }
+      }
   }
 }

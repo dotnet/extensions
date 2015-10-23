@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "Microsoft.Extensions.Configuration": "1.0.0-*",
     "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },

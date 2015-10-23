@@ -49,11 +49,11 @@ namespace Microsoft.Extensions.Configuration
                 return (string)basePath;
             }
 
-#if DOTNET5_4
-            return AppContext.BaseDirectory ?? string.Empty;
-#else
+#if NET451
             return AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
                 AppDomain.CurrentDomain.BaseDirectory ?? string.Empty;
+#else
+            return AppContext.BaseDirectory ?? string.Empty;
 #endif
         }
     }

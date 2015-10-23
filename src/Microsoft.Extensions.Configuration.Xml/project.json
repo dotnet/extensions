@@ -21,6 +21,15 @@
         "System.Xml.XmlDocument": "4.0.1-beta-*",
         "System.Xml.XmlSerializer": "4.0.11-beta-*"
       }
+    },
+    "netcore50": {
+      "dependencies": {
+        "System.IO": "4.0.10",
+        "System.IO.FileSystem": "4.0.0",
+        "System.IO.FileSystem.Primitives": "4.0.0",
+        "System.Xml.ReaderWriter": "4.0.10",
+        "System.Xml.XmlDocument": "4.0.0"
+      }
     }
   }
 }
