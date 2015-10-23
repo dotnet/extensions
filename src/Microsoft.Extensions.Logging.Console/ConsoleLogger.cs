@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Text;
+using Microsoft.Dnx.Runtime;
 using Microsoft.Extensions.Logging.Console.Internal;
 
 namespace Microsoft.Extensions.Logging.Console
@@ -15,6 +16,9 @@ namespace Microsoft.Extensions.Logging.Console
         private static readonly object _lock = new object();
         private static readonly string _loglevelPadding = ": ";
         private static readonly string _messagePadding;
+
+        // ConsoleColor does not have a value to specify the 'Default' color
+        private readonly ConsoleColor? DefaultConsoleColor = null;
 
         private const int _indentation = 2;
         private readonly string _name;
@@ -32,7 +36,15 @@ namespace Microsoft.Extensions.Logging.Console
             _name = name;
             _filter = filter ?? ((category, logLevel) => true);
             _includeScopes = includeScopes;
-            Console = new LogConsole();
+
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                Console = new WindowsLogConsole();
+            }
+            else
+            {
+                Console = new AnsiLogConsole(new AnsiSystemConsole());
+            }
         }
 
         public IConsole Console { get; set; }
@@ -101,7 +113,7 @@ namespace Microsoft.Extensions.Logging.Console
                 // use default colors
                 WriteWithColor(
                     ConsoleColor.Gray,
-                    Console.BackgroundColor,
+                    DefaultConsoleColor,
                     _loglevelPadding + logName + $"[{eventId}]",
                     newLine: true);
 
@@ -113,7 +125,7 @@ namespace Microsoft.Extensions.Logging.Console
                     {
                         WriteWithColor(
                             ConsoleColor.Gray,
-                            Console.BackgroundColor,
+                            DefaultConsoleColor,
                             _messagePadding + scopeInformation,
                             newLine: true);
                     }
@@ -122,9 +134,13 @@ namespace Microsoft.Extensions.Logging.Console
                 // message
                 WriteWithColor(
                     ConsoleColor.White,
-                    Console.BackgroundColor,
+                    DefaultConsoleColor,
                     _messagePadding + message,
                     newLine: true);
+
+                // In case of AnsiLogConsole, the messages are not yet written to the console,
+                // this would flush them instead.
+                Console.Flush();
             }
         }
 
@@ -230,41 +246,31 @@ namespace Microsoft.Extensions.Logging.Console
                 case LogLevel.Critical:
                     return new ConsoleColors(ConsoleColor.White, ConsoleColor.Red);
                 case LogLevel.Error:
-                    return new ConsoleColors(ConsoleColor.Red, Console.BackgroundColor);
+                    return new ConsoleColors(ConsoleColor.Red, DefaultConsoleColor);
                 case LogLevel.Warning:
-                    return new ConsoleColors(ConsoleColor.DarkYellow, Console.BackgroundColor);
+                    return new ConsoleColors(ConsoleColor.DarkYellow, DefaultConsoleColor);
                 case LogLevel.Information:
-                    return new ConsoleColors(ConsoleColor.DarkGreen, Console.BackgroundColor);
+                    return new ConsoleColors(ConsoleColor.DarkGreen, DefaultConsoleColor);
                 case LogLevel.Debug:
                 case LogLevel.Verbose:
                 default:
-                    return new ConsoleColors(ConsoleColor.Gray, Console.BackgroundColor);
+                    return new ConsoleColors(ConsoleColor.Gray, DefaultConsoleColor);
             }
         }
 
         private void WriteWithColor(
-            ConsoleColor foreground,
-            ConsoleColor background,
+            ConsoleColor? foreground,
+            ConsoleColor? background,
             string message,
             bool newLine = false)
         {
-            Console.ForegroundColor = foreground;
-            Console.BackgroundColor = background;
-
-            try
+            if (newLine)
             {
-                if (newLine)
-                {
-                    Console.WriteLine(message);
-                }
-                else
-                {
-                    Console.Write(message);
-                }
+                Console.WriteLine(message, background, foreground);
             }
-            finally
+            else
             {
-                Console.ResetColor();
+                Console.Write(message, background, foreground);
             }
         }
 
@@ -293,14 +299,28 @@ namespace Microsoft.Extensions.Logging.Console
 
         private struct ConsoleColors
         {
-            public ConsoleColors(ConsoleColor foreground, ConsoleColor background)
+            public ConsoleColors(ConsoleColor? foreground, ConsoleColor? background)
             {
                 Foreground = foreground;
                 Background = background;
             }
-            public ConsoleColor Foreground { get; }
 
-            public ConsoleColor Background { get; }
+            public ConsoleColor? Foreground { get; }
+
+            public ConsoleColor? Background { get; }
+        }
+
+        private class AnsiSystemConsole : IAnsiSystemConsole
+        {
+            public void Write(string message)
+            {
+                System.Console.Write(message);
+            }
+
+            public void WriteLine(string message)
+            {
+                System.Console.WriteLine(message);
+            }
         }
     }
 }

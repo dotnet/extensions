@@ -7,10 +7,8 @@ namespace Microsoft.Extensions.Logging.Console.Internal
 {
     public interface IConsole
     {
-        ConsoleColor BackgroundColor { get; set; }
-        ConsoleColor ForegroundColor { get; set; }
-        void ResetColor();
-        void Write(string message);
-        void WriteLine(string message);
+        void Write(string message, ConsoleColor? background, ConsoleColor? foreground);
+        void WriteLine(string message, ConsoleColor? background, ConsoleColor? foreground);
+        void Flush();
     }
 }

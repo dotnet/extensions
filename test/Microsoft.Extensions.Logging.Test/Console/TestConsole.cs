@@ -8,39 +8,55 @@ namespace Microsoft.Extensions.Logging.Test.Console
 {
     public class TestConsole : IConsole
     {
-        public const ConsoleColor DefaultBackgroundColor = ConsoleColor.Black;
-        public const ConsoleColor DefaultForegroundColor = ConsoleColor.Gray;
+        public static readonly ConsoleColor? DefaultBackgroundColor;
+        public static readonly ConsoleColor? DefaultForegroundColor;
 
         private ConsoleSink _sink;
 
         public TestConsole(ConsoleSink sink)
         {
             _sink = sink;
-        }
-
-        public ConsoleColor BackgroundColor { get; set; } = DefaultBackgroundColor;
-
-        public ConsoleColor ForegroundColor { get; set; } = DefaultForegroundColor;
-
-        public void ResetColor()
-        {
             BackgroundColor = DefaultBackgroundColor;
             ForegroundColor = DefaultForegroundColor;
         }
 
-        public void Write(string message)
+        public ConsoleColor? BackgroundColor { get; private set; }
+
+        public ConsoleColor? ForegroundColor { get; private set; }
+
+        public void Write(string message, ConsoleColor? background, ConsoleColor? foreground)
         {
-            _sink.Write(new ConsoleContext()
+            var consoleContext = new ConsoleContext();
+            consoleContext.Message = message;
+
+            if (background.HasValue)
             {
-                ForegroundColor = ForegroundColor,
-                BackgroundColor = BackgroundColor,
-                Message = message
-            });
+                consoleContext.BackgroundColor = background.Value;
+            }
+
+            if (foreground.HasValue)
+            {
+                consoleContext.ForegroundColor = foreground.Value;
+            }
+
+            _sink.Write(consoleContext);
+
+            ResetColor();
         }
 
-        public void WriteLine(string message)
+        public void WriteLine(string message, ConsoleColor? background, ConsoleColor? foreground)
         {
-            Write(message + Environment.NewLine);
+            Write(message + Environment.NewLine, background, foreground);
+        }
+
+        public void Flush()
+        {
+        }
+
+        private void ResetColor()
+        {
+            BackgroundColor = DefaultBackgroundColor;
+            ForegroundColor = DefaultForegroundColor;
         }
     }
 }
