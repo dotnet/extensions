@@ -14,4 +14,9 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\DNX\Microsoft.DNX.targets" Condition="'$(VSToolsPath)' != ''" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties project_1json__JSONSchema="http://json.schemastore.org/resume" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>
