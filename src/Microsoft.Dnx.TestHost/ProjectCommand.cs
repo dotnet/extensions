@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Dnx.Runtime;
 using Microsoft.Dnx.Runtime.CommandParsing;
 using Microsoft.Dnx.Runtime.Common;
 using Microsoft.Extensions.PlatformAbstractions;

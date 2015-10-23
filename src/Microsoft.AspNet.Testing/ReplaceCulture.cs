@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Testing
             _originalCulture = CultureInfo.CurrentCulture;
             _originalUICulture = CultureInfo.CurrentUICulture;
 
-#if NET451
+#if DNX451
             Thread.CurrentThread.CurrentCulture = Culture;
             Thread.CurrentThread.CurrentUICulture = UICulture;
 #else
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Testing
 
         public override void After(MethodInfo methodUnderTest)
         {
-#if NET451
+#if DNX451
             Thread.CurrentThread.CurrentCulture = _originalCulture;
             Thread.CurrentThread.CurrentUICulture = _originalUICulture;
 #else

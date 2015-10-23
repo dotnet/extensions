@@ -3,30 +3,30 @@
 
 using System;
 using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Dnx.Testing.Abstractions;
-using Microsoft.Dnx.TestHost.TestAdapter;
-using Microsoft.Dnx.Runtime.Common.DependencyInjection;
-using Microsoft.Dnx.Runtime;
 using Microsoft.Dnx.Compilation;
+using Microsoft.Dnx.Runtime.Common.DependencyInjection;
+using Microsoft.Dnx.TestHost.TestAdapter;
+using Microsoft.Dnx.Testing.Abstractions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.Dnx.TestHost
 {
     internal static class TestServices
     {
         public static ServiceProvider CreateTestServices(
-            IServiceProvider applicationServices,
             Project project,
             ReportingChannel channel)
         {
-            var services = new ServiceProvider(applicationServices);
+            var services = new ServiceProvider();
 
             var loggerFactory = new LoggerFactory();
             loggerFactory.AddProvider(new TestHostLoggerProvider(channel));
             services.Add(typeof(ILoggerFactory), loggerFactory);
+            services.Add(typeof(IApplicationEnvironment), PlatformServices.Default.Application);
+            services.Add(typeof(ILibraryManager), PlatformServices.Default.LibraryManager);
 
-            var libraryExporter = applicationServices.GetRequiredService<ILibraryExporter>();
+            var libraryExporter = CompilationServices.Default.LibraryExporter;
             var export = libraryExporter.GetExport(project.Name);
 
             var projectReference = export.MetadataReferences

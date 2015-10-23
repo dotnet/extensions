@@ -1,32 +1,31 @@
 {
-    "description": "Various helpers for writing tests that use DNX or ASP.NET.",
-    "version": "1.0.0-*",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/testing"
+  "description": "Various helpers for writing tests that use DNX or ASP.NET.",
+  "version": "1.0.0-*",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/testing"
+  },
+  "dependencies": {
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
+  "frameworks": {
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Runtime": "",
+        "System.Reflection": "",
+        "System.Threading.Tasks": ""
+      }
     },
-    "dependencies": {
-        "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
-        "xunit.assert": "2.1.0-*",
-        "xunit.extensibility.execution": "2.1.0-*"
-    },
-    "frameworks": {
-        "net451": {
-            "frameworkAssemblies": {
-                "System.Runtime": "",
-                "System.Reflection": "",
-                "System.Threading.Tasks": ""
-            }
-        },
-        "dotnet5.4": {
-            "dependencies": {
-                "System.Runtime": "4.0.21-beta-*",
-                "System.Runtime.InteropServices": "4.0.21-beta-*",
-                "System.Globalization": "4.0.11-beta-*",
-                "System.Threading.Tasks": "4.0.11-beta-*",
-                "System.Reflection": "4.0.11-beta-*",
-                "System.Threading.Thread": "4.0.0-beta-*"
-            }
-        }
+    "dnxcore50": {
+      "dependencies": {
+        "System.Runtime": "4.0.21-beta-*",
+        "System.Runtime.InteropServices": "4.0.21-beta-*",
+        "System.Globalization": "4.0.11-beta-*",
+        "System.Threading.Tasks": "4.0.11-beta-*",
+        "System.Reflection": "4.0.11-beta-*",
+        "System.Threading.Thread": "4.0.0-beta-*"
+      }
     }
+  }
 }
