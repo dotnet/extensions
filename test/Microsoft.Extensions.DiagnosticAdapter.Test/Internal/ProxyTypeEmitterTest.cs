@@ -138,6 +138,29 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
         }
 
         [Fact]
+        public void Adapt_Proxy_NullProperty()
+        {
+            // Arrange
+            var value = new Person()
+            {
+                Address = null,
+                FirstName = null,
+                LastName = null,
+            };
+
+            var outputType = typeof(IPerson);
+
+            // Act
+            var result = ConvertTo<IPerson>(value);
+
+            // Assert
+            var person = Assert.IsAssignableFrom<IPerson>(result);
+            Assert.Null(person.Address);
+            Assert.Null(person.FirstName);
+            Assert.Null(person.LastName);
+        }
+
+        [Fact]
         public void Adapt_Proxy_WithTypeCycle()
         {
             // Arrange
@@ -279,6 +302,27 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
 
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public void Adapt_ListWithProxy_ToReadOnlyList_Null()
+        {
+            // Arrange
+            var value = new List<Person>()
+            {
+                new Person() { FirstName = "Billy" },
+                null,
+            };
+
+            // Act 
+            var proxy = Convert<IList<Person>, IReadOnlyList<IPerson>>(value);
+
+            // Assert
+            Assert.NotNull(proxy);
+            Assert.Equal(2, proxy.Count);
+            Assert.Equal("Billy", proxy[0].FirstName);
+            Assert.Null(proxy[1]);
+        }
+
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void Adapt_ListWithProxy_ToReadOnlyList_Enumerator()
         {
             // Arrange
@@ -298,6 +342,30 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             foreach (var item in sequence)
             {
                 Assert.Equal(item.Item1.FirstName, item.Item2.FirstName);
+            }
+        }
+
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public void Adapt_ListWithProxy_ToReadOnlyList_Enumerator_Null()
+        {
+            // Arrange
+            var value = new List<Person>()
+            {
+                new Person() { FirstName = "Billy" },
+                null,
+            };
+
+            // Act 
+            var proxy = Convert<IList<Person>, IReadOnlyList<IPerson>>(value);
+
+            // Assert
+            Assert.NotNull(proxy);
+
+            var sequence = value.Zip(proxy, (i, j) => Tuple.Create(i, j));
+            foreach (var item in sequence)
+            {
+                Assert.Equal(item.Item1?.FirstName, item.Item2?.FirstName);
             }
         }
 

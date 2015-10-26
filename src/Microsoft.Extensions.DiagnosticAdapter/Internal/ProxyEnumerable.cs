@@ -78,6 +78,10 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                 {
                     return (TTargetElement)(object)element;
                 }
+                else if (element == null)
+                {
+                    return default(TTargetElement);
+                }
                 else
                 {
                     return (TTargetElement)Activator.CreateInstance(

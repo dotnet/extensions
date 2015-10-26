@@ -341,8 +341,17 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                     // Call the source property.
                     il.EmitCall(OpCodes.Callvirt, sourceProperty.GetMethod, null);
 
+                    var @return = il.DefineLabel();
+
+                    // At this point the value on the stack is the return value of the the source-type property.
+                    // If it returned null, we want to just jump to return.
+                    il.Emit(OpCodes.Dup);
+                    il.Emit(OpCodes.Brfalse, @return);
+
                     // Create a proxy for the value returned by source property (if necessary).
                     EmitProxy(context, il, targetProperty.PropertyType, sourceProperty.PropertyType);
+
+                    il.MarkLabel(@return);
                     il.Emit(OpCodes.Ret);
                 }
             }
