@@ -167,7 +167,11 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             var propertyMappings = new List<KeyValuePair<PropertyInfo, PropertyInfo>>();
 
             var sourceProperties = sourceType.GetRuntimeProperties();
-            foreach (var targetProperty in targetType.GetRuntimeProperties())
+            var targetProperties = targetType
+                .GetInterfaces()
+                .SelectMany(i => i.GetRuntimeProperties())
+                .Concat(targetType.GetRuntimeProperties());
+            foreach (var targetProperty in targetProperties)
             {
                 if (!targetProperty.CanRead)
                 {

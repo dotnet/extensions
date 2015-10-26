@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using Microsoft.Extensions.DiagnosticAdapter.Infrastructure;
 
 namespace Microsoft.Extensions.DiagnosticAdapter.Internal
 {
@@ -28,17 +29,18 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
         } 
 #endif
 
-        private static readonly ProxyTypeCache _cache = new ProxyTypeCache();
+        private static readonly MethodInfo ProxyFactoryGenericMethod = 
+            typeof(IProxyFactory).GetMethod(nameof(IProxyFactory.CreateProxy));
 
-        public static Func<object, object, bool> CreateProxyMethod(MethodInfo method, Type inputType)
+        public static Func<object, object, IProxyFactory, bool> CreateProxyMethod(MethodInfo method, Type inputType)
         {
             var name = string.Format("Proxy_Method_From_{0}_To_{1}", inputType.Name, method);
 
-            // Define the method-adapter as Func<object, object, bool>, we'll do casts inside.
+            // Define the method-adapter as Func<'listener', 'data', 'proxy factory', bool>, we'll do casts inside.
             var dynamicMethod = new DynamicMethod(
                 name,
                 returnType: typeof(bool),
-                parameterTypes: new Type[] { typeof(object), typeof(object) },
+                parameterTypes: new Type[] { typeof(object), typeof(object), typeof(IProxyFactory) },
                 restrictedSkipVisibility: true);
 
             var parameters = method.GetParameters();
@@ -48,8 +50,8 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
 #if GENERATE_ASSEMBLIES
             AddToAssembly(inputType, mappings, method, parameters);
 #endif
-
-            return (Func<object, object, bool>)dynamicMethod.CreateDelegate(typeof(Func<object, object, bool>));
+            var @delegate = dynamicMethod.CreateDelegate(typeof(Func<object, object, IProxyFactory, bool>));
+            return (Func<object, object, IProxyFactory, bool>)@delegate;
         }
 
         private static PropertyInfo[] GetPropertyToParameterMappings(Type inputType, ParameterInfo[] parameters)
@@ -137,24 +139,27 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             // Evaluate all properties and store them in the locals.
             for (var i = 0; i < parameters.Length; i++)
             {
+                var parameter = parameters[i];
                 var mapping = mappings[i];
                 if (mapping != null)
                 {
-                    il.Emit(OpCodes.Ldarg_1); // The event-data
-                    il.Emit(OpCodes.Castclass, inputType);
-
-                    il.Emit(OpCodes.Callvirt, mapping.GetMethod);
-
-                    // If the property-return-value requires a proxy, then create it.
-                    if (!parameters[i].ParameterType.IsAssignableFrom(mapping.PropertyType))
+                    // No proxy required, just load the value.
+                    if (parameter.ParameterType.IsAssignableFrom(mapping.PropertyType))
                     {
-                        var proxyType = ProxyTypeEmitter.GetProxyType(
-                            _cache,
-                            parameters[i].ParameterType,
-                            mapping.PropertyType);
-                        var proxyConstructor = proxyType.GetConstructors()[0];
+                        il.Emit(OpCodes.Ldarg_1); // The event-data
+                        il.Emit(OpCodes.Castclass, inputType);
+                        il.Emit(OpCodes.Callvirt, mapping.GetMethod);
+                    }
+                    else
+                    {
+                        il.Emit(OpCodes.Ldarg_2); // The proxy-factory
 
-                        il.Emit(OpCodes.Newobj, proxyConstructor);
+                        il.Emit(OpCodes.Ldarg_1); // The event-data
+                        il.Emit(OpCodes.Castclass, inputType);
+                        il.Emit(OpCodes.Callvirt, mapping.GetMethod);
+
+                        var factoryMethod = ProxyFactoryGenericMethod.MakeGenericMethod(parameter.ParameterType);
+                        il.Emit(OpCodes.Callvirt, factoryMethod);
                     }
 
                     il.Emit(OpCodes.Stloc_S, i);
@@ -202,7 +207,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                 MethodAttributes.Public, 
                 CallingConventions.Standard, 
                 returnType: typeof(bool), 
-                parameterTypes: new Type[] { typeof(object), typeof(object) });
+                parameterTypes: new Type[] { typeof(object), typeof(object), typeof(IProxyFactory) });
 
             var il = methodBuilder.GetILGenerator();
             EmitMethod(il, inputType, mappings, method, parameters);

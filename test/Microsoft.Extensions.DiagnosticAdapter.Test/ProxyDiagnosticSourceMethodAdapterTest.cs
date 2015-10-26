@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.DiagnosticAdapter
 {
-    public class ProxyTDiagnosticSourceMethodAdapterTest
+    public class ProxyDiagnosticSourceMethodAdapterTest
     {
         [Fact]
         public void Adapt_Throws_ForSameNamedPropertiesWithDifferentCasing()

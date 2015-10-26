@@ -213,7 +213,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter
         }
 
         [Fact]
-        public void WriteCanDuckType()
+        public void Write_CanDuckType()
         {
             // Arrange
             var target = new ThreeTarget();
@@ -239,6 +239,54 @@ namespace Microsoft.Extensions.DiagnosticAdapter
             Assert.Equal("Beta", target.Person.Address.City);
             Assert.Equal("Gamma", target.Person.Address.State);
             Assert.Equal(98028, target.Person.Address.Zip);
+        }
+
+        [Fact]
+        public void Write_CanDuckType_RuntimeType()
+        {
+            // Arrange
+            var target = new FourTarget();
+            var adapter = CreateAdapter(target);
+
+            // Act
+            adapter.Write("Four", new
+            {
+                person = (Person)new CoolPerson
+                {
+                    FirstName = "Alpha",
+                    Address = new Address
+                    {
+                        City = "Beta",
+                        State = "Gamma",
+                        Zip = 98028
+                    },
+                    Coolness = 5.7m,
+                }
+            });
+
+            // Assert
+            Assert.Equal("Alpha", target.Person.FirstName);
+            Assert.Equal("Beta", target.Person.Address.City);
+            Assert.Equal("Gamma", target.Person.Address.State);
+            Assert.Equal(98028, target.Person.Address.Zip);
+            Assert.Equal(5.7m, target.Person.Coolness);
+        }
+
+        [Fact]
+        public void Write_CanDuckType_Null()
+        {
+            // Arrange
+            var target = new ThreeTarget();
+            var adapter = CreateAdapter(target);
+
+            // Act
+            adapter.Write("Three", new
+            {
+                person = (Person)null,
+            });
+
+            // Assert
+            Assert.Null(target.Person);
         }
 
         [Fact]
@@ -281,6 +329,17 @@ namespace Microsoft.Extensions.DiagnosticAdapter
             }
         }
 
+        public class FourTarget
+        {
+            public ICoolPerson Person { get; private set; }
+
+            [DiagnosticName("Four")]
+            public void Three(ICoolPerson person)
+            {
+                Person = person;
+            }
+        }
+
         public interface IPerson
         {
             string FirstName { get; }
@@ -295,11 +354,21 @@ namespace Microsoft.Extensions.DiagnosticAdapter
             int Zip { get; }
         }
 
+        public interface ICoolPerson : IPerson
+        {
+            decimal Coolness { get; }
+        }
+
         public class Person
         {
             public string FirstName { get; set; }
             public string LastName { get; set; }
             public Address Address { get; set; }
+        }
+
+        public class CoolPerson : Person
+        {
+            public decimal Coolness { get; set; }
         }
 
         public class NominalType
