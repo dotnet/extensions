@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.DiagnosticAdapter.Infrastructure;
 
 namespace Microsoft.Extensions.DiagnosticAdapter.Internal
 {
-    public abstract class ProxyBase
+    public abstract class ProxyBase : IProxy
     {
         public readonly Type WrappedType;
 
@@ -18,6 +19,11 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
         public abstract object UnderlyingInstanceAsObject
         {
             get;
+        }
+
+        public T Upwrap<T>()
+        {
+            return (T)UnderlyingInstanceAsObject;
         }
     }
 }
