@@ -16,7 +16,7 @@ namespace Microsoft.Dnx.TestHost
 {
     public class ReportingChannel : IDisposable
     {
-        public static async Task<ReportingChannel> ListenOn(int port)
+        public static ReportingChannel ListenOn(int port)
         {
             // This fixes the mono incompatibility but ties it to ipv4 connections
             using (var listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
@@ -24,7 +24,7 @@ namespace Microsoft.Dnx.TestHost
                 listenSocket.Bind(new IPEndPoint(IPAddress.Loopback, port));
                 listenSocket.Listen(10);
 
-                var socket = await AcceptAsync(listenSocket);
+                var socket = listenSocket.Accept();
 
                 return new ReportingChannel(socket);
             }
@@ -145,11 +145,6 @@ namespace Microsoft.Dnx.TestHost
             }
 
             Socket.Dispose();
-        }
-
-        private static Task<Socket> AcceptAsync(Socket socket)
-        {
-            return Task.Factory.FromAsync((cb, state) => socket.BeginAccept(cb, state), ar => socket.EndAccept(ar), null);
         }
     }
 }

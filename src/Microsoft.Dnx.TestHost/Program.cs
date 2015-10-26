@@ -98,7 +98,7 @@ namespace Microsoft.Dnx.TestHost
                 var port = int.Parse(portOption.Value());
 
                 Console.WriteLine("Listening on port {0}", port);
-                using (var channel = await ReportingChannel.ListenOn(port))
+                using (var channel = ReportingChannel.ListenOn(port))
                 {
                     Console.WriteLine("Client accepted {0}", channel.Socket.LocalEndPoint);
 
