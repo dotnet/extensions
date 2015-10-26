@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Extensions.DiagnosticAdapter
@@ -241,7 +242,8 @@ namespace Microsoft.Extensions.DiagnosticAdapter
             Assert.Equal(98028, target.Person.Address.Zip);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void Write_CanDuckType_RuntimeType()
         {
             // Arrange
