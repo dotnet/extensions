@@ -8,8 +8,26 @@ using System.Reflection.Emit;
 
 namespace Microsoft.Extensions.DiagnosticAdapter.Internal
 {
+    // To diagnose issues with the emitted code, define GENERATE_ASSEMBLIES and call Save() in the
+    // immediate window after defining the problematic method.
+    //
+    // The use peverify or another tool to look at the generated code.
     public static class ProxyMethodEmitter
     {
+#if GENERATE_ASSEMBLIES
+        private static volatile int Counter = 0;
+
+        private static readonly AssemblyBuilder AssemblyBuilder;
+        private static readonly ModuleBuilder ModuleBuilder;
+        
+        static ProxyMethodEmitter()
+        {
+            var name = new AssemblyName("Microsoft.Extensions.DiagnosticAdapter.ProxyMethodAssembly");
+            AssemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave);
+            ModuleBuilder = AssemblyBuilder.DefineDynamicModule(name.Name + ".dll");
+        } 
+#endif
+
         private static readonly ProxyTypeCache _cache = new ProxyTypeCache();
 
         public static Func<object, object, bool> CreateProxyMethod(MethodInfo method, Type inputType)
@@ -23,11 +41,22 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                 parameterTypes: new Type[] { typeof(object), typeof(object) },
                 restrictedSkipVisibility: true);
 
-            var inputTypeInfo = inputType.GetTypeInfo();
             var parameters = method.GetParameters();
-            var properties = inputTypeInfo.DeclaredProperties.ToArray();
+            var mappings = GetPropertyToParameterMappings(inputType, parameters);
+            EmitMethod(dynamicMethod.GetILGenerator(), inputType, mappings, method, parameters);
 
+#if GENERATE_ASSEMBLIES
+            AddToAssembly(inputType, mappings, method, parameters);
+#endif
+
+            return (Func<object, object, bool>)dynamicMethod.CreateDelegate(typeof(Func<object, object, bool>));
+        }
+
+        private static PropertyInfo[] GetPropertyToParameterMappings(Type inputType, ParameterInfo[] parameters)
+        {
+            var properties = inputType.GetTypeInfo().DeclaredProperties.ToArray();
             var mappings = new PropertyInfo[parameters.Length];
+
             for (var i = 0; i < parameters.Length; i++)
             {
                 var parameter = parameters[i];
@@ -53,8 +82,16 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                 }
             }
 
-            var il = dynamicMethod.GetILGenerator();
-
+            return mappings;
+        }
+        
+        private static void EmitMethod(
+            ILGenerator il,
+            Type inputType,
+            PropertyInfo[] mappings,
+            MethodInfo method,
+            ParameterInfo[] parameters)
+        { 
             // Define a local for each method parameters. This is needed when the parameter is
             // a value type, but we'll do it for all for simplicity.
             for (var i = 0; i < parameters.Length; i++)
@@ -148,8 +185,38 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             // We expect that whoever branched to here put a boolean value (I4_0, I4_1) on top of the stack.
             il.MarkLabel(endLabel);
             il.Emit(OpCodes.Ret);
-
-            return (Func<object,  object, bool>)dynamicMethod.CreateDelegate(typeof(Func<object, object, bool>));
         }
+
+#if GENERATE_ASSEMBLIES
+        private static void AddToAssembly(
+            Type inputType,
+            PropertyInfo[] mappings,
+            MethodInfo method,
+            ParameterInfo[] parameters)
+        {
+            var typeName = $"Type_For_Proxy_Method_From_{inputType.Name}_To_{method}_{Counter++}";
+
+            var typeBuilder = ModuleBuilder.DefineType(typeName, TypeAttributes.Abstract);
+            var methodBuilder = typeBuilder.DefineMethod(
+                "Proxy",
+                MethodAttributes.Public, 
+                CallingConventions.Standard, 
+                returnType: typeof(bool), 
+                parameterTypes: new Type[] { typeof(object), typeof(object) });
+
+            var il = methodBuilder.GetILGenerator();
+            EmitMethod(il, inputType, mappings, method, parameters);
+
+            typeBuilder.CreateType();
+        }
+
+        public static string Save()
+        {
+            ProxyAssembly.Save();
+
+            AssemblyBuilder.Save(ModuleBuilder.ScopeName);
+            return ModuleBuilder.FullyQualifiedName;
+        }
+#endif
     }
 }

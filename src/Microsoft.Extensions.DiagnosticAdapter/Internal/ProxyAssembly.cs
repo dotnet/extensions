@@ -7,6 +7,10 @@ using System.Reflection.Emit;
 
 namespace Microsoft.Extensions.DiagnosticAdapter.Internal
 {
+    // To diagnose issues with the emitted code, define GENERATE_ASSEMBLIES and call Save() in the
+    // immediate window after defining the problematic method.
+    //
+    // The use peverify or another tool to look at the generated code.
     public static class ProxyAssembly
     {
         private static volatile int Counter = 0;
@@ -17,7 +21,11 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
         static ProxyAssembly()
         {
             var assemblyName = new AssemblyName("Microsoft.Extensions.DiagnosticAdapter.ProxyAssembly");
+#if GENERATE_ASSEMBLIES
+            var access = AssemblyBuilderAccess.RunAndSave;
+#else
             var access = AssemblyBuilderAccess.Run;
+#endif
 
             AssemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, access);
             ModuleBuilder = AssemblyBuilder.DefineDynamicModule("Microsoft.Extensions.DiagnosticAdapter.ProxyAssembly.dll");
@@ -32,5 +40,13 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             name = name + "_" + Counter++;
             return ModuleBuilder.DefineType(name, attributes, baseType, interfaces);
         }
+
+#if GENERATE_ASSEMBLIES
+        public static string Save()
+        {
+            AssemblyBuilder.Save(ModuleBuilder.ScopeName);
+            return ModuleBuilder.FullyQualifiedName;
+        }
+#endif
     }
 }
