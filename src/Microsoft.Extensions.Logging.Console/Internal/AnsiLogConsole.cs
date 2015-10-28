@@ -23,12 +23,26 @@ namespace Microsoft.Extensions.Logging.Console.Internal
         public void Write(string message, ConsoleColor? background, ConsoleColor? foreground)
         {
             // Order: backgroundcolor, foregroundcolor, Message, reset foregroundcolor, reset backgroundcolor
-            using (new BackgroundColorScope(_outputBuilder, background))
+            if (background.HasValue)
             {
-                using (new ForegroundColorScope(_outputBuilder, foreground))
-                {
-                    _outputBuilder.Append(message);
-                }
+                _outputBuilder.Append(GetBackgroundColorEscapeCode(background.Value));
+            }
+
+            if (foreground.HasValue)
+            {
+                _outputBuilder.Append(GetForegroundColorEscapeCode(foreground.Value));
+            }
+
+            _outputBuilder.Append(message);
+
+            if (foreground.HasValue)
+            {
+                _outputBuilder.Append("\x1B[39m"); // reset to default foreground color
+            }
+
+            if (background.HasValue)
+            {
+                _outputBuilder.Append("\x1B[0m"); // reset to the background color
             }
         }
 
@@ -44,83 +58,33 @@ namespace Microsoft.Extensions.Logging.Console.Internal
             _outputBuilder.Clear();
         }
 
-        private struct ForegroundColorScope : IDisposable
+        private static string GetForegroundColorEscapeCode(ConsoleColor color)
         {
-            private readonly ConsoleColor? _foreground;
-            private readonly StringBuilder _outputBuilder;
-
-            public ForegroundColorScope(StringBuilder outputBuilder, ConsoleColor? foreground)
+            switch (color)
             {
-                _foreground = foreground;
-                _outputBuilder = outputBuilder;
-
-                if (foreground.HasValue)
-                {
-                    outputBuilder.Append(GetForegroundColorEscapeCode(foreground.Value));
-                }
-            }
-
-            public void Dispose()
-            {
-                if (_foreground.HasValue)
-                {
-                    _outputBuilder.Append("\x1B[39m"); // reset to default foreground color
-                }
-            }
-
-            private static string GetForegroundColorEscapeCode(ConsoleColor color)
-            {
-                switch (color)
-                {
-                    case ConsoleColor.Red:
-                        return "\x1B[31m";
-                    case ConsoleColor.DarkGreen:
-                        return "\x1B[32m";
-                    case ConsoleColor.DarkYellow:
-                        return "\x1B[33m";
-                    case ConsoleColor.Gray:
-                        return "\x1B[37m";
-                    case ConsoleColor.White:
-                        return "\x1B[97m";
-                    default:
-                        return "\x1B[39m"; // default foreground color
-                }
+                case ConsoleColor.Red:
+                    return "\x1B[31m";
+                case ConsoleColor.DarkGreen:
+                    return "\x1B[32m";
+                case ConsoleColor.DarkYellow:
+                    return "\x1B[33m";
+                case ConsoleColor.Gray:
+                    return "\x1B[37m";
+                case ConsoleColor.White:
+                    return "\x1B[97m";
+                default:
+                    return "\x1B[39m"; // default foreground color
             }
         }
 
-        private struct BackgroundColorScope : IDisposable
+        private static string GetBackgroundColorEscapeCode(ConsoleColor color)
         {
-            private readonly ConsoleColor? _background;
-            private readonly StringBuilder _outputBuilder;
-
-            public BackgroundColorScope(StringBuilder outputBuilder, ConsoleColor? background)
+            switch (color)
             {
-                _background = background;
-                _outputBuilder = outputBuilder;
-
-                if (background.HasValue)
-                {
-                    outputBuilder.Append(GetBackgroundColorEscapeCode(background.Value));
-                }
-            }
-
-            public void Dispose()
-            {
-                if (_background.HasValue)
-                {
-                    _outputBuilder.Append("\x1B[0m"); // reset to the background color
-                }
-            }
-
-            private static string GetBackgroundColorEscapeCode(ConsoleColor color)
-            {
-                switch (color)
-                {
-                    case ConsoleColor.Red:
-                        return "\x1B[101m";
-                    default:
-                        return "\x1B[0m"; // Use default background color
-                }
+                case ConsoleColor.Red:
+                    return "\x1B[101m";
+                default:
+                    return "\x1B[0m"; // Use default background color
             }
         }
     }
