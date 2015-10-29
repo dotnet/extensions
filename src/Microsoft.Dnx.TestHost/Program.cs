@@ -157,8 +157,8 @@ namespace Microsoft.Dnx.TestHost
                                 "--designtime"
                             };
 
-                            var testServices = TestServices.CreateTestServices(project, channel);
-                            await ProjectCommand.Execute(testServices, project, "test", commandArgs);
+                            var services = new ProjectTestHostServices(project, channel);
+                            await ProjectCommand.Execute(project, services, "test", commandArgs.ToArray());
 
                             channel.Send(new Message()
                             {
@@ -186,8 +186,8 @@ namespace Microsoft.Dnx.TestHost
                                 }
                             }
 
-                            var testServices = TestServices.CreateTestServices(project, channel);
-                            await ProjectCommand.Execute(testServices, project, "test", commandArgs.ToArray());
+                            var services = new ProjectTestHostServices(project, channel);
+                            await ProjectCommand.Execute(project, services, "test", commandArgs.ToArray());
 
                             channel.Send(new Message()
                             {

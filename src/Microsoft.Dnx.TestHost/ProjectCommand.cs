@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Dnx.Runtime.CommandParsing;
 using Microsoft.Dnx.Runtime.Common;
+using Microsoft.Dnx.Testing.Abstractions;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.Dnx.TestHost
@@ -14,8 +15,8 @@ namespace Microsoft.Dnx.TestHost
     public static class ProjectCommand
     {
         public static async Task<int> Execute(
-            IServiceProvider services,
             Project project,
+            TestHostServices services,
             string command,
             string[] args)
         {
@@ -35,9 +36,7 @@ namespace Microsoft.Dnx.TestHost
             {
                 entryPoint = project.Name;
             }
-
-            CallContextServiceLocator.Locator.ServiceProvider = services;
-            return await ExecuteMain(services, entryPoint, args);
+            return await ExecuteMain(entryPoint, services, args);
         }
 
         private static string GetVariable(IApplicationEnvironment environment, string key)
@@ -62,10 +61,76 @@ namespace Microsoft.Dnx.TestHost
             return Environment.GetEnvironmentVariable(key);
         }
 
-        private static Task<int> ExecuteMain(IServiceProvider services, string entryPoint, string[] args)
+        private static Task<int> ExecuteMain(string entryPointName, TestHostServices services, string[] args)
         {
-            var assembly = Assembly.Load(new AssemblyName(entryPoint));
-            return EntryPointExecutor.Execute(assembly, args, services);
+            var assembly = Assembly.Load(new AssemblyName(entryPointName));
+            object instance;
+            MethodInfo entryPoint;
+            if (TryGetEntryPoint(assembly, instance: out instance,  entryPoint: out entryPoint))
+            {
+                var result = entryPoint.Invoke(instance, new object[] { services, args });
+                if (result is int)
+                {
+                    return Task.FromResult((int) result);
+                }
+                return Task.FromResult(0);
+            }
+
+            return EntryPointExecutor.Execute(assembly, args, null);
         }
+
+        //Copied from EntryPointExecutor because it would be gone
+        public static bool TryGetEntryPoint(Assembly assembly, out object instance, out MethodInfo entryPoint)
+        {
+            string name = assembly.GetName().Name;
+
+            instance = null;
+
+            // Add support for console apps
+            // This allows us to boot any existing console application
+            // under the runtime
+            entryPoint = GetEntryPoint(assembly);
+            if (entryPoint != null)
+            {
+                return true;
+            }
+
+            var programType = assembly.GetType("Program") ?? assembly.GetType(name + ".Program");
+
+            if (programType == null)
+            {
+                var programTypeInfo = assembly.DefinedTypes.FirstOrDefault(t => t.Name == "Program");
+
+                if (programTypeInfo == null)
+                {
+                    System.Console.WriteLine("'{0}' does not contain a static 'TestMain' method suitable for an entry point", name);
+                    return false;
+                }
+
+                programType = programTypeInfo.AsType();
+            }
+
+            entryPoint = programType.GetRuntimeMethod("TestMain", new[] {typeof (TestHostServices), typeof (string[])});
+
+            if (entryPoint == null)
+            {
+                System.Console.WriteLine("'{0}' does not contain a 'TestMain' method suitable for an entry point", name);
+                return false;
+            }
+
+            instance = programType.GetTypeInfo().IsAbstract ? null : Activator.CreateInstance(programType);
+            return true;
+        }
+
+        private static MethodInfo GetEntryPoint(Assembly assembly)
+        {
+#if DNX451
+            return assembly.EntryPoint;
+#else
+            // Temporary until https://github.com/dotnet/corefx/issues/3336 is fully merged and built
+            return assembly.GetType().GetRuntimeProperty("EntryPoint").GetValue(assembly) as MethodInfo;
+#endif
+        }
+
     }
 }

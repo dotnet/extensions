@@ -8,6 +8,9 @@
   "compilationOptions": {
     "warningsAsErrors": true
   },
+  "dependencies": {
+    "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*"
+  },
   "frameworks": {
     "net451": {},
     "dotnet5.4": {
