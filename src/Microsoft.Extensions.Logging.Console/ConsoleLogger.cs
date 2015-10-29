@@ -21,9 +21,9 @@ namespace Microsoft.Extensions.Logging.Console
         private readonly ConsoleColor? DefaultConsoleColor = null;
 
         private const int _indentation = 2;
-        private readonly string _name;
-        private readonly Func<string, LogLevel, bool> _filter;
-        private readonly bool _includeScopes;
+
+        private IConsole _console;
+        private Func<string, LogLevel, bool> _filter;
 
         static ConsoleLogger()
         {
@@ -33,9 +33,14 @@ namespace Microsoft.Extensions.Logging.Console
 
         public ConsoleLogger(string name, Func<string, LogLevel, bool> filter, bool includeScopes)
         {
-            _name = name;
-            _filter = filter ?? ((category, logLevel) => true);
-            _includeScopes = includeScopes;
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+            
+            Name = name;
+            Filter = filter ?? ((category, logLevel) => true);
+            IncludeScopes = includeScopes;
 
             if (RuntimeEnvironmentHelper.IsWindows)
             {
@@ -47,9 +52,37 @@ namespace Microsoft.Extensions.Logging.Console
             }
         }
 
-        public IConsole Console { get; set; }
+        public IConsole Console
+        {
+            get { return _console; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
 
-        protected string Name { get { return _name; } }
+                _console = value;
+            }
+        }
+
+        public Func<string, LogLevel, bool> Filter
+        {
+            get { return _filter; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _filter = value;
+            }
+        }
+
+        public bool IncludeScopes { get; set; }
+
+        public string Name { get; }
 
         public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
@@ -86,7 +119,7 @@ namespace Microsoft.Extensions.Logging.Console
                 return;
             }
 
-            WriteMessage(logLevel, _name, eventId, message);
+            WriteMessage(logLevel, Name, eventId, message);
         }
 
         public virtual void WriteMessage(LogLevel logLevel, string logName, int eventId, string message)
@@ -118,7 +151,7 @@ namespace Microsoft.Extensions.Logging.Console
                     newLine: true);
 
                 // scope information
-                if (_includeScopes)
+                if (IncludeScopes)
                 {
                     var scopeInformation = GetScopeInformation();
                     if (!string.IsNullOrEmpty(scopeInformation))
@@ -146,7 +179,7 @@ namespace Microsoft.Extensions.Logging.Console
 
         public bool IsEnabled(LogLevel logLevel)
         {
-            return _filter(_name, logLevel);
+            return Filter(Name, logLevel);
         }
 
         public IDisposable BeginScopeImpl(object state)
@@ -156,7 +189,7 @@ namespace Microsoft.Extensions.Logging.Console
                 throw new ArgumentNullException(nameof(state));
             }
 
-            return ConsoleLogScope.Push(_name, state);
+            return ConsoleLogScope.Push(Name, state);
         }
 
         private void FormatLogValues(StringBuilder builder, ILogValues logValues, int level, bool bullet)

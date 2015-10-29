@@ -1,0 +1,8 @@
+﻿{
+  "includeScopes" : "false",
+  "switches": {
+    "Default": "Verbose",
+    "System": "Information",
+    "Microsoft": "Information"
+  }
+}

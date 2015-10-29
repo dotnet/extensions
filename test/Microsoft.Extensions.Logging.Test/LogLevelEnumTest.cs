@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.Logging.Test
         {
             var values = GetEnumValues();
             values.Sort();
-            Assert.Equal(new[] { 1, 2, 3, 4, 5, 6 }, values);
+            Assert.Equal(new[] { 1, 2, 3, 4, 5, 6, int.MaxValue}, values);
         }
 
         private static List<int> GetEnumValues()

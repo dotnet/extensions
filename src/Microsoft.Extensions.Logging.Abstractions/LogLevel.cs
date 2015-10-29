@@ -42,5 +42,10 @@ namespace Microsoft.Extensions.Logging
         /// immediate attention.
         /// </summary>
         Critical = 6,
+
+        /// <summary>
+        /// Not used for writing log messages. Specifies that a logging category should not write any messages.
+        /// </summary>
+        None = int.MaxValue,
     }
 }
