@@ -6,7 +6,8 @@
     "url": "https://github.com/aspnet/common"
   },
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
