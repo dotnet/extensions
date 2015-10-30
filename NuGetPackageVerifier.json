@@ -11,8 +11,7 @@
         "packages": {
             "Microsoft.AspNet.Testing": { },
             "Microsoft.Dnx.TestHost": { },
-            "Microsoft.Dnx.Testing.Abstractions": { },
-            "Microsoft.Extensions.WebEncoders.Testing": { }
+            "Microsoft.Dnx.Testing.Abstractions": { }
         }
     },
     "adx-nonshipping": {
