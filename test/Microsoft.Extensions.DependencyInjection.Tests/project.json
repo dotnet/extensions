@@ -1,7 +1,6 @@
 {
     "version": "0.1-alpha-*",
     "dependencies": {
-        "Autofac.Extensions.DependencyInjection": "4.0.0-*",
         "Microsoft.AspNet.Testing": "1.0.0-*",
         "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
         "Microsoft.Extensions.DependencyInjection.Specification.Tests": "1.0.0-*",
