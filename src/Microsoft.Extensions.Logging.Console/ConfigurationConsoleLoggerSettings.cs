@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.Logging.Console
             get
             {
                 bool includeScopes;
-                var value = _configuration["includeScopes"];
+                var value = _configuration["IncludeScopes"];
                 if (string.IsNullOrEmpty(value))
                 {
                     return false;
@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.Logging.Console
 
         public bool TryGetSwitch(string name, out LogLevel level)
         {
-            var switches = _configuration.GetSection("switches");
+            var switches = _configuration.GetSection("LogLevel");
             if (switches == null)
             {
                 level = LogLevel.None;
