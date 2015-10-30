@@ -1,5 +1,9 @@
 {
   "version": "1.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
   "description": "Abstractions of key-value pair based configuration.",
   "repository": {
     "type": "git",

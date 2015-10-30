@@ -1,5 +1,9 @@
 {
   "version": "1.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
   "description": "Functionality to bind an object to data in configuration providers.",
   "repository": {
     "type": "git",

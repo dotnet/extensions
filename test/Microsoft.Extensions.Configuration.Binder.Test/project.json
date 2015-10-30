@@ -1,4 +1,8 @@
 {
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
   "dependencies": {
     "Microsoft.Extensions.Configuration.Binder": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Test.Common": "1.0.0-*",
