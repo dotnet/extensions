@@ -1,7 +1,9 @@
 {
     "version": "0.1-alpha-*",
+    "compilationOptions": {
+        "keyFile": "../../tools/Key.snk"
+    },
     "dependencies": {
-        "Autofac.Extensions.DependencyInjection": "4.0.0-*",
         "Microsoft.AspNet.Testing": "1.0.0-*",
         "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"

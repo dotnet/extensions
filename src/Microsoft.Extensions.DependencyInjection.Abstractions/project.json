@@ -6,9 +6,9 @@
     "url": "git://github.com/aspnet/dependencyinjection"
   },
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
-
   "frameworks": {
     "net451": {},
     "dotnet5.4": {
