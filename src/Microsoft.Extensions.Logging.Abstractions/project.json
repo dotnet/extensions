@@ -6,7 +6,8 @@
   },
   "description": "Logging interface definitions.",
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
     "Microsoft.Extensions.TypeNameHelper.Sources": {

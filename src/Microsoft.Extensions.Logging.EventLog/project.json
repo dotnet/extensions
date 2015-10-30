@@ -5,7 +5,8 @@
     "url": "git://github.com/aspnet/logging"
   },
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "description": "Logger for Windows Event Log.",
   "dependencies": {

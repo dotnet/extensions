@@ -13,7 +13,8 @@
     "warningsAsErrors": true,
     "define": [
       "TRACE"
-    ]
+    ],
+    "keyFile": "../../tools/Key.snk"
   },
   "frameworks": {
     "net451": {
