@@ -5,7 +5,8 @@
   },
   "description": "ASP.NET 5 distributed cache implementation on Microsoft SQL Server.",
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "frameworks": {
     "net451": {

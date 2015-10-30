@@ -6,12 +6,13 @@
     "url": "https://github.com/aspnet/caching"
   },
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
     "Microsoft.Extensions.Caching.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.OptionsModel": "1.0.0-*",
-    "StackExchange.Redis": "1.0.333"
+    "StackExchange.Redis.StrongName": "1.0.333"
   },
   "frameworks": {
     "net451": {}

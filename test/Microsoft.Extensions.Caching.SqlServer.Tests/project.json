@@ -1,4 +1,8 @@
 {
+    "compilationOptions": {
+        "warningsAsErrors": true,
+        "keyFile": "../../tools/Key.snk"
+    },
     "commands": {
         "test": "xunit.runner.aspnet"
     },
