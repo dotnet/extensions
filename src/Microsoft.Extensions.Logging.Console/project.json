@@ -6,7 +6,8 @@
   },
   "description": "Console logger implementation.",
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
     "Microsoft.Dnx.Runtime.Sources": {
