@@ -8,7 +8,9 @@
   "compilationOptions": {
     "define": [
       "TRACE"
-    ]
+    ],
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "frameworks": {
     "net451": {
