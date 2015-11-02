@@ -1,5 +1,9 @@
 {
   "version": "1.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
   "description": "Implementation of ASP.NET 5 file provider abstractions for embedded resources.",
   "repository": {
     "type": "git",
