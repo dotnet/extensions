@@ -1,4 +1,8 @@
 {
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
   "dependencies": {
     "Microsoft.Extensions.Configuration": "1.0.0-*",
     "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0-*",
@@ -8,8 +12,8 @@
     "dnx451": { },
     "dnxcore50": {
       "dependencies": {
-          "System.AppContext": "4.0.0-*"
-        }
+        "System.AppContext": "4.0.0-*"
+      }
     }
   },
   "commands": {

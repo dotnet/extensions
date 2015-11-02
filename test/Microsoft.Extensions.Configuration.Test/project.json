@@ -1,6 +1,7 @@
 {
     "compilationOptions": {
-        "warningsAsErrors": true
+        "warningsAsErrors": true,
+        "keyFile": "../../tools/Key.snk"
     },
     "dependencies": {
         "Microsoft.Extensions.Configuration": "1.0.0-*",

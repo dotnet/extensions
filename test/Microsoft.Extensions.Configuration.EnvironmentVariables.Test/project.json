@@ -1,4 +1,8 @@
 {
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
   "dependencies": {
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Test.Common": "1.0.0-*",
@@ -7,9 +11,9 @@
   "frameworks": {
     "dnx451": { },
     "dnxcore50": {
-        "dependencies": {
-            "System.Runtime": "4.0.21-*"
-        }
+      "dependencies": {
+        "System.Runtime": "4.0.21-*"
+      }
     }
   },
   "commands": {
