@@ -1,5 +1,9 @@
 {
   "version": "1.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
   "frameworks": {
     "net451": {},
     "dotnet5.4": {
