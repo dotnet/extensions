@@ -1,5 +1,9 @@
 {
   "version": "1.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
   "description": "Provides a strongly typed way of specifying and accessing settings using dependency injection.",
   "dependencies": {
     "Microsoft.Extensions.Configuration.Abstractions": "1.0.0-*",
