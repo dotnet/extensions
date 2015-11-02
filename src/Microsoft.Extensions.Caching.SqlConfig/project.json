@@ -25,7 +25,8 @@
     }
   },
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "version": "1.0.0-*",
   "repository": {
