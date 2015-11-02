@@ -6,7 +6,8 @@
     "xunit.extensibility.core": "2.1.0"
   },
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "frameworks": {
     "net451": {
