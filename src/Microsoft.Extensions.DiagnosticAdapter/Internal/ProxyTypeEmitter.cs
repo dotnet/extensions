@@ -259,7 +259,13 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             var il = constructorBuilder.GetILGenerator();
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Ldarg_1);
+
+            // LdToken loads a RuntimeTypeHandle, while the constructor takes a Type, so we convert.
+            // This is the same strategy the compiler uses when constructing this class.
             il.Emit(OpCodes.Ldtoken, proxyType);
+            var getTypeFromHandle = typeof(Type).GetMethod("GetTypeFromHandle", BindingFlags.Static | BindingFlags.Public);
+            il.EmitCall(OpCodes.Call, getTypeFromHandle, null);
+
             il.Emit(OpCodes.Call, baseConstructor);
             il.Emit(OpCodes.Ret);
 
@@ -305,7 +311,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                 var propertyBuilder = typeBuilder.DefineProperty(
                     targetProperty.Name,
                     PropertyAttributes.None,
-                    property.Key.PropertyType,
+                    targetProperty.PropertyType,
                     Type.EmptyTypes);
 
                 var methodBuilder = typeBuilder.DefineMethod(
@@ -320,40 +326,58 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                 var il = methodBuilder.GetILGenerator();
                 if (sourceProperty == null)
                 {
+                    // Return a default(T) value.
                     il.DeclareLocal(targetProperty.PropertyType);
 
-                    // Return a default(T) value.
                     il.Emit(OpCodes.Ldloca_S, 0);
                     il.Emit(OpCodes.Initobj, targetProperty.PropertyType);
 
                     il.Emit(OpCodes.Ldloc_S, 0);
                     il.Emit(OpCodes.Ret);
+                    continue;
                 }
-                else
+
+                il.DeclareLocal(targetProperty.PropertyType);
+                il.DeclareLocal(sourceProperty.PropertyType);
+
+                // Init variables with default(T)
+                il.Emit(OpCodes.Ldloca_S, 0);
+                il.Emit(OpCodes.Initobj, targetProperty.PropertyType);
+
+                il.Emit(OpCodes.Ldloca_S, 1);
+                il.Emit(OpCodes.Initobj, sourceProperty.PropertyType);
+
+                // Push 'this' and get the underlying instance.
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldfld,
+                    typeBuilder.BaseType.GetField(
+                        "Instance",
+                        BindingFlags.Instance | BindingFlags.Public));
+
+                // Call the source property.
+                il.EmitCall(OpCodes.Callvirt, sourceProperty.GetMethod, null);
+                il.Emit(OpCodes.Stloc_S, 1);
+
+                var @return = il.DefineLabel();
+
+                // BrFalse can't handle all value types (Decimal for example), so we skip it for value types
+                // since we're using it as a null-check anyway.
+                if (!sourceProperty.PropertyType.GetTypeInfo().IsValueType)
                 {
-                    // Push 'this' and get the underlying instance.
-                    il.Emit(OpCodes.Ldarg_0);
-                    il.Emit(OpCodes.Ldfld,
-                        typeBuilder.BaseType.GetField(
-                            "Instance",
-                            BindingFlags.Instance | BindingFlags.Public));
-
-                    // Call the source property.
-                    il.EmitCall(OpCodes.Callvirt, sourceProperty.GetMethod, null);
-
-                    var @return = il.DefineLabel();
-
                     // At this point the value on the stack is the return value of the the source-type property.
                     // If it returned null, we want to just jump to return.
-                    il.Emit(OpCodes.Dup);
+                    il.Emit(OpCodes.Ldloc_S, 1);
                     il.Emit(OpCodes.Brfalse, @return);
-
-                    // Create a proxy for the value returned by source property (if necessary).
-                    EmitProxy(context, il, targetProperty.PropertyType, sourceProperty.PropertyType);
-
-                    il.MarkLabel(@return);
-                    il.Emit(OpCodes.Ret);
                 }
+
+                // Create a proxy for the value returned by source property (if necessary).
+                il.Emit(OpCodes.Ldloc_S, 1);
+                EmitProxy(context, il, targetProperty.PropertyType, sourceProperty.PropertyType);
+                il.Emit(OpCodes.Stloc_S, 0);
+
+                il.MarkLabel(@return);
+                il.Emit(OpCodes.Ldloc_S, 0);
+                il.Emit(OpCodes.Ret);
             }
         }
 

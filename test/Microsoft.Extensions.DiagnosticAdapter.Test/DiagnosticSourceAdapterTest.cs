@@ -242,8 +242,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter
             Assert.Equal(98028, target.Person.Address.Zip);
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void Write_CanDuckType_RuntimeType()
         {
             // Arrange

@@ -279,8 +279,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             }
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void Adapt_ListWithProxy_ToReadOnlyList()
         {
             // Arrange
@@ -300,8 +299,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             Assert.Equal("Joe", proxy[1].FirstName);
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void Adapt_ListWithProxy_ToReadOnlyList_Null()
         {
             // Arrange
@@ -321,8 +319,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             Assert.Null(proxy[1]);
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void Adapt_ListWithProxy_ToReadOnlyList_Enumerator()
         {
             // Arrange
@@ -345,8 +342,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             }
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void Adapt_ListWithProxy_ToReadOnlyList_Enumerator_Null()
         {
             // Arrange
@@ -510,8 +506,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             }
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void Adapt_ListPropertyWithProxy_ToReadOnlyList()
         {
             // Arrange
@@ -534,8 +529,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             Assert.Equal("Joe", proxy.ListProperty[1].FirstName);
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void Adapt_ListPropertyWithProxy_ToReadOnlyList_Enumerator()
         {
             // Arrange
@@ -561,8 +555,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             }
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void Adapt_NestedList()
         {
             // Arrange
