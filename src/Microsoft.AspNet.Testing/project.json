@@ -1,6 +1,10 @@
 {
   "description": "Various helpers for writing tests that use DNX or ASP.NET.",
   "version": "1.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/testing"
