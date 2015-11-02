@@ -6,8 +6,7 @@
     "url": "git://github.com/aspnet/testing"
   },
   "compilationOptions": {
-    "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "warningsAsErrors": true
   },
   "dependencies": {
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*"
