@@ -8,9 +8,9 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using dia2;
-using Microsoft.Dnx.Compilation;
-using Microsoft.Extensions.Logging;
 using Microsoft.Dnx.Testing.Abstractions;
+using Microsoft.Extensions.Compilation;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.Dnx.TestHost.TestAdapter

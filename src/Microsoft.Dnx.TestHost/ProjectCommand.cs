@@ -64,14 +64,13 @@ namespace Microsoft.Dnx.TestHost
         private static Task<int> ExecuteMain(string entryPointName, TestHostServices services, string[] args)
         {
             var assembly = Assembly.Load(new AssemblyName(entryPointName));
-            object instance;
             MethodInfo entryPoint;
-            if (TryGetEntryPoint(assembly, instance: out instance,  entryPoint: out entryPoint))
+            if (TryGetEntryPoint(assembly, entryPoint: out entryPoint))
             {
-                var result = entryPoint.Invoke(instance, new object[] { services, args });
+                var result = entryPoint.Invoke(null, new object[] { services, args });
                 if (result is int)
                 {
-                    return Task.FromResult((int) result);
+                    return Task.FromResult((int)result);
                 }
                 return Task.FromResult(0);
             }
@@ -80,11 +79,9 @@ namespace Microsoft.Dnx.TestHost
         }
 
         //Copied from EntryPointExecutor because it would be gone
-        public static bool TryGetEntryPoint(Assembly assembly, out object instance, out MethodInfo entryPoint)
+        public static bool TryGetEntryPoint(Assembly assembly, out MethodInfo entryPoint)
         {
             string name = assembly.GetName().Name;
-
-            instance = null;
 
             // Add support for console apps
             // This allows us to boot any existing console application
@@ -110,15 +107,13 @@ namespace Microsoft.Dnx.TestHost
                 programType = programTypeInfo.AsType();
             }
 
-            entryPoint = programType.GetRuntimeMethod("TestMain", new[] {typeof (TestHostServices), typeof (string[])});
+            entryPoint = programType.GetRuntimeMethod("TestMain", new[] { typeof(TestHostServices), typeof(string[]) });
 
-            if (entryPoint == null)
+            if (entryPoint == null || !entryPoint.IsStatic)
             {
-                System.Console.WriteLine("'{0}' does not contain a 'TestMain' method suitable for an entry point", name);
+                System.Console.WriteLine("'{0}' does not contain a static 'TestMain' method suitable for an entry point", name);
                 return false;
             }
-
-            instance = programType.GetTypeInfo().IsAbstract ? null : Activator.CreateInstance(programType);
             return true;
         }
 

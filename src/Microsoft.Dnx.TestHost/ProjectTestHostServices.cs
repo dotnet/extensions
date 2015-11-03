@@ -3,10 +3,10 @@
 
 using System;
 using System.Linq;
-using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Runtime.Common.DependencyInjection;
 using Microsoft.Dnx.TestHost.TestAdapter;
 using Microsoft.Dnx.Testing.Abstractions;
+using Microsoft.Extensions.Compilation;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Dnx.TestHost
