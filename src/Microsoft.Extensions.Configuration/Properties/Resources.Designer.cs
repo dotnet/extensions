@@ -11,54 +11,6 @@ namespace Microsoft.Extensions.Configuration
             = new ResourceManager("Microsoft.Extensions.Configuration.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// Empty key is not allowed. 
-        /// </summary>
-        internal static string Error_EmptyKey
-        {
-            get { return GetString("Error_EmptyKey"); }
-        }
-
-        /// <summary>
-        /// Empty key is not allowed. 
-        /// </summary>
-        internal static string FormatError_EmptyKey()
-        {
-            return GetString("Error_EmptyKey");
-        }
-
-        /// <summary>
-        /// Reload can only be called on top-level configuration element
-        /// </summary>
-        internal static string Error_InvalidReload
-        {
-            get { return GetString("Error_InvalidReload"); }
-        }
-
-        /// <summary>
-        /// Reload can only be called on top-level configuration element
-        /// </summary>
-        internal static string FormatError_InvalidReload()
-        {
-            return GetString("Error_InvalidReload");
-        }
-
-        /// <summary>
-        /// Unable to resolve path '{0}'; construct this {1} with a non-null {2}.
-        /// </summary>
-        internal static string Error_MissingBasePath
-        {
-            get { return GetString("Error_MissingBasePath"); }
-        }
-
-        /// <summary>
-        /// Unable to resolve path '{0}'; construct this {1} with a non-null {2}.
-        /// </summary>
-        internal static string FormatError_MissingBasePath(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_MissingBasePath"), p0, p1, p2);
-        }
-
-        /// <summary>
         /// A configuration provider is not registered. Please register one before setting a value.
         /// </summary>
         internal static string Error_NoSources

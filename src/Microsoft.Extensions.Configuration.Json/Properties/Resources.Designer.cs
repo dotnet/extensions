@@ -11,38 +11,6 @@ namespace Microsoft.Extensions.Configuration.Json
             = new ResourceManager("Microsoft.Extensions.Configuration.Json.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// Unable to commit because the following keys are missing from the configuration file: {0}.
-        /// </summary>
-        internal static string Error_CommitWhenKeyMissing
-        {
-            get { return GetString("Error_CommitWhenKeyMissing"); }
-        }
-
-        /// <summary>
-        /// Unable to commit because the following keys are missing from the configuration file: {0}.
-        /// </summary>
-        internal static string FormatError_CommitWhenKeyMissing(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_CommitWhenKeyMissing"), p0);
-        }
-
-        /// <summary>
-        /// Unable to commit because a new key was added to the configuration file after last load operation. The newly added key is '{0}'.
-        /// </summary>
-        internal static string Error_CommitWhenNewKeyFound
-        {
-            get { return GetString("Error_CommitWhenNewKeyFound"); }
-        }
-
-        /// <summary>
-        /// Unable to commit because a new key was added to the configuration file after last load operation. The newly added key is '{0}'.
-        /// </summary>
-        internal static string FormatError_CommitWhenNewKeyFound(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_CommitWhenNewKeyFound"), p0);
-        }
-
-        /// <summary>
         /// The configuration file '{0}' was not found and is not optional.
         /// </summary>
         internal static string Error_FileNotFound
