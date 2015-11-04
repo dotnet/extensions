@@ -8,6 +8,8 @@ namespace Microsoft.Extensions.Logging
 {
     internal class Logger : ILogger
     {
+        private static readonly NullScope _nullScope = new NullScope();
+
         private readonly LoggerFactory _loggerFactory;
         private readonly string _name;
         private ILogger[] _loggers;
@@ -110,7 +112,12 @@ namespace Microsoft.Extensions.Logging
         {
             if (_loggers == null)
             {
-                return null;
+                return _nullScope;
+            }
+
+            if (_loggers.Length == 1)
+            {
+                return _loggers[0].BeginScopeImpl(state);
             }
 
             var loggers = _loggers;
@@ -224,6 +231,13 @@ namespace Microsoft.Extensions.Logging
             internal void Add(IDisposable disposable)
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        private class NullScope : IDisposable
+        {
+            public void Dispose()
+            {
             }
         }
     }
