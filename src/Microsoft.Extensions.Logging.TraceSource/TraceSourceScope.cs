@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.Logging.TraceSource
         /// <param name="state">The state.</param>
         public TraceSourceScope(object state)
         {
-#if NET451 || NET451
+#if NET451
             Trace.CorrelationManager.StartLogicalOperation(state);
 #endif
         }
@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.Logging.TraceSource
         {
             if (!_isDisposed)
             {
-#if NET451 || NET451
+#if NET451
                 Trace.CorrelationManager.StopLogicalOperation();
 #endif
                 _isDisposed = true;
