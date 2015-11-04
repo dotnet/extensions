@@ -130,7 +130,7 @@
     <comment>{0} = service which cannot be resolved, {1} = service being activated</comment>
   </data>
   <data name="NoConstructorMatch" xml:space="preserve">
-    <value>Unable to locate suitable constructor for type '{0}'. Ensure the type is concrete and all parameters are accepted by a constructor.</value>
+    <value>A suitable constructor for type '{0}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.</value>
     <comment>{0} = service type</comment>
   </data>
   <data name="NoServiceRegistered" xml:space="preserve">

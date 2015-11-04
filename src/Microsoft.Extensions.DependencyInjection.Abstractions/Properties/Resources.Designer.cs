@@ -59,7 +59,7 @@ namespace Microsoft.Extensions.DependencyInjection.Abstractions
         }
 
         /// <summary>
-        /// Unable to locate suitable constructor for type '{0}'. Ensure the type is concrete and all parameters are accepted by a constructor.
+        /// A suitable constructor for type '{0}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.
         /// </summary>
         internal static string NoConstructorMatch
         {
@@ -67,7 +67,7 @@ namespace Microsoft.Extensions.DependencyInjection.Abstractions
         }
 
         /// <summary>
-        /// Unable to locate suitable constructor for type '{0}'. Ensure the type is concrete and all parameters are accepted by a constructor.
+        /// A suitable constructor for type '{0}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.
         /// </summary>
         internal static string FormatNoConstructorMatch(object p0)
         {

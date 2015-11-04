@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             if (constructors.Length == 0)
             {
-                return new CreateInstanceCallSite(_descriptor);
+                throw new InvalidOperationException(Resources.FormatNoConstructorMatch(_descriptor.ImplementationType));
             }
             else if (constructors.Length == 1)
             {

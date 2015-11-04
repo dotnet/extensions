@@ -32,6 +32,22 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             Assert.Equal(nameof(ClassWithThrowingCtor), ex2.Message);
         }
 
+        [Fact]
+        public void DependencyWithPrivateConstructorIsIdentifiedAsPartOfException()
+        {
+            // Arrange
+            var expectedMessage = $"A suitable constructor for type '{typeof(ClassWithPrivateCtor).FullName}' could not be located. "
+                + "Ensure the type is concrete and services are registered for all parameters of a public constructor.";
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient<ClassWithPrivateCtor>();
+            serviceCollection.AddTransient<ClassDependsOnPrivateConstructorClass>();
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            // Act and Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetServices<ClassDependsOnPrivateConstructorClass>());
+            Assert.Equal(expectedMessage, ex.Message);
+        }
+
         [Theory]
         // GenericTypeDefintion, Abstract GenericTypeDefintion
         [InlineData(typeof(IFakeOpenGenericService<>), typeof(AbstractFakeOpenGenericService<>))]

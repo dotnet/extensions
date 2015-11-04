@@ -13,12 +13,27 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     public class ServiceTest
     {
+        [Fact]
+        public void CreateCallSite_Throws_IfTypeHasNoPublicConstructors()
+        {
+            // Arrange
+            var type = typeof(TypeWithNoPublicConstructors);
+            var expectedMessage = $"A suitable constructor for type '{type}' could not be located. " +
+                "Ensure the type is concrete and services are registered for all parameters of a public constructor.";
+            var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
+            var service = new Service(descriptor);
+            var serviceProvider = new ServiceProvider(new[] { descriptor });
+
+            // Act and Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => service.CreateCallSite(serviceProvider, new HashSet<Type>()));
+            Assert.Equal(expectedMessage, ex.Message);
+        }
+
         [Theory]
         [InlineData(typeof(TypeWithNoConstructors))]
-        [InlineData(typeof(TypeWithNoPublicConstructors))]
         [InlineData(typeof(TypeWithParameterlessConstructor))]
         [InlineData(typeof(TypeWithParameterlessPublicConstructor))]
-        public void CreateCallSite_CreatesInstanceCallSite_IfTypeHasNoPublicConstructors(Type type)
+        public void CreateCallSite_CreatesInstanceCallSite_IfTypeHasDefaultOrPublicParameterlessConstructor(Type type)
         {
             // Arrange
             var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);

@@ -125,11 +125,15 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         [MemberData(nameof(TypesWithNonPublicConstructorData))]
         public void TypeActivatorRequiresPublicConstructor(CreateInstanceFunc createFunc, Type type)
         {
+            // Arrange
+            var expectedMessage = $"A suitable constructor for type '{type}' could not be located. " +
+                "Ensure the type is concrete and services are registered for all parameters of a public constructor.";
+
+            // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
                 createFunc(provider: null, type: type, args: new object[0]));
 
-            Assert.Equal($"Unable to locate suitable constructor for type '{type}'. Ensure the type is concrete" +
-                " and all parameters are accepted by a constructor.", ex.Message);
+            Assert.Equal(expectedMessage, ex.Message);
         }
 
         [Theory]
@@ -137,8 +141,8 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void TypeActivatorRequiresAllArgumentsCanBeAccepted(CreateInstanceFunc createFunc)
         {
             // Arrange
-            var expectedMessage = $"Unable to locate suitable constructor for type '{typeof(AnotherClassAcceptingData)}'." +
-                " Ensure the type is concrete and all parameters are accepted by a constructor.";
+            var expectedMessage = $"A suitable constructor for type '{typeof(AnotherClassAcceptingData).FullName}' could not be located. " +
+                "Ensure the type is concrete and services are registered for all parameters of a public constructor.";
             var serviceCollection = new ServiceCollection()
                 .AddTransient<IFakeService, FakeService>();
             var serviceProvider = CreateServiceProvider(serviceCollection);
