@@ -8,10 +8,10 @@ namespace Microsoft.Extensions.Configuration
     public static class FileConfigurationExtensions
     {
         /// <summary>
-        /// Sets the base path in <see cref="IConfigurationBuilder"/> for file based providers.
+        /// Sets the base path to discover files in for file-based providers.
         /// </summary>
         /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
-        /// <param name="basePath">Absolute path of file based providers.
+        /// <param name="basePath">The absolute path of file-based providers.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         public static IConfigurationBuilder SetBasePath(this IConfigurationBuilder configurationBuilder, string basePath)
         {
@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.Configuration
         }
 
         /// <summary>
-        /// Gets the base path in <see cref="IConfigurationBuilder"/> for file based providers.
+        /// Gets the base path to discover files in for file-based providers.
         /// </summary>
         /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
