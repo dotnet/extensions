@@ -5,21 +5,34 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// Extension methods for adding services to an <see cref="IServiceCollection" />.
+    /// </summary>
     public static class ServiceCollectionExtensions
     {
+        /// <summary>
+        /// Adds a transient service of the type specified in <paramref name="serviceType"/> with an
+        /// implementation of the type specified in <paramref name="implementationType"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="serviceType">The type of the service to register.</param>
+        /// <param name="implementationType">The implementation type of the service.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Transient"/>
         public static IServiceCollection AddTransient(
-            this IServiceCollection collection,
-            Type service,
+            this IServiceCollection services,
+            Type serviceType,
             Type implementationType)
         {
-            if (collection == null)
+            if (services == null)
             {
-                throw new ArgumentNullException(nameof(collection));
+                throw new ArgumentNullException(nameof(services));
             }
 
-            if (service == null)
+            if (serviceType == null)
             {
-                throw new ArgumentNullException(nameof(service));
+                throw new ArgumentNullException(nameof(serviceType));
             }
 
             if (implementationType == null)
@@ -27,22 +40,32 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(implementationType));
             }
 
-            return Add(collection, service, implementationType, ServiceLifetime.Transient);
+            return Add(services, serviceType, implementationType, ServiceLifetime.Transient);
         }
 
+        /// <summary>
+        /// Adds a transient service of the type specified in <paramref name="serviceType"/> with a
+        /// factory specified in <paramref name="implementationFactory"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="serviceType">The type of the service to register.</param>
+        /// <param name="implementationFactory">The factory that creates the service.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Transient"/>
         public static IServiceCollection AddTransient(
-            this IServiceCollection collection,
-            Type service,
+            this IServiceCollection services,
+            Type serviceType,
             Func<IServiceProvider, object> implementationFactory)
         {
-            if (collection == null)
+            if (services == null)
             {
-                throw new ArgumentNullException(nameof(collection));
+                throw new ArgumentNullException(nameof(services));
             }
 
-            if (service == null)
+            if (serviceType == null)
             {
-                throw new ArgumentNullException(nameof(service));
+                throw new ArgumentNullException(nameof(serviceType));
             }
 
             if (implementationFactory == null)
@@ -50,126 +73,19 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(implementationFactory));
             }
 
-            return Add(collection, service, implementationFactory, ServiceLifetime.Transient);
+            return Add(services, serviceType, implementationFactory, ServiceLifetime.Transient);
         }
 
-        public static IServiceCollection AddScoped(
-            this IServiceCollection collection,
-            Type service,
-            Type implementationType)
-        {
-            if (collection == null)
-            {
-                throw new ArgumentNullException(nameof(collection));
-            }
-
-            if (service == null)
-            {
-                throw new ArgumentNullException(nameof(service));
-            }
-
-            if (implementationType == null)
-            {
-                throw new ArgumentNullException(nameof(implementationType));
-            }
-
-            return Add(collection, service, implementationType, ServiceLifetime.Scoped);
-        }
-
-        public static IServiceCollection AddScoped(
-            this IServiceCollection collection,
-            Type service,
-            Func<IServiceProvider, object> implementationFactory)
-        {
-            if (collection == null)
-            {
-                throw new ArgumentNullException(nameof(collection));
-            }
-
-            if (service == null)
-            {
-                throw new ArgumentNullException(nameof(service));
-            }
-
-            if (implementationFactory == null)
-            {
-                throw new ArgumentNullException(nameof(implementationFactory));
-            }
-
-            return Add(collection, service, implementationFactory, ServiceLifetime.Scoped);
-        }
-
-        public static IServiceCollection AddSingleton(
-            this IServiceCollection collection,
-            Type service,
-            Type implementationType)
-        {
-            if (collection == null)
-            {
-                throw new ArgumentNullException(nameof(collection));
-            }
-
-            if (service == null)
-            {
-                throw new ArgumentNullException(nameof(service));
-            }
-
-            if (implementationType == null)
-            {
-                throw new ArgumentNullException(nameof(implementationType));
-            }
-
-            return Add(collection, service, implementationType, ServiceLifetime.Singleton);
-        }
-
-        public static IServiceCollection AddSingleton(
-            this IServiceCollection collection,
-            Type service,
-            Func<IServiceProvider, object> implementationFactory)
-        {
-            if (collection == null)
-            {
-                throw new ArgumentNullException(nameof(collection));
-            }
-
-            if (service == null)
-            {
-                throw new ArgumentNullException(nameof(service));
-            }
-
-            if (implementationFactory == null)
-            {
-                throw new ArgumentNullException(nameof(implementationFactory));
-            }
-
-            return Add(collection, service, implementationFactory, ServiceLifetime.Singleton);
-        }
-
-        public static IServiceCollection AddInstance(
-            this IServiceCollection collection,
-            Type service,
-            object implementationInstance)
-        {
-            if (collection == null)
-            {
-                throw new ArgumentNullException(nameof(collection));
-            }
-
-            if (service == null)
-            {
-                throw new ArgumentNullException(nameof(service));
-            }
-
-            if (implementationInstance == null)
-            {
-                throw new ArgumentNullException(nameof(implementationInstance));
-            }
-
-            var serviceDescriptor = new ServiceDescriptor(service, implementationInstance);
-            collection.Add(serviceDescriptor);
-            return collection;
-        }
-
+        /// <summary>
+        /// Adds a transient service of the type specified in <typeparamref name="TService"/> with an
+        /// implementation type specified in <typeparamref name="TImplementation"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="TService">The type of the service to add.</typeparam>
+        /// <typeparam name="TImplementation">The type of the implementation to use.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Transient"/>
         public static IServiceCollection AddTransient<TService, TImplementation>(this IServiceCollection services)
             where TService : class
             where TImplementation : class, TService
@@ -182,6 +98,14 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddTransient(typeof(TService), typeof(TImplementation));
         }
 
+        /// <summary>
+        /// Adds a transient service of the type specified in <paramref name="serviceType"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="serviceType">The type of the service to register and the implementation to use.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Transient"/>
         public static IServiceCollection AddTransient(
             this IServiceCollection services,
             Type serviceType)
@@ -199,6 +123,14 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddTransient(serviceType, serviceType);
         }
 
+        /// <summary>
+        /// Adds a transient service of the type specified in <typeparamref name="TService"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="TService">The type of the service to add.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Transient"/>
         public static IServiceCollection AddTransient<TService>(this IServiceCollection services)
             where TService : class
         {
@@ -210,6 +142,16 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddTransient(typeof(TService));
         }
 
+        /// <summary>
+        /// Adds a transient service of the type specified in <typeparamref name="TService"/> with a
+        /// factory specified in <paramref name="implementationFactory"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="TService">The type of the service to add.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="implementationFactory">The factory that creates the service.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Transient"/>
         public static IServiceCollection AddTransient<TService>(
             this IServiceCollection services,
             Func<IServiceProvider, TService> implementationFactory)
@@ -228,6 +170,18 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddTransient(typeof(TService), implementationFactory);
         }
 
+        /// <summary>
+        /// Adds a transient service of the type specified in <typeparamref name="TService"/> with an
+        /// implementation type specified in <typeparamref name="TImplementation" /> using the
+        /// factory specified in <paramref name="implementationFactory"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="TService">The type of the service to add.</typeparam>
+        /// <typeparam name="TImplementation">The type of the implementation to use.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="implementationFactory">The factory that creates the service.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Transient"/>
         public static IServiceCollection AddTransient<TService, TImplementation>(
             this IServiceCollection services,
             Func<IServiceProvider, TImplementation> implementationFactory)
@@ -247,6 +201,84 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddTransient(typeof(TService), implementationFactory);
         }
 
+
+
+        /// <summary>
+        /// Adds a scoped service of the type specified in <paramref name="serviceType"/> with an
+        /// implementation of the type specified in <paramref name="implementationType"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="serviceType">The type of the service to register.</param>
+        /// <param name="implementationType">The implementation type of the service.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Scoped"/>
+        public static IServiceCollection AddScoped(
+            this IServiceCollection services,
+            Type serviceType,
+            Type implementationType)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (serviceType == null)
+            {
+                throw new ArgumentNullException(nameof(serviceType));
+            }
+
+            if (implementationType == null)
+            {
+                throw new ArgumentNullException(nameof(implementationType));
+            }
+
+            return Add(services, serviceType, implementationType, ServiceLifetime.Scoped);
+        }
+
+        /// <summary>
+        /// Adds a scoped service of the type specified in <paramref name="serviceType"/> with a
+        /// factory specified in <paramref name="implementationFactory"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="serviceType">The type of the service to register.</param>
+        /// <param name="implementationFactory">The factory that creates the service.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Scoped"/>
+        public static IServiceCollection AddScoped(
+            this IServiceCollection services,
+            Type serviceType,
+            Func<IServiceProvider, object> implementationFactory)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (serviceType == null)
+            {
+                throw new ArgumentNullException(nameof(serviceType));
+            }
+
+            if (implementationFactory == null)
+            {
+                throw new ArgumentNullException(nameof(implementationFactory));
+            }
+
+            return Add(services, serviceType, implementationFactory, ServiceLifetime.Scoped);
+        }
+
+        /// <summary>
+        /// Adds a scoped service of the type specified in <typeparamref name="TService"/> with an
+        /// implementation type specified in <typeparamref name="TImplementation"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="TService">The type of the service to add.</typeparam>
+        /// <typeparam name="TImplementation">The type of the implementation to use.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Scoped"/>
         public static IServiceCollection AddScoped<TService, TImplementation>(this IServiceCollection services)
             where TService : class
             where TImplementation : class, TService
@@ -259,6 +291,14 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddScoped(typeof(TService), typeof(TImplementation));
         }
 
+        /// <summary>
+        /// Adds a scoped service of the type specified in <paramref name="serviceType"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="serviceType">The type of the service to register and the implementation to use.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Scoped"/>
         public static IServiceCollection AddScoped(
             this IServiceCollection services,
             Type serviceType)
@@ -276,6 +316,35 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddScoped(serviceType, serviceType);
         }
 
+        /// <summary>
+        /// Adds a scoped service of the type specified in <typeparamref name="TService"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="TService">The type of the service to add.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Scoped"/>
+        public static IServiceCollection AddScoped<TService>(this IServiceCollection services)
+            where TService : class
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            return services.AddScoped(typeof(TService));
+        }
+
+        /// <summary>
+        /// Adds a scoped service of the type specified in <typeparamref name="TService"/> with a
+        /// factory specified in <paramref name="implementationFactory"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="TService">The type of the service to add.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="implementationFactory">The factory that creates the service.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Scoped"/>
         public static IServiceCollection AddScoped<TService>(
             this IServiceCollection services,
             Func<IServiceProvider, TService> implementationFactory)
@@ -294,6 +363,18 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddScoped(typeof(TService), implementationFactory);
         }
 
+        /// <summary>
+        /// Adds a scoped service of the type specified in <typeparamref name="TService"/> with an
+        /// implementation type specified in <typeparamref name="TImplementation" /> using the
+        /// factory specified in <paramref name="implementationFactory"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="TService">The type of the service to add.</typeparam>
+        /// <typeparam name="TImplementation">The type of the implementation to use.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="implementationFactory">The factory that creates the service.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Scoped"/>
         public static IServiceCollection AddScoped<TService, TImplementation>(
             this IServiceCollection services,
             Func<IServiceProvider, TImplementation> implementationFactory)
@@ -313,17 +394,83 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddScoped(typeof(TService), implementationFactory);
         }
 
-        public static IServiceCollection AddScoped<TService>(this IServiceCollection services)
-            where TService : class
+
+        /// <summary>
+        /// Adds a singleton service of the type specified in <paramref name="serviceType"/> with an
+        /// implementation of the type specified in <paramref name="implementationType"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="serviceType">The type of the service to register.</param>
+        /// <param name="implementationType">The implementation type of the service.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Singleton"/>
+        public static IServiceCollection AddSingleton(
+            this IServiceCollection services,
+            Type serviceType,
+            Type implementationType)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
 
-            return services.AddScoped(typeof(TService));
+            if (serviceType == null)
+            {
+                throw new ArgumentNullException(nameof(serviceType));
+            }
+
+            if (implementationType == null)
+            {
+                throw new ArgumentNullException(nameof(implementationType));
+            }
+
+            return Add(services, serviceType, implementationType, ServiceLifetime.Singleton);
         }
 
+        /// <summary>
+        /// Adds a singleton service of the type specified in <paramref name="serviceType"/> with a
+        /// factory specified in <paramref name="implementationFactory"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="serviceType">The type of the service to register.</param>
+        /// <param name="implementationFactory">The factory that creates the service.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Singleton"/>
+        public static IServiceCollection AddSingleton(
+            this IServiceCollection services,
+            Type serviceType,
+            Func<IServiceProvider, object> implementationFactory)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (serviceType == null)
+            {
+                throw new ArgumentNullException(nameof(serviceType));
+            }
+
+            if (implementationFactory == null)
+            {
+                throw new ArgumentNullException(nameof(implementationFactory));
+            }
+
+            return Add(services, serviceType, implementationFactory, ServiceLifetime.Singleton);
+        }
+
+        /// <summary>
+        /// Adds a singleton service of the type specified in <typeparamref name="TService"/> with an
+        /// implementation type specified in <typeparamref name="TImplementation"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="TService">The type of the service to add.</typeparam>
+        /// <typeparam name="TImplementation">The type of the implementation to use.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Singleton"/>
         public static IServiceCollection AddSingleton<TService, TImplementation>(this IServiceCollection services)
             where TService : class
             where TImplementation : class, TService
@@ -336,6 +483,14 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddSingleton(typeof(TService), typeof(TImplementation));
         }
 
+        /// <summary>
+        /// Adds a singleton service of the type specified in <paramref name="serviceType"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="serviceType">The type of the service to register and the implementation to use.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Singleton"/>
         public static IServiceCollection AddSingleton(
             this IServiceCollection services,
             Type serviceType)
@@ -353,6 +508,14 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddSingleton(serviceType, serviceType);
         }
 
+        /// <summary>
+        /// Adds a singleton service of the type specified in <typeparamref name="TService"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="TService">The type of the service to add.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Singleton"/>
         public static IServiceCollection AddSingleton<TService>(this IServiceCollection services)
             where TService : class
         {
@@ -364,6 +527,16 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddSingleton(typeof(TService));
         }
 
+        /// <summary>
+        /// Adds a singleton service of the type specified in <typeparamref name="TService"/> with a
+        /// factory specified in <paramref name="implementationFactory"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="TService">The type of the service to add.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="implementationFactory">The factory that creates the service.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Singleton"/>
         public static IServiceCollection AddSingleton<TService>(
             this IServiceCollection services,
             Func<IServiceProvider, TService> implementationFactory)
@@ -382,6 +555,18 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddSingleton(typeof(TService), implementationFactory);
         }
 
+        /// <summary>
+        /// Adds a singleton service of the type specified in <typeparamref name="TService"/> with an
+        /// implementation type specified in <typeparamref name="TImplementation" /> using the
+        /// factory specified in <paramref name="implementationFactory"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="TService">The type of the service to add.</typeparam>
+        /// <typeparam name="TImplementation">The type of the implementation to use.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="implementationFactory">The factory that creates the service.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Singleton"/>
         public static IServiceCollection AddSingleton<TService, TImplementation>(
             this IServiceCollection services,
             Func<IServiceProvider, TImplementation> implementationFactory)
@@ -401,7 +586,51 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddSingleton(typeof(TService), implementationFactory);
         }
 
+        /// <summary>
+        /// Adds a singleton service of the type specified in <paramref name="serviceType"/> with an
+        /// instance specified in <paramref name="implementationInstance"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="serviceType">The type of the service to register.</param>
+        /// <param name="implementationInstance">The instance of the service.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Singleton"/>
+        public static IServiceCollection AddInstance(
+            this IServiceCollection services,
+            Type serviceType,
+            object implementationInstance)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
 
+            if (serviceType == null)
+            {
+                throw new ArgumentNullException(nameof(serviceType));
+            }
+
+            if (implementationInstance == null)
+            {
+                throw new ArgumentNullException(nameof(implementationInstance));
+            }
+
+            var serviceDescriptor = new ServiceDescriptor(serviceType, implementationInstance);
+            services.Add(serviceDescriptor);
+            return services;
+        }
+
+        /// <summary>
+        /// Adds a singleton service of the type specified in <typeparamref name="TService" /> with an
+        /// instance specified in <paramref name="implementationInstance"/> to the
+        /// specified <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
+        /// <param name="serviceType">The type of the service to register.</param>
+        /// <param name="implementationInstance">The instance of the service.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        /// <seealso cref="ServiceLifetime.Singleton"/>
         public static IServiceCollection AddInstance<TService>(
             this IServiceCollection services,
             TService implementationInstance)
@@ -420,24 +649,25 @@ namespace Microsoft.Extensions.DependencyInjection
             return services.AddInstance(typeof(TService), implementationInstance);
         }
 
+
         private static IServiceCollection Add(
             IServiceCollection collection,
-            Type service,
+            Type serviceType,
             Type implementationType,
-            ServiceLifetime lifeCycle)
+            ServiceLifetime lifetime)
         {
-            var descriptor = new ServiceDescriptor(service, implementationType, lifeCycle);
+            var descriptor = new ServiceDescriptor(serviceType, implementationType, lifetime);
             collection.Add(descriptor);
             return collection;
         }
 
         private static IServiceCollection Add(
             IServiceCollection collection,
-            Type service,
+            Type serviceType,
             Func<IServiceProvider, object> implementationFactory,
-            ServiceLifetime lifeCycle)
+            ServiceLifetime lifetime)
         {
-            var descriptor = new ServiceDescriptor(service, implementationFactory, lifeCycle);
+            var descriptor = new ServiceDescriptor(serviceType, implementationFactory, lifetime);
             collection.Add(descriptor);
             return collection;
         }
