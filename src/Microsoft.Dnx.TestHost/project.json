@@ -10,7 +10,7 @@
         "keyFile": "../../tools/Key.snk"
     },
     "dependencies": {
-        "Microsoft.Extensions.Compilation.Abstractions": "1.0.0-*",
+        "Microsoft.Extensions.CompilationAbstractions": "1.0.0-*",
         "Microsoft.Dnx.Runtime.CommandParsing.Sources": {
             "version": "1.0.0-*",
             "type": "build"
