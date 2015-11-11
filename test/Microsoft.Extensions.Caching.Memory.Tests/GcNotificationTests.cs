@@ -20,42 +20,43 @@ namespace Microsoft.Extensions.Caching.Memory
                 return false;
             }, null);
 
-            GC.Collect(2, GCCollectionMode.Forced, blocking: true);
-            Assert.True(callbackInvoked.WaitOne(TimeSpan.FromSeconds(30)));
+            GcCollectAndWait();
+            Assert.True(callbackInvoked.WaitOne(0));
         }
 
         [Fact]
         public void CallbackInvokedMultipleTimes()
         {
-            int callbackCount = 0;
+            var reRegisterForFinalize = true;
             var callbackInvoked = new ManualResetEvent(false);
             GcNotification.Register(state =>
             {
-                callbackCount++;
                 callbackInvoked.Set();
-                if (callbackCount < 2)
-                {
-                    return true;
-                }
-                return false;
+                return reRegisterForFinalize;
             }, null);
 
-            GC.Collect(2, GCCollectionMode.Forced, blocking: true);
-            Assert.True(callbackInvoked.WaitOne(TimeSpan.FromSeconds(30)));
-            Assert.Equal(1, callbackCount);
+            GcCollectAndWait();
+            Assert.True(callbackInvoked.WaitOne(0));
 
             callbackInvoked.Reset();
+            reRegisterForFinalize = false;
 
-            GC.Collect(2, GCCollectionMode.Forced, blocking: true);
-            Assert.True(callbackInvoked.WaitOne(TimeSpan.FromSeconds(30)));
-            Assert.Equal(2, callbackCount);
+            GcCollectAndWait();
+            Assert.True(callbackInvoked.WaitOne(0));
 
             callbackInvoked.Reset();
 
             // No callback expected the 3rd time
+            GcCollectAndWait();
+            Assert.False(callbackInvoked.WaitOne(0));
+        }
+
+        private static void GcCollectAndWait()
+        {
+            // We need to collect twice for this test to work on Mono
             GC.Collect(2, GCCollectionMode.Forced, blocking: true);
-            Assert.False(callbackInvoked.WaitOne(TimeSpan.FromSeconds(30)));
-            Assert.Equal(2, callbackCount);
+            GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+            GC.WaitForPendingFinalizers();
         }
     }
 }
