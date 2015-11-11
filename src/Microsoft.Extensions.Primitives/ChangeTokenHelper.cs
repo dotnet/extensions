@@ -10,6 +10,12 @@ namespace Microsoft.Extensions.Primitives
     /// </summary>
     public static class ChangeTokenHelper
     {
+        /// <summary>
+        /// Registers the changeTokenConsumer action to be called whenever the token produced changes.
+        /// </summary>
+        /// <param name="changeTokenProducer">Produces the change token.</param>
+        /// <param name="changeTokenConsumer">Action called when the token changes.</param>
+        /// <returns></returns>
         public static IDisposable OnChange(Func<IChangeToken> changeTokenProducer, Action changeTokenConsumer)
         {
             if (changeTokenProducer == null)
@@ -33,6 +39,13 @@ namespace Microsoft.Extensions.Primitives
             return changeTokenProducer().RegisterChangeCallback(callback, null);
         }
 
+        /// <summary>
+        /// Registers the changeTokenConsumer action to be called whenever the token produced changes.
+        /// </summary>
+        /// <param name="changeTokenProducer">Produces the change token.</param>
+        /// <param name="changeTokenConsumer">Action called when the token changes.</param>
+        /// <param name="state">state for the consumer.</param>
+        /// <returns></returns>
         public static IDisposable OnChange<TState>(Func<IChangeToken> changeTokenProducer, Action<TState> changeTokenConsumer, TState state)
         {
             if (changeTokenProducer == null)
