@@ -24,12 +24,12 @@
     },
     "dotnet5.4": {
       "dependencies": {
-        "System.Collections.Concurrent": "4.0.11-beta-*",
-        "System.Collections": "4.0.11-beta-*",
-        "System.ComponentModel": "4.0.1-beta-*",
-        "System.Globalization": "4.0.11-beta-*",
-        "System.Linq": "4.0.1-beta-*",
-        "System.Threading": "4.0.11-beta-*"
+        "System.Collections.Concurrent": "4.0.11-*",
+        "System.Collections": "4.0.11-*",
+        "System.ComponentModel": "4.0.1-*",
+        "System.Globalization": "4.0.11-*",
+        "System.Linq": "4.0.1-*",
+        "System.Threading": "4.0.11-*"
       }
     },
     "netcore50": {
