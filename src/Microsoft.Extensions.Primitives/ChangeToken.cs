@@ -8,10 +8,10 @@ namespace Microsoft.Extensions.Primitives
     /// <summary>
     /// Propagates notifications that a change has occured.
     /// </summary>
-    public static class ChangeTokenHelper
+    public static class ChangeToken
     {
         /// <summary>
-        /// Registers the changeTokenConsumer action to be called whenever the token produced changes.
+        /// Registers the <paramref="changeTokenConsumer"/> action to be called whenever the token produced changes.
         /// </summary>
         /// <param name="changeTokenProducer">Produces the change token.</param>
         /// <param name="changeTokenConsumer">Action called when the token changes.</param>
@@ -21,6 +21,10 @@ namespace Microsoft.Extensions.Primitives
             if (changeTokenProducer == null)
             {
                 throw new ArgumentNullException(nameof(changeTokenProducer));
+            }
+            if (changeTokenConsumer == null)
+            {
+                throw new ArgumentNullException(nameof(changeTokenConsumer));
             }
 
             Action<object> callback = null;
@@ -51,6 +55,10 @@ namespace Microsoft.Extensions.Primitives
             if (changeTokenProducer == null)
             {
                 throw new ArgumentNullException(nameof(changeTokenProducer));
+            }
+            if (changeTokenConsumer == null)
+            {
+                throw new ArgumentNullException(nameof(changeTokenConsumer));
             }
 
             Action<object> callback = null;
