@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.Primitives
         }
 
         /// <summary>
-        /// Registers the changeTokenConsumer action to be called whenever the token produced changes.
+        /// Registers the <paramref="changeTokenConsumer"/> action to be called whenever the token produced changes.
         /// </summary>
         /// <param name="changeTokenProducer">Produces the change token.</param>
         /// <param name="changeTokenConsumer">Action called when the token changes.</param>
