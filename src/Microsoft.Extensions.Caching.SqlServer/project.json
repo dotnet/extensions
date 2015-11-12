@@ -16,7 +16,7 @@
     },
     "dotnet5.4": {
       "dependencies": {
-        "System.Data.SqlClient": "4.0.0-beta-*"
+        "System.Data.SqlClient": "4.0.0-*"
       }
     }
   },
