@@ -23,12 +23,12 @@
     },
     "dnxcore50": {
       "dependencies": {
-        "System.Runtime": "4.0.21-beta-*",
-        "System.Runtime.InteropServices": "4.0.21-beta-*",
-        "System.Globalization": "4.0.11-beta-*",
-        "System.Threading.Tasks": "4.0.11-beta-*",
-        "System.Reflection": "4.0.11-beta-*",
-        "System.Threading.Thread": "4.0.0-beta-*"
+        "System.Runtime": "4.0.21-*",
+        "System.Runtime.InteropServices": "4.0.21-*",
+        "System.Globalization": "4.0.11-*",
+        "System.Threading.Tasks": "4.0.11-*",
+        "System.Reflection": "4.0.11-*",
+        "System.Threading.Thread": "4.0.0-*"
       }
     }
   }
