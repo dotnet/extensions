@@ -22,8 +22,8 @@
     },
     "dotnet5.4": {
       "dependencies": {
-        "System.Xml.XmlDocument": "4.0.1-beta-*",
-        "System.Xml.XmlSerializer": "4.0.11-beta-*"
+        "System.Xml.XmlDocument": "4.0.1-*",
+        "System.Xml.XmlSerializer": "4.0.11-*"
       }
     },
     "netcore50": {
