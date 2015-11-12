@@ -154,7 +154,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IEnumerable<IFoo>>(new List<IFoo>());
+            serviceCollection.AddSingleton<IEnumerable<IFoo>>(new List<IFoo>());
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             // Act
@@ -170,7 +170,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IEnumerable<IFoo>>(new List<IFoo>());
+            serviceCollection.AddSingleton<IEnumerable<IFoo>>(new List<IFoo>());
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             // Act

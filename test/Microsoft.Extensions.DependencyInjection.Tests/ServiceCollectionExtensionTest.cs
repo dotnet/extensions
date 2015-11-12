@@ -107,21 +107,21 @@ namespace Microsoft.Extensions.DependencyInjection
             Assert.Equal(lifeCycle, descriptor.Lifetime);
         }
 
-        public static TheoryData AddInstanceData
+        public static TheoryData AddSingletonData
         {
             get
             {
                 return new TheoryData<Action<IServiceCollection>>
                 {
-                    { collection => collection.AddInstance<IFakeService>(_instance) },
-                    { collection => collection.AddInstance(typeof(IFakeService), _instance) },
+                    { collection => collection.AddSingleton<IFakeService>(_instance) },
+                    { collection => collection.AddSingleton(typeof(IFakeService), _instance) },
                 };
             }
         }
 
         [Theory]
-        [MemberData(nameof(AddInstanceData))]
-        public void AddInstance_AddsWithSingletonLifecycle(Action<IServiceCollection> addAction)
+        [MemberData(nameof(AddSingletonData))]
+        public void AddSingleton_AddsWithSingletonLifecycle(Action<IServiceCollection> addAction)
         {
             // Arrange
             var collection = new ServiceCollection();
@@ -137,7 +137,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Theory]
-        [MemberData(nameof(AddInstanceData))]
+        [MemberData(nameof(AddSingletonData))]
         public void TryAddNoOpFailsIfExists(Action<IServiceCollection> addAction)
         {
             // Arrange

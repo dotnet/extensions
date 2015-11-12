@@ -1,19 +1,20 @@
 {
-    "version": "0.1-alpha-*",
-    "compilationOptions": {
-        "keyFile": "../../tools/Key.snk"
-    },
-    "dependencies": {
-        "Microsoft.AspNet.Testing": "1.0.0-*",
-        "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
-        "Microsoft.Extensions.DependencyInjection.Specification.Tests": "1.0.0-*",
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
-    },
-    "frameworks": {
-        "dnx451": {},
-        "dnxcore50": {}
-    },
-    "commands": {
-        "test": "xunit.runner.aspnet"
-    }
+  "version": "0.1-alpha-*",
+  "compilationOptions": {
+    "keyFile": "../../tools/Key.snk",
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
+    "Microsoft.Extensions.DependencyInjection.Specification.Tests": "1.0.0-*",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": { }
+  },
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  }
 }

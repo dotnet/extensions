@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var collection = new ServiceCollection();
             var instance = new FakeService();
-            collection.AddInstance(typeof(IFakeServiceInstance), instance);
+            collection.AddSingleton(typeof(IFakeServiceInstance), instance);
             var provider = CreateServiceProvider(collection);
 
             // Act
@@ -164,7 +164,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var collection = new ServiceCollection();
             var fakeService = new FakeService();
             collection.AddTransient<IFakeOuterService, FakeOuterService>();
-            collection.AddInstance<IFakeService>(fakeService);
+            collection.AddSingleton<IFakeService>(fakeService);
             collection.AddTransient<IFakeMultipleService, FakeOneMultipleService>();
             collection.AddTransient<IFakeMultipleService, FakeTwoMultipleService>();
             var provider = CreateServiceProvider(collection);
@@ -501,7 +501,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var collection = new ServiceCollection();
             collection.AddTransient(typeof(IFakeOpenGenericService<string>), typeof(FakeService));
             collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>));
-            collection.AddInstance("Hello world");
+            collection.AddSingleton("Hello world");
             var provider = CreateServiceProvider(collection);
 
             // Act

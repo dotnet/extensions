@@ -59,7 +59,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         public void NoCircularDependencyGeneric()
         {
             var serviceProvider = new ServiceCollection()
-                .AddInstance(new SelfCircularDependencyGeneric<string>())
+                .AddSingleton(new SelfCircularDependencyGeneric<string>())
                 .AddTransient<SelfCircularDependencyGeneric<int>>()
                 .BuildServiceProvider();
 

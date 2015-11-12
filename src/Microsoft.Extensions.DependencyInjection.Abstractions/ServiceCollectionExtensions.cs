@@ -596,7 +596,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="implementationInstance">The instance of the service.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         /// <seealso cref="ServiceLifetime.Singleton"/>
-        public static IServiceCollection AddInstance(
+        public static IServiceCollection AddSingleton(
             this IServiceCollection services,
             Type serviceType,
             object implementationInstance)
@@ -621,7 +621,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        /// <summary>
+        // <summary>
         /// Adds a singleton service of the type specified in <typeparamref name="TService" /> with an
         /// instance specified in <paramref name="implementationInstance"/> to the
         /// specified <see cref="IServiceCollection"/>.
@@ -631,7 +631,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="implementationInstance">The instance of the service.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         /// <seealso cref="ServiceLifetime.Singleton"/>
-        public static IServiceCollection AddInstance<TService>(
+        public static IServiceCollection AddSingleton<TService>(
             this IServiceCollection services,
             TService implementationInstance)
             where TService : class
@@ -646,9 +646,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(implementationInstance));
             }
 
-            return services.AddInstance(typeof(TService), implementationInstance);
+            return services.AddSingleton(typeof(TService), implementationInstance);
         }
-
 
         private static IServiceCollection Add(
             IServiceCollection collection,
