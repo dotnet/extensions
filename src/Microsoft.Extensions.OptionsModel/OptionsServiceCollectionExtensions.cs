@@ -85,7 +85,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var serviceTypes = FindIConfigureOptions(configureInstance.GetType());
             foreach (var serviceType in serviceTypes)
             {
-                services.AddInstance(serviceType, configureInstance);
+                services.AddSingleton(serviceType, configureInstance);
             }
             return services;
         }
