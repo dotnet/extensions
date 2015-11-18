@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using Microsoft.Extensions.Logging.Test;
 using Xunit;
 using Xunit.Sdk;
@@ -161,6 +162,47 @@ namespace Microsoft.Extensions.Logging
                 string.Format(TestLoggerExtensions.ScopeInfoWithThreeParameters.FormatString, param1, param2, param3),
                 actualLogValues.ToString());
         }
+
+        [Theory]
+        [MemberData(nameof(LogMessagesData))]
+        public void LogMessages(Delegate messageDelegate, int argumentCount)
+        {
+            // Arrange
+            var testSink = new TestSink();
+            var testLogger = new TestLogger("testlogger", testSink, enabled: true);
+            var exception = new Exception("TestException");
+            var parameterNames = Enumerable.Range(0, argumentCount).Select(i => "P" + i).ToArray();
+            var parameters = new List<object>();
+            parameters.Add(testLogger);
+            parameters.AddRange(parameterNames);
+            parameters.Add(exception);
+
+            var expectedFormat = "Log " + string.Join(" ", parameterNames.Select(p => "{" + p + "}"));
+            var expectedToString = "Log " + string.Join(" ", parameterNames);
+            var expectedValues = parameterNames.Select(p => new KeyValuePair<string, object>(p, p)).ToList();
+            expectedValues.Add(new KeyValuePair<string, object>("{OriginalFormat}", expectedFormat));
+
+            // Act
+            messageDelegate.DynamicInvoke(parameters.ToArray());
+
+            // Assert
+            Assert.Equal(1, testSink.Writes.Count);
+            var write = testSink.Writes.First();
+            var actualLogValues = Assert.IsAssignableFrom<ILogValues>(write.State);
+            AssertLogValues(expectedValues, actualLogValues.GetValues());
+            Assert.Equal(expectedToString, actualLogValues.ToString());
+        }
+
+        public static IEnumerable<object[]> LogMessagesData => new[]
+        {
+            new object[] { LoggerMessage.Define(LogLevel.Error, 0, "Log "), 0 },
+            new object[] { LoggerMessage.Define<string>(LogLevel.Error, 1, "Log {P0}"), 1 },
+            new object[] { LoggerMessage.Define<string, string>(LogLevel.Error, 2, "Log {P0} {P1}"), 2 },
+            new object[] { LoggerMessage.Define<string, string, string>(LogLevel.Error, 3, "Log {P0} {P1} {P2}"), 3 },
+            new object[] { LoggerMessage.Define<string, string, string, string>(LogLevel.Error, 4, "Log {P0} {P1} {P2} {P3}"), 4 },
+            new object[] { LoggerMessage.Define<string, string, string, string, string>(LogLevel.Error, 5, "Log {P0} {P1} {P2} {P3} {P4}"), 5 },
+            new object[] { LoggerMessage.Define<string, string, string, string, string, string>(LogLevel.Error, 6, "Log {P0} {P1} {P2} {P3} {P4} {P5}"), 6 },
+        };
 
         private void AssertLogValues(
             IEnumerable<KeyValuePair<string, object>> expected,

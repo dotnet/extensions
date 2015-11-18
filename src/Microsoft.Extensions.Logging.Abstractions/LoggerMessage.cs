@@ -69,6 +69,26 @@ namespace Microsoft.Extensions.Logging
         /// <summary>
         /// Creates a delegate which can be invoked for logging a message.
         /// </summary>
+        /// <param name="logLevel">The <see cref="LogLevel"/></param>
+        /// <param name="eventId">The event id</param>
+        /// <param name="formatString">The named format string</param>
+        /// <returns>A delegate which when invoked creates a log message.</returns>
+        public static Action<ILogger, Exception> Define(LogLevel logLevel, int eventId, string formatString)
+        {
+            var formatter = new LogValuesFormatter(formatString);
+
+            return (logger, exception) =>
+            {
+                if (logger.IsEnabled(logLevel))
+                {
+                    logger.Log(logLevel, eventId, new LogValues(formatter), exception, LogValues.Callback);
+                }
+            };
+        }
+
+        /// <summary>
+        /// Creates a delegate which can be invoked for logging a message.
+        /// </summary>
         /// <typeparam name="T1">The type of the first parameter passed to the named format string.</typeparam>
         /// <param name="logLevel">The <see cref="LogLevel"/></param>
         /// <param name="eventId">The event id</param>
@@ -128,6 +148,81 @@ namespace Microsoft.Extensions.Logging
                 if (logger.IsEnabled(logLevel))
                 {
                     logger.Log(logLevel, eventId, new LogValues<T1, T2, T3>(formatter, arg1, arg2, arg3), exception, LogValues<T1, T2, T3>.Callback);
+                }
+            };
+        }
+
+        /// <summary>
+        /// Creates a delegate which can be invoked for logging a message.
+        /// </summary>
+        /// <typeparam name="T1">The type of the first parameter passed to the named format string.</typeparam>
+        /// <typeparam name="T2">The type of the second parameter passed to the named format string.</typeparam>
+        /// <typeparam name="T3">The type of the third parameter passed to the named format string.</typeparam>
+        /// <typeparam name="T4">The type of the fourth parameter passed to the named format string.</typeparam>
+        /// <param name="logLevel">The <see cref="LogLevel"/></param>
+        /// <param name="eventId">The event id</param>
+        /// <param name="formatString">The named format string</param>
+        /// <returns>A delegate which when invoked creates a log message.</returns>
+        public static Action<ILogger, T1, T2, T3, T4, Exception> Define<T1, T2, T3, T4>(LogLevel logLevel, int eventId, string formatString)
+        {
+            var formatter = new LogValuesFormatter(formatString);
+
+            return (logger, arg1, arg2, arg3, arg4, exception) =>
+            {
+                if (logger.IsEnabled(logLevel))
+                {
+                    logger.Log(logLevel, eventId, new LogValues<T1, T2, T3, T4>(formatter, arg1, arg2, arg3, arg4), exception, LogValues<T1, T2, T3, T4>.Callback);
+                }
+            };
+        }
+
+        /// <summary>
+        /// Creates a delegate which can be invoked for logging a message.
+        /// </summary>
+        /// <typeparam name="T1">The type of the first parameter passed to the named format string.</typeparam>
+        /// <typeparam name="T2">The type of the second parameter passed to the named format string.</typeparam>
+        /// <typeparam name="T3">The type of the third parameter passed to the named format string.</typeparam>
+        /// <typeparam name="T4">The type of the fourth parameter passed to the named format string.</typeparam>
+        /// <typeparam name="T5">The type of the fifth parameter passed to the named format string.</typeparam>
+        /// <param name="logLevel">The <see cref="LogLevel"/></param>
+        /// <param name="eventId">The event id</param>
+        /// <param name="formatString">The named format string</param>
+        /// <returns>A delegate which when invoked creates a log message.</returns>
+        public static Action<ILogger, T1, T2, T3, T4, T5, Exception> Define<T1, T2, T3, T4, T5>(LogLevel logLevel, int eventId, string formatString)
+        {
+            var formatter = new LogValuesFormatter(formatString);
+
+            return (logger, arg1, arg2, arg3, arg4, arg5, exception) =>
+            {
+                if (logger.IsEnabled(logLevel))
+                {
+                    logger.Log(logLevel, eventId, new LogValues<T1, T2, T3, T4, T5>(formatter, arg1, arg2, arg3, arg4, arg5), exception, LogValues<T1, T2, T3, T4, T5>.Callback);
+                }
+            };
+        }
+
+        /// <summary>
+        /// Creates a delegate which can be invoked for logging a message.
+        /// </summary>
+        /// <typeparam name="T1">The type of the first parameter passed to the named format string.</typeparam>
+        /// <typeparam name="T2">The type of the second parameter passed to the named format string.</typeparam>
+        /// <typeparam name="T3">The type of the third parameter passed to the named format string.</typeparam>
+        /// <typeparam name="T4">The type of the fourth parameter passed to the named format string.</typeparam>
+        /// <typeparam name="T5">The type of the fifth parameter passed to the named format string.</typeparam>
+        /// <typeparam name="T5">The type of the sixth parameter passed to the named format string.</typeparam>
+        /// <param name="logLevel">The <see cref="LogLevel"/></param>
+        /// <param name="eventId">The event id</param>
+        /// <param name="formatString">The named format string</param>
+        /// <returns>A delegate which when invoked creates a log message.</returns>
+        public static Action<ILogger, T1, T2, T3, T4, T5, T6, Exception> Define<T1, T2, T3, T4, T5, T6>(LogLevel logLevel, int eventId, string formatString)
+        {
+            var formatter = new LogValuesFormatter(formatString);
+
+            return (logger, arg1, arg2, arg3, arg4, arg5, arg6, exception) =>
+            {
+                if (logger.IsEnabled(logLevel))
+                {
+                    logger.Log(logLevel, eventId, new LogValues<T1, T2, T3, T4, T5, T6>(formatter, arg1, arg2, arg3, arg4, arg5, arg6), exception, LogValues<T1, T2, T3, T4, T5, T6>.Callback);
                 }
             };
         }
@@ -265,6 +360,123 @@ namespace Microsoft.Extensions.Logging
             };
 
             public object[] ToArray() => new object[] { _value0, _value1, _value2, _value3 };
+
+            public override string ToString() => _formatter.Format(ToArray());
+        }
+
+        private class LogValues<T0, T1, T2, T3, T4> : ILogValues
+        {
+            public static Func<object, Exception, string> Callback = (state, exception) => ((LogValues<T0, T1, T2, T3, T4>)state)._formatter.Format(((LogValues<T0, T1, T2, T3, T4>)state).ToArray());
+
+            private readonly LogValuesFormatter _formatter;
+            public T0 _value0;
+            public T1 _value1;
+            public T2 _value2;
+            public T3 _value3;
+            public T4 _value4;
+
+            public LogValues(LogValuesFormatter formatter, T0 value0, T1 value1, T2 value2, T3 value3, T4 value4)
+            {
+                _formatter = formatter;
+                _value0 = value0;
+                _value1 = value1;
+                _value2 = value2;
+                _value3 = value3;
+                _value4 = value4;
+            }
+
+            public IEnumerable<KeyValuePair<string, object>> GetValues() => new[]
+            {
+                new KeyValuePair<string, object>(_formatter.ValueNames[0], _value0),
+                new KeyValuePair<string, object>(_formatter.ValueNames[1], _value1),
+                new KeyValuePair<string, object>(_formatter.ValueNames[2], _value2),
+                new KeyValuePair<string, object>(_formatter.ValueNames[3], _value3),
+                new KeyValuePair<string, object>(_formatter.ValueNames[4], _value4),
+                new KeyValuePair<string, object>("{OriginalFormat}", _formatter.OriginalFormat),
+            };
+
+            public object[] ToArray() => new object[] { _value0, _value1, _value2, _value3, _value4 };
+
+            public override string ToString() => _formatter.Format(ToArray());
+        }
+
+        private class LogValues<T0, T1, T2, T3, T4, T5> : ILogValues
+        {
+            public static Func<object, Exception, string> Callback = (state, exception) => ((LogValues<T0, T1, T2, T3, T4, T5>)state)._formatter.Format(((LogValues<T0, T1, T2, T3, T4, T5>)state).ToArray());
+
+            private readonly LogValuesFormatter _formatter;
+            public T0 _value0;
+            public T1 _value1;
+            public T2 _value2;
+            public T3 _value3;
+            public T4 _value4;
+            public T5 _value5;
+
+            public LogValues(LogValuesFormatter formatter, T0 value0, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5)
+            {
+                _formatter = formatter;
+                _value0 = value0;
+                _value1 = value1;
+                _value2 = value2;
+                _value3 = value3;
+                _value4 = value4;
+                _value5 = value5;
+            }
+
+            public IEnumerable<KeyValuePair<string, object>> GetValues() => new[]
+            {
+                new KeyValuePair<string, object>(_formatter.ValueNames[0], _value0),
+                new KeyValuePair<string, object>(_formatter.ValueNames[1], _value1),
+                new KeyValuePair<string, object>(_formatter.ValueNames[2], _value2),
+                new KeyValuePair<string, object>(_formatter.ValueNames[3], _value3),
+                new KeyValuePair<string, object>(_formatter.ValueNames[4], _value4),
+                new KeyValuePair<string, object>(_formatter.ValueNames[5], _value5),
+                new KeyValuePair<string, object>("{OriginalFormat}", _formatter.OriginalFormat),
+            };
+
+            public object[] ToArray() => new object[] { _value0, _value1, _value2, _value3, _value4, _value5 };
+
+            public override string ToString() => _formatter.Format(ToArray());
+        }
+
+        private class LogValues<T0, T1, T2, T3, T4, T5, T6> : ILogValues
+        {
+            public static Func<object, Exception, string> Callback = (state, exception) => ((LogValues<T0, T1, T2, T3, T4, T5, T6>)state)._formatter.Format(((LogValues<T0, T1, T2, T3, T4, T5, T6>)state).ToArray());
+
+            private readonly LogValuesFormatter _formatter;
+            public T0 _value0;
+            public T1 _value1;
+            public T2 _value2;
+            public T3 _value3;
+            public T4 _value4;
+            public T5 _value5;
+            public T6 _value6;
+
+            public LogValues(LogValuesFormatter formatter, T0 value0, T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6)
+            {
+                _formatter = formatter;
+                _value0 = value0;
+                _value1 = value1;
+                _value2 = value2;
+                _value3 = value3;
+                _value4 = value4;
+                _value5 = value5;
+                _value6 = value6;
+            }
+
+            public IEnumerable<KeyValuePair<string, object>> GetValues() => new[]
+            {
+                new KeyValuePair<string, object>(_formatter.ValueNames[0], _value0),
+                new KeyValuePair<string, object>(_formatter.ValueNames[1], _value1),
+                new KeyValuePair<string, object>(_formatter.ValueNames[2], _value2),
+                new KeyValuePair<string, object>(_formatter.ValueNames[3], _value3),
+                new KeyValuePair<string, object>(_formatter.ValueNames[4], _value4),
+                new KeyValuePair<string, object>(_formatter.ValueNames[5], _value5),
+                new KeyValuePair<string, object>(_formatter.ValueNames[6], _value6),
+                new KeyValuePair<string, object>("{OriginalFormat}", _formatter.OriginalFormat),
+            };
+
+            public object[] ToArray() => new object[] { _value0, _value1, _value2, _value3, _value4, _value5, _value6 };
 
             public override string ToString() => _formatter.Format(ToArray());
         }
