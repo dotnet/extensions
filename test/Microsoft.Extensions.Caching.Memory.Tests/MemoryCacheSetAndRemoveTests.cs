@@ -122,12 +122,12 @@ namespace Microsoft.Extensions.Caching.Memory
             result = cache.Set(key, value2, options2);
             Assert.Same(value2, result);
             Assert.True(callback1Invoked.WaitOne(TimeSpan.FromSeconds(30)), "Callback1");
-            Assert.False(callback2Invoked.WaitOne(TimeSpan.FromSeconds(30)), "Callback2");
+            Assert.False(callback2Invoked.WaitOne(TimeSpan.FromSeconds(1)), "Callback2");
 
             result = cache.Get(key);
             Assert.Same(value2, result);
 
-            Assert.False(callback2Invoked.WaitOne(TimeSpan.FromSeconds(30)), "Callback2");
+            Assert.False(callback2Invoked.WaitOne(TimeSpan.FromSeconds(1)), "Callback2");
         }
 
         [Fact]
