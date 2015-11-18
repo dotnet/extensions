@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
 using Microsoft.Extensions.Logging.Test;
 using Xunit;
 using Xunit.Sdk;
