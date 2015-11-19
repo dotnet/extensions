@@ -1,7 +1,6 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22823.1
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A1477614-E825-4204-A684-385004B63AEB}"
 EndProject
@@ -27,6 +26,10 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FileProviders.Physical.Tests", "test\Microsoft.AspNet.FileProviders.Physical.Tests\Microsoft.AspNet.FileProviders.Physical.Tests.xproj", "{66FE5FDF-BBF9-4573-A7B7-53551731C0F9}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FileProviders.Sources", "src\Microsoft.AspNet.FileProviders.Sources\Microsoft.AspNet.FileProviders.Sources.xproj", "{92C2C85C-D1A5-44BD-BE23-238E08471B4D}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FileProviders.Composite", "src\Microsoft.AspNet.FileProviders.Composite\Microsoft.AspNet.FileProviders.Composite.xproj", "{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FileProviders.Composite.Tests", "test\Microsoft.AspNet.FileProviders.Composite.Tests\Microsoft.AspNet.FileProviders.Composite.Tests.xproj", "{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -132,6 +135,30 @@ Global
 		{92C2C85C-D1A5-44BD-BE23-238E08471B4D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{92C2C85C-D1A5-44BD-BE23-238E08471B4D}.Release|x86.ActiveCfg = Release|Any CPU
 		{92C2C85C-D1A5-44BD-BE23-238E08471B4D}.Release|x86.Build.0 = Release|Any CPU
+		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}.Debug|x86.Build.0 = Debug|Any CPU
+		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}.Release|x86.ActiveCfg = Release|Any CPU
+		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}.Release|x86.Build.0 = Release|Any CPU
+		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}.Debug|x86.Build.0 = Debug|Any CPU
+		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}.Release|x86.ActiveCfg = Release|Any CPU
+		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -145,5 +172,7 @@ Global
 		{6B6BA57A-B32D-430A-AF39-09CAA85308C2} = {E399495E-82B8-4C06-8779-C1D02BEF4495}
 		{66FE5FDF-BBF9-4573-A7B7-53551731C0F9} = {E399495E-82B8-4C06-8779-C1D02BEF4495}
 		{92C2C85C-D1A5-44BD-BE23-238E08471B4D} = {A1477614-E825-4204-A684-385004B63AEB}
+		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254} = {A1477614-E825-4204-A684-385004B63AEB}
+		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494} = {E399495E-82B8-4C06-8779-C1D02BEF4495}
 	EndGlobalSection
 EndGlobal
