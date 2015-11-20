@@ -526,18 +526,6 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         }
 
         [Fact]
-        public void AttemptingToResolveNonexistentServiceIndirectlyThrows()
-        {
-            // Arrange
-            var collection = new ServiceCollection();
-            collection.AddTransient<IDependOnNonexistentService, DependOnNonexistentService>();
-            var provider = CreateServiceProvider(collection);
-
-            // Act and Assert
-            Assert.ThrowsAny<Exception>(() => provider.GetService<IDependOnNonexistentService>());
-        }
-
-        [Fact]
         public void NonexistentServiceCanBeIEnumerableResolved()
         {
             // Arrange
@@ -549,19 +537,6 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
 
             // Assert
             Assert.Empty(services);
-        }
-
-        [Fact]
-        public void AttemptingToIEnumerableResolveNonexistentServiceIndirectlyThrows()
-        {
-            // Arrange
-            var collection = new ServiceCollection();
-            collection.AddTransient<IDependOnNonexistentService, DependOnNonexistentService>();
-            var provider = CreateServiceProvider(collection);
-
-            // Act and Assert
-            Assert.ThrowsAny<Exception>(() =>
-                provider.GetService<IEnumerable<IDependOnNonexistentService>>().ToArray());
         }
     }
 }

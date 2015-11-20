@@ -48,6 +48,35 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             Assert.Equal(expectedMessage, ex.Message);
         }
 
+        [Fact]
+        public void AttemptingToResolveNonexistentServiceIndirectlyThrows()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            collection.AddTransient<DependOnNonexistentService>();
+            var provider = CreateServiceProvider(collection);
+
+            // Act and Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => provider.GetService<DependOnNonexistentService>());
+            Assert.Equal($"Unable to resolve service for type '{typeof(IFakeService)}' while attempting to activate " +
+                $"'{typeof(DependOnNonexistentService)}'.", ex.Message);
+        }
+
+        [Fact]
+        public void AttemptingToIEnumerableResolveNonexistentServiceIndirectlyThrows()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            collection.AddTransient<DependOnNonexistentService>();
+            var provider = CreateServiceProvider(collection);
+
+            // Act and Assert
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+                provider.GetService<IEnumerable<DependOnNonexistentService>>());
+            Assert.Equal($"Unable to resolve service for type '{typeof(IFakeService)}' while attempting to activate " +
+                $"'{typeof(DependOnNonexistentService)}'.", ex.Message);
+        }
+
         [Theory]
         // GenericTypeDefintion, Abstract GenericTypeDefintion
         [InlineData(typeof(IFakeOpenGenericService<>), typeof(AbstractFakeOpenGenericService<>))]
