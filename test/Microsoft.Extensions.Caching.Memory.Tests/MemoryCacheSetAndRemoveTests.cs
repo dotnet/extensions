@@ -246,7 +246,7 @@ namespace Microsoft.Extensions.Caching.Memory
             result = cache.Get(new TestKey());
             Assert.Same(obj, result);
 
-            var key = new TestKey(); 
+            var key = new TestKey();
             cache.Remove(key);
             result = cache.Get(key);
             Assert.Null(result);

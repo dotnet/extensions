@@ -16,6 +16,8 @@ namespace Microsoft.Extensions.Caching.Memory
 
         private readonly DateTimeOffset? _absoluteExpiration;
 
+        internal readonly object _lock = new object();
+
         internal CacheEntry(
             object key,
             object value,
@@ -100,24 +102,25 @@ namespace Microsoft.Extensions.Caching.Memory
             return false;
         }
 
-        // TODO: There's a possible race between AttachTokens and DetachTokens if a token fires almost immediately.
-        // This may result in some registrations not getting disposed.
         internal void AttachTokens()
         {
             var expirationTokens = Options.ExpirationTokens;
             if (expirationTokens != null)
             {
-                for (int i = 0; i < expirationTokens.Count; i++)
+                lock (_lock)
                 {
-                    var expirationToken = expirationTokens[i];
-                    if (expirationToken.ActiveChangeCallbacks)
+                    for (int i = 0; i < expirationTokens.Count; i++)
                     {
-                        if (ExpirationTokenRegistrations == null)
+                        var expirationToken = expirationTokens[i];
+                        if (expirationToken.ActiveChangeCallbacks)
                         {
-                            ExpirationTokenRegistrations = new List<IDisposable>(1);
+                            if (ExpirationTokenRegistrations == null)
+                            {
+                                ExpirationTokenRegistrations = new List<IDisposable>(1);
+                            }
+                            var registration = expirationToken.RegisterChangeCallback(ExpirationCallback, this);
+                            ExpirationTokenRegistrations.Add(registration);
                         }
-                        var registration = expirationToken.RegisterChangeCallback(ExpirationCallback, this);
-                        ExpirationTokenRegistrations.Add(registration);
                     }
                 }
             }
@@ -125,22 +128,28 @@ namespace Microsoft.Extensions.Caching.Memory
 
         private static void ExpirationTokensExpired(object obj)
         {
-            var entry = (CacheEntry)obj;
-            entry.SetExpired(EvictionReason.TokenExpired);
-            entry._notifyCacheOfExpiration(entry);
+            // start a new thread to avoid issues with callbacks called from RegisterChangeCallback
+            Task.Factory.StartNew(state =>
+            {
+                var entry = (CacheEntry)state;
+                entry.SetExpired(EvictionReason.TokenExpired);
+                entry._notifyCacheOfExpiration(entry);
+            }, obj, CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
         }
 
-        // TODO: Thread safety
         private void DetachTokens()
         {
-            var registrations = ExpirationTokenRegistrations;
-            if (registrations != null)
+            lock(_lock)
             {
-                ExpirationTokenRegistrations = null;
-                for (int i = 0; i < registrations.Count; i++)
+                var registrations = ExpirationTokenRegistrations;
+                if (registrations != null)
                 {
-                    var registration = registrations[i];
-                    registration.Dispose();
+                    ExpirationTokenRegistrations = null;
+                    for (int i = 0; i < registrations.Count; i++)
+                    {
+                        var registration = registrations[i];
+                        registration.Dispose();
+                    }
                 }
             }
         }

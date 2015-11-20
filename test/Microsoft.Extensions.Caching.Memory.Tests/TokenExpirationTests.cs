@@ -3,8 +3,10 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory.Infrastructure;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.Extensions.Caching.Memory
@@ -186,6 +188,66 @@ namespace Microsoft.Extensions.Caching.Memory
 
             result = cache.Get(key);
             Assert.Null(result); // It wasn't cached
+        }
+
+        [Fact]
+        public void TokenExpiresOnRegister()
+        {
+            var cache = CreateCache();
+            var key = "myKey";
+            var value = new object();
+            var callbackInvoked = new ManualResetEvent(false);
+            var expirationToken = new TestToken(callbackInvoked);
+            var task = Task.Run(() => cache.Set(key, value, new MemoryCacheEntryOptions()
+                .AddExpirationToken(expirationToken)));
+            callbackInvoked.WaitOne(TimeSpan.FromSeconds(30));
+            var result = task.Result;
+
+            Assert.Same(value, result);
+            result = cache.Get(key);
+            Assert.Null(result);
+        }
+
+        internal class TestToken : IChangeToken
+        {
+            private bool _hasChanged;
+            private ManualResetEvent _event;
+
+            public TestToken(ManualResetEvent mre)
+            {
+                _event = mre;
+            }
+
+            public bool ActiveChangeCallbacks
+            {
+                get
+                {
+                    return true;
+                }
+            }
+
+            public bool HasChanged
+            {
+                get
+                {
+                    return _hasChanged;
+                }
+            }
+
+            public IDisposable RegisterChangeCallback(Action<object> callback, object state)
+            {
+                _hasChanged = true;
+                callback(state);
+                _event.Set();
+                return new TestDisposable();
+            }
+        }
+
+        internal class TestDisposable : IDisposable
+        {
+            public void Dispose()
+            {
+            }
         }
     }
 }
