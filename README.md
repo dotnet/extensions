@@ -10,10 +10,7 @@ To get started using it, see [How to create test projects](https://github.com/as
 
 #### Troubleshooting
 
-If you're using xUnit, make sure that you're using a versions of `xunit` and `xunit.runner.dnx` that are compatible with your dnx version.
-
-For dnx 1.0.0-beta7: reference `xunit 2.1.0-rc1-*` and `xunit.runner.dnx 2.1.0-beta5-*`.
-For dnx 1.0.0-beta8: reference `xunit 2.1.0-*` and `xunit.runner.dnx 2.1.0-*`.
+If you're using xUnit, make sure that you're using a versions of `xunit` and `xunit.runner.dnx` that are compatible with your dnx version. [Find the right version here.](https://xunit.github.io/docs/getting-started-dnx.html)
 
 To use nightly builds of xUnit packages, use feed:https://www.myget.org/F/xunit/api/v2/
 
