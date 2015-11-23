@@ -16,8 +16,6 @@ namespace Microsoft.Extensions.Logging.Testing
             _enabled = enabled;
         }
 
-        public LogLevel MinimumLevel { get; set; } = LogLevel.Verbose;
-
         public ILogger CreateLogger(string name)
         {
             return new TestLogger(name, _sink, _enabled);

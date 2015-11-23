@@ -12,11 +12,6 @@ namespace Microsoft.Extensions.Logging
     public interface ILoggerFactory : IDisposable
     {
         /// <summary>
-        /// The minimum level of log messages sent to loggers.
-        /// </summary>
-        LogLevel MinimumLevel { get; set; }
-
-        /// <summary>
         /// Creates a new <see cref="ILogger"/> instance.
         /// </summary>
         /// <param name="categoryName">The category name for messages produced by the logger.</param>

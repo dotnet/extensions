@@ -37,42 +37,34 @@ namespace Microsoft.Extensions.Logging
                 return;
             }
 
-            if (logLevel >= _loggerFactory.MinimumLevel)
+            List<Exception> exceptions = null;
+            foreach (var logger in _loggers)
             {
-                List<Exception> exceptions = null;
-                foreach (var logger in _loggers)
+                try
                 {
-                    try
-                    {
-                        logger.Log(logLevel, eventId, state, exception, formatter);
-                    }
-                    catch (Exception ex)
-                    {
-                        if (exceptions == null)
-                        {
-                            exceptions = new List<Exception>();
-                        }
-
-                        exceptions.Add(ex);
-                    }
+                    logger.Log(logLevel, eventId, state, exception, formatter);
                 }
-
-                if (exceptions != null && exceptions.Count > 0)
+                catch (Exception ex)
                 {
-                    throw new AggregateException(
-                        message: "An error occurred while writing to logger(s).", innerExceptions: exceptions);
+                    if (exceptions == null)
+                    {
+                        exceptions = new List<Exception>();
+                    }
+
+                    exceptions.Add(ex);
                 }
+            }
+
+            if (exceptions != null && exceptions.Count > 0)
+            {
+                throw new AggregateException(
+                    message: "An error occurred while writing to logger(s).", innerExceptions: exceptions);
             }
         }
 
         public bool IsEnabled(LogLevel logLevel)
         {
             if (_loggers == null)
-            {
-                return false;
-            }
-
-            if (logLevel < _loggerFactory.MinimumLevel)
             {
                 return false;
             }

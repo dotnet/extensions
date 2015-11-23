@@ -55,60 +55,6 @@ namespace Microsoft.Extensions.Logging.Test
         }
 
         [Fact]
-        public void MessagesAreNotLoggedWhenBelowMinimumLevel()
-        {
-            // arrange
-            var t = SetUpFactory(null);
-            var factory = t.Item1;
-            var sink = t.Item2;
-            var logger = factory.CreateLogger(_loggerName);
-
-
-            // act
-            logger.Log(LogLevel.Debug, 0, _state, null, null);
-            logger.Log(LogLevel.Verbose, 0, _state, null, null);
-
-            // assert
-            Assert.Equal(LogLevel.Verbose, factory.MinimumLevel);
-            Assert.Equal(3, sink.Writes.Count);
-        }
-
-        [Theory]
-        [InlineData(LogLevel.Debug, 18, true, true)]
-        [InlineData(LogLevel.Verbose, 15, false, true)]
-        [InlineData(LogLevel.Information, 12, false, true)]
-        [InlineData(LogLevel.Warning, 9, false, false)]
-        [InlineData(LogLevel.Error, 6, false, false)]
-        [InlineData(LogLevel.Critical, 3, false, false)]
-        public void MinimumLogLevelCanBeChanged(
-            LogLevel minimumLevel,
-            int expectedMessageCount,
-            bool enabledDebug,
-            bool enabledInformation)
-        {
-            var t = SetUpFactory(null);
-            var factory = t.Item1;
-            var sink = t.Item2;
-            var logger = factory.CreateLogger(_loggerName);
-
-            factory.MinimumLevel = minimumLevel;
-
-            // act
-            logger.Log(LogLevel.Debug, 0, _state, null, null);
-            logger.Log(LogLevel.Verbose, 0, _state, null, null);
-            logger.Log(LogLevel.Information, 0, _state, null, null);
-            logger.Log(LogLevel.Warning, 0, _state, null, null);
-            logger.Log(LogLevel.Error, 0, _state, null, null);
-            logger.Log(LogLevel.Critical, 0, _state, null, null);
-
-            // assert
-            Assert.Equal(minimumLevel, factory.MinimumLevel);
-            Assert.Equal(expectedMessageCount, sink.Writes.Count);
-            Assert.Equal(enabledDebug, logger.IsEnabled(LogLevel.Debug));
-            Assert.Equal(enabledInformation, logger.IsEnabled(LogLevel.Information));
-        }
-
-        [Fact]
         public void ThrowsException_WhenNoMessageAndExceptionAreProvided()
         {
             // Arrange

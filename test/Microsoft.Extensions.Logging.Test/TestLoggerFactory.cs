@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-
 namespace Microsoft.Extensions.Logging.Test
 {
     public class TestLoggerFactory : ILoggerFactory
@@ -15,8 +13,6 @@ namespace Microsoft.Extensions.Logging.Test
             _sink = sink;
             _enabled = enabled;
         }
-
-        public LogLevel MinimumLevel { get; set; } = LogLevel.Verbose;
 
         public ILogger CreateLogger(string categoryName)
         {

@@ -31,8 +31,6 @@ namespace Microsoft.Extensions.Logging
             return logger;
         }
 
-        public LogLevel MinimumLevel { get; set; } = LogLevel.Verbose;
-
         public void AddProvider(ILoggerProvider provider)
         {
             lock (_sync)
