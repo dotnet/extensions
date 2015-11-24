@@ -8,9 +8,7 @@ using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Logging.Test.Console;
 using Microsoft.Extensions.Primitives;
 using System.Threading;
-#if MOCK_SUPPORT
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.Extensions.Logging.Test
@@ -39,7 +37,6 @@ namespace Microsoft.Extensions.Logging.Test
             _theMessageAndError = ((message, error) => message + Environment.NewLine + _paddingString + error);
         }
 
-#if MOCK_SUPPORT
         private Tuple<ILoggerFactory, ConsoleSink> SetUpFactory(Func<string, LogLevel, bool> filter)
         {
             var t = SetUp(null);
@@ -110,7 +107,6 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(enabledDebug, logger.IsEnabled(LogLevel.Debug));
             Assert.Equal(enabledInformation, logger.IsEnabled(LogLevel.Information));
         }
-#endif
 
         [Fact]
         public void ThrowsException_WhenNoMessageAndExceptionAreProvided()
