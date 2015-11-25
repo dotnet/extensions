@@ -10,7 +10,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.FileProviders
 {
-    internal class PhysicalFilesWatcher
+    internal class PhysicalFilesWatcher : IDisposable
     {
         private readonly ConcurrentDictionary<string, FileChangeToken> _tokenCache =
             new ConcurrentDictionary<string, FileChangeToken>(StringComparer.OrdinalIgnoreCase);
@@ -53,6 +53,11 @@ namespace Microsoft.AspNet.FileProviders
             }
 
             return changeToken;
+        }
+
+        public void Dispose()
+        {
+            _fileWatcher.Dispose();
         }
 
         private void OnRenamed(object sender, RenamedEventArgs e)

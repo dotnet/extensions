@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.FileProviders
     /// <summary>
     /// Looks up files using the on-disk file system
     /// </summary>
-    public class PhysicalFileProvider : IFileProvider
+    public class PhysicalFileProvider : IFileProvider, IDisposable
     {
         private readonly PhysicalFilesWatcher _filesWatcher;
 
@@ -36,6 +36,11 @@ namespace Microsoft.AspNet.FileProviders
 
             // Monitor only the application's root folder.
             _filesWatcher = new PhysicalFilesWatcher(Root);
+        }
+
+        public void Dispose()
+        {
+            _filesWatcher.Dispose();
         }
 
         /// <summary>
@@ -105,7 +110,7 @@ namespace Microsoft.AspNet.FileProviders
                 return new NotFoundFileInfo(subpath);
             }
 
-            return new PhysicalFileInfo(_filesWatcher, fileInfo);
+            return new PhysicalFileInfo(fileInfo);
         }
 
         /// <summary>
@@ -152,7 +157,7 @@ namespace Microsoft.AspNet.FileProviders
                         var fileInfo = fileSystemInfo as FileInfo;
                         if (fileInfo != null)
                         {
-                            virtualInfos.Add(new PhysicalFileInfo(_filesWatcher, fileInfo));
+                            virtualInfos.Add(new PhysicalFileInfo(fileInfo));
                         }
                         else
                         {
@@ -198,12 +203,9 @@ namespace Microsoft.AspNet.FileProviders
         {
             private readonly FileInfo _info;
 
-            private readonly PhysicalFilesWatcher _filesWatcher;
-
-            public PhysicalFileInfo(PhysicalFilesWatcher filesWatcher, FileInfo info)
+            public PhysicalFileInfo(FileInfo info)
             {
                 _info = info;
-                _filesWatcher = filesWatcher;
             }
 
             public bool Exists
