@@ -21,7 +21,7 @@ namespace MemoryCacheSample
 
             SetKey(cache, "0");
 
-            PriodicallyReadKey(cache, TimeSpan.FromSeconds(1));
+            PeriodicallyReadKey(cache, TimeSpan.FromSeconds(1));
 
             PeriodciallyRemoveKey(cache, TimeSpan.FromSeconds(11));
 
@@ -63,7 +63,7 @@ namespace MemoryCacheSample
             });
         }
 
-        private void PriodicallyReadKey(IMemoryCache cache, TimeSpan interval)
+        private void PeriodicallyReadKey(IMemoryCache cache, TimeSpan interval)
         {
             Task.Run(async () =>
             {
