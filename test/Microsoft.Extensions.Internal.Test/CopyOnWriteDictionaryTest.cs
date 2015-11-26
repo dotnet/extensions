@@ -3,16 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-#if !DNXCORE50
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.Extensions.Internal
 {
     public class CopyOnWriteDictionaryTest
     {
-#if !DNXCORE50
         [Fact]
         public void ReadOperation_DelegatesToSourceDictionary_IfNoMutationsArePerformed()
         {
@@ -20,21 +17,26 @@ namespace Microsoft.Extensions.Internal
             var values = new List<object>();
             var enumerator = Mock.Of<IEnumerator<KeyValuePair<string, object>>>();
             var sourceDictionary = new Mock<IDictionary<string, object>>(MockBehavior.Strict);
-            sourceDictionary.SetupGet(d => d.Count)
-                            .Returns(100)
-                            .Verifiable();
-            sourceDictionary.SetupGet(d => d.Values)
-                            .Returns(values)
-                            .Verifiable();
-            sourceDictionary.Setup(d => d.ContainsKey("test-key"))
-                            .Returns(value: true)
-                            .Verifiable();
-            sourceDictionary.Setup(d => d.GetEnumerator())
-                            .Returns(enumerator)
-                            .Verifiable();
-            sourceDictionary.Setup(d => d["key2"])
-                            .Returns("key2-value")
-                            .Verifiable();
+            sourceDictionary
+                .SetupGet(d => d.Count)
+                .Returns(100)
+                .Verifiable();
+            sourceDictionary
+                .SetupGet(d => d.Values)
+                .Returns(values)
+                .Verifiable();
+            sourceDictionary
+                .Setup(d => d.ContainsKey("test-key"))
+                .Returns(value: true)
+                .Verifiable();
+            sourceDictionary
+                .Setup(d => d.GetEnumerator())
+                .Returns(enumerator)
+                .Verifiable();
+            sourceDictionary
+                .Setup(d => d["key2"])
+                .Returns("key2-value")
+                .Verifiable();
             object value;
             sourceDictionary.Setup(d => d.TryGetValue("different-key", out value))
                             .Returns(false)
@@ -52,7 +54,6 @@ namespace Microsoft.Extensions.Internal
             Assert.False(copyOnWriteDictionary.TryGetValue("different-key", out value));
             sourceDictionary.Verify();
         }
-#endif
 
         [Fact]
         public void ReadOperation_DoesNotDelegateToSourceDictionary_OnceAValueIsChanged()
@@ -64,8 +65,9 @@ namespace Microsoft.Extensions.Internal
                 { "key1", "value1" },
                 { "key2", "value2" }
             };
-            var copyOnWriteDictionary = new CopyOnWriteDictionary<string, object>(sourceDictionary,
-                                                                                  StringComparer.OrdinalIgnoreCase);
+            var copyOnWriteDictionary = new CopyOnWriteDictionary<string, object>(
+                sourceDictionary,
+                StringComparer.OrdinalIgnoreCase);
 
             // Act
             copyOnWriteDictionary["key2"] = "value3";
@@ -87,8 +89,9 @@ namespace Microsoft.Extensions.Internal
                 { "key1", "value1" },
                 { "key2", "value2" }
             };
-            var copyOnWriteDictionary = new CopyOnWriteDictionary<string, object>(sourceDictionary,
-                                                                                  StringComparer.OrdinalIgnoreCase);
+            var copyOnWriteDictionary = new CopyOnWriteDictionary<string, object>(
+                sourceDictionary,
+                StringComparer.OrdinalIgnoreCase);
 
             // Act
             copyOnWriteDictionary.Add("key3", "value3");
