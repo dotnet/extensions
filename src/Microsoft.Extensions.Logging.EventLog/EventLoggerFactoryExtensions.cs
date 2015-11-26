@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.Logging
         }
 
         /// <summary>
-        /// Adds an event logger that is enabled for <see cref="LogLevel"/>s of minLevel or higher.
+        /// Adds an event logger. Use <paramref name="settings"/> to enable logging for specific <see cref="LogLevel"/>s.
         /// </summary>
         /// <param name="factory">The extension method argument.</param>
         /// <param name="settings">The <see cref="EventLogSettings"/>.</param>
