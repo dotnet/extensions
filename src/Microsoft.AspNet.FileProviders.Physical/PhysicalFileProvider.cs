@@ -45,20 +45,12 @@ namespace Microsoft.AspNet.FileProviders
 
         private string GetFullPath(string path)
         {
-            try
+            var fullPath = Path.GetFullPath(Path.Combine(Root, path));
+            if (!IsUnderneathRoot(fullPath))
             {
-                var fullPath = Path.GetFullPath(Path.Combine(Root, path));
-                if (!IsUnderneathRoot(fullPath))
-                {
-                    return null;
-                }
-                return fullPath;
+                return null;
             }
-            catch (NotSupportedException)
-            {
-                // path contains a colon (":") that is not part of a volume identifier (for example, "c:\").
-            }
-            return null;
+            return fullPath;
         }
 
         private bool IsUnderneathRoot(string fullPath)
