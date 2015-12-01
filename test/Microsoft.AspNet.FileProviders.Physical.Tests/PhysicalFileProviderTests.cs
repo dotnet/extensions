@@ -480,8 +480,10 @@ namespace Microsoft.AspNet.FileProviders
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Skipping until #104 is resolved.")]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Skipping until #104 is resolved.")]
+        [OSSkipCondition(OperatingSystems.Linux, 
+            SkipReason = "We treat forward slash differently so rooted path can happen only on windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX,
+            SkipReason = "We treat forward slash differently so rooted path can happen only on windows.")]
         public void Token_For_AbsolutePath_Filters()
         {
             using (var root = new DisposableFileSystem())
