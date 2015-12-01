@@ -105,7 +105,11 @@ namespace Microsoft.Dnx.TestHost.Client
                 WorkingDirectory = project,
             };
 
+#if DNXCORE50 || DOTNET5_4
+            Process.StartInfo.Environment["DNX_TESTHOST_TRACE"] = "1";
+#else
             Process.StartInfo.EnvironmentVariables.Add("DNX_TESTHOST_TRACE", "1");
+#endif
 
             Process.OutputDataReceived += Process_OutputDataReceived;
             Process.ErrorDataReceived += Process_OutputDataReceived;
@@ -130,7 +134,11 @@ namespace Microsoft.Dnx.TestHost.Client
 
             if (!client.Connected)
             {
+#if DNXCORE50 || DOTNET5_4
+                client.Dispose();
+#else
                 client.Close();
+#endif
                 throw new Exception("Unable to connect.");
             }
 
@@ -273,7 +281,11 @@ namespace Microsoft.Dnx.TestHost.Client
         {
             if (Client != null)
             {
+#if DNXCORE50 || DOTNET5_4
+                Client.Dispose();
+#else
                 Client.Close();
+#endif
                 Client = null;
             }
         }

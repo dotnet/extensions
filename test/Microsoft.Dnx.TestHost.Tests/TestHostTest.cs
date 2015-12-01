@@ -8,9 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Dnx.Runtime;
-using Microsoft.Dnx.Testing.Abstractions;
 using Microsoft.Dnx.TestHost.Client;
+using Microsoft.Dnx.Testing.Abstractions;
 using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
 
@@ -298,7 +297,9 @@ namespace Microsoft.Dnx.TestHost
             // Arrange
             var parentProcess = new Process();
             parentProcess.StartInfo.FileName = "cmd";
+#if !DNXCORE50
             parentProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+#endif
             var testHost = new TestHostWrapper(_testProject);
             int testHostProcessId;
 

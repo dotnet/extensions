@@ -1,18 +1,18 @@
 {
-    "version": "1.0.0-*",
-    "compilationOptions": {
-        "warningsAsErrors": true,
-        "keyFile": "../../tools/Key.snk"
-    },
-    "dependencies": {
-        "Microsoft.AspNet.Testing": "1.0.0-*",
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
-    },
-    "commands": {
-        "test": "xunit.runner.aspnet"
-    },
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": { }
-    }
+  "version": "1.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  },
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": { }
+  }
 }

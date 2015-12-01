@@ -31,7 +31,7 @@ namespace Microsoft.Dnx.TestHost.Client
         public static string FindDnxDirectory()
         {
             var path = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                Environment.ExpandEnvironmentVariables("%USERPROFILE%"),
                 ".dnx\\runtimes");
 
             if (Directory.Exists(path))
