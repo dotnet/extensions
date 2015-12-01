@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Logging.Testing
 
             // Act & Assert
             Assert.False(logger.IsEnabled(LogLevel.Debug));
-            Assert.False(logger.IsEnabled(LogLevel.Verbose));
+            Assert.False(logger.IsEnabled(LogLevel.Trace));
             Assert.False(logger.IsEnabled(LogLevel.Information));
             Assert.False(logger.IsEnabled(LogLevel.Warning));
             Assert.False(logger.IsEnabled(LogLevel.Error));
@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.Logging.Testing
             bool isCalled = false;
 
             // Act
-            logger.Log(LogLevel.Verbose, eventId: 0, state: null, exception: null, formatter: (ex, message) => { isCalled = true; return string.Empty; });
+            logger.Log(LogLevel.Trace, eventId: 0, state: null, exception: null, formatter: (ex, message) => { isCalled = true; return string.Empty; });
 
             // Assert
             Assert.False(isCalled);

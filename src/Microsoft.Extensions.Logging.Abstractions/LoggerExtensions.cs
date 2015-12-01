@@ -121,80 +121,80 @@ namespace Microsoft.Extensions.Logging
             logger.LogWithEvent(LogLevel.Debug, eventId, state, error);
         }
 
-        //------------------------------------------VERBOSE------------------------------------------//
+        //------------------------------------------TRACE------------------------------------------//
 
         /// <summary>
-        /// Writes a verbose log message.
+        /// Writes a trace log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="data">The message to log.</param>
         // FYI, this field is called data because naming it message triggers CA1303 and CA2204 for callers.
-        public static void LogVerbose(this ILogger logger, string data)
+        public static void LogTrace(this ILogger logger, string data)
         {
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            logger.Log(LogLevel.Verbose, 0, data, null, _messageFormatter);
+            logger.Log(LogLevel.Trace, 0, data, null, _messageFormatter);
         }
 
         /// <summary>
-        /// Writes a verbose log message.
+        /// Writes a trace log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="eventId">The event id associated with the log.</param>
         /// <param name="data">The message to log.</param>
-        public static void LogVerbose(this ILogger logger, int eventId, string data)
+        public static void LogTrace(this ILogger logger, int eventId, string data)
         {
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            logger.Log(LogLevel.Verbose, eventId, data, null, _messageFormatter);
+            logger.Log(LogLevel.Trace, eventId, data, null, _messageFormatter);
         }
 
         /// <summary>
-        /// Formats and writes a verbose log message.
+        /// Formats and writes a trace log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="format">Format string of the log message.</param>
         /// <param name="args">An object array that contains zero or more objects to format.</param>
-        public static void LogVerbose(this ILogger logger, string format, params object[] args)
+        public static void LogTrace(this ILogger logger, string format, params object[] args)
         {
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            logger.Log(LogLevel.Verbose, 0, new FormattedLogValues(format, args), null, _messageFormatter);
+            logger.Log(LogLevel.Trace, 0, new FormattedLogValues(format, args), null, _messageFormatter);
         }
 
         /// <summary>
-        /// Formats and writes a verbose log message.
+        /// Formats and writes a trace log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="eventId">The event id associated with the log.</param>
         /// <param name="format">Format string of the log message.</param>
         /// <param name="args">An object array that contains zero or more objects to format.</param>
-        public static void LogVerbose(this ILogger logger, int eventId, string format, params object[] args)
+        public static void LogTrace(this ILogger logger, int eventId, string format, params object[] args)
         {
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            logger.Log(LogLevel.Verbose, eventId, new FormattedLogValues(format, args), null, _messageFormatter);
+            logger.Log(LogLevel.Trace, eventId, new FormattedLogValues(format, args), null, _messageFormatter);
         }
 
         /// <summary>
-        /// Formats the given <see cref="ILogValues"/> and writes a verbose log message.
+        /// Formats the given <see cref="ILogValues"/> and writes a trace log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="state">The <see cref="ILogValues"/> to write.</param>
         /// <param name="error">The exception to log.</param>
-        public static void LogVerbose(
+        public static void LogTrace(
             this ILogger logger,
             ILogValues state,
             Exception error = null)
@@ -204,17 +204,17 @@ namespace Microsoft.Extensions.Logging
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            logger.Log(LogLevel.Verbose, state, error);
+            logger.Log(LogLevel.Trace, state, error);
         }
 
         /// <summary>
-        /// Formats the given <see cref="ILogValues"/> and writes a verbose log message.
+        /// Formats the given <see cref="ILogValues"/> and writes a trace log message.
         /// </summary>
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="eventId">The event id associated with the log.</param>
         /// <param name="state">The <see cref="ILogValues"/> to write.</param>
         /// <param name="error">The exception to log.</param>
-        public static void LogVerbose(
+        public static void LogTrace(
             this ILogger logger,
             int eventId,
             ILogValues state,
@@ -225,7 +225,7 @@ namespace Microsoft.Extensions.Logging
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            logger.LogWithEvent(LogLevel.Verbose, eventId, state, error);
+            logger.LogWithEvent(LogLevel.Trace, eventId, state, error);
         }
 
         //------------------------------------------INFORMATION------------------------------------------//

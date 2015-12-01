@@ -12,13 +12,13 @@ namespace Microsoft.Extensions.Logging
         /// Logs that contain the most detailed messages. These messages may contain sensitive application data.
         /// These messages are disabled by default and should never be enabled in a production environment.
         /// </summary>
-        Debug = 1,
+        Trace = 1,
 
         /// <summary>
         /// Logs that are used for interactive investigation during development.  These logs should primarily contain
         /// information useful for debugging and have no long-term value.
         /// </summary>
-        Verbose = 2,
+        Debug = 2,
 
         /// <summary>
         /// Logs that track the general flow of the application. These logs should have long-term value.

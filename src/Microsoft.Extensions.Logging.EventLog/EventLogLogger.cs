@@ -106,7 +106,7 @@ namespace Microsoft.Extensions.Logging.EventLog
             {
                 case LogLevel.Information:
                 case LogLevel.Debug:
-                case LogLevel.Verbose:
+                case LogLevel.Trace:
                     return EventLogEntryType.Information;
                 case LogLevel.Warning:
                     return EventLogEntryType.Warning;

@@ -58,7 +58,7 @@ namespace Microsoft.Extensions.Logging.TraceSource
                 case LogLevel.Error: return TraceEventType.Error;
                 case LogLevel.Warning: return TraceEventType.Warning;
                 case LogLevel.Information: return TraceEventType.Information;
-                case LogLevel.Verbose:
+                case LogLevel.Trace:
                 default: return TraceEventType.Verbose;
             }
         }

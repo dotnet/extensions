@@ -27,7 +27,8 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.True(logger.IsEnabled(LogLevel.Error));
             Assert.True(logger.IsEnabled(LogLevel.Warning));
             Assert.False(logger.IsEnabled(LogLevel.Information));
-            Assert.False(logger.IsEnabled(LogLevel.Verbose));
+            Assert.False(logger.IsEnabled(LogLevel.Debug));
+            Assert.False(logger.IsEnabled(LogLevel.Trace));
         }
 
         [Theory]

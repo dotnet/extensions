@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.Logging.Test
             var logger = SetUp(sink);
 
             // Act
-            logger.LogVerbose(_state);
+            logger.LogTrace(_state);
             logger.LogInformation(_state);
             logger.LogWarning(_state);
             logger.LogError(_state);
@@ -40,11 +40,11 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.Equal(6, sink.Writes.Count);
 
-            var verbose = sink.Writes[0];
-            Assert.Equal(LogLevel.Verbose, verbose.LogLevel);
-            Assert.Equal(_state, verbose.State);
-            Assert.Equal(0, verbose.EventId);
-            Assert.Equal(null, verbose.Exception);
+            var trace = sink.Writes[0];
+            Assert.Equal(LogLevel.Trace, trace.LogLevel);
+            Assert.Equal(_state, trace.State);
+            Assert.Equal(0, trace.EventId);
+            Assert.Equal(null, trace.Exception);
 
             var information = sink.Writes[1];
             Assert.Equal(LogLevel.Information, information.LogLevel);
@@ -85,7 +85,7 @@ namespace Microsoft.Extensions.Logging.Test
             var logger = SetUp(sink);
 
             // Act
-            logger.LogVerbose(_format, "test1", "test2");
+            logger.LogTrace(_format, "test1", "test2");
             logger.LogInformation(_format, "test1", "test2");
             logger.LogWarning(_format, "test1", "test2");
             logger.LogError(_format, "test1", "test2");
@@ -95,11 +95,11 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.Equal(6, sink.Writes.Count);
 
-            var verbose = sink.Writes[0];
-            Assert.Equal(LogLevel.Verbose, verbose.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), verbose.State?.ToString());
-            Assert.Equal(0, verbose.EventId);
-            Assert.Equal(null, verbose.Exception);
+            var trace = sink.Writes[0];
+            Assert.Equal(LogLevel.Trace, trace.LogLevel);
+            Assert.Equal(string.Format(_format, "test1", "test2"), trace.State?.ToString());
+            Assert.Equal(0, trace.EventId);
+            Assert.Equal(null, trace.Exception);
 
             var information = sink.Writes[1];
             Assert.Equal(LogLevel.Information, information.LogLevel);
@@ -140,7 +140,7 @@ namespace Microsoft.Extensions.Logging.Test
             var logger = SetUp(sink);
 
             // Act
-            logger.LogVerbose(1, _state);
+            logger.LogTrace(1, _state);
             logger.LogInformation(2, _state);
             logger.LogWarning(3, _state);
             logger.LogError(4, _state);
@@ -150,11 +150,11 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.Equal(6, sink.Writes.Count);
 
-            var verbose = sink.Writes[0];
-            Assert.Equal(LogLevel.Verbose, verbose.LogLevel);
-            Assert.Equal(_state, verbose.State);
-            Assert.Equal(1, verbose.EventId);
-            Assert.Equal(null, verbose.Exception);
+            var trace = sink.Writes[0];
+            Assert.Equal(LogLevel.Trace, trace.LogLevel);
+            Assert.Equal(_state, trace.State);
+            Assert.Equal(1, trace.EventId);
+            Assert.Equal(null, trace.Exception);
 
             var information = sink.Writes[1];
             Assert.Equal(LogLevel.Information, information.LogLevel);
@@ -195,7 +195,7 @@ namespace Microsoft.Extensions.Logging.Test
             var logger = SetUp(sink);
 
             // Act
-            logger.LogVerbose(1, _format, "test1", "test2");
+            logger.LogTrace(1, _format, "test1", "test2");
             logger.LogInformation(2, _format, "test1", "test2");
             logger.LogWarning(3, _format, "test1", "test2");
             logger.LogError(4, _format, "test1", "test2");
@@ -205,11 +205,11 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.Equal(6, sink.Writes.Count);
 
-            var verbose = sink.Writes[0];
-            Assert.Equal(LogLevel.Verbose, verbose.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), verbose.State?.ToString());
-            Assert.Equal(1, verbose.EventId);
-            Assert.Equal(null, verbose.Exception);
+            var trace = sink.Writes[0];
+            Assert.Equal(LogLevel.Trace, trace.LogLevel);
+            Assert.Equal(string.Format(_format, "test1", "test2"), trace.State?.ToString());
+            Assert.Equal(1, trace.EventId);
+            Assert.Equal(null, trace.Exception);
 
             var information = sink.Writes[1];
             Assert.Equal(LogLevel.Information, information.LogLevel);
@@ -322,7 +322,7 @@ namespace Microsoft.Extensions.Logging.Test
             };
 
             // Act
-            logger.LogVerbose(testLogValues);
+            logger.LogTrace(testLogValues);
             logger.LogInformation(testLogValues);
             logger.LogWarning(testLogValues);
             logger.LogError(testLogValues);
@@ -332,12 +332,12 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.Equal(6, sink.Writes.Count);
 
-            var verbose = sink.Writes[0];
-            Assert.Equal(LogLevel.Verbose, verbose.LogLevel);
-            Assert.Same(testLogValues, verbose.State);
-            Assert.Equal(0, verbose.EventId);
-            Assert.Equal(null, verbose.Exception);
-            Assert.Equal("Test 1", verbose.Formatter(verbose.State, verbose.Exception));
+            var trace = sink.Writes[0];
+            Assert.Equal(LogLevel.Trace, trace.LogLevel);
+            Assert.Same(testLogValues, trace.State);
+            Assert.Equal(0, trace.EventId);
+            Assert.Equal(null, trace.Exception);
+            Assert.Equal("Test 1", trace.Formatter(trace.State, trace.Exception));
 
             var information = sink.Writes[1];
             Assert.Equal(LogLevel.Information, information.LogLevel);
@@ -387,7 +387,7 @@ namespace Microsoft.Extensions.Logging.Test
             };
 
             // Act
-            logger.LogVerbose(1, testLogValues);
+            logger.LogTrace(1, testLogValues);
             logger.LogInformation(2, testLogValues);
             logger.LogWarning(3, testLogValues);
             logger.LogError(4, testLogValues);
@@ -397,12 +397,12 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.Equal(6, sink.Writes.Count);
 
-            var verbose = sink.Writes[0];
-            Assert.Equal(LogLevel.Verbose, verbose.LogLevel);
-            Assert.Same(testLogValues, verbose.State);
-            Assert.Equal(1, verbose.EventId);
-            Assert.Equal(null, verbose.Exception);
-            Assert.Equal("Test 1", verbose.Formatter(verbose.State, verbose.Exception));
+            var trace = sink.Writes[0];
+            Assert.Equal(LogLevel.Trace, trace.LogLevel);
+            Assert.Same(testLogValues, trace.State);
+            Assert.Equal(1, trace.EventId);
+            Assert.Equal(null, trace.Exception);
+            Assert.Equal("Test 1", trace.Formatter(trace.State, trace.Exception));
 
             var information = sink.Writes[1];
             Assert.Equal(LogLevel.Information, information.LogLevel);
@@ -452,7 +452,7 @@ namespace Microsoft.Extensions.Logging.Test
             };
 
             // Act
-            logger.LogVerbose(testLogValues, _exception);
+            logger.LogTrace(testLogValues, _exception);
             logger.LogInformation(testLogValues, _exception);
             logger.LogWarning(testLogValues, _exception);
             logger.LogError(testLogValues, _exception);
@@ -462,14 +462,14 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.Equal(6, sink.Writes.Count);
 
-            var verbose = sink.Writes[0];
-            Assert.Equal(LogLevel.Verbose, verbose.LogLevel);
-            Assert.Same(testLogValues, verbose.State);
-            Assert.Equal(0, verbose.EventId);
-            Assert.Equal(_exception, verbose.Exception);
+            var trace = sink.Writes[0];
+            Assert.Equal(LogLevel.Trace, trace.LogLevel);
+            Assert.Same(testLogValues, trace.State);
+            Assert.Equal(0, trace.EventId);
+            Assert.Equal(_exception, trace.Exception);
             Assert.Equal(
                 "Test 1" + Environment.NewLine + _exception,
-                verbose.Formatter(verbose.State, verbose.Exception));
+                trace.Formatter(trace.State, trace.Exception));
 
             var information = sink.Writes[1];
             Assert.Equal(LogLevel.Information, information.LogLevel);
@@ -528,7 +528,7 @@ namespace Microsoft.Extensions.Logging.Test
             };
 
             // Act
-            logger.LogVerbose(1, testLogValues, _exception);
+            logger.LogTrace(1, testLogValues, _exception);
             logger.LogInformation(2, testLogValues, _exception);
             logger.LogWarning(3, testLogValues, _exception);
             logger.LogError(4, testLogValues, _exception);
@@ -538,14 +538,14 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.Equal(6, sink.Writes.Count);
 
-            var verbose = sink.Writes[0];
-            Assert.Equal(LogLevel.Verbose, verbose.LogLevel);
-            Assert.Same(testLogValues, verbose.State);
-            Assert.Equal(1, verbose.EventId);
-            Assert.Equal(_exception, verbose.Exception);
+            var trace = sink.Writes[0];
+            Assert.Equal(LogLevel.Trace, trace.LogLevel);
+            Assert.Same(testLogValues, trace.State);
+            Assert.Equal(1, trace.EventId);
+            Assert.Equal(_exception, trace.Exception);
             Assert.Equal(
                 "Test 1" + Environment.NewLine + _exception,
-                verbose.Formatter(verbose.State, verbose.Exception));
+                trace.Formatter(trace.State, trace.Exception));
 
             var information = sink.Writes[1];
             Assert.Equal(LogLevel.Information, information.LogLevel);

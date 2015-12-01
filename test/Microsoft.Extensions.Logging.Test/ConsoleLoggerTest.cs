@@ -228,7 +228,7 @@ namespace Microsoft.Extensions.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Log(LogLevel.Verbose, 0, _state, null, null);
+            logger.Log(LogLevel.Debug, 0, _state, null, null);
 
             // Assert
             Assert.Equal(0, sink.Writes.Count);
@@ -241,10 +241,31 @@ namespace Microsoft.Extensions.Logging.Test
         }
 
         [Fact]
-        public void VerboseFilter_LogsWhenAppropriate()
+        public void DebugFilter_LogsWhenAppropriate()
         {
             // Arrange
-            var t = SetUp((category, logLevel) => logLevel >= LogLevel.Verbose);
+            var t = SetUp((category, logLevel) => logLevel >= LogLevel.Debug);
+            var logger = t.Item1;
+            var sink = t.Item2;
+
+            // Act
+            logger.Log(LogLevel.Trace, 0, _state, null, null);
+
+            // Assert
+            Assert.Equal(0, sink.Writes.Count);
+
+            // Act
+            logger.Log(LogLevel.Debug, 0, _state, null, null);
+
+            // Assert
+            Assert.Equal(3, sink.Writes.Count);
+        }
+
+        [Fact]
+        public void TraceFilter_LogsWhenAppropriate()
+        {
+            // Arrange
+            var t = SetUp((category, logLevel) => logLevel >= LogLevel.Trace);
             var logger = t.Item1;
             var sink = t.Item2;
 
@@ -253,10 +274,11 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Error, 0, _state, null, null);
             logger.Log(LogLevel.Warning, 0, _state, null, null);
             logger.Log(LogLevel.Information, 0, _state, null, null);
-            logger.Log(LogLevel.Verbose, 0, _state, null, null);
+            logger.Log(LogLevel.Debug, 0, _state, null, null);
+            logger.Log(LogLevel.Trace, 0, _state, null, null);
 
             // Assert
-            Assert.Equal(15, sink.Writes.Count);
+            Assert.Equal(18, sink.Writes.Count);
         }
 
         [Fact]
@@ -356,7 +378,7 @@ namespace Microsoft.Extensions.Logging.Test
         }
 
         [Fact]
-        public void WriteVerbose_LogsCorrectColors()
+        public void WriteDebug_LogsCorrectColors()
         {
             // Arrange
             var t = SetUp(null);
@@ -364,7 +386,31 @@ namespace Microsoft.Extensions.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Log(LogLevel.Verbose, 0, _state, null, null);
+            logger.Log(LogLevel.Debug, 0, _state, null, null);
+
+            // Assert
+            Assert.Equal(3, sink.Writes.Count);
+            var write = sink.Writes[0];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            write = sink.Writes[1];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            write = sink.Writes[2];
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.White, write.ForegroundColor);
+        }
+
+        [Fact]
+        public void WriteTrace_LogsCorrectColors()
+        {
+            // Arrange
+            var t = SetUp(null);
+            var logger = t.Item1;
+            var sink = t.Item2;
+
+            // Act
+            logger.Log(LogLevel.Trace, 0, _state, null, null);
 
             // Assert
             Assert.Equal(3, sink.Writes.Count);
@@ -394,8 +440,8 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Error, 0, _state, ex, _theMessageAndError);
             logger.Log(LogLevel.Warning, 0, _state, ex, _theMessageAndError);
             logger.Log(LogLevel.Information, 0, _state, ex, _theMessageAndError);
-            logger.Log(LogLevel.Verbose, 0, _state, ex, _theMessageAndError);
             logger.Log(LogLevel.Debug, 0, _state, ex, _theMessageAndError);
+            logger.Log(LogLevel.Trace, 0, _state, ex, _theMessageAndError);
 
             // Assert
             Assert.Equal(18, sink.Writes.Count);
@@ -403,8 +449,8 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(GetMessage("fail", 0, ex), GetMessage(sink.Writes.GetRange(3, 3)));
             Assert.Equal(GetMessage("warn", 0, ex), GetMessage(sink.Writes.GetRange(6, 3)));
             Assert.Equal(GetMessage("info", 0, ex), GetMessage(sink.Writes.GetRange(9, 3)));
-            Assert.Equal(GetMessage("verb", 0, ex), GetMessage(sink.Writes.GetRange(12, 3)));
-            Assert.Equal(GetMessage("dbug", 0, ex), GetMessage(sink.Writes.GetRange(15, 3)));
+            Assert.Equal(GetMessage("dbug", 0, ex), GetMessage(sink.Writes.GetRange(12, 3)));
+            Assert.Equal(GetMessage("trce", 0, ex), GetMessage(sink.Writes.GetRange(15, 3)));
         }
 
         [Fact]
@@ -613,9 +659,9 @@ namespace Microsoft.Extensions.Logging.Test
             loggerFactory.AddConsole(settings);
 
             var logger = loggerFactory.CreateLogger("Test");
-            Assert.False(logger.IsEnabled(LogLevel.Verbose));
+            Assert.False(logger.IsEnabled(LogLevel.Trace));
 
-            settings.Switches["Test"] = LogLevel.Verbose;
+            settings.Switches["Test"] = LogLevel.Trace;
 
             var cancellationTokenSource = settings.Cancel;
             settings.Cancel = new CancellationTokenSource();
@@ -624,7 +670,7 @@ namespace Microsoft.Extensions.Logging.Test
             cancellationTokenSource.Cancel();
 
             // Assert
-            Assert.True(logger.IsEnabled(LogLevel.Verbose));
+            Assert.True(logger.IsEnabled(LogLevel.Trace));
         }
 
         [Fact]
@@ -644,19 +690,19 @@ namespace Microsoft.Extensions.Logging.Test
             loggerFactory.AddConsole(settings);
 
             var logger = loggerFactory.CreateLogger("Test");
-            Assert.False(logger.IsEnabled(LogLevel.Verbose));
+            Assert.False(logger.IsEnabled(LogLevel.Trace));
 
             // Act & Assert
             for (var i = 0; i < 10; i++)
             {
-                settings.Switches["Test"] = i % 2 == 0 ? LogLevel.Information : LogLevel.Verbose;
+                settings.Switches["Test"] = i % 2 == 0 ? LogLevel.Information : LogLevel.Trace;
 
                 var cancellationTokenSource = settings.Cancel;
                 settings.Cancel = new CancellationTokenSource();
 
                 cancellationTokenSource.Cancel();
 
-                Assert.Equal(i % 2 == 1, logger.IsEnabled(LogLevel.Verbose));
+                Assert.Equal(i % 2 == 1, logger.IsEnabled(LogLevel.Trace));
             }
         }
 

@@ -43,7 +43,7 @@ namespace SampleApp
             //    IncludeScopes = true,
             //    Switches =
             //    {
-            //        ["Default"] = LogLevel.Verbose,
+            //        ["Default"] = LogLevel.Debug,
             //        ["Microsoft"] = LogLevel.Information,
             //    }
             //};

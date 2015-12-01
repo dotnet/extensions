@@ -75,7 +75,7 @@ namespace Microsoft.Extensions.Logging.NLog
             {
                 switch (logLevel)
                 {
-                    case LogLevel.Verbose: return global::NLog.LogLevel.Trace;
+                    case LogLevel.Trace: return global::NLog.LogLevel.Trace;
                     case LogLevel.Debug: return global::NLog.LogLevel.Debug;
                     case LogLevel.Information: return global::NLog.LogLevel.Info;
                     case LogLevel.Warning: return global::NLog.LogLevel.Warn;

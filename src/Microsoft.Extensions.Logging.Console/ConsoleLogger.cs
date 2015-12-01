@@ -254,10 +254,10 @@ namespace Microsoft.Extensions.Logging.Console
         {
             switch (logLevel)
             {
+                case LogLevel.Trace:
+                    return "trce";
                 case LogLevel.Debug:
                     return "dbug";
-                case LogLevel.Verbose:
-                    return "verb";
                 case LogLevel.Information:
                     return "info";
                 case LogLevel.Warning:
@@ -285,7 +285,7 @@ namespace Microsoft.Extensions.Logging.Console
                 case LogLevel.Information:
                     return new ConsoleColors(ConsoleColor.DarkGreen, DefaultConsoleColor);
                 case LogLevel.Debug:
-                case LogLevel.Verbose:
+                case LogLevel.Trace:
                 default:
                     return new ConsoleColors(ConsoleColor.Gray, DefaultConsoleColor);
             }
