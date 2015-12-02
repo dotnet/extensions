@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections;
+using System.Runtime.InteropServices;
 using System.Text;
-using Microsoft.Dnx.Runtime;
 using Microsoft.Extensions.Logging.Console.Internal;
 
 namespace Microsoft.Extensions.Logging.Console
@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.Logging.Console
             Filter = filter ?? ((category, logLevel) => true);
             IncludeScopes = includeScopes;
 
-            if (RuntimeEnvironmentHelper.IsWindows)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 Console = new WindowsLogConsole();
             }
