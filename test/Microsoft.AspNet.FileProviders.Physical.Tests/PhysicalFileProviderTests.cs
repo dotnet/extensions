@@ -174,6 +174,69 @@ namespace Microsoft.AspNet.FileProviders
             }
         }
 
+        // On Unix the minimum invalid file path characters are / and \0
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData("/test:test")]
+        [InlineData("/dir/name\"")]
+        [InlineData("/dir>/name")]
+        public void InvalidPath_DoesNotThrowWindows_GetFileInfo(string path)
+        {
+            InvalidPath_DoesNotThrowGeneric_GetFileInfo(path);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows)]
+        [InlineData("/test:test\0")]
+        [InlineData("/dir/\0name\"")]
+        [InlineData("/dir>/name\0")]
+        public void InvalidPath_DoesNotThrowUnix_GetFileInfo(string path)
+        {
+            InvalidPath_DoesNotThrowGeneric_GetFileInfo(path);
+        }
+
+        public void InvalidPath_DoesNotThrowGeneric_GetFileInfo(string path)
+        {
+            using (var provider = new PhysicalFileProvider(Directory.GetCurrentDirectory()))
+            {
+                var info = provider.GetFileInfo(path);
+                Assert.NotNull(info);
+                Assert.IsType<NotFoundFileInfo>(info);
+            }
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData("/test:test")]
+        [InlineData("/dir/name\"")]
+        [InlineData("/dir>/name")]
+        public void InvalidPath_DoesNotThrowWindows_GetDirectoryContents(string path)
+        {
+            InvalidPath_DoesNotThrowGeneric_GetDirectoryContents(path);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows)]
+        [InlineData("/test:test\0")]
+        [InlineData("/dir/\0name\"")]
+        [InlineData("/dir>/name\0")]
+        public void InvalidPath_DoesNotThrowUnix_GetDirectoryContents(string path)
+        {
+            InvalidPath_DoesNotThrowGeneric_GetDirectoryContents(path);
+        }
+
+        public void InvalidPath_DoesNotThrowGeneric_GetDirectoryContents(string path)
+        {
+            using (var provider = new PhysicalFileProvider(Directory.GetCurrentDirectory()))
+            {
+                var info = provider.GetDirectoryContents(path);
+                Assert.NotNull(info);
+                Assert.IsType<NotFoundDirectoryContents>(info);
+            }
+        }
+
         [Fact]
         public void SubPathActsAsRoot()
         {

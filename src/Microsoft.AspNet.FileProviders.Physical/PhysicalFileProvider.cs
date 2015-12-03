@@ -14,6 +14,8 @@ namespace Microsoft.AspNet.FileProviders
     /// </summary>
     public class PhysicalFileProvider : IFileProvider, IDisposable
     {
+        private static readonly char [] _invalidFileNameChars = Path.GetInvalidFileNameChars()
+            .Where(c => c != Path.DirectorySeparatorChar && c != Path.AltDirectorySeparatorChar).ToArray();
         private readonly PhysicalFilesWatcher _filesWatcher;
 
         /// <summary>
@@ -74,6 +76,11 @@ namespace Microsoft.AspNet.FileProviders
             return path;
         }
 
+        private static bool HasInvalidPathChars(string path)
+        {
+            return path.IndexOfAny(_invalidFileNameChars) != -1;
+        }
+
         /// <summary>
         /// Locate a file at the given path by directly mapping path segments to physical directories.
         /// </summary>
@@ -81,7 +88,7 @@ namespace Microsoft.AspNet.FileProviders
         /// <returns>The file information. Caller must check Exists property. </returns>
         public IFileInfo GetFileInfo(string subpath)
         {
-            if (string.IsNullOrEmpty(subpath))
+            if (string.IsNullOrEmpty(subpath) || HasInvalidPathChars(subpath))
             {
                 return new NotFoundFileInfo(subpath);
             }
@@ -122,7 +129,7 @@ namespace Microsoft.AspNet.FileProviders
         {
             try
             {
-                if (subpath == null)
+                if (subpath == null || HasInvalidPathChars(subpath))
                 {
                     return new NotFoundDirectoryContents();
                 }

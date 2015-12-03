@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using Microsoft.Extensions.Primitives;
@@ -16,6 +17,8 @@ namespace Microsoft.AspNet.FileProviders
     /// </summary>
     public class EmbeddedFileProvider : IFileProvider
     {
+        private static readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars()
+            .Where(c => c != Path.DirectorySeparatorChar && c != Path.AltDirectorySeparatorChar).ToArray();
         private readonly Assembly _assembly;
         private readonly string _baseNamespace;
         private readonly DateTimeOffset _lastModified;
@@ -83,6 +86,11 @@ namespace Microsoft.AspNet.FileProviders
             }
 
             var resourcePath = builder.ToString();
+            if (HasInvalidPathChars(resourcePath))
+            {
+                return new NotFoundFileInfo(resourcePath);
+            }
+
             var name = Path.GetFileName(subpath);
             if (_assembly.GetManifestResourceInfo(resourcePath) == null)
             {
@@ -140,6 +148,11 @@ namespace Microsoft.AspNet.FileProviders
         public IChangeToken Watch(string pattern)
         {
             return NoopChangeToken.Singleton;
+        }
+
+        private static bool HasInvalidPathChars(string path)
+        {
+            return path.IndexOfAny(_invalidFileNameChars) != -1;
         }
 
         private class EmbeddedResourceFileInfo : IFileInfo
