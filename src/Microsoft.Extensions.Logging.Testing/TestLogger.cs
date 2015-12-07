@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.Logging.Testing
                 Scope = state,
             });
 
-            return null;
+            return TestDisposable.Instance;
         }
 
         public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
@@ -51,6 +51,16 @@ namespace Microsoft.Extensions.Logging.Testing
         public bool IsEnabled(LogLevel logLevel)
         {
             return _enabled;
+        }
+
+        private class TestDisposable : IDisposable
+        {
+            public static readonly TestDisposable Instance = new TestDisposable();
+
+            public void Dispose()
+            {
+                // intentionally does nothing
+            }
         }
     }
 }
