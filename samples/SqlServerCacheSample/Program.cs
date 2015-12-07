@@ -14,7 +14,7 @@ namespace SqlServerCacheSample
 {
     /// <summary>
     /// This sample requires setting up a Microsoft SQL Server based cache database.
-    /// 1. Install the command globally by doing "dnx commands install Microsoft.Extensions.Caching.SqlServer". This
+    /// 1. Install the command globally by doing "dnu commands install Microsoft.Extensions.Caching.SqlConfig". This
     ///    installs a command called "sqlservercache".
     /// 2. Create a new database in the SQL Server or use as existing gone.
     /// 3. Run the command "sqlservercache create <connectionstring> <schemName> <tableName>" to setup the table and
@@ -47,14 +47,12 @@ namespace SqlServerCacheSample
             var value = Encoding.UTF8.GetBytes(message);
 
             Console.WriteLine("Connecting to cache");
-            var cache = new SqlServerCache(
-                new CacheOptions(
-                new SqlServerCacheOptions()
-                {
-                    ConnectionString = Configuration["ConnectionString"],
-                    SchemaName = Configuration["SchemaName"],
-                    TableName = Configuration["TableName"]
-                }));
+            var cache = new SqlServerCache(new SqlServerCacheOptions()
+            {
+                ConnectionString = Configuration["ConnectionString"],
+                SchemaName = Configuration["SchemaName"],
+                TableName = Configuration["TableName"]
+            });
             await cache.ConnectAsync();
 
             Console.WriteLine("Connected");
@@ -98,24 +96,6 @@ namespace SqlServerCacheSample
             }
 
             Console.ReadLine();
-        }
-
-        private class CacheOptions : IOptions<SqlServerCacheOptions>
-        {
-            private readonly SqlServerCacheOptions _innerOptions;
-
-            public CacheOptions(SqlServerCacheOptions innerOptions)
-            {
-                _innerOptions = innerOptions;
-            }
-
-            public SqlServerCacheOptions Value
-            {
-                get
-                {
-                    return _innerOptions;
-                }
-            }
         }
     }
 }

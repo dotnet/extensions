@@ -45,14 +45,12 @@ namespace SqlServerCacheConcurrencySample
             _cacheEntryOptions = new DistributedCacheEntryOptions();
             _cacheEntryOptions.SetSlidingExpiration(TimeSpan.FromSeconds(10));
 
-            var cache = new SqlServerCache(
-                new CacheOptions(
-                new SqlServerCacheOptions()
-                {
-                    ConnectionString = Configuration["ConnectionString"],
-                    SchemaName = Configuration["SchemaName"],
-                    TableName = Configuration["TableName"]
-                }));
+            var cache = new SqlServerCache(new SqlServerCacheOptions()
+            {
+                ConnectionString = Configuration["ConnectionString"],
+                SchemaName = Configuration["SchemaName"],
+                TableName = Configuration["TableName"]
+            });
             cache.Connect();
 
             SetKey(cache, "0");
@@ -125,24 +123,6 @@ namespace SqlServerCacheConcurrencySample
                     cache.Remove(Key);
                 }
             });
-        }
-
-        private class CacheOptions : IOptions<SqlServerCacheOptions>
-        {
-            private readonly SqlServerCacheOptions _innerOptions;
-
-            public CacheOptions(SqlServerCacheOptions innerOptions)
-            {
-                _innerOptions = innerOptions;
-            }
-
-            public SqlServerCacheOptions Value
-            {
-                get
-                {
-                    return _innerOptions;
-                }
-            }
         }
     }
 }

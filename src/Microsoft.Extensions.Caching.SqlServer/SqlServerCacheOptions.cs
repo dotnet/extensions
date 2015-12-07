@@ -3,10 +3,11 @@
 
 using System;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.Extensions.Caching.SqlServer
 {
-    public class SqlServerCacheOptions
+    public class SqlServerCacheOptions : IOptions<SqlServerCacheOptions>
     {
         /// <summary>
         /// An abstraction to represent the clock of a machine in order to enable unit testing.
@@ -32,5 +33,13 @@ namespace Microsoft.Extensions.Caching.SqlServer
         /// Name of the table where the cache items are stored.
         /// </summary>
         public string TableName { get; set; }
+
+        SqlServerCacheOptions IOptions<SqlServerCacheOptions>.Value
+        {
+            get
+            {
+                return this;
+            }
+        }
     }
 }
