@@ -292,6 +292,7 @@ namespace Microsoft.Dnx.TestHost
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
         public async Task TestHostExits_WhenParentProcessExits()
         {
             // Arrange
