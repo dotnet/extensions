@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -175,7 +174,7 @@ namespace Microsoft.Extensions.OptionsModel.Tests
                         {
                             { nameof(NullableOptions.MyNullableBool), "true" },
                             { nameof(NullableOptions.MyNullableInt), "1" },
-                            { nameof(NullableOptions.MyNullableDateTime), new DateTime(2015, 1, 1).ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern) }
+                            { nameof(NullableOptions.MyNullableDateTime), new DateTime(2015, 1, 1).ToString(CultureInfo.InvariantCulture.DateTimeFormat.ShortDatePattern) }
                         },
                         new Dictionary<string, object>
                         {
@@ -189,7 +188,7 @@ namespace Microsoft.Extensions.OptionsModel.Tests
                         {
                             { nameof(NullableOptions.MyNullableBool), "false" },
                             { nameof(NullableOptions.MyNullableInt), "-1" },
-                            { nameof(NullableOptions.MyNullableDateTime), new DateTime(1995, 12, 31).ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern) }
+                            { nameof(NullableOptions.MyNullableDateTime), new DateTime(1995, 12, 31).ToString(CultureInfo.InvariantCulture.DateTimeFormat.ShortDatePattern) }
                         },
                         new Dictionary<string, object>
                         {
