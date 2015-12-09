@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts
 
         public abstract void PushDirectory(DirectoryInfoBase directory);
 
-        public void PopDirectory()
+        public virtual void PopDirectory()
         {
             Frame = _stack.Pop();
         }

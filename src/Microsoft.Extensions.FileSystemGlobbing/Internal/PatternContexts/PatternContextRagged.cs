@@ -99,6 +99,15 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts
             PushDataFrame(frame);
         }
 
+        public override void PopDirectory()
+        {
+            base.PopDirectory();
+            if (Frame.StemItems.Count > 0)
+            {
+                Frame.StemItems.RemoveAt(Frame.StemItems.Count - 1);
+            }
+        }
+
         public struct FrameData
         {
             public bool IsNotApplicable;

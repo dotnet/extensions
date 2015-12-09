@@ -338,6 +338,62 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests
                 "src/project2/source1.cs");
         }
 
+        [Fact]
+        public void StemCorrectWithDifferentWildCards()
+        {
+            var matcher = new Matcher();
+            matcher.AddInclude("sub/*.cs");
+            matcher.AddInclude("**/*.cs");
+
+            var directoryPath = Path.Combine(_context.RootPath, "src/project");
+            var results = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(directoryPath)));
+
+            var actual = results.Files.Select(match => match.Stem);
+            var expected = new string[] {
+                "source1.cs",
+                "source2.cs",
+                "source3.cs",
+                "sub2/source4.cs",
+                "sub2/source5.cs",
+                "compiler/preprocess/preprocess-source1.cs",
+                "compiler/preprocess/sub/preprocess-source2.cs",
+                "compiler/preprocess/sub/sub/preprocess-source3.cs",
+                "compiler/shared/shared1.cs",
+                "compiler/shared/sub/shared2.cs",
+                "compiler/shared/sub/sub/sharedsub.cs"
+            };
+
+            Assert.Equal(
+                expected.OrderBy(e => e),
+                actual.OrderBy(e => e),
+                StringComparer.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void MultipleSubDirsAfterFirstWildcardMatch_HasCorrectStem()
+        {
+            var matcher = new Matcher();
+            matcher.AddInclude("compiler/**/*.cs");
+
+            var directoryPath = Path.Combine(_context.RootPath, "src/project");
+            var results = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(directoryPath)));
+
+            var actual = results.Files.Select(match => match.Stem);
+            var expected = new string[] {
+                "preprocess/preprocess-source1.cs",
+                "preprocess/sub/preprocess-source2.cs",
+                "preprocess/sub/sub/preprocess-source3.cs",
+                "shared/shared1.cs",
+                "shared/sub/shared2.cs",
+                "shared/sub/sub/sharedsub.cs"
+            };
+
+            Assert.Equal(
+                expected.OrderBy(e => e),
+                actual.OrderBy(e => e),
+                StringComparer.OrdinalIgnoreCase);
+        }
+
         private DisposableFileSystem CreateContext()
         {
             var context = new DisposableFileSystem();
