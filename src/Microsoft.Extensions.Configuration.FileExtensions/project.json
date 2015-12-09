@@ -20,9 +20,9 @@
       }
     },
     "netcore50": {
-        "dependencies": {
-          "System.AppContext": "4.0.0"
-        }
+      "dependencies": {
+        "System.AppContext": "4.0.0"
       }
+    }
   }
 }
