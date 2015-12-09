@@ -2,36 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.Extensions.OptionsModel
 {
     public class OptionsManager<TOptions> : IOptions<TOptions> where TOptions : class, new()
     {
-        private TOptions _options;
-        private IEnumerable<IConfigureOptions<TOptions>> _setups;
+        private OptionsCache<TOptions> _optionsCache;
 
         public OptionsManager(IEnumerable<IConfigureOptions<TOptions>> setups)
         {
-            _setups = setups;
+            _optionsCache = new OptionsCache<TOptions>(setups);
         }
 
         public virtual TOptions Value
         {
             get
             {
-                if (_options == null)
-                {
-                    _options = _setups == null
-                        ? new TOptions()
-                        : _setups.Aggregate(new TOptions(),
-                                            (options, setup) =>
-                                            {
-                                                setup.Configure(options);
-                                                return options;
-                                            });
-                }
-                return _options;
+                return _optionsCache.Value;
             }
         }
     }

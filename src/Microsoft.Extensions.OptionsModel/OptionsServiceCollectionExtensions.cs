@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.OptionsModel;
 
@@ -21,6 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptions<>), typeof(OptionsManager<>)));
+            services.TryAdd(ServiceDescriptor.Singleton(typeof(IOptionsMonitor<>), typeof(OptionsMonitor<>)));
             return services;
         }
 
@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IConfigureOptions<>));
             if (!serviceTypes.Any())
             {
-                string error = "TODO: No IConfigureOptions<> found.";
+                var error = "No IConfigureOptions<> found.";
                 if (IsAction(type))
                 {
                     error += " did you mean Configure(Action<T>)";
@@ -90,9 +90,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection Configure<TOptions>(
-            this IServiceCollection services,
-            Action<TOptions> setupAction)
+        public static IServiceCollection Configure<TOptions>(this IServiceCollection services, Action<TOptions> setupAction)
             where TOptions : class
         {
             if (services == null)
@@ -106,25 +104,6 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.ConfigureOptions(new ConfigureOptions<TOptions>(setupAction));
-            return services;
-        }
-
-        public static IServiceCollection Configure<TOptions>(
-            this IServiceCollection services,
-            IConfiguration config)
-            where TOptions : class
-        {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            if (config == null)
-            {
-                throw new ArgumentNullException(nameof(config));
-            }
-
-            services.ConfigureOptions(new ConfigureFromConfigurationOptions<TOptions>(config));
             return services;
         }
     }
