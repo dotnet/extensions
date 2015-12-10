@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Extensions.FileSystemGlobbing.Tests.TestUtility;
-using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.FileProviders
@@ -18,158 +16,197 @@ namespace Microsoft.AspNet.FileProviders
         private const int WaitTimeForTokenToFire = 2 * 100;
 
         [Fact]
-        public void ExistingFilesReturnTrue()
+        public void GetFileInfoReturnsNotFoundFileInfoForNullPath()
         {
-            using (var provider = new PhysicalFileProvider(Directory.GetCurrentDirectory()))
+            using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
-                var info = provider.GetFileInfo("File.txt");
-                Assert.NotNull(info);
-                Assert.True(info.Exists);
-
-                info = provider.GetFileInfo("/File.txt");
-                Assert.NotNull(info);
-                Assert.True(info.Exists);
+                var info = provider.GetFileInfo(null);
+                Assert.IsType(typeof(NotFoundFileInfo), info);
             }
         }
 
         [Fact]
-        public async Task ModifyContent_And_Delete_File_Succeeds_And_Callsback_RegisteredTokens()
+        public void GetFileInfoReturnsNotFoundFileInfoForEmptyPath()
+        {
+            using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
+            {
+                var info = provider.GetFileInfo(string.Empty);
+                Assert.IsType(typeof(NotFoundFileInfo), info);
+            }
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Paths starting with / are considered relative.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Paths starting with / are considered relative.")]
+        public void GetFileInfoReturnsNotFoundFileInfoForAbsolutePath()
+        {
+            using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
+            {
+                var info = provider.GetFileInfo(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
+                Assert.IsType(typeof(NotFoundFileInfo), info);
+            }
+        }
+
+        [Fact]
+        public void GetFileInfoReturnsNotFoundFileInfoForRelativePathAboveRootPath()
+        {
+            using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
+            {
+                var info = provider.GetFileInfo(Path.Combine("..", Guid.NewGuid().ToString()));
+                Assert.IsType(typeof(NotFoundFileInfo), info);
+            }
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hidden and system files only make sense on Windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Hidden and system files only make sense on Windows.")]
+        public void GetFileInfoReturnsNotFoundFileInfoForHiddenFile()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                using (var provider = new PhysicalFileProvider(root.RootPath))
+                {
+                    var fileName = Guid.NewGuid().ToString();
+                    var filePath = Path.Combine(root.RootPath, fileName);
+                    File.Create(filePath);
+                    var fileInfo = new FileInfo(filePath);
+                    File.SetAttributes(filePath, fileInfo.Attributes | FileAttributes.Hidden);
+
+                    var info = provider.GetFileInfo(fileName);
+
+                    Assert.IsType(typeof(NotFoundFileInfo), info);
+                }
+            }
+        }
+
+        [Fact]
+        public void GetFileInfoReturnsNotFoundFileInfoForFileNameStartingWithPeriod()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                using (var provider = new PhysicalFileProvider(root.RootPath))
+                {
+                    var fileName = "." + Guid.NewGuid().ToString();
+                    var filePath = Path.Combine(root.RootPath, fileName);
+
+                    var info = provider.GetFileInfo(fileName);
+
+                    Assert.IsType(typeof(NotFoundFileInfo), info);
+                }
+            }
+        }
+
+        [Fact]
+        public void TokenIsSameForSamePath()
         {
             using (var root = new DisposableFileSystem())
             {
                 var fileName = Guid.NewGuid().ToString();
                 var fileLocation = Path.Combine(root.RootPath, fileName);
-                File.WriteAllText(fileLocation, "OldContent");
+
                 using (var provider = new PhysicalFileProvider(root.RootPath))
                 {
                     var fileInfo = provider.GetFileInfo(fileName);
-                    Assert.Equal(new FileInfo(fileInfo.PhysicalPath).Length, fileInfo.Length);
-                    Assert.True(fileInfo.Exists);
 
                     var token1 = provider.Watch(fileName);
                     var token2 = provider.Watch(fileName);
 
-                    // Valid token1 created.
                     Assert.NotNull(token1);
-                    Assert.False(token1.HasChanged);
-                    Assert.True(token1.ActiveChangeCallbacks);
-
-                    // Valid token2 created.
                     Assert.NotNull(token2);
-                    Assert.False(token2.HasChanged);
-                    Assert.True(token2.ActiveChangeCallbacks);
-
-                    // token is the same for a specific file.
                     Assert.Equal(token2, token1);
-
-                    IChangeToken token3 = null;
-                    IChangeToken token4 = null;
-                    token1.RegisterChangeCallback(state =>
-                    {
-                        var infoFromState = state as IFileInfo;
-                        token3 = provider.Watch(infoFromState.Name);
-                        Assert.NotNull(token3);
-                        token3.RegisterChangeCallback(_ => { }, null);
-                        Assert.False(token3.HasChanged);
-                    }, state: fileInfo);
-
-                    token2.RegisterChangeCallback(state =>
-                    {
-                        var infoFromState = state as IFileInfo;
-                        token4 = provider.Watch(infoFromState.Name);
-                        Assert.NotNull(token4);
-                        token4.RegisterChangeCallback(_ => { }, null);
-                        Assert.False(token4.HasChanged);
-                    }, state: fileInfo);
-
-                    // Write new content.
-                    File.WriteAllText(fileLocation, "OldContent + NewContent");
-                    Assert.True(fileInfo.Exists);
-                    // Wait for callbacks to be fired.
-                    await Task.Delay(WaitTimeForTokenToFire);
-                    Assert.True(token1.HasChanged);
-                    Assert.True(token2.HasChanged);
-
-                    // token is the same for a specific file.
-                    Assert.Same(token4, token3);
-                    // A new token is created.
-                    Assert.NotEqual(token1, token3);
-
-                    // Delete the file and verify file info is updated.
-                    File.Delete(fileLocation);
-                    fileInfo = provider.GetFileInfo(fileName);
-                    Assert.False(fileInfo.Exists);
-                    Assert.False(new FileInfo(fileLocation).Exists);
-
-                    // Wait for callbacks to be fired.
-                    await Task.Delay(WaitTimeForTokenToFire);
-                    Assert.True(token3.HasChanged);
-                    Assert.True(token4.HasChanged);
                 }
             }
         }
 
         [Fact]
-        public void Exists_WithNonExistingFile_ReturnsFalse()
-        {
-            // Set stuff up on disk (nothing to set up here because we're testing a non-existing file)
-            using (var root = new DisposableFileSystem())
-            {
-                var nonExistingFileName = Guid.NewGuid().ToString();
-
-                // Use the file provider to try to read the file info back
-                using (var provider = new PhysicalFileProvider(root.RootPath))
-                {
-                    var file = provider.GetFileInfo(nonExistingFileName);
-
-                    Assert.False(file.Exists);
-                    Assert.Throws<FileNotFoundException>(() => file.CreateReadStream());
-                }
-            }
-        }
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hidden files only make sense on Windows.")]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Hidden files only make sense on Windows.")]
-        public void Exists_WithHiddenFile_ReturnsFalse()
+        public async Task TokensFiredOnFileChange()
         {
             using (var root = new DisposableFileSystem())
             {
-                // Set stuff up on disk
-                var tempFileName = Guid.NewGuid().ToString();
-                var physicalHiddenFileName = Path.Combine(root.RootPath, tempFileName);
-                File.WriteAllText(physicalHiddenFileName, "Content");
-                var fileInfo = new FileInfo(physicalHiddenFileName);
-                File.SetAttributes(physicalHiddenFileName, fileInfo.Attributes | FileAttributes.Hidden);
+                var fileName = Guid.NewGuid().ToString();
+                var fileLocation = Path.Combine(root.RootPath, fileName);
 
-                // Use the file provider to try to read the file info back
-                using (var provider = new PhysicalFileProvider(root.RootPath))
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    var file = provider.GetFileInfo(tempFileName);
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var token = provider.Watch(fileName);
+                            Assert.NotNull(token);
+                            Assert.False(token.HasChanged);
+                            Assert.True(token.ActiveChangeCallbacks);
 
-                    Assert.False(file.Exists);
-                    Assert.Throws<FileNotFoundException>(() => file.CreateReadStream());
+                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, fileName));
+                            await Task.Delay(WaitTimeForTokenToFire);
+
+                            Assert.True(token.HasChanged);
+                        }
+                    }
                 }
             }
         }
 
         [Fact]
-        public void Exists_WithFileStartingWithPeriod_ReturnsFalse()
+        public async Task TokenCallbackInvokedOnFileChange()
         {
             using (var root = new DisposableFileSystem())
             {
-                // Set stuff up on disk
-                var fileNameStartingWithPeriod = "." + Guid.NewGuid().ToString();
-                var physicalFileNameStartingWithPeriod = Path.Combine(root.RootPath, fileNameStartingWithPeriod);
-                File.WriteAllText(physicalFileNameStartingWithPeriod, "Content");
+                var fileName = Guid.NewGuid().ToString();
+                var fileLocation = Path.Combine(root.RootPath, fileName);
 
-                // Use the file provider to try to read the file info back
-                using (var provider = new PhysicalFileProvider(root.RootPath))
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    var file = provider.GetFileInfo(fileNameStartingWithPeriod);
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var token = provider.Watch(fileName);
+                            Assert.NotNull(token);
+                            Assert.False(token.HasChanged);
+                            Assert.True(token.ActiveChangeCallbacks);
 
-                    Assert.False(file.Exists);
-                    Assert.Throws<FileNotFoundException>(() => file.CreateReadStream());
+                            bool callbackInvoked = false;
+                            token.RegisterChangeCallback(state =>
+                            {
+                                callbackInvoked = true;
+                            }, state: null);
+
+                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, fileName));
+                            await Task.Delay(WaitTimeForTokenToFire);
+
+                            Assert.True(callbackInvoked);
+                        }
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task TokensFiredOnFileDeleted()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                var fileName = Guid.NewGuid().ToString();
+                var fileLocation = Path.Combine(root.RootPath, fileName);
+
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+                {
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var token = provider.Watch(fileName);
+                            Assert.NotNull(token);
+                            Assert.False(token.HasChanged);
+                            Assert.True(token.ActiveChangeCallbacks);
+
+                            fileSystemWatcher.CallOnDeleted(new FileSystemEventArgs(WatcherChangeTypes.Deleted, root.RootPath, fileName));
+                            await Task.Delay(WaitTimeForTokenToFire);
+
+                            Assert.True(token.HasChanged);
+                        }
+                    }
                 }
             }
         }
@@ -238,268 +275,229 @@ namespace Microsoft.AspNet.FileProviders
         }
 
         [Fact]
-        public void SubPathActsAsRoot()
+        public void GetDirectoryContentsReturnsNotFoundDirectoryContentsForNullPath()
         {
-            using (var provider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "sub")))
+            using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
-                var info = provider.GetFileInfo("File2.txt");
-                Assert.NotNull(info);
-                Assert.True(info.Exists);
+                var contents = provider.GetDirectoryContents(null);
+                Assert.IsType(typeof(NotFoundDirectoryContents), contents);
             }
         }
 
         [Fact]
-        public void GetDirectoryContents_FromRootPath_ForEmptyDirectoryName()
+        public void GetDirectoryContentsReturnsNotFoundDirectoryContentsForAbsolutePath()
         {
-            using (var provider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "sub")))
+            using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
-                var info = provider.GetDirectoryContents(string.Empty);
-                Assert.NotNull(info);
-                Assert.True(info.Exists);
-                var firstDirectory = info.Where(f => f.IsDirectory).Where(f => f.Exists).FirstOrDefault();
-                Assert.Throws<InvalidOperationException>(() => firstDirectory.CreateReadStream());
-
-                var fileInfo = info.Where(f => f.Name == "File2.txt").FirstOrDefault();
-                Assert.NotNull(fileInfo);
-                Assert.True(fileInfo.Exists);
+                var contents = provider.GetDirectoryContents(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
+                Assert.IsType(typeof(NotFoundDirectoryContents), contents);
             }
         }
 
         [Fact]
-        public void RelativePathPastRootNotAllowed()
+        public void GetDirectoryContentsReturnsNotFoundDirectoryContentsForNonExistingDirectory()
         {
-            using (var provider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "sub")))
+            using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
-                var info = provider.GetFileInfo("..\\File.txt");
-                Assert.NotNull(info);
-                Assert.False(info.Exists);
-
-                info = provider.GetFileInfo(".\\..\\File.txt");
-                Assert.NotNull(info);
-                Assert.False(info.Exists);
-
-                info = provider.GetFileInfo("File2.txt");
-                Assert.NotNull(info);
-                Assert.True(info.Exists);
-                Assert.Equal(Path.Combine(Directory.GetCurrentDirectory(), "sub", "File2.txt"), info.PhysicalPath);
+                var contents = provider.GetDirectoryContents(Guid.NewGuid().ToString());
+                Assert.IsType(typeof(NotFoundDirectoryContents), contents);
             }
         }
 
         [Fact]
-        public void AbsolutePathNotAllowed()
-        {
-            using (var provider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "sub")))
-            {
-                var applicationBase = Directory.GetCurrentDirectory();
-                var file1 = Path.Combine(applicationBase, "File.txt");
-
-                var info = provider.GetFileInfo(file1);
-                Assert.NotNull(info);
-                Assert.False(info.Exists);
-
-                var file2 = Path.Combine(applicationBase, "sub", "File2.txt");
-                info = provider.GetFileInfo(file2);
-                Assert.NotNull(info);
-                Assert.False(info.Exists);
-
-                var directory1 = Path.Combine(applicationBase, "sub");
-                var directoryContents = provider.GetDirectoryContents(directory1);
-                Assert.NotNull(info);
-                Assert.False(info.Exists);
-
-                var directory2 = Path.Combine(applicationBase, "Does_Not_Exists");
-                directoryContents = provider.GetDirectoryContents(directory2);
-                Assert.NotNull(info);
-                Assert.False(info.Exists);
-            }
-        }
-
-        [Fact]
-        public async Task CreatedToken_Same_For_A_File_And_Callsback_AllRegisteredTokens_OnChange()
+        public void GetDirectoryContentsReturnsRootDirectoryContentsForEmptyPath()
         {
             using (var root = new DisposableFileSystem())
             {
-                var fileName = Guid.NewGuid().ToString();
-                var fileLocation = Path.Combine(root.RootPath, fileName);
-                File.WriteAllText(fileLocation, "Content");
+                File.Create(Path.Combine(root.RootPath, Guid.NewGuid().ToString()));
+                Directory.CreateDirectory(Path.Combine(root.RootPath, Guid.NewGuid().ToString()));
+
                 using (var provider = new PhysicalFileProvider(root.RootPath))
                 {
-                    var count = 10;
-                    var tasks = new List<Task>(count);
-                    var tokens = new IChangeToken[count];
-                    var callbackResults = new bool[count];
+                    var contents = provider.GetDirectoryContents(string.Empty);
+                    Assert.NotNull(contents.SingleOrDefault(fileInfo => fileInfo is PhysicalFileProvider.PhysicalFileInfo));
+                    Assert.NotNull(contents.SingleOrDefault(fileInfo => fileInfo is PhysicalFileProvider.PhysicalDirectoryInfo));
+                }
+            }
+        }
 
-                    for (int i = 0; i < count; i++)
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hidden and system files only make sense on Windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Hidden and system files only make sense on Windows.")]
+        public void GetDirectoryContentsDoesNotReturnFileInfoForHiddenFile()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                var directoryName = Guid.NewGuid().ToString();
+                var directoryPath = Path.Combine(root.RootPath, directoryName);
+                Directory.CreateDirectory(directoryPath);
+
+                var fileName = Guid.NewGuid().ToString();
+                var filePath = Path.Combine(directoryPath, fileName);
+                File.Create(filePath);
+                var fileInfo = new FileInfo(filePath);
+                File.SetAttributes(filePath, fileInfo.Attributes | FileAttributes.Hidden);
+
+                using (var provider = new PhysicalFileProvider(root.RootPath))
+                {
+                    var contents = provider.GetDirectoryContents(directoryName);
+                    Assert.Empty(contents);
+                }
+            }
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hidden and system files only make sense on Windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Hidden and system files only make sense on Windows.")]
+        public void GetDirectoryContentsDoesNotReturnFileInfoForSystemFile()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                var directoryName = Guid.NewGuid().ToString();
+                var directoryPath = Path.Combine(root.RootPath, directoryName);
+                Directory.CreateDirectory(directoryPath);
+
+                var fileName = Guid.NewGuid().ToString();
+                var filePath = Path.Combine(directoryPath, fileName);
+                File.Create(filePath);
+                var fileInfo = new FileInfo(filePath);
+                File.SetAttributes(filePath, fileInfo.Attributes | FileAttributes.System);
+
+                using (var provider = new PhysicalFileProvider(root.RootPath))
+                {
+                    var contents = provider.GetDirectoryContents(directoryName);
+                    Assert.Empty(contents);
+                }
+            }
+        }
+
+        [Fact]
+        public void GetDirectoryContentsDoesNotReturnFileInfoForFileNameStartingWithPeriod()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                var directoryName = Guid.NewGuid().ToString();
+                var directoryPath = Path.Combine(root.RootPath, directoryName);
+                Directory.CreateDirectory(directoryPath);
+
+                var fileName = "." + Guid.NewGuid().ToString();
+                var filePath = Path.Combine(directoryPath, fileName);
+                File.Create(filePath);
+
+                using (var provider = new PhysicalFileProvider(root.RootPath))
+                {
+                    var contents = provider.GetDirectoryContents(directoryName);
+                    Assert.Empty(contents);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task FileChangeTokenNotNotifiedAfterExpiry()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+                {
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
                     {
-                        tasks.Add(new Task(index =>
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
+                            var fileName = Guid.NewGuid().ToString();
                             var changeToken = provider.Watch(fileName);
-                            tokens[(int)index] = changeToken;
-                            Assert.NotNull(changeToken);
-                            Assert.False(changeToken.HasChanged);
-                            changeToken.RegisterChangeCallback(_ => { callbackResults[(int)index] = true; }, index);
-                        }, state: i));
+                            var invocationCount = 0;
+                            changeToken.RegisterChangeCallback(_ => { invocationCount++; }, null);
+
+                            // Callback expected.
+                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, fileName));
+                            await Task.Delay(WaitTimeForTokenToFire);
+
+                            // Callback not expected.
+                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, fileName));
+                            await Task.Delay(WaitTimeForTokenToFire);
+
+                            Assert.Equal(1, invocationCount);
+                        }
                     }
-
-                    // Simulating multiple concurrent requests to the same file.
-                    Parallel.ForEach(tasks, task => task.Start());
-                    await Task.WhenAll(tasks);
-                    File.AppendAllText(fileLocation, "UpdatedContent");
-
-                    // Some warm up time for the callbacks to be fired.
-                    await Task.Delay(WaitTimeForTokenToFire);
-
-                    for (int index = 1; index < count; index++)
-                    {
-                        Assert.Equal(tokens[index - 1], tokens[index]);
-                    }
-
-                    Assert.True(callbackResults.All(c => c));
-
-                    File.Delete(fileLocation);
                 }
             }
         }
 
         [Fact]
-        public async Task FileChangeToken_NotNotified_After_Expiry()
+        public void TokenIsSameForSamePathCaseInsensitive()
         {
-            using (var root = new DisposableFileSystem())
+            using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
                 var fileName = Guid.NewGuid().ToString();
-                var fileLocation = Path.Combine(root.RootPath, fileName);
-                File.WriteAllText(fileLocation, "Content");
-                using (var provider = new PhysicalFileProvider(root.RootPath))
-                {
-                    var changeToken = provider.Watch(fileName);
-                    int invocationCount = 0;
-                    changeToken.RegisterChangeCallback(_ => { invocationCount++; }, null);
-
-                    // Callback expected for this change.
-                    File.AppendAllText(fileLocation, "UpdatedContent1");
-
-                    // Callback not expected for this change.
-                    File.AppendAllText(fileLocation, "UpdatedContent2");
-
-                    // Wait for callbacks to be fired.
-                    await Task.Delay(WaitTimeForTokenToFire);
-
-                    Assert.Equal(1, invocationCount);
-
-                    File.Delete(fileLocation);
-                }
+                var token = provider.Watch(fileName);
+                var lowerCaseToken = provider.Watch(fileName.ToLowerInvariant());
+                Assert.Equal(token, lowerCaseToken);
             }
         }
 
         [Fact]
-        public void Token_Is_FileName_Case_Insensitive()
+        public async Task CorrectTokensFiredForMultipleFiles()
         {
             using (var root = new DisposableFileSystem())
             {
-                var fileName = Guid.NewGuid().ToString() + 'A';
-                var fileLocation = Path.Combine(root.RootPath, fileName);
-                File.WriteAllText(fileLocation, "Content");
-                using (var provider = new PhysicalFileProvider(root.RootPath))
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    var changeToken = provider.Watch(fileName);
-                    var lowerCaseChangeToken = provider.Watch(fileName.ToLowerInvariant());
-                    Assert.Equal(lowerCaseChangeToken, changeToken);
-
-                    File.Delete(fileLocation);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task Token_With_MultipleFiles()
-        {
-            using (var root = new DisposableFileSystem())
-            {
-                var fileName1 = Guid.NewGuid().ToString();
-                var fileName2 = Guid.NewGuid().ToString();
-                var fileLocation1 = Path.Combine(root.RootPath, fileName1);
-                var fileLocation2 = Path.Combine(root.RootPath, fileName2);
-                File.WriteAllText(fileLocation1, "Content1");
-                File.WriteAllText(fileLocation2, "Content2");
-                using (var provider = new PhysicalFileProvider(root.RootPath))
-                {
-                    int invocationCount1 = 0, invocationCount2 = 0;
-                    var token1 = provider.Watch(fileName1);
-                    token1.RegisterChangeCallback(_ => { invocationCount1++; }, null);
-                    var token2 = provider.Watch(fileName2);
-                    token2.RegisterChangeCallback(_ => { invocationCount2++; }, null);
-
-                    Assert.NotNull(token1);
-                    Assert.False(token1.HasChanged);
-                    Assert.True(token1.ActiveChangeCallbacks);
-
-                    Assert.NotNull(token2);
-                    Assert.False(token2.HasChanged);
-                    Assert.True(token2.ActiveChangeCallbacks);
-
-                    Assert.NotEqual(token2, token1);
-
-                    File.AppendAllText(fileLocation1, "Update1");
-                    File.AppendAllText(fileLocation2, "Update2");
-
-                    // Wait for callbacks to be fired.
-                    await Task.Delay(WaitTimeForTokenToFire);
-
-                    Assert.Equal(1, invocationCount1);
-                    Assert.Equal(1, invocationCount2);
-                    Assert.True(token1.HasChanged);
-                    Assert.True(token2.HasChanged);
-
-                    File.Delete(fileLocation1);
-                    File.Delete(fileLocation2);
-
-                    // Callbacks not invoked on changed tokens.
-                    Assert.Equal(1, invocationCount1);
-                    Assert.Equal(1, invocationCount2);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task Token_Callbacks_Are_Async_And_TokenNotAffected_By_Exceptions()
-        {
-            using (var root = new DisposableFileSystem())
-            {
-                var fileName = Guid.NewGuid().ToString();
-                var fileLocation = Path.Combine(root.RootPath, fileName);
-                File.WriteAllText(fileLocation, "Content");
-                using (var provider = new PhysicalFileProvider(root.RootPath))
-                {
-                    var changeToken = provider.Watch(fileName);
-                    changeToken.RegisterChangeCallback(async _ =>
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
                     {
-                        await Task.Delay(10 * 1000);
-                        throw new Exception("Callback throwing exception");
-                    }, null);
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var fileName1 = Guid.NewGuid().ToString();
+                            var token1 = provider.Watch(fileName1);
+                            var fileName2 = Guid.NewGuid().ToString();
+                            var token2 = provider.Watch(fileName2);
 
-                    File.AppendAllText(fileLocation, "UpdatedContent");
-                    // Wait for callback to be fired.
-                    await Task.Delay(WaitTimeForTokenToFire);
-                    Assert.True(changeToken.HasChanged);
+                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, fileName1));
+                            await Task.Delay(WaitTimeForTokenToFire);
 
-                    // Verify file system watcher is stable.
-                    int callbackCount = 0;
-                    var changeTokenAfterCallbackException = provider.Watch(fileName);
-                    changeTokenAfterCallbackException.RegisterChangeCallback(_ => { callbackCount++; }, null);
-                    File.AppendAllText(fileLocation, "UpdatedContent");
+                            Assert.True(token1.HasChanged);
+                            Assert.False(token2.HasChanged);
 
-                    // Wait for callback to be fired.
-                    await Task.Delay(WaitTimeForTokenToFire);
-                    Assert.True(changeToken.HasChanged);
-                    Assert.Equal(1, callbackCount);
+                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, fileName2));
+                            await Task.Delay(WaitTimeForTokenToFire);
 
-                    File.Delete(fileLocation);
+                            Assert.True(token2.HasChanged);
+                        }
+                    }
                 }
             }
         }
 
         [Fact]
-        public void Token_For_Null_Filter()
+        public async Task TokenNotAffectedByExceptions()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+                {
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var fileName = Guid.NewGuid().ToString();
+                            var token = provider.Watch(fileName);
+
+                            token.RegisterChangeCallback(_ =>
+                            {
+                                throw new Exception();
+                            }, null);
+
+                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, fileName));
+                            await Task.Delay(WaitTimeForTokenToFire);
+
+                            Assert.True(token.HasChanged);
+                        }
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void NoopChangeTokenForNullFilter()
         {
             using (var root = new DisposableFileSystem())
             {
@@ -513,7 +511,7 @@ namespace Microsoft.AspNet.FileProviders
         }
 
         [Fact]
-        public void Token_For_Empty_Filter()
+        public void TokenForEmptyFilter()
         {
             using (var root = new DisposableFileSystem())
             {
@@ -528,7 +526,7 @@ namespace Microsoft.AspNet.FileProviders
         }
 
         [Fact]
-        public void Token_For_Whitespace_Filters()
+        public void TokenForWhitespaceFilters()
         {
             using (var root = new DisposableFileSystem())
             {
@@ -543,17 +541,17 @@ namespace Microsoft.AspNet.FileProviders
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux, 
+        [OSSkipCondition(OperatingSystems.Linux,
             SkipReason = "We treat forward slash differently so rooted path can happen only on windows.")]
         [OSSkipCondition(OperatingSystems.MacOSX,
             SkipReason = "We treat forward slash differently so rooted path can happen only on windows.")]
-        public void Token_For_AbsolutePath_Filters()
+        public void NoopChangeTokenForAbsolutePathFilters()
         {
             using (var root = new DisposableFileSystem())
             {
                 using (var provider = new PhysicalFileProvider(root.RootPath))
                 {
-                    var path = Path.Combine(root.RootPath, "filename");
+                    var path = Path.Combine(root.RootPath, Guid.NewGuid().ToString());
                     var token = provider.Watch(path);
 
                     Assert.Same(NoopChangeToken.Singleton, token);
@@ -562,346 +560,289 @@ namespace Microsoft.AspNet.FileProviders
         }
 
         [Fact]
-        public async Task Token_Fired_For_File_Or_Directory_Create_And_Delete()
-        {
-            using (var root = new DisposableFileSystem())
-            using (var provider = new PhysicalFileProvider(root.RootPath))
-            {
-                string fileName = Guid.NewGuid().ToString();
-                string directoryName = Guid.NewGuid().ToString();
-
-                int tokenCount = 0;
-                var filetoken = provider.Watch(fileName);
-                filetoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
-                var directorytoken = provider.Watch(directoryName);
-                directorytoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
-
-                Assert.NotEqual(directorytoken, filetoken);
-
-                File.WriteAllText(Path.Combine(root.RootPath, fileName), "Content");
-                Directory.CreateDirectory(Path.Combine(root.RootPath, directoryName));
-
-                // Wait for tokens to fire.
-                await Task.Delay(WaitTimeForTokenToFire);
-
-                Assert.Equal(2, tokenCount);
-
-                Assert.True(filetoken.HasChanged);
-                Assert.True(directorytoken.HasChanged);
-
-                filetoken = provider.Watch(fileName);
-                filetoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
-                directorytoken = provider.Watch(directoryName);
-                directorytoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
-
-                File.Delete(Path.Combine(root.RootPath, fileName));
-                Directory.Delete(Path.Combine(root.RootPath, directoryName));
-
-                // Wait for tokens to fire.
-                await Task.Delay(WaitTimeForTokenToFire);
-                Assert.Equal(4, tokenCount);
-            }
-        }
-
-        [Fact]
-        public async Task Tokens_With_Path_Ending_With_Slash()
-        {
-            using (var root = new DisposableFileSystem())
-            using (var provider = new PhysicalFileProvider(root.RootPath))
-            {
-                string fileName = Guid.NewGuid().ToString();
-                string folderName = Guid.NewGuid().ToString();
-
-                int tokenCount = 0;
-                var filetoken = provider.Watch("/" + folderName + "/");
-                filetoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
-
-                var folderPath = Path.Combine(root.RootPath, folderName);
-                Directory.CreateDirectory(folderPath);
-                File.WriteAllText(Path.Combine(folderPath, fileName), "Content");
-
-                await Task.Delay(WaitTimeForTokenToFire);
-                Assert.Equal(1, tokenCount);
-
-                filetoken = provider.Watch("/" + folderName + "/");
-                filetoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
-
-                File.AppendAllText(Path.Combine(folderPath, fileName), "UpdatedContent");
-                await Task.Delay(WaitTimeForTokenToFire);
-                Assert.Equal(2, tokenCount);
-
-                filetoken = provider.Watch("/" + folderName + "/");
-                filetoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
-
-                File.Delete(Path.Combine(folderPath, fileName));
-                await Task.Delay(WaitTimeForTokenToFire);
-                Assert.Equal(3, tokenCount);
-            }
-        }
-
-        [Fact]
-        public async Task Tokens_With_Path_Not_Ending_With_Slash()
-        {
-            using (var root = new DisposableFileSystem())
-            using (var provider = new PhysicalFileProvider(root.RootPath))
-            {
-                string directoryName = Guid.NewGuid().ToString();
-                string fileName = Guid.NewGuid().ToString();
-
-                int tokenCount = 0;
-                // Matches file/directory with this name.
-                var filetoken = provider.Watch("/" + directoryName);
-                filetoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
-
-                Directory.CreateDirectory(Path.Combine(root.RootPath, directoryName));
-                await Task.Delay(WaitTimeForTokenToFire);
-                Assert.Equal(1, tokenCount);
-
-                // Matches file/directory with this name.
-                filetoken = provider.Watch("/" + fileName);
-                filetoken.RegisterChangeCallback(_ => { tokenCount++; }, null);
-
-                File.WriteAllText(Path.Combine(root.RootPath, fileName), "Content");
-                await Task.Delay(WaitTimeForTokenToFire);
-                Assert.Equal(2, tokenCount);
-            }
-        }
-
-        [Fact]
-        public async Task Tokens_With_Regular_Expressions()
+        public async Task TokenFiredOnCreation()
         {
             using (var root = new DisposableFileSystem())
             {
-                var pattern1 = "**/*";
-                var pattern2 = "*.cshtml";
-                var fileName = Guid.NewGuid().ToString();
-                var subFolder = Path.Combine(root.RootPath, Guid.NewGuid().ToString());
-                Directory.CreateDirectory(subFolder);
-
-                int pattern1tokenCount = 0, pattern2tokenCount = 0;
-                Action<object> callback1 = _ => { pattern1tokenCount++; };
-                Action<object> callback2 = _ => { pattern2tokenCount++; };
-
-                using (var provider = new PhysicalFileProvider(root.RootPath))
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    var token1 = provider.Watch(pattern1);
-                    token1.RegisterChangeCallback(callback1, null);
-                    var token2 = provider.Watch(pattern2);
-                    token2.RegisterChangeCallback(callback2, null);
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var name = Guid.NewGuid().ToString();
+                            var token = provider.Watch(name);
 
-                    File.WriteAllText(Path.Combine(root.RootPath, fileName + ".cshtml"), "Content");
+                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Created, root.RootPath, name));
+                            await Task.Delay(WaitTimeForTokenToFire);
 
-                    await Task.Delay(WaitTimeForTokenToFire);
-                    Assert.Equal(1, pattern1tokenCount);
-                    Assert.Equal(1, pattern2tokenCount);
-
-                    token1 = provider.Watch(pattern1);
-                    token1.RegisterChangeCallback(callback1, null);
-                    token2 = provider.Watch(pattern2);
-                    token2.RegisterChangeCallback(callback2, null);
-                    File.WriteAllText(Path.Combine(subFolder, fileName + ".txt"), "Content");
-
-                    await Task.Delay(WaitTimeForTokenToFire);
-                    Assert.Equal(2, pattern1tokenCount);
-                    Assert.Equal(1, pattern2tokenCount);
-
-                    Directory.Delete(subFolder, true);
-                    File.Delete(Path.Combine(root.RootPath, fileName + ".cshtml"));
+                            Assert.True(token.HasChanged);
+                        }
+                    }
                 }
             }
         }
 
         [Fact]
-        public async Task Tokens_With_Regular_Expression_Filters()
+        public async Task TokenFiredOnDeletion()
         {
             using (var root = new DisposableFileSystem())
             {
-                var pattern1 = "**/*";
-                var pattern2 = "*.cshtml";
-                var fileName = Guid.NewGuid().ToString();
-                var subFolder = Path.Combine(root.RootPath, Guid.NewGuid().ToString());
-                Directory.CreateDirectory(subFolder);
-
-                int pattern1tokenCount = 0, pattern2tokenCount = 0;
-                Action<object> callback1 = _ => { pattern1tokenCount++; };
-                Action<object> callback2 = _ => { pattern2tokenCount++; };
-
-                using (var provider = new PhysicalFileProvider(root.RootPath))
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    var token1 = provider.Watch(pattern1);
-                    token1.RegisterChangeCallback(callback1, null);
-                    var token2 = provider.Watch(pattern2);
-                    token2.RegisterChangeCallback(callback2, null);
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var name = Guid.NewGuid().ToString();
+                            var token = provider.Watch(name);
 
-                    File.WriteAllText(Path.Combine(root.RootPath, fileName + ".cshtml"), "Content");
+                            fileSystemWatcher.CallOnDeleted(new FileSystemEventArgs(WatcherChangeTypes.Deleted, root.RootPath, name));
+                            await Task.Delay(WaitTimeForTokenToFire);
 
-                    await Task.Delay(WaitTimeForTokenToFire);
-                    Assert.Equal(1, pattern1tokenCount);
-                    Assert.Equal(1, pattern2tokenCount);
-
-                    token1 = provider.Watch(pattern1);
-                    token1.RegisterChangeCallback(callback1, null);
-                    token2 = provider.Watch(pattern2);
-                    token2.RegisterChangeCallback(callback2, null);
-                    File.WriteAllText(Path.Combine(subFolder, fileName + ".txt"), "Content");
-
-                    await Task.Delay(WaitTimeForTokenToFire);
-                    Assert.Equal(2, pattern1tokenCount);
-                    Assert.Equal(1, pattern2tokenCount);
-
-                    Directory.Delete(subFolder, true);
-                    File.Delete(Path.Combine(root.RootPath, fileName + ".cshtml"));
+                            Assert.True(token.HasChanged);
+                        }
+                    }
                 }
             }
         }
 
         [Fact]
-        public async Task Tokens_With_Regular_Expression_Pointing_To_SubFolder()
+        public async Task TokenFiredForFilesUnderPathEndingWithSlash()
         {
             using (var root = new DisposableFileSystem())
             {
-                var subFolderName = Guid.NewGuid().ToString();
-                var pattern1 = "**/*";
-                var pattern2 = string.Format("{0}/**/*.cshtml", subFolderName);
-                var fileName = Guid.NewGuid().ToString();
-                var subFolder = Path.Combine(root.RootPath, subFolderName);
-                Directory.CreateDirectory(subFolder);
-
-                int pattern1tokenCount = 0, pattern2tokenCount = 0;
-                using (var provider = new PhysicalFileProvider(root.RootPath))
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    var token1 = provider.Watch(pattern1);
-                    token1.RegisterChangeCallback(_ => { pattern1tokenCount++; }, null);
-                    var token2 = provider.Watch(pattern2);
-                    token2.RegisterChangeCallback(_ => { pattern2tokenCount++; }, null);
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var directoryName = Guid.NewGuid().ToString();
+                            var token = provider.Watch(directoryName + Path.DirectorySeparatorChar);
 
-                    File.WriteAllText(Path.Combine(root.RootPath, fileName + ".cshtml"), "Content");
+                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, Path.Combine(root.RootPath, directoryName), Guid.NewGuid().ToString()));
+                            await Task.Delay(WaitTimeForTokenToFire);
 
-                    await Task.Delay(WaitTimeForTokenToFire);
-                    Assert.Equal(1, pattern1tokenCount);
-                    Assert.Equal(0, pattern2tokenCount);
-
-                    token1 = provider.Watch(pattern1);
-                    token1.RegisterChangeCallback(_ => { pattern1tokenCount++; }, null);
-                    // Register this token again.
-                    var token3 = provider.Watch(pattern2);
-                    token3.RegisterChangeCallback(_ => { pattern2tokenCount++; }, null);
-                    Assert.Equal(token2, token3);
-                    File.WriteAllText(Path.Combine(subFolder, fileName + ".cshtml"), "Content");
-
-                    await Task.Delay(WaitTimeForTokenToFire);
-                    Assert.Equal(2, pattern1tokenCount);
-                    Assert.Equal(2, pattern2tokenCount);
-
-                    Directory.Delete(subFolder, true);
-                    File.Delete(Path.Combine(root.RootPath, fileName + ".cshtml"));
+                            Assert.True(token.HasChanged);
+                        }
+                    }
                 }
             }
         }
 
         [Fact]
-        public void Tokens_With_Forward_And_Backward_Slash()
+        public async Task TokenFiredForRelativePathStartingWithSlash()
         {
             using (var root = new DisposableFileSystem())
             {
-                using (var provider = new PhysicalFileProvider(root.RootPath))
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    var token1 = provider.Watch("/a/b");
-                    var token2 = provider.Watch("a/b");
-                    var token3 = provider.Watch(@"a\b");
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var fileName = Guid.NewGuid().ToString();
+                            var token = provider.Watch("/" + fileName);
 
-                    Assert.Equal(token2, token1);
-                    Assert.Equal(token3, token2);
+                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, fileName));
+                            await Task.Delay(WaitTimeForTokenToFire);
 
-                    Assert.True(token1.ActiveChangeCallbacks);
-                    Assert.True(token2.ActiveChangeCallbacks);
-                    Assert.True(token3.ActiveChangeCallbacks);
-
-                    Assert.False(token1.HasChanged);
-                    Assert.False(token2.HasChanged);
-                    Assert.False(token3.HasChanged);
+                            Assert.True(token.HasChanged);
+                        }
+                    }
                 }
-            }
-        }
-
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        public async Task Token_Fired_On_Directory_Name_Change()
-        {
-            using (var root = new DisposableFileSystem())
-            using (var provider = new PhysicalFileProvider(root.RootPath))
-            {
-                var oldDirectoryName = Guid.NewGuid().ToString();
-                var newDirectoryName = Guid.NewGuid().ToString();
-                var oldDirectoryFullPath = Path.Combine(root.RootPath, oldDirectoryName);
-                var newDirectoryFullPath = Path.Combine(root.RootPath, newDirectoryName);
-
-                Directory.CreateDirectory(oldDirectoryFullPath);
-                var oldDirectorytoken = provider.Watch("**/" + oldDirectoryName);
-                var newDirectorytoken = provider.Watch("**/" + newDirectoryName);
-                var oldtokens = new List<IChangeToken>();
-                var newtokens = new List<IChangeToken>();
-
-                oldtokens.Add(provider.Watch(Path.Combine("**", oldDirectoryName, "*.txt")));
-                newtokens.Add(provider.Watch(Path.Combine("**", newDirectoryName, "*.txt")));
-
-                for (int i = 0; i < 5; i++)
-                {
-                    var fileName = string.Format("test{0}.txt", i);
-                    File.WriteAllText(Path.Combine(oldDirectoryFullPath, fileName), "test content");
-                    oldtokens.Add(provider.Watch(Path.Combine("**", oldDirectoryName, fileName)));
-                    newtokens.Add(provider.Watch(Path.Combine("**", newDirectoryName, fileName)));
-                }
-
-                await Task.Delay(2 * 100); // Give it a while before trying rename.
-                Directory.Move(oldDirectoryFullPath, newDirectoryFullPath);
-
-                // Wait for tokens to fire.
-                await Task.Delay(WaitTimeForTokenToFire);
-                Assert.True(oldDirectorytoken.HasChanged);
-                Assert.True(newDirectorytoken.HasChanged);
-                oldtokens.ForEach(t => Assert.True(t.HasChanged));
-                newtokens.ForEach(t => Assert.True(t.HasChanged));
-
-                newDirectorytoken = provider.Watch(newDirectoryName);
-                newtokens = new List<IChangeToken>();
-
-                newtokens.Add(provider.Watch(Path.Combine("**", newDirectoryName, "*.txt")));
-                for (int i = 0; i < 5; i++)
-                {
-                    var fileName = string.Format("test{0}.txt", i);
-                    newtokens.Add(provider.Watch(Path.Combine("**", newDirectoryName, fileName)));
-                }
-
-                Directory.Delete(newDirectoryFullPath, true);
-
-                // Wait for tokens to fire.
-                await Task.Delay(WaitTimeForTokenToFire);
-                Assert.True(newDirectorytoken.HasChanged);
-                newtokens.ForEach(t => Assert.True(t.HasChanged));
             }
         }
 
         [Fact]
-        public async Task Tokens_NotFired_For_FileNames_Starting_With_Period()
+        public async Task TokensFiredForRegularExpressionPatterns()
         {
             using (var root = new DisposableFileSystem())
             {
-                var fileNameStartingWithPeriod = Path.Combine(root.RootPath, "." + Guid.NewGuid().ToString());
-                File.WriteAllText(fileNameStartingWithPeriod, "Content");
-
-                using (var provider = new PhysicalFileProvider(root.RootPath))
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    var tokenFileNameStartingPeriod = provider.Watch(Path.GetFileName(fileNameStartingWithPeriod));
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var token1 = provider.Watch("**/*");
+                            var pattern1tokenCount = 0;
+                            token1.RegisterChangeCallback(_ => { pattern1tokenCount++; }, null);
 
-                    Assert.False(tokenFileNameStartingPeriod.HasChanged);
+                            var token2 = provider.Watch("*.cshtml");
+                            var pattern2tokenCount = 0;
+                            token2.RegisterChangeCallback(_ => { pattern2tokenCount++; }, null);
 
-                    File.WriteAllText(fileNameStartingWithPeriod, "Updated Contents");
+                            var fileName = Guid.NewGuid().ToString();
 
-                    // Wait for tokens to fire.
-                    await Task.Delay(WaitTimeForTokenToFire);
+                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, fileName + ".cshtml"));
+                            await Task.Delay(WaitTimeForTokenToFire);
 
-                    Assert.False(tokenFileNameStartingPeriod.HasChanged);
+                            Assert.Equal(1, pattern1tokenCount);
+                            Assert.Equal(1, pattern2tokenCount);
+
+                            token1 = provider.Watch("**/*");
+                            token1.RegisterChangeCallback(_ => { pattern1tokenCount++; }, null);
+                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, fileName + ".txt"));
+                            await Task.Delay(WaitTimeForTokenToFire);
+
+                            Assert.Equal(2, pattern1tokenCount);
+                            Assert.Equal(1, pattern2tokenCount);
+                        }
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task TokenFiredForRegularExpressionPatternsPointingToSubDirectory()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+                {
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var subDirectoryName = Guid.NewGuid().ToString();
+                            var pattern = string.Format(Path.Combine(subDirectoryName, "**", "*.cshtml"));
+                            var token = provider.Watch(pattern);
+
+                            var subSubDirectoryName = Guid.NewGuid().ToString();
+                            var fileName = Guid.NewGuid().ToString() + ".cshtml";
+                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, Path.Combine(root.RootPath, subDirectoryName, subSubDirectoryName), fileName));
+                            await Task.Delay(WaitTimeForTokenToFire);
+
+                            Assert.True(token.HasChanged);
+                        }
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void TokensWithForwardAndBackwardSlashesAreSame()
+        {
+            using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
+            {
+                var token1 = provider.Watch(@"a/b\c");
+                var token2 = provider.Watch(@"a\b/c");
+
+                Assert.Equal(token1, token2);
+            }
+        }
+
+        [Fact]
+        public async Task TokensFiredForOldAndNewNamesOnRename()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+                {
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var oldFileName = Guid.NewGuid().ToString();
+                            var oldToken = provider.Watch(oldFileName);
+
+                            var newFileName = Guid.NewGuid().ToString();
+                            var newToken = provider.Watch(newFileName);
+
+                            fileSystemWatcher.CallOnRenamed(new RenamedEventArgs(WatcherChangeTypes.Renamed, root.RootPath, newFileName, oldFileName));
+                            await Task.Delay(WaitTimeForTokenToFire);
+                            
+                            Assert.True(oldToken.HasChanged);
+                            Assert.True(newToken.HasChanged);
+                        }
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task TokensFiredForNewDirectoryContentsOnRename()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+                {
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var oldDirectoryName = Guid.NewGuid().ToString();
+                            var oldSubDirectoryName = Guid.NewGuid().ToString();
+                            var oldSubDirectoryPath = Path.Combine(oldDirectoryName, oldSubDirectoryName);
+                            var oldFileName = Guid.NewGuid().ToString();
+                            var oldFilePath = Path.Combine(oldDirectoryName, oldSubDirectoryName, oldFileName);
+
+                            var newDirectoryName = Guid.NewGuid().ToString();
+                            var newSubDirectoryName = Guid.NewGuid().ToString();
+                            var newSubDirectoryPath = Path.Combine(newDirectoryName, newSubDirectoryName);
+                            var newFileName = Guid.NewGuid().ToString();
+                            var newFilePath = Path.Combine(newDirectoryName, newSubDirectoryName, newFileName);
+
+                            Directory.CreateDirectory(Path.Combine(root.RootPath, newDirectoryName));
+                            Directory.CreateDirectory(Path.Combine(root.RootPath, newDirectoryName, newSubDirectoryName));
+                            File.Create(Path.Combine(root.RootPath, newDirectoryName, newSubDirectoryName, newFileName));
+
+                            await Task.Delay(WaitTimeForTokenToFire);
+
+                            var oldDirectoryToken = provider.Watch(oldDirectoryName);
+                            var oldSubDirectoryToken = provider.Watch(oldSubDirectoryPath);
+                            var oldFileToken = provider.Watch(oldFilePath);
+
+                            var newDirectoryToken = provider.Watch(newDirectoryName);
+                            var newSubDirectoryToken = provider.Watch(newSubDirectoryPath);
+                            var newFileToken = provider.Watch(newFilePath);
+
+                            await Task.Delay(WaitTimeForTokenToFire);
+
+                            Assert.False(oldDirectoryToken.HasChanged);
+                            Assert.False(oldSubDirectoryToken.HasChanged);
+                            Assert.False(oldFileToken.HasChanged);
+                            Assert.False(newDirectoryToken.HasChanged);
+                            Assert.False(newSubDirectoryToken.HasChanged);
+                            Assert.False(newFileToken.HasChanged);
+
+                            fileSystemWatcher.CallOnRenamed(new RenamedEventArgs(WatcherChangeTypes.Renamed, root.RootPath, newDirectoryName, oldDirectoryName));
+                            await Task.Delay(WaitTimeForTokenToFire);
+
+                            Assert.True(oldDirectoryToken.HasChanged);
+                            Assert.False(oldSubDirectoryToken.HasChanged);
+                            Assert.False(oldFileToken.HasChanged);
+                            Assert.True(newDirectoryToken.HasChanged);
+                            Assert.True(newSubDirectoryToken.HasChanged);
+                            Assert.True(newFileToken.HasChanged);
+                        }
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task TokenNotFiredForFileNameStartingWithPeriod()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+                {
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var fileName = "." + Guid.NewGuid().ToString();
+                            var token = provider.Watch(Path.GetFileName(fileName));
+
+                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, fileName));
+                            await Task.Delay(WaitTimeForTokenToFire);
+
+                            Assert.False(token.HasChanged);
+                        }
+                    }
                 }
             }
         }
@@ -909,35 +850,67 @@ namespace Microsoft.AspNet.FileProviders
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hidden and system files only make sense on Windows.")]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Hidden and system files only make sense on Windows.")]
-        public async Task Tokens_NotFired_For_Hidden_And_System_Files()
+        public async Task TokensNotFiredForHiddenAndSystemFiles()
         {
             using (var root = new DisposableFileSystem())
             {
-                var hiddenFileName = Path.Combine(root.RootPath, Guid.NewGuid().ToString());
-                File.WriteAllText(hiddenFileName, "Content");
-                var systemFileName = Path.Combine(root.RootPath, Guid.NewGuid().ToString());
-                File.WriteAllText(systemFileName, "Content");
-                var fileInfo = new FileInfo(hiddenFileName);
-                File.SetAttributes(hiddenFileName, fileInfo.Attributes | FileAttributes.Hidden);
-                fileInfo = new FileInfo(systemFileName);
-                File.SetAttributes(systemFileName, fileInfo.Attributes | FileAttributes.System);
+                var hiddenFileName = Guid.NewGuid().ToString();
+                var hiddenFilePath = Path.Combine(root.RootPath, hiddenFileName);
+                File.Create(hiddenFilePath);
+                var fileInfo = new FileInfo(hiddenFilePath);
+                File.SetAttributes(hiddenFilePath, fileInfo.Attributes | FileAttributes.Hidden);
 
-                using (var provider = new PhysicalFileProvider(root.RootPath))
+                var systemFileName = Guid.NewGuid().ToString();
+                var systemFilePath = Path.Combine(root.RootPath, systemFileName);
+                File.Create(systemFilePath);
+                fileInfo = new FileInfo(systemFilePath);
+                File.SetAttributes(systemFilePath, fileInfo.Attributes | FileAttributes.System);
+
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    var hiddenFiletoken = provider.Watch(Path.GetFileName(hiddenFileName));
-                    var systemFiletoken = provider.Watch(Path.GetFileName(systemFileName));
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var hiddenFiletoken = provider.Watch(Path.GetFileName(hiddenFileName));
+                            var systemFiletoken = provider.Watch(Path.GetFileName(systemFileName));
 
-                    Assert.False(hiddenFiletoken.HasChanged);
-                    Assert.False(systemFiletoken.HasChanged);
+                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, hiddenFileName));
+                            await Task.Delay(WaitTimeForTokenToFire);
+                            Assert.False(hiddenFiletoken.HasChanged);
 
-                    File.AppendAllText(hiddenFileName, "Appending text");
-                    File.AppendAllText(systemFileName, "Appending text");
+                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, systemFileName));
+                            await Task.Delay(WaitTimeForTokenToFire);
+                            Assert.False(systemFiletoken.HasChanged);
+                        }
+                    }
+                }
+            }
+        }
 
-                    // Wait for tokens to fire.
-                    await Task.Delay(WaitTimeForTokenToFire);
+        [Fact]
+        public async Task TokensFiredForAllEntriesOnError()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+                {
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var token1 = provider.Watch(Guid.NewGuid().ToString());
+                            var token2 = provider.Watch(Guid.NewGuid().ToString());
+                            var token3 = provider.Watch(Guid.NewGuid().ToString());
 
-                    Assert.False(hiddenFiletoken.HasChanged);
-                    Assert.False(systemFiletoken.HasChanged);
+                            fileSystemWatcher.CallOnError(new ErrorEventArgs(new Exception()));
+                            await Task.Delay(WaitTimeForTokenToFire);
+
+                            Assert.True(token1.HasChanged);
+                            Assert.True(token2.HasChanged);
+                            Assert.True(token3.HasChanged);
+                        }
+                    }
                 }
             }
         }

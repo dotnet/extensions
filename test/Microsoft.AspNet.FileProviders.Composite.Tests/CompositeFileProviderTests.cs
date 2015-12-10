@@ -285,12 +285,10 @@ namespace Microsoft.AspNet.FileProviders.Composite.Tests
             Assert.Equal(0, firstChangeToken.Callbacks.Count);
             Assert.Equal(0, secondChangeToken.Callbacks.Count);
             Assert.Equal(0, thirdChangeToken.Callbacks.Count);
-            var hasBeenCalled = false;
             object result = null;
             object state = new object();
             var disposable = changeToken.RegisterChangeCallback(item =>
             {
-                hasBeenCalled = true;
                 result = item;
             }, state);
             Assert.Equal(1, firstChangeToken.Callbacks.Count);

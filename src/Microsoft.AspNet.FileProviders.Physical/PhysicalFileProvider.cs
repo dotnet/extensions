@@ -23,6 +23,11 @@ namespace Microsoft.AspNet.FileProviders
         /// </summary>
         /// <param name="root">The root directory. This should be an absolute path.</param>
         public PhysicalFileProvider(string root)
+            : this(root, new PhysicalFilesWatcher(EnsureTrailingSlash(Path.GetFullPath(root))))
+        {
+        }
+
+        internal PhysicalFileProvider(string root, PhysicalFilesWatcher physicalFilesWatcher)
         {
             if (!Path.IsPathRooted(root))
             {
@@ -36,8 +41,7 @@ namespace Microsoft.AspNet.FileProviders
                 throw new DirectoryNotFoundException(Root);
             }
 
-            // Monitor only the application's root folder.
-            _filesWatcher = new PhysicalFilesWatcher(Root);
+            _filesWatcher = physicalFilesWatcher;
         }
 
         public void Dispose()
@@ -206,7 +210,7 @@ namespace Microsoft.AspNet.FileProviders
             return _filesWatcher.CreateFileChangeToken(filter);
         }
 
-        private class PhysicalFileInfo : IFileInfo
+        internal class PhysicalFileInfo : IFileInfo
         {
             private readonly FileInfo _info;
 
@@ -261,7 +265,7 @@ namespace Microsoft.AspNet.FileProviders
             }
         }
 
-        private class PhysicalDirectoryInfo : IFileInfo
+        internal class PhysicalDirectoryInfo : IFileInfo
         {
             private readonly DirectoryInfo _info;
 

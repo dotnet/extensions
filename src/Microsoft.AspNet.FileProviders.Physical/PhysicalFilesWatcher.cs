@@ -22,9 +22,14 @@ namespace Microsoft.AspNet.FileProviders
         private readonly string _root;
 
         internal PhysicalFilesWatcher(string root)
+            : this(root, new FileSystemWatcher(root))
+        {
+        }
+
+        internal PhysicalFilesWatcher(string root, FileSystemWatcher fileSystemWatcher)
         {
             _root = root;
-            _fileWatcher = new FileSystemWatcher(root);
+            _fileWatcher = fileSystemWatcher;
             _fileWatcher.IncludeSubdirectories = true;
             _fileWatcher.Created += OnChanged;
             _fileWatcher.Changed += OnChanged;
