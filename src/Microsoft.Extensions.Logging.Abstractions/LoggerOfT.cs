@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.Logging
 {
@@ -13,14 +14,19 @@ namespace Microsoft.Extensions.Logging
     public class Logger<T> : ILogger<T>
     {
         private readonly ILogger _logger;
-        
+
         /// <summary>
         /// Creates a new <see cref="Logger{T}"/>.
         /// </summary>
         /// <param name="factory">The factory.</param>
         public Logger(ILoggerFactory factory)
         {
-            _logger = factory.CreateLogger<T>();
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            _logger = factory.CreateLogger(TypeNameHelper.GetTypeDisplayName(typeof(T), fullName: true));
         }
 
         IDisposable ILogger.BeginScopeImpl(object state)
