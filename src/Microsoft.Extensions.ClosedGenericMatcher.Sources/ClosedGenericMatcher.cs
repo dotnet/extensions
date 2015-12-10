@@ -40,16 +40,63 @@ namespace Microsoft.Extensions.Internal
                 throw new ArgumentNullException(nameof(interfaceType));
             }
 
-            Func<Type, bool> matchesInterface =
-                type => type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == interfaceType;
-            if (matchesInterface(queryType))
+            // Checked type matches (i.e. is a closed generic type created from) the open generic type.
+            if (IsGenericInstantiation(queryType, interfaceType))
             {
-                // Checked type matches (i.e. is a closed generic type created from) the open generic type.
+
                 return queryType;
             }
 
             // Otherwise check all interfaces the type implements for a match.
-            return queryType.GetTypeInfo().ImplementedInterfaces.FirstOrDefault(matchesInterface);
+            // 
+            // We do this by recursing down to the most derived type, and then looking at the implemented
+            // interfaces on the way back out.
+            // - If multiple different generic instantiations exists, we want the most derived one.
+            // - If that doesn't break the tie, then we sort alphabetically so that it's deterministic.
+            return GetGenericInstantiation(queryType, interfaceType);
+        }
+
+        private static bool IsGenericInstantiation(Type candidate, Type interfaceType)
+        {
+            return
+                candidate.GetTypeInfo().IsGenericType &&
+                candidate.GetGenericTypeDefinition() == interfaceType;
+        }
+
+        private static Type GetGenericInstantiation(Type queryType, Type interfaceType)
+        {
+            // BaseType will be null for object and interfaces, which means we've reached 'bottom'.
+            var baseType = queryType?.GetTypeInfo().BaseType;
+
+            Type baseTypeMatch = null;
+            if (baseType != null)
+            {
+                baseTypeMatch = GetGenericInstantiation(baseType, interfaceType);
+            }
+
+            Type bestMatch = null;
+            var interfaces = queryType.GetInterfaces();
+            foreach (var @interface in interfaces)
+            {
+                if (IsGenericInstantiation(@interface, interfaceType))
+                {
+                    if (bestMatch == null)
+                    {
+                        bestMatch = @interface;
+                    }
+                    else if (StringComparer.Ordinal.Compare(@interface.FullName, bestMatch.FullName) < 0)
+                    {
+                        bestMatch = @interface;
+                    }
+                    else
+                    {
+                        // There are two matches at this level of the class hierarchy, but @interface is after
+                        // bestMatch in the sort order.
+                    }
+                }
+            }
+
+            return bestMatch ?? baseTypeMatch;
         }
     }
 }
