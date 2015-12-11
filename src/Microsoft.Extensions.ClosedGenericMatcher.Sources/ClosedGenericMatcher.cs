@@ -65,15 +65,6 @@ namespace Microsoft.Extensions.Internal
 
         private static Type GetGenericInstantiation(Type queryType, Type interfaceType)
         {
-            // BaseType will be null for object and interfaces, which means we've reached 'bottom'.
-            var baseType = queryType?.GetTypeInfo().BaseType;
-
-            Type baseTypeMatch = null;
-            if (baseType != null)
-            {
-                baseTypeMatch = GetGenericInstantiation(baseType, interfaceType);
-            }
-
             Type bestMatch = null;
             var interfaces = queryType.GetInterfaces();
             foreach (var @interface in interfaces)
@@ -96,7 +87,21 @@ namespace Microsoft.Extensions.Internal
                 }
             }
 
-            return bestMatch ?? baseTypeMatch;
+            if (bestMatch != null)
+            {
+                return bestMatch;
+            }
+
+            // BaseType will be null for object and interfaces, which means we've reached 'bottom'.
+            var baseType = queryType?.GetTypeInfo().BaseType;
+            if (baseType == null)
+            {
+                return null;
+            }
+            else
+            {
+                return GetGenericInstantiation(baseType, interfaceType);
+            }
         }
     }
 }

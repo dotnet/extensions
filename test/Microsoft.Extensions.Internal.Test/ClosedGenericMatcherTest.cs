@@ -220,9 +220,9 @@ namespace Microsoft.Extensions.Internal
             }
         }
 
-        private class TwoIEnumerableImplementationsInherited : List<string>, IEnumerable<int>
+        private class TwoIEnumerableImplementationsInherited : List<int>, IEnumerable<string>
         {
-            IEnumerator<int> IEnumerable<int>.GetEnumerator()
+            IEnumerator<string> IEnumerable<string>.GetEnumerator()
             {
                 throw new NotImplementedException();
             }
