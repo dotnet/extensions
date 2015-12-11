@@ -174,6 +174,65 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal(expectedResult, result);
         }
 
+        // IEnumerable<int> is preferred because it is defined on the more-derived type.
+        [Fact]
+        public void ExtractGenericInterface_MultipleDefinitionsInherited()
+        {
+            // Arrange
+            var type = typeof(TwoIEnumerableImplementationsInherited);
+
+            // Act
+            var result = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IEnumerable<>));
+
+            // Sort
+            Assert.Equal(typeof(IEnumerable<int>), result);
+        }
+
+        // IEnumerable<int> is preferred because we sort by Ordinal on the full name.
+        [Fact]
+        public void ExtractGenericInterface_MultipleDefinitionsOnSameType()
+        {
+            // Arrange
+            var type = typeof(TwoIEnumerableImplementationsOnSameClass);
+
+            // Act
+            var result = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IEnumerable<>));
+
+            // Sort
+            Assert.Equal(typeof(IEnumerable<int>), result); 
+        }
+
+        private class TwoIEnumerableImplementationsOnSameClass : IEnumerable<string>, IEnumerable<int>
+        {
+            IEnumerator<int> IEnumerable<int>.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+
+            IEnumerator<string> IEnumerable<string>.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class TwoIEnumerableImplementationsInherited : List<int>, IEnumerable<string>
+        {
+            IEnumerator<string> IEnumerable<string>.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         private class BaseClass : IDictionary<string, object>, IEquatable<BaseClass>
         {
             object IDictionary<string, object>.this[string key]
