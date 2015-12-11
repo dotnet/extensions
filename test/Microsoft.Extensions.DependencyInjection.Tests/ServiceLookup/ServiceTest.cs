@@ -245,7 +245,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         [Fact]
-        public void CreateCallSite_ThrowsIfTypeHasSingleConstructorWithResolvableParameters()
+        public void CreateCallSite_ThrowsIfTypeHasSingleConstructorWithUnresolvableParameters()
         {
             // Arrange
             var type = typeof(TypeWithParameterizedConstructor);
