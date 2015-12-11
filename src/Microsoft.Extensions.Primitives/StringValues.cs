@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Extensions.Internal;
@@ -18,17 +19,36 @@ namespace Microsoft.Extensions.Primitives
 
         private readonly string _value;
         private readonly string[] _values;
+        private readonly Encoding _encoding;
+        private readonly byte[] _bytes;
+
+        public StringValues(string value, Encoding encoding)
+        {
+            _value = value;
+            _values = null;
+            _encoding = encoding;
+            _bytes = _encoding.GetBytes(value);
+        }
 
         public StringValues(string value)
         {
             _value = value;
             _values = null;
+            _encoding = null;
+            _bytes = null;
         }
 
         public StringValues(string[] values)
         {
             _value = null;
             _values = values;
+            _encoding = null;
+            _bytes = null;
+        }
+
+        public static StringValues CreateConstant(string value, Encoding encoding)
+        {
+            return new StringValues(value, encoding);
         }
 
         public static implicit operator StringValues(string value)
@@ -416,6 +436,13 @@ namespace Microsoft.Extensions.Primitives
                 hcc.Add(_values[i]);
             }
             return hcc.CombinedHash;
+        }
+
+        public bool TryGetConstant(out byte[] bytes, out Encoding encoding)
+        {
+            bytes = _bytes;
+            encoding = _encoding;
+            return _bytes != null;
         }
 
         public struct Enumerator : IEnumerator<string>
