@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="provider">The service provider used to resolve dependencies</param>
         /// <param name="instanceType">The type to activate</param>
-        /// <param name="parameters">Constructor arguments not provided by the <see cref="provider"/></param>
+        /// <param name="parameters">Constructor arguments not provided by the <paramref name="provider"/>.</param>
         /// <returns>An activated object of type instanceType</returns>
         public static object CreateInstance(IServiceProvider provider, Type instanceType, params object[] parameters)
         {
@@ -91,7 +91,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <typeparam name="T">The type to activate</typeparam>
         /// <param name="provider">The service provider used to resolve dependencies</param>
-        /// <param name="parameters">Constructor arguments not provided by the <see cref="provider"/></param>
+        /// <param name="parameters">Constructor arguments not provided by the <paramref name="provider"/>.</param>
         /// <returns>An activated object of type T</returns>
         public static T CreateInstance<T>(IServiceProvider provider, params object[] parameters)
         {
