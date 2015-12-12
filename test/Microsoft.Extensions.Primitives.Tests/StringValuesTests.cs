@@ -466,7 +466,7 @@ namespace Microsoft.Extensions.Primitives
             Encoding encoding;
             byte[] bytes;
 
-            Assert.False(stringValues.TryGetConstant(out bytes, out encoding));
+            Assert.False(stringValues.TryGetPreEncoded(out bytes, out encoding));
             Assert.Null(encoding);
             Assert.Null(bytes);
         }
@@ -476,17 +476,17 @@ namespace Microsoft.Extensions.Primitives
         [MemberData(nameof(EmptyStringValues))]
         public void CreateConstant_ThrowsForNullOrEmpty(StringValues stringValues)
         {
-            Assert.Throws<ArgumentNullException>(() => (StringValues.CreateConstant(stringValues, Encoding.ASCII)));
+            Assert.Throws<ArgumentNullException>(() => (StringValues.CreatePreEncoded(stringValues, Encoding.ASCII)));
         }
 
         [Fact]
         public void CreateConstant_EncodesEmptyString()
         {
-            var stringValueConstant = StringValues.CreateConstant("", Encoding.ASCII);
+            var stringValueConstant = StringValues.CreatePreEncoded("", Encoding.ASCII);
             byte[] bytes;
             Encoding encoding;
 
-            stringValueConstant.TryGetConstant(out bytes, out encoding);
+            stringValueConstant.TryGetPreEncoded(out bytes, out encoding);
 
             Assert.NotNull(bytes);
             Assert.Empty(bytes);
@@ -500,8 +500,8 @@ namespace Microsoft.Extensions.Primitives
             byte[] outBytes;
             Encoding outEncoding;
 
-            var constantStringValues = StringValues.CreateConstant(testString, Encoding.ASCII);
-            constantStringValues.TryGetConstant(out outBytes, out outEncoding);
+            var constantStringValues = StringValues.CreatePreEncoded(testString, Encoding.ASCII);
+            constantStringValues.TryGetPreEncoded(out outBytes, out outEncoding);
 
             Assert.Equal(expectedBytes, outBytes);
             Assert.Equal(Encoding.ASCII, outEncoding);
@@ -511,12 +511,12 @@ namespace Microsoft.Extensions.Primitives
         public void TryGetConstant_ReturnsIdenticalBytesAndEncoding()
         {
             var encoding = Encoding.GetEncoding(20127); // US-ASCII
-            var constantStringValues = StringValues.CreateConstant("foo bar", encoding);
+            var constantStringValues = StringValues.CreatePreEncoded("foo bar", encoding);
 
             byte[] bytes1, bytes2;
             Encoding encoding1, encoding2;
-            constantStringValues.TryGetConstant(out bytes1, out encoding1);
-            constantStringValues.TryGetConstant(out bytes2, out encoding2);
+            constantStringValues.TryGetPreEncoded(out bytes1, out encoding1);
+            constantStringValues.TryGetPreEncoded(out bytes2, out encoding2);
 
             Assert.Same(bytes1, bytes2);
             Assert.Same(encoding, encoding1);
