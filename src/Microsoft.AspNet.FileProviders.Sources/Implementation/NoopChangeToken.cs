@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.FileProviders
 
         public IDisposable RegisterChangeCallback(Action<object> callback, object state)
         {
-            throw new NotSupportedException("Trigger does not support registering change notifications.");
+            return EmptyDisposable.Instance;
         }
     }
 }

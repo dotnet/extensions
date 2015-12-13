@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.FileProviders
         /// <param name="changeTokens">The list of <see cref="IChangeToken"/> to compose.</param>
         public CompositeFileChangeToken(IList<IChangeToken> changeTokens)
         {
-            if(changeTokens == null)
+            if (changeTokens == null)
             {
                 throw new ArgumentNullException(nameof(changeTokens));
             }
@@ -34,11 +34,8 @@ namespace Microsoft.AspNet.FileProviders
             for (var i = 0; i < _changeTokens.Count; i++)
             {
                 var changeToken = _changeTokens[i];
-                if (changeToken.ActiveChangeCallbacks)
-                {
-                    var disposable = _changeTokens[i].RegisterChangeCallback(callback, state);
-                    disposables.Add(disposable);
-                }
+                var disposable = _changeTokens[i].RegisterChangeCallback(callback, state);
+                disposables.Add(disposable);
             }
             return new CompositeDisposable(disposables);
         }

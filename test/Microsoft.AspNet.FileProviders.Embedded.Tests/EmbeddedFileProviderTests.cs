@@ -223,7 +223,6 @@ namespace Microsoft.AspNet.FileProviders.Embedded.Tests
             Assert.NotNull(token);
             Assert.False(token.ActiveChangeCallbacks);
             Assert.False(token.HasChanged);
-            Assert.Throws<NotSupportedException>(() => token.RegisterChangeCallback(_ => { }, new object()));
         }
     }
 }

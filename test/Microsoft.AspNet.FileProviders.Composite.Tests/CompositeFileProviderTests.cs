@@ -266,7 +266,7 @@ namespace Microsoft.AspNet.FileProviders.Composite.Tests
             // Arrange
             var firstChangeToken = new MockChangeToken { ActiveChangeCallbacks = true };
             var secondChangeToken = new MockChangeToken();
-            var thirdChangeToken = new MockChangeToken { ActiveChangeCallbacks = true };
+            var thirdChangeToken = new MockChangeToken { ActiveChangeCallbacks = false };
             var provider = new CompositeFileProvider(
                 new MockFileProvider(
                     new KeyValuePair<string, IChangeToken>("pattern", firstChangeToken),
