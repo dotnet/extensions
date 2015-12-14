@@ -32,6 +32,10 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Object
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.ObjectPool.Test", "test\Microsoft.Extensions.ObjectPool.Test\Microsoft.Extensions.ObjectPool.Test.xproj", "{DA1D70F4-717A-4440-B388-B5BEE670C14D}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.CommandLineUtils.Tests", "test\Microsoft.Extensions.CommandLineUtils.Tests\Microsoft.Extensions.CommandLineUtils.Tests.xproj", "{7E6564C3-04E3-418C-B96A-463FE2906F09}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.CommandLineUtils", "src\Microsoft.Extensions.CommandLineUtils\Microsoft.Extensions.CommandLineUtils.xproj", "{C46A8C00-CD50-4478-8639-6A6CF8CDD05B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,6 +94,14 @@ Global
 		{DA1D70F4-717A-4440-B388-B5BEE670C14D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA1D70F4-717A-4440-B388-B5BEE670C14D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA1D70F4-717A-4440-B388-B5BEE670C14D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E6564C3-04E3-418C-B96A-463FE2906F09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E6564C3-04E3-418C-B96A-463FE2906F09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E6564C3-04E3-418C-B96A-463FE2906F09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E6564C3-04E3-418C-B96A-463FE2906F09}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C46A8C00-CD50-4478-8639-6A6CF8CDD05B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C46A8C00-CD50-4478-8639-6A6CF8CDD05B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C46A8C00-CD50-4478-8639-6A6CF8CDD05B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C46A8C00-CD50-4478-8639-6A6CF8CDD05B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -108,5 +120,7 @@ Global
 		{61F72E92-B3AE-4A10-B838-44F80AED40AE} = {6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}
 		{C87DA599-4C1F-4B91-9C77-A10E79CD8701} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 		{DA1D70F4-717A-4440-B388-B5BEE670C14D} = {6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}
+		{7E6564C3-04E3-418C-B96A-463FE2906F09} = {6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}
+		{C46A8C00-CD50-4478-8639-6A6CF8CDD05B} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 	EndGlobalSection
 EndGlobal
