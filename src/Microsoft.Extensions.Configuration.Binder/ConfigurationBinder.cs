@@ -82,6 +82,7 @@ namespace Microsoft.Extensions.Configuration
             }
 
             propertyValue = BindInstance(property.PropertyType, propertyValue, config.GetSection(property.Name));
+
             if (propertyValue != null && hasPublicSetter)
             {
                 property.SetValue(instance, propertyValue);
@@ -90,6 +91,12 @@ namespace Microsoft.Extensions.Configuration
 
         private static object BindInstance(Type type, object instance, IConfiguration config)
         {
+            // if binding IConfigurationSection, break early
+            if (type == typeof(IConfigurationSection))
+            {
+                return config;
+            }
+
             var section = config as IConfigurationSection;
             var configValue = section?.Value;
             if (configValue != null)

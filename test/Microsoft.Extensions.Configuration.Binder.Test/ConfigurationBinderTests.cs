@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using Microsoft.Extensions.Configuration.Memory;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.Extensions.Configuration.Binder.Test
@@ -71,6 +72,86 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
         public class GenericOptions<T>
         {
             public T Value { get; set; }
+        }
+
+        public class ConfigurationInterfaceOptions
+        {
+            public IConfigurationSection Section { get; set; }
+        }                
+
+        public class DerivedOptionsWithIConfigurationSection : DerivedOptions
+        {
+            public IConfigurationSection DerivedSection { get; set; }
+        }
+
+        [Fact]
+        public void CanBindIConfigurationSection()
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {"Section:Integer", "-2"},
+                {"Section:Boolean", "TRUe"},
+                {"Section:Nested:Integer", "11"},
+                {"Section:Virtual", "Sup"}
+            };
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
+            var config = configurationBuilder.Build();
+
+            var options = new ConfigurationInterfaceOptions();
+            config.Bind(options);
+
+            var childOptions = new DerivedOptions();
+            options.Section.Bind(childOptions);
+
+            Assert.True(childOptions.Boolean);
+            Assert.Equal(-2, childOptions.Integer);
+            Assert.Equal(11, childOptions.Nested.Integer);
+            Assert.Equal("Derived:Sup", childOptions.Virtual);
+
+            Assert.Equal("Section", options.Section.Key);
+            Assert.Equal("Section", options.Section.Path);
+            Assert.Equal(null, options.Section.Value);
+        }
+
+        [Fact]
+        public void CanBindIConfigurationSectionWithDerivedOptionsSection()
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {"Section:Integer", "-2"},
+                {"Section:Boolean", "TRUe"},
+                {"Section:Nested:Integer", "11"},
+                {"Section:Virtual", "Sup"},
+                {"Section:DerivedSection:Nested:Integer", "11"},
+                {"Section:DerivedSection:Virtual", "Sup"}
+            };
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
+            var config = configurationBuilder.Build();
+
+            var options = new ConfigurationInterfaceOptions();
+            config.Bind(options);
+
+            var childOptions = new DerivedOptionsWithIConfigurationSection();
+            options.Section.Bind(childOptions);
+
+
+            var childDerivedOptions = new DerivedOptions();
+            childOptions.DerivedSection.Bind(childDerivedOptions);
+
+            Assert.True(childOptions.Boolean);
+            Assert.Equal(-2, childOptions.Integer);
+            Assert.Equal(11, childOptions.Nested.Integer);
+            Assert.Equal("Derived:Sup", childOptions.Virtual);
+            Assert.Equal(11, childDerivedOptions.Nested.Integer);
+            Assert.Equal("Derived:Sup", childDerivedOptions.Virtual);
+
+            Assert.Equal("Section", options.Section.Key);
+            Assert.Equal("Section", options.Section.Path);
+            Assert.Equal("DerivedSection", childOptions.DerivedSection.Key);
+            Assert.Equal("Section:DerivedSection", childOptions.DerivedSection.Path);
+            Assert.Equal(null, options.Section.Value);
         }
 
         [Fact]
