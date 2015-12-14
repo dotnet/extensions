@@ -32,23 +32,31 @@
       "type": "build",
       "version": "1.0.0-*"
     },
-    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    "xunit": "2.1.0"
   },
-  "commands": {
-    "test": "xunit.runner.aspnet"
-  },
+  "testRunner": "xunit",
   "frameworks": {
     "dnx451": {
+      "frameworkAssemblies": {
+        "System.Runtime": ""
+      },
       "dependencies": {
+        "xunit.runner.console": "2.1.0",
         "Moq": "4.2.1312.1622"
       }
     },
     "dnxcore50": {
       "dependencies": {
+        "xunit.runner.aspnet": "2.0.0-aspnet-*",
+        "Microsoft.NETCore.Platforms": "1.0.0-*",
         "moq.netcore": "4.4.0-beta8",
+        "System.Linq.Expressions": "4.0.11-beta-*",
         "System.Security.Claims": "4.0.1-*",
         "System.Security.Principal": "4.0.1-*"
       }
     }
+  },
+  "commands": {		
+    "test": "xunit.runner.aspnet"		
   }
 }

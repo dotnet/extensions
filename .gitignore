@@ -2,10 +2,12 @@
 [Bb]in/
 TestResults/
 .nuget/
+.testPublish/
 *.sln.ide/
 _ReSharper.*/
 packages/
 artifacts/
+.build/
 PublishProfiles/
 .vs/
 bower_components/
