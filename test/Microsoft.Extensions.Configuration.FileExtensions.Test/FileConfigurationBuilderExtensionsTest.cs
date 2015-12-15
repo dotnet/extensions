@@ -54,13 +54,12 @@ namespace Microsoft.Extensions.Configuration.Json
             // Act
             var actualPath = configurationBuilder.GetBasePath();
 
-            string expectedPath = string.Empty;
+            string expectedPath;
 
 #if DNXCORE50
-             expectedPath = AppContext.BaseDirectory;
+            expectedPath = AppContext.BaseDirectory;
 #else
-            expectedPath = AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
-                AppDomain.CurrentDomain.BaseDirectory ?? string.Empty;
+            expectedPath = Path.GetFullPath((string)AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY"));
 #endif
 
             // Assert

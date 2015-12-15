@@ -241,13 +241,12 @@ CommonKey3:CommonKey4=IniValue6";
         {
             // Arrange
             var builder = new ConfigurationBuilder();
-            string filePath = string.Empty;
+            string filePath;
 
 #if DNXCORE50
-             filePath = AppContext.BaseDirectory ?? string.Empty;
+            filePath = AppContext.BaseDirectory;
 #else
-            filePath = AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
-                AppDomain.CurrentDomain.BaseDirectory ?? string.Empty;
+            filePath = Path.GetFullPath((string)AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY"));
 #endif
 
             var jsonConfigFilePath = Path.Combine(filePath, "test.json");

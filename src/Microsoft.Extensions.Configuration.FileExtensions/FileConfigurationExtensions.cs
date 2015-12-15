@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 
 namespace Microsoft.Extensions.Configuration
 {
@@ -26,7 +27,7 @@ namespace Microsoft.Extensions.Configuration
             }
 
             configurationBuilder.Properties["BasePath"] = basePath;
-            
+
             return configurationBuilder;
         }
 
@@ -49,8 +50,13 @@ namespace Microsoft.Extensions.Configuration
             }
 
 #if NET451
-            return AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
-                AppDomain.CurrentDomain.BaseDirectory ?? string.Empty;
+            var stringBasePath =
+                AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
+                AppDomain.CurrentDomain.BaseDirectory ??
+                string.Empty;
+
+            // On Mono, the value of APP_CONTEXT_BASE_DIRECTORY is ".". We'll expand it to get the full base path.
+            return Path.GetFullPath(stringBasePath);
 #else
             return AppContext.BaseDirectory ?? string.Empty;
 #endif

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using Microsoft.AspNet.FileProviders;
 
 namespace Microsoft.Extensions.Configuration
@@ -20,8 +21,13 @@ namespace Microsoft.Extensions.Configuration
                 throw new ArgumentNullException(nameof(filename));
             }
 #if NET451
-            var basePath = AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
-                AppDomain.CurrentDomain.BaseDirectory ?? string.Empty;
+            var basePath =
+                AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
+                AppDomain.CurrentDomain.BaseDirectory ??
+                string.Empty;
+
+            // On Mono, the value of APP_CONTEXT_BASE_DIRECTORY is ".". We'll expand it to get the full base path.
+            basePath = Path.GetFullPath(basePath);
 #else
             var basePath = AppContext.BaseDirectory ?? string.Empty;
 #endif
