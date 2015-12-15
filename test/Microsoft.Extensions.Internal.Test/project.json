@@ -47,7 +47,7 @@
     },
     "dnxcore50": {
       "dependencies": {
-        "dotnet-test-xunit": { "version":"99.99.99-dev", "target": "package" },
+        "dotnet-test-xunit": { "version":"0.0.1-*", "target": "package" },
         "Microsoft.NETCore.Platforms": "1.0.0-*",
         "moq.netcore": "4.4.0-beta8",
         "System.Linq.Expressions": "4.0.11-beta-*",

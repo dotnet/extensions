@@ -16,7 +16,7 @@
         "dnxcore50": {
             "dependencies": {
                 "Microsoft.NETCore.Platforms": "1.0.0-*",
-                "dotnet-test-xunit": { "version":"99.99.99-dev", "target": "package" }
+                "dotnet-test-xunit": { "version":"0.0.1-*", "target": "package" }
             }
          }
     }
