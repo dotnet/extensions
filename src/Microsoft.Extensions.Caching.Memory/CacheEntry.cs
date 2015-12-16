@@ -16,6 +16,8 @@ namespace Microsoft.Extensions.Caching.Memory
 
         private readonly DateTimeOffset? _absoluteExpiration;
 
+        private IList<PostEvictionCallbackRegistration> _postEvictionCallbacks;
+
         internal readonly object _lock = new object();
 
         internal CacheEntry(
@@ -32,7 +34,7 @@ namespace Microsoft.Extensions.Caching.Memory
             Options = options;
             _notifyCacheOfExpiration = notifyCacheOfExpiration;
             _absoluteExpiration = absoluteExpiration;
-            PostEvictionCallbacks = options.PostEvictionCallbacks;
+            _postEvictionCallbacks = options.PostEvictionCallbacks;
         }
 
         internal MemoryCacheEntryOptions Options { get; private set; }
@@ -46,8 +48,6 @@ namespace Microsoft.Extensions.Caching.Memory
         internal EvictionReason EvictionReason { get; private set; }
 
         internal IList<IDisposable> ExpirationTokenRegistrations { get; set; }
-
-        internal IList<PostEvictionCallbackRegistration> PostEvictionCallbacks { get; set; }
 
         internal DateTimeOffset LastAccessed { get; set; }
 
@@ -154,10 +154,9 @@ namespace Microsoft.Extensions.Caching.Memory
             }
         }
 
-        // TODO: Ensure a thread safe way to prevent these from being invoked more than once;
         internal void InvokeEvictionCallbacks()
         {
-            if (PostEvictionCallbacks != null)
+            if (_postEvictionCallbacks != null)
             {
                 Task.Factory.StartNew(state => InvokeCallbacks((CacheEntry)state), this,
                     CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
@@ -166,8 +165,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
         private static void InvokeCallbacks(CacheEntry entry)
         {
-            var callbackRegistrations = entry.PostEvictionCallbacks;
-            entry.PostEvictionCallbacks = null;
+            var callbackRegistrations = Interlocked.Exchange(ref entry._postEvictionCallbacks, null);
 
             if (callbackRegistrations == null)
             {
