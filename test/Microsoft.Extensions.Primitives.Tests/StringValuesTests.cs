@@ -18,7 +18,6 @@ namespace Microsoft.Extensions.Primitives
             {
                 return new TheoryData<StringValues>
                 {
-                    new StringValues(),
                     new StringValues((string)null),
                     new StringValues((string[])null),
                     (string)null,
@@ -64,7 +63,6 @@ namespace Microsoft.Extensions.Primitives
             {
                 return new TheoryData<StringValues, string>
                 {
-                    { default(StringValues), (string)null },
                     { StringValues.Empty, (string)null },
                     { new StringValues(new string[] { }), (string)null },
                     { new StringValues(string.Empty), string.Empty },
@@ -80,7 +78,6 @@ namespace Microsoft.Extensions.Primitives
             {
                 return new TheoryData<StringValues, object>
                 {
-                    { default(StringValues), (object)null },
                     { StringValues.Empty, (object)null },
                     { new StringValues(new string[] { }), (object)null },
                     { new StringValues("abc"), (object)"abc" },
@@ -97,7 +94,6 @@ namespace Microsoft.Extensions.Primitives
             {
                 return new TheoryData<StringValues, string[]>
                 {
-                    { default(StringValues), new string[0] },
                     { StringValues.Empty, new string[0] },
                     { new StringValues(string.Empty), new[] { string.Empty } },
                     { new StringValues("abc"), new[] { "abc" } },
@@ -334,8 +330,6 @@ namespace Microsoft.Extensions.Primitives
             string[] empty = new string[0];
             Assert.Equal(empty, StringValues.Concat(stringValues, StringValues.Empty));
             Assert.Equal(empty, StringValues.Concat(StringValues.Empty, stringValues));
-            Assert.Equal(empty, StringValues.Concat(stringValues, new StringValues()));
-            Assert.Equal(empty, StringValues.Concat(new StringValues(), stringValues));
         }
 
         [Theory]

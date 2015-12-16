@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Primitives
     /// <summary>
     /// Represents zero/null, one, or many strings in an efficient way.
     /// </summary>
-    public struct StringValues : IList<string>, IReadOnlyList<string>, IEquatable<StringValues>, IEquatable<string>, IEquatable<string[]>
+    public class StringValues : IList<string>, IReadOnlyList<string>, IEquatable<StringValues>, IEquatable<string>, IEquatable<string[]>
     {
         private static readonly string[] EmptyArray = new string[0];
         public static readonly StringValues Empty = new StringValues(EmptyArray);
@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.Primitives
         private readonly string[] _values;
         private readonly Encoding _encoding;
         private readonly byte[] _bytes;
-        
+
         public StringValues(string value)
         {
             _value = value;
