@@ -288,8 +288,9 @@ namespace Microsoft.Extensions.DependencyInjection
             return Describe(typeof(TService), implementationFactory, ServiceLifetime.Singleton);
         }
 
-        public static ServiceDescriptor Singleton(Type serviceType,
-                                                  Func<IServiceProvider, object> implementationFactory)
+        public static ServiceDescriptor Singleton(
+            Type serviceType,
+            Func<IServiceProvider, object> implementationFactory)
         {
             if (serviceType == null)
             {
@@ -304,7 +305,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return Describe(serviceType, implementationFactory, ServiceLifetime.Singleton);
         }
 
-        public static ServiceDescriptor Instance<TService>(TService implementationInstance)
+        public static ServiceDescriptor Singleton<TService>(TService implementationInstance)
             where TService : class
         {
             if (implementationInstance == null)
@@ -312,11 +313,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(implementationInstance));
             }
 
-            return Instance(typeof(TService), implementationInstance);
+            return Singleton(typeof(TService), implementationInstance);
         }
 
-        public static ServiceDescriptor Instance(Type serviceType,
-                                                 object implementationInstance)
+        public static ServiceDescriptor Singleton(
+            Type serviceType,
+            object implementationInstance)
         {
             if (serviceType == null)
             {

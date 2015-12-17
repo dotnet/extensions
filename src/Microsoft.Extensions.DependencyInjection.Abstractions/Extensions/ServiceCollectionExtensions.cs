@@ -397,6 +397,23 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
             TryAddSingleton(collection, typeof(TService), typeof(TImplementation));
         }
 
+        public static void TryAddSingleton<TService>(this IServiceCollection collection, TService instance)
+            where TService : class
+        {
+            if (collection == null)
+            {
+                throw new ArgumentNullException(nameof(collection));
+            }
+
+            if (instance == null)
+            {
+                throw new ArgumentNullException(nameof(instance));
+            }
+
+            var descriptor = ServiceDescriptor.Singleton(typeof(TService), instance);
+            TryAdd(collection, descriptor);
+        }
+
         public static void TryAddSingleton<TService>(
             this IServiceCollection services,
             Func<IServiceProvider, TService> implementationFactory)

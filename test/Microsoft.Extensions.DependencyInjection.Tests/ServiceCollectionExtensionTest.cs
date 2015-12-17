@@ -258,7 +258,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     { ServiceDescriptor.Singleton<IFakeService, FakeService>(), serviceType, implementationType, ServiceLifetime.Singleton },
                     { ServiceDescriptor.Singleton<IFakeService, FakeService >(s => new FakeService()), serviceType, implementationType, ServiceLifetime.Singleton },
 
-                    { ServiceDescriptor.Instance<IFakeService>(_instance), serviceType, implementationType, ServiceLifetime.Singleton },
+                    { ServiceDescriptor.Singleton<IFakeService>(_instance), serviceType, implementationType, ServiceLifetime.Singleton },
                 };
             }
         }
