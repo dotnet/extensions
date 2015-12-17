@@ -55,19 +55,19 @@ namespace Microsoft.AspNet.Testing.xunit
             var currentOSVersion = _runtimeEnvironment.OperatingSystemVersion;
 
             OperatingSystems os;
-            switch (currentOS.ToLowerInvariant())
+            switch (_runtimeEnvironment.OperatingSystemPlatform)
             {
-                case "windows":
+                case Platform.Windows:
                     os = OperatingSystems.Windows;
                     break;
-                case "linux":
+                case Platform.Linux:
                     os = OperatingSystems.Linux;
                     break;
-                case "darwin":
+                case Platform.Darwin:
                     os = OperatingSystems.MacOSX;
                     break;
                 default:
-                    throw new InvalidOperationException($"Unrecognized operating system '{currentOS}'.");
+                    throw new InvalidOperationException($"Unrecognized operating system '{_runtimeEnvironment.OperatingSystemPlatform}'.");
             }
 
             return new OSInfo()

@@ -16,21 +16,21 @@ namespace Microsoft.AspNet.Testing.Tests
         {
             // Arrange
             var osName = "Blah";
-            var env = new MockRuntimeEnvironment(osName, "2.5");
+            var env = new MockRuntimeEnvironment(osName, "2.5", Platform.Unknown);
 
             // Act
             var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Windows, env);
 
             // Assert
             var exception = Assert.Throws<InvalidOperationException>(() => osSkipAttribute.IsMet);
-            Assert.Equal($"Unrecognized operating system '{osName}'.", exception.Message);
+            Assert.Equal($"Unrecognized operating system '{Platform.Unknown}'.", exception.Message);
         }
 
         [Fact]
         public void Skips_WhenOnlyOperatingSystemIsSupplied()
         {
             // Arrange
-            var env = new MockRuntimeEnvironment("Windows", "2.5");
+            var env = new MockRuntimeEnvironment("Windows", "2.5", Platform.Windows);
 
             // Act
             var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Windows, env);
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Testing.Tests
         public void DoesNotSkip_WhenOperatingSystemDoesNotMatch()
         {
             // Arrange
-            var env = new MockRuntimeEnvironment("Windows", "2.5");
+            var env = new MockRuntimeEnvironment("Windows", "2.5", Platform.Windows);
 
             // Act
             var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Linux, env);
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Testing.Tests
         public void DoesNotSkip_WhenVersionsDoNotMatch()
         {
             // Arrange
-            var env = new MockRuntimeEnvironment("Windows", "2.5");
+            var env = new MockRuntimeEnvironment("Windows", "2.5", Platform.Windows);
 
             // Act
             var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Windows, env, "10.0");
@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Testing.Tests
         public void DoesNotSkip_WhenOnlyVersionsMatch()
         {
             // Arrange
-            var env = new MockRuntimeEnvironment("Windows", "2.5");
+            var env = new MockRuntimeEnvironment("Windows", "2.5", Platform.Windows);
 
             // Act
             var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Linux, env, "2.5");
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Testing.Tests
         public void Skips_WhenVersionsMatches(string currentOSVersion, string skipVersion)
         {
             // Arrange
-            var env = new MockRuntimeEnvironment("Windows", currentOSVersion);
+            var env = new MockRuntimeEnvironment("Windows", currentOSVersion, Platform.Windows);
 
             // Act
             var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Windows, env, skipVersion);
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Testing.Tests
         public void Skips_WhenVersionsMatchesOutOfMultiple()
         {
             // Arrange
-            var env = new MockRuntimeEnvironment("Windows", "2.5");
+            var env = new MockRuntimeEnvironment("Windows", "2.5", Platform.Windows);
 
             // Act
             var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Windows, env, "10.0", "3.4", "2.5");
@@ -108,15 +108,18 @@ namespace Microsoft.AspNet.Testing.Tests
 
         private class MockRuntimeEnvironment : IRuntimeEnvironment
         {
-            public MockRuntimeEnvironment(string operatingSystem, string version)
+            public MockRuntimeEnvironment(string operatingSystem, string version, Platform platform)
             {
                 OperatingSystem = operatingSystem;
                 OperatingSystemVersion = version;
+                OperatingSystemPlatform = platform;
             }
 
             public string OperatingSystem { get; }
 
             public string OperatingSystemVersion { get; }
+
+            public Platform OperatingSystemPlatform { get; }
 
             public string RuntimeArchitecture
             {
