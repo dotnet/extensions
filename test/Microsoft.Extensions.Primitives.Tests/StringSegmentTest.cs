@@ -9,6 +9,33 @@ namespace Microsoft.Extensions.Primitives
     public class StringSegmentTest
     {
         [Fact]
+        public void StringSegment_StringCtor_AllowsNullBuffers()
+        {
+            // Arrange & Act
+            var segment = new StringSegment(null);
+
+            // Assert
+            Assert.False(segment.HasValue);
+            Assert.Equal(0, segment.Offset);
+            Assert.Equal(0, segment.Length);
+        }
+
+        [Fact]
+        public void StringSegment_StringCtor_InitializesValuesCorrectly()
+        {
+            // Arrange
+            var buffer = "Hello world!";
+
+            // Act
+            var segment = new StringSegment(buffer);
+
+            // Assert
+            Assert.True(segment.HasValue);
+            Assert.Equal(0, segment.Offset);
+            Assert.Equal(buffer.Length, segment.Length);
+        }
+
+        [Fact]
         public void StringSegment_Value_Valid()
         {
             // Arrange
@@ -265,6 +292,26 @@ namespace Microsoft.Extensions.Primitives
         }
 
         [Fact]
+        public void StringSegment_Substring_InvalidOffset()
+        {
+            // Arrange
+            var segment = new StringSegment("Hello, World!", 1, 3);
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => segment.Substring(-1, 1));
+        }
+
+        [Fact]
+        public void StringSegment_Substring_InvalidOffsetAndLength()
+        {
+            // Arrange
+            var segment = new StringSegment("Hello, World!", 1, 3);
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => segment.Substring(2, 3));
+        }
+
+        [Fact]
         public void StringSegment_Subsegment_Valid()
         {
             // Arrange
@@ -286,6 +333,94 @@ namespace Microsoft.Extensions.Primitives
 
             // Act & Assert
             Assert.Throws<ArgumentOutOfRangeException>(() => segment.Subsegment(0, 0));
+        }
+
+        [Fact]
+        public void StringSegment_Subsegment_InvalidOffset()
+        {
+            // Arrange
+            var segment = new StringSegment("Hello, World!", 1, 3);
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => segment.Subsegment(-1, 1));
+        }
+
+        [Fact]
+        public void StringSegment_Subsegment_InvalidOffsetAndLength()
+        {
+            // Arrange
+            var segment = new StringSegment("Hello, World!", 1, 3);
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => segment.Subsegment(2, 3));
+        }
+
+        [Fact]
+        public void IndexOf_ComputesIndex_RelativeToTheCurrentSegment()
+        {
+            // Arrange
+            var segment = new StringSegment("Hello, World!", 1, 10);
+
+            // Act
+            var result = segment.IndexOf(',');
+
+            // Assert
+            Assert.Equal(4, result);
+        }
+
+        [Fact]
+        public void IndexOf_ReturnsMinusOne_IfElementNotInSegment()
+        {
+            // Arrange
+            var segment = new StringSegment("Hello, World!", 1, 3);
+
+            // Act
+            var result = segment.IndexOf(',');
+
+            // Assert
+            Assert.Equal(-1, result);
+        }
+
+        [Fact]
+        public void IndexOf_SkipsANumberOfCaracters_IfStartIsProvided()
+        {
+            // Arrange
+            const string buffer = "Hello, World!, Hello people!";
+            var segment = new StringSegment(buffer, 3, buffer.Length - 3);
+
+            // Act
+            var result = segment.IndexOf('!', 15);
+
+            // Assert
+            Assert.Equal(buffer.Length - 4, result);
+        }
+
+        [Fact]
+        public void IndexOf_SearchOnlyInsideTheRange_IfStartAndCountAreProvided()
+        {
+            // Arrange
+            const string buffer = "Hello, World!, Hello people!";
+            var segment = new StringSegment(buffer, 3, buffer.Length - 3);
+
+            // Act
+            var result = segment.IndexOf('!', 15, 5);
+
+            // Assert
+            Assert.Equal(-1, result);
+        }
+
+        [Fact]
+        public void Value_DoesNotAllocateANewString_IfTheSegmentContainsTheWholeBuffer()
+        {
+            // Arrange
+            const string buffer = "Hello, World!";
+            var segment = new StringSegment(buffer);
+
+            // Act
+            var result = segment.Value;
+
+            // Assert
+            Assert.Same(buffer, result);
         }
 
         [Fact]
