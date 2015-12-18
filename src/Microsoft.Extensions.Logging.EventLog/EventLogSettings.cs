@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.Logging.EventLog.Internal;
 
 namespace Microsoft.Extensions.Logging.EventLog
 {
@@ -29,5 +30,10 @@ namespace Microsoft.Extensions.Logging.EventLog
         /// The function used to filter events based on the log level.
         /// </summary>
         public Func<string, LogLevel, bool> Filter { get; set; }
+
+        /// <summary>
+        /// For unit testing purposes only.
+        /// </summary>
+        public IEventLog EventLog { get; set; }
     }
 }
