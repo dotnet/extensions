@@ -134,5 +134,15 @@ namespace Microsoft.Extensions.Configuration
             configSource.Load();
             Assert.Throws<InvalidOperationException>(() => configSource.Get("key"));
         }
+
+        [Fact]
+        public void ThrowFormatExceptionWhenFileIsEmpty()
+        {
+            var json = @"";
+            var jsonConfigSource = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
+
+            var exception = Assert.Throws<FormatException>(
+                () => jsonConfigSource.Load(TestStreamHelpers.StringToStream(json)));
+        }
     }
 }

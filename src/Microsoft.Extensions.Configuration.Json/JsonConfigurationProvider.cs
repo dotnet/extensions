@@ -83,27 +83,50 @@ namespace Microsoft.Extensions.Configuration.Json
             {
                 Data = parser.Parse(stream);
             }
-            catch(JsonReaderException e)
+            catch (JsonReaderException e)
             {
                 string errorLine = string.Empty;
-                if (File.Exists(Path))
+                if (stream.CanSeek)
                 {
-                    // Read the JSON file and get the line content where the error occurred.
-                    List<string> fileContent;
-                    if (e.LineNumber > 1)
+                    stream.Seek(0, SeekOrigin.Begin);
+
+                    IEnumerable<string> fileContent;
+                    using (var streamReader = new StreamReader(stream))
                     {
-                        fileContent = File.ReadLines(Path).Skip(e.LineNumber - 2).Take(2).ToList();
-                        errorLine = fileContent[0].Trim() + Environment.NewLine + fileContent[1].Trim();
-                    }
-                    else
-                    {
-                        fileContent = File.ReadLines(Path).Skip(e.LineNumber - 1).Take(1).ToList();
-                        errorLine = fileContent[0].Trim();
+                        fileContent = ReadLines(streamReader);
+                        errorLine = RetrieveErrorContext(e, fileContent);
                     }
                 }
 
                 throw new FormatException(Resources.FormatError_JSONParseError(e.LineNumber, errorLine), e);
             }
+        }
+
+        private static string RetrieveErrorContext(JsonReaderException e, IEnumerable<string> fileContent)
+        {
+            string errorLine;
+            if (e.LineNumber >= 2)
+            {
+                var errorContext = fileContent.Skip(e.LineNumber - 2).Take(2).ToList();
+                errorLine = errorContext[0].Trim() + Environment.NewLine + errorContext[1].Trim();
+            }
+            else
+            {
+                var possibleLineContent = fileContent.Skip(e.LineNumber - 1).FirstOrDefault();
+                errorLine = possibleLineContent ?? string.Empty;
+            }
+
+            return errorLine;
+        }
+
+        private static IEnumerable<string> ReadLines(StreamReader streamReader)
+        {
+            string line;
+            do
+            {
+                line = streamReader.ReadLine();
+                yield return line;
+            } while (line != null);
         }
     }
 }
