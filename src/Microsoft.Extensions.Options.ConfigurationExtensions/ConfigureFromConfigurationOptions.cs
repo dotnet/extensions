@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.Extensions.OptionsModel
+namespace Microsoft.Extensions.Options
 {
     public class ConfigureFromConfigurationOptions<TOptions> : ConfigureOptions<TOptions>
         where TOptions : class

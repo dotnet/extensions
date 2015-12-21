@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Microsoft.Extensions.OptionsModel
+namespace Microsoft.Extensions.Options
 {
     internal class OptionsCache<TOptions> where TOptions : class, new()
     {

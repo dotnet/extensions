@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.Extensions.OptionsModel
+namespace Microsoft.Extensions.Options
 {
     public interface IOptionsChangeTokenSource<out TOptions>
     {

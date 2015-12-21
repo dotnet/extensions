@@ -5,7 +5,7 @@
   },
   "dependencies": {
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
-    "Microsoft.Extensions.OptionsModel": "1.0.0-*",
+    "Microsoft.Extensions.Options": "1.0.0-*",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },

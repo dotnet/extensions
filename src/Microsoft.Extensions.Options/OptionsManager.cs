@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Extensions.OptionsModel
+namespace Microsoft.Extensions.Options
 {
     public class OptionsManager<TOptions> : IOptions<TOptions> where TOptions : class, new()
     {

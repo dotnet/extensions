@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.Extensions.OptionsModel
+namespace Microsoft.Extensions.Options
 {
     public class ConfigurationChangeTokenSource<TOptions> : IOptionsChangeTokenSource<TOptions>
     {

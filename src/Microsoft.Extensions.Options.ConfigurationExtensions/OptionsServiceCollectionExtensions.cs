@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

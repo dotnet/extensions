@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.OptionsModel
+namespace Microsoft.Extensions.Options
 {
     public interface IOptionsMonitor<out TOptions>
     {

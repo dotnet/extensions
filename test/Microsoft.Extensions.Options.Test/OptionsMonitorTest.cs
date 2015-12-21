@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
-namespace Microsoft.Extensions.OptionsModel.Tests
+namespace Microsoft.Extensions.Options.Tests
 {
     public class OptionsMonitorTest
     {
