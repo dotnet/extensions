@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "Microsoft.Extensions.Caching.Abstractions": "1.0.0-*",
-    "Microsoft.Extensions.OptionsModel": "1.0.0-*",
+    "Microsoft.Extensions.Options": "1.0.0-*",
     "StackExchange.Redis.StrongName": "1.0.333"
   },
   "frameworks": {

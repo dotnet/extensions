@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "Microsoft.Extensions.Caching.Abstractions": "1.0.0-*",
-    "Microsoft.Extensions.OptionsModel": "1.0.0-*"
+    "Microsoft.Extensions.Options": "1.0.0-*"
   },
   "description": "ASP.NET 5 distributed cache implementation on Microsoft SQL Server.",
   "compilationOptions": {
