@@ -9,7 +9,7 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.Extensions.OptionsModel": { }
+            "Microsoft.Extensions.Options": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
