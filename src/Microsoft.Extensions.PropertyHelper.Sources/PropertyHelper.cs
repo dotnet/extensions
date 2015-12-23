@@ -79,7 +79,6 @@ namespace Microsoft.Extensions.Internal
             {
                 if (_valueSetter == null)
                 {
-                    // We'll allow safe races here.
                     _valueSetter = MakeFastPropertySetter(Property);
                 }
 
