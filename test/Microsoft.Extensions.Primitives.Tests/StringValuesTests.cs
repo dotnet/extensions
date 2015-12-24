@@ -238,7 +238,6 @@ namespace Microsoft.Extensions.Primitives
         public void Enumerator(StringValues stringValues, string[] expected)
         {
             var e = stringValues.GetEnumerator();
-            Assert.Null(e.Current);
             for (int i = 0; i < expected.Length; i++)
             {
                 Assert.True(e.MoveNext());
@@ -249,7 +248,6 @@ namespace Microsoft.Extensions.Primitives
             Assert.False(e.MoveNext());
 
             var e1 = ((IEnumerable<string>)stringValues).GetEnumerator();
-            Assert.Null(e1.Current);
             for (int i = 0; i < expected.Length; i++)
             {
                 Assert.True(e1.MoveNext());
@@ -260,7 +258,6 @@ namespace Microsoft.Extensions.Primitives
             Assert.False(e1.MoveNext());
 
             var e2 = ((IEnumerable)stringValues).GetEnumerator();
-            Assert.Null(e2.Current);
             for (int i = 0; i < expected.Length; i++)
             {
                 Assert.True(e2.MoveNext());

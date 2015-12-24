@@ -51,7 +51,7 @@ namespace Microsoft.Extensions.Primitives
             return value.GetArrayValue();
         }
 
-        public int Count => _values?.Length ?? (_value != null ? 1 : 0);
+        public int Count => _value != null ? 1 : (_values?.Length ?? 0);
 
         bool ICollection<string>.IsReadOnly
         {
@@ -206,7 +206,7 @@ namespace Microsoft.Extensions.Primitives
 
         public Enumerator GetEnumerator()
         {
-            return new Enumerator(this);
+            return new Enumerator(ref this);
         }
 
         IEnumerator<string> IEnumerable<string>.GetEnumerator()
@@ -420,43 +420,39 @@ namespace Microsoft.Extensions.Primitives
 
         public struct Enumerator : IEnumerator<string>
         {
-            private readonly StringValues _values;
+            private readonly string[] _values;
             private string _current;
             private int _index;
 
-            public Enumerator(StringValues values)
+            public Enumerator(ref StringValues values)
             {
-                _values = values;
-                _current = null;
+                _values = values._values;
+                _current = values._value;
                 _index = 0;
             }
 
             public bool MoveNext()
             {
-                var values = _values._values;
-                if (values != null)
+                if (_index < 0)
                 {
-                    if (_index < values.Length)
+                    return false;
+                }
+
+                if (_values != null)
+                {
+                    if (_index < _values.Length)
                     {
-                        _current = values[_index];
+                        _current = _values[_index];
                         _index++;
                         return true;
                     }
 
-                    _current = null;
+                    _index = -1;
                     return false;
                 }
 
-                var value = _values._value;
-                if (value != null && _index == 0)
-                {
-                    _current = value;
-                    _index = -1; // sentinel value
-                    return true;
-                }
-
-                _current = null;
-                return false;
+                _index = -1; // sentinel value
+                return _current != null;
             }
 
             public string Current => _current;
@@ -465,8 +461,7 @@ namespace Microsoft.Extensions.Primitives
 
             void IEnumerator.Reset()
             {
-                _current = null;
-                _index = 0;
+                throw new NotSupportedException();
             }
 
             void IDisposable.Dispose()
