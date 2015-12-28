@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.AspNet.FileProviders.Composite.Tests.TestUtility
+namespace Microsoft.AspNet.FileProviders.Composite
 {
     public class MockFileInfo : IFileInfo
     {

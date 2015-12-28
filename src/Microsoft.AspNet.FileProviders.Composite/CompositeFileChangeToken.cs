@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.FileProviders
+namespace Microsoft.AspNet.FileProviders.Composite
 {
     /// <summary>
     /// Represents a composition of <see cref="IChangeToken"/>.

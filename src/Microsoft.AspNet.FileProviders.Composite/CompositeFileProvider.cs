@@ -1,10 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using Microsoft.Extensions.Primitives;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.FileProviders.Composite;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.FileProviders
 {
@@ -29,7 +30,7 @@ namespace Microsoft.AspNet.FileProviders
         /// <param name="fileProviders"></param>
         public CompositeFileProvider(IEnumerable<IFileProvider> fileProviders)
         {
-            if(fileProviders == null)
+            if (fileProviders == null)
             {
                 throw new ArgumentNullException(nameof(fileProviders));
             }

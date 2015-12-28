@@ -7,9 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.FileProviders
+namespace Microsoft.AspNet.FileProviders.Physical
 {
-    internal class FileChangeToken : IChangeToken
+    public class FileChangeToken : IChangeToken
     {
         private Regex _searchRegex;
 

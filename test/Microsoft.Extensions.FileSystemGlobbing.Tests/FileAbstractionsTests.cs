@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests
             using (var scenario = new DisposableFileSystem()
                 .CreateFile("alpha.txt"))
             {
-                var contents = scenario.DirectoryInfo.EnumerateFileSystemInfos();
+                var contents = new DirectoryInfoWrapper(scenario.DirectoryInfo).EnumerateFileSystemInfos();
                 var alphaTxt = contents.OfType<FileInfoBase>().Single();
 
                 Assert.Equal(1, contents.Count());
@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests
             using (var scenario = new DisposableFileSystem()
                 .CreateFolder("beta"))
             {
-                var contents1 = scenario.DirectoryInfo.EnumerateFileSystemInfos();
+                var contents1 = new DirectoryInfoWrapper(scenario.DirectoryInfo).EnumerateFileSystemInfos();
                 var beta = contents1.OfType<DirectoryInfoBase>().Single();
                 var contents2 = beta.EnumerateFileSystemInfos();
 
@@ -61,7 +61,7 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests
                 .CreateFolder("beta")
                 .CreateFile(Path.Combine("beta", "alpha.txt")))
             {
-                var contents1 = scenario.DirectoryInfo.EnumerateFileSystemInfos();
+                var contents1 = new DirectoryInfoWrapper(scenario.DirectoryInfo).EnumerateFileSystemInfos();
                 var beta = contents1.OfType<DirectoryInfoBase>().Single();
                 var contents2 = beta.EnumerateFileSystemInfos();
                 var alphaTxt = contents2.OfType<FileInfoBase>().Single();
@@ -81,7 +81,8 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests
                 .CreateFolder("beta")
                 .CreateFile(Path.Combine("beta", "alpha.txt")))
             {
-                var gamma = scenario.DirectoryInfo.GetDirectory("gamma");
+                var directoryInfoBase = new DirectoryInfoWrapper(scenario.DirectoryInfo);
+                var gamma = directoryInfoBase.GetDirectory("gamma");
                 var dotdot = gamma.GetDirectory("..");
                 var contents1 = dotdot.EnumerateFileSystemInfos();
                 var beta = dotdot.GetDirectory("beta");

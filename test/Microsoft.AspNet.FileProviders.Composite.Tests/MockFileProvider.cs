@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.FileProviders.Composite.Tests.TestUtility
+namespace Microsoft.AspNet.FileProviders.Composite
 {
     public class MockFileProvider : IFileProvider
     {

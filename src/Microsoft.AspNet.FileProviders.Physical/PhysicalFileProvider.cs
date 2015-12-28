@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Primitives;
+using Microsoft.AspNet.FileProviders.Physical;
 
 namespace Microsoft.AspNet.FileProviders
 {
@@ -14,7 +15,7 @@ namespace Microsoft.AspNet.FileProviders
     /// </summary>
     public class PhysicalFileProvider : IFileProvider, IDisposable
     {
-        private static readonly char [] _invalidFileNameChars = Path.GetInvalidFileNameChars()
+        private static readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars()
             .Where(c => c != Path.DirectorySeparatorChar && c != Path.AltDirectorySeparatorChar).ToArray();
         private readonly PhysicalFilesWatcher _filesWatcher;
 
@@ -52,7 +53,7 @@ namespace Microsoft.AspNet.FileProviders
         /// <summary>
         /// The root directory for this instance.
         /// </summary>
-        public string Root { get; private set; }
+        public string Root { get; }
 
         private string GetFullPath(string path)
         {
@@ -210,107 +211,8 @@ namespace Microsoft.AspNet.FileProviders
             return _filesWatcher.CreateFileChangeToken(filter);
         }
 
-        internal class PhysicalFileInfo : IFileInfo
-        {
-            private readonly FileInfo _info;
 
-            public PhysicalFileInfo(FileInfo info)
-            {
-                _info = info;
-            }
 
-            public bool Exists
-            {
-                get { return _info.Exists; }
-            }
 
-            public long Length
-            {
-                get { return _info.Length; }
-            }
-
-            public string PhysicalPath
-            {
-                get { return _info.FullName; }
-            }
-
-            public string Name
-            {
-                get { return _info.Name; }
-            }
-
-            public DateTimeOffset LastModified
-            {
-                get
-                {
-                    return _info.LastWriteTimeUtc;
-                }
-            }
-
-            public bool IsDirectory
-            {
-                get { return false; }
-            }
-
-            public Stream CreateReadStream()
-            {
-                // Note: Buffer size must be greater than zero, even if the file size is zero.
-                return new FileStream(
-                    PhysicalPath,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.ReadWrite,
-                    1024 * 64,
-                    FileOptions.Asynchronous | FileOptions.SequentialScan);
-            }
-        }
-
-        internal class PhysicalDirectoryInfo : IFileInfo
-        {
-            private readonly DirectoryInfo _info;
-
-            public PhysicalDirectoryInfo(DirectoryInfo info)
-            {
-                _info = info;
-            }
-
-            public bool Exists
-            {
-                get { return _info.Exists; }
-            }
-
-            public long Length
-            {
-                get { return -1; }
-            }
-
-            public string PhysicalPath
-            {
-                get { return _info.FullName; }
-            }
-
-            public string Name
-            {
-                get { return _info.Name; }
-            }
-
-            public DateTimeOffset LastModified
-            {
-                get
-                {
-                    return _info.LastWriteTimeUtc;
-                }
-            }
-
-            public bool IsDirectory
-            {
-                get { return true; }
-            }
-
-            public Stream CreateReadStream()
-            {
-                throw new InvalidOperationException("Cannot create a stream for a directory.");
-            }
-        }
     }
 }

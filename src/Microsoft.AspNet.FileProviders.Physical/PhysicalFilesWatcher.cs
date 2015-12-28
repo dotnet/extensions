@@ -8,25 +8,22 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.FileProviders
+namespace Microsoft.AspNet.FileProviders.Physical
 {
-    internal class PhysicalFilesWatcher : IDisposable
+    public class PhysicalFilesWatcher : IDisposable
     {
         private readonly ConcurrentDictionary<string, FileChangeToken> _tokenCache =
             new ConcurrentDictionary<string, FileChangeToken>(StringComparer.OrdinalIgnoreCase);
-
         private readonly FileSystemWatcher _fileWatcher;
-
         private readonly object _lockObject = new object();
-
         private readonly string _root;
 
-        internal PhysicalFilesWatcher(string root)
+        public PhysicalFilesWatcher(string root)
             : this(root, new FileSystemWatcher(root))
         {
         }
 
-        internal PhysicalFilesWatcher(string root, FileSystemWatcher fileSystemWatcher)
+        public PhysicalFilesWatcher(string root, FileSystemWatcher fileSystemWatcher)
         {
             _root = root;
             _fileWatcher = fileSystemWatcher;

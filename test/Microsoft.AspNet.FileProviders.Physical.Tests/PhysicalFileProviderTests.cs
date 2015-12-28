@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.FileProviders.Physical;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Extensions.FileSystemGlobbing.Tests.TestUtility;
 using Xunit;
@@ -309,14 +310,15 @@ namespace Microsoft.AspNet.FileProviders
         {
             using (var root = new DisposableFileSystem())
             {
-                File.Create(Path.Combine(root.RootPath, Guid.NewGuid().ToString()));
-                Directory.CreateDirectory(Path.Combine(root.RootPath, Guid.NewGuid().ToString()));
+                File.Create(Path.Combine(root.RootPath, "File" + Guid.NewGuid().ToString()));
+                Directory.CreateDirectory(Path.Combine(root.RootPath, "Dir" + Guid.NewGuid().ToString()));
 
                 using (var provider = new PhysicalFileProvider(root.RootPath))
                 {
                     var contents = provider.GetDirectoryContents(string.Empty);
-                    Assert.NotNull(contents.SingleOrDefault(fileInfo => fileInfo is PhysicalFileProvider.PhysicalFileInfo));
-                    Assert.NotNull(contents.SingleOrDefault(fileInfo => fileInfo is PhysicalFileProvider.PhysicalDirectoryInfo));
+                    Assert.Collection(contents.OrderBy(c => c.Name),
+                        item => Assert.IsType<PhysicalDirectoryInfo>(item),
+                        item => Assert.IsType<PhysicalFileInfo>(item));
                 }
             }
         }

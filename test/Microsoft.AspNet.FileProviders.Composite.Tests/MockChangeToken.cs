@@ -5,7 +5,7 @@ using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.FileProviders.Composite.Tests.TestUtility
+namespace Microsoft.AspNet.FileProviders.Composite
 {
     public class MockChangeToken : IChangeToken
     {

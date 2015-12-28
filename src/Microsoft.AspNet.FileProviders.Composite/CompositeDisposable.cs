@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.FileProviders
+namespace Microsoft.AspNet.FileProviders.Composite
 {
     /// <summary>
     /// Represents a composition of <see cref="IDisposable"/>.
@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.FileProviders
         /// <param name="disposables">The list of <see cref="IDisposable"/> to compose.</param>
         public CompositeDisposable(IList<IDisposable> disposables)
         {
-            if(disposables == null)
+            if (disposables == null)
             {
                 throw new ArgumentNullException(nameof(disposables));
             }

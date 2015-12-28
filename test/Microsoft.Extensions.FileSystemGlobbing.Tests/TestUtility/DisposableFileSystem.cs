@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 
 namespace Microsoft.Extensions.FileSystemGlobbing.Tests.TestUtility
 {
@@ -13,12 +12,12 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests.TestUtility
         {
             RootPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(RootPath);
-            DirectoryInfo = new DirectoryInfoWrapper(new DirectoryInfo(RootPath));
+            DirectoryInfo = new DirectoryInfo(RootPath);
         }
 
         public string RootPath { get; }
 
-        public DirectoryInfoBase DirectoryInfo { get; }
+        public DirectoryInfo DirectoryInfo { get; }
 
         public DisposableFileSystem CreateFolder(string path)
         {

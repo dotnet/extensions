@@ -4,11 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.FileProviders.Composite.Tests.TestUtility;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
-namespace Microsoft.AspNet.FileProviders.Composite.Tests
+namespace Microsoft.AspNet.FileProviders.Composite
 {
     public class CompositeFileProviderTests
     {
