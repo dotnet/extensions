@@ -7,10 +7,6 @@ namespace Microsoft.Extensions.Caching.Distributed
 {
     public interface IDistributedCache
     {
-        void Connect();
-
-        Task ConnectAsync();
-
         byte[] Get(string key);
 
         Task<byte[]> GetAsync(string key);

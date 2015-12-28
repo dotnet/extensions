@@ -51,7 +51,6 @@ namespace SqlServerCacheConcurrencySample
                 SchemaName = Configuration["SchemaName"],
                 TableName = Configuration["TableName"]
             });
-            cache.Connect();
 
             SetKey(cache, "0");
 

@@ -76,18 +76,6 @@ namespace Microsoft.Extensions.Caching.SqlServer
             }
         }
 
-        public void Connect()
-        {
-            // Try connecting to the database and check if its available.
-            _dbOperations.GetTableSchema();
-        }
-
-        public async Task ConnectAsync()
-        {
-            // Try connecting to the database and check if its available.
-            await _dbOperations.GetTableSchemaAsync();
-        }
-
         public byte[] Get(string key)
         {
             if (key == null)

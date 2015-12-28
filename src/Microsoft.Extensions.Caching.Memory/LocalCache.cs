@@ -23,15 +23,6 @@ namespace Microsoft.Extensions.Caching.Distributed
             _memCache = memoryCache;
         }
 
-        public void Connect()
-        {
-        }
-
-        public Task ConnectAsync()
-        {
-            return CompletedTask;
-        }
-
         public byte[] Get(string key)
         {
             if (key == null)

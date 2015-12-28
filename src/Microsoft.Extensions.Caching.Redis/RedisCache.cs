@@ -9,7 +9,7 @@ using StackExchange.Redis;
 
 namespace Microsoft.Extensions.Caching.Redis
 {
-    public class RedisCache : IDistributedCache
+    public class RedisCache : IDistributedCache, IDisposable
     {
         // KEYS[1] = = key
         // ARGV[1] = absolute-expiration - ticks as long (-1 for none)
@@ -17,10 +17,10 @@ namespace Microsoft.Extensions.Caching.Redis
         // ARGV[3] = relative-expiration (long, in seconds, -1 for none) - Min(absolute-expiration - Now, sliding-expiration)
         // ARGV[4] = data - byte[]
         // this order should not change LUA script depends on it
-        private const string SetScript = (@" 
+        private const string SetScript = (@"
                 redis.call('HMSET', KEYS[1], 'absexp', ARGV[1], 'sldexp', ARGV[2], 'data', ARGV[4])
                 if ARGV[3] ~= '-1' then
-                  redis.call('EXPIRE', KEYS[1], ARGV[3]) 
+                  redis.call('EXPIRE', KEYS[1], ARGV[3])
                 end
                 return 1");
         private const string AbsoluteExpirationKey = "absexp";
@@ -45,24 +45,6 @@ namespace Microsoft.Extensions.Caching.Redis
 
             // This allows partitioning a single backend cache for use with multiple apps/services.
             _instance = _options.InstanceName ?? string.Empty;
-        }
-
-        public void Connect()
-        {
-            if (_connection == null)
-            {
-                _connection = ConnectionMultiplexer.Connect(_options.Configuration);
-                _cache = _connection.GetDatabase();
-            }
-        }
-
-        public async Task ConnectAsync()
-        {
-            if (_connection == null)
-            {
-                _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration);
-                _cache = _connection.GetDatabase();
-            }
         }
 
         public byte[] Get(string key)
@@ -145,6 +127,24 @@ namespace Microsoft.Extensions.Caching.Redis
             }
 
             await GetAndRefreshAsync(key, getData: false);
+        }
+
+        private void Connect()
+        {
+            if (_connection == null)
+            {
+                _connection = ConnectionMultiplexer.Connect(_options.Configuration);
+                _cache = _connection.GetDatabase();
+            }
+        }
+
+        private async Task ConnectAsync()
+        {
+            if (_connection == null)
+            {
+                _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration);
+                _cache = _connection.GetDatabase();
+            }
         }
 
         private byte[] GetAndRefresh(string key, bool getData)
@@ -354,6 +354,14 @@ namespace Microsoft.Extensions.Caching.Redis
                 return (long)options.SlidingExpiration.Value.TotalSeconds;
             }
             return null;
+        }
+
+        public void Dispose()
+        {
+            if (_connection != null)
+            {
+                _connection.Close();
+            }
         }
     }
 }

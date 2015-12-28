@@ -53,7 +53,6 @@ namespace SqlServerCacheSample
                 SchemaName = Configuration["SchemaName"],
                 TableName = Configuration["TableName"]
             });
-            await cache.ConnectAsync();
 
             Console.WriteLine("Connected");
 

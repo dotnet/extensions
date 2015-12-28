@@ -94,40 +94,6 @@ namespace Microsoft.Extensions.Caching.SqlServer
             await GetCacheItemAsync(key, includeValue: false);
         }
 
-        public virtual void GetTableSchema()
-        {
-            // Try connecting to the database and check if its available.
-            using (var connection = new SqlConnection(ConnectionString))
-            {
-                var command = new SqlCommand(SqlQueries.TableInfo, connection);
-                connection.Open();
-
-                var reader = command.ExecuteReader(CommandBehavior.SingleRow);
-                if (!reader.Read())
-                {
-                    throw new InvalidOperationException(
-                        string.Format(GetTableSchemaErrorText, SchemaName, TableName, ConnectionString));
-                }
-            }
-        }
-
-        public virtual async Task GetTableSchemaAsync()
-        {
-            using (var connection = new SqlConnection(ConnectionString))
-            {
-                var command = new SqlCommand(SqlQueries.TableInfo, connection);
-                await connection.OpenAsync();
-
-                var reader = await command.ExecuteReaderAsync(CommandBehavior.SingleRow);
-
-                if (!await reader.ReadAsync())
-                {
-                    throw new InvalidOperationException(
-                        string.Format(GetTableSchemaErrorText, SchemaName, TableName, ConnectionString));
-                }
-            }
-        }
-
         public virtual void DeleteExpiredCacheItems()
         {
             var utcNow = SystemClock.UtcNow;

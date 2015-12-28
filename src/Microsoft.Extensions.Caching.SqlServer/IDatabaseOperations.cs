@@ -8,10 +8,6 @@ namespace Microsoft.Extensions.Caching.SqlServer
 {
     internal interface IDatabaseOperations
     {
-        void GetTableSchema();
-
-        Task GetTableSchemaAsync();
-
         byte[] GetCacheItem(string key);
 
         Task<byte[]> GetCacheItemAsync(string key);
