@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.Internal;
 using Xunit.Sdk;
 
 namespace Microsoft.Extensions.Logging.Testing
@@ -32,7 +31,7 @@ namespace Microsoft.Extensions.Logging.Testing
         /// <param name="expectedValues">Expected subset of values</param>
         /// <param name="actualValues">Actual set of values</param>
         /// <param name="comparer">
-        /// An <see cref="IEqualityComparer{T}"/> to compare the values. 
+        /// An <see cref="IEqualityComparer{T}"/> to compare the values.
         /// In case no comparer is provided, a default comparer is used.
         /// </param>
         public static void Contains(

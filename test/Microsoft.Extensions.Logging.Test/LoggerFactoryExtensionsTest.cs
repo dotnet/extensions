@@ -1,17 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DNX451
+using System.Collections.Generic;
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.Extensions.Logging.Test
 {
     public class LoggerFactoryExtensionsTest
     {
-#if DNX451
-        [Fact] 
+        [Fact]
         public void LoggerFactoryCreateOfT_CallsCreateWithCorrectName()
         {
             // Arrange
@@ -53,12 +51,65 @@ namespace Microsoft.Extensions.Logging.Test
                 x => x.Equals("Microsoft.Extensions.Logging.Test.GenericClass<Microsoft.Extensions.Logging.Test.TestType, Microsoft.Extensions.Logging.Test.SecondTestType>"))))
             .Returns(new Mock<ILogger>().Object);
 
-            var logger = factory.Object.CreateLogger<GenericClass<TestType,SecondTestType>>();
+            var logger = factory.Object.CreateLogger<GenericClass<TestType, SecondTestType>>();
 
             // Assert
             Assert.NotNull(logger);
         }
-#endif
+
+        [Fact]
+        public void CreatesLoggerName_WithoutGenericTypeArgumentsInformation()
+        {
+            // Arrange
+            var fullName = typeof(GenericClass<string>).GetGenericTypeDefinition().FullName;
+            var fullNameWithoutBacktick = fullName.Substring(0, fullName.IndexOf('`'));
+            var testSink = new TestSink();
+            var factory = new TestLoggerFactory(testSink, enabled: true);
+
+            // Act
+            var logger = factory.CreateLogger<GenericClass<string>>();
+            logger.LogInformation("test message");
+
+            // Assert
+            Assert.Single(testSink.Writes);
+            Assert.Equal(fullNameWithoutBacktick, testSink.Writes[0].LoggerName);
+        }
+
+        [Fact]
+        public void CreatesLoggerName_OnNestedGenericType_CreatesWithoutGenericTypeArgumentsInformation()
+        {
+            // Arrange
+            var fullName = typeof(GenericClass<GenericClass<string>>).GetGenericTypeDefinition().FullName;
+            var fullNameWithoutBacktick = fullName.Substring(0, fullName.IndexOf('`'));
+            var testSink = new TestSink();
+            var factory = new TestLoggerFactory(testSink, enabled: true);
+
+            // Act
+            var logger = factory.CreateLogger<GenericClass<GenericClass<string>>>();
+            logger.LogInformation("test message");
+
+            // Assert
+            Assert.Single(testSink.Writes);
+            Assert.Equal(fullNameWithoutBacktick, testSink.Writes[0].LoggerName);
+        }
+
+        [Fact]
+        public void CreatesLoggerName_OnMultipleTypeArgumentGenericType_CreatesWithoutGenericTypeArgumentsInformation()
+        {
+            // Arrange
+            var fullName = typeof(GenericClass<string, string>).GetGenericTypeDefinition().FullName;
+            var fullNameWithoutBacktick = fullName.Substring(0, fullName.IndexOf('`'));
+            var testSink = new TestSink();
+            var factory = new TestLoggerFactory(testSink, enabled: true);
+
+            // Act
+            var logger = factory.CreateLogger<GenericClass<string, string>>();
+            logger.LogInformation("test message");
+
+            // Assert
+            Assert.Single(testSink.Writes);
+            Assert.Equal(fullNameWithoutBacktick, testSink.Writes[0].LoggerName);
+        }
     }
 
     internal class TestType
