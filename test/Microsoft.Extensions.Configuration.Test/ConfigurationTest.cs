@@ -333,5 +333,73 @@ namespace Microsoft.Extensions.Configuration.Test
             Assert.False(hasChanged3);
             Assert.NotSame(token1, token2);
         }
+
+        [Fact]
+        public void KeyStartingWithColonMeansFirstSectionHasEmptyName()
+        {
+            // Arrange
+            var dict = new Dictionary<string, string>
+            {
+                [":Key2"] = "value"
+            };
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dict);
+            var config = configurationBuilder.Build();
+
+            // Act
+            var children = config.GetChildren().ToArray();
+
+            // Assert
+            Assert.Equal(1, children.Length);
+            Assert.Equal(string.Empty, children.First().Key);
+            Assert.Equal(1, children.First().GetChildren().Count());
+            Assert.Equal("Key2", children.First().GetChildren().First().Key);
+        }
+
+        [Fact]
+        public void KeyWithDoubleColonHasSectionWithEmptyName()
+        {
+            // Arrange
+            var dict = new Dictionary<string, string>
+            {
+                ["Key1::Key3"] = "value"
+            };
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dict);
+            var config = configurationBuilder.Build();
+
+            // Act
+            var children = config.GetChildren().ToArray();
+
+            // Assert
+            Assert.Equal(1, children.Length);
+            Assert.Equal("Key1", children.First().Key);
+            Assert.Equal(1, children.First().GetChildren().Count());
+            Assert.Equal(string.Empty, children.First().GetChildren().First().Key);
+            Assert.Equal(1, children.First().GetChildren().First().GetChildren().Count());
+            Assert.Equal("Key3", children.First().GetChildren().First().GetChildren().First().Key);
+        }
+
+        [Fact]
+        public void KeyEndingWithColonMeansLastSectionHasEmptyName()
+        {
+            // Arrange
+            var dict = new Dictionary<string, string>
+            {
+                ["Key1:"] = "value"
+            };
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dict);
+            var config = configurationBuilder.Build();
+
+            // Act
+            var children = config.GetChildren().ToArray();
+
+            // Assert
+            Assert.Equal(1, children.Length);
+            Assert.Equal("Key1", children.First().Key);
+            Assert.Equal(1, children.First().GetChildren().Count());
+            Assert.Equal(string.Empty, children.First().GetChildren().First().Key);
+        }
     }
 }

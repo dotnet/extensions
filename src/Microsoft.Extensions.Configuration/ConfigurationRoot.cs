@@ -55,11 +55,11 @@ namespace Microsoft.Extensions.Configuration
             }
         }
 
-        public IEnumerable<IConfigurationSection> GetChildren() => GetChildrenImplementation(string.Empty);
+        public IEnumerable<IConfigurationSection> GetChildren() => GetChildrenImplementation(null);
 
         internal IEnumerable<IConfigurationSection> GetChildrenImplementation(string path)
         {
-            var prefix = string.IsNullOrEmpty(path) ? "" : (path + Constants.KeyDelimiter);
+            var prefix = path == null ? "" : (path + Constants.KeyDelimiter);
             return _providers
                 .Aggregate(Enumerable.Empty<string>(),
                     (seed, source) => source.GetChildKeys(seed, path, Constants.KeyDelimiter))

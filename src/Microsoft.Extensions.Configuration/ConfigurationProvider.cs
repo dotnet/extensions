@@ -35,11 +35,7 @@ namespace Microsoft.Extensions.Configuration
             string parentPath,
             string delimiter)
         {
-            var prefix = parentPath;
-            if (prefix != string.Empty)
-            {
-                prefix = parentPath + delimiter;
-            }
+            var prefix = parentPath == null ? string.Empty : parentPath + delimiter;
 
             return Data
                 .Where(kv => kv.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
