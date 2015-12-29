@@ -51,7 +51,7 @@ namespace Microsoft.Extensions.Primitives
             return value.GetArrayValue();
         }
 
-        public int Count => _values?.Length ?? (_value != null ? 1 : 0);
+        public int Count => _value != null ? 1 : (_values?.Length ?? 0);
 
         bool ICollection<string>.IsReadOnly
         {
