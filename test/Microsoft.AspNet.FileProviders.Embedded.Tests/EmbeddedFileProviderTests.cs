@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.FileProviders.Embedded.Tests
         {
             // Arrange
             var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, Namespace);
-            var expectedFileLength = new FileInfo("File.txt").Length;
+            var expectedFileLength = 8;
 
             // Act
             var fileInfo = provider.GetFileInfo(filePath);
@@ -55,8 +55,7 @@ namespace Microsoft.AspNet.FileProviders.Embedded.Tests
         {
             // Arrange
             var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, Namespace + ".SubNamespace");
-            var expectedFileLength = new FileInfo("File.txt").Length;
-
+          
             // Act
             var fileInfo = provider.GetFileInfo("File.txt");
 
@@ -70,8 +69,7 @@ namespace Microsoft.AspNet.FileProviders.Embedded.Tests
         {
             // Arrange
             var provider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, Namespace);
-            var expectedFileLength = new FileInfo("File.txt").Length;
-
+          
             // Act
             var fileInfo = provider.GetFileInfo("\\File.txt");
 
