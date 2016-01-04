@@ -1,13 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
 
-namespace Microsoft.Dnx.TestHost.Tests
+namespace Microsoft.AspNet.Testing.xunit
 {
-    public class OSSkipConditionFacts
+    public class OSSkipConditionTest
     {
         private IRuntimeEnvironment RuntimeEnvironment
         {
@@ -22,7 +21,7 @@ namespace Microsoft.Dnx.TestHost.Tests
         public void TestSkipLinux()
         {
             Assert.False(
-                "linux" == RuntimeEnvironment.OperatingSystem.ToLowerInvariant(),
+                RuntimeEnvironment.OperatingSystemPlatform == Platform.Linux,
                 "Test should not be running on Linux");
         }
 
@@ -31,7 +30,7 @@ namespace Microsoft.Dnx.TestHost.Tests
         public void TestSkipMacOSX()
         {
             Assert.False(
-                "darwin" == RuntimeEnvironment.OperatingSystem.ToLowerInvariant(),
+                RuntimeEnvironment.OperatingSystemPlatform == Platform.Darwin,
                 "Test should not be running on MacOSX.");
         }
 
@@ -40,7 +39,7 @@ namespace Microsoft.Dnx.TestHost.Tests
         public void RunTest_DoesNotRunOnWin7OrWin2008R2()
         {
             Assert.False(
-                RuntimeEnvironment.OperatingSystem.ToLowerInvariant() == "windows" &&
+                RuntimeEnvironment.OperatingSystemPlatform == Platform.Windows &&
                 RuntimeEnvironment.OperatingSystemVersion == "6.1",
                 "Test should not be running on Win7 or Win2008R2.");
         }
@@ -50,7 +49,7 @@ namespace Microsoft.Dnx.TestHost.Tests
         public void TestSkipWindows()
         {
             Assert.False(
-                "windows" == RuntimeEnvironment.OperatingSystem.ToLowerInvariant(),
+                RuntimeEnvironment.OperatingSystemPlatform == Platform.Windows,
                 "Test should not be running on Windows.");
         }
     }

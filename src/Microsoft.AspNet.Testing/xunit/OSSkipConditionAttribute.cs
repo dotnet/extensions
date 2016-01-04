@@ -51,7 +51,6 @@ namespace Microsoft.AspNet.Testing.xunit
 
         private OSInfo GetCurrentOSInfo()
         {
-            var currentOS = _runtimeEnvironment.OperatingSystem;
             var currentOSVersion = _runtimeEnvironment.OperatingSystemVersion;
 
             OperatingSystems os;

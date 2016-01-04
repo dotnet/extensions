@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Dnx.Runtime;
 using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
 
-namespace Microsoft.AspNet.Testing.Tests
+namespace Microsoft.AspNet.Testing.xunit
 {
     public class OSSkipConditionAttributeTest
     {
