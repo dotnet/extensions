@@ -48,12 +48,12 @@ namespace Microsoft.Extensions.Logging.EventLog
             EventLog = settings.EventLog ?? new WindowsEventLog(logName, machineName, sourceName);
 
             // Examples:
-            // 1. An error occur...
+            // 1. An error occu...
             // 2. ...esponse stream
             _beginOrEndMessageSegmentSize = EventLog.MaxMessageSize - ContinuationString.Length;
 
             // Example:
-            // ...red while writ...
+            // ...rred while writ...
             _intermediateMessageSegmentSize = EventLog.MaxMessageSize - 2 * ContinuationString.Length;
         }
 
@@ -127,7 +127,7 @@ namespace Microsoft.Extensions.Logging.EventLog
             while (true)
             {
                 // Begin segment
-                // Example: An error occur...
+                // Example: An error occu...
                 if (startIndex == 0)
                 {
                     messageSegment = message.Substring(startIndex, _beginOrEndMessageSegmentSize) + ContinuationString;
@@ -145,7 +145,7 @@ namespace Microsoft.Extensions.Logging.EventLog
                     }
                     else
                     {
-                        // Example: ...red while writ...
+                        // Example: ...rred while writ...
                         messageSegment =
                             ContinuationString
                             + message.Substring(startIndex, _intermediateMessageSegmentSize)
