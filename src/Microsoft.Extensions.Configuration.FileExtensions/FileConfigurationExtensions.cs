@@ -50,12 +50,8 @@ namespace Microsoft.Extensions.Configuration
             }
 
 #if NET451
-            var stringBasePath =
-                AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
-                AppDomain.CurrentDomain.BaseDirectory ??
-                string.Empty;
+            var stringBasePath = AppDomain.CurrentDomain.BaseDirectory ?? string.Empty;
 
-            // On Mono, the value of APP_CONTEXT_BASE_DIRECTORY is ".". We'll expand it to get the full base path.
             return Path.GetFullPath(stringBasePath);
 #else
             return AppContext.BaseDirectory ?? string.Empty;
