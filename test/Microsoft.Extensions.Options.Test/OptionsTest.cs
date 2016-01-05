@@ -302,5 +302,45 @@ namespace Microsoft.Extensions.Options.Tests
             Assert.Collection(expectedValues, assertions.ToArray());
         }
 
+        [Fact]
+        public void Options_StaticCreateCreateMakesOptions()
+        {
+            var options = Options.Create(new FakeOptions
+            {
+                Message = "This is a message"
+            });
+
+            Assert.Equal("This is a message", options.Value.Message);
+        }
+
+        [Fact]
+        public void OptionsWrapper_MakesOptions()
+        {
+            var options = new OptionsWrapper<FakeOptions>(new FakeOptions
+            {
+                Message = "This is a message"
+            });
+
+            Assert.Equal("This is a message", options.Value.Message);
+        }
+
+        [Fact]
+        public void Options_CanOverrideForSpecificTOptions()
+        {
+            var services = new ServiceCollection().AddOptions();
+
+            services.Configure<FakeOptions>(options =>
+            {
+                options.Message = "Initial value";
+            });
+
+            services.AddSingleton(Options.Create(new FakeOptions
+            {
+                Message = "Override"
+            }));
+
+            var sp = services.BuildServiceProvider();
+            Assert.Equal("Override", sp.GetRequiredService<IOptions<FakeOptions>>().Value.Message);
+        }
     }
 }
