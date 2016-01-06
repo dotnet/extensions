@@ -20,10 +20,7 @@
             "type": "build"
         },
         "Microsoft.Dnx.Testing.Abstractions": "1.0.0-*",
-        "Microsoft.Extensions.CommandLineUtils.Sources": {
-            "version": "1.0.0-*",
-            "type": "build"
-        },
+        "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
         "Microsoft.Extensions.Logging": "1.0.0-*",
         "Newtonsoft.Json": "6.0.6"
     },
