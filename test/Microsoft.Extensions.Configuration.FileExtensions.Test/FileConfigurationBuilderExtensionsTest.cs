@@ -59,7 +59,8 @@ namespace Microsoft.Extensions.Configuration.Json
 #if DNXCORE50
             expectedPath = AppContext.BaseDirectory;
 #else
-            expectedPath = Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory);
+            expectedPath = Path.GetFullPath(AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ?? 
+                AppDomain.CurrentDomain.BaseDirectory);
 #endif
 
             // Assert

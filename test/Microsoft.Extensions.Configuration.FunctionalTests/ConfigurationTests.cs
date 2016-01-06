@@ -246,7 +246,8 @@ CommonKey3:CommonKey4=IniValue6";
 #if DNXCORE50
             filePath = AppContext.BaseDirectory;
 #else
-            filePath = Path.GetFullPath((string)AppDomain.CurrentDomain.BaseDirectory);
+            filePath = Path.GetFullPath(AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
+                AppDomain.CurrentDomain.BaseDirectory);
 #endif
 
             var jsonConfigFilePath = Path.Combine(filePath, "test.json");

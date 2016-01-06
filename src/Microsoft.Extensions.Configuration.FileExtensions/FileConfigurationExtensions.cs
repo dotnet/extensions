@@ -50,7 +50,9 @@ namespace Microsoft.Extensions.Configuration
             }
 
 #if NET451
-            var stringBasePath = AppDomain.CurrentDomain.BaseDirectory ?? string.Empty;
+            var stringBasePath = AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
+                AppDomain.CurrentDomain.BaseDirectory ?? 
+                string.Empty;
 
             return Path.GetFullPath(stringBasePath);
 #else
