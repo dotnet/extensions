@@ -4,8 +4,8 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
-using Microsoft.Dnx.Runtime.Common.CommandLine;
 
 namespace Microsoft.Extensions.Caching.SqlConfig
 {
