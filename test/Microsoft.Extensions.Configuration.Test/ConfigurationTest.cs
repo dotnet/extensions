@@ -12,6 +12,89 @@ namespace Microsoft.Extensions.Configuration.Test
     public class ConfigurationTest
     {
         [Fact]
+        public void CanChainConfiguration()
+        {
+            // Arrange
+            var dic1 = new Dictionary<string, string>()
+                {
+                    {"Mem1:KeyInMem1", "ValueInMem1"}
+                };
+            var memConfigSrc1 = new MemoryConfigurationProvider(dic1);
+
+            var configurationBuilder = new ConfigurationBuilder();
+
+            // Act
+            configurationBuilder.Add(memConfigSrc1, load: false);
+
+            var dic2 = new Dictionary<string, string>()
+                {
+                    {"Mem2:KeyInMem2", "ValueInMem2"}
+                };
+            var memConfigSrc2 = new MemoryConfigurationProvider(dic2);
+            var configurationBuilder2 = new ConfigurationBuilder();
+            configurationBuilder2.Add(memConfigSrc2, load: false);
+            configurationBuilder2.Include(configurationBuilder.Build());
+
+            var config = configurationBuilder2.Build();
+
+            var memVal1 = config["mem1:keyinmem1"];
+            var memVal2 = config["Mem2:KeyInMem2"];
+
+            // Assert
+            Assert.Contains(memConfigSrc2, configurationBuilder2.Providers);
+            Assert.True(configurationBuilder2.Providers.ElementAt(1) is IncludedConfigurationProvider);
+
+            Assert.Equal("ValueInMem1", memVal1);
+            Assert.Equal("ValueInMem2", memVal2);
+            Assert.Null(config["NotExist"]);
+        }
+
+        [Fact]
+        public void CanIncludeConfigurationWithPrefix()
+        {
+            // Arrange
+            var dic1 = new Dictionary<string, string>()
+            {
+                {"Data:Key", "Value"},
+                {"Data:DB1:Connection1", "MemVal1"},
+                {"Data:DB1:Connection2", "MemVal2"}
+            };
+            var memConfigSrc1 = new MemoryConfigurationProvider(dic1);
+
+            var configurationBuilder = new ConfigurationBuilder();
+
+            // Act
+            configurationBuilder.Add(memConfigSrc1, load: false);
+
+            var dic2 = new Dictionary<string, string>()
+            {
+                {"Mem2:KeyInMem2", "MemVal3"}
+            };
+            var memConfigSrc2 = new MemoryConfigurationProvider(dic2);
+            var configurationBuilder2 = new ConfigurationBuilder();
+            configurationBuilder2.Add(memConfigSrc2, load: false);
+            configurationBuilder2.Include("Data", configurationBuilder.Build());
+
+            var config = configurationBuilder2.Build();
+
+            var memVal0 = config["Key"];
+            var memVal1 = config["DB1:Connection1"];
+            var memVal2 = config["DB1:Connection2"];
+            var memVal3 = config["Mem2:KeyInMem2"];
+
+            // Assert
+            Assert.Contains(memConfigSrc2, configurationBuilder2.Providers);
+            Assert.True(configurationBuilder2.Providers.ElementAt(1) is IncludedConfigurationProvider);
+
+            Assert.Equal("Value", memVal0);
+            Assert.Equal("MemVal1", memVal1);
+            Assert.Equal("MemVal2", memVal2);
+            Assert.Equal("MemVal3", memVal3);
+
+            Assert.Null(config["NotExist"]);
+        }
+
+        [Fact]
         public void LoadAndCombineKeyValuePairsFromDifferentConfigurationProviders()
         {
             // Arrange
