@@ -20,16 +20,18 @@ namespace Microsoft.Extensions.Primitives
             Assert.Equal(0, segment.Length);
         }
 
-        [Fact]
-        public void StringSegmentConstructor_AllowsEmptyBuffers()
+        [Theory]
+        [InlineData("", 0, 0)]
+        [InlineData("abc", 2, 0)]
+        public void StringSegmentConstructor_AllowsEmptyBuffers(string text, int offset, int length)
         {
             // Arrange & Act
-            var segment = new StringSegment("", 0, 0);
+            var segment = new StringSegment(text, offset, length);
 
             // Assert
             Assert.True(segment.HasValue);
-            Assert.Equal(0, segment.Offset);
-            Assert.Equal(0, segment.Length);
+            Assert.Equal(offset, segment.Offset);
+            Assert.Equal(length, segment.Length);
         }
 
         [Fact]
@@ -454,6 +456,7 @@ namespace Microsoft.Extensions.Primitives
         [InlineData("   a     ", 0, 9, "a")]
         [InlineData("value\t value  value ", 2, 13, "lue\t value  v")]
         [InlineData("\x0009value \x0085", 0, 8, "value")]
+        [InlineData(" \f\t\u000B\u2028Hello \u2029\n\t ", 1, 13, "Hello")]
         [InlineData("      ", 1, 2, "")]
         [InlineData("\t\t\t", 0, 3, "")]
         [InlineData("\n\n\t\t  \t", 2, 3, "")]

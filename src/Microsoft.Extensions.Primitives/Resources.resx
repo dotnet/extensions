@@ -118,6 +118,6 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Argument_InvalidOffsetLength" xml:space="preserve">
-    <value>Offset and length were out of bounds for the string or length is greater than the number of characters from index to the end of the string.</value>
+    <value>Offset and length are out of bounds for the string or length is greater than the number of characters from index to the end of the string.</value>
   </data>
 </root>

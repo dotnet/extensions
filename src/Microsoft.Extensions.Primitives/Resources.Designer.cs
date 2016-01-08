@@ -59,7 +59,7 @@ namespace Microsoft.Extensions.Primitives {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Offset and length were out of bounds for the string or length is greater than the number of characters from index to the end of the string..
+        ///    Looks up a localized string similar to Offset and length are out of bounds for the string or length is greater than the number of characters from index to the end of the string..
         /// </summary>
         internal static string Argument_InvalidOffsetLength {
             get {

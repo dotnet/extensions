@@ -31,11 +31,9 @@ namespace Microsoft.Extensions.Primitives
             _separator = separator;
         }
 
-        /// <inheritdoc />
-        public IEnumerator<StringSegment> GetEnumerator()
-        {
-            return new Enumerator(ref this);
-        }
+        public Enumerator GetEnumerator() => new Enumerator(ref this);
+
+        IEnumerator<StringSegment> IEnumerable<StringSegment>.GetEnumerator() => GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
@@ -63,32 +61,23 @@ namespace Microsoft.Extensions.Primitives
 
             public bool MoveNext()
             {
-                if (_index > _value.Length)
+                if (_value == null || _index > _value.Length)
                 {
+                    Current = default(StringSegment);
                     return false;
                 }
 
                 var next = _value.IndexOf(_separator, _index);
                 if (next == -1)
                 {
-                    if (_index <= _value.Length)
-                    {
-                        Current = new StringSegment(_value, _index, _value.Length - _index);
-                        _index = _value.Length + 1;
-                        return true;
-                    }
-                    else
-                    {
-                        Current = default(StringSegment);
-                        return false;
-                    }
+                    // No token found. Consume the remainder of the string
+                    next = _value.Length;
                 }
-                else
-                {
-                    Current = new StringSegment(_value, _index, next - _index);
-                    _index = next + 1;
-                    return true;
-                }
+
+                Current = new StringSegment(_value, _index, next - _index);
+                _index = next + 1;
+
+                return true;
             }
 
             public void Reset()

@@ -8,6 +8,20 @@ namespace Microsoft.Extensions.Primitives
 {
     public class StringTokenizerTest
     {
+        [Fact]
+        public void TokenizerReturnsEmptySequenceForNullValues()
+        {
+            // Arrange
+            var stringTokenizer = new StringTokenizer();
+            var enumerator = stringTokenizer.GetEnumerator();
+
+            // Act
+            var next = enumerator.MoveNext();
+
+            // Assert
+            Assert.False(next);
+        }
+
         [Theory]
         [InlineData("", new[] { "" })]
         [InlineData("a", new[] { "a" })]
