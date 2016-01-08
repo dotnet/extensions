@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 namespace Microsoft.Extensions.Primitives
@@ -13,8 +10,6 @@ namespace Microsoft.Extensions.Primitives
     {
         public class TestChangeToken : IChangeToken
         {
-            private bool _changed = false;
-
             public bool ActiveChangeCallbacks { get; set; }
             public bool HasChanged { get; set; }
 

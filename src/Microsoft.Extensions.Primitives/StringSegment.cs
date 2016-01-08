@@ -37,14 +37,19 @@ namespace Microsoft.Extensions.Primitives
                 throw new ArgumentNullException(nameof(buffer));
             }
 
-            if (offset < 0 || offset >= buffer.Length)
+            if (offset < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset));
             }
 
-            if (length < 0 || offset + length > buffer.Length)
+            if (length < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(length));
+            }
+
+            if (offset + length > buffer.Length)
+            {
+                throw new ArgumentException(Resources.Argument_InvalidOffsetLength);
             }
 
             Buffer = buffer;
@@ -345,6 +350,37 @@ namespace Microsoft.Extensions.Primitives
         public int IndexOf(char c)
         {
             return IndexOf(c, 0, Length);
+        }
+
+        /// <summary>
+        /// Removes all leading and trailing whitespaces.
+        /// </summary>
+        /// <returns>The trimmed <see cref="StringSegment"/>.</returns>
+        public StringSegment Trim()
+        {
+            var trimmedStart = Offset;
+            while (trimmedStart < Offset + Length)
+            {
+                if (!char.IsWhiteSpace(Buffer, trimmedStart))
+                {
+                    break;
+                }
+
+                trimmedStart++;
+            }
+
+            var trimmedEnd = Offset + Length - 1;
+            while (trimmedEnd >= trimmedStart)
+            {
+                if (!char.IsWhiteSpace(Buffer, trimmedEnd))
+                {
+                    break;
+                }
+
+                trimmedEnd--;
+            }
+
+            return new StringSegment(Buffer, trimmedStart, trimmedEnd - trimmedStart + 1);
         }
 
         /// <summary>

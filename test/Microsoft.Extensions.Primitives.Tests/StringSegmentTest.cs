@@ -20,6 +20,20 @@ namespace Microsoft.Extensions.Primitives
             Assert.Equal(0, segment.Length);
         }
 
+        [Theory]
+        [InlineData("", 0, 0)]
+        [InlineData("abc", 2, 0)]
+        public void StringSegmentConstructor_AllowsEmptyBuffers(string text, int offset, int length)
+        {
+            // Arrange & Act
+            var segment = new StringSegment(text, offset, length);
+
+            // Assert
+            Assert.True(segment.HasValue);
+            Assert.Equal(offset, segment.Offset);
+            Assert.Equal(length, segment.Length);
+        }
+
         [Fact]
         public void StringSegment_StringCtor_InitializesValuesCorrectly()
         {
@@ -432,5 +446,31 @@ namespace Microsoft.Extensions.Primitives
             // Assert
             Assert.True(segment.HasValue);
         }
+
+        [Theory]
+        [InlineData("   value", 0, 8, "value")]
+        [InlineData("value   ", 0, 8, "value")]
+        [InlineData("\t\tvalue", 0, 7, "value")]
+        [InlineData("value\t\t", 0, 7, "value")]
+        [InlineData("\t\tvalue \t a", 1, 8, "value")]
+        [InlineData("   a     ", 0, 9, "a")]
+        [InlineData("value\t value  value ", 2, 13, "lue\t value  v")]
+        [InlineData("\x0009value \x0085", 0, 8, "value")]
+        [InlineData(" \f\t\u000B\u2028Hello \u2029\n\t ", 1, 13, "Hello")]
+        [InlineData("      ", 1, 2, "")]
+        [InlineData("\t\t\t", 0, 3, "")]
+        [InlineData("\n\n\t\t  \t", 2, 3, "")]
+        public void Trim_RemovesLeadingAndTrailingWhitespaces(string value, int start, int length, string expected)
+        {
+            // Arrange
+            var segment = new StringSegment(value, start, length);
+
+            // Act
+            var actual = segment.Trim();
+
+            // Assert
+            Assert.Equal(expected, actual.Value);
+        }
+
     }
 }
