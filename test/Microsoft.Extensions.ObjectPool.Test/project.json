@@ -3,6 +3,9 @@
     "Microsoft.Extensions.ObjectPool": "1.0.0-*",
     "xunit": "2.1.0"
   },
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
   "testRunner": "xunit",
   "frameworks": {
     "dnx451": {
@@ -21,7 +24,7 @@
       }
     }
   },
-  "commands": {		
-    "test": "xunit.runner.aspnet"		
+  "commands": {
+    "test": "xunit.runner.aspnet"
   }
 }

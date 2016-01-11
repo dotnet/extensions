@@ -3,6 +3,9 @@
     "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
     "xunit": "2.1.0"
   },
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
   "testRunner": "xunit",
   "frameworks": {
     "dnx451": {

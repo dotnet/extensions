@@ -357,10 +357,11 @@ namespace Microsoft.Extensions.Primitives
 
             var equalStringArray = new string[] { equalString };
             var equalStringValues = new StringValues(equalString);
+            var otherStringValues = new StringValues(equalString);
             var stringArray = new string[] { equalString, equalString };
             var stringValuesArray = new StringValues(stringArray);
 
-            Assert.True(equalStringValues == equalStringValues);
+            Assert.True(equalStringValues == otherStringValues);
 
             Assert.True(equalStringValues == equalString);
             Assert.True(equalString == equalStringValues);
@@ -383,10 +384,11 @@ namespace Microsoft.Extensions.Primitives
 
             var equalStringArray = new string[] { equalString };
             var equalStringValues = new StringValues(equalString);
+            var otherStringValues = new StringValues(equalString);
             var stringArray = new string[] { equalString, equalString };
             var stringValuesArray = new StringValues(stringArray);
 
-            Assert.False(equalStringValues != equalStringValues);
+            Assert.False(equalStringValues != otherStringValues);
 
             Assert.False(equalStringValues != equalString);
             Assert.False(equalString != equalStringValues);

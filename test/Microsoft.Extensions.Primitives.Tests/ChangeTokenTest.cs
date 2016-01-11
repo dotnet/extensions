@@ -10,6 +10,8 @@ namespace Microsoft.Extensions.Primitives
     {
         public class TestChangeToken : IChangeToken
         {
+            private Action _callback;
+
             public bool ActiveChangeCallbacks { get; set; }
             public bool HasChanged { get; set; }
 
@@ -24,8 +26,6 @@ namespace Microsoft.Extensions.Primitives
                 HasChanged = true;
                 _callback();
             }
-
-            private Action _callback;
         }
 
         [Fact]
