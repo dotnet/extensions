@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Logging
         /// <param name="exception"></param>
         /// <param name="formatter"></param>
         /// <returns></returns>
-        void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter);
+        void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter);
 
         /// <summary>
         /// Checks if the given LogLevel is enabled.

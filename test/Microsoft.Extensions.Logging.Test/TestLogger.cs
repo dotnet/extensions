@@ -34,7 +34,7 @@ namespace Microsoft.Extensions.Logging.Test
             return new NoopDisposable();
         }
 
-        public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             _sink.Write(new WriteContext()
             {
@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.Logging.Test
                 EventId = eventId,
                 State = state,
                 Exception = exception,
-                Formatter = formatter,
+                Formatter = (s, e) => formatter((TState)s, e),
                 LoggerName = _name,
                 Scope = _scope
             });

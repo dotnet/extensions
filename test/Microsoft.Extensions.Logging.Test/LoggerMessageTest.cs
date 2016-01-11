@@ -27,14 +27,14 @@ namespace Microsoft.Extensions.Logging
             // Assert
             Assert.Equal(1, testSink.Writes.Count);
             var writeContext = testSink.Writes.First();
-            var actualLogValues = Assert.IsAssignableFrom<ILogValues>(writeContext.State);
+            var actualLogValues = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(writeContext.State);
             AssertLogValues(
                 new[] {
                     new KeyValuePair<string, object>("{OriginalFormat}", TestLoggerExtensions.ActionMatchedInfo.NamedStringFormat),
                     new KeyValuePair<string, object>("controller", controller),
                     new KeyValuePair<string, object>("action", action)
                 },
-                actualLogValues.GetValues());
+                actualLogValues.ToArray());
             Assert.Equal(LogLevel.Information, writeContext.LogLevel);
             Assert.Equal(1, writeContext.EventId);
             Assert.Null(writeContext.Exception);
@@ -61,12 +61,12 @@ namespace Microsoft.Extensions.Logging
             Assert.Equal(0, testSink.Writes.Count);
             Assert.Equal(1, testSink.Scopes.Count);
             var scopeContext = testSink.Scopes.First();
-            var actualLogValues = Assert.IsAssignableFrom<ILogValues>(scopeContext.Scope);
+            var actualLogValues = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(scopeContext.Scope);
             AssertLogValues(new[]
             {
                 new KeyValuePair<string, object>("{OriginalFormat}", TestLoggerExtensions.ScopeWithoutAnyParameters.Message)
             },
-            actualLogValues.GetValues());
+            actualLogValues.ToArray());
             Assert.Equal(
                 TestLoggerExtensions.ScopeWithoutAnyParameters.Message,
                 actualLogValues.ToString());
@@ -88,13 +88,13 @@ namespace Microsoft.Extensions.Logging
             Assert.Equal(0, testSink.Writes.Count);
             Assert.Equal(1, testSink.Scopes.Count);
             var scopeContext = testSink.Scopes.First();
-            var actualLogValues = Assert.IsAssignableFrom<ILogValues>(scopeContext.Scope);
+            var actualLogValues = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(scopeContext.Scope);
             AssertLogValues(new[]
             {
                 new KeyValuePair<string, object>("RequestId", param1),
                 new KeyValuePair<string, object>("{OriginalFormat}", TestLoggerExtensions.ScopeWithOneParameter.NamedStringFormat)
             },
-            actualLogValues.GetValues());
+            actualLogValues.ToArray());
             Assert.Equal(
                 string.Format(TestLoggerExtensions.ScopeWithOneParameter.FormatString, param1),
                 actualLogValues.ToString());
@@ -117,14 +117,14 @@ namespace Microsoft.Extensions.Logging
             Assert.Equal(0, testSink.Writes.Count);
             Assert.Equal(1, testSink.Scopes.Count);
             var scopeContext = testSink.Scopes.First();
-            var actualLogValues = Assert.IsAssignableFrom<ILogValues>(scopeContext.Scope);
+            var actualLogValues = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(scopeContext.Scope);
             AssertLogValues(new[]
             {
                 new KeyValuePair<string, object>("param1", param1),
                 new KeyValuePair<string, object>("param2", param2),
                 new KeyValuePair<string, object>("{OriginalFormat}", TestLoggerExtensions.ScopeInfoWithTwoParameters.NamedStringFormat)
             },
-            actualLogValues.GetValues());
+            actualLogValues.ToArray());
             Assert.Equal(
                 string.Format(TestLoggerExtensions.ScopeInfoWithTwoParameters.FormatString, param1, param2),
                 actualLogValues.ToString());
@@ -148,7 +148,7 @@ namespace Microsoft.Extensions.Logging
             Assert.Equal(0, testSink.Writes.Count);
             Assert.Equal(1, testSink.Scopes.Count);
             var scopeContext = testSink.Scopes.First();
-            var actualLogValues = Assert.IsAssignableFrom<ILogValues>(scopeContext.Scope);
+            var actualLogValues = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(scopeContext.Scope);
             AssertLogValues(new[]
             {
                 new KeyValuePair<string, object>("param1", param1),
@@ -156,7 +156,7 @@ namespace Microsoft.Extensions.Logging
                 new KeyValuePair<string, object>("param3", param3),
                 new KeyValuePair<string, object>("{OriginalFormat}", TestLoggerExtensions.ScopeInfoWithThreeParameters.NamedStringFormat)
             },
-            actualLogValues.GetValues());
+            actualLogValues.ToArray());
             Assert.Equal(
                 string.Format(TestLoggerExtensions.ScopeInfoWithThreeParameters.FormatString, param1, param2, param3),
                 actualLogValues.ToString());
@@ -187,8 +187,8 @@ namespace Microsoft.Extensions.Logging
             // Assert
             Assert.Equal(1, testSink.Writes.Count);
             var write = testSink.Writes.First();
-            var actualLogValues = Assert.IsAssignableFrom<ILogValues>(write.State);
-            AssertLogValues(expectedValues, actualLogValues.GetValues());
+            var actualLogValues = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(write.State);
+            AssertLogValues(expectedValues, actualLogValues.ToList());
             Assert.Equal(expectedToString, actualLogValues.ToString());
         }
 

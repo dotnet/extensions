@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.Logging
             return _logger.IsEnabled(logLevel);
         }
 
-        void ILogger.Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        void ILogger.Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             _logger.Log(logLevel, eventId, state, exception, formatter);
         }

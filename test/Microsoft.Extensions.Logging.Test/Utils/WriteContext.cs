@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Logging
     {
         public LogLevel LogLevel { get; set; }
 
-        public int EventId { get; set; }
+        public EventId EventId { get; set; }
 
         public object State { get; set; }
 

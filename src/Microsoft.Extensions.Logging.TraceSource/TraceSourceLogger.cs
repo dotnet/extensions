@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Logging.TraceSource
             _traceSource = traceSource;
         }
 
-        public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             if (!IsEnabled(logLevel))
             {
@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.Logging.TraceSource
             }
             if (!string.IsNullOrEmpty(message))
             {
-                _traceSource.TraceEvent(GetEventType(logLevel), eventId, message);
+                _traceSource.TraceEvent(GetEventType(logLevel), eventId.Id, message);
             }
         }
 

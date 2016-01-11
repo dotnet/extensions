@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(expected, logValues.ToString());
 
             // Original format is expected to be returned from GetValues.
-            Assert.Equal(format, logValues.GetValues().First(v => v.Key == "{OriginalFormat}").Value);
+            Assert.Equal(format, logValues.First(v => v.Key == "{OriginalFormat}").Value);
         }
 
         [Theory]
@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(expected, logValues.ToString());
 
             // Original format is expected to be returned from GetValues.
-            Assert.Equal(format, logValues.GetValues().First(v => v.Key == "{OriginalFormat}").Value);
+            Assert.Equal(format, logValues.First(v => v.Key == "{OriginalFormat}").Value);
         }
 
         [Theory]
@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(expected, logValues.ToString());
 
             // Original format is expected to be returned from GetValues.
-            Assert.Equal(format, logValues.GetValues().First(v => v.Key == "{OriginalFormat}").Value);
+            Assert.Equal(format, logValues.First(v => v.Key == "{OriginalFormat}").Value);
         }
 
         [Theory]

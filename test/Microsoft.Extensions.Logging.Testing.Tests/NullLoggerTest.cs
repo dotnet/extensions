@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.Logging.Testing
             bool isCalled = false;
 
             // Act
-            logger.Log(LogLevel.Trace, eventId: 0, state: null, exception: null, formatter: (ex, message) => { isCalled = true; return string.Empty; });
+            logger.Log<object>(LogLevel.Trace, eventId: 0, state: null, exception: null, formatter: (ex, message) => { isCalled = true; return string.Empty; });
 
             // Assert
             Assert.False(isCalled);

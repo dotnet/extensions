@@ -24,12 +24,12 @@ namespace Microsoft.Extensions.Logging.Testing
             return _logger.IsEnabled(logLevel);
         }
 
-        public void Log(
+        public void Log<TState>(
             LogLevel logLevel,
-            int eventId,
-            object state,
+            EventId eventId,
+            TState state,
             Exception exception,
-            Func<object, Exception, string> formatter)
+            Func<TState, Exception, string> formatter)
         {
             _logger.Log(logLevel, eventId, state, exception, formatter);
         }

@@ -41,29 +41,29 @@ namespace Microsoft.Extensions.Logging.NLog
                 _logger = logger;
             }
 
-            public void Log(
+            public void Log<TState>(
                 LogLevel logLevel,
-                int eventId,
-                object state,
+                EventId eventId,
+                TState state,
                 Exception exception,
-                Func<object, Exception, string> formatter)
+                Func<TState, Exception, string> formatter)
             {
                 var nLogLogLevel = GetLogLevel(logLevel);
-                var message = string.Empty;
-                if (formatter != null)
+                if (formatter == null)
                 {
-                    message = formatter(state, exception);
+                    throw new ArgumentNullException(nameof(formatter));
                 }
-                else
+
+                var message = formatter(state, exception);
+
+                if (string.IsNullOrEmpty(message))
                 {
-                    message = LogFormatter.Formatter(state, exception);
+                    return;
                 }
-                if (!string.IsNullOrEmpty(message))
-                {
-                    var eventInfo = LogEventInfo.Create(nLogLogLevel, _logger.Name, message, exception);
+
+                var eventInfo = LogEventInfo.Create(nLogLogLevel, _logger.Name, message, exception);
                     eventInfo.Properties["EventId"] = eventId;
                     _logger.Log(eventInfo);
-                }
             }
 
             public bool IsEnabled(LogLevel logLevel)

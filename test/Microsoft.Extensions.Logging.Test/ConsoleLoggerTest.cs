@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Logging.Test
         private readonly string _paddingString;
         private const string _loggerName = "test";
         private const string _state = "This is a test, and {curly braces} are just fine!";
-        private readonly Func<object, Exception, string> _theMessageAndError;
+        private Func<object, Exception, string> _defaultFormatter = (state, exception) => state.ToString();
 
         private Tuple<ConsoleLogger, ConsoleSink> SetUp(Func<string, LogLevel, bool> filter, bool includeScopes = false)
         {
@@ -34,7 +34,6 @@ namespace Microsoft.Extensions.Logging.Test
         {
             var loglevelStringWithPadding = "INFO: ";
             _paddingString = new string(' ', loglevelStringWithPadding.Length);
-            _theMessageAndError = ((message, error) => message + Environment.NewLine + _paddingString + error);
         }
 
         private Tuple<ILoggerFactory, ConsoleSink> SetUpFactory(Func<string, LogLevel, bool> filter)
@@ -61,14 +60,10 @@ namespace Microsoft.Extensions.Logging.Test
             var t = SetUp(null);
             var logger = (ILogger)t.Item1;
             var sink = t.Item2;
-            var expectedExceptionMessage = "No message or exception details were found " +
-                    "to create a message for the log.";
 
             // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => logger.LogCritical(state: null));
-            Assert.Equal(expectedExceptionMessage, exception.Message);
-            exception = Assert.Throws<InvalidOperationException>(() => logger.LogCritical(state: null, error: null));
-            Assert.Equal(expectedExceptionMessage, exception.Message);
+            var exception = Assert.Throws<ArgumentNullException>(() => logger.LogCritical(eventId: 0, exception: null, message: null));
+            exception = Assert.Throws<ArgumentNullException>(() => logger.LogCritical(eventId: 0, message: null));
         }
 
         [Fact]
@@ -83,9 +78,9 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Act
             logger.LogCritical(logMessage);
-            logger.LogCritical(logMessage, error: null);
+            logger.LogCritical(eventId: 10, message: logMessage, exception: null);
             logger.LogCritical(eventId: 10, message: logMessage);
-            logger.LogCritical(eventId: 10, message: logMessage, error: null);
+            logger.LogCritical(eventId: 10, message: logMessage, exception: null);
 
             // Assert
             Assert.Equal(12, sink.Writes.Count);
@@ -97,7 +92,6 @@ namespace Microsoft.Extensions.Logging.Test
 
         [Theory]
         [InlineData("Route with name 'Default' was not found.")]
-        [InlineData("")]
         public void Writes_NewLine_WhenExceptionIsProvided(string message)
         {
             // Arrange
@@ -107,38 +101,41 @@ namespace Microsoft.Extensions.Logging.Test
             var eventId = 10;
             var exception = new InvalidOperationException("Invalid value");
             var expectedMessage =
-                _paddingString + message + Environment.NewLine
-                + _paddingString + ReplaceMessageNewLinesWithPadding(exception.ToString()) + Environment.NewLine;
+                _paddingString + message + Environment.NewLine;
+            var expectedExceptionMessage =
+                _paddingString + exception.Message + Environment.NewLine;
 
             // Act
-            logger.LogCritical(message, exception);
-            logger.LogCritical(eventId, message, exception);
+            logger.LogCritical(eventId, exception, message);
 
             // Assert
-            Assert.Equal(6, sink.Writes.Count);
+            Assert.Equal(5, sink.Writes.Count);
             Assert.Equal(expectedMessage, sink.Writes[2].Message);
-            Assert.Equal(expectedMessage, sink.Writes[5].Message);
+            Assert.Equal(_paddingString + exception.GetType().FullName + Environment.NewLine, sink.Writes[3].Message);
+            Assert.Equal(expectedExceptionMessage, sink.Writes[4].Message);
         }
 
         [Fact]
-        public void WritesException_WhenNoMessageIsProvided()
+        public void ThrowsException_WhenNoMessageIsProvided()
         {
             // Arrange
             var t = SetUp(null);
             var logger = (ILogger)t.Item1;
-            var sink = t.Item2;
             var exception = new InvalidOperationException("Invalid value");
-            var expectedMessage =
-                _paddingString + ReplaceMessageNewLinesWithPadding(exception.ToString()) + Environment.NewLine;
 
-            // Act
-            logger.LogCritical(state: null, error: exception);
-            logger.LogCritical(10, state: null, error: exception);
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => logger.LogCritical(10, message: null, exception: exception));
+        }
 
-            // Assert
-            Assert.Equal(6, sink.Writes.Count);
-            Assert.Equal(expectedMessage, sink.Writes[2].Message);
-            Assert.Equal(expectedMessage, sink.Writes[5].Message);
+        [Fact]
+        public void ThrowsException_WhenNoFormatterIsProvided()
+        {
+            // Arrange
+            var t = SetUp(null);
+            var logger = (ILogger)t.Item1;
+
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => logger.Log<object>(LogLevel.Trace, 1, "empty", new Exception(), null));
         }
 
         [Fact]
@@ -148,12 +145,14 @@ namespace Microsoft.Extensions.Logging.Test
             var t = SetUp(null);
             var logger = t.Item1;
             var sink = t.Item2;
+            var expectedMessage = _paddingString + _state + Environment.NewLine;
 
             // Act
-            logger.Log(LogLevel.Information, 0, _state, null, null);
+            logger.Log(LogLevel.Information, 0, _state, null, _defaultFormatter);
 
             // Assert
             Assert.Equal(3, sink.Writes.Count);
+            Assert.Equal(expectedMessage, sink.Writes[2].Message);
         }
 
         [Fact]
@@ -165,13 +164,13 @@ namespace Microsoft.Extensions.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Log(LogLevel.Warning, 0, _state, null, null);
+            logger.Log(LogLevel.Warning, 0, _state, null, _defaultFormatter);
 
             // Assert
             Assert.Equal(0, sink.Writes.Count);
 
             // Act
-            logger.Log(LogLevel.Critical, 0, _state, null, null);
+            logger.Log(LogLevel.Critical, 0, _state, null, _defaultFormatter);
 
             // Assert
             Assert.Equal(3, sink.Writes.Count);
@@ -192,7 +191,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(0, sink.Writes.Count);
 
             // Act
-            logger.Log(LogLevel.Error, 0, _state, null, null);
+            logger.Log(LogLevel.Error, 0, _state, null, _defaultFormatter);
 
             // Assert
             Assert.Equal(3, sink.Writes.Count);
@@ -213,7 +212,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(0, sink.Writes.Count);
 
             // Act
-            logger.Log(LogLevel.Warning, 0, _state, null, null);
+            logger.Log(LogLevel.Warning, 0, _state, null, _defaultFormatter);
 
             // Assert
             Assert.Equal(3, sink.Writes.Count);
@@ -234,7 +233,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(0, sink.Writes.Count);
 
             // Act
-            logger.Log(LogLevel.Information, 0, _state, null, null);
+            logger.Log(LogLevel.Information, 0, _state, null, _defaultFormatter);
 
             // Assert
             Assert.Equal(3, sink.Writes.Count);
@@ -255,7 +254,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(0, sink.Writes.Count);
 
             // Act
-            logger.Log(LogLevel.Debug, 0, _state, null, null);
+            logger.Log(LogLevel.Debug, 0, _state, null, _defaultFormatter);
 
             // Assert
             Assert.Equal(3, sink.Writes.Count);
@@ -270,12 +269,12 @@ namespace Microsoft.Extensions.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Log(LogLevel.Critical, 0, _state, null, null);
-            logger.Log(LogLevel.Error, 0, _state, null, null);
-            logger.Log(LogLevel.Warning, 0, _state, null, null);
-            logger.Log(LogLevel.Information, 0, _state, null, null);
-            logger.Log(LogLevel.Debug, 0, _state, null, null);
-            logger.Log(LogLevel.Trace, 0, _state, null, null);
+            logger.Log(LogLevel.Critical, 0, _state, null, _defaultFormatter);
+            logger.Log(LogLevel.Error, 0, _state, null, _defaultFormatter);
+            logger.Log(LogLevel.Warning, 0, _state, null, _defaultFormatter);
+            logger.Log(LogLevel.Information, 0, _state, null, _defaultFormatter);
+            logger.Log(LogLevel.Debug, 0, _state, null, _defaultFormatter);
+            logger.Log(LogLevel.Trace, 0, _state, null, _defaultFormatter);
 
             // Assert
             Assert.Equal(18, sink.Writes.Count);
@@ -290,7 +289,7 @@ namespace Microsoft.Extensions.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Log(LogLevel.Critical, 0, _state, null, null);
+            logger.Log(LogLevel.Critical, 0, _state, null, _defaultFormatter);
 
             // Assert
             Assert.Equal(3, sink.Writes.Count);
@@ -314,7 +313,7 @@ namespace Microsoft.Extensions.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Log(LogLevel.Error, 0, _state, null, null);
+            logger.Log(LogLevel.Error, 0, _state, null, _defaultFormatter);
 
             // Assert
             Assert.Equal(3, sink.Writes.Count);
@@ -338,7 +337,7 @@ namespace Microsoft.Extensions.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Log(LogLevel.Warning, 0, _state, null, null);
+            logger.Log(LogLevel.Warning, 0, _state, null, _defaultFormatter);
 
             // Assert
             Assert.Equal(3, sink.Writes.Count);
@@ -362,7 +361,7 @@ namespace Microsoft.Extensions.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Log(LogLevel.Information, 0, _state, null, null);
+            logger.Log(LogLevel.Information, 0, _state, null, _defaultFormatter);
 
             // Assert
             Assert.Equal(3, sink.Writes.Count);
@@ -386,7 +385,7 @@ namespace Microsoft.Extensions.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Log(LogLevel.Debug, 0, _state, null, null);
+            logger.Log(LogLevel.Debug, 0, _state, null, _defaultFormatter);
 
             // Assert
             Assert.Equal(3, sink.Writes.Count);
@@ -410,7 +409,7 @@ namespace Microsoft.Extensions.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Log(LogLevel.Trace, 0, _state, null, null);
+            logger.Log(LogLevel.Trace, 0, _state, null, _defaultFormatter);
 
             // Assert
             Assert.Equal(3, sink.Writes.Count);
@@ -434,23 +433,22 @@ namespace Microsoft.Extensions.Logging.Test
             var sink = t.Item2;
             var ex = new Exception();
 
-
             // Act
-            logger.Log(LogLevel.Critical, 0, _state, ex, _theMessageAndError);
-            logger.Log(LogLevel.Error, 0, _state, ex, _theMessageAndError);
-            logger.Log(LogLevel.Warning, 0, _state, ex, _theMessageAndError);
-            logger.Log(LogLevel.Information, 0, _state, ex, _theMessageAndError);
-            logger.Log(LogLevel.Debug, 0, _state, ex, _theMessageAndError);
-            logger.Log(LogLevel.Trace, 0, _state, ex, _theMessageAndError);
+            logger.Log(LogLevel.Critical, 0, _state, ex, _defaultFormatter);
+            logger.Log(LogLevel.Error, 0, _state, ex, _defaultFormatter);
+            logger.Log(LogLevel.Warning, 0, _state, ex, _defaultFormatter);
+            logger.Log(LogLevel.Information, 0, _state, ex, _defaultFormatter);
+            logger.Log(LogLevel.Debug, 0, _state, ex, _defaultFormatter);
+            logger.Log(LogLevel.Trace, 0, _state, ex, _defaultFormatter);
 
             // Assert
-            Assert.Equal(18, sink.Writes.Count);
-            Assert.Equal(GetMessage("crit", 0, ex), GetMessage(sink.Writes.GetRange(0, 3)));
-            Assert.Equal(GetMessage("fail", 0, ex), GetMessage(sink.Writes.GetRange(3, 3)));
-            Assert.Equal(GetMessage("warn", 0, ex), GetMessage(sink.Writes.GetRange(6, 3)));
-            Assert.Equal(GetMessage("info", 0, ex), GetMessage(sink.Writes.GetRange(9, 3)));
-            Assert.Equal(GetMessage("dbug", 0, ex), GetMessage(sink.Writes.GetRange(12, 3)));
-            Assert.Equal(GetMessage("trce", 0, ex), GetMessage(sink.Writes.GetRange(15, 3)));
+            Assert.Equal(30, sink.Writes.Count);
+            Assert.Equal(GetMessage("crit", 0, ex), GetMessage(sink.Writes.GetRange(0, 5)));
+            Assert.Equal(GetMessage("fail", 0, ex), GetMessage(sink.Writes.GetRange(5, 5)));
+            Assert.Equal(GetMessage("warn", 0, ex), GetMessage(sink.Writes.GetRange(10, 5)));
+            Assert.Equal(GetMessage("info", 0, ex), GetMessage(sink.Writes.GetRange(15, 5)));
+            Assert.Equal(GetMessage("dbug", 0, ex), GetMessage(sink.Writes.GetRange(20, 5)));
+            Assert.Equal(GetMessage("trce", 0, ex), GetMessage(sink.Writes.GetRange(25, 5)));
         }
 
         [Fact]
@@ -462,7 +460,7 @@ namespace Microsoft.Extensions.Logging.Test
             var sink = t.Item2;
 
             // Act
-            logger.Log(LogLevel.Warning, 0, _state, null, null);
+            logger.Log(LogLevel.Warning, 0, _state, null, _defaultFormatter);
 
             // Assert
             Assert.Equal(3, sink.Writes.Count);
@@ -490,7 +488,7 @@ namespace Microsoft.Extensions.Logging.Test
             // Act
             using (logger.BeginScope(scopeMessage, id))
             {
-                logger.Log(LogLevel.Information, 0, _state, null, null);
+                logger.Log(LogLevel.Information, 0, _state, null, _defaultFormatter);
             }
 
             // Assert
@@ -524,7 +522,7 @@ namespace Microsoft.Extensions.Logging.Test
             // Act
             using (logger.BeginScope("RequestId: {RequestId}", 100))
             {
-                logger.Log(LogLevel.Information, 0, _state, null, null);
+                logger.Log(LogLevel.Information, 0, _state, null, _defaultFormatter);
             }
 
             // Assert
@@ -553,7 +551,7 @@ namespace Microsoft.Extensions.Logging.Test
             {
                 using (logger.BeginScope("Request matched action: {ActionName}", "Index"))
                 {
-                    logger.Log(LogLevel.Information, 0, _state, null, null);
+                    logger.Log(LogLevel.Information, 0, _state, null, _defaultFormatter);
                 }
             }
 
@@ -587,12 +585,12 @@ namespace Microsoft.Extensions.Logging.Test
             {
                 using (logger.BeginScope("Request matched action: {ActionName}", "Index"))
                 {
-                    logger.Log(LogLevel.Information, 0, _state, null, null);
+                    logger.Log(LogLevel.Information, 0, _state, null, _defaultFormatter);
                 }
 
                 using (logger.BeginScope("Created product: {ProductName}", "Car"))
                 {
-                    logger.Log(LogLevel.Information, 0, _state, null, null);
+                    logger.Log(LogLevel.Information, 0, _state, null, _defaultFormatter);
                 }
             }
 
@@ -712,7 +710,9 @@ namespace Microsoft.Extensions.Logging.Test
 
             return
                 loglevelStringWithPadding + $"{_loggerName}[{eventId}]" + Environment.NewLine
-                + _paddingString + ReplaceMessageNewLinesWithPadding(_theMessageAndError(_state, exception)) + Environment.NewLine;
+                + _paddingString + ReplaceMessageNewLinesWithPadding(_state.ToString())
+                + Environment.NewLine + _paddingString + exception.GetType().FullName + Environment.NewLine + _paddingString
+                + ReplaceMessageNewLinesWithPadding(exception.Message) + Environment.NewLine;
         }
 
         private string ReplaceMessageNewLinesWithPadding(string message)

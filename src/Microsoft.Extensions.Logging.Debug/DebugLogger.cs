@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Microsoft.Extensions.Logging.Debug
@@ -51,31 +52,19 @@ namespace Microsoft.Extensions.Logging.Debug
         }
 
         /// <inheritdoc />
-        public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             if (!IsEnabled(logLevel))
             {
                 return;
             }
 
-            string message;
-            var values = state as ILogValues;
-            if (formatter != null)
+            if(formatter == null)
             {
-                message = formatter(state, exception);
+                throw new ArgumentNullException(nameof(formatter));
             }
-            else if (values != null)
-            {
-                message = LogFormatter.FormatLogValues(values);
-                if (exception != null)
-                {
-                    message += Environment.NewLine + exception;
-                }
-            }
-            else
-            {
-                message = LogFormatter.Formatter(state, exception);
-            }
+
+            var message = formatter(state, exception);
 
             if (string.IsNullOrEmpty(message))
             {

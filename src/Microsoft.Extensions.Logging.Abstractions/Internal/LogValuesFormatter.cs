@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -142,6 +143,21 @@ namespace Microsoft.Extensions.Logging.Internal
             }
 
             return string.Format(CultureInfo.InvariantCulture, _format, values);
+        }
+
+        public KeyValuePair<string, object> GetValue(object[] values, int index)
+        {
+            if (index < 0 || index > _valueNames.Count + 1)
+            {
+                throw new IndexOutOfRangeException(nameof(index));
+            }
+
+            if (_valueNames.Count > index)
+            {
+                return new KeyValuePair<string, object>(_valueNames[index], values[index]);
+            }
+
+            return new KeyValuePair<string, object>("{OriginalFormat}", OriginalFormat);
         }
 
         public IEnumerable<KeyValuePair<string, object>> GetValues(object[] values)

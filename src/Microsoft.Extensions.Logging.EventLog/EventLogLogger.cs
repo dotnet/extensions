@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging.EventLog.Internal;
 
@@ -72,36 +73,24 @@ namespace Microsoft.Extensions.Logging.EventLog
         }
 
         /// <inheritdoc />
-        public void Log(
+        public void Log<TState>(
             LogLevel logLevel,
-            int eventId,
-            object state,
+            EventId eventId,
+            TState state,
             Exception exception,
-            Func<object, Exception, string> formatter)
+            Func<TState, Exception, string> formatter)
         {
             if (!IsEnabled(logLevel))
             {
                 return;
             }
 
-            string message;
-            var values = state as ILogValues;
-            if (formatter != null)
+            if (formatter == null)
             {
-                message = formatter(state, exception);
+                throw new ArgumentNullException(nameof(formatter));
             }
-            else if (values != null)
-            {
-                message = LogFormatter.FormatLogValues(values);
-                if (exception != null)
-                {
-                    message += Environment.NewLine + exception;
-                }
-            }
-            else
-            {
-                message = LogFormatter.Formatter(state, exception);
-            }
+
+            var message = formatter(state, exception);
 
             if (string.IsNullOrEmpty(message))
             {
@@ -110,7 +99,7 @@ namespace Microsoft.Extensions.Logging.EventLog
 
             message = _name + Environment.NewLine + message;
 
-            WriteMessage(message, GetEventLogEntryType(logLevel), eventId);
+            WriteMessage(message, GetEventLogEntryType(logLevel), eventId.Id);
         }
 
         // category '0' translates to 'None' in event log
