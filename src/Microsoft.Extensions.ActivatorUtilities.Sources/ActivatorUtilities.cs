@@ -51,7 +51,7 @@ namespace Microsoft.Extensions.Internal
 
             if (bestMatcher == null)
             {
-                throw new InvalidOperationException($"Unable to locate suitable constructor for type '{instanceType}'.Ensure the type is concrete and all parameters are accepted by a constructor.");
+                throw new InvalidOperationException($"Unable to locate suitable constructor for type '{instanceType}'. Ensure the type is concrete and all parameters are accepted by a constructor.");
             }
 
             return bestMatcher.CreateInstance(provider);
@@ -267,7 +267,6 @@ namespace Microsoft.Extensions.Internal
 
             public int Match(object[] givenParameters)
             {
-
                 var applyIndexStart = 0;
                 var applyExactLength = 0;
                 for (var givenIndex = 0; givenIndex != givenParameters.Length; ++givenIndex)
@@ -277,8 +276,9 @@ namespace Microsoft.Extensions.Internal
 
                     for (var applyIndex = applyIndexStart; givenMatched == false && applyIndex != _parameters.Length; ++applyIndex)
                     {
-                        if (_parameterValuesSet[applyIndex] == false &&
-                            _parameters[applyIndex].ParameterType.GetTypeInfo().IsAssignableFrom(givenType))
+                        if (givenType == null ||
+                            (_parameterValuesSet[applyIndex] == false &&
+                            _parameters[applyIndex].ParameterType.GetTypeInfo().IsAssignableFrom(givenType)))
                         {
                             givenMatched = true;
                             _parameterValuesSet[applyIndex] = true;
@@ -308,6 +308,11 @@ namespace Microsoft.Extensions.Internal
                 {
                     if (_parameterValuesSet[index] == false)
                     {
+                        if (_parameters[index] == null)
+                        {
+                            _parameterValues[index] = null;
+                            continue;
+                        }
                         var value = provider.GetService(_parameters[index].ParameterType);
                         if (value == null)
                         {
