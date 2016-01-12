@@ -22,10 +22,10 @@ namespace Microsoft.Dnx.TestHost
         public TestHostTest()
         {
             var libraryManager = DnxPlatformServices.Default.LibraryManager;
-            _testProject = Path.GetDirectoryName(libraryManager.GetLibrary("Sample.Tests").Path);
+            _testProject = "Not set"; // _testProject = Path.GetDirectoryName(libraryManager.GetLibrary("Sample.Tests").Path);
         }
 
-        [ConditionalFact]
+        [Fact(Skip = "TestHost has to be redesigned to support the new project format")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ListTest()
@@ -66,7 +66,7 @@ namespace Microsoft.Dnx.TestHost
             Assert.Equal("TestDiscovery.Response", host.Output[host.Output.Count - 1].MessageType);
         }
 
-        [ConditionalFact]
+        [Fact(Skip = "TestHost has to be redesigned to support the new project format")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ListTest_AsyncMethod_Symbols()
@@ -89,7 +89,7 @@ namespace Microsoft.Dnx.TestHost
             Assert.Equal(35, test.LineNumber);
         }
 
-        [ConditionalFact]
+        [Fact(Skip = "TestHost has to be redesigned to support the new project format")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ListTest_InheritedMethod_Symbols()
@@ -111,8 +111,8 @@ namespace Microsoft.Dnx.TestHost
             Assert.EndsWith("BaseTest.cs", test.CodeFilePath);
             Assert.Equal(12, test.LineNumber);
         }
-
-        [ConditionalFact]
+    
+        [Fact(Skip = "TestHost has to be redesigned to support the new project format")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task RunTest_All()
@@ -151,7 +151,7 @@ namespace Microsoft.Dnx.TestHost
             Assert.Equal("TestExecution.Response", host.Output[host.Output.Count - 1].MessageType);
         }
 
-        [ConditionalFact]
+        [Fact(Skip = "TestHost has to be redesigned to support the new project format")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task RunTest_IncludesStartAndEndTime()
@@ -177,7 +177,7 @@ namespace Microsoft.Dnx.TestHost
             }
         }
 
-        [ConditionalFact]
+        [Fact(Skip = "TestHost has to be redesigned to support the new project format")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task RunTest_ByUniqueName()
@@ -211,7 +211,7 @@ namespace Microsoft.Dnx.TestHost
             Assert.Equal("TestExecution.Response", host.Output[host.Output.Count - 1].MessageType);
         }
 
-        [ConditionalFact]
+        [Fact(Skip = "TestHost has to be redesigned to support the new project format")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task RunTest_ByUniqueName_ProtocolVersion_MatchingVersion()
@@ -250,7 +250,7 @@ namespace Microsoft.Dnx.TestHost
             Assert.Equal("TestExecution.Response", host.Output[host.Output.Count - 1].MessageType);
         }
 
-        [ConditionalFact]
+        [Fact(Skip = "TestHost has to be redesigned to support the new project format")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task RunTest_ByUniqueName_ProtocolVersion_UnknownVersion()
@@ -289,7 +289,7 @@ namespace Microsoft.Dnx.TestHost
             Assert.Equal("TestExecution.Response", host.Output[host.Output.Count - 1].MessageType);
         }
 
-        [ConditionalFact]
+        [Fact(Skip = "TestHost has to be redesigned to support the new project format")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
