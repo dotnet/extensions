@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Extensions.Internal;
 using Xunit;
 
@@ -10,7 +11,8 @@ namespace Microsoft.Extensions.Caching.Memory
 {
     public class GcNotificationTests
     {
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test fails on Mono (finalizer never called).")]
         public void CallbackRegisteredAndInvoked()
         {
             var callbackInvoked = new ManualResetEvent(false);
