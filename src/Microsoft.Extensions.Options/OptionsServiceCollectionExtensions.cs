@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection Configure<TOptions>(this IServiceCollection services, Action<TOptions> setupAction)
+        public static IServiceCollection Configure<TOptions>(this IServiceCollection services, Action<TOptions> configureOptions)
             where TOptions : class
         {
             if (services == null)
@@ -32,12 +32,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            if (setupAction == null)
+            if (configureOptions == null)
             {
-                throw new ArgumentNullException(nameof(setupAction));
+                throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            services.AddSingleton<IConfigureOptions<TOptions>>(new ConfigureOptions<TOptions>(setupAction));
+            services.AddSingleton<IConfigureOptions<TOptions>>(new ConfigureOptions<TOptions>(configureOptions));
             return services;
         }
     }
