@@ -24,72 +24,6 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        private static bool IsAction(Type type)
-        {
-            return (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Action<>));
-        }
-
-        private static IEnumerable<Type> FindIConfigureOptions(Type type)
-        {
-            var serviceTypes = type.GetTypeInfo().ImplementedInterfaces
-                .Where(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IConfigureOptions<>));
-            if (!serviceTypes.Any())
-            {
-                var error = "No IConfigureOptions<> found.";
-                if (IsAction(type))
-                {
-                    error += " did you mean Configure(Action<T>)";
-                }
-                throw new InvalidOperationException(error);
-            }
-            return serviceTypes;
-        }
-
-        public static IServiceCollection ConfigureOptions(this IServiceCollection services, Type configureType)
-        {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            var serviceTypes = FindIConfigureOptions(configureType);
-            foreach (var serviceType in serviceTypes)
-            {
-                services.AddTransient(serviceType, configureType);
-            }
-            return services;
-        }
-
-        public static IServiceCollection ConfigureOptions<TSetup>(this IServiceCollection services)
-        {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            return services.ConfigureOptions(typeof(TSetup));
-        }
-
-        public static IServiceCollection ConfigureOptions(this IServiceCollection services, object configureInstance)
-        {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            if (configureInstance == null)
-            {
-                throw new ArgumentNullException(nameof(configureInstance));
-            }
-
-            var serviceTypes = FindIConfigureOptions(configureInstance.GetType());
-            foreach (var serviceType in serviceTypes)
-            {
-                services.AddSingleton(serviceType, configureInstance);
-            }
-            return services;
-        }
-
         public static IServiceCollection Configure<TOptions>(this IServiceCollection services, Action<TOptions> setupAction)
             where TOptions : class
         {
@@ -103,7 +37,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(setupAction));
             }
 
-            services.ConfigureOptions(new ConfigureOptions<TOptions>(setupAction));
+            services.AddSingleton<IConfigureOptions<TOptions>>(new ConfigureOptions<TOptions>(setupAction));
             return services;
         }
     }

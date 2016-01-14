@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(config));
             }
 
-            services.ConfigureOptions(new ConfigureFromConfigurationOptions<TOptions>(config));
+            services.AddSingleton<IConfigureOptions<TOptions>>(new ConfigureFromConfigurationOptions<TOptions>(config));
             return services;
         }
 
@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(config));
             }
 
-            services.ConfigureOptions(new ConfigureFromConfigurationOptions<TOptions>(config));
+            services.AddSingleton<IConfigureOptions<TOptions>>(new ConfigureFromConfigurationOptions<TOptions>(config));
             if (trackConfigChanges)
             {
                 services.AddSingleton<IOptionsChangeTokenSource<TOptions>>(new ConfigurationChangeTokenSource<TOptions>(config));

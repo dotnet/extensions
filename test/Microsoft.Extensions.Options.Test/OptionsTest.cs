@@ -152,16 +152,13 @@ namespace Microsoft.Extensions.Options.Tests
             services.Configure<FakeOptions>(o => o.Message += "Igetstomped");
             services.Configure<FakeOptions>(config);
             services.Configure<FakeOptions>(o => o.Message += "a");
-            services.ConfigureOptions(typeof(FakeOptionsSetupA));
-            services.ConfigureOptions(new FakeOptionsSetupB());
-            services.ConfigureOptions<FakeOptionsSetupC>();
             services.Configure<FakeOptions>(o => o.Message += "z");
 
             var service = services.BuildServiceProvider().GetService<IOptions<FakeOptions>>();
             Assert.NotNull(service);
             var options = service.Value;
             Assert.NotNull(options);
-            Assert.Equal("!aABCz", options.Message);
+            Assert.Equal("!az", options.Message);
         }
 
         public static TheoryData Configure_GetsNullableOptionsFromConfiguration_Data
