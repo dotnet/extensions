@@ -86,9 +86,9 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
-            Assert.True(config.Get<bool?>("Boolean"));
-            Assert.Equal(-2, config.Get<int?>("Integer"));
-            Assert.Equal(11, config.Get<int?>("Nested:Integer"));
+            Assert.True(config.GetValue<bool?>("Boolean"));
+            Assert.Equal(-2, config.GetValue<int?>("Integer"));
+            Assert.Equal(11, config.GetValue<int?>("Nested:Integer"));
         }
 
         [Fact]
@@ -105,10 +105,10 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
-            Assert.False(config.Get<bool>("Boolean"));
-            Assert.Equal(0, config.Get<int>("Integer"));
-            Assert.Equal(0, config.Get<int>("Nested:Integer"));
-            Assert.Null(config.Get<ComplexOptions>("Object"));
+            Assert.False(config.GetValue<bool>("Boolean"));
+            Assert.Equal(0, config.GetValue<int>("Integer"));
+            Assert.Equal(0, config.GetValue<int>("Nested:Integer"));
+            Assert.Null(config.GetValue<ComplexOptions>("Object"));
         }
 
         [Fact]
@@ -121,15 +121,15 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
-            Assert.False(config.Get<bool>("Boolean"));
-            Assert.Equal(0, config.Get<int>("Integer"));
-            Assert.Equal(0, config.Get<int>("Nested:Integer"));
-            Assert.Null(config.Get<ComplexOptions>("Object"));
-            Assert.True(config.Get("Boolean", true));
-            Assert.Equal(3, config.Get("Integer", 3));
-            Assert.Equal(1, config.Get("Nested:Integer", 1));
+            Assert.False(config.GetValue<bool>("Boolean"));
+            Assert.Equal(0, config.GetValue<int>("Integer"));
+            Assert.Equal(0, config.GetValue<int>("Nested:Integer"));
+            Assert.Null(config.GetValue<ComplexOptions>("Object"));
+            Assert.True(config.GetValue("Boolean", true));
+            Assert.Equal(3, config.GetValue("Integer", 3));
+            Assert.Equal(1, config.GetValue("Nested:Integer", 1));
             var foo = new ComplexOptions();
-            Assert.Same(config.Get("Object", foo), foo);
+            Assert.Same(config.GetValue("Object", foo), foo);
         }
 
 #if !DNXCORE50 // TypeConverter doesn't support this on DNXCORE
@@ -144,7 +144,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
-            var uri = config.Get<Uri>("AnUri");
+            var uri = config.GetValue<Uri>("AnUri");
 
             Assert.Equal("http://www.bing.com", uri.OriginalString);
         }
@@ -191,7 +191,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             // act
             config.Bind(options);
             var optionsValue = options.GetType().GetProperty("Value").GetValue(options);
-            var getValue = config.Get(type, "Value");
+            var getValue = config.GetValue(type, "Value");
 
             // assert
             Assert.Equal(expectedValue, optionsValue);
@@ -237,7 +237,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
                 () => config.Bind(options));
 
             var getException = Assert.Throws<InvalidOperationException>(
-                () => config.Get(type, "Value"));
+                () => config.GetValue(type, "Value"));
 
             // assert
             Assert.NotNull(exception.InnerException);
@@ -292,7 +292,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<ComplexOptions>();
+            var options = new ComplexOptions();
+            config.Bind(options);
 
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
@@ -336,7 +337,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<DerivedOptions>();
+            var options = new DerivedOptions();
+            config.Bind(options);
 
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
@@ -354,8 +356,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
-
-            var options = config.Get<ComplexOptions>();
+            var options = new ComplexOptions();
+            config.Bind(options);
 
             Assert.Equal("stuff", ComplexOptions.StaticProperty);
         }
@@ -392,7 +394,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<ComplexOptions>();
+            var options = new ComplexOptions();
+            config.Bind(options);
             Assert.Null(options.GetType().GetTypeInfo().GetDeclaredProperty(property).GetValue(options));
         }
 
@@ -430,7 +433,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var config = configurationBuilder.Build();
 
             var exception = Assert.Throws<InvalidOperationException>(
-                () => config.Get<TestOptions>());
+                () => config.Bind(new TestOptions()));
             Assert.Equal(
                 Resources.FormatError_CannotActivateAbstractOrInterface(typeof(ISomeInterface)),
                 exception.Message);
@@ -449,7 +452,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var config = configurationBuilder.Build();
 
             var exception = Assert.Throws<InvalidOperationException>(
-                () => config.Get<TestOptions>());
+                () => config.Bind(new TestOptions()));
             Assert.Equal(
                 Resources.FormatError_MissingParameterlessConstructor(typeof(ClassWithoutPublicConstructor)),
                 exception.Message);
@@ -468,7 +471,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var config = configurationBuilder.Build();
 
             var exception = Assert.Throws<InvalidOperationException>(
-                () => config.Get<TestOptions>());
+                () => config.Bind(new TestOptions()));
             Assert.NotNull(exception.InnerException);
             Assert.Equal(
                 Resources.FormatError_FailedToActivate(typeof(ThrowsWhenActivated)),
@@ -488,7 +491,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var config = configurationBuilder.Build();
 
             var exception = Assert.Throws<InvalidOperationException>(
-                () => config.Get<TestOptions>());
+                () => config.Bind(new TestOptions()));
             Assert.Equal(
                 Resources.FormatError_CannotActivateAbstractOrInterface(typeof(ISomeInterface)),
                 exception.Message);

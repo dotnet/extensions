@@ -25,48 +25,29 @@ namespace Microsoft.Extensions.Configuration
             }
         }
 
-        public static T Get<T>(this IConfiguration configuration, T defaultValue)
+        public static T GetValue<T>(this IConfiguration configuration, string key)
         {
-            var value = configuration.Get(typeof(T));
-            if (value == null)
+            return GetValue(configuration, key, default(T));
+        }
+
+        public static T GetValue<T>(this IConfiguration configuration, string key, T defaultValue)
+        {
+            return (T)GetValue(configuration, typeof(T), key, defaultValue);
+        }
+
+        public static object GetValue(this IConfiguration configuration, Type type, string key)
+        {
+            return GetValue(configuration, type, key, defaultValue: null);
+        }
+
+        public static object GetValue(this IConfiguration configuration, Type type, string key, object defaultValue)
+        {
+            var value = configuration.GetSection(key).Value;
+            if (value != null)
             {
-                return defaultValue;
+                return ConvertValue(type, value);
             }
-
-            return (T)value;
-        }
-
-        public static T Get<T>(this IConfiguration configuration)
-        {
-            return configuration.Get(default(T));
-        }
-
-        public static T Get<T>(this IConfiguration configuration, string key)
-        {
-            return Get(configuration.GetSection(key), default(T));
-        }
-
-        public static T Get<T>(this IConfiguration configuration, string key, T defaultValue)
-        {
-            return Get<T>(configuration.GetSection(key), defaultValue);
-        }
-
-        public static object Get(this IConfiguration configuration, Type type)
-        {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
-
-            return BindInstance(
-                type: type,
-                instance: null,
-                config: configuration);
-        }
-
-        public static object Get(this IConfiguration configuration, Type type, string key)
-        {
-            return Get(configuration.GetSection(key), type);
+            return defaultValue;
         }
 
         private static void BindNonScalar(this IConfiguration configuration, object instance)
@@ -114,7 +95,7 @@ namespace Microsoft.Extensions.Configuration
             if (configValue != null)
             {
                 // Leaf nodes are always reinitialized
-                return ReadValue(type, configValue, section);
+                return ConvertValue(type, configValue);
             }
 
             if (config != null && config.GetChildren().Any())
@@ -278,20 +259,20 @@ namespace Microsoft.Extensions.Configuration
             return newArray;
         }
 
-        private static object ReadValue(Type type, string value, IConfigurationSection config)
+        private static object ConvertValue(Type type, string value)
         {
             if (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
-                return ReadValue(Nullable.GetUnderlyingType(type), value, config);
+                return ConvertValue(Nullable.GetUnderlyingType(type), value);
             }
 
             try
             {
-                return TypeDescriptor.GetConverter(type).ConvertFromInvariantString(config.Value);
+                return TypeDescriptor.GetConverter(type).ConvertFromInvariantString(value);
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException(Resources.FormatError_FailedBinding(config.Value, type), ex);
+                throw new InvalidOperationException(Resources.FormatError_FailedBinding(value, type), ex);
             }
         }
 

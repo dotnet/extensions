@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.Configuration.Memory;
 using Xunit;
 
 namespace Microsoft.Extensions.Configuration.Binder.Test
@@ -25,7 +23,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
-            var list = config.Get<List<string>>("StringList");
+            var list = new List<string>();
+            config.GetSection("StringList").Bind(list);
 
             Assert.Equal(4, list.Count);
 
@@ -49,7 +48,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
-            var list = config.Get<List<string>>("StringList");
+            var list = new List<string>();
+            config.GetSection("StringList").Bind(list);
 
             Assert.Equal(0, list.Count);
         }
@@ -66,25 +66,11 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
-            var list = config.Get<List<bool>>("InvalidList");
+            var list = new List<bool>();
+            config.GetSection("InvalidList").Bind(list);
 
             Assert.Equal(1, list.Count);
             Assert.Equal(true, list[0]);
-        }
-
-        [Fact]
-        public void GetListDataDoesNotExist()
-        {
-            var input = new Dictionary<string, string>
-            {
-            };
-
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddInMemoryCollection(input);
-            var config = configurationBuilder.Build();
-            var list = config.Get<List<string>>("StringList");
-
-            Assert.Null(list);
         }
 
         [Fact]
@@ -127,7 +113,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<List<NestedOptions>>("ObjectList");
+            var options = new List<NestedOptions>();
+            config.GetSection("ObjectList").Bind(options);
 
             Assert.Equal(3, options.Count);
 
@@ -150,7 +137,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<Dictionary<string, string>>("StringDictionary");
+            var options = new Dictionary<string, string>();
+            config.GetSection("StringDictionary").Bind(options);
 
             Assert.Equal(3, options.Count);
 
@@ -173,7 +161,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
-            var options = config.Get<OptionsWithLists>();
+            var options = new OptionsWithLists();
+            config.Bind(options);
 
             var list = options.StringList;
 
@@ -227,7 +216,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<OptionsWithLists>();
+            var options = new OptionsWithLists();
+            config.Bind(options);
 
             var list = options.IntList;
 
@@ -282,7 +272,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<OptionsWithLists>();
+            var options = new OptionsWithLists();
+            config.Bind(options);
 
             var list = options.AlreadyInitializedList;
 
@@ -310,7 +301,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<OptionsWithLists>();
+            var options = new OptionsWithLists();
+            config.Bind(options);
 
             var list = options.CustomList;
 
@@ -336,7 +328,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<OptionsWithLists>();
+            var options = new OptionsWithLists();
+            config.Bind(options);
 
             Assert.Equal(3, options.ObjectList.Count);
 
@@ -361,7 +354,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<OptionsWithLists>();
+            var options = new OptionsWithLists();
+            config.Bind(options);
 
             Assert.Equal(2, options.NestedLists.Count);
             Assert.Equal(2, options.NestedLists[0].Count);
@@ -388,7 +382,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<OptionsWithDictionary>();
+            var options = new OptionsWithDictionary();
+            config.Bind(options);
 
             Assert.Equal(3, options.StringDictionary.Count);
 
@@ -411,7 +406,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<OptionsWithDictionary>();
+            var options = new OptionsWithDictionary();
+            config.Bind(options);
 
             Assert.Equal(3, options.IntDictionary.Count);
 
@@ -434,7 +430,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<OptionsWithDictionary>();
+            var options = new OptionsWithDictionary();
+            config.Bind(options);
 
             Assert.Equal(3, options.ObjectDictionary.Count);
 
@@ -459,7 +456,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<OptionsWithDictionary>();
+            var options = new OptionsWithDictionary();
+            config.Bind(options);
 
             Assert.Equal(2, options.ListDictionary.Count);
             Assert.Equal(2, options.ListDictionary["abc"].Count);
@@ -488,7 +486,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<OptionsWithLists>();
+            var options = new OptionsWithLists();
+            config.Bind(options);
 
             Assert.Equal(2, options.ObjectList.Count);
             Assert.Equal(2, options.ObjectList[0].ListInNestedOption.Count);
@@ -515,7 +514,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<OptionsWithDictionary>();
+            var options = new OptionsWithDictionary();
+            config.Bind(options);
 
             Assert.Equal(0, options.NonStringKeyDictionary.Count);
         }
@@ -535,7 +535,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<OptionsWithArrays>();
+            var options = new OptionsWithArrays();
+            config.Bind(options);
 
             var array = options.StringArray;
 
@@ -591,7 +592,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(input);
             var config = configurationBuilder.Build();
 
-            var options = config.Get<OptionsWithArrays>();
+            var options = new OptionsWithArrays();
+            config.Bind(options);
             var array = options.AlreadyInitializedArray;
 
             Assert.Equal(7, array.Length);
