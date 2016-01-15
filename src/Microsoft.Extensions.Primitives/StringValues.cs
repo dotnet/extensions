@@ -25,23 +25,16 @@ namespace Microsoft.Extensions.Primitives
         public StringValues(string value)
         {
             _value = value;
-            _values = null;
-            _encoding = null;
-            _bytes = null;
         }
 
         public StringValues(string[] values)
         {
-            _value = null;
             _values = values;
-            _encoding = null;
-            _bytes = null;
         }
 
         private StringValues(string value, Encoding encoding)
         {
             _value = value;
-            _values = null;
             _encoding = encoding;
             _bytes = _encoding.GetBytes(value);
         }
@@ -54,6 +47,15 @@ namespace Microsoft.Extensions.Primitives
         /// <returns>A <see cref="StringValues"/> which contains the pre-encoded bytes.</returns>
         public static StringValues CreatePreEncoded(string value, Encoding encoding)
         {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+            if (encoding == null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
+            }
+
             return new StringValues(value, encoding);
         }
 
@@ -245,7 +247,7 @@ namespace Microsoft.Extensions.Primitives
 
         public Enumerator GetEnumerator()
         {
-            return new Enumerator(ref this);
+            return new Enumerator(this);
         }
 
         IEnumerator<string> IEnumerable<string>.GetEnumerator()
@@ -463,7 +465,7 @@ namespace Microsoft.Extensions.Primitives
             private string _current;
             private int _index;
 
-            public Enumerator(ref StringValues values)
+            public Enumerator(StringValues values)
             {
                 _values = values._values;
                 _current = values._value;
