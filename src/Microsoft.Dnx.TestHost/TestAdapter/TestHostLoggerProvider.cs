@@ -47,12 +47,12 @@ namespace Microsoft.Dnx.TestHost
                 return true;
             }
 
-            public void Log(
+            public void Log<TState>(
                 LogLevel logLevel,
-                int eventId,
-                object state,
+                EventId eventId,
+                TState state,
                 Exception exception,
-                Func<object, Exception, string> formatter)
+                Func<TState, Exception, string> formatter)
             {
                 string message = null;
                 if (formatter != null)
@@ -83,7 +83,7 @@ namespace Microsoft.Dnx.TestHost
                     Payload = JToken.FromObject(new LogMessage()
                     {
                         Name = _name,
-                        EventId = eventId,
+                        EventId = eventId.Id,
                         Level = logLevel.ToString(),
                         Message = message,
                     }),

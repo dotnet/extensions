@@ -80,7 +80,7 @@ namespace Microsoft.Dnx.TestHost.TestAdapter
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Failed to access source information in symbol.", ex);
+                _logger.LogWarning(0, ex, "Failed to access source information in symbol.");
                 return null;
             }
         }
@@ -198,7 +198,7 @@ namespace Microsoft.Dnx.TestHost.TestAdapter
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Failed to create DIA DataSource. No source information will be available.", ex);
+                _logger.LogWarning(0, ex, "Failed to create DIA DataSource. No source information will be available.");
                 _isInitialized = false;
                 return _isInitialized.Value;
             }
@@ -218,7 +218,7 @@ namespace Microsoft.Dnx.TestHost.TestAdapter
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Failed to load symbols. No source information will be available.", ex);
+                _logger.LogWarning(0, ex, "Failed to load symbols. No source information will be available.");
                 _isInitialized = false;
                 return _isInitialized.Value;
             }
@@ -229,7 +229,7 @@ namespace Microsoft.Dnx.TestHost.TestAdapter
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("Failed to read symbols. No source information will be available.", ex);
+                _logger.LogWarning(0, ex, "Failed to read symbols. No source information will be available.");
                 _isInitialized = false;
                 return _isInitialized.Value;
             }
