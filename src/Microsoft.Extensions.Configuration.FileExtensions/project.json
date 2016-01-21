@@ -16,7 +16,7 @@
     "net451": { },
     "dotnet5.4": {
       "dependencies": {
-        "System.AppContext": "4.0.1-*"
+        "System.AppContext": "4.1.0-*"
       }
     },
     "netcore50": {
