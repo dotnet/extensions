@@ -1,0 +1,25 @@
+{
+    "dependencies": {
+        "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*",
+        "Microsoft.AspNet.Testing": "1.0.0-*",
+        "xunit": "2.1.0"
+    },
+    "testRunner": "xunit",
+    "commands": {
+        "test": "xunit.runner.aspnet"
+    },
+    "resource": "File.txt;sub/**;Resources/**",
+    "frameworks": {
+        "dnx451": { 
+          "dependencies": {
+            "xunit.runner.console": "2.1.0"
+          }
+        },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Reflection.Extensions": "4.0.1-*",
+                "xunit.runner.aspnet": "2.0.0-aspnet-*"
+            }
+        }
+    }
+}
