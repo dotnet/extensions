@@ -19,7 +19,7 @@
         "System.Globalization": "4.0.11-*",
         "System.Reflection": "4.1.0-*",
         "System.Runtime": "4.0.21-*",
-        "System.Runtime.Extensions": "4.0.11-*",
+        "System.Runtime.Extensions": "4.1.0-*",
         "System.Runtime.InteropServices": "4.0.21-*"
       }
     },
