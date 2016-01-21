@@ -18,10 +18,10 @@
       "dependencies": {
         "System.Collections": "4.0.11-*",
         "System.Diagnostics.Debug": "4.0.11-*",
-        "System.IO": "4.0.11-*",
+        "System.IO": "4.1.0-*",
         "System.IO.FileSystem": "4.0.1-*",
         "System.Resources.ResourceManager": "4.0.1-*",
-        "System.Runtime.Extensions": "4.0.11-*",
+        "System.Runtime.Extensions": "4.1.0-*",
         "System.Runtime.InteropServices": "4.0.21-*",
         "System.Threading": "4.0.11-*"
       }
