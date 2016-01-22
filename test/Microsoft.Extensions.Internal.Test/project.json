@@ -3,7 +3,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "type": "build",
       "version": "1.0.0-*"

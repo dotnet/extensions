@@ -4,7 +4,7 @@
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Extensions.Internal
