@@ -9,16 +9,16 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.AspNet.FileProviders.Abstractions": { },
-            "Microsoft.AspNet.FileProviders.Embedded": { },
-            "Microsoft.AspNet.FileProviders.Physical": { },
+            "Microsoft.Extensions.FileProviders.Abstractions": { },
+            "Microsoft.Extensions.FileProviders.Embedded": { },
+            "Microsoft.Extensions.FileProviders.Physical": { },
             "Microsoft.Extensions.FileSystemGlobbing": { }
         }
     },
     "adx-nonshipping": {
         "rules": [],
         "packages": {
-            "Microsoft.AspNet.FileProviders.Sources": { }
+            "Microsoft.Extensions.FileProviders.Sources": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
