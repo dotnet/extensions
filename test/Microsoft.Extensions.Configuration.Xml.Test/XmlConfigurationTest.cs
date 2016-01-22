@@ -3,7 +3,7 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration.Test;
 using Xunit;
 
