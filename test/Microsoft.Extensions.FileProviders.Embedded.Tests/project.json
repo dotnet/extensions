@@ -1,7 +1,7 @@
 {
     "dependencies": {
         "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*",
-        "Microsoft.AspNet.Testing": "1.0.0-*",
+        "Microsoft.AspNetCore.Testing": "1.0.0-*",
         "xunit": "2.1.0"
     },
     "testRunner": "xunit",

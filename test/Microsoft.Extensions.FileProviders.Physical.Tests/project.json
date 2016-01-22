@@ -6,7 +6,7 @@
   "compile": "../Microsoft.Extensions.FileSystemGlobbing.Tests/TestUtility/DisposableFileSystem.cs",
   "dependencies": {
     "Microsoft.Extensions.FileProviders.Physical": "1.0.0-*",
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
   },
   "testRunner": "xunit",

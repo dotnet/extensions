@@ -8,7 +8,7 @@ using System.Linq;
 namespace Microsoft.Extensions.FileSystemGlobbing.Tests.TestUtility
 {
     public class RunWhenWhenDirectoryInfoWorksAttribute :
-        Attribute, Microsoft.AspNet.Testing.xunit.ITestCondition
+        Attribute, Microsoft.AspNetCore.Testing.xunit.ITestCondition
     {
         public bool IsMet
         {
