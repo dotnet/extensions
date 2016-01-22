@@ -3,7 +3,7 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNet.FileProviders;
+using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.Extensions.Configuration
 {

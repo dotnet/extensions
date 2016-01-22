@@ -10,7 +10,7 @@
     "url": "https://github.com/aspnet/configuration"
   },
   "dependencies": {
-    "Microsoft.AspNet.FileProviders.Physical": "1.0.0-*",
+    "Microsoft.Extensions.FileProviders.Physical": "1.0.0-*",
     "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0-*"
   },
   "frameworks": {

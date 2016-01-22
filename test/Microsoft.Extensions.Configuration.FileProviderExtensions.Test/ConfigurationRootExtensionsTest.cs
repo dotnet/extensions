@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Microsoft.AspNet.FileProviders;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
