@@ -4,7 +4,7 @@
 using System;
 using System.Globalization;
 using System.Threading;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Xunit;
 
