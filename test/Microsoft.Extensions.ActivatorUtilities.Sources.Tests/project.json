@@ -1,0 +1,27 @@
+﻿{
+  "dependencies": {
+    "Microsoft.Extensions.ActivatorUtilities.Sources": { "type": "build", "version": "1.0.0-*" },
+    "xunit": "2.1.0"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "testRunner": "xunit",
+  "frameworks": {
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Runtime": "4.0.10-*"
+      },
+      "dependencies": {
+        "xunit.runner.console": "2.1.0"
+      }
+    },
+    "dnxcore50": {
+      "dependencies": {
+        "Microsoft.NETCore.Platforms": "1.0.0-*",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+      }
+    }
+  },
+  "commands": { "test": "xunit.runner.aspnet" }
+}
