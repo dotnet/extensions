@@ -14,12 +14,10 @@ namespace SqlServerCacheSample
 {
     /// <summary>
     /// This sample requires setting up a Microsoft SQL Server based cache database.
-    /// 1. Install the command globally by doing "dnu commands install Microsoft.Extensions.Caching.SqlConfig". This
-    ///    installs a command called "sqlservercache".
+    /// 1. Install the .NET Core sql-cache tool globally by installing the dotnet-sql-cache package.
     /// 2. Create a new database in the SQL Server or use as existing gone.
-    /// 3. Run the command "sqlservercache create <connectionstring> <schemName> <tableName>" to setup the table and
-    ///    indexes.
-    /// 4. Run this sample by doing "dnx . run"
+    /// 3. Run the command "dotnet sql-cache create <connectionstring> <schemaName> <tableName>" to setup the table and indexes.
+    /// 4. Run this sample by doing "dotnet run"
     /// </summary>
     public class Program
     {

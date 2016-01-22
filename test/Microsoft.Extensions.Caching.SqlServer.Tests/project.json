@@ -8,7 +8,8 @@
     "Microsoft.Extensions.Caching.SqlServer": "1.0.0-*",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
-    "Microsoft.Extensions.DependencyInjection": "1.0.0-*"
+    "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
     "dnx451": {
@@ -20,10 +21,10 @@
         "xunit.runner.console": "2.1.0"
       }
     },
-    "dnxcore50": { 
+    "dnxcore50": {
       "imports": "portable-net45+win8",
       "dependencies": {
-        "Microsoft.NETCore.Platforms": "1.0.1-*",
+        "System.Data.SqlClient": "4.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
       }
     }

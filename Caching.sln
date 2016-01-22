@@ -1,7 +1,6 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22823.1
+VisualStudioVersion = 14.0.24709.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Caching.Memory", "src\Microsoft.Extensions.Caching.Memory\Microsoft.Extensions.Caching.Memory.xproj", "{966D16D8-5D4E-4433-9DA7-F53EE44B7EE7}"
 EndProject
@@ -40,7 +39,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SqlServerCacheConcurrencySa
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Caching.SqlServer.Tests", "test\Microsoft.Extensions.Caching.SqlServer.Tests\Microsoft.Extensions.Caching.SqlServer.Tests.xproj", "{38EFEDCC-1076-4E1F-89C5-443C7FCCEE6A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Caching.SqlConfig", "src\Microsoft.Extensions.Caching.SqlConfig\Microsoft.Extensions.Caching.SqlConfig.xproj", "{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "dotnet-sql-cache", "src\dotnet-sql-cache\dotnet-sql-cache.xproj", "{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

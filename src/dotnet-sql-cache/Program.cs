@@ -23,8 +23,13 @@ namespace Microsoft.Extensions.Caching.SqlConfig
             loggerFactory.AddConsole();
             _logger = loggerFactory.CreateLogger<Program>();
         }
+        
+        public static int Main(string[] args)
+        {
+            return new Program().Run(args);
+        }
 
-        public int Main(string[] args)
+        public int Run(string[] args)
         {
             try
             {
@@ -32,7 +37,7 @@ namespace Microsoft.Extensions.Caching.SqlConfig
                     "to be used for distributed caching";
 
                 var app = new CommandLineApplication();
-                app.Name = "sqlservercache";
+                app.Name = "dotnet-sql-cache";
                 app.Description = description;
 
                 app.HelpOption("-?|-h|--help");

@@ -1,13 +1,11 @@
 {
-  "commands": {
-    "sqlservercache": "Microsoft.Extensions.Caching.SqlConfig"
-  },
   "dependencies": {
     "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
     "Microsoft.Extensions.Logging": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.0.0-*"
+    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
-  "description": "Contains commands for creating table and indexes in Microsoft SQL Server database to be used for ASP.NET 5 distributed caching.",
+  "description": ".NET Core tool for creating table and indexes in Microsoft SQL Server database to be used for ASP.NET 5 distributed caching.",
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
@@ -22,6 +20,7 @@
     }
   },
   "compilationOptions": {
+    "emitEntryPoint": true,
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   },
