@@ -58,6 +58,36 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
+        [Fact]
+        public void GetFileInfoReturnsNotFoundFileInfoForRelativePathThatNavigatesAboveRoot()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                File.Create(Path.Combine(root.RootPath, "b"));
+
+                using (var provider = new PhysicalFileProvider(root.RootPath))
+                {
+                    var info = provider.GetFileInfo(Path.Combine("a", "..", "..", root.DirectoryInfo.Name, "b"));
+                    Assert.IsType(typeof(NotFoundFileInfo), info);
+                }
+            }
+        }
+        
+        [Fact]
+        public void GetFileInfoReturnsNotFoundFileInfoForRelativePathWithEmptySegmentsThatNavigates()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                File.Create(Path.Combine(root.RootPath, "b"));
+
+                using (var provider = new PhysicalFileProvider(root.RootPath))
+                {
+                    var info = provider.GetFileInfo("a///../../" + root.DirectoryInfo.Name + "/b");
+                    Assert.IsType(typeof(NotFoundFileInfo), info);
+                }
+            }
+        }
+
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hidden and system files only make sense on Windows.")]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Hidden and system files only make sense on Windows.")]
@@ -323,6 +353,21 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
+        [Fact]
+        public void GetDirectoryContentsReturnsNotFoundDirectoryContentsForPathThatNavigatesAboveRoot()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                Directory.CreateDirectory(Path.Combine(root.RootPath, "b"));
+
+                using (var provider = new PhysicalFileProvider(root.RootPath))
+                {
+                    var contents = provider.GetDirectoryContents(Path.Combine("a", "..", "..", root.DirectoryInfo.Name, "b"));
+                    Assert.IsType(typeof(NotFoundDirectoryContents), contents);
+                }
+            }
+        }
+
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hidden and system files only make sense on Windows.")]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Hidden and system files only make sense on Windows.")]
@@ -506,6 +551,20 @@ namespace Microsoft.Extensions.FileProviders
                 using (var provider = new PhysicalFileProvider(root.RootPath))
                 {
                     var token = provider.Watch(null);
+
+                    Assert.Same(NoopChangeToken.Singleton, token);
+                }
+            }
+        }
+
+        [Fact]
+        public void NoopChangeTokenForFilterThatNavigatesAboveRoot()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                using (var provider = new PhysicalFileProvider(root.RootPath))
+                {
+                    var token = provider.Watch(Path.Combine("a", "..", "..", root.DirectoryInfo.Name, "b"));
 
                     Assert.Same(NoopChangeToken.Singleton, token);
                 }

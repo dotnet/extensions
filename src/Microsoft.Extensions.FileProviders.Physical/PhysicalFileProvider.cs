@@ -17,6 +17,7 @@ namespace Microsoft.Extensions.FileProviders
     {
         private static readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars()
             .Where(c => c != Path.DirectorySeparatorChar && c != Path.AltDirectorySeparatorChar).ToArray();
+        private static readonly char[] _pathSeparators = new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
         private readonly PhysicalFilesWatcher _filesWatcher;
 
         /// <summary>
@@ -57,12 +58,47 @@ namespace Microsoft.Extensions.FileProviders
 
         private string GetFullPath(string path)
         {
+            if (PathNavigatesAboveRoot(path))
+            {
+                return null;
+            }
+
             var fullPath = Path.GetFullPath(Path.Combine(Root, path));
             if (!IsUnderneathRoot(fullPath))
             {
                 return null;
             }
+
             return fullPath;
+        }
+
+        private bool PathNavigatesAboveRoot(string path)
+        {
+            var tokenizer = new StringTokenizer(path, _pathSeparators);
+            var depth = 0;
+
+            foreach (var segment in tokenizer)
+            {
+                if (segment.Equals(".") || segment.Equals(""))
+                {
+                    continue;
+                }
+                else if (segment.Equals(".."))
+                {
+                    depth--;
+
+                    if (depth == -1)
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    depth++;
+                }
+            }
+
+            return false;
         }
 
         private bool IsUnderneathRoot(string fullPath)
@@ -196,6 +232,11 @@ namespace Microsoft.Extensions.FileProviders
                 return NoopChangeToken.Singleton;
             }
 
+            if (PathNavigatesAboveRoot(filter))
+            {
+                return NoopChangeToken.Singleton;
+            }
+
             // Relative paths starting with a leading slash okay
             if (filter.StartsWith("/", StringComparison.Ordinal))
             {
@@ -210,9 +251,5 @@ namespace Microsoft.Extensions.FileProviders
 
             return _filesWatcher.CreateFileChangeToken(filter);
         }
-
-
-
-
     }
 }
