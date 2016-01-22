@@ -1,5 +1,5 @@
 {
-  "version": "0.1-alpha-*",
+  "version": "1.0.0-*",
   "compilationOptions": {
     "keyFile": "../../tools/Key.snk",
     "warningsAsErrors": true
@@ -16,7 +16,7 @@
         "xunit.runner.console": "2.1.0"
       }
     },
-    "dnxcore50": { 
+    "dnxcore50": {
       "dependencies": {
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
       }
