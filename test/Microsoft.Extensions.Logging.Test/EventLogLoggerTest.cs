@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.EventLog;
 using Microsoft.Extensions.Logging.EventLog.Internal;
 using Xunit;

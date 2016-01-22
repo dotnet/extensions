@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -51,8 +51,8 @@ namespace Microsoft.Extensions.Logging.Abstractions.Internal
                         // Since '.' is typically used to filter log messages in a hierarchy kind of scenario,
                         // do not include any generic type information as part of the name.
                         // Example:
-                        // Microsoft.AspNet.Mvc -> log level set as Warning
-                        // Microsoft.AspNet.Mvc.ModelBinding -> log level set as Verbose
+                        // Microsoft.AspNetCore.Mvc -> log level set as Warning
+                        // Microsoft.AspNetCore.Mvc.ModelBinding -> log level set as Verbose
                         partName = partName.Substring(0, backTickIndex);
                     }
 
