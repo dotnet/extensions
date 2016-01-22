@@ -6,7 +6,7 @@
   },
   "dependencies": {
     "Sample.Tests": "1.0.0-*",
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Dnx.TestHost": "1.0.0-*",
     "Microsoft.Dnx.TestHost.Client.Sources": {
       "type": "build",

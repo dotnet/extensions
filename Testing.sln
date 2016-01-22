@@ -6,7 +6,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5525B6EA-8BB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{09F799F3-E521-466F-B155-B89E2746C8C9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Testing", "src\Microsoft.AspNet.Testing\Microsoft.AspNet.Testing.xproj", "{09BE5203-8042-4338-9713-E44169342E72}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Testing", "src\Microsoft.AspNetCore.Testing\Microsoft.AspNetCore.Testing.xproj", "{09BE5203-8042-4338-9713-E44169342E72}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Sample.Tests", "test\Sample.Tests\Sample.Tests.xproj", "{25D18D0B-119C-4AB4-BCA6-AC06179335FA}"
 EndProject
@@ -25,7 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Testing.Tests", "test\Microsoft.AspNet.Testing.Tests\Microsoft.AspNet.Testing.Tests.xproj", "{C9F758D6-17A3-4BF1-BCCD-972B1DA959FC}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Testing.Tests", "test\Microsoft.AspNetCore.Testing.Tests\Microsoft.AspNetCore.Testing.Tests.xproj", "{C9F758D6-17A3-4BF1-BCCD-972B1DA959FC}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Dnx.Testing.Abstractions", "src\Microsoft.Dnx.Testing.Abstractions\Microsoft.Dnx.Testing.Abstractions.xproj", "{DCDFE282-03DE-4DBC-B90C-CC3CE3EC8162}"
 EndProject

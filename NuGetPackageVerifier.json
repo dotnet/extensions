@@ -9,7 +9,7 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.AspNet.Testing": { },
+            "Microsoft.AspNetCore.Testing": { },
             "Microsoft.Dnx.TestHost": { },
             "Microsoft.Dnx.Testing.Abstractions": { }
         }

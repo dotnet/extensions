@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Threading;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNet.Testing
+namespace Microsoft.AspNetCore.Testing
 {
     /// <summary>
     /// Replaces the current culture and UI culture for the test.

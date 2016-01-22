@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Testing.xunit
+namespace Microsoft.AspNetCore.Testing.xunit
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class FrameworkSkipConditionAttribute : Attribute, ITestCondition

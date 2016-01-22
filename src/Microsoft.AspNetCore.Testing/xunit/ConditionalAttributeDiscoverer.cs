@@ -7,7 +7,7 @@ using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNet.Testing.xunit
+namespace Microsoft.AspNetCore.Testing.xunit
 {
     internal class ConditionalAttributeDiscoverer : IXunitTestCaseDiscoverer
     {

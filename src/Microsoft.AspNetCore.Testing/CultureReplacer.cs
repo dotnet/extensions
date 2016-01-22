@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Threading;
 using Xunit;
 
-namespace Microsoft.AspNet.Testing
+namespace Microsoft.AspNetCore.Testing
 {
     public class CultureReplacer : IDisposable
     {

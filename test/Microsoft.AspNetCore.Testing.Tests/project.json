@@ -5,7 +5,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "commands": {

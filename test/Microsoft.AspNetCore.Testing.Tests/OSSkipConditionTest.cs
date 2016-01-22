@@ -4,7 +4,7 @@
 using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
 
-namespace Microsoft.AspNet.Testing.xunit
+namespace Microsoft.AspNetCore.Testing.xunit
 {
     public class OSSkipConditionTest
     {

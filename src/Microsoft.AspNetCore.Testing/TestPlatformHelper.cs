@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.PlatformAbstractions;
 
-namespace Microsoft.AspNet.Testing
+namespace Microsoft.AspNetCore.Testing
 {
     public static class TestPlatformHelper
     {
