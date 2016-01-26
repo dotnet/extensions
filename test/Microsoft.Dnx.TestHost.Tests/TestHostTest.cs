@@ -21,7 +21,7 @@ namespace Microsoft.Dnx.TestHost
 
         public TestHostTest()
         {
-            var libraryManager = PlatformServices.Default.LibraryManager;
+            var libraryManager = DnxPlatformServices.Default.LibraryManager;
             _testProject = Path.GetDirectoryName(libraryManager.GetLibrary("Sample.Tests").Path);
         }
 
