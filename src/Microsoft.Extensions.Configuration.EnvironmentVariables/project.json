@@ -14,7 +14,6 @@
   },
   "frameworks": {
     "net451": {},
-    "dotnet5.4": {},
-    "netcore50": {}
+    "dotnet5.4": {}
   }
 }
