@@ -23,7 +23,9 @@
       }
     },
     "dnxcore50": {
+      "imports": "portable-net45+win8",
       "dependencies": {
+        "Microsoft.NETCore.Platforms": "1.0.1-*",
         "moq.netcore": "4.4.0-beta8",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
       }

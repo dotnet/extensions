@@ -24,11 +24,6 @@
       "dependencies": {
         "System.Console": "4.0.0-*"
       }
-    },
-    "netcore50": {
-      "dependencies": {
-        "System.Console": "4.0.0-*"
-      }
     }
   }
 }

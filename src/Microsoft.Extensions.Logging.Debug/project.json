@@ -16,7 +16,6 @@
     "dotnet5.4": {
       "dependencies": {
       }
-    },
-    "netcore50": {}
+    }
   }
 }
