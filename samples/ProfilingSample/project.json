@@ -7,6 +7,7 @@
         "dnx451": { },
         "dnxcore50": {
             "dependencies": {
+                "Microsoft.NETCore.Platforms": "1.0.1-*",
                 "System.Console": "4.0.0-*"
             }
         }

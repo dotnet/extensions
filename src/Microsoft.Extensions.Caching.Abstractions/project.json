@@ -15,15 +15,6 @@
         "System.Threading": "4.0.11-*",
         "System.Threading.Tasks": "4.0.11-*"
       }
-    },
-    "netcore50": {
-      "dependencies": {
-        "System.Collections": "4.0.10",
-        "System.Diagnostics.Debug": "4.0.10",
-        "System.Resources.ResourceManager": "4.0.0",
-        "System.Runtime": "4.0.20",
-        "System.Threading.Tasks": "4.0.10"
-      }
     }
   },
   "version": "1.0.0-*",
