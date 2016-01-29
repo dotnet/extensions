@@ -18,3 +18,6 @@ https://github.com/structuremap/structuremap.dnx
 
 * **LightInject**
 https://github.com/seesharper/LightInject.Microsoft.DependencyInjection
+
+* **DryIoc**
+https://www.nuget.org/packages/DryIoc.dnx.dependencyinjection
