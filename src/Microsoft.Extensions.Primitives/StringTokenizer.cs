@@ -13,22 +13,27 @@ namespace Microsoft.Extensions.Primitives
     public struct StringTokenizer :  IEnumerable<StringSegment>
     {
         private readonly string _value;
-        private readonly char _separator;
+        private readonly char[] _separators;
 
         /// <summary>
         /// Initializes a new instance of <see cref="StringTokenizer"/>.
         /// </summary>
         /// <param name="value">The <c>string</c> to tokenize.</param>
-        /// <param name="separator">The character to tokenize by.</param>
-        public StringTokenizer(string value, char separator)
+        /// <param name="separators">The characters to tokenize by.</param>
+        public StringTokenizer(string value, char[] separators)
         {
             if (value == null)
             {
                 throw new ArgumentNullException(nameof(value));
             }
+            
+            if (separators == null)
+            {
+                throw new ArgumentNullException(nameof(separators));
+            }
 
             _value = value;
-            _separator = separator;
+            _separators = separators;
         }
 
         public Enumerator GetEnumerator() => new Enumerator(ref this);
@@ -40,13 +45,13 @@ namespace Microsoft.Extensions.Primitives
         public struct Enumerator : IEnumerator<StringSegment>
         {
             private readonly string _value;
-            private readonly char _separator;
+            private readonly char[] _separators;
             private int _index;
 
             public Enumerator(ref StringTokenizer tokenizer)
             {
                 _value = tokenizer._value;
-                _separator = tokenizer._separator;
+                _separators = tokenizer._separators;
                 Current = default(StringSegment);
                 _index = 0;
             }
@@ -67,7 +72,7 @@ namespace Microsoft.Extensions.Primitives
                     return false;
                 }
 
-                var next = _value.IndexOf(_separator, _index);
+                var next = _value.IndexOfAny(_separators, _index);
                 if (next == -1)
                 {
                     // No separator found. Consume the remainder of the string.
