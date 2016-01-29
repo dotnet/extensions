@@ -40,9 +40,9 @@ namespace Microsoft.Extensions.Logging.Test
         }
 
         [Theory]
-        [InlineData("{", "{{", null)]
-        [InlineData("'{'", "'{{'", null)]
-        [InlineData("'{}'", "'{{}}'", null)]
+        [InlineData("{{", "{{", null)]
+        [InlineData("'{{'", "'{{'", null)]
+        [InlineData("'{{}}'", "'{{}}'", null)]
         [InlineData("arg1 arg2 '{}'  '{' '{:}' '{,:}' {,}- test string",
             "{0} {1} '{{}}'  '{{' '{{:}}' '{{,:}}' {{,}}- test string",
             new object[] { "arg1", "arg2" })]
@@ -62,12 +62,12 @@ namespace Microsoft.Extensions.Logging.Test
         [Theory]
         [InlineData("{foo")]
         [InlineData("bar}")]
-        [InlineData("{foo bar}")]
+        [InlineData("{foo bar}}")]
         public void LogValues_With_UnbalancedBraces(string format)
         {
             Assert.Throws<FormatException>(() =>
             {
-                var logValues = new FormattedLogValues(format);
+                var logValues = new FormattedLogValues(format, new object[] { "arg1" });
                 logValues.ToString();
             });
         }

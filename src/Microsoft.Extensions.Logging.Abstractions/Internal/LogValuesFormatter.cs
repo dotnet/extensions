@@ -147,7 +147,7 @@ namespace Microsoft.Extensions.Logging.Internal
 
         public KeyValuePair<string, object> GetValue(object[] values, int index)
         {
-            if (index < 0 || index > _valueNames.Count + 1)
+            if (index < 0 || index > _valueNames.Count)
             {
                 throw new IndexOutOfRangeException(nameof(index));
             }

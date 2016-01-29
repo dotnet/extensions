@@ -17,6 +17,7 @@ namespace Microsoft.Extensions.Logging.Internal
         private static ConcurrentDictionary<string, LogValuesFormatter> _formatters = new ConcurrentDictionary<string, LogValuesFormatter>();
         private readonly LogValuesFormatter _formatter;
         private readonly object[] _values;
+        private readonly string _originalMessage;
 
         public FormattedLogValues(string format, params object[] values)
         {
@@ -24,7 +25,13 @@ namespace Microsoft.Extensions.Logging.Internal
             {
                 throw new ArgumentNullException(nameof(format));
             }
-            _formatter = _formatters.GetOrAdd(format, f => new LogValuesFormatter(f));
+
+            if (values.Length != 0)
+            {
+                _formatter = _formatters.GetOrAdd(format, f => new LogValuesFormatter(f));
+            }
+
+            _originalMessage = format;
             _values = values;
         }
 
@@ -32,10 +39,16 @@ namespace Microsoft.Extensions.Logging.Internal
         {
             get
             {
-                if (index > Count)
+                if (index < 0 || index >= Count)
                 {
                     throw new IndexOutOfRangeException(nameof(index));
                 }
+
+                if (index == Count - 1)
+                {
+                    return new KeyValuePair<string, object> ("{OriginalFormat}", _originalMessage);
+                }
+
                 return _formatter.GetValue(_values, index);
             }
         }
@@ -44,6 +57,11 @@ namespace Microsoft.Extensions.Logging.Internal
         {
             get
             {
+                if (_formatter == null)
+                {
+                    return 1;
+                }
+
                 return _formatter.ValueNames.Count + 1;
             }
         }
@@ -58,6 +76,11 @@ namespace Microsoft.Extensions.Logging.Internal
 
         public override string ToString()
         {
+            if (_formatter == null)
+            {
+                return _originalMessage;
+            }
+
             return _formatter.Format(_values);
         }
 
