@@ -103,16 +103,15 @@ namespace Microsoft.Extensions.Logging.Test
             var expectedMessage =
                 _paddingString + message + Environment.NewLine;
             var expectedExceptionMessage =
-                _paddingString + exception.Message + Environment.NewLine;
+                exception.ToString() + Environment.NewLine;
 
             // Act
             logger.LogCritical(eventId, exception, message);
 
             // Assert
-            Assert.Equal(5, sink.Writes.Count);
+            Assert.Equal(4, sink.Writes.Count);
             Assert.Equal(expectedMessage, sink.Writes[2].Message);
-            Assert.Equal(_paddingString + exception.GetType().FullName + Environment.NewLine, sink.Writes[3].Message);
-            Assert.Equal(expectedExceptionMessage, sink.Writes[4].Message);
+            Assert.Equal(expectedExceptionMessage, sink.Writes[3].Message);
         }
 
         [Fact]
@@ -442,13 +441,13 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Trace, 0, _state, ex, _defaultFormatter);
 
             // Assert
-            Assert.Equal(30, sink.Writes.Count);
-            Assert.Equal(GetMessage("crit", 0, ex), GetMessage(sink.Writes.GetRange(0, 5)));
-            Assert.Equal(GetMessage("fail", 0, ex), GetMessage(sink.Writes.GetRange(5, 5)));
-            Assert.Equal(GetMessage("warn", 0, ex), GetMessage(sink.Writes.GetRange(10, 5)));
-            Assert.Equal(GetMessage("info", 0, ex), GetMessage(sink.Writes.GetRange(15, 5)));
-            Assert.Equal(GetMessage("dbug", 0, ex), GetMessage(sink.Writes.GetRange(20, 5)));
-            Assert.Equal(GetMessage("trce", 0, ex), GetMessage(sink.Writes.GetRange(25, 5)));
+            Assert.Equal(24, sink.Writes.Count);
+            Assert.Equal(GetMessage("crit", 0, ex), GetMessage(sink.Writes.GetRange(0, 4)));
+            Assert.Equal(GetMessage("fail", 0, ex), GetMessage(sink.Writes.GetRange(4, 4)));
+            Assert.Equal(GetMessage("warn", 0, ex), GetMessage(sink.Writes.GetRange(8, 4)));
+            Assert.Equal(GetMessage("info", 0, ex), GetMessage(sink.Writes.GetRange(12, 4)));
+            Assert.Equal(GetMessage("dbug", 0, ex), GetMessage(sink.Writes.GetRange(16, 4)));
+            Assert.Equal(GetMessage("trce", 0, ex), GetMessage(sink.Writes.GetRange(20, 4)));
         }
 
         [Fact]
@@ -711,8 +710,7 @@ namespace Microsoft.Extensions.Logging.Test
             return
                 loglevelStringWithPadding + $"{_loggerName}[{eventId}]" + Environment.NewLine
                 + _paddingString + ReplaceMessageNewLinesWithPadding(_state.ToString())
-                + Environment.NewLine + _paddingString + exception.GetType().FullName + Environment.NewLine + _paddingString
-                + ReplaceMessageNewLinesWithPadding(exception.Message) + Environment.NewLine;
+                + Environment.NewLine + ReplaceMessageNewLinesWithPadding(exception.ToString()) + Environment.NewLine;
         }
 
         private string ReplaceMessageNewLinesWithPadding(string message)

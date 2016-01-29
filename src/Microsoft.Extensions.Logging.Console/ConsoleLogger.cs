@@ -172,28 +172,20 @@ namespace Microsoft.Extensions.Logging.Console
 
         private void WriteException(LogLevel logLevel, string logName, int eventId, Exception ex)
         {
-            var message = ReplaceMessageNewLinesWithPadding(ex.Message);
             var logLevelColors = GetLogLevelConsoleColors(logLevel);
             var loglevelString = GetLogLevelString(logLevel);
 
             // Example:
             // System.InvalidOperationException
-            //       Something bad happened
+            //    at Namespace.Class.Function() in File:line X
 
             lock (_lock)
             {
-                // exception name string
-                WriteWithColor(
-                    ConsoleColor.Gray,
-                    DefaultConsoleColor,
-                    _messagePadding + ex.GetType().FullName,
-                    newLine: true);
-
                 // exception message
                 WriteWithColor(
                     ConsoleColor.White,
                     DefaultConsoleColor,
-                    _messagePadding + message,
+                    ex.ToString(),
                     newLine: true);
 
                 // In case of AnsiLogConsole, the messages are not yet written to the console,
