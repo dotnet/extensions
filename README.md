@@ -15,3 +15,6 @@ http://alexmg.com/autofac-packages-for-visual-studio-2015-and-asp-net-5/
 
 * **StructureMap**
 https://github.com/structuremap/structuremap.dnx
+
+* **LightInject**
+https://github.com/seesharper/LightInject.Microsoft.DependencyInjection
