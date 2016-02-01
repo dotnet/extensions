@@ -5,8 +5,9 @@
   },
   "compile": "../Microsoft.Extensions.FileSystemGlobbing.Tests/TestUtility/DisposableFileSystem.cs",
   "dependencies": {
-    "Microsoft.Extensions.FileProviders.Physical": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
+    "Microsoft.Extensions.FileProviders.Physical": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "xunit": "2.1.0"
   },
   "testRunner": "xunit",
@@ -20,6 +21,7 @@
       }
     },
     "dnxcore50": { 
+      "imports": "portable-net45+win8",
       "dependencies": {
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
       }
