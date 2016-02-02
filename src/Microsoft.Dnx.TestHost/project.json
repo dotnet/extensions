@@ -1,48 +1,50 @@
 {
-    "description": "Test host for discovering and running unit tests at design time, such as in Visual Studio.",
-    "version": "1.0.0-*",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/testing"
+  "description": "Test host for discovering and running unit tests at design time, such as in Visual Studio.",
+  "version": "1.0.0-*",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/testing"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
+  "dependencies": {
+    "Microsoft.Extensions.CompilationAbstractions": "1.0.0-*",
+    "Microsoft.Dnx.Runtime.CommandParsing.Sources": {
+      "version": "1.0.0-*",
+      "type": "build"
     },
-    "compilationOptions": {
-        "warningsAsErrors": true,
-        "keyFile": "../../tools/Key.snk"
+    "Microsoft.Dnx.Runtime.Sources": {
+      "version": "1.0.0-*",
+      "type": "build"
     },
-    "dependencies": {
-        "Microsoft.Extensions.CompilationAbstractions": "1.0.0-*",
-        "Microsoft.Dnx.Runtime.CommandParsing.Sources": {
-            "version": "1.0.0-*",
-            "type": "build"
-        },
-        "Microsoft.Dnx.Runtime.Sources": {
-            "version": "1.0.0-*",
-            "type": "build"
-        },
-        "Microsoft.Dnx.Testing.Abstractions": "1.0.0-*",
-        "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
-        "Microsoft.Extensions.Logging": "1.0.0-*",
-        "Newtonsoft.Json": "6.0.6"
+    "Microsoft.Dnx.Testing.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
+    "Microsoft.Extensions.Logging": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
+    "Newtonsoft.Json": "6.0.6"
+  },
+  "commands": {
+    "run": "run"
+  },
+  "frameworks": {
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Runtime": "",
+        "System.Threading.Tasks": ""
+      }
     },
-    "commands": {
-        "run": "run"
-    },
-    "frameworks": {
-        "dnx451": {
-            "frameworkAssemblies": {
-                "System.Runtime": "",
-                "System.Threading.Tasks": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.IO": "4.1.0-*",
-                "System.Console": "4.0.0-*",
-                "System.Diagnostics.Process": "4.1.0-*",
-                "System.Diagnostics.TextWriterTraceListener": "4.0.0-*",
-                "System.Net.Sockets": "4.1.0-*",
-                "System.Threading.Thread": "4.0.0-*"
-            }
-        }
+    "dnxcore50": {
+      "dependencies": {
+        "System.IO": "4.1.0-*",
+        "System.Console": "4.0.0-*",
+        "System.Diagnostics.Process": "4.1.0-*",
+        "System.Diagnostics.TextWriterTraceListener": "4.0.0-*",
+        "System.Net.Sockets": "4.1.0-*",
+        "System.Threading.Thread": "4.0.0-*"
+      },
+      "imports": "portable-net451+win8"
     }
+  }
 }

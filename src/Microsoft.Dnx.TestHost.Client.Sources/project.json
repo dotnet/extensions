@@ -6,13 +6,16 @@
     "url": "git://github.com/aspnet/testing"
   },
   "shared": "*.cs",
-  "dependencies": {},
+  "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
+  },
   "frameworks": {
     "net451": {},
     "dotnet5.4": {
       "dependencies": {
         "System.Runtime": "4.0.21-*"
-      }
+      },
+      "imports": "portable-net451+win8"
     }
   }
 }
