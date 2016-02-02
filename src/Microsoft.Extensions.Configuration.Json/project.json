@@ -12,7 +12,6 @@
   "dependencies": {
     "Microsoft.Extensions.Configuration": "1.0.0-*",
     "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Newtonsoft.Json": "6.0.6"
   },
   "frameworks": {

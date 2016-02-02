@@ -6,8 +6,7 @@
   },
   "description": "Implementation of key-value pair based configuration. Includes the memory configuration provider.",
   "dependencies": {
-    "Microsoft.Extensions.Configuration.Abstractions": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    "Microsoft.Extensions.Configuration.Abstractions": "1.0.0-*"
   },
   "repository": {
     "type": "git",
@@ -25,8 +24,7 @@
         "System.Runtime.Extensions": "4.1.0-*",
         "System.Runtime.InteropServices": "4.0.21-*",
         "System.Threading": "4.0.11-*"
-      },
-      "imports": "portable-net451+win8"
+      }
     }
   }
 }

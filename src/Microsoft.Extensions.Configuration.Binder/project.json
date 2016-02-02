@@ -10,16 +10,14 @@
     "url": "https://github.com/aspnet/configuration"
   },
   "dependencies": {
-    "Microsoft.Extensions.Configuration": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    "Microsoft.Extensions.Configuration": "1.0.0-*"
   },
   "frameworks": {
     "net451": {},
     "dotnet5.4": {
       "dependencies": {
         "System.ComponentModel.TypeConverter": "4.0.1-*"
-      },
-      "imports": "portable-net451+win8"
+      }
     }
   }
 }

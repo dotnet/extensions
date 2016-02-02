@@ -11,8 +11,7 @@
   },
   "dependencies": {
     "Microsoft.Extensions.Configuration": "1.0.0-*",
-    "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0-*"
   },
   "frameworks": {
     "net451": {
@@ -25,8 +24,7 @@
       "dependencies": {
         "System.Xml.XmlDocument": "4.0.1-*",
         "System.Xml.XmlSerializer": "4.0.11-*"
-      },
-      "imports": "portable-net451+win8"
+      }
     }
   }
 }
