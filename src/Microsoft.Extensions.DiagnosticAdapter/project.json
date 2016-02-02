@@ -3,8 +3,7 @@
   "description": "A DiagnosticListener implementation which provides duck-typing through generated proxy types.",
   "dependencies": {
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
-    "System.Diagnostics.DiagnosticSource": "4.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    "System.Diagnostics.DiagnosticSource": "4.0.0-*"
   },
   "compilationOptions": {
     "define": [
@@ -29,8 +28,7 @@
         "System.Reflection.Emit.Lightweight": "4.0.1-*",
         "System.Reflection.Extensions": "4.0.1-*",
         "System.Reflection.TypeExtensions": "4.1.0-*"
-      },
-      "imports": "portable-net451+win8"
+      }
     }
   }
 }
