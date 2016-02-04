@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.Configuration
         /// Gets the base path to discover files in for file-based providers.
         /// </summary>
         /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
-        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        /// <returns>The base path.</returns>
         public static string GetBasePath(this IConfigurationBuilder configurationBuilder)
         {
             if (configurationBuilder == null)
