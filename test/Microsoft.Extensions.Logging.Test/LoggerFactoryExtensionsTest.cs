@@ -110,6 +110,55 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Single(testSink.Writes);
             Assert.Equal(fullNameWithoutBacktick, testSink.Writes[0].LoggerName);
         }
+
+
+        [Fact]
+        public void LoggerFactoryCreate_CallsCreateWithCorrectName()
+        {
+            // Arrange
+            var expected = typeof(TestType).FullName;
+
+            var factory = new Mock<ILoggerFactory>();
+            factory.Setup(f => f.CreateLogger(
+                It.IsAny<string>()))
+            .Returns(new Mock<ILogger>().Object);
+
+            // Act
+            factory.Object.CreateLogger(typeof(TestType));
+
+            // Assert
+            factory.Verify(f => f.CreateLogger(expected));
+        }
+
+        [Fact]
+        public void LoggerFactoryCreate_SingleGeneric_CallsCreateWithCorrectName()
+        {
+            // Arrange
+            var factory = new Mock<ILoggerFactory>();
+            factory.Setup(f => f.CreateLogger(It.Is<string>(
+                x => x.Equals("Microsoft.Extensions.Logging.Test.GenericClass"))))
+            .Returns(new Mock<ILogger>().Object);
+
+            var logger = factory.Object.CreateLogger(typeof(GenericClass<TestType>));
+
+            // Assert
+            Assert.NotNull(logger);
+        }
+
+        [Fact]
+        public void LoggerFactoryCreate_TwoGenerics_CallsCreateWithCorrectName()
+        {
+            // Arrange
+            var factory = new Mock<ILoggerFactory>();
+            factory.Setup(f => f.CreateLogger(It.Is<string>(
+                x => x.Equals("Microsoft.Extensions.Logging.Test.GenericClass"))))
+            .Returns(new Mock<ILogger>().Object);
+
+            var logger = factory.Object.CreateLogger(typeof(GenericClass<TestType, SecondTestType>));
+
+            // Assert
+            Assert.NotNull(logger);
+        }
     }
 
     internal class TestType
