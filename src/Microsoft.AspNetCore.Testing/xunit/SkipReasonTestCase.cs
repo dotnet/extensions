@@ -9,7 +9,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Testing.xunit
 {
-    internal class SkipReasonTestCase : IXunitTestCase
+    internal class SkipReasonTestCase : LongLivedMarshalByRefObject, IXunitTestCase
     {
         private readonly bool _isTheory;
         private readonly string _skipReason;
