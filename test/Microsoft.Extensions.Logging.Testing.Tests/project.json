@@ -25,7 +25,6 @@
       "imports": "portable-net45+win8",
       "dependencies": {
         "Microsoft.NETCore.Platforms": "1.0.1-*",
-        "System.Runtime": "4.0.21-*",
         "System.Threading.Tasks": "4.0.11-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
       }
