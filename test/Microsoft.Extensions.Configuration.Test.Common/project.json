@@ -13,7 +13,6 @@
     "dnxcore50": {
       "dependencies": {
         "System.Collections.NonGeneric": "4.0.1-*",
-        "System.Runtime": "4.0.21-*"
       },
       "imports": "portable-net451+win8"
     }
