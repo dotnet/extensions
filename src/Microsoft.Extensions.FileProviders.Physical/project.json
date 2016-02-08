@@ -20,10 +20,10 @@
     "net451": { },
     "dotnet5.4": {
       "dependencies": {
-        "System.Collections.Concurrent": "4.0.11-*",
+        "System.Collections.Concurrent": "4.0.12-*",
         "System.IO.FileSystem.Watcher": "4.0.0-*",
         "System.IO.FileSystem": "4.0.1-*",
-        "System.Text.RegularExpressions": "4.0.11-*"
+        "System.Text.RegularExpressions": "4.0.12-*"
       }
     }
   }
