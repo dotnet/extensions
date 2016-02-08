@@ -23,7 +23,7 @@
     "dotnet5.4": {
       "dependencies": {
         "System.ComponentModel": "4.0.1-*",
-        "System.Collections.Concurrent": "4.0.11-*",
+        "System.Collections.Concurrent": "4.0.12-*",
         "System.Reflection.Emit": "4.0.1-*",
         "System.Reflection.Emit.Lightweight": "4.0.1-*",
         "System.Reflection.Extensions": "4.0.1-*",
