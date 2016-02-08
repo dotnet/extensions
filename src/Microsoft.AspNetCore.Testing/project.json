@@ -11,11 +11,10 @@
   },
   "dependencies": {
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "xunit": "2.1.0"
   },
   "frameworks": {
-    "dnx451": {
+    "net451": {
       "frameworkAssemblies": {
         "System.Runtime": "",
         "System.Reflection": "",
@@ -24,6 +23,7 @@
     },
     "dnxcore50": {
       "dependencies": {
+        "Microsoft.NETCore.Platforms": "1.0.1-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
       },
       "imports": "portable-net451+win8"
