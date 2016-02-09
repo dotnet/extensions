@@ -23,9 +23,9 @@ namespace MemoryCacheSample
 
             PeriodicallyReadKey(cache, TimeSpan.FromSeconds(1));
 
-            PeriodciallyRemoveKey(cache, TimeSpan.FromSeconds(11));
+            PeriodicallyRemoveKey(cache, TimeSpan.FromSeconds(11));
 
-            PeriodciallySetKey(cache, TimeSpan.FromSeconds(13));
+            PeriodicallySetKey(cache, TimeSpan.FromSeconds(13));
 
             Console.ReadLine();
             Console.WriteLine("Shutting down");
@@ -50,7 +50,7 @@ namespace MemoryCacheSample
             Console.WriteLine("Evicted. Value: " + value + ", Reason: " + reason);
         }
 
-        private void PeriodciallySetKey(IMemoryCache cache, TimeSpan interval)
+        private void PeriodicallySetKey(IMemoryCache cache, TimeSpan interval)
         {
             Task.Run(async () =>
             {
@@ -90,7 +90,7 @@ namespace MemoryCacheSample
             });
         }
 
-        private void PeriodciallyRemoveKey(IMemoryCache cache, TimeSpan interval)
+        private void PeriodicallyRemoveKey(IMemoryCache cache, TimeSpan interval)
         {
             Task.Run(async () =>
             {
