@@ -13,8 +13,7 @@
   "frameworks": {
     "dnx451": {
       "dependencies": {
-        "Microsoft.Extensions.Logging.EventLog": "1.0.0-*",
-        "Microsoft.Extensions.Logging.NLog": "1.0.0-*"
+        "Microsoft.Extensions.Logging.EventLog": "1.0.0-*"
       }
     },
     "dnxcore50": {
