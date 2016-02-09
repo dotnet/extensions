@@ -16,7 +16,7 @@ namespace SqlServerCacheConcurrencySample
     /// <summary>
     /// This sample requires setting up a Microsoft SQL Server based cache database.
     /// 1. Install the .NET Core sql-cache tool globally by installing the dotnet-sql-cache package.
-    /// 2. Create a new database in the SQL Server or use as existing gone.
+    /// 2. Create a new database in the SQL Server or use as existing one.
     /// 3. Run the command "dotnet sql-cache create <connectionstring> <schemaName> <tableName>" to setup the table and indexes.
     /// 4. Run this sample by doing "dotnet run"
     /// </summary>
@@ -52,7 +52,7 @@ namespace SqlServerCacheConcurrencySample
 
             SetKey(cache, "0");
 
-            PriodicallyReadKey(cache, TimeSpan.FromSeconds(1));
+            PeriodicallyReadKey(cache, TimeSpan.FromSeconds(1));
 
             PeriodciallyRemoveKey(cache, TimeSpan.FromSeconds(11));
 
@@ -81,7 +81,7 @@ namespace SqlServerCacheConcurrencySample
             });
         }
 
-        private void PriodicallyReadKey(IDistributedCache cache, TimeSpan interval)
+        private void PeriodicallyReadKey(IDistributedCache cache, TimeSpan interval)
         {
             Task.Run(async () =>
             {
