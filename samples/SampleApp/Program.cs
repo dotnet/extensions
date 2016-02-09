@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Primitives;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
+using Microsoft.Extensions.Logging.Filter;
 
 namespace SampleApp
 {
@@ -24,7 +25,15 @@ namespace SampleApp
 
             // providers may be added to an ILoggerFactory at any time, existing ILoggers are updated
 #if !NETSTANDARDAPP1_5
-            factory.AddEventLog();
+            /// How to wrap filtering provider around other providers
+            factory
+                .WithFilter(new FilterLoggerSettings
+                {
+                    { "Microsoft", LogLevel.Warning },
+                    { "System", LogLevel.Warning },
+                    { "SampleApp.Program", LogLevel.Debug },
+                })
+                .AddEventLog();
 #endif
 
             // How to configure the console logger to reload based on a configuration file.
