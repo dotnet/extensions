@@ -15,6 +15,12 @@
     "xunit": "2.1.0"
   },
   "frameworks": {
+    "dnxcore50": {
+      "dependencies": {
+        "dotnet-test-xunit": "1.0.0-dev-*"
+      },
+      "imports": "portable-net451+win8"
+    },
     "dnx451": {
       "frameworkAssemblies": {
         "System.Runtime": "",
@@ -23,12 +29,6 @@
       "dependencies": {
         "xunit.runner.console": "2.1.0"
       }
-    },
-    "dnxcore50": { 
-      "dependencies": {
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
-      },
-      "imports": "portable-net451+win8"
     }
   }
 }
