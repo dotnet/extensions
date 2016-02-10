@@ -8,13 +8,14 @@
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
-    "dnx451": {
-    },
     "dnxcore50": {
       "dependencies": {
         "System.Collections.NonGeneric": "4.0.1-*",
+        "System.Runtime": "4.0.21-*",
+        "dotnet-test-xunit": "1.0.0-dev-*"
       },
       "imports": "portable-net451+win8"
+    },
+    "dnx451": {}
     }
-  }
 }
