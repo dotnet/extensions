@@ -9,6 +9,10 @@
   },
   "testRunner": "xunit",
   "frameworks": {
-    "dnx451": { }
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Runtime": ""
+      }
+    }
   }
 }
