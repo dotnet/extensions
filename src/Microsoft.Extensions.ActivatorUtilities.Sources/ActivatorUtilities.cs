@@ -11,21 +11,13 @@ namespace Microsoft.Extensions.Internal
 {
     internal delegate object ObjectFactory(IServiceProvider serviceProvider, object[] arguments);
 
-    /// <summary>
-    /// Helper code for the various activator services.
-    /// </summary>
+    // Do not take a dependency on this class unless you are explicitly trying to avoid taking a
+    // dependency on Microsoft.AspNetCore.DependencyInjection.Abstractions.
     internal static class ActivatorUtilities
     {
         private static readonly MethodInfo GetServiceInfo =
             GetMethodInfo<Func<IServiceProvider, Type, Type, bool, object>>((sp, t, r, c) => GetService(sp, t, r, c));
 
-        /// <summary>
-        /// Instantiate a type with constructor arguments provided directly and/or from an <see cref="IServiceProvider"/>.
-        /// </summary>
-        /// <param name="provider">The service provider used to resolve dependencies</param>
-        /// <param name="instanceType">The type to activate</param>
-        /// <param name="parameters">Constructor arguments not provided by the <paramref name="provider"/></param>
-        /// <returns>An activated object of type instanceType</returns>
         internal static object CreateInstance(IServiceProvider provider, Type instanceType, params object[] parameters)
         {
             int bestLength = -1;
@@ -51,24 +43,13 @@ namespace Microsoft.Extensions.Internal
 
             if (bestMatcher == null)
             {
-                throw new InvalidOperationException($"Unable to locate suitable constructor for type '{instanceType}'.Ensure the type is concrete and all parameters are accepted by a constructor.");
+                var message = $"A suitable constructor for type '{instanceType}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.";
+                throw new InvalidOperationException(message);
             }
 
             return bestMatcher.CreateInstance(provider);
         }
 
-        /// <summary>
-        /// Create a delegate that will instantiate a type with constructor arguments provided directly
-        /// and/or from an <see cref="IServiceProvider"/>.
-        /// </summary>
-        /// <param name="instanceType">The type to activate</param>
-        /// <param name="argumentTypes">
-        /// The types of objects, in order, that will be passed to the returned function as its second parameter
-        /// </param>
-        /// <returns>
-        /// A factory that will instantiate instanceType using an <see cref="IServiceProvider"/>
-        /// and an argument array containing objects matching the types defined in argumentTypes
-        /// </returns>
         internal static ObjectFactory CreateFactory(Type instanceType, Type[] argumentTypes)
         {
             ConstructorInfo constructor;
@@ -87,35 +68,16 @@ namespace Microsoft.Extensions.Internal
             return result.Invoke;
         }
 
-        /// <summary>
-        /// Instantiate a type with constructor arguments provided directly and/or from an <see cref="IServiceProvider"/>.
-        /// </summary>
-        /// <typeparam name="T">The type to activate</typeparam>
-        /// <param name="provider">The service provider used to resolve dependencies</param>
-        /// <param name="parameters">Constructor arguments not provided by the <paramref name="provider"/></param>
-        /// <returns>An activated object of type T</returns>
         public static T CreateInstance<T>(IServiceProvider provider, params object[] parameters)
         {
             return (T)CreateInstance(provider, typeof(T), parameters);
         }
 
-        /// <summary>
-        /// Retrieve an instance of the given type from the service provider. If one is not found then instantiate it directly.
-        /// </summary>
-        /// <typeparam name="T">The type of the service</typeparam>
-        /// <param name="provider">The service provider used to resolve dependencies</param>
-        /// <returns>The resolved service or created instance</returns>
         public static T GetServiceOrCreateInstance<T>(IServiceProvider provider)
         {
             return (T)GetServiceOrCreateInstance(provider, typeof(T));
         }
 
-        /// <summary>
-        /// Retrieve an instance of the given type from the service provider. If one is not found then instantiate it directly.
-        /// </summary>
-        /// <param name="activator">The type activator</param>
-        /// <param name="type">The type of the service</param>
-        /// <returns>The resolved service or created instance</returns>
         public static object GetServiceOrCreateInstance(IServiceProvider provider, Type type)
         {
             return provider.GetService(type) ?? CreateInstance(provider, type);
@@ -132,8 +94,8 @@ namespace Microsoft.Extensions.Internal
             var service = sp.GetService(type);
             if (service == null && !isDefaultParameterRequired)
             {
-                throw new InvalidOperationException(
-                $"Unable to resolve service for type '{type}' while attempting to activate '{requiredBy}'.");
+                var message = $"Unable to resolve service for type '{type}' while attempting to activate '{requiredBy}'.";
+                throw new InvalidOperationException(message);
             }
             return service;
         }
@@ -210,7 +172,8 @@ namespace Microsoft.Extensions.Internal
 
             if (matchingConstructor == null)
             {
-                throw new InvalidOperationException($"Unable to locate suitable constructor for type '{instanceType}'. Ensure the type is concrete and all parameters are accepted by a constructor.");
+                var message = $"A suitable constructor for type '{instanceType}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.";
+                throw new InvalidOperationException(message);
             }
         }
 
@@ -270,7 +233,7 @@ namespace Microsoft.Extensions.Internal
 
                 var applyIndexStart = 0;
                 var applyExactLength = 0;
-                for (var givenIndex = 0; givenIndex != givenParameters.Length; ++givenIndex)
+                for (var givenIndex = 0; givenIndex != givenParameters.Length; givenIndex++)
                 {
                     var givenType = givenParameters[givenIndex] == null ? null : givenParameters[givenIndex].GetType().GetTypeInfo();
                     var givenMatched = false;
@@ -304,7 +267,7 @@ namespace Microsoft.Extensions.Internal
 
             public object CreateInstance(IServiceProvider provider)
             {
-                for (var index = 0; index != _parameters.Length; ++index)
+                for (var index = 0; index != _parameters.Length; index++)
                 {
                     if (_parameterValuesSet[index] == false)
                     {
