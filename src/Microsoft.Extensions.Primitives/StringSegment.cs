@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.Primitives
         /// Initializes an instance of the <see cref="StringSegment"/> struct.
         /// </summary>
         /// <param name="buffer">The original <see cref="string"/> used as buffer.</param>
-        /// <param name="offset"The offset of the segment within the <paramref name="buffer"/>.</param>
+        /// <param name="offset">The offset of the segment within the <paramref name="buffer"/>.</param>
         /// <param name="length">The length of the segment.</param>
         public StringSegment(string buffer, int offset, int length)
         {
@@ -126,7 +126,6 @@ namespace Microsoft.Extensions.Primitives
         /// <param name="other">An object to compare with this object.</param>
         /// <param name="comparisonType">One of the enumeration values that specifies the rules to use in the comparison.</param>
         /// <returns><code>true</code> if the current object is equal to the other parameter; otherwise, <code>false</code>.</returns>
-        /// <summary>
         public bool Equals(StringSegment other, StringComparison comparisonType)
         {
             int textLength = other.Length;
@@ -141,7 +140,7 @@ namespace Microsoft.Extensions.Primitives
         /// <summary>
         /// Checks if the specified <see cref="string"/> is equal to the current <see cref="StringSegment"/>.
         /// </summary>
-        /// <param name="other">The <see cref="string"/> to compare with the current <see cref="StringSegment"/>.</param>
+        /// <param name="text">The <see cref="string"/> to compare with the current <see cref="StringSegment"/>.</param>
         /// <returns><code>true</code> if the specified <see cref="string"/> is equal to the current <see cref="StringSegment"/>; otherwise, <code>false</code>.</returns>
         public bool Equals(string text)
         {
@@ -151,7 +150,7 @@ namespace Microsoft.Extensions.Primitives
         /// <summary>
         /// Checks if the specified <see cref="string"/> is equal to the current <see cref="StringSegment"/>.
         /// </summary>
-        /// <param name="other">The <see cref="string"/> to compare with the current <see cref="StringSegment"/>.</param>
+        /// <param name="text">The <see cref="string"/> to compare with the current <see cref="StringSegment"/>.</param>
         /// <param name="comparisonType">One of the enumeration values that specifies the rules to use in the comparison.</param>
         /// <returns><code>true</code> if the specified <see cref="string"/> is equal to the current <see cref="StringSegment"/>; otherwise, <code>false</code>.</returns>
         public bool Equals(string text, StringComparison comparisonType)
