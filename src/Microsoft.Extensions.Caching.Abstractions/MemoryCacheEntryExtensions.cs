@@ -84,7 +84,6 @@ namespace Microsoft.Extensions.Caching.Memory
         /// </summary>
         /// <param name="options"></param>
         /// <param name="callback"></param>
-        /// <param name="state"></param>
         public static MemoryCacheEntryOptions RegisterPostEvictionCallback(
             this MemoryCacheEntryOptions options,
             PostEvictionDelegate callback)
@@ -124,6 +123,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <summary>
         /// Adds inherited token and absolute expiration information.
         /// </summary>
+        /// <param name="options"></param>
         /// <param name="link"></param>
         public static MemoryCacheEntryOptions AddEntryLink(this MemoryCacheEntryOptions options, IEntryLink link)
         {

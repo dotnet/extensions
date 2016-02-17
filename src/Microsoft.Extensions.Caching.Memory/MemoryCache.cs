@@ -26,8 +26,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <summary>
         /// Creates a new MemoryCache instance.
         /// </summary>
-        /// <param name="clock"></param>
-        /// <param name="listenForMemoryPressure"></param>
+        /// <param name="optionsAccessor"></param>
         public MemoryCache(IOptions<MemoryCacheOptions> optionsAccessor)
         {
             if (optionsAccessor == null)
