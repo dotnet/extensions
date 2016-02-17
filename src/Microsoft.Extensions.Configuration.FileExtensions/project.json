@@ -2,7 +2,9 @@
   "version": "1.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [ "CS1591" ],
+    "xmlDoc": true
   },
   "description": "File based provider configuration extensions for the Configuration package.",
   "repository": {

@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Configuration
     public static class DefaultConfigurationBuilderExtensions
     {
         /// <summary>
-        /// Includes an existing IConfiguration as a configuration provider to <paramref name="configuraton"/>.
+        /// Includes an existing IConfiguration as a configuration provider to <paramref name="configurationBuilder"/>.
         /// </summary>
         /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
         /// <param name="includedConfiguration">The <see cref="IConfiguration"/> to include.</param>
@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.Configuration
         }
 
         /// <summary>
-        /// Includes an existing IConfiguration as a configuration provider to <paramref name="configuraton"/>.
+        /// Includes an existing IConfiguration as a configuration provider to <paramref name="configurationBuilder"/>.
         /// </summary>
         /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
         /// <param name="includedKey">Includes the configuration starting from the child section found with this key.</param>
@@ -43,7 +43,7 @@ namespace Microsoft.Extensions.Configuration
         }
 
         /// <summary>
-        /// Adds the memory configuration provider to <paramref name="configuraton"/>.
+        /// Adds the memory configuration provider to <paramref name="configurationBuilder"/>.
         /// </summary>
         /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
@@ -59,7 +59,7 @@ namespace Microsoft.Extensions.Configuration
         }
 
         /// <summary>
-        /// Adds the memory configuration provider to <paramref name="configuraton"/>.
+        /// Adds the memory configuration provider to <paramref name="configurationBuilder"/>.
         /// </summary>
         /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
         /// <param name="initialData">The data to add to memory configuration provider.</param>
