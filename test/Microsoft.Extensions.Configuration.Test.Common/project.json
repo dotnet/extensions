@@ -16,6 +16,6 @@
       },
       "imports": "portable-net451+win8"
     },
-    "dnx451": {}
+    "net451": {}
     }
 }
