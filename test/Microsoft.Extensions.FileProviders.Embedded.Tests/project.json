@@ -15,7 +15,7 @@
         "dotnet-test-xunit": "1.0.0-dev-*"
       }
     },
-    "dnx451": {
+    "net451": {
       "frameworkAssemblies": {
         "System.Runtime": ""
       },
