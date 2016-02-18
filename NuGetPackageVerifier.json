@@ -1,27 +1,17 @@
 {
     "adx": { // Packages written by the ADX team and that ship on NuGet.org
         "rules": [
-            "AssemblyHasDocumentFileRule",
-            "AssemblyHasVersionAttributesRule",
-            "AssemblyHasServicingAttributeRule",
-            "AssemblyHasNeutralResourcesLanguageAttributeRule",
-            "SatellitePackageRule",
-            "StrictSemanticVersionValidationRule"
+            "AdxVerificationCompositeRule"
         ],
         "packages": {
             "Microsoft.Extensions.DependencyInjection": { },
             "Microsoft.Extensions.DependencyInjection.Abstractions": { },
-            "Microsoft.Extensions.DependencyInjection.Specification.Tests": { },
+            "Microsoft.Extensions.DependencyInjection.Specification.Tests": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
         "rules": [
-            "AssemblyHasDocumentFileRule",
-            "AssemblyHasVersionAttributesRule",
-            "AssemblyHasServicingAttributeRule",
-            "AssemblyHasNeutralResourcesLanguageAttributeRule",
-            "SatellitePackageRule",
-            "StrictSemanticVersionValidationRule"
+            "DefaultVerificationRule"
         ]
     }
 }
