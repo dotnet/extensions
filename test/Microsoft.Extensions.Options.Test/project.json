@@ -18,7 +18,7 @@
         "System.Dynamic.Runtime": "4.0.11-*"
       }
     },
-    "dnx451": {
+    "net451": {
       "frameworkAssemblies": {
         "System.Runtime": ""
       },
