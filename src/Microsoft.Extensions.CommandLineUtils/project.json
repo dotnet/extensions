@@ -14,7 +14,7 @@
         "System.Collections": "4.0.11-*",
         "System.Console": "4.0.0-*",
         "System.IO": "4.1.0-*",
-        "System.Linq": "4.0.2-*",
+        "System.Linq": "4.1.0-*",
       }
     }
   }
