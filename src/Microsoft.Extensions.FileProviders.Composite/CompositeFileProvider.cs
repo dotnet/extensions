@@ -69,11 +69,10 @@ namespace Microsoft.Extensions.FileProviders
         }
 
         /// <summary>
-        /// Creates a <see cref="IChangeToken"/> for the specified <paramref name="filter"/>.
+        /// Creates a <see cref="IChangeToken"/> for the specified <paramref name="pattern"/>.
         /// </summary>
-        /// <remarks></remarks>
         /// <param name="pattern">Filter string used to determine what files or folders to monitor. Example: **/*.cs, *.*, subFolder/**/*.cshtml.</param>
-        /// <returns>An <see cref="IChangeToken"/> that is notified when a file matching <paramref name="filter"/> is added, modified or deleted.
+        /// <returns>An <see cref="IChangeToken"/> that is notified when a file matching <paramref name="pattern"/> is added, modified or deleted.
         /// The change token will be notified when one of the change token returned by the provided <see cref="IFileProvider"/> will be notified.</returns>
         public IChangeToken Watch(string pattern)
         {
