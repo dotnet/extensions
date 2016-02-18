@@ -20,7 +20,7 @@
         "dotnet-test-xunit": "1.0.0-dev-*"
       }
     },
-    "dnx451": {
+    "net451": {
       "dependencies": {
         "Microsoft.Extensions.Logging.EventLog": "1.0.0-*",
         "Moq": "4.2.1312.1622",

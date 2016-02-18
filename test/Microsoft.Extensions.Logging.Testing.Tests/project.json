@@ -5,7 +5,6 @@
   },
   "dependencies": {
     "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
-    "xunit.runner.aspnet": "2.0.0-aspnet-*",
     "xunit": "2.1.0"
   },
   "testRunner": "xunit",
@@ -19,7 +18,7 @@
         "dotnet-test-xunit": "1.0.0-dev-*"
       }
   },
-    "dnx451": {
+    "net451": {
       "frameworkAssemblies": {
         "System.Threading.Tasks": ""
       },
