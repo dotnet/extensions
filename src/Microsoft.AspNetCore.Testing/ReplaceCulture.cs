@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.Testing
             UICulture = new CultureInfo(currentUICulture);
         }
 
+#if NET451
         /// <summary>
         /// The <see cref="Thread.CurrentCulture"/> for the test. Defaults to en-GB.
         /// </summary>
@@ -45,11 +46,27 @@ namespace Microsoft.AspNetCore.Testing
         /// want to be able to find bugs where we're accidentally relying on the Invariant instead of the
         /// user's culture.
         /// </remarks>
+#else
+        /// <summary>
+        /// The <see cref="CultureInfo.CurrentCulture"/> for the test. Defaults to en-GB.
+        /// </summary>
+        /// <remarks>
+        /// en-GB is used here as the default because en-US is equivalent to the InvariantCulture. We
+        /// want to be able to find bugs where we're accidentally relying on the Invariant instead of the
+        /// user's culture.
+        /// </remarks>
+#endif
         public CultureInfo Culture { get; }
 
+#if NET451
         /// <summary>
         /// The <see cref="Thread.CurrentUICulture"/> for the test. Defaults to en-US.
         /// </summary>
+#else
+        /// <summary>
+        /// The <see cref="CultureInfo.CurrentUICulture"/> for the test. Defaults to en-US.
+        /// </summary>
+#endif
         public CultureInfo UICulture { get; }
 
         public override void Before(MethodInfo methodUnderTest)
