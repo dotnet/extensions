@@ -311,7 +311,7 @@ namespace Microsoft.Extensions.Internal
         /// Given an object, adds each instance property with a public get method as a key and its
         /// associated value to a dictionary.
         ///
-        /// If the object is already an <see cref="IDictionary{string, object}"/> instance, then a copy
+        /// If the object is already an <see cref="IDictionary{String, Object}"/> instance, then a copy
         /// is returned.
         /// </summary>
         /// <remarks>
