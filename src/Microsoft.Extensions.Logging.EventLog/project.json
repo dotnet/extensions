@@ -6,7 +6,9 @@
   },
   "compilationOptions": {
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "nowarn": [ "CS1591" ],
+    "xmlDoc": true
   },
   "description": "Logger for Windows Event Log.",
   "dependencies": {

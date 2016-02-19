@@ -32,6 +32,7 @@ namespace Microsoft.Extensions.Logging
         /// <summary>
         /// Adds a console logger that is enabled for <see cref="LogLevel"/>s of minLevel or higher.
         /// </summary>
+        /// <param name="factory">The <see cref="ILoggerFactory"/> to use.</param>
         /// <param name="minLevel">The minimum <see cref="LogLevel"/> to be logged</param>
         public static ILoggerFactory AddConsole(this ILoggerFactory factory, LogLevel minLevel)
         {

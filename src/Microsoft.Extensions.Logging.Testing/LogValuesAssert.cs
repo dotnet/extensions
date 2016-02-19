@@ -30,10 +30,6 @@ namespace Microsoft.Extensions.Logging.Testing
         /// </summary>
         /// <param name="expectedValues">Expected subset of values</param>
         /// <param name="actualValues">Actual set of values</param>
-        /// <param name="comparer">
-        /// An <see cref="IEqualityComparer{T}"/> to compare the values.
-        /// In case no comparer is provided, a default comparer is used.
-        /// </param>
         public static void Contains(
             IEnumerable<KeyValuePair<string, object>> expectedValues,
             IEnumerable<KeyValuePair<string, object>> actualValues)

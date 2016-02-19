@@ -210,7 +210,7 @@ namespace Microsoft.Extensions.Logging
         /// <typeparam name="T3">The type of the third parameter passed to the named format string.</typeparam>
         /// <typeparam name="T4">The type of the fourth parameter passed to the named format string.</typeparam>
         /// <typeparam name="T5">The type of the fifth parameter passed to the named format string.</typeparam>
-        /// <typeparam name="T5">The type of the sixth parameter passed to the named format string.</typeparam>
+        /// <typeparam name="T6">The type of the sixth parameter passed to the named format string.</typeparam>
         /// <param name="logLevel">The <see cref="LogLevel"/></param>
         /// <param name="eventId">The event id</param>
         /// <param name="formatString">The named format string</param>
