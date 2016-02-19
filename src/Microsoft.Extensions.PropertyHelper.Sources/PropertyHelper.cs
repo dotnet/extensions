@@ -136,7 +136,7 @@ namespace Microsoft.Extensions.Internal
         /// on the specified type.
         /// </para>
         /// <para>
-        /// <see cref="GetVisibleProperties"/> excludes properties defined on base types that have been
+        /// <see cref="M:GetVisibleProperties"/> excludes properties defined on base types that have been
         /// hidden by definitions using the <c>new</c> keyword.
         /// </para>
         /// </summary>
@@ -155,7 +155,7 @@ namespace Microsoft.Extensions.Internal
         /// on the specified type.
         /// </para>
         /// <para>
-        /// <see cref="GetVisibleProperties"/> excludes properties defined on base types that have been
+        /// <see cref="M:GetVisibleProperties"/> excludes properties defined on base types that have been
         /// hidden by definitions using the <c>new</c> keyword.
         /// </para>
         /// </summary>
