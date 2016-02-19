@@ -17,8 +17,8 @@ namespace Microsoft.Extensions.Internal
         /// Merges a new claims principal, placing all new identities first, and eliminating
         /// any empty unauthenticated identities from context.User
         /// </summary>
-        /// <param name="existingPrincipal"></param>
-        /// <param name="additionalPrincipal"></param>
+        /// <param name="existingPrincipal">The <see cref="ClaimsPrincipal"/> containing existing <see cref="ClaimsIdentity"/>.</param>
+        /// <param name="additionalPrincipal">The <see cref="ClaimsPrincipal"/> containing <see cref="ClaimsIdentity"/> to be added.</param>
         public static ClaimsPrincipal MergeUserPrincipal(ClaimsPrincipal existingPrincipal, ClaimsPrincipal additionalPrincipal)
         {
             var newPrincipal = new ClaimsPrincipal();
