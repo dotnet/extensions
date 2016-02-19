@@ -133,7 +133,7 @@ namespace Microsoft.Extensions.Configuration.Xml
                                 // it means there is no text/CDATA node in current element
                                 if (preNodeType == XmlNodeType.Element)
                                 {
-                                    var key = string.Join(Constants.KeyDelimiter, prefixStack.Reverse());
+                                    var key = ConfigurationPath.Combine(prefixStack.Reverse());
                                     data[key] = string.Empty;
                                 }
 
@@ -144,8 +144,7 @@ namespace Microsoft.Extensions.Configuration.Xml
                         case XmlNodeType.CDATA:
                         case XmlNodeType.Text:
                             {
-                                var key = string.Join(Constants.KeyDelimiter, prefixStack.Reverse());
-
+                                var key = ConfigurationPath.Combine(prefixStack.Reverse());
                                 if (data.ContainsKey(key))
                                 {
                                     throw new FormatException(Resources.FormatError_KeyIsDuplicated(key,
@@ -234,7 +233,7 @@ namespace Microsoft.Extensions.Configuration.Xml
             if (prefixStack.Any())
             {
                 var lastPrefix = prefixStack.Pop();
-                prefixStack.Push(lastPrefix + Constants.KeyDelimiter + reader.Value);
+                prefixStack.Push(ConfigurationPath.Combine(lastPrefix, reader.Value));
             }
             else
             {
@@ -253,8 +252,7 @@ namespace Microsoft.Extensions.Configuration.Xml
             }
 
             prefixStack.Push(reader.LocalName);
-            var key = string.Join(Constants.KeyDelimiter, prefixStack.Reverse());
-
+            var key = ConfigurationPath.Combine(prefixStack.Reverse());
             if (data.ContainsKey(key))
             {
                 throw new FormatException(Resources.FormatError_KeyIsDuplicated(key, GetLineInfo(reader)));

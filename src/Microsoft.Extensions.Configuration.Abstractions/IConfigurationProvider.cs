@@ -37,8 +37,7 @@ namespace Microsoft.Extensions.Configuration
         /// </summary>
         /// <param name="earlierKeys">The child keys returned by the preceding providers for the same parent path.</param>
         /// <param name="parentPath">The parent path.</param>
-        /// <param name="delimiter">The delimiter to use to identify keys in the <see cref="IConfigurationProvider"/>'s data.</param>
         /// <returns>The child keys.</returns>
-        IEnumerable<string> GetChildKeys(IEnumerable<string> earlierKeys, string parentPath, string delimiter);
+        IEnumerable<string> GetChildKeys(IEnumerable<string> earlierKeys, string parentPath);
     }
 }

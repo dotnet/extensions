@@ -78,21 +78,21 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables
             }
             else
             {
-                entry.Key = key.Replace("__", ":");
+                entry.Key = key.Replace("__", ConfigurationPath.KeyDelimiter);
                 yield return entry;
                 yield break;
             }
 
             // Return the key-value pair for connection string
             yield return new DictionaryEntry(
-                string.Format(ConnStrKeyFormat, key.Substring(prefix.Length).Replace("__", ":")),
+                string.Format(ConnStrKeyFormat, key.Substring(prefix.Length).Replace("__", ConfigurationPath.KeyDelimiter)),
                 entry.Value);
 
             if (!string.IsNullOrEmpty(provider))
             {
                 // Return the key-value pair for provider name
                 yield return new DictionaryEntry(
-                    string.Format(ProviderKeyFormat, key.Substring(prefix.Length).Replace("__", ":")),
+                    string.Format(ProviderKeyFormat, key.Substring(prefix.Length).Replace("__", ConfigurationPath.KeyDelimiter)),
                     provider);
             }
         }

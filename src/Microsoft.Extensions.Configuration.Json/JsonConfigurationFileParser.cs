@@ -101,13 +101,13 @@ namespace Microsoft.Extensions.Configuration.Json
         private void EnterContext(string context)
         {
             _context.Push(context);
-            _currentPath = string.Join(Constants.KeyDelimiter, _context.Reverse());
+            _currentPath = ConfigurationPath.Combine(_context.Reverse());
         }
 
         private void ExitContext()
         {
             _context.Pop();
-            _currentPath = string.Join(Constants.KeyDelimiter, _context.Reverse());
+            _currentPath = ConfigurationPath.Combine(_context.Reverse());
         }
     }
 }

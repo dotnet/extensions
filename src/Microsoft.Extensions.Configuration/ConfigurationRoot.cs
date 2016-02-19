@@ -59,12 +59,11 @@ namespace Microsoft.Extensions.Configuration
 
         internal IEnumerable<IConfigurationSection> GetChildrenImplementation(string path)
         {
-            var prefix = path == null ? "" : (path + Constants.KeyDelimiter);
             return _providers
                 .Aggregate(Enumerable.Empty<string>(),
-                    (seed, source) => source.GetChildKeys(seed, path, Constants.KeyDelimiter))
+                    (seed, source) => source.GetChildKeys(seed, path))
                 .Distinct()
-                .Select(key => GetSection(prefix + key));
+                .Select(key => GetSection(path == null ? key : ConfigurationPath.Combine(path, key)));
         }
 
         public IChangeToken GetReloadToken()

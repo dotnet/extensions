@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Configuration
 {
     public class ConfigurationKeyComparer : IComparer<string>
     {
-        private static readonly string[] _keyDelimiterArray = new[] { Constants.KeyDelimiter };
+        private static readonly string[] _keyDelimiterArray = new[] { ConfigurationPath.KeyDelimiter };
         
         public static ConfigurationKeyComparer Instance { get; } = new ConfigurationKeyComparer();
 
