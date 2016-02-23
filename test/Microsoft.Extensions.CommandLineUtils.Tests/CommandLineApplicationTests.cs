@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
 
@@ -391,7 +392,8 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal(unexpectedOption, subCmd.RemainingArguments[0]);
         }
         
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hangs (https://github.com/dotnet/coreclr/issues/3306).")]
         public void HandlesAsyncExecutes()
         {
             bool called = false;
@@ -411,7 +413,8 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal(2, result);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hangs (https://github.com/dotnet/coreclr/issues/3306).")]
         public void PropagatesAsyncExceptions()
         {
             var app = new CommandLineApplication();
