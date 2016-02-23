@@ -390,42 +390,5 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal(1, subCmd.RemainingArguments.Count);
             Assert.Equal(unexpectedOption, subCmd.RemainingArguments[0]);
         }
-        
-        [Fact]
-        public void HandlesAsyncExecutes()
-        {
-            bool called = false;
-
-            var app = new CommandLineApplication();
-
-            app.OnExecute(async () =>
-            {
-                await Task.Delay(5);
-                called = true;
-                return 2;
-            });
-
-            var result = app.Execute();
-
-            Assert.True(called);
-            Assert.Equal(2, result);
-        }
-
-        [Fact]
-        public void PropagatesAsyncExceptions()
-        {
-            var app = new CommandLineApplication();
-
-            app.OnExecute(async () =>
-            {
-                await Task.Delay(5);
-                throw new InvalidOperationException("this should throw");
-            });
-
-            var ex = Assert.Throws<AggregateException>(() => app.Execute()).InnerException;
-            Assert.NotNull(ex);
-            Assert.IsType<InvalidOperationException>(ex);
-            Assert.Equal("this should throw", ex.Message);
-        }
     }
 }
