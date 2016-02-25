@@ -20,6 +20,7 @@
       "dependencies": {
         "System.Data.SqlClient": "4.0.0-*",
         "dotnet-test-xunit": "1.0.0-dev-*",
+        "moq.netcore": "4.4.0-beta8",
         "Microsoft.NETCore.Platforms": "1.0.1-*"
       }
     },
@@ -29,7 +30,8 @@
         "System.Threading.Tasks": ""
       },
       "dependencies": {
-        "xunit.runner.console": "2.1.0"
+        "xunit.runner.console": "2.1.0",
+        "Moq": "4.2.1312.1622"
       }
     }
   },

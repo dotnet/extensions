@@ -9,8 +9,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Extension methods for setting up Microsoft SQL Server distributed cache related services in an
-    /// <see cref="IServiceCollection" />.
+    /// Extension methods for setting up Microsoft SQL Server distributed cache services in an <see cref="IServiceCollection" />.
     /// </summary>
     public static class SqlServerCachingServicesExtensions
     {
@@ -18,32 +17,28 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds Microsoft SQL Server distributed caching services to the specified <see cref="IServiceCollection" />.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-        /// <param name="options">An action callback to configure a <see cref="SqlServerCacheOptions" /> instance.</param>
-        /// <returns>A reference to this instance after the operation has completed.</returns> 
-        public static IServiceCollection AddSqlServerCache(
-            this IServiceCollection services,
-            Action<SqlServerCacheOptions> options)
+        /// <param name="setupAction">An <see cref="Action{SqlServerCacheOptions}"/> to configure the provided <see cref="SqlServerCacheOptions"/>.</param>
+        public static void AddDistributedSqlServerCache(this IServiceCollection services, Action<SqlServerCacheOptions> setupAction)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
 
-            if (options == null)
+            if (setupAction == null)
             {
-                throw new ArgumentNullException(nameof(options));
+                throw new ArgumentNullException(nameof(setupAction));
             }
 
             services.AddOptions();
             AddSqlServerCacheServices(services);
-            services.Configure(options);
-            return services;
+            services.Configure(setupAction);
         }
 
         // to enable unit testing
         internal static void AddSqlServerCacheServices(IServiceCollection services)
         {
-            services.TryAdd(ServiceDescriptor.Singleton<IDistributedCache, SqlServerCache>());
+            services.Add(ServiceDescriptor.Singleton<IDistributedCache, SqlServerCache>());
         }
     }
 }

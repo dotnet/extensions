@@ -14,13 +14,13 @@ namespace Microsoft.Extensions.Caching.Distributed
     public class CacheServiceExtensionsTests
     {
         [Fact]
-        public void AddCaching_RegistersMemoryCacheAsSingleton()
+        public void AddMemoryCache_RegistersMemoryCacheAsSingleton()
         {
             // Arrange
             var services = new ServiceCollection();
 
             // Act
-            services.AddCaching();
+            services.AddMemoryCache();
 
             // Assert
             var memoryCache = services.FirstOrDefault(desc => desc.ServiceType == typeof(IMemoryCache));
@@ -30,13 +30,13 @@ namespace Microsoft.Extensions.Caching.Distributed
         }
 
         [Fact]
-        public void AddCaching_RegistersDistributedCacheAsTransient()
+        public void AddDistributedMemoryCache_RegistersDistributedCacheAsTransient()
         {
             // Arrange
             var services = new ServiceCollection();
 
             // Act
-            services.AddCaching();
+            services.AddDistributedMemoryCache();
 
             // Assert
             var distributedCache = services.FirstOrDefault(desc => desc.ServiceType == typeof(IDistributedCache));
@@ -54,7 +54,8 @@ namespace Microsoft.Extensions.Caching.Distributed
             services.AddScoped<IDistributedCache, TestDistributedCache>();
 
             // Act
-            services.AddCaching();
+            services.AddMemoryCache();
+            services.AddDistributedMemoryCache();
 
             // Assert
             var serviceProvider = services.BuildServiceProvider();

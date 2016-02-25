@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Caching.Redis
@@ -14,13 +15,13 @@ namespace Microsoft.Extensions.Caching.Redis
     public class CacheServiceExtensionsTests
     {
         [Fact]
-        public void AddRedisCache_RegistersDistributedCacheAsSingleton()
+        public void AddDistributedRedisCache_RegistersDistributedCacheAsSingleton()
         {
             // Arrange
             var services = new ServiceCollection();
 
             // Act
-            services.AddRedisCache();
+            services.AddDistributedRedisCache(options => { });
 
             // Assert
             var distributedCache = services.FirstOrDefault(desc => desc.ServiceType == typeof(IDistributedCache));
@@ -30,14 +31,14 @@ namespace Microsoft.Extensions.Caching.Redis
         }
 
         [Fact]
-        public void AddRedisCache_DoesNotReplaceUserRegisteredServices()
+        public void AddDistributedRedisCache_ReplacesPreviouslyUserRegisteredServices()
         {
             // Arrange
             var services = new ServiceCollection();
-            services.AddScoped<IDistributedCache, TestDistributedCache>();
+            services.AddScoped(typeof(IDistributedCache), sp => Mock.Of<IDistributedCache>());
 
             // Act
-            services.AddRedisCache();
+            services.AddDistributedRedisCache(options => { });
 
             // Assert
             var serviceProvider = services.BuildServiceProvider();
@@ -46,65 +47,7 @@ namespace Microsoft.Extensions.Caching.Redis
 
             Assert.NotNull(distributedCache);
             Assert.Equal(ServiceLifetime.Scoped, distributedCache.Lifetime);
-            Assert.IsType<TestDistributedCache>(serviceProvider.GetRequiredService<IDistributedCache>());
-        }
-
-        private class TestDistributedCache : IDistributedCache
-        {
-            public void Connect()
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task ConnectAsync()
-            {
-                throw new NotImplementedException();
-            }
-
-            public byte[] Get(string key)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<byte[]> GetAsync(string key)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Refresh(string key)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task RefreshAsync(string key)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Remove(string key)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task RemoveAsync(string key)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool TryGetValue(string key, out Stream value)
-            {
-                throw new NotImplementedException();
-            }
+            Assert.IsType<RedisCache>(serviceProvider.GetRequiredService<IDistributedCache>());
         }
     }
 }

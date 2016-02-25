@@ -7,13 +7,13 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.Extensions.Caching.Distributed
 {
-    public class LocalCache : IDistributedCache
+    public class MemoryDistributedCache : IDistributedCache
     {
         private static readonly Task CompletedTask = Task.FromResult<object>(null);
 
         private readonly IMemoryCache _memCache;
 
-        public LocalCache(IMemoryCache memoryCache)
+        public MemoryDistributedCache(IMemoryCache memoryCache)
         {
             if (memoryCache == null)
             {
