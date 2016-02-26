@@ -143,6 +143,49 @@ namespace Microsoft.Extensions.Configuration.Test
         }
 
         [Fact]
+        public void AsEnumerateFlattensIntoDictionaryTest()
+        {
+            // Arrange
+            var dic1 = new Dictionary<string, string>()
+            {
+                {"Mem1:KeyInMem1", "ValueInMem1"},
+                {"Mem1:KeyInMem1:Deep1", "ValueDeep1"}
+            };
+            var dic2 = new Dictionary<string, string>()
+            {
+                {"Mem2:KeyInMem2", "ValueInMem2"},
+                {"Mem2:KeyInMem2:Deep2", "ValueDeep2"}
+            };
+            var dic3 = new Dictionary<string, string>()
+            {
+                {"Mem3:KeyInMem3", "ValueInMem3"},
+                {"Mem3:KeyInMem3:Deep3", "ValueDeep3"}
+            };
+            var memConfigSrc1 = new MemoryConfigurationProvider(dic1);
+            var memConfigSrc2 = new MemoryConfigurationProvider(dic2);
+            var memConfigSrc3 = new MemoryConfigurationProvider(dic3);
+
+            var configurationBuilder = new ConfigurationBuilder();
+
+            // Act
+            configurationBuilder.Add(memConfigSrc1, load: false);
+            configurationBuilder.Add(memConfigSrc2, load: false);
+            configurationBuilder.Add(memConfigSrc3, load: false);
+
+            var config = configurationBuilder.Build();
+
+            var dict = config.AsEnumerable().ToDictionary(k => k.Key, v => v.Value);
+            Assert.Equal("ValueInMem1", config["Mem1:KeyInMem1"]);
+            Assert.Equal("ValueDeep1", config["Mem1:KeyInMem1:Deep1"]);
+            Assert.Equal("ValueInMem2", config["Mem2:KeyInMem2"]);
+            Assert.Equal("ValueDeep2", config["Mem2:KeyInMem2:Deep2"]);
+            Assert.Equal("ValueInMem3", config["Mem3:KeyInMem3"]);
+            Assert.Equal("ValueDeep3", config["Mem3:KeyInMem3:Deep3"]);
+        }
+
+
+
+        [Fact]
         public void NewConfigurationProviderOverridesOldOneWhenKeyIsDuplicated()
         {
             // Arrange
