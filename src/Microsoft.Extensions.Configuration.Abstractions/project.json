@@ -6,7 +6,8 @@
     "nowarn": [ "CS1591" ],
     "xmlDoc": true
   },
-  "description": "Abstractions of key-value pair based configuration.",
+  "description": "Abstractions of key-value pair based configuration.\r\nCommonly used types:\r\nMicrosoft.Extensions.Configuration.IConfiguration\r\nMicrosoft.Extensions.Configuration.IConfigurationBuilder\r\nMicrosoft.Extensions.Configuration.IConfigurationRoot\r\nMicrosoft.Extensions.Configuration.IConfigurationProvider",
+  "tags": [ "configuration" ],
   "repository": {
     "type": "git",
     "url": "https://github.com/aspnet/configuration"

@@ -6,7 +6,8 @@
     "nowarn": [ "CS1591" ],
     "xmlDoc": true
   },
-  "description": "JSON configuration provider for the Configuration package.",
+  "description": "JSON configuration provider implementation of the Microsoft.Extensions.Configuration.IConfigurationProvider interface.",
+  "tags": [ "configuration", "json" ],
   "repository": {
     "type": "git",
     "url": "https://github.com/aspnet/configuration"
@@ -17,7 +18,7 @@
     "Newtonsoft.Json": "8.0.2"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "dotnet5.4": {
       "dependencies": {
         "System.Dynamic.Runtime": "4.0.11-*"

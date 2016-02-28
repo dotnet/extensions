@@ -6,7 +6,8 @@
     "nowarn": [ "CS1591" ],
     "xmlDoc": true
   },
-  "description": "File based provider configuration extensions for the Configuration package.",
+  "description": "Extension methods for configuring file-based configuration providers using the Microsoft.Extensions.Configuration.IConfigurationBuilder interface.",
+  "tags": [ "configuration" ],
   "repository": {
     "type": "git",
     "url": "https://github.com/aspnet/configuration"

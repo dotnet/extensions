@@ -6,7 +6,8 @@
     "nowarn": [ "CS1591" ],
     "xmlDoc": true
   },
-  "description": "XML configuration provider for the Configuration package.",
+  "description": "XML configuration provider implementation of the Microsoft.Extensions.Configuration.IConfigurationProvider interface.",
+  "tags": [ "configuration", "xml" ],
   "repository": {
     "type": "git",
     "url": "https://github.com/aspnet/configuration"

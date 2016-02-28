@@ -6,7 +6,8 @@
     "nowarn": [ "CS1591" ],
     "xmlDoc": true
   },
-  "description": "Implementation of key-value pair based configuration. Includes the memory configuration provider.",
+  "description": "Implementation of key-value pair based configuration using the Microsoft.Extensions.Configuration.IConfiguration interface. Includes the memory configuration provider.",
+  "tags": [ "configuration" ],
   "dependencies": {
     "Microsoft.Extensions.Configuration.Abstractions": "1.0.0-*"
   },
