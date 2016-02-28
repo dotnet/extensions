@@ -1,6 +1,7 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 distributed cache implementation on Redis.",
+  "description": "Distributed cache implementation of Microsoft.Extensions.Caching.Distributed.IDistributedCache using Redis.",
+  "tags": [ "cache", "distributedcache", "redis" ],
   "repository": {
     "type": "git",
     "url": "https://github.com/aspnet/caching"

@@ -5,7 +5,8 @@
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
-  "description": ".NET Core tool for creating table and indexes in Microsoft SQL Server database to be used for ASP.NET 5 distributed caching.",
+  "description": "Command line tool to create tables and indexes in a Microsoft SQL Server database for distributed caching.",
+  "tags": [ "cache", "distributedcache", "sqlserver" ],
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {

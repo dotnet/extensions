@@ -1,6 +1,7 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 in memory cache abstractions and implementation.",
+  "description": "In-memory cache implementation of Microsoft.Extensions.Caching.Memory.IMemoryCache.",
+  "tags": [ "cache", "memorycache" ],
   "repository": {
     "type": "git",
     "url": "https://github.com/aspnet/caching"

@@ -3,7 +3,8 @@
     "Microsoft.Extensions.Caching.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Options": "1.0.0-*"
   },
-  "description": "ASP.NET 5 distributed cache implementation on Microsoft SQL Server.",
+  "description": "Distributed cache implementation of Microsoft.Extensions.Caching.Distributed.IDistributedCache using Microsoft SQL Server.",
+  "tags": [ "cache", "distributedcache", "sqlserver" ],
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
