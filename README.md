@@ -4,20 +4,15 @@ AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/o6mbbm70k0gdd
 
 Travis:   [![Travis](https://travis-ci.org/aspnet/DependencyInjection.svg?branch=dev)](https://travis-ci.org/aspnet/DependencyInjection)
 
-Contains the common DI abstractions that all of ASP.NET 5 and Entity Framework 7 use, as well as adapters for some IoC containers.
+Contains common DI abstractions that ASP.NET Core and Entity Framework Core use.
 
-This project is part of ASP.NET 5. You can find samples, documentation and getting started instructions for ASP.NET 5 at the [Home](https://github.com/aspnet/home) repo.
 
-#### Using other containers with Microsoft.Extensions.DependencyInjection
+### Using other containers with Microsoft.Extensions.DependencyInjection
 
-* **Autofac**
-http://alexmg.com/autofac-packages-for-visual-studio-2015-and-asp-net-5/
+* **Autofac** http://alexmg.com/autofac-packages-for-visual-studio-2015-and-asp-net-5/
+* **StructureMap** https://github.com/structuremap/structuremap.dnx
+* **LightInject** https://github.com/seesharper/LightInject.Microsoft.DependencyInjection
+* **DryIoc** https://www.nuget.org/packages/DryIoc.dnx.dependencyinjection
 
-* **StructureMap**
-https://github.com/structuremap/structuremap.dnx
 
-* **LightInject**
-https://github.com/seesharper/LightInject.Microsoft.DependencyInjection
-
-* **DryIoc**
-https://www.nuget.org/packages/DryIoc.dnx.dependencyinjection
+This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.

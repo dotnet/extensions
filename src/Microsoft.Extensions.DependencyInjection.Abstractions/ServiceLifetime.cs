@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Specifies that a new instance of the service will be created for each scope.
         /// </summary>
         /// <remarks>
-        /// In ASP.NET applications a scope is created around each server request.
+        /// In ASP.NET Core applications a scope is created around each server request.
         /// </remarks>
         Scoped,
         /// <summary>

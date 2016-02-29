@@ -1,6 +1,7 @@
 {
   "version": "1.0.0-*",
-  "description": "Contracts for dependency injection.",
+  "description": "Abstractions for dependency injection.\r\nCommonly used types:\r\nMicrosoft.Extensions.DependencyInjection.IServiceCollection\r\nMicrosoft.Extensions.DependencyInjection.ServiceCollectionExtensions",
+  "tags": [ "dependencyinjection", "di" ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/dependencyinjection"
@@ -18,7 +19,7 @@
     }
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "dotnet5.4": {
       "dependencies": {
         "System.ComponentModel": "4.0.1-*",
