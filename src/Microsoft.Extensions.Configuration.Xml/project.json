@@ -8,7 +8,7 @@
     ],
     "xmlDoc": true
   },
-  "description": "XML configuration provider implementation of the Microsoft.Extensions.Configuration.IConfigurationProvider interface.",
+  "description": "XML configuration provider implementation for Microsoft.Extensions.Configuration.",
   "tags": [
     "configuration",
     "xml"

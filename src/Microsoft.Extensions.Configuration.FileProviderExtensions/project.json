@@ -8,7 +8,7 @@
     ],
     "xmlDoc": true
   },
-  "description": "Extension methods for using configuration with file providers and the Microsoft.Extensions.Configuration.IConfigurationRoot interface.",
+  "description": "Extension methods for using configuration with file providers for Microsoft.Extensions.Configuration.",
   "tags": [
     "configuration"
   ],
@@ -21,7 +21,7 @@
     "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "imports": [
         "dotnet5.4"

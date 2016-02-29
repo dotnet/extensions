@@ -8,7 +8,7 @@
     ],
     "xmlDoc": true
   },
-  "description": "Environment variables configuration provider implementation of the Microsoft.Extensions.Configuration.IConfigurationProvider interface.",
+  "description": "Environment variables configuration provider implementation for Microsoft.Extensions.Configuration.",
   "tags": [
     "configuration",
     "envvar",
@@ -22,7 +22,7 @@
     "Microsoft.Extensions.Configuration": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "imports": [
         "dotnet5.4"

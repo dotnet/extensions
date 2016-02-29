@@ -8,7 +8,7 @@
     ],
     "xmlDoc": true
   },
-  "description": "JSON configuration provider implementation of the Microsoft.Extensions.Configuration.IConfigurationProvider interface.",
+  "description": "JSON configuration provider implementation for Microsoft.Extensions.Configuration.",
   "tags": [
     "configuration",
     "json"
@@ -23,7 +23,7 @@
     "Newtonsoft.Json": "8.0.2"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
         "System.Dynamic.Runtime": "4.0.11-*"

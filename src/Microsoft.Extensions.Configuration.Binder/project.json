@@ -8,7 +8,7 @@
     ],
     "xmlDoc": true
   },
-  "description": "Functionality to bind an object to data in configuration providers using the Microsoft.Extensions.Configuration.IConfiguration interface.",
+  "description": "Functionality to bind an object to data in configuration providers for Microsoft.Extensions.Configuration.",
   "tags": [
     "configuration"
   ],
@@ -20,7 +20,7 @@
     "Microsoft.Extensions.Configuration": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
         "System.ComponentModel.TypeConverter": "4.0.1-*"
