@@ -3,11 +3,16 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "description": "Command line configuration provider implementation of the Microsoft.Extensions.Configuration.IConfigurationProvider interface.",
-  "tags": [ "configuration", "commandline" ],
+  "tags": [
+    "configuration",
+    "commandline"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/aspnet/configuration"
@@ -16,7 +21,11 @@
     "Microsoft.Extensions.Configuration": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { },
-    "dotnet5.4": { }
+    "net451": {},
+    "netstandard1.3": {
+      "imports": [
+        "dotnet5.4"
+      ]
+    }
   }
 }

@@ -3,11 +3,15 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "description": "Abstractions of key-value pair based configuration.\r\nCommonly used types:\r\nMicrosoft.Extensions.Configuration.IConfiguration\r\nMicrosoft.Extensions.Configuration.IConfigurationBuilder\r\nMicrosoft.Extensions.Configuration.IConfigurationRoot\r\nMicrosoft.Extensions.Configuration.IConfigurationProvider",
-  "tags": [ "configuration" ],
+  "tags": [
+    "configuration"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/aspnet/configuration"
@@ -16,11 +20,14 @@
     "Microsoft.Extensions.Primitives": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { },
-    "dotnet5.4": {
+    "net451": {},
+    "netstandard1.3": {
       "dependencies": {
         "System.Linq": "4.1.0-*"
-      }
+      },
+      "imports": [
+        "dotnet5.4"
+      ]
     }
   }
 }

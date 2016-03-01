@@ -3,11 +3,15 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "description": "Extension methods for configuring file-based configuration providers using the Microsoft.Extensions.Configuration.IConfigurationBuilder interface.",
-  "tags": [ "configuration" ],
+  "tags": [
+    "configuration"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/aspnet/configuration"
@@ -16,11 +20,14 @@
     "Microsoft.Extensions.Configuration.Abstractions": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { },
-    "dotnet5.4": {
+    "net451": {},
+    "netstandard1.3": {
       "dependencies": {
         "System.AppContext": "4.1.0-*"
-      }
+      },
+      "imports": [
+        "dotnet5.4"
+      ]
     }
   }
 }

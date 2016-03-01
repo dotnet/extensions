@@ -243,7 +243,7 @@ CommonKey3:CommonKey4=IniValue6";
             var builder = new ConfigurationBuilder();
             string filePath;
 
-#if DNXCORE50
+#if NETSTANDARDAPP1_5
             filePath = AppContext.BaseDirectory;
 #else
             filePath = Path.GetFullPath(AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??

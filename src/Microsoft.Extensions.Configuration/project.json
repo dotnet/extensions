@@ -3,11 +3,15 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "description": "Implementation of key-value pair based configuration using the Microsoft.Extensions.Configuration.IConfiguration interface. Includes the memory configuration provider.",
-  "tags": [ "configuration" ],
+  "tags": [
+    "configuration"
+  ],
   "dependencies": {
     "Microsoft.Extensions.Configuration.Abstractions": "1.0.0-*"
   },
@@ -16,8 +20,8 @@
     "url": "https://github.com/aspnet/configuration"
   },
   "frameworks": {
-    "net451": { },
-    "dotnet5.4": {
+    "net451": {},
+    "netstandard1.3": {
       "dependencies": {
         "System.Collections": "4.0.11-*",
         "System.Diagnostics.Debug": "4.0.11-*",
@@ -27,7 +31,10 @@
         "System.Runtime.Extensions": "4.1.0-*",
         "System.Runtime.InteropServices": "4.1.0-*",
         "System.Threading": "4.0.11-*"
-      }
+      },
+      "imports": [
+        "dotnet5.4"
+      ]
     }
   }
 }

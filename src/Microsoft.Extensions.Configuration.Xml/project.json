@@ -3,11 +3,16 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "description": "XML configuration provider implementation of the Microsoft.Extensions.Configuration.IConfigurationProvider interface.",
-  "tags": [ "configuration", "xml" ],
+  "tags": [
+    "configuration",
+    "xml"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/aspnet/configuration"
@@ -23,11 +28,14 @@
         "System.Xml": ""
       }
     },
-    "dotnet5.4": {
+    "netstandard1.3": {
       "dependencies": {
         "System.Xml.XmlDocument": "4.0.1-*",
         "System.Xml.XmlSerializer": "4.0.11-*"
-      }
+      },
+      "imports": [
+        "dotnet5.4"
+      ]
     }
   }
 }
