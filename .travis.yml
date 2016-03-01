@@ -16,5 +16,7 @@ os:
   - linux
   - osx
 osx_image: xcode7.1
+env:
+  - MONO_MANAGED_WATCHER=false
 script:
   - ./build.sh verify
