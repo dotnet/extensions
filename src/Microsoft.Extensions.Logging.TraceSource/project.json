@@ -7,7 +7,9 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "dependencies": {
@@ -19,7 +21,7 @@
         "System.Collections.Concurrent": ""
       }
     },
-    "dotnet5.4": {
+    "netstandard1.3": {
       "dependencies": {
         "System.Collections.Concurrent": "4.0.12-*",
         "System.Collections": "4.0.11-*",
@@ -27,7 +29,10 @@
         "System.Globalization": "4.0.11-*",
         "System.Linq": "4.1.0-*",
         "System.Threading": "4.0.11-*"
-      }
+      },
+      "imports": [
+        "dotnet5.4"
+      ]
     }
   }
 }
