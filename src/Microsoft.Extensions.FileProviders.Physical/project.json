@@ -3,7 +3,9 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "description": "Implementation of ASP.NET 5 file provider abstractions for physical files.",
@@ -19,14 +21,17 @@
     "Microsoft.Extensions.FileProviders.Abstractions": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { },
-    "dotnet5.4": {
+    "net451": {},
+    "netstandard1.3": {
       "dependencies": {
         "System.Collections.Concurrent": "4.0.12-*",
         "System.IO.FileSystem.Watcher": "4.0.0-*",
         "System.IO.FileSystem": "4.0.1-*",
         "System.Text.RegularExpressions": "4.0.12-*"
-      }
+      },
+      "imports": [
+        "dotnet5.4"
+      ]
     }
   }
 }

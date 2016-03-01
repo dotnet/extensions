@@ -3,7 +3,9 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "description": "Implementation of ASP.NET 5 file system globbing.",
@@ -21,14 +23,17 @@
     "net451": {
       "dependencies": {}
     },
-    "dotnet5.4": {
+    "netstandard1.3": {
       "dependencies": {
         "System.Collections": "4.0.11-*",
         "System.IO.FileSystem": "4.0.1-*",
         "System.Linq": "4.1.0-*",
         "System.Resources.ResourceManager": "4.0.1-*",
         "System.Runtime.Extensions": "4.1.0-*"
-      }
+      },
+      "imports": [
+        "dotnet5.4"
+      ]
     }
   }
 }
