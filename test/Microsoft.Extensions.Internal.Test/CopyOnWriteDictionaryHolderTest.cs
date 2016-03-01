@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if !DNXCORE50
+#if !NETSTANDARDAPP1_5
 using Moq;
 #endif
 using Xunit;
@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Internal
 {
     public class CopyOnWriteDictionaryHolderTest
     {
-#if !DNXCORE50
+#if !NETSTANDARDAPP1_5
         [Fact]
         public void ReadOperation_DelegatesToSourceDictionary_IfNoMutationsArePerformed()
         {

@@ -4,9 +4,11 @@
   "dependencies": {},
   "frameworks": {
     "net451": {},
-    "dotnet5.4": {
-      "dependencies": {
-      }
+    "netstandard1.3": {
+      "dependencies": {},
+      "imports": [
+        "dotnet5.4"
+      ]
     }
   }
 }
