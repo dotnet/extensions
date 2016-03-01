@@ -105,7 +105,7 @@ namespace Microsoft.Dnx.TestHost.Client
                 WorkingDirectory = project,
             };
 
-#if DNXCORE50 || DOTNET5_4
+#if NETSTANDARDAPP1_5 || NETSTANDARD1_3
             Process.StartInfo.Environment["DNX_TESTHOST_TRACE"] = "1";
 #else
             Process.StartInfo.EnvironmentVariables.Add("DNX_TESTHOST_TRACE", "1");
@@ -134,7 +134,7 @@ namespace Microsoft.Dnx.TestHost.Client
 
             if (!client.Connected)
             {
-#if DNXCORE50 || DOTNET5_4
+#if NETSTANDARDAPP1_5 || NETSTANDARD1_3
                 client.Dispose();
 #else
                 client.Close();
@@ -281,7 +281,7 @@ namespace Microsoft.Dnx.TestHost.Client
         {
             if (Client != null)
             {
-#if DNXCORE50 || DOTNET5_4
+#if NETSTANDARDAPP1_5 || NETSTANDARD1_3
                 Client.Dispose();
 #else
                 Client.Close();
