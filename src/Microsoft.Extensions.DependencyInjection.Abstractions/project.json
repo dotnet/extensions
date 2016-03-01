@@ -1,7 +1,10 @@
 {
   "version": "1.0.0-*",
   "description": "Abstractions for dependency injection.\r\nCommonly used types:\r\nMicrosoft.Extensions.DependencyInjection.IServiceCollection\r\nMicrosoft.Extensions.DependencyInjection.ServiceCollectionExtensions",
-  "tags": [ "dependencyinjection", "di" ],
+  "tags": [
+    "dependencyinjection",
+    "di"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/dependencyinjection"
@@ -9,7 +12,9 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "dependencies": {
@@ -19,8 +24,8 @@
     }
   },
   "frameworks": {
-    "net451": { },
-    "dotnet5.4": {
+    "net451": {},
+    "netstandard1.3": {
       "dependencies": {
         "System.ComponentModel": "4.0.1-*",
         "System.Diagnostics.Debug": "4.0.11-*",
@@ -29,7 +34,10 @@
         "System.Linq.Expressions": "4.0.11-*",
         "System.Reflection": "4.1.0-*",
         "System.Resources.ResourceManager": "4.0.1-*"
-      }
+      },
+      "imports": [
+        "dotnet5.4"
+      ]
     }
   }
 }

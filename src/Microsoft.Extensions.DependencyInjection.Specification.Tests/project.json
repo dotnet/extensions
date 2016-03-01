@@ -1,7 +1,10 @@
 {
   "version": "1.0.0-*",
   "description": "Suite of xUnit.net tests to check for container compatibility with Microsoft.Extensions.DependencyInjection.",
-  "tags": [ "dependencyinjection", "di" ],
+  "tags": [
+    "dependencyinjection",
+    "di"
+  ],
   "dependencies": {
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
     "xunit.assert": "2.1.0",
@@ -10,7 +13,9 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "frameworks": {
@@ -20,8 +25,11 @@
         "System.Threading.Tasks": ""
       }
     },
-    "dotnet5.4": {
-      "imports": "portable-net45+win8",
+    "netstandard1.3": {
+      "imports": [
+        "dotnet5.4",
+        "portable-net45+win8"
+      ],
       "dependencies": {
         "System.Threading": "4.0.11-*"
       }
