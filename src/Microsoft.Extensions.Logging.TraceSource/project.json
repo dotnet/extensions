@@ -16,11 +16,7 @@
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Collections.Concurrent": ""
-      }
-    },
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
         "System.Collections.Concurrent": "4.0.12-*",
