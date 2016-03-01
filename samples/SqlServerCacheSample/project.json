@@ -1,20 +1,23 @@
 {
-    "commands": {
-        "SqlServerCacheSample": "SqlServerCacheSample"
-    },
-    "dependencies": {
-        "Microsoft.Extensions.Caching.SqlServer": "1.0.0-*",
-        "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
-        "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
-        "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
-    },
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": {
-            "dependencies": {
-                "Microsoft.NETCore.Platforms": "1.0.1-*",
-                "System.Console": "4.0.0-*"
-            }
-        }
+  "commands": {
+    "SqlServerCacheSample": "SqlServerCacheSample"
+  },
+  "dependencies": {
+    "Microsoft.Extensions.Caching.SqlServer": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
+  },
+  "frameworks": {
+    "dnx451": {},
+    "netstandardapp1.5": {
+      "dependencies": {
+        "Microsoft.NETCore.Platforms": "1.0.1-*",
+        "System.Console": "4.0.0-*"
+      },
+      "imports": [
+        "dnxcore50"
+      ]
     }
+  }
 }

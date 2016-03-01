@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DOTNET5_4
+#if NETSTANDARD1_3
 using System.Threading;
 #else
 using System.Runtime.Remoting;
@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Caching.Memory
 {
     internal static class EntryLinkHelpers
     {
-#if DOTNET5_4
+#if NETSTANDARD1_3
         private static readonly AsyncLocal<EntryLink> _contextLink = new AsyncLocal<EntryLink>();
 
         public static EntryLink ContextLink

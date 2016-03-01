@@ -2,22 +2,31 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "description": "Caching abstractions for in-memory cache and distributed cache.\r\nCommonly used types:\r\nMicrosoft.Extensions.Caching.Distributed.IDistributedCache\r\nMicrosoft.Extensions.Caching.Memory.IMemoryCache",
-  "tags": [ "cache", "memorycache", "distributedcache" ],
+  "tags": [
+    "cache",
+    "memorycache",
+    "distributedcache"
+  ],
   "dependencies": {
     "Microsoft.Extensions.Primitives": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { },
-    "dotnet5.4": {
+    "net451": {},
+    "netstandard1.3": {
       "dependencies": {
         "System.Collections": "4.0.11-*",
         "System.Threading": "4.0.11-*",
         "System.Threading.Tasks": "4.0.11-*"
-      }
+      },
+      "imports": [
+        "dotnet5.4"
+      ]
     }
   },
   "version": "1.0.0-*",
