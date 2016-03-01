@@ -11,7 +11,9 @@
     ],
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "frameworks": {
@@ -22,7 +24,7 @@
         "System.Runtime": ""
       }
     },
-    "dotnet5.4": {
+    "netstandard1.3": {
       "dependencies": {
         "System.ComponentModel": "4.0.1-*",
         "System.Collections.Concurrent": "4.0.12-*",
@@ -30,7 +32,10 @@
         "System.Reflection.Emit.Lightweight": "4.0.1-*",
         "System.Reflection.Extensions": "4.0.1-*",
         "System.Reflection.TypeExtensions": "4.1.0-*"
-      }
+      },
+      "imports": [
+        "dotnet5.4"
+      ]
     }
   }
 }
