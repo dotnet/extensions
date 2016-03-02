@@ -24,12 +24,14 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
+        "System.Runtime": "",
         "System.Security": "",
         "System.Xml": ""
       }
     },
     "netstandard1.3": {
       "dependencies": {
+        "System.IO.FileSystem": "4.0.1-*",
         "System.Xml.XmlDocument": "4.0.1-*",
         "System.Xml.XmlSerializer": "4.0.11-*"
       },
