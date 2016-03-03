@@ -3,6 +3,12 @@
   "shared": "*.cs",
   "dependencies": {},
   "frameworks": {
-    "netstandard1.0": {}
+    "net451": {},
+    "netstandard1.3": {
+      "dependencies": {},
+      "imports": [
+        "dotnet5.4"
+      ]
+    }
   }
 }
