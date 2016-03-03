@@ -17,15 +17,14 @@
     "Microsoft.Extensions.Primitives": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
-    "netstandard1.3": {
+    "netstandard1.0": {
       "dependencies": {
         "System.Collections": "4.0.11-*",
         "System.Threading": "4.0.11-*",
         "System.Threading.Tasks": "4.0.11-*"
       },
       "imports": [
-        "dotnet5.4"
+        "dotnet5.1"
       ]
     }
   },
