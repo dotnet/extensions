@@ -4,7 +4,9 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "repository": {
@@ -18,17 +20,26 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Runtime": {"type": "build" },
-        "System.Reflection": {"type": "build" },
-        "System.Threading.Tasks": {"type": "build" }
+        "System.Runtime": {
+          "type": "build"
+        },
+        "System.Reflection": {
+          "type": "build"
+        },
+        "System.Threading.Tasks": {
+          "type": "build"
+        }
       }
     },
-    "dnxcore50": {
+    "netstandardapp1.5": {
       "dependencies": {
         "Microsoft.NETCore.Platforms": "1.0.1-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
       },
-      "imports": [ "netstandardapp1.5", "portable-net451+win8" ]
+      "imports": [
+        "dnxcore50",
+        "portable-net451+win8"
+      ]
     }
   }
 }
