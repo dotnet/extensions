@@ -21,7 +21,11 @@
     "xmlDoc": true
   },
   "frameworks": {
-    "net451": { },
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Runtime": { "type": "build" }
+      }
+    },
     "netstandard1.3": {
       "dependencies": {
         "System.Collections.Concurrent": "4.0.12-*"
