@@ -8,9 +8,7 @@
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [
-      "CS1591"
-    ],
+    "nowarn": [ "CS1591" ],
     "xmlDoc": true
   },
   "dependencies": {
@@ -39,7 +37,7 @@
         "System.Threading.Tasks": ""
       }
     },
-    "netstandardapp1.5": {
+    "dnxcore50": {
       "dependencies": {
         "System.IO": "4.1.0-*",
         "System.Console": "4.0.0-*",
@@ -48,10 +46,7 @@
         "System.Net.Sockets": "4.1.0-*",
         "System.Threading.Thread": "4.0.0-*"
       },
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ]
+      "imports": ["portable-net451+win8", "netstandard1.3"]
     }
   }
 }

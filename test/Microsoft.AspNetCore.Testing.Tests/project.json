@@ -10,14 +10,11 @@
     "xunit": "2.1.0"
   },
   "frameworks": {
-    "netstandardapp1.5": {
+    "dnxcore50": {
       "dependencies": {
         "dotnet-test-xunit": "1.0.0-dev-*"
       },
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ]
+      "imports": [ "netstandardapp1.5", "portable-net451+win8" ]
     },
     "net451": {
       "dependencies": {
