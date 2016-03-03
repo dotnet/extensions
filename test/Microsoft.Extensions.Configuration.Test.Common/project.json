@@ -4,13 +4,20 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.Extensions.Configuration": "1.0.0-*"
+    "Microsoft.Extensions.Configuration": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
-    "netstandard11": {
+    "netstandardapp1.5": {
+      "dependencies": {
+        "System.Collections.NonGeneric": "4.0.1-*",
+        "System.Runtime": "4.0.21-*"
+      },
       "imports": [
-        "dotnet5.2"
+        "dnxcore50",
+        "portable-net451+win8"
       ]
-    }
+    },
+    "net451": {}
   }
 }
