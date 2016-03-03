@@ -18,10 +18,6 @@
     "StackExchange.Redis.StrongName": "1.0.333"
   },
   "frameworks": {
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Runtime": { "type": "build" }
-      }
-    }
+    "net451": {}
   }
 }

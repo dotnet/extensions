@@ -23,11 +23,7 @@
     "Microsoft.Extensions.Options": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Runtime": { "type": "build" }
-      }
-    },
+    "net451": {},
     "netstandard1.3": {
       "dependencies": {
         "System.Linq": "4.1.0-*",
