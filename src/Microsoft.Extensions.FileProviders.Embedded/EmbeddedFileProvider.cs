@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.FileProviders
     public class EmbeddedFileProvider : IFileProvider
     {
         private static readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars()
-            .Where(c => c != Path.DirectorySeparatorChar && c != Path.AltDirectorySeparatorChar).ToArray();
+            .Where(c => c != '/' && c != '\\').ToArray();
         private readonly Assembly _assembly;
         private readonly string _baseNamespace;
         private readonly DateTimeOffset _lastModified;
