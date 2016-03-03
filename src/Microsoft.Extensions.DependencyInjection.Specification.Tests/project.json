@@ -19,9 +19,15 @@
     "xmlDoc": true
   },
   "frameworks": {
-    "netstandard1.1": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Runtime": "",
+        "System.Threading.Tasks": ""
+      }
+    },
+    "netstandard1.3": {
       "imports": [
-        "dotnet5.2",
+        "dotnet5.4",
         "portable-net45+win8"
       ],
       "dependencies": {

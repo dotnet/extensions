@@ -24,7 +24,8 @@
     }
   },
   "frameworks": {
-    "netstandard1.0": {
+    "net451": {},
+    "netstandard1.3": {
       "dependencies": {
         "System.ComponentModel": "4.0.1-*",
         "System.Diagnostics.Debug": "4.0.11-*",
@@ -35,7 +36,7 @@
         "System.Resources.ResourceManager": "4.0.1-*"
       },
       "imports": [
-        "dotnet5.1"
+        "dotnet5.4"
       ]
     }
   }
