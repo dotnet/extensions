@@ -9,10 +9,10 @@ Contains common DI abstractions that ASP.NET Core and Entity Framework Core use.
 
 ### Using other containers with Microsoft.Extensions.DependencyInjection
 
-* **Autofac** http://alexmg.com/autofac-packages-for-visual-studio-2015-and-asp-net-5/
-* **StructureMap** https://github.com/structuremap/structuremap.dnx
-* **LightInject** https://github.com/seesharper/LightInject.Microsoft.DependencyInjection
-* **DryIoc** https://www.nuget.org/packages/DryIoc.dnx.dependencyinjection
+* [**Autofac**](http://autofac.readthedocs.org/en/latest/integration/aspnetcore.html)
+* [**StructureMap**](https://github.com/structuremap/structuremap.dnx)
+* [**LightInject**](https://github.com/seesharper/LightInject.Microsoft.DependencyInjection)
+* [**DryIoc**](https://www.nuget.org/packages/DryIoc.dnx.dependencyinjection)
 
 
 This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
