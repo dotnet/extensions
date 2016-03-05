@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-#if !DNXCORE50
+#if (NET45 || DNX451 || NET46 || NET451 || NET461)
 using Moq;
 #endif
 using Xunit;
@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Internal
 {
     public class CopyOnWriteDictionaryTest
     {
-#if !DNXCORE50
+#if (NET45 || DNX451 || NET46 || NET451 || NET461)
         [Fact]
         public void ReadOperation_DelegatesToSourceDictionary_IfNoMutationsArePerformed()
         {
