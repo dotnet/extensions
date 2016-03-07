@@ -1,5 +1,10 @@
 {
   "version": "1.0.0-*",
+  "description": "File provider shared source code for Microsoft.Extensions.FileProviders.",
+  "tags": [
+    "files",
+    "filesystem"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/filesystem"
@@ -9,7 +14,7 @@
     "Microsoft.Extensions.FileProviders.Abstractions": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
         "System.Linq": "4.1.0-*"

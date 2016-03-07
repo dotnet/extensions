@@ -8,7 +8,13 @@
     ],
     "xmlDoc": true
   },
-  "description": "Implementation of ASP.NET 5 file system globbing.",
+  "description": "File system globbing to find files matching a specified pattern.",
+  "tags": [
+    "files",
+    "filesystem",
+    "glob",
+    "globbing"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/filesystem"
@@ -21,7 +27,7 @@
   },
   "frameworks": {
     "net451": {
-      "dependencies": {}
+      "dependencies": { }
     },
     "netstandard1.3": {
       "dependencies": {

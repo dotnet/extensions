@@ -4,6 +4,6 @@ AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/8pryt261xf7q0
 
 Travis:   [![Travis](https://travis-ci.org/aspnet/FileSystem.svg?branch=dev)](https://travis-ci.org/aspnet/FileSystem)
 
-File Provider abstractions for ASP.NET 5 runtime. Contains IFileInfo and IFileProvider.
+File Provider abstractions. Contains file system abstractions and file system globbing.
 
-This project is part of ASP.NET 5. You can find samples, documentation and getting started instructions for ASP.NET 5 at the [Home](https://github.com/aspnet/home) repo.
+This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.

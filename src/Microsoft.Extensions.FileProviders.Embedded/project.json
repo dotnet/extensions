@@ -8,7 +8,11 @@
     ],
     "xmlDoc": true
   },
-  "description": "Implementation of ASP.NET 5 file provider abstractions for embedded resources.",
+  "description": "File provider for files in embedded resources for Microsoft.Extensions.FileProviders.",
+  "tags": [
+    "files",
+    "filesystem"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/filesystem"

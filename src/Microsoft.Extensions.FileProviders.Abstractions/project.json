@@ -8,7 +8,11 @@
     ],
     "xmlDoc": true
   },
-  "description": "ASP.NET 5 file provider interfaces.",
+  "description": "Abstractions of files and directories.\r\nCommonly used types:\r\nMicrosoft.Extensions.FileProviders.IDirectoryContents\r\nMicrosoft.Extensions.FileProviders.IFileInfo\r\nMicrosoft.Extensions.FileProviders.IFileProvider",
+  "tags": [
+    "files",
+    "filesystem"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/filesystem"
@@ -17,7 +21,7 @@
     "Microsoft.Extensions.Primitives": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": { },
     "netstandard1.3": {
       "dependencies": {
         "System.IO": "4.1.0-*",
