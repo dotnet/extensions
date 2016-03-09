@@ -1,29 +1,32 @@
 {
-  "commands": {
-    "SampleApp": "SampleApp"
-  },
-  "dependencies": {
-    "Microsoft.Extensions.FileProviders.Physical": "1.0.0-*",
-    "Microsoft.Extensions.Configuration.FileProviderExtensions": "1.0.0-*",
-    "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
-    "Microsoft.Extensions.Logging": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
-  },
-  "frameworks": {
-    "dnx451": {
-      "dependencies": {
-        "Microsoft.Extensions.Logging.EventLog": "1.0.0-*"
-      }
+    "compilationOptions": {
+        "emitEntryPoint": true
     },
-    "netstandardapp1.5": {
-      "dependencies": {
-        "Microsoft.NETCore.Platforms": "1.0.1-*",
-        "System.Console": "4.0.0-*"
-      },
-      "imports": [
-        "dnxcore50"
-      ]
+    "commands": {
+        "SampleApp": "SampleApp"
+    },
+    "dependencies": {
+        "Microsoft.Extensions.FileProviders.Physical": "1.0.0-*",
+        "Microsoft.Extensions.Configuration.FileProviderExtensions": "1.0.0-*",
+        "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
+        "Microsoft.Extensions.Logging": "1.0.0-*",
+        "Microsoft.Extensions.Logging.Console": "1.0.0-*",
+        "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
+    },
+    "frameworks": {
+        "dnx451": {
+            "dependencies": {
+                "Microsoft.Extensions.Logging.EventLog": "1.0.0-*"
+            }
+        },
+        "netstandardapp1.5": {
+            "dependencies": {
+                "Microsoft.NETCore.Platforms": "1.0.1-*",
+                "System.Console": "4.0.0-*"
+            },
+            "imports": [
+                "dnxcore50"
+            ]
+        }
     }
-  }
 }

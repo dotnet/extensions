@@ -87,7 +87,12 @@ namespace SampleApp
             }
         }
 
-        public void Main(string[] args)
+        public static void Main(string[] args)
+        {
+            new Program().Execute(args);
+        }
+
+        public void Execute(string[] args)
         {
             _logger.LogInformation("Starting");
 
