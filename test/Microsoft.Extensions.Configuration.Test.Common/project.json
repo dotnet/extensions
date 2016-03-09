@@ -10,8 +10,7 @@
   "frameworks": {
     "netstandardapp1.5": {
       "dependencies": {
-        "System.Collections.NonGeneric": "4.0.1-*",
-        "System.Runtime": "4.0.21-*"
+        "System.Collections.NonGeneric": "4.0.1-*"
       },
       "imports": [
         "dnxcore50",
