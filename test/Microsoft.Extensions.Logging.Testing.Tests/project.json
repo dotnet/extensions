@@ -16,8 +16,6 @@
       ],
       "dependencies": {
         "Microsoft.NETCore.Platforms": "1.0.1-*",
-        "System.Runtime": "4.0.21-*",
-        "System.Threading.Tasks": "4.0.11-*",
         "dotnet-test-xunit": "1.0.0-dev-*"
       }
     },
