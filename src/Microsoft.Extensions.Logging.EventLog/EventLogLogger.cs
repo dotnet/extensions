@@ -61,9 +61,9 @@ namespace Microsoft.Extensions.Logging.EventLog
         public IEventLog EventLog { get; }
 
         /// <inheritdoc />
-        public IDisposable BeginScopeImpl(object state)
+        public IDisposable BeginScope<TState>(TState state)
         {
-            return new NoopDisposable();
+            return NoopDisposable.Instance;
         }
 
         /// <inheritdoc />
@@ -172,6 +172,8 @@ namespace Microsoft.Extensions.Logging.EventLog
 
         private class NoopDisposable : IDisposable
         {
+            public static NoopDisposable Instance = new NoopDisposable();
+
             public void Dispose()
             {
             }

@@ -197,7 +197,7 @@ namespace Microsoft.Extensions.Logging.Console
             return Filter(Name, logLevel);
         }
 
-        public IDisposable BeginScopeImpl(object state)
+        public IDisposable BeginScope<TState>(TState state)
         {
             if (state == null)
             {

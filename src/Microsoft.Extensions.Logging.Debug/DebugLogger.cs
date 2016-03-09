@@ -36,9 +36,9 @@ namespace Microsoft.Extensions.Logging.Debug
 
 
         /// <inheritdoc />
-        public IDisposable BeginScopeImpl(object state)
+        public IDisposable BeginScope<TState>(TState state)
         {
-            return new NoopDisposable();
+            return NoopDisposable.Instance;
         }
 
         /// <inheritdoc />
@@ -82,6 +82,8 @@ namespace Microsoft.Extensions.Logging.Debug
 
         private class NoopDisposable : IDisposable
         {
+            public static NoopDisposable Instance = new NoopDisposable();
+
             public void Dispose()
             {
             }

@@ -615,8 +615,8 @@ namespace Microsoft.Extensions.Logging.Test
             var sink = t.Item2;
 
             // Act
-            var disposable1 = logger.BeginScopeImpl("Scope1");
-            var disposable2 = logger.BeginScopeImpl("Scope2");
+            var disposable1 = logger.BeginScope("Scope1");
+            var disposable2 = logger.BeginScope("Scope2");
 
             // Assert
             Assert.NotNull(disposable1);
@@ -633,7 +633,7 @@ namespace Microsoft.Extensions.Logging.Test
             var sink = t.Item2;
 
             // Act
-            var disposable = logger.BeginScopeImpl("Scope1");
+            var disposable = logger.BeginScope("Scope1");
 
             // Assert
             Assert.NotNull(disposable);

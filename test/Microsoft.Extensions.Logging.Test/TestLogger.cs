@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.Logging.Test
 
         public string Name { get; set; }
 
-        public IDisposable BeginScopeImpl(object state)
+        public IDisposable BeginScope<TState>(TState state)
         {
             _scope = state;
 
@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.Logging.Test
                 Scope = state,
             });
 
-            return new NoopDisposable();
+            return NoopDisposable.Instance;
         }
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
@@ -65,6 +65,8 @@ namespace Microsoft.Extensions.Logging.Test
 
         private class NoopDisposable : IDisposable
         {
+            public static NoopDisposable Instance = new NoopDisposable();
+
             public void Dispose()
             {
             }

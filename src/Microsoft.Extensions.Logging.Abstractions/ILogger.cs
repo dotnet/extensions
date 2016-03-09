@@ -33,6 +33,6 @@ namespace Microsoft.Extensions.Logging
         /// </summary>
         /// <param name="state">The identifier for the scope.</param>
         /// <returns>An IDisposable that ends the logical operation scope on dispose.</returns>
-        IDisposable BeginScopeImpl(object state);
+        IDisposable BeginScope<TState>(TState state);
     }
 }

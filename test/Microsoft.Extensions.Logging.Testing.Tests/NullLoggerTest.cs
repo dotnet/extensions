@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Logging.Testing
             var logger = NullLogger.Instance;
 
             // Act & Assert
-            using (logger.BeginScopeImpl(null))
+            using (logger.BeginScope("48656c6c6f20576f726c64"))
             {
             }
         }

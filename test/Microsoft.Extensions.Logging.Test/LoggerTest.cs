@@ -137,7 +137,7 @@ namespace Microsoft.Extensions.Logging
                 _store = store;
             }
 
-            public IDisposable BeginScopeImpl(object state)
+            public IDisposable BeginScope<TState>(TState state)
             {
                 if (_throwExceptionAt == ThrowExceptionAt.BeginScope)
                 {

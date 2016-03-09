@@ -129,7 +129,7 @@ namespace SampleApp
                     _logger.LogWarning("Unexpected warning", ex);
                 }
 
-                using (_logger.BeginScopeImpl("Main"))
+                using (_logger.BeginScope("Main"))
                 {
 
                     _logger.LogInformation("Waiting for user input");

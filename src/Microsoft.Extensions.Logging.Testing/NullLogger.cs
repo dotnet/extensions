@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Logging.Testing
     {
         public static readonly NullLogger Instance = new NullLogger();
 
-        public IDisposable BeginScopeImpl(object state)
+        public IDisposable BeginScope<TState>(TState state)
         {
             return NullDisposable.Instance;
         }

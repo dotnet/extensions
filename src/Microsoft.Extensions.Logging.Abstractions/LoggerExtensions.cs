@@ -357,7 +357,7 @@ namespace Microsoft.Extensions.Logging
                 throw new ArgumentNullException(nameof(messageFormat));
             }
 
-            return logger.BeginScopeImpl(new FormattedLogValues(messageFormat, args));
+            return logger.BeginScope(new FormattedLogValues(messageFormat, args));
         }
 
         //------------------------------------------HELPERS------------------------------------------//

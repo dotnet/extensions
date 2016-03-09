@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.Logging.Testing
 
         public string Name { get; set; }
 
-        public IDisposable BeginScopeImpl(object state)
+        public IDisposable BeginScope<TState>(TState state)
         {
             _scope = state;
 

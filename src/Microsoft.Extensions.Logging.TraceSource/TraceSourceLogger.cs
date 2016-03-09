@@ -63,7 +63,7 @@ namespace Microsoft.Extensions.Logging.TraceSource
             }
         }
 
-        public IDisposable BeginScopeImpl(object state)
+        public IDisposable BeginScope<TState>(TState state)
         {
             return new TraceSourceScope(state);
         }

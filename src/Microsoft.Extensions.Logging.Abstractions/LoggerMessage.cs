@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.Logging
         {
             var logValues = new LogValues(new LogValuesFormatter(formatString));
 
-            return logger => logger.BeginScopeImpl(logValues);
+            return logger => logger.BeginScope(logValues);
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.Logging
         {
             var formatter = new LogValuesFormatter(formatString);
 
-            return (logger, arg1) => logger.BeginScopeImpl(new LogValues<T1>(formatter, arg1));
+            return (logger, arg1) => logger.BeginScope(new LogValues<T1>(formatter, arg1));
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.Logging
         {
             var formatter = new LogValuesFormatter(formatString);
 
-            return (logger, arg1, arg2) => logger.BeginScopeImpl(new LogValues<T1, T2>(formatter, arg1, arg2));
+            return (logger, arg1, arg2) => logger.BeginScope(new LogValues<T1, T2>(formatter, arg1, arg2));
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace Microsoft.Extensions.Logging
         {
             var formatter = new LogValuesFormatter(formatString);
 
-            return (logger, arg1, arg2, arg3) => logger.BeginScopeImpl(new LogValues<T1, T2, T3>(formatter, arg1, arg2, arg3));
+            return (logger, arg1, arg2, arg3) => logger.BeginScope(new LogValues<T1, T2, T3>(formatter, arg1, arg2, arg3));
         }
 
         /// <summary>

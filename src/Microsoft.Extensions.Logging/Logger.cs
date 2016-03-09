@@ -100,7 +100,7 @@ namespace Microsoft.Extensions.Logging
             return false;
         }
 
-        public IDisposable BeginScopeImpl(object state)
+        public IDisposable BeginScope<TState>(TState state)
         {
             if (_loggers == null)
             {
@@ -109,7 +109,7 @@ namespace Microsoft.Extensions.Logging
 
             if (_loggers.Length == 1)
             {
-                return _loggers[0].BeginScopeImpl(state);
+                return _loggers[0].BeginScope(state);
             }
 
             var loggers = _loggers;
@@ -120,7 +120,7 @@ namespace Microsoft.Extensions.Logging
             {
                 try
                 {
-                    var disposable = loggers[index].BeginScopeImpl(state);
+                    var disposable = loggers[index].BeginScope(state);
                     scope.SetDisposable(index, disposable);
                 }
                 catch (Exception ex)

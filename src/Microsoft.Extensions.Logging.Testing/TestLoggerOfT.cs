@@ -14,9 +14,9 @@ namespace Microsoft.Extensions.Logging.Testing
             _logger = factory.CreateLogger<T>();
         }
 
-        public IDisposable BeginScopeImpl(object state)
+        public IDisposable BeginScope<TState>(TState state)
         {
-            return _logger.BeginScopeImpl(state);
+            return _logger.BeginScope(state);
         }
 
         public bool IsEnabled(LogLevel logLevel)
