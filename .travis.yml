@@ -18,5 +18,11 @@ os:
 osx_image: xcode7.1
 env:
   - MONO_MANAGED_WATCHER=false
+branches:
+  only:
+    - master
+    - release
+    - dev
+    - /^(.*\\/)?ci-.*$/
 script:
   - ./build.sh verify
