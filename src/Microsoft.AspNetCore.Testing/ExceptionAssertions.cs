@@ -5,7 +5,6 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -18,7 +17,6 @@ namespace Microsoft.AspNetCore.Testing
         /// <typeparam name="TException">The type of the exception expected to be thrown</typeparam>
         /// <param name="testCode">A delegate to the code to be tested</param>
         /// <returns>The exception that was thrown, when successful</returns>
-        /// <exception cref="ThrowsException">Thrown when an exception was not thrown, or when an exception of the incorrect type is thrown</exception>
         public static TException Throws<TException>(Action testCode)
             where TException : Exception
         {
@@ -33,7 +31,6 @@ namespace Microsoft.AspNetCore.Testing
         /// <param name="testCode">A delegate to the code to be tested</param>
         /// <param name="exceptionMessage">The exception message to verify</param>
         /// <returns>The exception that was thrown, when successful</returns>
-        /// <exception>Thrown when an exception was not thrown, or when an exception of the incorrect type is thrown</exception>
         public static TException Throws<TException>(Action testCode, string exceptionMessage)
             where TException : Exception
         {
@@ -50,12 +47,11 @@ namespace Microsoft.AspNetCore.Testing
         /// <param name="testCode">A delegate to the code to be tested</param>
         /// <param name="exceptionMessage">The exception message to verify</param>
         /// <returns>The exception that was thrown, when successful</returns>
-        /// <exception>Thrown when an exception was not thrown, or when an exception of the incorrect type is thrown</exception>
         public static async Task<TException> ThrowsAsync<TException>(Func<Task> testCode, string exceptionMessage)
             where TException : Exception
         {
             // The 'testCode' Task might execute asynchronously in a different thread making it hard to enforce the thread culture.
-            // The correct way to verify exception messages in such a scenario would be to run the task synchronously inside of a 
+            // The correct way to verify exception messages in such a scenario would be to run the task synchronously inside of a
             // culture enforced block.
             var ex = await Assert.ThrowsAsync<TException>(testCode);
             VerifyExceptionMessage(ex, exceptionMessage);
@@ -70,7 +66,6 @@ namespace Microsoft.AspNetCore.Testing
         /// <param name="testCode">A delegate to the code to be tested</param>
         /// <param name="exceptionMessage">The exception message to verify</param>
         /// <returns>The exception that was thrown, when successful</returns>
-        /// <exception>Thrown when an exception was not thrown, or when an exception of the incorrect type is thrown</exception>
         public static TException Throws<TException>(Func<object> testCode, string exceptionMessage)
             where TException : Exception
         {
@@ -84,10 +79,18 @@ namespace Microsoft.AspNetCore.Testing
         /// <param name="paramName">The name of the parameter that should throw the exception</param>
         /// <param name="exceptionMessage">The exception message to verify</param>
         /// <returns>The exception that was thrown, when successful</returns>
-        /// <exception>Thrown when an exception was not thrown, or when an exception of the incorrect type is thrown</exception>
         public static ArgumentException ThrowsArgument(Action testCode, string paramName, string exceptionMessage)
         {
-            var ex = Throws<ArgumentException>(testCode);
+            return ThrowsArgumentInternal<ArgumentException>(testCode, paramName, exceptionMessage);
+        }
+
+        private static TException ThrowsArgumentInternal<TException>(
+            Action testCode,
+            string paramName,
+            string exceptionMessage)
+            where TException : ArgumentException
+        {
+            var ex = Throws<TException>(testCode);
             if (paramName != null)
             {
                 Assert.Equal(paramName, ex.ParamName);
@@ -103,10 +106,18 @@ namespace Microsoft.AspNetCore.Testing
         /// <param name="paramName">The name of the parameter that should throw the exception</param>
         /// <param name="exceptionMessage">The exception message to verify</param>
         /// <returns>The exception that was thrown, when successful</returns>
-        /// <exception>Thrown when an exception was not thrown, or when an exception of the incorrect type is thrown</exception>
-        public static async Task<ArgumentException> ThrowsArgumentAsync(Func<Task> testCode, string paramName, string exceptionMessage)
+        public static Task<ArgumentException> ThrowsArgumentAsync(Func<Task> testCode, string paramName, string exceptionMessage)
         {
-            var ex = await Assert.ThrowsAsync<ArgumentException>(testCode);
+            return ThrowsArgumentAsyncInternal<ArgumentException>(testCode, paramName, exceptionMessage);
+        }
+
+        private static async Task<TException> ThrowsArgumentAsyncInternal<TException>(
+            Func<Task> testCode,
+            string paramName,
+            string exceptionMessage)
+            where TException : ArgumentException
+        {
+            var ex = await Assert.ThrowsAsync<TException>(testCode);
             if (paramName != null)
             {
                 Assert.Equal(paramName, ex.ParamName);
@@ -121,7 +132,6 @@ namespace Microsoft.AspNetCore.Testing
         /// <param name="testCode">A delegate to the code to be tested</param>
         /// <param name="paramName">The name of the parameter that should throw the exception</param>
         /// <returns>The exception that was thrown, when successful</returns>
-        /// <exception>Thrown when an exception was not thrown, or when an exception of the incorrect type is thrown</exception>
         public static ArgumentNullException ThrowsArgumentNull(Action testCode, string paramName)
         {
             var ex = Throws<ArgumentNullException>(testCode);
@@ -139,10 +149,9 @@ namespace Microsoft.AspNetCore.Testing
         /// <param name="testCode">A delegate to the code to be tested</param>
         /// <param name="paramName">The name of the parameter that should throw the exception</param>
         /// <returns>The exception that was thrown, when successful</returns>
-        /// <exception>Thrown when an exception was not thrown, or when an exception of the incorrect type is thrown</exception>
         public static ArgumentException ThrowsArgumentNullOrEmpty(Action testCode, string paramName)
         {
-            return Throws<ArgumentException>(testCode, "Value cannot be null or empty." + Environment.NewLine + "Parameter name: " + paramName);
+            return ThrowsArgumentInternal<ArgumentException>(testCode, paramName, "Value cannot be null or empty.");
         }
 
         /// <summary>
@@ -152,10 +161,9 @@ namespace Microsoft.AspNetCore.Testing
         /// <param name="testCode">A delegate to the code to be tested</param>
         /// <param name="paramName">The name of the parameter that should throw the exception</param>
         /// <returns>The exception that was thrown, when successful</returns>
-        /// <exception>Thrown when an exception was not thrown, or when an exception of the incorrect type is thrown</exception>
         public static Task<ArgumentException> ThrowsArgumentNullOrEmptyAsync(Func<Task> testCode, string paramName)
         {
-            return ThrowsAsync<ArgumentException>(testCode, "Value cannot be null or empty." + Environment.NewLine + "Parameter name: " + paramName);
+            return ThrowsArgumentAsyncInternal<ArgumentException>(testCode, paramName, "Value cannot be null or empty.");
         }
 
         /// <summary>
@@ -165,10 +173,9 @@ namespace Microsoft.AspNetCore.Testing
         /// <param name="testCode">A delegate to the code to be tested</param>
         /// <param name="paramName">The name of the parameter that should throw the exception</param>
         /// <returns>The exception that was thrown, when successful</returns>
-        /// <exception>Thrown when an exception was not thrown, or when an exception of the incorrect type is thrown</exception>
         public static ArgumentException ThrowsArgumentNullOrEmptyString(Action testCode, string paramName)
         {
-            return ThrowsArgument(testCode, paramName, "Value cannot be null or an empty string.");
+            return ThrowsArgumentInternal<ArgumentException>(testCode, paramName, "Value cannot be null or an empty string.");
         }
 
         /// <summary>
@@ -178,10 +185,9 @@ namespace Microsoft.AspNetCore.Testing
         /// <param name="testCode">A delegate to the code to be tested</param>
         /// <param name="paramName">The name of the parameter that should throw the exception</param>
         /// <returns>The exception that was thrown, when successful</returns>
-        /// <exception>Thrown when an exception was not thrown, or when an exception of the incorrect type is thrown</exception>
         public static Task<ArgumentException> ThrowsArgumentNullOrEmptyStringAsync(Func<Task> testCode, string paramName)
         {
-            return ThrowsArgumentAsync(testCode, paramName, "Value cannot be null or an empty string.");
+            return ThrowsArgumentAsyncInternal<ArgumentException>(testCode, paramName, "Value cannot be null or an empty string.");
         }
 
         /// <summary>
@@ -192,41 +198,28 @@ namespace Microsoft.AspNetCore.Testing
         /// <param name="exceptionMessage">The exception message to verify</param>
         /// <param name="actualValue">The actual value provided</param>
         /// <returns>The exception that was thrown, when successful</returns>
-        /// <exception cref="ThrowsException">Thrown when an exception was not thrown, or when an exception of the incorrect type is thrown</exception>
         public static ArgumentOutOfRangeException ThrowsArgumentOutOfRange(Action testCode, string paramName, string exceptionMessage, object actualValue = null)
         {
-            if (exceptionMessage != null)
-            {
-                exceptionMessage = exceptionMessage + Environment.NewLine + "Parameter name: " + paramName;
-                if (actualValue != null)
-                {
-                    exceptionMessage += Environment.NewLine;
-                    if (TestPlatformHelper.IsMono)
-                    {
-                        exceptionMessage += actualValue;
-                    }
-                    else
-                    {
-                        exceptionMessage += String.Format(CultureReplacer.DefaultCulture, "Actual value was {0}.", actualValue);
-                    }
-                }
-            }
-
-            var ex = Throws<ArgumentOutOfRangeException>(testCode, exceptionMessage);
+            var ex = ThrowsArgumentInternal<ArgumentOutOfRangeException>(testCode, paramName, exceptionMessage);
 
             if (paramName != null)
             {
                 Assert.Equal(paramName, ex.ParamName);
             }
 
+            if (actualValue != null)
+            {
+                Assert.Equal(actualValue, ex.ActualValue);
+            }
+
             return ex;
         }
 
-        // We've re-implemented all the xUnit.net Throws code so that we can get this 
+        // We've re-implemented all the xUnit.net Throws code so that we can get this
         // updated implementation of RecordException which silently unwraps any instances
-        // of AggregateException. In addition to unwrapping exceptions, this method ensures 
+        // of AggregateException. In addition to unwrapping exceptions, this method ensures
         // that tests are executed in with a known set of Culture and UICulture. This prevents
-        // tests from failing when executed on a non-English machine. 
+        // tests from failing when executed on a non-English machine.
         private static Exception RecordException(Action testCode)
         {
             try
