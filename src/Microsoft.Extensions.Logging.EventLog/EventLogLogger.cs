@@ -99,6 +99,11 @@ namespace Microsoft.Extensions.Logging.EventLog
 
             message = _name + Environment.NewLine + message;
 
+            if (exception != null)
+            {
+                message += Environment.NewLine + Environment.NewLine + exception.ToString();
+            }
+
             WriteMessage(message, GetEventLogEntryType(logLevel), eventId.Id);
         }
 
