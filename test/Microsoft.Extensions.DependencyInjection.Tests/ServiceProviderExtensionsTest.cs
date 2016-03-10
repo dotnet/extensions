@@ -25,6 +25,19 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
+        public void ISupportRequiredService_GetRequiredService_Returns_CorrectService()
+        {
+            // Arrange
+            var serviceProvider = new RequiredServiceSupportingProvider();
+
+            // Act
+            var service = serviceProvider.GetRequiredService<IBar>();
+
+            // Assert
+            Assert.IsType<Bar1>(service);
+        }
+
+        [Fact]
         public void GetRequiredService_Throws_WhenNoServiceRegistered()
         {
             // Arrange
@@ -36,6 +49,16 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
+        public void ISupportRequiredService_GetRequiredService_Throws_WhenNoServiceRegistered()
+        {
+            // Arrange
+            var serviceProvider = new RequiredServiceSupportingProvider();
+
+            // Act + Assert
+            ExceptionAssert.Throws<RankException>(() => serviceProvider.GetRequiredService<IFoo>());
+        }
+
+        [Fact]
         public void NonGeneric_GetRequiredService_Throws_WhenNoServiceRegistered()
         {
             // Arrange
@@ -44,6 +67,16 @@ namespace Microsoft.Extensions.DependencyInjection
             // Act + Assert
             ExceptionAssert.Throws<InvalidOperationException>(() => serviceProvider.GetRequiredService(typeof(IFoo)),
                 $"No service for type '{typeof(IFoo)}' has been registered.");
+        }
+
+        [Fact]
+        public void ISupportRequiredService_NonGeneric_GetRequiredService_Throws_WhenNoServiceRegistered()
+        {
+            // Arrange
+            var serviceProvider = new RequiredServiceSupportingProvider();
+
+            // Act + Assert
+            ExceptionAssert.Throws<RankException>(() => serviceProvider.GetRequiredService(typeof(IFoo)));
         }
 
         [Fact]
@@ -219,5 +252,23 @@ namespace Microsoft.Extensions.DependencyInjection
         public class Bar1 : IBar { }
 
         public class Bar2 : IBar { }
+
+        private class RequiredServiceSupportingProvider : IServiceProvider, ISupportRequiredService
+        {
+            object ISupportRequiredService.GetRequiredService(Type serviceType)
+            {
+                if (serviceType == typeof(IBar))
+                {
+                    return new Bar1();
+                }
+
+                throw new RankException();
+            }
+
+            object IServiceProvider.GetService(Type serviceType)
+            {
+                throw new NotSupportedException();
+            }
+        }
     }
 }
