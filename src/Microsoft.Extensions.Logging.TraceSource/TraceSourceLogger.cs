@@ -7,7 +7,7 @@ using DiagnosticsTraceSource = System.Diagnostics.TraceSource;
 
 namespace Microsoft.Extensions.Logging.TraceSource
 {
-    internal class TraceSourceLogger : ILogger
+    public class TraceSourceLogger : ILogger
     {
         private readonly DiagnosticsTraceSource _traceSource;
 
