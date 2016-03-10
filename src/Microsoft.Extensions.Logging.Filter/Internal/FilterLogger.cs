@@ -40,9 +40,9 @@ namespace Microsoft.Extensions.Logging.Filter.Internal
             }
         }
 
-        public IDisposable BeginScopeImpl(object state)
+        public IDisposable BeginScope<TState>(TState state)
         {
-            return _innerLogger.BeginScopeImpl(state);
+            return _innerLogger.BeginScope(state);
         }
 
         private Func<LogLevel, bool> GetFilter()

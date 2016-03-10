@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Act
             var a = Trace.CorrelationManager.LogicalOperationStack.Peek();
-            var scope = logger.BeginScopeImpl(state);
+            var scope = logger.BeginScope(state);
             var b = Trace.CorrelationManager.LogicalOperationStack.Peek();
             scope.Dispose();
             var c = Trace.CorrelationManager.LogicalOperationStack.Peek();
