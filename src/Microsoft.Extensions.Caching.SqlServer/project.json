@@ -20,7 +20,8 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Data": "4.0.0.0"
+        "System.Data": "4.0.0.0",
+        "System.Runtime": { "type": "build" }
       }
     },
     "netstandard1.3": {

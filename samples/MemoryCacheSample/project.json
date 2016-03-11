@@ -6,7 +6,11 @@
     "MemoryCacheSample": "MemoryCacheSample"
   },
   "frameworks": {
-    "dnx451": {},
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Threading.Tasks": { "type": "build" }
+      }
+    },
     "netstandardapp1.5": {
       "dependencies": {
         "Microsoft.NETCore.Platforms": "1.0.1-*",
