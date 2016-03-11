@@ -133,8 +133,8 @@ namespace Microsoft.Extensions.Logging.Console
                 // category and event id
                 // use default colors
                 WriteWithColor(
-                    ConsoleColor.Gray,
-                    DefaultConsoleColor,
+                    logLevelColors.Foreground,
+                    logLevelColors.Background,
                     _loglevelPadding + logName + $"[{eventId}]",
                     newLine: true);
 
@@ -145,7 +145,7 @@ namespace Microsoft.Extensions.Logging.Console
                     if (!string.IsNullOrEmpty(scopeInformation))
                     {
                         WriteWithColor(
-                            ConsoleColor.Gray,
+                            DefaultConsoleColor,
                             DefaultConsoleColor,
                             _messagePadding + scopeInformation,
                             newLine: true);
@@ -154,7 +154,7 @@ namespace Microsoft.Extensions.Logging.Console
 
                 // message
                 WriteWithColor(
-                    ConsoleColor.White,
+                    DefaultConsoleColor,
                     DefaultConsoleColor,
                     _messagePadding + message,
                     newLine: true);
@@ -183,7 +183,7 @@ namespace Microsoft.Extensions.Logging.Console
             {
                 // exception message
                 WriteWithColor(
-                    ConsoleColor.White,
+                    DefaultConsoleColor,
                     DefaultConsoleColor,
                     ex.ToString(),
                     newLine: true);
@@ -238,15 +238,17 @@ namespace Microsoft.Extensions.Logging.Console
                 case LogLevel.Critical:
                     return new ConsoleColors(ConsoleColor.White, ConsoleColor.Red);
                 case LogLevel.Error:
-                    return new ConsoleColors(ConsoleColor.Red, DefaultConsoleColor);
+                    return new ConsoleColors(ConsoleColor.Red, ConsoleColor.Black);
                 case LogLevel.Warning:
-                    return new ConsoleColors(ConsoleColor.DarkYellow, DefaultConsoleColor);
+                    return new ConsoleColors(ConsoleColor.Yellow, ConsoleColor.Black);
                 case LogLevel.Information:
-                    return new ConsoleColors(ConsoleColor.DarkGreen, DefaultConsoleColor);
+                    return new ConsoleColors(ConsoleColor.DarkGreen, ConsoleColor.Black);
                 case LogLevel.Debug:
+                    return new ConsoleColors(ConsoleColor.Gray, ConsoleColor.Black);
                 case LogLevel.Trace:
+                    return new ConsoleColors(ConsoleColor.Gray, ConsoleColor.Black);
                 default:
-                    return new ConsoleColors(ConsoleColor.Gray, DefaultConsoleColor);
+                    return new ConsoleColors(DefaultConsoleColor, DefaultConsoleColor);
             }
         }
 

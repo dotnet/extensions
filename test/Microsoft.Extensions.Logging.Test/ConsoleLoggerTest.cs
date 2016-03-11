@@ -296,11 +296,11 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(ConsoleColor.Red, write.BackgroundColor);
             Assert.Equal(ConsoleColor.White, write.ForegroundColor);
             write = sink.Writes[1];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            Assert.Equal(ConsoleColor.Red, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.White, write.ForegroundColor);
             write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.White, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
 
         [Fact]
@@ -317,14 +317,14 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.Equal(3, sink.Writes.Count);
             var write = sink.Writes[0];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
             Assert.Equal(ConsoleColor.Red, write.ForegroundColor);
             write = sink.Writes[1];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Red, write.ForegroundColor);
             write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.White, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
 
         [Fact]
@@ -341,14 +341,14 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.Equal(3, sink.Writes.Count);
             var write = sink.Writes[0];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.DarkYellow, write.ForegroundColor);
+            Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Yellow, write.ForegroundColor);
             write = sink.Writes[1];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Yellow, write.ForegroundColor);
             write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.White, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
 
         [Fact]
@@ -365,14 +365,14 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.Equal(3, sink.Writes.Count);
             var write = sink.Writes[0];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
             Assert.Equal(ConsoleColor.DarkGreen, write.ForegroundColor);
             write = sink.Writes[1];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.DarkGreen, write.ForegroundColor);
             write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.White, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
 
         [Fact]
@@ -389,14 +389,14 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.Equal(3, sink.Writes.Count);
             var write = sink.Writes[0];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
             Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
             write = sink.Writes[1];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
             Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
             write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.White, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
 
         [Fact]
@@ -413,14 +413,14 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.Equal(3, sink.Writes.Count);
             var write = sink.Writes[0];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
             Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
             write = sink.Writes[1];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
             Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
             write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.White, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
 
         [Fact]
@@ -464,14 +464,14 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.Equal(3, sink.Writes.Count);
             var write = sink.Writes[0];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.DarkYellow, write.ForegroundColor);
+            Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Yellow, write.ForegroundColor);
             write = sink.Writes[1];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Yellow, write.ForegroundColor);
             write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.White, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
 
         [Fact]
@@ -493,17 +493,17 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.Equal(4, sink.Writes.Count);
             var write = sink.Writes[0];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
             Assert.Equal(ConsoleColor.DarkGreen, write.ForegroundColor);
             write = sink.Writes[1];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.DarkGreen, write.ForegroundColor);
             write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
             write = sink.Writes[3];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.White, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
 
         [Fact]
@@ -530,7 +530,7 @@ namespace Microsoft.Extensions.Logging.Test
             var write = sink.Writes[2];
             Assert.Equal(expectedMessage, write.Message);
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultBackgroundColor, write.ForegroundColor);
         }
 
         [Fact]
@@ -560,7 +560,7 @@ namespace Microsoft.Extensions.Logging.Test
             var write = sink.Writes[2];
             Assert.Equal(expectedMessage, write.Message);
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
 
         [Fact]
@@ -599,11 +599,11 @@ namespace Microsoft.Extensions.Logging.Test
             var write = sink.Writes[2];
             Assert.Equal(expectedMessage1, write.Message);
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
             write = sink.Writes[6];
             Assert.Equal(expectedMessage2, write.Message);
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
 
         [Fact]
