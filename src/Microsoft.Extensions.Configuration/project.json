@@ -20,7 +20,11 @@
     "url": "https://github.com/aspnet/configuration"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Runtime": { "type": "build" }
+      }
+    },
     "netstandard1.3": {
       "dependencies": {
         "System.Collections": "4.0.11-*",
