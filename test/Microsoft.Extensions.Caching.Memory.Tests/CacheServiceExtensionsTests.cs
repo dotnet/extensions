@@ -70,6 +70,30 @@ namespace Microsoft.Extensions.Caching.Distributed
             Assert.IsType<TestDistributedCache>(serviceProvider.GetRequiredService<IDistributedCache>());
         }
 
+        [Fact]
+        public void AddMemoryCache_allows_chaining()
+        {
+            var services = new ServiceCollection();
+
+            Assert.Same(services, services.AddMemoryCache());
+        }
+
+        [Fact]
+        public void AddMemoryCache_with_action_allows_chaining()
+        {
+            var services = new ServiceCollection();
+
+            Assert.Same(services, services.AddMemoryCache(_ => { }));
+        }
+
+        [Fact]
+        public void AddDistributedMemoryCache_allows_chaining()
+        {
+            var services = new ServiceCollection();
+
+            Assert.Same(services, services.AddDistributedMemoryCache());
+        }
+
         private class TestMemoryCache : IMemoryCache
         {
             public IEntryLink CreateLinkingScope()

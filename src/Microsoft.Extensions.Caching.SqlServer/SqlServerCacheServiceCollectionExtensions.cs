@@ -18,7 +18,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
         /// <param name="setupAction">An <see cref="Action{SqlServerCacheOptions}"/> to configure the provided <see cref="SqlServerCacheOptions"/>.</param>
-        public static void AddDistributedSqlServerCache(this IServiceCollection services, Action<SqlServerCacheOptions> setupAction)
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection AddDistributedSqlServerCache(this IServiceCollection services, Action<SqlServerCacheOptions> setupAction)
         {
             if (services == null)
             {
@@ -33,6 +34,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddOptions();
             AddSqlServerCacheServices(services);
             services.Configure(setupAction);
+
+            return services;
         }
 
         // to enable unit testing

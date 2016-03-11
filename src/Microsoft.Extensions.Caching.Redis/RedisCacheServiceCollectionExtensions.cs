@@ -19,7 +19,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
         /// <param name="setupAction">An <see cref="Action{RedisCacheOptions}"/> to configure the provided
         /// <see cref="RedisCacheOptions"/>.</param>
-        public static void AddDistributedRedisCache(this IServiceCollection services, Action<RedisCacheOptions> setupAction)
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection AddDistributedRedisCache(this IServiceCollection services, Action<RedisCacheOptions> setupAction)
         {
             if (services == null)
             {
@@ -34,6 +35,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddOptions();
             services.Configure(setupAction);
             services.Add(ServiceDescriptor.Singleton<IDistributedCache, RedisCache>());
+
+            return services;
         }
     }
 }

@@ -49,5 +49,13 @@ namespace Microsoft.Extensions.Caching.Redis
             Assert.Equal(ServiceLifetime.Scoped, distributedCache.Lifetime);
             Assert.IsType<RedisCache>(serviceProvider.GetRequiredService<IDistributedCache>());
         }
+
+        [Fact]
+        public void AddDistributedRedisCache_allows_chaining()
+        {
+            var services = new ServiceCollection();
+
+            Assert.Same(services, services.AddDistributedRedisCache(_ => { }));
+        }
     }
 }

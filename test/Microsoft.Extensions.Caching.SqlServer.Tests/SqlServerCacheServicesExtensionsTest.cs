@@ -54,5 +54,13 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Equal(ServiceLifetime.Scoped, distributedCache.Lifetime);
             Assert.IsType<SqlServerCache>(serviceProvider.GetRequiredService<IDistributedCache>());
         }
+
+        [Fact]
+        public void AddDistributedSqlServerCache_allows_chaining()
+        {
+            var services = new ServiceCollection();
+
+            Assert.Same(services, services.AddDistributedSqlServerCache(_ => { }));
+        }
     }
 }
