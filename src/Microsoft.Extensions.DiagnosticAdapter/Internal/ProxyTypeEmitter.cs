@@ -12,9 +12,11 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
 {
     public static class ProxyTypeEmitter
     {
+        private static readonly Type[] EmptyTypes = new Type[0];
+
         public static Type GetProxyType(ProxyTypeCache cache, Type targetType, Type sourceType)
         {
-            if (targetType.IsAssignableFrom(sourceType))
+            if (targetType.GetTypeInfo().IsAssignableFrom(sourceType.GetTypeInfo()))
             {
                 return null;
             }
@@ -105,7 +107,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                 return !cacheResult.IsError;
             }
 
-            if (targetType == sourceType || targetType.IsAssignableFrom(sourceType))
+            if (targetType == sourceType || targetType.GetTypeInfo().IsAssignableFrom(sourceType.GetTypeInfo()))
             {
                 // If we find a trivial conversion, then that will work. 
                 return true;
@@ -131,8 +133,8 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                 var sourceInterfaceType = GetGenericImplementation(sourceType, typeof(IList<>));
                 if (sourceInterfaceType != null)
                 {
-                    var targetElementType = targetType.GetGenericArguments()[0];
-                    var sourceElementType = sourceInterfaceType.GetGenericArguments()[0];
+                    var targetElementType = targetType.GetTypeInfo().GenericTypeArguments[0];
+                    var sourceElementType = sourceInterfaceType.GetTypeInfo().GenericTypeArguments[0];
 
                     var elementKey = new Tuple<Type, Type>(sourceElementType, targetElementType);
                     if (!VerifyProxySupport(context, elementKey))
@@ -151,7 +153,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                     {
                         // No proxy needed for elements.
                         verificationResult.Type = typeof(ProxyList<,>).MakeGenericType(elementKey.Item1, elementKey.Item2);
-                        verificationResult.Constructor = verificationResult.Type.GetConstructors()[0];
+                        verificationResult.Constructor = verificationResult.Type.GetTypeInfo().DeclaredConstructors.First();
                     }
                     else
                     {
@@ -168,7 +170,8 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
 
             var sourceProperties = sourceType.GetRuntimeProperties();
             var targetProperties = targetType
-                .GetInterfaces()
+                .GetTypeInfo()
+                .ImplementedInterfaces
                 .SelectMany(i => i.GetRuntimeProperties())
                 .Concat(targetType.GetRuntimeProperties());
             foreach (var targetProperty in targetProperties)
@@ -243,7 +246,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             VerificationResult verificationResult)
         {
             var baseType = typeof(ProxyList<,>).MakeGenericType(sourceElementType, targetElementType);
-            var baseConstructor = baseType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)[0];
+            var baseConstructor = baseType.GetTypeInfo().DeclaredConstructors.FirstOrDefault(ctor => !ctor.IsPublic && !ctor.IsStatic);
 
             var typeBuilder = ProxyAssembly.DefineType(
                 string.Format("Proxy_From_IList<{0}>_To_IReadOnlyList<{1}>", sourceElementType.Name, targetElementType.Name),
@@ -263,7 +266,8 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             // LdToken loads a RuntimeTypeHandle, while the constructor takes a Type, so we convert.
             // This is the same strategy the compiler uses when constructing this class.
             il.Emit(OpCodes.Ldtoken, proxyType);
-            var getTypeFromHandle = typeof(Type).GetMethod("GetTypeFromHandle", BindingFlags.Static | BindingFlags.Public);
+            var getTypeFromHandle = typeof(Type).GetRuntimeMethods()
+                .First(m => string.Equals(m.Name, nameof(Type.GetTypeFromHandle)) && m.IsStatic && m.IsPublic);
             il.EmitCall(OpCodes.Call, getTypeFromHandle, null);
 
             il.Emit(OpCodes.Call, baseConstructor);
@@ -291,7 +295,13 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Ldarg_1);
             il.Emit(OpCodes.Castclass, sourceType);
-            il.Emit(OpCodes.Call, baseType.GetConstructor(new Type[] { sourceType }));
+            il.Emit(OpCodes.Call, baseType.GetTypeInfo()
+                .DeclaredConstructors
+                .First(c =>
+                {
+                    var parameters = c.GetParameters();
+                    return parameters.Length == 1 && parameters[0].ParameterType == sourceType;
+                }));
             il.Emit(OpCodes.Ret);
 
             verificationResult.Constructor = constructorBuilder;
@@ -312,14 +322,14 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                     targetProperty.Name,
                     PropertyAttributes.None,
                     targetProperty.PropertyType,
-                    Type.EmptyTypes);
+                    EmptyTypes);
 
                 var methodBuilder = typeBuilder.DefineMethod(
                     targetProperty.GetMethod.Name,
                     targetProperty.GetMethod.Attributes & ~MethodAttributes.Abstract,
                     targetProperty.GetMethod.CallingConvention,
                     targetProperty.GetMethod.ReturnType,
-                    Type.EmptyTypes);
+                    EmptyTypes);
                 propertyBuilder.SetGetMethod(methodBuilder);
                 typeBuilder.DefineMethodOverride(methodBuilder, targetProperty.GetMethod);
 
@@ -350,9 +360,10 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                 // Push 'this' and get the underlying instance.
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Ldfld,
-                    typeBuilder.BaseType.GetField(
-                        "Instance",
-                        BindingFlags.Instance | BindingFlags.Public));
+                    typeBuilder.BaseType.GetRuntimeFields().First(
+                        f => string.Equals(f.Name, "Instance", StringComparison.Ordinal) &&
+                            !f.IsStatic &&
+                            f.IsPublic));
 
                 // Call the source property.
                 il.EmitCall(OpCodes.Callvirt, sourceProperty.GetMethod, null);
@@ -388,7 +399,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                 // Do nothing.
                 return;
             }
-            else if (targetType.IsAssignableFrom(sourceType))
+            else if (targetType.GetTypeInfo().IsAssignableFrom(sourceType.GetTypeInfo()))
             {
                 il.Emit(OpCodes.Castclass, targetType);
                 return;

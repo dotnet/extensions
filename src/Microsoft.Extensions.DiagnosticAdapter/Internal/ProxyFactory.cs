@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             {
                 return default(TProxy);
             }
-            else if (typeof(TProxy).IsAssignableFrom(obj.GetType()))
+            else if (typeof(TProxy).GetTypeInfo().IsAssignableFrom(obj.GetType().GetTypeInfo()))
             {
                 return (TProxy)obj;
             }

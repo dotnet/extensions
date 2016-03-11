@@ -29,8 +29,8 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
         } 
 #endif
 
-        private static readonly MethodInfo ProxyFactoryGenericMethod = 
-            typeof(IProxyFactory).GetMethod(nameof(IProxyFactory.CreateProxy));
+        private static readonly MethodInfo ProxyFactoryGenericMethod =
+            typeof(IProxyFactory).GetTypeInfo().GetDeclaredMethod(nameof(IProxyFactory.CreateProxy));
 
         public static Func<object, object, IProxyFactory, bool> CreateProxyMethod(MethodInfo method, Type inputType)
         {
@@ -86,14 +86,14 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
 
             return mappings;
         }
-        
+
         private static void EmitMethod(
             ILGenerator il,
             Type inputType,
             PropertyInfo[] mappings,
             MethodInfo method,
             ParameterInfo[] parameters)
-        { 
+        {
             // Define a local for each method parameters. This is needed when the parameter is
             // a value type, but we'll do it for all for simplicity.
             for (var i = 0; i < parameters.Length; i++)
@@ -144,7 +144,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                 if (mapping != null)
                 {
                     // No proxy required, just load the value.
-                    if (parameter.ParameterType.IsAssignableFrom(mapping.PropertyType))
+                    if (parameter.ParameterType.GetTypeInfo().IsAssignableFrom(mapping.PropertyType.GetTypeInfo()))
                     {
                         il.Emit(OpCodes.Ldarg_1); // The event-data
                         il.Emit(OpCodes.Castclass, inputType);
