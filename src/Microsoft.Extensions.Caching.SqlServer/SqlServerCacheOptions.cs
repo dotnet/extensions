@@ -7,6 +7,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Caching.SqlServer
 {
+    /// <summary>
+    /// Configuration options for <see cref="SqlServerCache"/>.
+    /// </summary>
     public class SqlServerCacheOptions : IOptions<SqlServerCacheOptions>
     {
         /// <summary>
