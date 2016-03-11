@@ -39,8 +39,8 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             // Closed Generic Descriptor
             yield return new object[]
             {
-                new[] { new ServiceDescriptor(typeof(IFakeOpenGenericService<string>), typeof(FakeService), lifetime) },
-                typeof(IFakeOpenGenericService<string>),
+                new[] { new ServiceDescriptor(typeof(IFakeOpenGenericService<AnotherClass>), typeof(FakeService), lifetime) },
+                typeof(IFakeOpenGenericService<AnotherClass>),
                 compare,
             };
             // Open Generic Descriptor
