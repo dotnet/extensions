@@ -21,11 +21,10 @@
     },
     "net451": {
       "frameworkAssemblies": {
-        "System.Runtime": "",
-        "System.Threading.Tasks": ""
+        "System.Threading.Tasks": { "type": "build" }
       },
       "dependencies": {
-        "xunit.runner.console": "2.1.0"
+        "System.Runtime": "4.0.10.0"
       }
     }
   },

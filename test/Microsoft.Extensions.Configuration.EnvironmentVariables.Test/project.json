@@ -12,7 +12,8 @@
   "frameworks": {
     "netstandardapp1.5": {
       "dependencies": {
-        "dotnet-test-xunit": "1.0.0-dev-*"
+        "dotnet-test-xunit": "1.0.0-dev-*",
+        "System.Collections.NonGeneric": "4.0.1-*"
       },
       "imports": [
         "dnxcore50",

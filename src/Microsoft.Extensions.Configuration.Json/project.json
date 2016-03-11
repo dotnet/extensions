@@ -23,10 +23,15 @@
     "Newtonsoft.Json": "8.0.2"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Runtime": { "type": "build" }
+      }
+    },
     "netstandard1.3": {
       "dependencies": {
-        "System.Dynamic.Runtime": "4.0.11-*"
+        "System.Dynamic.Runtime": "4.0.11-*",
+        "System.IO.FileSystem": "4.0.1-*"
       },
       "imports": [
         "dotnet5.4",
