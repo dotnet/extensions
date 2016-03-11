@@ -18,7 +18,11 @@
     "url": "https://github.com/aspnet/options"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Runtime": { "type": "build" }
+      }
+    },
     "netstandard1.3": {
       "dependencies": {
         "System.ComponentModel": "4.0.1-*",
