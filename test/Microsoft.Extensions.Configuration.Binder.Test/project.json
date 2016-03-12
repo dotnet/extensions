@@ -24,7 +24,7 @@
         "System.Threading.Tasks": { "type": "build" }
       },
       "dependencies": {
-        "System.Runtime": "4.0.10.0"
+        "System.Runtime": "4.1.0-*"
       }
     }
   },
