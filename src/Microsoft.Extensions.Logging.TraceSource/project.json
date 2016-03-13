@@ -16,15 +16,14 @@
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Runtime": { "type": "build" }
+      }
+    },
     "netstandard1.3": {
       "dependencies": {
-        "System.Collections.Concurrent": "4.0.12-*",
-        "System.Collections": "4.0.11-*",
-        "System.Diagnostics.TraceSource": "4.0.0-*",
-        "System.Globalization": "4.0.11-*",
-        "System.Linq": "4.1.0-*",
-        "System.Threading": "4.0.11-*"
+        "System.Diagnostics.TraceSource": "4.0.0-*"
       },
       "imports": [
         "dotnet5.4"
