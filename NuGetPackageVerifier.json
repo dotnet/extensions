@@ -4,15 +4,7 @@
             "AdxVerificationCompositeRule"
         ],
         "packages": {
-            "Microsoft.AspNetCore.Testing": { },
-            "Microsoft.Dnx.TestHost": { },
-            "Microsoft.Dnx.Testing.Abstractions": { }
-        }
-    },
-    "adx-nonshipping": {
-        "rules": [],
-        "packages": {
-            "Microsoft.Dnx.TestHost.Client.Sources": { }
+            "Microsoft.AspNetCore.Testing": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
