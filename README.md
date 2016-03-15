@@ -4,7 +4,7 @@ AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/nwh8qlyaisvg3
 
 Travis:   [![Travis](https://travis-ci.org/aspnet/Testing.svg?branch=dev)](https://travis-ci.org/aspnet/Testing)
 
-This repository contains testing infrastructure for ASP.NET
+This repository contains testing infrastructure for ASP.NET.
 
 To get started using it, see [How to create test projects](https://github.com/aspnet/Testing/wiki/How-to-create-test-projects).
 
@@ -46,4 +46,4 @@ at Microsoft.Extensions.TestHost.Program.<>c__DisplayClass2_0.b__0()
 
 Then you almost certainly have a compatability problem caused by mixing package versions spanning separate beta releases. Doing a `dnu list` on your project at the commandline will help pin down what version is incompatible.
 
-This project is part of ASP.NET 5. You can find samples, documentation and getting started instructions for ASP.NET 5 at the [Home](https://github.com/aspnet/home) repo.
+This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
