@@ -1,6 +1,9 @@
 {
   "version": "1.0.0-*",
-  "description": "Logging infrastructure.",
+  "description": "Logging infrastructure default implementation for Microsoft.Extensions.Logging.",
+  "tags": [
+    "logging"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/logging"

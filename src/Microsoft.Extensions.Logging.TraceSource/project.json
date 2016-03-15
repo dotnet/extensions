@@ -1,5 +1,10 @@
 {
   "version": "1.0.0-*",
+  "description": "TraceSource logger provider implementation for Microsoft.Extensions.Logging.  This logger logs messages to a trace listener by writing messages with System.Diagnostics.TraceSource.TraceEvent().",
+  "tags": [
+    "logging",
+    "tracesource"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/logging"

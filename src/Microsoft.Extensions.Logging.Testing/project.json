@@ -1,5 +1,9 @@
 {
-  "description": "Helpers for writing tests that use Microsoft.Extensions.Logging.",
+  "description": "Helpers for writing tests that use Microsoft.Extensions.Logging. Contains null implementations of the abstractions that do nothing, as well as test implementations that are observable.",
+  "tags": [
+    "logging",
+    "testing"
+  ],
   "version": "1.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": true,

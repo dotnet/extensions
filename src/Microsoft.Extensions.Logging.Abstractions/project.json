@@ -4,7 +4,10 @@
     "type": "git",
     "url": "git://github.com/aspnet/logging"
   },
-  "description": "Logging interface definitions.",
+  "description": "Logging abstractions for Microsoft.Extensions.Logging.\r\nCommonly used types:\r\nMicrosoft.Extensions.Logging.ILogger\r\nMicrosoft.Extensions.Logging.ILoggerFactory\r\nMicrosoft.Extensions.Logging.ILogger<TCategoryName>\r\nMicrosoft.Extensions.Logging.LogLevel\r\nMicrosoft.Extensions.Logging. \r\nMicrosoft.Extensions.Logging.",
+  "tags": [
+    "logging"
+  ],
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",

@@ -4,7 +4,10 @@
     "type": "git",
     "url": "git://github.com/aspnet/logging"
   },
-  "description": "Console logger implementation.",
+  "description": "Console logger provider implementation for Microsoft.Extensions.Logging.",
+  "tags": [
+    "logging"
+  ],
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",

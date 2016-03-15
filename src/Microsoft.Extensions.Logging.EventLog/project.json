@@ -1,5 +1,11 @@
 {
   "version": "1.0.0-*",
+  "description": "Windows Event Log logger provider implementation for Microsoft.Extensions.Logging.",
+  "tags": [
+    "eventlog",
+    "logging",
+    "windowseventlog"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/logging"
@@ -10,7 +16,6 @@
     "nowarn": [ "CS1591" ],
     "xmlDoc": true
   },
-  "description": "Logger for Windows Event Log.",
   "dependencies": {
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*"
   },
