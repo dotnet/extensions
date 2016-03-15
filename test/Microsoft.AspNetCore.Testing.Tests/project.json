@@ -19,11 +19,7 @@
         "portable-net451+win8"
       ]
     },
-    "net451": {
-      "dependencies": {
-        "xunit.runner.console": "2.1.0"
-      }
-    }
+    "net451": {}
   },
   "testRunner": "xunit"
 }
