@@ -9,23 +9,10 @@ namespace Microsoft.Extensions.FileProviders
 {
     internal class NotFoundDirectoryContents : IDirectoryContents
     {
-        public NotFoundDirectoryContents()
-        {
-        }
+        public bool Exists => false;
 
-        public bool Exists
-        {
-            get { return false; }
-        }
+        public IEnumerator<IFileInfo> GetEnumerator() => Enumerable.Empty<IFileInfo>().GetEnumerator();
 
-        public IEnumerator<IFileInfo> GetEnumerator()
-        {
-            return Enumerable.Empty<IFileInfo>().GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

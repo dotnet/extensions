@@ -11,46 +11,26 @@ namespace Microsoft.Extensions.FileProviders
     /// </summary>
     internal class NotFoundFileInfo : IFileInfo
     {
-        private readonly string _name;
-
         public NotFoundFileInfo(string name)
         {
-            _name = name;
+            Name = name;
         }
 
-        public bool Exists
-        {
-            get { return false; }
-        }
+        public bool Exists => false;
 
-        public bool IsDirectory
-        {
-            get { return false; }
-        }
+        public bool IsDirectory => false;
 
-        public DateTimeOffset LastModified
-        {
-            get { return DateTimeOffset.MinValue; }
-        }
+        public DateTimeOffset LastModified => DateTimeOffset.MinValue;
 
-        public long Length
-        {
-            get { return -1; }
-        }
+        public long Length => -1;
 
-        public string Name
-        {
-            get { return _name; }
-        }
+        public string Name { get; }
 
-        public string PhysicalPath
-        {
-            get { return null; }
-        }
+        public string PhysicalPath => null;
 
         public Stream CreateReadStream()
         {
-            throw new FileNotFoundException(string.Format("The file {0} does not exist.", Name));
+            throw new FileNotFoundException($"The file {Name} does not exist.");
         }
     }
 }

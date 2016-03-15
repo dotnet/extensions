@@ -10,9 +10,6 @@
     "url": "git://github.com/aspnet/filesystem"
   },
   "shared": "**/*.cs",
-  "dependencies": {
-    "Microsoft.Extensions.FileProviders.Abstractions": "1.0.0-*"
-  },
   "frameworks": {
     "netstandard1.0": {
       "dependencies": {
