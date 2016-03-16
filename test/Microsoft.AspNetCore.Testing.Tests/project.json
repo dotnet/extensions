@@ -19,7 +19,13 @@
         "portable-net451+win8"
       ]
     },
-    "net451": {}
+    "net451": {
+        "frameworkAssemblies": {
+            "System.Runtime": { "type": "build" },
+            "System.Reflection": { "type": "build" },
+            "System.Threading.Tasks": { "type": "build"}
+        }
+    }
   },
   "testRunner": "xunit"
 }
