@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24711.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FEAA3936-5906-4383-B750-F07FE1B156C5}"
 EndProject
@@ -35,6 +35,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.CommandLineUtils.Tests", "test\Microsoft.Extensions.CommandLineUtils.Tests\Microsoft.Extensions.CommandLineUtils.Tests.xproj", "{7E6564C3-04E3-418C-B96A-463FE2906F09}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.CommandLineUtils", "src\Microsoft.Extensions.CommandLineUtils\Microsoft.Extensions.CommandLineUtils.xproj", "{C46A8C00-CD50-4478-8639-6A6CF8CDD05B}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Process.Sources", "src\Microsoft.Extensions.Process.Sources\Microsoft.Extensions.Process.Sources.xproj", "{6DDC4681-0D48-41F6-91EB-C47381F92FF1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -102,6 +104,10 @@ Global
 		{C46A8C00-CD50-4478-8639-6A6CF8CDD05B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C46A8C00-CD50-4478-8639-6A6CF8CDD05B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C46A8C00-CD50-4478-8639-6A6CF8CDD05B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DDC4681-0D48-41F6-91EB-C47381F92FF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DDC4681-0D48-41F6-91EB-C47381F92FF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DDC4681-0D48-41F6-91EB-C47381F92FF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DDC4681-0D48-41F6-91EB-C47381F92FF1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -122,5 +128,6 @@ Global
 		{DA1D70F4-717A-4440-B388-B5BEE670C14D} = {6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}
 		{7E6564C3-04E3-418C-B96A-463FE2906F09} = {6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}
 		{C46A8C00-CD50-4478-8639-6A6CF8CDD05B} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
+		{6DDC4681-0D48-41F6-91EB-C47381F92FF1} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 	EndGlobalSection
 EndGlobal
