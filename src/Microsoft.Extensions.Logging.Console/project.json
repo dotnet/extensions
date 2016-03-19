@@ -29,7 +29,8 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "System.Console": "4.0.0-*"
+        "System.Console": "4.0.0-*",
+        "System.Threading": "4.0.11-*"
       },
       "imports": [
         "dotnet5.4"
