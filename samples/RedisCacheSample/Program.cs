@@ -11,13 +11,18 @@ namespace RedisCacheSample
 {
     public class Program
     {
+        public static void Main(string[] args)
+        {
+            RunSampleAsync().Wait();
+        }
+
         /// <summary>
         /// This sample assumes that a redis server is running on the local machine. You can set this up by doing the following:
         /// Install this chocolatey package: http://chocolatey.org/packages/redis-64/
         /// run "redis-server" from command prompt.
         /// </summary>
         /// <param name="args"></param>
-        public static async Task Main(string[] args)
+        public static async Task RunSampleAsync()
         {
             var key = "myKey";
             var message = "Hello, World!";

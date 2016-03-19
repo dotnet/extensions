@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading;
-using Microsoft.Extensions.Caching;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Primitives;
 
@@ -11,7 +10,7 @@ namespace MemoryCacheSample
 {
     public class Program
     {
-        public void Main()
+        public static void Main()
         {
             IMemoryCache cache = new MemoryCache(new MemoryCacheOptions());
             object result;

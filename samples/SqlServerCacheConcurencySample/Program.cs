@@ -24,30 +24,24 @@ namespace SqlServerCacheConcurrencySample
     {
         private const string Key = "MyKey";
         private static readonly Random Random = new Random();
-        private DistributedCacheEntryOptions _cacheEntryOptions;
+        private static DistributedCacheEntryOptions _cacheEntryOptions;
 
-        public Program(IApplicationEnvironment appEnv)
+        public static void Main()
         {
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder
-                .SetBasePath(appEnv.ApplicationBasePath)
                 .AddJsonFile("config.json")
                 .AddEnvironmentVariables();
-            Configuration = configurationBuilder.Build();
-        }
+            var configuration = configurationBuilder.Build();
 
-        public IConfiguration Configuration { get; }
-
-        public void Main()
-        {
             _cacheEntryOptions = new DistributedCacheEntryOptions();
             _cacheEntryOptions.SetSlidingExpiration(TimeSpan.FromSeconds(10));
 
             var cache = new SqlServerCache(new SqlServerCacheOptions()
             {
-                ConnectionString = Configuration["ConnectionString"],
-                SchemaName = Configuration["SchemaName"],
-                TableName = Configuration["TableName"]
+                ConnectionString = configuration["ConnectionString"],
+                SchemaName = configuration["SchemaName"],
+                TableName = configuration["TableName"]
             });
 
             SetKey(cache, "0");
@@ -62,13 +56,13 @@ namespace SqlServerCacheConcurrencySample
             Console.WriteLine("Shutting down");
         }
 
-        private void SetKey(IDistributedCache cache, string value)
+        private static void SetKey(IDistributedCache cache, string value)
         {
             Console.WriteLine("Setting: " + value);
             cache.Set(Key, Encoding.UTF8.GetBytes(value), _cacheEntryOptions);
         }
 
-        private void PeriodciallySetKey(IDistributedCache cache, TimeSpan interval)
+        private static void PeriodciallySetKey(IDistributedCache cache, TimeSpan interval)
         {
             Task.Run(async () =>
             {
@@ -81,7 +75,7 @@ namespace SqlServerCacheConcurrencySample
             });
         }
 
-        private void PeriodicallyReadKey(IDistributedCache cache, TimeSpan interval)
+        private static void PeriodicallyReadKey(IDistributedCache cache, TimeSpan interval)
         {
             Task.Run(async () =>
             {
@@ -108,7 +102,7 @@ namespace SqlServerCacheConcurrencySample
             });
         }
 
-        private void PeriodciallyRemoveKey(IDistributedCache cache, TimeSpan interval)
+        private static void PeriodciallyRemoveKey(IDistributedCache cache, TimeSpan interval)
         {
             Task.Run(async () =>
             {

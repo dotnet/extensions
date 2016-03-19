@@ -1,9 +1,13 @@
 {
-    "dependencies": {
-        "Microsoft.Extensions.Caching.Redis": "1.0.0-*"
-    },
-    "commands": { "RedisCacheSample": "RedisCacheSample" },
-    "frameworks" : {
-        "dnx451" : { }
-    }
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+
+  "dependencies": {
+    "Microsoft.Extensions.Caching.Redis": "1.0.0-*"
+  },
+
+  "frameworks": {
+    "net451": { }
+  }
 }

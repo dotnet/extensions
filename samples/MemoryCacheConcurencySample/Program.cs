@@ -11,9 +11,9 @@ namespace MemoryCacheSample
     {
         private const string Key = "MyKey";
         private static readonly Random Random = new Random();
-        private MemoryCacheEntryOptions _cacheEntryOptions;
+        private static MemoryCacheEntryOptions _cacheEntryOptions;
 
-        public void Main()
+        public static void Main()
         {
             _cacheEntryOptions = GetCacheEntryOptions();
 
@@ -31,13 +31,13 @@ namespace MemoryCacheSample
             Console.WriteLine("Shutting down");
         }
 
-        private void SetKey(IMemoryCache cache, string value)
+        private static void SetKey(IMemoryCache cache, string value)
         {
             Console.WriteLine("Setting: " + value);
             cache.Set(Key, value, _cacheEntryOptions);
         }
 
-        private MemoryCacheEntryOptions GetCacheEntryOptions()
+        private static MemoryCacheEntryOptions GetCacheEntryOptions()
         {
             return new MemoryCacheEntryOptions()
                 .SetAbsoluteExpiration(TimeSpan.FromSeconds(7))
@@ -45,12 +45,12 @@ namespace MemoryCacheSample
                 .RegisterPostEvictionCallback(AfterEvicted, state: null);
         }
 
-        private void AfterEvicted(object key, object value, EvictionReason reason, object state)
+        private static void AfterEvicted(object key, object value, EvictionReason reason, object state)
         {
             Console.WriteLine("Evicted. Value: " + value + ", Reason: " + reason);
         }
 
-        private void PeriodicallySetKey(IMemoryCache cache, TimeSpan interval)
+        private static void PeriodicallySetKey(IMemoryCache cache, TimeSpan interval)
         {
             Task.Run(async () =>
             {
@@ -63,7 +63,7 @@ namespace MemoryCacheSample
             });
         }
 
-        private void PeriodicallyReadKey(IMemoryCache cache, TimeSpan interval)
+        private static void PeriodicallyReadKey(IMemoryCache cache, TimeSpan interval)
         {
             Task.Run(async () =>
             {
@@ -90,7 +90,7 @@ namespace MemoryCacheSample
             });
         }
 
-        private void PeriodicallyRemoveKey(IMemoryCache cache, TimeSpan interval)
+        private static void PeriodicallyRemoveKey(IMemoryCache cache, TimeSpan interval)
         {
             Task.Run(async () =>
             {

@@ -4,11 +4,9 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.SqlServer;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 
 namespace SqlServerCacheSample
 {
@@ -21,25 +19,19 @@ namespace SqlServerCacheSample
     /// </summary>
     public class Program
     {
-        public Program(IApplicationEnvironment appEnv)
-        {
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder
-                .SetBasePath(appEnv.ApplicationBasePath)
-                .AddJsonFile("config.json")
-                .AddEnvironmentVariables();
-            Configuration = configurationBuilder.Build();
-        }
-
-        public IConfiguration Configuration { get; }
-
-        public void Main()
+        public static void Main()
         {
             RunSampleAsync().Wait();
         }
 
-        public async Task RunSampleAsync()
+        public static async Task RunSampleAsync()
         {
+            var configurationBuilder = new ConfigurationBuilder();
+            var configuration = configurationBuilder
+                .AddJsonFile("config.json")
+                .AddEnvironmentVariables()
+                .Build();
+
             var key = Guid.NewGuid().ToString();
             var message = "Hello, World!";
             var value = Encoding.UTF8.GetBytes(message);
@@ -47,9 +39,9 @@ namespace SqlServerCacheSample
             Console.WriteLine("Connecting to cache");
             var cache = new SqlServerCache(new SqlServerCacheOptions()
             {
-                ConnectionString = Configuration["ConnectionString"],
-                SchemaName = Configuration["SchemaName"],
-                TableName = Configuration["TableName"]
+                ConnectionString = configuration["ConnectionString"],
+                SchemaName = configuration["SchemaName"],
+                TableName = configuration["TableName"]
             });
 
             Console.WriteLine("Connected");
