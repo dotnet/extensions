@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
+using System.Collections.Concurrent;
 
 namespace Microsoft.Extensions.ObjectPool
 {
     public class DefaultObjectPool<T> : ObjectPool<T> where T : class
     {
-        private readonly T[] _items;
+        private readonly ConcurrentQueue<T> _items;
+        private readonly int _maximumRetained;
         private readonly IPooledObjectPolicy<T> _policy;
 
         public DefaultObjectPool(IPooledObjectPolicy<T> policy)
@@ -24,18 +25,16 @@ namespace Microsoft.Extensions.ObjectPool
             }
 
             _policy = policy;
-            _items = new T[maximumRetained];
+            _maximumRetained = maximumRetained;
+            _items = new ConcurrentQueue<T>();
         }
 
         public override T Get()
         {
-            for (var i = 0; i < _items.Length; i++)
+            T item;
+            if (_items.TryDequeue(out item))
             {
-                var item = _items[i];
-                if (item != null && Interlocked.CompareExchange(ref _items[i], null, item) == item)
-                {
-                    return item;
-                }
+                return item;
             }
 
             return _policy.Create();
@@ -48,13 +47,9 @@ namespace Microsoft.Extensions.ObjectPool
                 return;
             }
 
-            for (var i = 0; i < _items.Length; i++)
+            if (_items.Count < _maximumRetained)
             {
-                if (_items[i] == null)
-                {
-                    _items[i] = obj;
-                    return;
-                }
+                _items.Enqueue(obj);
             }
         }
     }
