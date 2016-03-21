@@ -20,7 +20,8 @@
   "frameworks": {
     "netstandard1.1": {
       "dependencies": {
-        "System.Data.SqlClient": "4.1.0-*"
+        "System.Data.Common": "4.0.1-*",
+        "System.Data.SqlClient": "4.0.0-*"
       },
       "imports": [
         "dotnet5.2"
