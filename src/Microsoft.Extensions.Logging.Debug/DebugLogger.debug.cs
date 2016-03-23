@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Logging.Debug
     {
         private void DebugWriteLine(string message, string name)
         {
-            System.Diagnostics.Debug.WriteLine(message, name);
+            System.Diagnostics.Debug.WriteLine(message, category: name);
         }
     }
 }

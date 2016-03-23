@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.Extensions.Logging.Debug;
 using Xunit;
 
@@ -35,6 +36,17 @@ namespace Microsoft.Extensions.Logging
 
             // Assert
             Assert.NotNull(disposable);
+        }
+
+        [Fact]
+        public void CallingLogWithCurlyBracesAfterFormatter_DoesNotThrow()
+        {
+            // Arrange
+            var logger = new DebugLogger("Test");
+            var message = "{test string}";
+
+            // Act
+            logger.Log(LogLevel.Debug, 0, message, null, (s, e) => s);
         }
     }
 }
