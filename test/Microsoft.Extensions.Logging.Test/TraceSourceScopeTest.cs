@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Logging.Test
 {
     public class TraceSourceScopeTest
     {
-#if DNX451
+#if NET451
         [Fact]
         public static void DiagnosticsScope_PushesAndPops_LogicalOperationStack()
         {
@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Logging.Test
             var baseState = "base";
             Trace.CorrelationManager.StartLogicalOperation(baseState);
             var state = "1337state7331";
-            
+
             var factory = new LoggerFactory();
             var logger = factory.CreateLogger("Test");
             factory.AddTraceSource(new SourceSwitch("TestSwitch"), new ConsoleTraceListener());
