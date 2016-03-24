@@ -23,7 +23,7 @@ namespace ProfilingSample
                     for (int i = 0; i < 110000; i++)
                     {
                         object value;
-                        if(!cache.TryGetValue(key, out value))
+                        if (!cache.TryGetValue(key, out value))
                         {
                             // Fake expensive object creation.
                             for (int j = 0; j < 1000000; j++)

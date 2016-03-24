@@ -119,24 +119,5 @@ namespace Microsoft.Extensions.Caching.Memory
             });
             return options;
         }
-
-        /// <summary>
-        /// Adds inherited token and absolute expiration information.
-        /// </summary>
-        /// <param name="options"></param>
-        /// <param name="link"></param>
-        public static MemoryCacheEntryOptions AddEntryLink(this MemoryCacheEntryOptions options, IEntryLink link)
-        {
-            foreach (var expirationToken in link.ExpirationTokens)
-            {
-                options.AddExpirationToken(expirationToken);
-            }
-
-            if (link.AbsoluteExpiration.HasValue)
-            {
-                options.SetAbsoluteExpiration(link.AbsoluteExpiration.Value);
-            }
-            return options;
-        }
     }
 }

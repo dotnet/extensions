@@ -80,7 +80,7 @@ namespace MemoryCacheSample
                     {
                         Console.Write("Reading...");
                         object result;
-                        if(!cache.TryGetValue(Key, out result))
+                        if (!cache.TryGetValue(Key, out result))
                         {
                             result = cache.Set(Key, "B", _cacheEntryOptions);
                         }

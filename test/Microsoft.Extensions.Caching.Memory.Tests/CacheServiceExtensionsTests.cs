@@ -96,11 +96,6 @@ namespace Microsoft.Extensions.Caching.Distributed
 
         private class TestMemoryCache : IMemoryCache
         {
-            public IEntryLink CreateLinkingScope()
-            {
-                throw new NotImplementedException();
-            }
-
             public void Dispose()
             {
                 throw new NotImplementedException();
@@ -111,12 +106,12 @@ namespace Microsoft.Extensions.Caching.Distributed
                 throw new NotImplementedException();
             }
 
-            public object Set(object key, object value, MemoryCacheEntryOptions cacheEntryOptions)
+            public bool TryGetValue(object key, out object value)
             {
                 throw new NotImplementedException();
             }
 
-            public bool TryGetValue(object key, out object value)
+            public ICacheEntry CreateEntry(object key)
             {
                 throw new NotImplementedException();
             }

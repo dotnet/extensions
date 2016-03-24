@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.Threading;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
@@ -22,7 +21,7 @@ namespace Microsoft.Extensions.Caching.Memory
         }
 
         [Fact]
-        public void AbsoluteExpirationInThePastThrows()
+        public void AbsoluteExpirationInThePastDoesntAddEntry()
         {
             var clock = new TestClock();
             var cache = CreateCache(clock);
@@ -30,14 +29,9 @@ namespace Microsoft.Extensions.Caching.Memory
             var obj = new object();
 
             var expected = clock.UtcNow - TimeSpan.FromMinutes(1);
-            ExceptionAssert.ThrowsArgumentOutOfRange(() =>
-            {
-                var result = cache.Set(key, obj, new MemoryCacheEntryOptions().SetAbsoluteExpiration(expected));
+            var result = cache.Set(key, obj, new MemoryCacheEntryOptions().SetAbsoluteExpiration(expected));
 
-            },
-            nameof(MemoryCacheEntryOptions.AbsoluteExpiration),
-            "The absolute expiration value must be in the future.",
-            expected);
+            Assert.Null(cache.Get(key));
         }
 
         [Fact]
@@ -48,8 +42,7 @@ namespace Microsoft.Extensions.Caching.Memory
             var key = "myKey";
             var value = new object();
 
-            var result = cache.Set(key, value, new MemoryCacheEntryOptions()
-                .SetAbsoluteExpiration(clock.UtcNow + TimeSpan.FromMinutes(1)));
+            var result = cache.Set(key, value, clock.UtcNow + TimeSpan.FromMinutes(1));
             Assert.Same(value, result);
 
             var found = cache.TryGetValue(key, out result);
@@ -140,7 +133,7 @@ namespace Microsoft.Extensions.Caching.Memory
             var key = "myKey";
             var value = new object();
 
-            var result = cache.Set(key, value, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(1)));
+            var result = cache.Set(key, value, TimeSpan.FromMinutes(1));
             Assert.Same(value, result);
 
             var found = cache.TryGetValue(key, out result);

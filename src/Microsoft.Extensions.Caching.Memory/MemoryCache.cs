@@ -11,22 +11,30 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Caching.Memory
 {
+    /// <summary>
+    /// An implementation of <see cref="IMemoryCache"/> using a dictionary to
+    /// store its entries.
+    /// </summary>
     public class MemoryCache : IMemoryCache
     {
         private readonly Dictionary<object, CacheEntry> _entries;
         private readonly ReaderWriterLockSlim _entryLock;
         private bool _disposed;
 
+        // We store the delegates locally to prevent allocations
+        // every time a new CacheEntry is created.
+        private readonly Action<CacheEntry> _setEntry;
         private readonly Action<CacheEntry> _entryExpirationNotification;
+
         private readonly ISystemClock _clock;
 
         private TimeSpan _expirationScanFrequency;
         private DateTimeOffset _lastExpirationScan;
 
         /// <summary>
-        /// Creates a new MemoryCache instance.
+        /// Creates a new <see cref="MemoryCache"/> instance.
         /// </summary>
-        /// <param name="optionsAccessor"></param>
+        /// <param name="optionsAccessor">The options of the cache.</param>
         public MemoryCache(IOptions<MemoryCacheOptions> optionsAccessor)
         {
             if (optionsAccessor == null)
@@ -37,7 +45,9 @@ namespace Microsoft.Extensions.Caching.Memory
             var options = optionsAccessor.Value;
             _entries = new Dictionary<object, CacheEntry>();
             _entryLock = new ReaderWriterLockSlim();
+            _setEntry = SetEntry;
             _entryExpirationNotification = EntryExpired;
+
             _clock = options.Clock ?? new SystemClock();
             if (options.CompactOnMemoryPressure)
             {
@@ -63,77 +73,62 @@ namespace Microsoft.Extensions.Caching.Memory
             get { return _entries.Count; }
         }
 
-        public IEntryLink CreateLinkingScope()
+        /// <inheritdoc />
+        public ICacheEntry CreateEntry(object key)
         {
-            return EntryLinkHelpers.CreateLinkingScope();
+            CheckDisposed();
+            
+            return new CacheEntry(
+                key,
+                _setEntry,
+                _entryExpirationNotification
+            );
         }
 
-        public object Set(object key, object value, MemoryCacheEntryOptions cacheEntryOptions)
+        private void SetEntry(CacheEntry entry)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            CheckDisposed();
-            CacheEntry priorEntry = null;
             var utcNow = _clock.UtcNow;
 
             DateTimeOffset? absoluteExpiration = null;
-            if (cacheEntryOptions.AbsoluteExpirationRelativeToNow.HasValue)
+            if (entry._absoluteExpirationRelativeToNow.HasValue)
             {
-                absoluteExpiration = utcNow + cacheEntryOptions.AbsoluteExpirationRelativeToNow;
+                absoluteExpiration = utcNow + entry._absoluteExpirationRelativeToNow;
             }
-            else if (cacheEntryOptions.AbsoluteExpiration.HasValue)
+            else if (entry._absoluteExpiration.HasValue)
             {
-                if (cacheEntryOptions.AbsoluteExpiration <= utcNow)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        nameof(MemoryCacheEntryOptions.AbsoluteExpiration),
-                        cacheEntryOptions.AbsoluteExpiration.Value,
-                        "The absolute expiration value must be in the future.");
-                }
-
-                absoluteExpiration = cacheEntryOptions.AbsoluteExpiration;
+                absoluteExpiration = entry._absoluteExpiration;
             }
 
-            var entry = new CacheEntry(
-                key,
-                value,
-                utcNow,
-                absoluteExpiration,
-                cacheEntryOptions,
-                _entryExpirationNotification);
-
-            var link = EntryLinkHelpers.ContextLink;
-            if (link != null)
+            // Applying the option's absolute expiration only if it's not already smaller.
+            // This can be the case if a dependent cache entry has a smaller value, and
+            // it was set by cascading it to its parent.
+            if (absoluteExpiration.HasValue)
             {
-                // Copy expiration tokens and AbsoluteExpiration to the link.
-                // We do this regardless of it gets cached because the tokens are associated with the value we'll return.
-                if (entry.Options.ExpirationTokens != null)
+                if (!entry._absoluteExpiration.HasValue || absoluteExpiration.Value < entry._absoluteExpiration.Value)
                 {
-                    link.AddExpirationTokens(entry.Options.ExpirationTokens);
-                }
-                if (absoluteExpiration.HasValue)
-                {
-                    link.SetAbsoluteExpiration(absoluteExpiration.Value);
+                    entry._absoluteExpiration = absoluteExpiration;
                 }
             }
 
-            bool added = false;
+            // Initialize the last access timestamp at the time the entry is added
+            entry.LastAccessed = utcNow;
+
+            var added = false;
+            CacheEntry priorEntry;
 
             _entryLock.EnterWriteLock();
             try
             {
-                if (_entries.TryGetValue(key, out priorEntry))
+                
+                if (_entries.TryGetValue(entry.Key, out priorEntry))
                 {
-                    _entries.Remove(key);
+                    _entries.Remove(entry.Key);
                     priorEntry.SetExpired(EvictionReason.Replaced);
                 }
 
                 if (!entry.CheckExpired(utcNow))
                 {
-                    _entries[key] = entry;
+                    _entries[entry.Key] = entry;
                     entry.AttachTokens();
                     added = true;
                 }
@@ -142,30 +137,32 @@ namespace Microsoft.Extensions.Caching.Memory
             {
                 _entryLock.ExitWriteLock();
             }
+
             if (priorEntry != null)
             {
                 priorEntry.InvokeEvictionCallbacks();
             }
+
             if (!added)
             {
                 entry.InvokeEvictionCallbacks();
             }
 
             StartScanForExpiredItems();
-
-            return value;
         }
 
-        public bool TryGetValue(object key, out object value)
+        /// <inheritdoc />
+        public bool TryGetValue(object key, out object result)
         {
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            value = null;
-            CacheEntry expiredEntry = null;
+            var utcNow = _clock.UtcNow;
+            result = null;
             bool found = false;
+            CacheEntry expiredEntry = null;
             CheckDisposed();
             _entryLock.EnterReadLock();
             try
@@ -174,30 +171,19 @@ namespace Microsoft.Extensions.Caching.Memory
                 if (_entries.TryGetValue(key, out entry))
                 {
                     // Check if expired due to expiration tokens, timers, etc. and if so, remove it.
-                    if (entry.CheckExpired(_clock.UtcNow))
+                    if (entry.CheckExpired(utcNow))
                     {
                         expiredEntry = entry;
                     }
                     else
                     {
-                        // Refresh sliding expiration, etc.
-                        entry.LastAccessed = _clock.UtcNow;
-                        value = entry.Value;
                         found = true;
+                        entry.LastAccessed = utcNow;
+                        result = entry.Value;
 
-                        var link = EntryLinkHelpers.ContextLink;
-                        if (link != null)
-                        {
-                            // Copy expiration tokens and AbsoluteExpiration to the link
-                            if (entry.Options.ExpirationTokens != null)
-                            {
-                                link.AddExpirationTokens(entry.Options.ExpirationTokens);
-                            }
-                            if (entry.Options.AbsoluteExpiration.HasValue)
-                            {
-                                link.SetAbsoluteExpiration(entry.Options.AbsoluteExpiration.Value);
-                            }
-                        }
+                        // When this entry is retrieved in the scope of creating another entry, 
+                        // that entry needs a copy of these expiration tokens.
+                        entry.PropageOptions(CacheEntryHelper.Current);
                     }
                 }
             }
@@ -217,6 +203,7 @@ namespace Microsoft.Extensions.Caching.Memory
             return found;
         }
 
+        /// <inheritdoc />
         public void Remove(object key)
         {
             if (key == null)
@@ -381,7 +368,7 @@ namespace Microsoft.Extensions.Caching.Memory
                     }
                     else
                     {
-                        switch (entry.Options.Priority)
+                        switch (entry.Priority)
                         {
                             case CacheItemPriority.Low:
                                 lowPriEntries.Add(entry);
@@ -396,7 +383,7 @@ namespace Microsoft.Extensions.Caching.Memory
                                 neverRemovePriEntries.Add(entry);
                                 break;
                             default:
-                                System.Diagnostics.Debug.Assert(false, "Not implemented: " + entry.Options.Priority);
+                                System.Diagnostics.Debug.Assert(false, "Not implemented: " + entry.Priority);
                                 break;
                         }
                     }

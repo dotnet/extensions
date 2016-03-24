@@ -28,13 +28,13 @@ namespace Microsoft.Extensions.Caching.Memory
         }
 
         [Fact]
-        public void SetWithTokenRegistersForNotificaiton()
+        public void SetWithTokenRegistersForNotification()
         {
             var cache = CreateCache();
             string key = "myKey";
             var value = new object();
             var expirationToken = new TestExpirationToken() { ActiveChangeCallbacks = true };
-            cache.Set(key, value, new MemoryCacheEntryOptions().AddExpirationToken(expirationToken));
+            cache.Set(key, value, expirationToken);
 
             Assert.True(expirationToken.HasChangedWasCalled);
             Assert.True(expirationToken.ActiveChangeCallbacksWasCalled);

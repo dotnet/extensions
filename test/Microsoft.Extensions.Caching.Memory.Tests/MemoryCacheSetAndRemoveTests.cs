@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Extensions.Caching.Memory
@@ -82,6 +83,90 @@ namespace Microsoft.Extensions.Caching.Memory
         }
 
         [Fact]
+        public void GetOrCreate_AddsNewValue()
+        {
+            var cache = CreateCache();
+            var obj = new object();
+            string key = "myKey";
+            bool invoked = false;
+
+            var result = cache.GetOrCreate(key, e =>
+            {
+                invoked = true;
+                return obj;
+            });
+
+            Assert.Same(obj, result);
+            Assert.True(invoked);
+
+            result = cache.Get(key);
+            Assert.Same(obj, result);
+        }
+
+        [Fact]
+        public async Task GetOrCreateAsync_AddsNewValue()
+        {
+            var cache = CreateCache();
+            var obj = new object();
+            string key = "myKey";
+            bool invoked = false;
+
+            var result = await cache.GetOrCreateAsync(key, e =>
+            {
+                invoked = true;
+                return Task.FromResult(obj);
+            });
+
+            Assert.Same(obj, result);
+            Assert.True(invoked);
+
+            result = cache.Get(key);
+            Assert.Same(obj, result);
+        }
+
+        [Fact]
+        public void GetOrCreate_ReturnExistingValue()
+        {
+            var cache = CreateCache();
+            var obj = new object();
+            var obj1 = new object();
+            string key = "myKey";
+            bool invoked = false;
+
+            cache.Set(key, obj);
+
+            var result = cache.GetOrCreate(key, e => 
+            {
+                invoked = true;
+                return obj1;
+            });
+
+            Assert.False(invoked);
+            Assert.Same(obj, result);
+        }
+
+        [Fact]
+        public async Task GetOrCreateAsync_ReturnExistingValue()
+        {
+            var cache = CreateCache();
+            var obj = new object();
+            var obj1 = new object();
+            string key = "myKey";
+            bool invoked = false;
+
+            cache.Set(key, obj);
+
+            var result = await cache.GetOrCreateAsync(key, e =>
+            {
+                invoked = true;
+                return Task.FromResult(obj1);
+            });
+
+            Assert.False(invoked);
+            Assert.Same(obj, result);
+        }
+
+        [Fact]
         public void SetOverwritesAndInvokesCallbacks()
         {
             var cache = CreateCache();
@@ -128,6 +213,37 @@ namespace Microsoft.Extensions.Caching.Memory
             Assert.Same(value2, result);
 
             Assert.False(callback2Invoked.WaitOne(TimeSpan.FromSeconds(1)), "Callback2");
+        }
+
+        [Fact]
+        public void SetOverwritesWithReplacedReason()
+        {
+            var cache = CreateCache();
+            var value1 = new object();
+            string key = "myKey";
+            var callback1Invoked = new ManualResetEvent(false);
+            EvictionReason actualReason = EvictionReason.None;
+
+            var options1 = new MemoryCacheEntryOptions();
+            options1.PostEvictionCallbacks.Add(new PostEvictionCallbackRegistration()
+            {
+                EvictionCallback = (subkey, subValue, reason, state) =>
+                {
+                    actualReason = reason;
+                    var localCallbackInvoked = (ManualResetEvent)state;
+                    localCallbackInvoked.Set();
+                },
+                State = callback1Invoked
+            });
+
+            var result = cache.Set(key, value1, options1);
+            Assert.Same(value1, result);
+
+            var value2 = new object();
+            result = cache.Set(key, value2);
+
+            Assert.True(callback1Invoked.WaitOne(TimeSpan.FromSeconds(3)), "Callback1");
+            Assert.Equal(EvictionReason.Replaced, actualReason);
         }
 
         [Fact]

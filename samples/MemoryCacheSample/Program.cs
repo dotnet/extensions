@@ -92,20 +92,18 @@ namespace MemoryCacheSample
             cts.Cancel();
 
             // Expire an entry if the dependent entry expires
-            using (var link = cache.CreateLinkingScope())
+            using (var entry = cache.CreateEntry("key1"))
             {
+                // expire this entry if the entry with key "key2" expires.
+                entry.Value = "value1";
                 cts = new CancellationTokenSource();
-                cache.Set("key1", "value1", new MemoryCacheEntryOptions()
-                    .AddExpirationToken(new CancellationChangeToken(cts.Token)));
-
-                // expire this entry if the entry with key "key1" expires.
-                cache.Set("key2", "value2", new MemoryCacheEntryOptions()
-                    .AddEntryLink(link)
-                    .RegisterPostEvictionCallback(
+                entry.RegisterPostEvictionCallback(
                     (echoKey, value, reason, substate) =>
                     {
                         Console.WriteLine(echoKey + ": '" + value + "' was evicted due to " + reason);
-                    }));
+                    });
+
+                cache.Set("key2", "value2", new CancellationChangeToken(cts.Token));
             }
 
             // Fire the token to see the registered callback being invoked

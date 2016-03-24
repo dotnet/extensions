@@ -5,23 +5,11 @@ using System;
 
 namespace Microsoft.Extensions.Caching.Memory
 {
+    /// <summary>
+    /// Represents a local in-memory cache whose values are not serialized.
+    /// </summary>
     public interface IMemoryCache : IDisposable
     {
-        /// <summary>
-        /// Creates an entry link scope.
-        /// </summary>
-        /// <returns>The <see cref="IEntryLink"/>.</returns>
-        IEntryLink CreateLinkingScope();
-
-        /// <summary>
-        /// Create or overwrite an entry in the cache.
-        /// </summary>
-        /// <param name="key">An object identifying the entry.</param>
-        /// <param name="value">The value to be cached.</param>
-        /// <param name="options">The <see cref="MemoryCacheEntryOptions"/>.</param>
-        /// <returns>The object that was cached.</returns>
-        object Set(object key, object value, MemoryCacheEntryOptions options);
-
         /// <summary>
         /// Gets the item associated with this key if present.
         /// </summary>
@@ -29,6 +17,13 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <param name="value">The located value or null.</param>
         /// <returns>True if the key was found.</returns>
         bool TryGetValue(object key, out object value);
+
+        /// <summary>
+        /// Create or overwrite an entry in the cache.
+        /// </summary>
+        /// <param name="key">An object identifying the entry.</param>
+        /// <returns>The newly created <see cref="ICacheEntry"/> instance.</returns>
+        ICacheEntry CreateEntry(object key);
 
         /// <summary>
         /// Removes the object associated with the given key.
