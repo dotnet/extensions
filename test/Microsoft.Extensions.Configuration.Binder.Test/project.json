@@ -22,10 +22,8 @@
     },
     "net451": {
       "frameworkAssemblies": {
+        "System.Runtime": { "type": "build" },
         "System.Threading.Tasks": { "type": "build" }
-      },
-      "dependencies": {
-        "System.Runtime": "4.1.0-*"
       }
     }
   },
