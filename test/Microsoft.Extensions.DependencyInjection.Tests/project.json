@@ -17,7 +17,8 @@
         "portable-net451+win8"
       ],
       "dependencies": {
-        "Microsoft.NETCore.Platforms": "1.0.1-*",
+        "NETStandard.Library": "1.5.0-*",
+        "System.Diagnostics.Process": "4.1.0-*",
         "dotnet-test-xunit": "1.0.0-dev-*"
       }
     },
