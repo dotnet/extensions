@@ -1,13 +1,15 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Primitives;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
-using Microsoft.Extensions.Logging.Filter;
 
 namespace SampleApp
 {
@@ -17,23 +19,22 @@ namespace SampleApp
 
         public Program()
         {
-            // a DI based application would get ILoggerFactory injected instead
-            var factory = new LoggerFactory();
+            // A dependency injection based application would get ILoggerFactory injected instead.
+            // Create a logger factory with filter settings that can be applied across all logger providers.
+            var factory = new LoggerFactory()
+                .WithFilter(new FilterLoggerSettings
+                {
+                    { "Microsoft", LogLevel.Warning },
+                    { "System", LogLevel.Warning },
+                    { "SampleApp.Program", LogLevel.Debug }
+                });
 
             // getting the logger immediately using the class's name is conventional
             _logger = factory.CreateLogger<Program>();
 
             // providers may be added to an ILoggerFactory at any time, existing ILoggers are updated
 #if !NETSTANDARDAPP1_5
-            /// How to wrap filtering provider around other providers
-            factory
-                .WithFilter(new FilterLoggerSettings
-                {
-                    { "Microsoft", LogLevel.Warning },
-                    { "System", LogLevel.Warning },
-                    { "SampleApp.Program", LogLevel.Debug },
-                })
-                .AddEventLog();
+            factory.AddEventLog();
 #endif
 
             // How to configure the console logger to reload based on a configuration file.

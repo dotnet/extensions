@@ -1,42 +1,49 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Logging.Filter.Internal
 {
     public class FilterLogger : ILogger
     {
-        private readonly ILogger _logger;
+        private readonly ILogger _innerLogger;
         private readonly string _categoryName;
         private IFilterLoggerSettings _settings;
-        private Func<LogLevel, bool> _isEnabled;
+        private Func<LogLevel, bool> _filter;
 
-        public FilterLogger(
-            ILogger logger,
-            string categoryName,
-            IFilterLoggerSettings settings)
+        public FilterLogger(ILogger innerLogger, string categoryName, IFilterLoggerSettings settings)
         {
-            _logger = logger;
+            _innerLogger = innerLogger;
             _categoryName = categoryName;
             _settings = settings;
 
-            _isEnabled = GetFilter();
+            _filter = GetFilter();
         }
 
-        public bool IsEnabled(LogLevel logLevel) => _isEnabled(logLevel);
-
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public bool IsEnabled(LogLevel logLevel)
         {
-            if (_isEnabled(logLevel))
+            return _filter(logLevel);
+        }
+
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception exception,
+            Func<TState, Exception, string> formatter)
+        {
+            if (IsEnabled(logLevel))
             {
-                _logger.Log(logLevel, eventId, state, exception, formatter);
+                _innerLogger.Log(logLevel, eventId, state, exception, formatter);
             }
         }
 
         public IDisposable BeginScopeImpl(object state)
         {
-            return BeginScopeImpl(state);
+            return _innerLogger.BeginScopeImpl(state);
         }
-
 
         private Func<LogLevel, bool> GetFilter()
         {
@@ -45,13 +52,18 @@ namespace Microsoft.Extensions.Logging.Filter.Internal
                 LogLevel level;
                 if (_settings.TryGetSwitch(prefix, out level))
                 {
-                    return l => l >= level;
+                    return logLevel => logLevel >= level;
                 }
             }
 
-            return l => true;
+            return _ => true;
         }
 
+        // Get the category name from most specific to least specific
+        // Example: For "Microsoft.AspNetCore.Routing", the keys in order are
+        // Microsoft.AspNetCore.Routing
+        // Microsoft.AspNetCore
+        // Microsoft
         private IEnumerable<string> GetKeyPrefixes(string name)
         {
             while (!string.IsNullOrEmpty(name))
