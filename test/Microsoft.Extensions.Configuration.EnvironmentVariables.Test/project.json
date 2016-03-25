@@ -6,14 +6,15 @@
   "dependencies": {
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Test.Common": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "xunit": "2.1.0"
   },
   "frameworks": {
     "netstandardapp1.5": {
       "dependencies": {
         "dotnet-test-xunit": "1.0.0-dev-*",
-        "System.Collections.NonGeneric": "4.0.1-*"
+        "System.Collections.NonGeneric": "4.0.1-*",
+        "NETStandard.Library": "1.5.0-*",
+        "System.Diagnostics.Process": "4.1.0-*"
       },
       "imports": [
         "dnxcore50",
