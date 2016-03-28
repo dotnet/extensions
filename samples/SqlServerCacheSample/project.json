@@ -10,6 +10,10 @@
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
   },
 
+  "content": [
+    "config.json"
+  ],
+  
   "frameworks": {
     "net451": { },
     "netstandardapp1.5": {

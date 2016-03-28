@@ -83,6 +83,53 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Equal("The absolute expiration value must be in the future.", exception.Message);
         }
 
+        [Fact]
+        public async Task SetCacheItem_SucceedsFor_KeyEqualToMaximumSize()
+        {
+            // Arrange
+            // Create a key with the maximum allowed key length. Here a key of length 898 bytes is created.
+            var key = new string('a', SqlParameterCollectionExtensions.CacheItemIdColumnWidth);
+            var testClock = new TestClock();
+            var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
+            var sqlServerCache = GetCache(testClock);
+
+            // Act
+            await sqlServerCache.SetAsync(
+                key, expectedValue,
+                new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30)));
+
+            // Assert
+            var cacheItem = await GetCacheItemFromDatabaseAsync(key);
+            Assert.Equal(expectedValue, cacheItem.Value);
+
+            // Act
+            await sqlServerCache.RemoveAsync(key);
+
+            // Assert
+            var cacheItemInfo = await GetCacheItemFromDatabaseAsync(key);
+            Assert.Null(cacheItemInfo);
+        }
+
+        [Fact]
+        public async Task SetCacheItem_FailsFor_KeyGreaterThanMaximumSize()
+        {
+            // Arrange
+            // Create a key which is greater than the maximum length.
+            var key = new string('b', SqlParameterCollectionExtensions.CacheItemIdColumnWidth + 1);
+            var testClock = new TestClock();
+            var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
+            var sqlServerCache = GetCache(testClock);
+
+            // Act
+            await sqlServerCache.SetAsync(
+                key, expectedValue,
+                new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30)));
+
+            // Assert
+            var cacheItem = await GetCacheItemFromDatabaseAsync(key);
+            Assert.Null(cacheItem);
+        }
+
         // Arrange
         [Theory]
         [InlineData(10, 11)]

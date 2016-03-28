@@ -8,8 +8,10 @@ namespace Microsoft.Extensions.Caching.SqlConfig
     internal class SqlQueries
     {
         private const string CreateTableFormat = "CREATE TABLE {0}(" +
-            // add collation to the key column to make it case-sensitive
-            "Id nvarchar(900) COLLATE SQL_Latin1_General_CP1_CS_AS NOT NULL, " +
+            // Maximum size of primary key column is 900 bytes (898 bytes from key + 2 additional bytes used by the 
+            // Sql Server). In the case where the key is greater than 898 bytes, then it gets truncated.
+            // - Add collation to the key column to make it case-sensitive
+            "Id nvarchar(449) COLLATE SQL_Latin1_General_CP1_CS_AS NOT NULL, " +
             "Value varbinary(MAX) NOT NULL, " +
             "ExpiresAtTime datetimeoffset NOT NULL, " +
             "SlidingExpirationInSeconds bigint NULL," +
