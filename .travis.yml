@@ -26,7 +26,7 @@ script:
   - ./build.sh verify
 notifications:
   webhooks:
-    secure: "EpQlRPSxm5EjSwHkLE6V3PIzx0IW8AJ3kQSXHVexxzQ9DmlZ3HRk2m0sXNMJdrXak35cGEnjFf9mdAV10tvlQEnu5Fhr0+JLBxusWK2lTncIOMzXvoLupSWUL0NvouCC+pfcoj0/lmfzQmzN/AYxJgHJgWORcpimV6/HrHQVOKc=" 
+    secure: "FTGj3SSdAQpe5bsLH0dqRKMcHDUSO1xMQnoZ6ocGLGuRG3gjjU+TSia5atEPIZ+EQJTK7GCKDKnp/wx//ti7Vdis1EnTybvt1cdRBU3JJkIyvauYdHVQAPmu8gXpJvaM7Y2nSC2CKwSEhoMH04Jm6EojFupRXn3Ye9gmlYLjQXM=" 
   on_success: always
   on_failure: always
   on_start: always
