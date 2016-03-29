@@ -15,7 +15,8 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables
         private const string SqlServerPrefix = "SQLCONNSTR_";
         private const string CustomPrefix = "CUSTOMCONNSTR_";
 
-        private const string ProviderKeyFormat = "{0}:ProviderName";
+        private const string ConnStrKeyFormat = "ConnectionStrings:{0}";
+        private const string ProviderKeyFormat = "ConnectionStrings:{0}_ProviderName";
 
         private readonly string _prefix;
 
@@ -89,7 +90,7 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables
 
             // Return the key-value pair for connection string
             yield return new DictionaryEntry(
-                NormalizeKey(key.Substring(prefix.Length)),
+                string.Format(ConnStrKeyFormat, NormalizeKey(key.Substring(prefix.Length))),
                 entry.Value);
 
             if (!string.IsNullOrEmpty(provider))

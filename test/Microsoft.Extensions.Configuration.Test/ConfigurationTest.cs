@@ -298,6 +298,39 @@ namespace Microsoft.Extensions.Configuration.Test
         }
 
         [Fact]
+        public void CanGetConnectionStrings()
+        {
+            // Arrange
+            var dic1 = new Dictionary<string, string>()
+                {
+                    {"ConnectionStrings:DB1:Connection1", "MemVal1"},
+                    {"ConnectionStrings:DB1:Connection2", "MemVal2"}
+                };
+            var dic2 = new Dictionary<string, string>()
+                {
+                    {"ConnectionStrings:DB2:Connection", "MemVal3"}
+                };
+            var memConfigSrc1 = new MemoryConfigurationProvider(dic1);
+            var memConfigSrc2 = new MemoryConfigurationProvider(dic2);
+
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.Add(memConfigSrc1, load: false);
+            configurationBuilder.Add(memConfigSrc2, load: false);
+
+            var config = configurationBuilder.Build();
+
+            // Act
+            var memVal1 = config.GetConnectionString("DB1:Connection1");
+            var memVal2 = config.GetConnectionString("DB1:Connection2");
+            var memVal3 = config.GetConnectionString("DB2:Connection");
+
+            // Assert
+            Assert.Equal("MemVal1", memVal1);
+            Assert.Equal("MemVal2", memVal2);
+            Assert.Equal("MemVal3", memVal3);
+        }
+
+        [Fact]
         public void CanGetConfigurationChildren()
         {
             // Arrange

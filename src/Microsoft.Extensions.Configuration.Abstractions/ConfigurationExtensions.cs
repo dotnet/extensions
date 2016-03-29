@@ -11,6 +11,17 @@ namespace Microsoft.Extensions.Configuration
     public static class ConfigurationExtensions
     {
         /// <summary>
+        /// Shorthand for GetSection("ConnectionStrings")[name].
+        /// </summary>
+        /// <param name="configuration">The configuration.</param>
+        /// <param name="name">The connection string key.</param>
+        /// <returns></returns>
+        public static string GetConnectionString(this IConfiguration configuration, string name)
+        {
+            return configuration?.GetSection("ConnectionStrings")?[name];
+        }
+
+        /// <summary>
         /// Get the enumeration of key value pairs within the <see cref="IConfiguration" />
         /// </summary>
         /// <param name="configuration">The <see cref="IConfiguration"/> to enumerate.</param>
