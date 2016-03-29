@@ -71,6 +71,12 @@ namespace Microsoft.Extensions.Logging.Debug
             }
 
             message = $"{ logLevel }: {message}";
+
+            if (exception != null)
+            {
+                message += Environment.NewLine + Environment.NewLine + exception.ToString();
+            }
+
             DebugWriteLine(message, _name);
         }
 
