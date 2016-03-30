@@ -2,12 +2,11 @@
   "compilationOptions": {
     "emitEntryPoint": true
   },
-
   "dependencies": {
-    "Microsoft.Extensions.Caching.Redis": "1.0.0-*"
+    "Microsoft.Extensions.Caching.Redis": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
-
   "frameworks": {
-    "net451": { }
+    "net451": {}
   }
 }

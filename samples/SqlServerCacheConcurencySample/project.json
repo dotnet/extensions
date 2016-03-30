@@ -2,24 +2,22 @@
   "compilationOptions": {
     "emitEntryPoint": true
   },
-
   "dependencies": {
     "Microsoft.Extensions.Caching.SqlServer": "1.0.0-*",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.Extensions.Options": "1.0.0-*",
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
-
   "content": [
     "config.json"
   ],
-
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "netstandardapp1.5": {
       "dependencies": {
-        "NETStandard.Library": "1.0.0-*"
+        "NETStandard.Library": "1.5.0-*"
       },
       "imports": [
         "dnxcore50",
