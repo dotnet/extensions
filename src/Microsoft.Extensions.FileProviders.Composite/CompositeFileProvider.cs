@@ -24,6 +24,7 @@ namespace Microsoft.Extensions.FileProviders
         {
             _fileProviders = fileProviders ?? new IFileProvider[0];
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CompositeFileProvider" /> class using a list of file provider.
         /// </summary>
@@ -95,5 +96,10 @@ namespace Microsoft.Extensions.FileProviders
             var CompositeFileChangeToken = new CompositeFileChangeToken(changeTokens);
             return CompositeFileChangeToken;
         }
+
+        /// <summary>
+        /// Gets the list of configured <see cref="IFileProvider" /> instances.
+        /// </summary>
+        public IEnumerable<IFileProvider> FileProviders => _fileProviders;
     }
 }
