@@ -40,9 +40,14 @@ namespace SampleApp
             // How to configure the console logger to reload based on a configuration file.
             //
             //
-            var loggingConfiguration = new ConfigurationBuilder().AddJsonFile("logging.json").Build();
+            var loggingConfiguration = new ConfigurationBuilder()
+                .AddJsonFile(source =>
+                {
+                    source.Path = "logging.json";
+                    source.ReloadOnChange = true;
+                })
+                .Build();
             factory.AddConsole(loggingConfiguration);
-            loggingConfiguration.ReloadOnChanged("logging.json");
 
             // How to configure the console logger to use settings provided in code.
             //
