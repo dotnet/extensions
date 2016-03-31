@@ -244,7 +244,7 @@ CommonKey3:CommonKey4=IniValue6";
         }
 
         [Fact]
-        public async Task TouchingFileWillReload()
+        public void TouchingFileWillReload()
         {
             // Arrange
             File.WriteAllText(Path.Combine(_basePath, "reload.json"), @"{""JsonKey1"": ""JsonValue1""}");
