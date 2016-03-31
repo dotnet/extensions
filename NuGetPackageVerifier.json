@@ -10,7 +10,6 @@
             "Microsoft.Extensions.Configuration.CommandLine": { },
             "Microsoft.Extensions.Configuration.EnvironmentVariables": { },
             "Microsoft.Extensions.Configuration.FileExtensions": { },
-            "Microsoft.Extensions.Configuration.FileProviderExtensions": { },
             "Microsoft.Extensions.Configuration.Ini": { },
             "Microsoft.Extensions.Configuration.Json": { },
             "Microsoft.Extensions.Configuration.Xml": { }
