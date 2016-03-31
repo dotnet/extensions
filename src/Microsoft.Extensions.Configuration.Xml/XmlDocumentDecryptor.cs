@@ -7,7 +7,7 @@ using System.Xml;
 
 namespace Microsoft.Extensions.Configuration.Xml
 {
-    internal class XmlDocumentDecryptor
+    public class XmlDocumentDecryptor
     {
         /// <summary>
         /// Accesses the singleton decryptor instance.

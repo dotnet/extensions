@@ -10,84 +10,17 @@ using System.Xml;
 namespace Microsoft.Extensions.Configuration.Xml
 {
     /// <summary>
-    /// An XML file based <see cref="ConfigurationProvider"/>.
+    /// An XML file based <see cref="FileConfigurationProvider"/>.
     /// </summary>
-    public class XmlConfigurationProvider : ConfigurationProvider
+    public class XmlConfigurationProvider : FileConfigurationProvider
     {
         private const string NameAttributeKey = "Name";
 
-        private readonly XmlDocumentDecryptor _xmlDocumentDecryptor;
+        public XmlConfigurationProvider(XmlConfigurationSource source) : base(source) { }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="XmlConfigurationProvider"/>.
-        /// </summary>
-        /// <param name="path">Absolute path of the XML configuration file.</param>
-        public XmlConfigurationProvider(string path)
-            : this(path, null, optional: false)
-        {
-        }
+        internal XmlDocumentDecryptor Decryptor { get; set; } = XmlDocumentDecryptor.Instance;
 
-        public XmlConfigurationProvider(string path, bool optional)
-            : this(path, null, optional: optional)
-        {
-        }
-
-        internal XmlConfigurationProvider(string path, XmlDocumentDecryptor xmlDocumentDecryptor)
-            : this(path, xmlDocumentDecryptor, optional: false)
-        {
-        }
-
-        internal XmlConfigurationProvider(string path, XmlDocumentDecryptor xmlDocumentDecryptor, bool optional)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentException(Resources.Error_InvalidFilePath, "path");
-            }
-
-            Optional = optional;
-            Path = path;
-
-            _xmlDocumentDecryptor = xmlDocumentDecryptor ?? XmlDocumentDecryptor.Instance;
-        }
-
-        /// <summary>
-        /// Gets a value that determines if this instance of <see cref="XmlConfigurationProvider"/> is optional.
-        /// </summary>
-        public bool Optional { get; }
-
-        /// <summary>
-        /// The absolute path of the file backing this instance of <see cref="XmlConfigurationProvider"/>.
-        /// </summary>
-        public string Path { get; }
-
-        /// <summary>
-        /// Loads the contents of the file at <see cref="Path"/>.
-        /// </summary>
-        /// <exception cref="FileNotFoundException">If <see cref="Optional"/> is <c>false</c> and a
-        /// file does not exist at <see cref="Path"/>.</exception>
-        public override void Load()
-        {
-            if (!File.Exists(Path))
-            {
-                if (Optional)
-                {
-                    Data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                }
-                else
-                {
-                    throw new FileNotFoundException(Resources.FormatError_FileNotFound(Path), Path);
-                }
-            }
-            else
-            {
-                using (var stream = new FileStream(Path, FileMode.Open, FileAccess.Read))
-                {
-                    Load(stream);
-                }
-            }
-        }
-
-        internal void Load(Stream stream)
+        public override void Load(Stream stream)
         {
             var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -99,7 +32,7 @@ namespace Microsoft.Extensions.Configuration.Xml
                     IgnoreWhitespace = true
                 };
 
-            using (var reader = _xmlDocumentDecryptor.CreateDecryptingXmlReader(stream, readerSettings))
+            using (var reader = Decryptor.CreateDecryptingXmlReader(stream, readerSettings))
             {
                 var prefixStack = new Stack<string>();
 

@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Configuration
     public class ConfigurationRoot : IConfigurationRoot
     {
         private IList<IConfigurationProvider> _providers;
-        private ConfigurationReloadToken _reloadToken = new ConfigurationReloadToken();
+        private ConfigurationReloadToken _changeToken = new ConfigurationReloadToken();
 
         public ConfigurationRoot(IList<IConfigurationProvider> providers)
         {
@@ -22,6 +22,11 @@ namespace Microsoft.Extensions.Configuration
             }
 
             _providers = providers;
+            foreach (var p in providers)
+            {
+                p.Load();
+                ChangeToken.OnChange(() => p.GetReloadToken(), () => RaiseChanged());
+            }
         }
 
         public string this[string key]
@@ -68,7 +73,7 @@ namespace Microsoft.Extensions.Configuration
 
         public IChangeToken GetReloadToken()
         {
-            return _reloadToken;
+            return _changeToken;
         }
 
         public IConfigurationSection GetSection(string key)
@@ -82,8 +87,13 @@ namespace Microsoft.Extensions.Configuration
             {
                 provider.Load();
             }
-            var previousReloadToken = Interlocked.Exchange(ref _reloadToken, new ConfigurationReloadToken());
-            previousReloadToken.OnReload();
+            RaiseChanged();
+        }
+
+        private void RaiseChanged()
+        {
+            var previousToken = Interlocked.Exchange(ref _changeToken, new ConfigurationReloadToken());
+            previousToken.OnReload();
         }
     }
 }

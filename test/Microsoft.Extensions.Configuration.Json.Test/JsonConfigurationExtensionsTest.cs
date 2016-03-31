@@ -27,11 +27,10 @@ namespace Microsoft.Extensions.Configuration.Json
         public void AddJsonFile_ThrowsIfFileDoesNotExistAtPath()
         {
             // Arrange
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "file-does-not-exist.json");
-            var configurationBuilder = new ConfigurationBuilder();
+            var path = "file-does-not-exist.json";
 
             // Act and Assert
-            var ex = Assert.Throws<FileNotFoundException>(() => JsonConfigurationExtensions.AddJsonFile(configurationBuilder, path));
+            var ex = Assert.Throws<FileNotFoundException>(() => new ConfigurationBuilder().AddJsonFile(path).Build());
             Assert.Equal($"The configuration file '{path}' was not found and is not optional.", ex.Message);
         }
     }

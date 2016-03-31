@@ -20,14 +20,13 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables
 
         private readonly string _prefix;
 
+        public EnvironmentVariablesConfigurationProvider() : this(string.Empty)
+        { }
+
+
         public EnvironmentVariablesConfigurationProvider(string prefix)
         {
-            _prefix = prefix;
-        }
-
-        public EnvironmentVariablesConfigurationProvider()
-        {
-            _prefix = string.Empty;
+            _prefix = prefix ?? string.Empty;
         }
 
         public override void Load()

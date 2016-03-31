@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using Microsoft.Extensions.Configuration.Xml;
 
 namespace Microsoft.Extensions.Configuration
@@ -13,41 +12,17 @@ namespace Microsoft.Extensions.Configuration
     public static class XmlConfigurationExtensions
     {
         /// <summary>
-        /// Adds the XML configuration provider at <paramref name="path"/> to <paramref name="configurationBuilder"/>.
+        /// Adds the XML configuration provider at <paramref name="path"/> to <paramref name="builder"/>.
         /// </summary>
-        /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
-        /// <param name="path">Absolute path or path relative to the base path store in 
-        /// <see cref="IConfigurationBuilder.Properties"/> of <paramref name="configurationBuilder"/>.</param>
+        /// <param name="builder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="path">Path relative to the base path stored in 
+        /// <see cref="IConfigurationBuilder.Properties"/> of <paramref name="builder"/>.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
-        public static IConfigurationBuilder AddXmlFile(this IConfigurationBuilder configurationBuilder, string path)
+        public static IConfigurationBuilder AddXmlFile(this IConfigurationBuilder builder, string path)
         {
-            if (configurationBuilder == null)
+            if (builder == null)
             {
-                throw new ArgumentNullException(nameof(configurationBuilder));
-            }
-
-            return AddXmlFile(configurationBuilder, path, optional: false);
-        }
-
-        /// <summary>
-        /// Adds the XML configuration provider at <paramref name="path"/> to <paramref name="configurationBuilder"/>.
-        /// </summary>
-        /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
-        /// <param name="path">Absolute path or path relative to the base path store in 
-        /// <see cref="IConfigurationBuilder.Properties"/> of <paramref name="configurationBuilder"/>.</param>
-        /// <param name="optional">Determines if loading the configuration provider is optional.</param>
-        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
-        /// <exception cref="ArgumentException">If <paramref name="path"/> is null or empty.</exception>
-        /// <exception cref="FileNotFoundException">If <paramref name="optional"/> is <c>false</c> and the file cannot
-        /// be resolved.</exception>
-        public static IConfigurationBuilder AddXmlFile(
-            this IConfigurationBuilder configurationBuilder,
-            string path,
-            bool optional)
-        {
-            if (configurationBuilder == null)
-            {
-                throw new ArgumentNullException(nameof(configurationBuilder));
+                throw new ArgumentNullException(nameof(builder));
             }
 
             if (string.IsNullOrEmpty(path))
@@ -55,16 +30,60 @@ namespace Microsoft.Extensions.Configuration
                 throw new ArgumentException(Resources.Error_InvalidFilePath, nameof(path));
             }
 
-            var fullPath = Path.Combine(configurationBuilder.GetBasePath(), path);
+            return AddXmlFile(builder, source => source.Path = path);
+        }
 
-            if (!optional && !File.Exists(fullPath))
+        /// <summary>
+        /// Adds the XML configuration provider at <paramref name="path"/> to <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="path">Path relative to the base path stored in 
+        /// <see cref="IConfigurationBuilder.Properties"/> of <paramref name="builder"/>.</param>
+        /// <param name="optional">Whether the file is optional.</param>
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        public static IConfigurationBuilder AddXmlFile(this IConfigurationBuilder builder, string path, bool optional)
+        {
+            if (builder == null)
             {
-                throw new FileNotFoundException(Resources.FormatError_FileNotFound(fullPath), fullPath);
+                throw new ArgumentNullException(nameof(builder));
             }
 
-            configurationBuilder.Add(new XmlConfigurationProvider(fullPath, optional: optional));
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentException(Resources.Error_InvalidFilePath, nameof(path));
+            }
 
-            return configurationBuilder;
+            return AddXmlFile(builder, source =>
+            {
+                source.Path = path;
+                source.Optional = optional;
+            });
+        }
+
+        /// <summary>
+        /// Adds a XML configuration source to <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="configureSource">Configures the <see cref="XmlConfigurationSource"/> to add.</param>
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        public static IConfigurationBuilder AddXmlFile(
+            this IConfigurationBuilder builder,
+            Action<XmlConfigurationSource> configureSource)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (configureSource == null)
+            {
+                throw new ArgumentNullException(nameof(configureSource));
+            }
+
+            var source = new XmlConfigurationSource();
+            configureSource(source);
+            builder.Add(source);
+            return builder;
         }
     }
 }

@@ -4,12 +4,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration.Ini;
+using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.Configuration.Xml;
 using Xunit;
 
 namespace Microsoft.Extensions.Configuration.Test
 {
     public class ConfigurationTests : IDisposable
     {
+        private readonly string _basePath;
         private readonly string _iniConfigFilePath;
         private readonly string _xmlConfigFilePath;
         private readonly string _jsonConfigFilePath;
@@ -65,13 +70,21 @@ CommonKey3:CommonKey4=IniValue6";
 
         public ConfigurationTests()
         {
-            _iniConfigFilePath = Path.GetTempFileName();
-            _xmlConfigFilePath = Path.GetTempFileName();
-            _jsonConfigFilePath = Path.GetTempFileName();
+#if NET451
+            _basePath = AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
+                AppDomain.CurrentDomain.BaseDirectory ??
+                string.Empty;
+#else
+            _basePath = AppContext.BaseDirectory ?? string.Empty;
+#endif
 
-            File.WriteAllText(_iniConfigFilePath, _iniConfigFileContent);
-            File.WriteAllText(_xmlConfigFilePath, _xmlConfigFileContent);
-            File.WriteAllText(_jsonConfigFilePath, _jsonConfigFileContent);
+            _iniConfigFilePath = Path.GetRandomFileName();
+            _xmlConfigFilePath = Path.GetRandomFileName();
+            _jsonConfigFilePath = Path.GetRandomFileName();
+
+            File.WriteAllText(Path.Combine(_basePath, _iniConfigFilePath), _iniConfigFileContent);
+            File.WriteAllText(Path.Combine(_basePath, _xmlConfigFilePath), _xmlConfigFileContent);
+            File.WriteAllText(Path.Combine(_basePath, _jsonConfigFilePath), _jsonConfigFileContent);
         }
 
         [Fact]
@@ -81,9 +94,9 @@ CommonKey3:CommonKey4=IniValue6";
             var configurationBuilder = new ConfigurationBuilder();
 
             // Act
-            configurationBuilder.AddIniFile(_iniConfigFilePath);
-            configurationBuilder.AddJsonFile(_jsonConfigFilePath);
-            configurationBuilder.AddXmlFile(_xmlConfigFilePath);
+            configurationBuilder.AddIniFile(source => source.Path = _iniConfigFilePath);
+            configurationBuilder.AddJsonFile(source => source.Path = _jsonConfigFilePath);
+            configurationBuilder.AddXmlFile(source => source.Path = _xmlConfigFilePath);
             configurationBuilder.AddInMemoryCollection(_memConfigContent);
 
             var config = configurationBuilder.Build();
@@ -127,11 +140,11 @@ CommonKey3:CommonKey4=IniValue6";
             var config = configurationBuilder.Build();
             Assert.Equal("IniValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
 
-            configurationBuilder.AddJsonFile(_jsonConfigFilePath);
+            configurationBuilder.AddJsonFile(source => source.Path = _jsonConfigFilePath);
             config = configurationBuilder.Build();
             Assert.Equal("JsonValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
 
-            configurationBuilder.AddXmlFile(_xmlConfigFilePath);
+            configurationBuilder.AddXmlFile(source => source.Path = _xmlConfigFilePath);
             config = configurationBuilder.Build();
             Assert.Equal("XmlValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
 
@@ -140,14 +153,62 @@ CommonKey3:CommonKey4=IniValue6";
             Assert.Equal("MemValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
         }
 
+        private IConfigurationRoot BuildConfig()
+        {
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddIniFile(Path.GetFileName(_iniConfigFilePath));
+            configurationBuilder.AddJsonFile(Path.GetFileName(_jsonConfigFilePath));
+            configurationBuilder.AddXmlFile(Path.GetFileName(_xmlConfigFilePath));
+            return configurationBuilder.Build();
+        }
+
+        public class TestIniSourceProvider : IniConfigurationProvider, IConfigurationSource
+        {
+            public TestIniSourceProvider(string path)
+                : base(new IniConfigurationSource { Path = path })
+            { }
+
+            public IConfigurationProvider Build(IConfigurationBuilder builder)
+            {
+                Source.FileProvider = builder.GetFileProvider();
+                return this;
+            }
+        }
+
+        public class TestJsonSourceProvider : JsonConfigurationProvider, IConfigurationSource
+        {
+            public TestJsonSourceProvider(string path)
+                : base(new JsonConfigurationSource { Path = path })
+            { }
+
+            public IConfigurationProvider Build(IConfigurationBuilder builder)
+            {
+                Source.FileProvider = builder.GetFileProvider();
+                return this;
+            }
+        }
+
+        public class TestXmlSourceProvider : XmlConfigurationProvider, IConfigurationSource
+        {
+            public TestXmlSourceProvider(string path)
+                : base(new XmlConfigurationSource { Path = path })
+            { }
+
+            public IConfigurationProvider Build(IConfigurationBuilder builder)
+            {
+                Source.FileProvider = builder.GetFileProvider();
+                return this;
+            }
+        }
+
         [Fact]
         public void CanSetValuesAndReloadValues()
         {
             // Arrange
             var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddIniFile(_iniConfigFilePath);
-            configurationBuilder.AddJsonFile(_jsonConfigFilePath);
-            configurationBuilder.AddXmlFile(_xmlConfigFilePath);
+            configurationBuilder.Add(new TestIniSourceProvider(Path.GetFileName(_iniConfigFilePath)));
+            configurationBuilder.Add(new TestJsonSourceProvider(Path.GetFileName(_jsonConfigFilePath)));
+            configurationBuilder.Add(new TestXmlSourceProvider(Path.GetFileName(_xmlConfigFilePath)));
 
             var config = configurationBuilder.Build();
 
@@ -156,10 +217,10 @@ CommonKey3:CommonKey4=IniValue6";
             config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"] = "NewValue";
 
             // All config sources must be updated
-            foreach (var provider in configurationBuilder.Providers)
+            foreach (var provider in configurationBuilder.Sources)
             {
                 Assert.Equal("NewValue",
-                    (provider as ConfigurationProvider).Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
+                    (provider as FileConfigurationProvider).Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
             }
 
             // Recover values by reloading
@@ -171,15 +232,60 @@ CommonKey3:CommonKey4=IniValue6";
             config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"] = "NewValue";
 
             // All config sources must be updated
-            foreach (var provider in configurationBuilder.Providers)
+            foreach (var provider in configurationBuilder.Sources)
             {
                 Assert.Equal("NewValue",
-                    (provider as ConfigurationProvider).Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
+                    (provider as FileConfigurationProvider).Get("CommonKey1:CommonKey2:CommonKey3:CommonKey4"));
             }
 
             // Recover values by reloading
             config.Reload();
             Assert.Equal("XmlValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
+        }
+
+        [Fact]
+        public async Task TouchingFileWillReload()
+        {
+            // Arrange
+            File.WriteAllText(Path.Combine(_basePath, "reload.json"), @"{""JsonKey1"": ""JsonValue1""}");
+            File.WriteAllText(Path.Combine(_basePath, "reload.ini"), @"IniKey1 = IniValue1");
+            File.WriteAllText(Path.Combine(_basePath, "reload.xml"), @"<settings XmlKey1=""XmlValue1""/>");
+
+            var config = new ConfigurationBuilder().AddIniFile(source =>
+            {
+                source.Path = "reload.ini";
+                source.ReloadOnChange = true;
+            })
+            .AddJsonFile(source =>
+            {
+                source.Path = "reload.json";
+                source.ReloadOnChange = true;
+            })
+            .AddXmlFile(source =>
+            {
+                source.Path = "reload.xml";
+                source.ReloadOnChange = true;
+            }).Build();
+
+            Assert.Equal("JsonValue1", config["JsonKey1"]);
+            Assert.Equal("IniValue1", config["IniKey1"]);
+            Assert.Equal("XmlValue1", config["XmlKey1"]);
+
+            var token = config.GetReloadToken();
+
+            // Act & Assert
+            // Update files
+            File.WriteAllText(Path.Combine(_basePath, "reload.json"), @"{""JsonKey1"": ""JsonValue2""}");
+            File.WriteAllText(Path.Combine(_basePath, "reload.ini"), @"IniKey1 = IniValue2");
+            File.WriteAllText(Path.Combine(_basePath, "reload.xml"), @"<settings XmlKey1=""XmlValue2""/>");
+
+            // NOTE: we'd like to wait for file notification here, but its flaky on CI so we force it
+            config.Reload();
+
+            Assert.Equal("JsonValue2", config["JsonKey1"]);
+            Assert.Equal("IniValue2", config["IniKey1"]);
+            Assert.Equal("XmlValue2", config["XmlKey1"]);
+            Assert.True(token.HasChanged);
         }
 
         [Fact]
@@ -193,33 +299,35 @@ CommonKey3:CommonKey4=IniValue6";
                     'zipcode': '12345'
                 }
             }";
-            var jsonFile = Path.GetTempFileName();
+            var jsonFile = Path.GetRandomFileName();
             File.WriteAllText(jsonFile, json);
 
-            var builder = new ConfigurationBuilder();
+            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory());
 
             // Act & Assert
-            var exception = Assert.Throws<FormatException>(() => builder.AddJsonFile(jsonFile));
+            var exception = Assert.Throws<FormatException>(() => builder.AddJsonFile(jsonFile).Build());
             Assert.NotNull(exception.Message);
 
             File.Delete(jsonFile);
         }
 
         [Fact]
-        public void SetBasePathCalledMultipleTimesForEachSource()
+        public void SetBasePathCalledMultipleTimesForEachSourceLastOneWins()
         {
+
             // Arrange
-            var configurationBuilder = new ConfigurationBuilder();
-            var jsonConfigFilePath = Path.Combine(Directory.GetCurrentDirectory(), "test.json");
-            File.WriteAllText(jsonConfigFilePath, _jsonConfigFileContent);
+            var builder = new ConfigurationBuilder();
+            var jsonConfigFilePath = "test.json";
+            File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), jsonConfigFilePath), _jsonConfigFileContent);
+            var xmlConfigFilePath = "test.xml";
+            File.WriteAllText(Path.Combine(Directory.GetCurrentDirectory(), xmlConfigFilePath), _xmlConfigFileContent);
 
             // Act
-            configurationBuilder.SetBasePath(Path.GetDirectoryName(_xmlConfigFilePath))
-                .AddXmlFile(Path.GetFileName(_xmlConfigFilePath))
+            builder.AddXmlFile("test.xml")
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("test.json");
 
-            var config = configurationBuilder.Build();
+            var config = builder.Build();
 
             // Assert
             Assert.Equal("JsonValue1", config["JsonKey1"]);

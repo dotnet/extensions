@@ -46,7 +46,7 @@ namespace Microsoft.Extensions.Configuration.Xml.Test
                 </settings>";
 
             // Arrange
-            var xmlConfigSrc = new XmlConfigurationProvider(ArbitraryFilePath);
+            var xmlConfigSrc = new XmlConfigurationProvider(new XmlConfigurationSource());
 
             // Act & assert
             var ex = Assert.Throws<PlatformNotSupportedException>(() => xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml)));

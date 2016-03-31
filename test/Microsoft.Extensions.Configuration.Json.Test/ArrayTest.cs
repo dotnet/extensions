@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Configuration.Json.Test
                 ]
             }";
 
-            var jsonConfigSource = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSource = new JsonConfigurationProvider(new JsonConfigurationSource());
             jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
             
             Assert.Equal("1.2.3.4", jsonConfigSource.Get("ip:0"));
@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.Configuration.Json.Test
                 ]
             }";
 
-            var jsonConfigSource = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSource = new JsonConfigurationProvider(new JsonConfigurationSource());
             jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
 
             Assert.Equal("1.2.3.4", jsonConfigSource.Get("ip:0:address"));
@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.Configuration.Json.Test
                 ]
             }";
 
-            var jsonConfigSource = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
+            var jsonConfigSource = new JsonConfigurationProvider(new JsonConfigurationSource());
             jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
 
             Assert.Equal("1.2.3.4", jsonConfigSource.Get("ip:0:0"));
@@ -95,15 +95,12 @@ namespace Microsoft.Extensions.Configuration.Json.Test
                 ]
             }";
 
-            var jsonConfigSource1 = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
-            jsonConfigSource1.Load(TestStreamHelpers.StringToStream(json1));
-
-            var jsonConfigSource2 = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
-            jsonConfigSource2.Load(TestStreamHelpers.StringToStream(json2));
+            var jsonConfigSource1 = new JsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json1) };
+            var jsonConfigSource2 = new JsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json2) };
 
             var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.Add(jsonConfigSource1, load: false);
-            configurationBuilder.Add(jsonConfigSource2, load: false);
+            configurationBuilder.Add(jsonConfigSource1);
+            configurationBuilder.Add(jsonConfigSource2);
             var config = configurationBuilder.Build();
 
             Assert.Equal(3, config.GetSection("ip").GetChildren().Count());
@@ -129,15 +126,12 @@ namespace Microsoft.Extensions.Configuration.Json.Test
                 }
             }";
 
-            var jsonConfigSource1 = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
-            jsonConfigSource1.Load(TestStreamHelpers.StringToStream(json1));
-
-            var jsonConfigSource2 = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
-            jsonConfigSource2.Load(TestStreamHelpers.StringToStream(json2));
+            var jsonConfigSource1 = new JsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json1) };
+            var jsonConfigSource2 = new JsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json2) };
 
             var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.Add(jsonConfigSource1, load: false);
-            configurationBuilder.Add(jsonConfigSource2, load: false);
+            configurationBuilder.Add(jsonConfigSource1);
+            configurationBuilder.Add(jsonConfigSource2);
             var config = configurationBuilder.Build();
 
             Assert.Equal(3, config.GetSection("ip").GetChildren().Count());
@@ -163,15 +157,12 @@ namespace Microsoft.Extensions.Configuration.Json.Test
                 }
             }";
 
-            var jsonConfigSource1 = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
-            jsonConfigSource1.Load(TestStreamHelpers.StringToStream(json1));
-
-            var jsonConfigSource2 = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
-            jsonConfigSource2.Load(TestStreamHelpers.StringToStream(json2));
+            var jsonConfigSource1 = new JsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json1) };
+            var jsonConfigSource2 = new JsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json2) };
 
             var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.Add(jsonConfigSource1, load: false);
-            configurationBuilder.Add(jsonConfigSource2, load: false);
+            configurationBuilder.Add(jsonConfigSource1);
+            configurationBuilder.Add(jsonConfigSource2);
             var config = configurationBuilder.Build();
 
             Assert.Equal(4, config.GetSection("ip").GetChildren().Count());
@@ -192,11 +183,10 @@ namespace Microsoft.Extensions.Configuration.Json.Test
                 ]
             }";
 
-            var jsonConfigSource = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
-            jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
+            var jsonConfigSource = new JsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json) };
 
             var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.Add(jsonConfigSource, load: false);
+            configurationBuilder.Add(jsonConfigSource);
             var config = configurationBuilder.Build();
 
             var configurationSection = config.GetSection("setting");
@@ -222,11 +212,10 @@ namespace Microsoft.Extensions.Configuration.Json.Test
                 }
             }";
 
-            var jsonConfigSource = new JsonConfigurationProvider(TestStreamHelpers.ArbitraryFilePath);
-            jsonConfigSource.Load(TestStreamHelpers.StringToStream(json));
+            var jsonConfigSource = new JsonConfigurationSource { FileProvider = TestStreamHelpers.StringToFileProvider(json) };
 
             var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.Add(jsonConfigSource, load: false);
+            configurationBuilder.Add(jsonConfigSource);
             var config = configurationBuilder.Build();
 
             var configurationSection = config.GetSection("setting");

@@ -4,9 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Reflection;
-using Microsoft.Extensions.Configuration.Memory;
-using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.Extensions.Configuration.Binder.Test

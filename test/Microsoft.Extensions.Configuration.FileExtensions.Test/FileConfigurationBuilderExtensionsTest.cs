@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using Microsoft.Extensions.FileProviders;
 using Xunit;
 
 namespace Microsoft.Extensions.Configuration.Json
@@ -10,49 +11,36 @@ namespace Microsoft.Extensions.Configuration.Json
     public class FileConfigurationBuilderExtensionsTest
     {
         [Fact]
-        public void SetBasePath_ThrowsIfBasePathIsNull()
+        public void SetFileProvider_ThrowsIfBasePathIsNull()
         {
             // Arrange
             var configurationBuilder = new ConfigurationBuilder();
 
             // Act and Assert
-            var ex = Assert.Throws<ArgumentNullException>(() => configurationBuilder.SetBasePath(null));
+            var ex = Assert.Throws<ArgumentNullException>(() => configurationBuilder.SetBasePath(basePath: null));
             Assert.Equal("basePath", ex.ParamName);
         }
 
         [Fact]
-        public void SetBasePath_CheckPropertiesValueOnBuilder()
+        public void SetFileProvider_CheckPropertiesValueOnBuilder()
         {
-            var expectedBasePath = @"C:\ExamplePath";
+            var expectedBasePath = Directory.GetCurrentDirectory() + "\\";
             var configurationBuilder = new ConfigurationBuilder();
 
             configurationBuilder.SetBasePath(expectedBasePath);
-            Assert.Equal(expectedBasePath, configurationBuilder.Properties["BasePath"]);
+            var physicalProvider = configurationBuilder.GetFileProvider() as PhysicalFileProvider;
+            Assert.NotNull(physicalProvider);
+            Assert.Equal(expectedBasePath, physicalProvider.Root);
         }
 
         [Fact]
-        public void GetBasePath_ReturnBaseBathIfSet()
-        {
-            // Arrange
-            var testDir = Path.GetDirectoryName(Path.GetTempFileName());
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.SetBasePath(testDir);
-
-            // Act
-            var actualPath = configurationBuilder.GetBasePath();
-
-            // Assert
-            Assert.Equal(testDir, actualPath);
-        }
-
-        [Fact]
-        public void GetBasePath_ReturnBaseDirectoryIfNotSet()
+        public void GetFileProvider_ReturnPhysicalProviderWithBaseDirectoryIfNotSet()
         {
             // Arrange
             var configurationBuilder = new ConfigurationBuilder();
 
             // Act
-            var actualPath = configurationBuilder.GetBasePath();
+            var physicalProvider = configurationBuilder.GetFileProvider() as PhysicalFileProvider;
 
             string expectedPath;
 
@@ -63,8 +51,8 @@ namespace Microsoft.Extensions.Configuration.Json
                 AppDomain.CurrentDomain.BaseDirectory);
 #endif
 
-            // Assert
-            Assert.Equal(expectedPath, actualPath);
+            Assert.NotNull(physicalProvider);
+            Assert.Equal(expectedPath + "\\", physicalProvider.Root);
         }
     }
 }

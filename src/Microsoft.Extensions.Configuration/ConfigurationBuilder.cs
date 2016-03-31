@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Configuration
@@ -10,16 +11,16 @@ namespace Microsoft.Extensions.Configuration
     /// </summary>
     public class ConfigurationBuilder : IConfigurationBuilder
     {
-        private readonly IList<IConfigurationProvider> _providers = new List<IConfigurationProvider>();
+        private readonly IList<IConfigurationSource> _sources = new List<IConfigurationSource>();
 
         /// <summary>
-        /// Returns the providers used to obtain configuation values.
+        /// Returns the sources used to obtain configuation values.
         /// </summary>
-        public IEnumerable<IConfigurationProvider> Providers
+        public IEnumerable<IConfigurationSource> Sources
         {
             get
             {
-                return _providers;
+                return _sources;
             }
         }
 
@@ -30,41 +31,36 @@ namespace Microsoft.Extensions.Configuration
         public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// Adds a new configuration provider.
+        /// Adds a new configuration source.
         /// </summary>
-        /// <param name="provider">The configuration provider to add.</param>
+        /// <param name="source">The configuration source to add.</param>
         /// <returns>The same <see cref="IConfigurationBuilder"/>.</returns>
-        public IConfigurationBuilder Add(IConfigurationProvider provider)
+        public IConfigurationBuilder Add(IConfigurationSource source)
         {
-            return Add(provider, load: true);
-        }
-
-        /// <summary>
-        /// Adds a new provider to obtain configuration values from.
-        /// This method is intended only for test scenarios.
-        /// </summary>
-        /// <param name="provider">The configuration provider to add.</param>
-        /// <param name="load">If true, the configuration provider's <see cref="IConfigurationProvider.Load"/> method will
-        ///  be called.</param>
-        /// <returns>The same <see cref="IConfigurationBuilder"/>.</returns>
-        public IConfigurationBuilder Add(IConfigurationProvider provider, bool load)
-        {
-            if (load)
+            if (source == null)
             {
-                provider.Load();
+                throw new ArgumentNullException(nameof(source));
             }
-            _providers.Add(provider);
+
+            _sources.Add(source);
             return this;
         }
 
         /// <summary>
         /// Builds an <see cref="IConfiguration"/> with keys and values from the set of providers registered in
-        /// <see cref="Providers"/>.
+        /// <see cref="Sources"/>.
         /// </summary>
         /// <returns>An <see cref="IConfigurationRoot"/> with keys and values from the registered providers.</returns>
         public IConfigurationRoot Build()
         {
-            return new ConfigurationRoot(_providers);
+            var providers = new List<IConfigurationProvider>();
+            foreach (var source in _sources)
+            {
+                var provider = source.Build(this);
+                provider.Load();
+                providers.Add(provider);
+            }
+            return new ConfigurationRoot(providers);
         }
     }
 }

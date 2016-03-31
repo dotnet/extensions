@@ -118,6 +118,6 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Error_NoSources" xml:space="preserve">
-    <value>A configuration provider is not registered. Please register one before setting a value.</value>
+    <value>A configuration source is not registered. Please register one before setting a value.</value>
   </data>
 </root>

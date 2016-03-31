@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.Configuration
 {
     /// <summary>
-    /// Represents a source of configuration key/values for an application.
+    /// Provides configuration key/values for an application.
     /// </summary>
     public interface IConfigurationProvider
     {
@@ -24,6 +25,12 @@ namespace Microsoft.Extensions.Configuration
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         void Set(string key, string value);
+
+        /// <summary>
+        /// Returns a change token if this provider supports change tracking, null otherwise.
+        /// </summary>
+        /// <returns></returns>
+        IChangeToken GetReloadToken();
 
         /// <summary>
         /// Loads configuration values from the source represented by this <see cref="IConfigurationProvider"/>.

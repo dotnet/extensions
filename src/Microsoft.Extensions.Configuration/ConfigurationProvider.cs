@@ -4,11 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.Configuration
 {
     public abstract class ConfigurationProvider : IConfigurationProvider
     {
+        private ConfigurationReloadToken _reloadToken = new ConfigurationReloadToken();
+
         protected ConfigurationProvider()
         {
             Data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -47,6 +51,20 @@ namespace Microsoft.Extensions.Configuration
         {
             var indexOf = key.IndexOf(ConfigurationPath.KeyDelimiter, prefixLength, StringComparison.OrdinalIgnoreCase);
             return indexOf < 0 ? key.Substring(prefixLength) : key.Substring(prefixLength, indexOf - prefixLength);
+        }
+
+        public IChangeToken GetReloadToken()
+        {
+            return _reloadToken;
+        }
+
+        /// <summary>
+        /// Fires the Change Token
+        /// </summary>
+        protected void OnReload()
+        {
+            var previousToken = Interlocked.Exchange(ref _reloadToken, new ConfigurationReloadToken());
+            previousToken.OnReload();
         }
     }
 }

@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.Configuration.Ini;
 using Xunit;
 
 namespace Microsoft.Extensions.Configuration.FunctionalTests
@@ -50,13 +49,7 @@ i=ini_i.i.i.i
         [Fact]
         public void DifferentConfigSources_Merged_KeysAreSorted()
         {
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddJsonFile(_json1ConfigFilePath);
-            configurationBuilder.AddIniFile(_iniConfigFilePath);
-            configurationBuilder.AddJsonFile(_json2ConfigFilePath);
-            configurationBuilder.AddXmlFile(_xmlConfigFilePath);
-
-            var config = configurationBuilder.Build();
+            var config = BuildConfig();
 
             var configurationSection = config.GetSection("address");
             var indexConfigurationSections = configurationSection.GetChildren().ToArray();
@@ -84,14 +77,7 @@ i=ini_i.i.i.i
         [Fact]
         public void DifferentConfigSources_Merged_WithOverwrites()
         {
-            var configurationBuilder = new ConfigurationBuilder();
-
-            configurationBuilder.AddJsonFile(_json1ConfigFilePath);
-            configurationBuilder.AddIniFile(_iniConfigFilePath);
-            configurationBuilder.AddJsonFile(_json2ConfigFilePath);
-            configurationBuilder.AddXmlFile(_xmlConfigFilePath);
-
-            var config = configurationBuilder.Build();
+            var config = BuildConfig();
 
             Assert.Equal("json_0.0.0.0", config["address:0"]);
             Assert.Equal("xml_1.1.1.1", config["address:1"]);
@@ -103,19 +89,36 @@ i=ini_i.i.i.i
             Assert.Equal("xml_x.x.x.x", config["address:x"]);
         }
 
-        public ArrayTests()
+        private IConfiguration BuildConfig()
         {
-            _iniConfigFilePath = Path.GetTempFileName();
-            _xmlConfigFilePath = Path.GetTempFileName();
-            _json1ConfigFilePath = Path.GetTempFileName();
-            _json2ConfigFilePath = Path.GetTempFileName();
-
-            File.WriteAllText(_iniConfigFilePath, _iniConfigFileContent);
-            File.WriteAllText(_xmlConfigFilePath, _xmlConfigFileContent);
-            File.WriteAllText(_json1ConfigFilePath, _json1ConfigFileContent);
-            File.WriteAllText(_json2ConfigFilePath, _json2ConfigFileContent);
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddJsonFile(_json1ConfigFilePath);
+            configurationBuilder.AddIniFile(_iniConfigFilePath);
+            configurationBuilder.AddJsonFile(_json2ConfigFilePath);
+            configurationBuilder.AddXmlFile(_xmlConfigFilePath);
+            return configurationBuilder.Build();
         }
 
+        public ArrayTests()
+        {
+#if NET451
+            var basePath = AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
+                AppDomain.CurrentDomain.BaseDirectory ??
+                string.Empty;
+#else
+            var basePath = AppContext.BaseDirectory ?? string.Empty;
+#endif
+            _iniConfigFilePath = Path.GetRandomFileName();
+            _xmlConfigFilePath = Path.GetRandomFileName();
+            _json1ConfigFilePath = Path.GetRandomFileName();
+            _json2ConfigFilePath = Path.GetRandomFileName();
+
+            File.WriteAllText(Path.Combine(basePath, _iniConfigFilePath), _iniConfigFileContent);
+            File.WriteAllText(Path.Combine(basePath, _xmlConfigFilePath), _xmlConfigFileContent);
+            File.WriteAllText(Path.Combine(basePath, _json1ConfigFilePath), _json1ConfigFileContent);
+            File.WriteAllText(Path.Combine(basePath, _json2ConfigFilePath), _json2ConfigFileContent);
+        }
+        
         public void Dispose()
         {
             File.Delete(_iniConfigFilePath);

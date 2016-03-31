@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables.Test
                     {"Inventory:ConnectionString", "AnotherTestConnectionString"},
                     {"Inventory:Provider", "MySql"}
                 };
-            var envConfigSrc = new EnvironmentVariablesConfigurationProvider();
+            var envConfigSrc = new EnvironmentVariablesConfigurationProvider(null);
 
             envConfigSrc.Load(dict);
 

@@ -1,24 +1,31 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Configuration.Memory
 {
-    public class MemoryConfigurationProvider : 
-        ConfigurationProvider, 
-        IEnumerable<KeyValuePair<string,string>>
+    public class MemoryConfigurationProvider : ConfigurationProvider, IEnumerable<KeyValuePair<string, string>>
     {
-        public MemoryConfigurationProvider()
-        {
-        }
+        private readonly MemoryConfigurationSource _source;
 
-        public MemoryConfigurationProvider(IEnumerable<KeyValuePair<string, string>> initialData)
+        public MemoryConfigurationProvider(MemoryConfigurationSource source)
         {
-            foreach (var pair in initialData)
+            if (source == null)
             {
-                Data.Add(pair.Key, pair.Value);
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            _source = source;
+
+            if (_source.InitialData != null)
+            {
+                foreach (var pair in _source.InitialData)
+                {
+                    Data.Add(pair.Key, pair.Value);
+                }
             }
         }
 

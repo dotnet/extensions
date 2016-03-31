@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Configuration
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         public static IConfigurationBuilder AddEnvironmentVariables(this IConfigurationBuilder configurationBuilder)
         {
-            configurationBuilder.Add(new EnvironmentVariablesConfigurationProvider());
+            configurationBuilder.Add(new EnvironmentVariablesConfigurationSource());
             return configurationBuilder;
         }
 
@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.Configuration
             this IConfigurationBuilder configurationBuilder,
             string prefix)
         {
-            configurationBuilder.Add(new EnvironmentVariablesConfigurationProvider(prefix));
+            configurationBuilder.Add(new EnvironmentVariablesConfigurationSource { Prefix = prefix });
             return configurationBuilder;
         }
     }
