@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.Extensions.Configuration
@@ -9,6 +10,7 @@ namespace Microsoft.Extensions.Configuration
     public static class FileConfigurationExtensions
     {
         private static string FileProviderKey = "FileProvider";
+        private static string BasePathKey = "BasePath";
 
         /// <summary>
         /// Sets the default <see cref="IFileProvider"/> to be used for file-based providers.
@@ -50,14 +52,7 @@ namespace Microsoft.Extensions.Configuration
                 return builder.Properties[FileProviderKey] as IFileProvider;
             }
 
-#if NET451
-            var stringBasePath = AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string 
-                ?? AppDomain.CurrentDomain.BaseDirectory 
-                ?? string.Empty;
-            return new PhysicalFileProvider(stringBasePath);
-#else
-            return new PhysicalFileProvider(AppContext.BaseDirectory ?? string.Empty);
-#endif
+            return new PhysicalFileProvider(builder.GetBasePath());
         }
 
         /// <summary>
@@ -78,7 +73,37 @@ namespace Microsoft.Extensions.Configuration
                 throw new ArgumentNullException(nameof(basePath));
             }
 
+            builder.Properties[BasePathKey] = basePath;
             return builder.SetFileProvider(new PhysicalFileProvider(basePath));
+        }
+
+        /// <summary>
+        /// Gets the base path to discover files in for file-based providers.
+        /// </summary>
+        /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <returns>The base path.</returns>
+        public static string GetBasePath(this IConfigurationBuilder configurationBuilder)
+        {
+            if (configurationBuilder == null)
+            {
+                throw new ArgumentNullException(nameof(configurationBuilder));
+            }
+
+            object basePath;
+            if (configurationBuilder.Properties.TryGetValue(BasePathKey, out basePath))
+            {
+                return (string)basePath;
+            }
+
+#if NET451
+            var stringBasePath = AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
+                AppDomain.CurrentDomain.BaseDirectory ??
+                string.Empty;
+
+            return Path.GetFullPath(stringBasePath);
+#else
+            return AppContext.BaseDirectory ?? string.Empty;
+#endif
         }
     }
 }
