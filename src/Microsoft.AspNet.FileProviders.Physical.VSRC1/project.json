@@ -1,0 +1,18 @@
+{
+  "version": "1.0.0-rc1-final",
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
+  "description": "Implementation of ASP.NET 5 file provider abstractions for physical files.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/filesystem"
+  },
+  "dependencies": {
+    "Microsoft.AspNet.FileProviders.Abstractions.VSRC1": "1.0.0-rc1-final"
+  },
+  "frameworks": {
+    "net451": { }
+  }
+}

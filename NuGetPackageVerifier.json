@@ -5,9 +5,11 @@
         ],
         "packages": {
             "Microsoft.Extensions.FileProviders.Abstractions": { },
+            "Microsoft.AspNet.FileProviders.Abstractions.VSRC1": { },
             "Microsoft.Extensions.FileProviders.Composite": { },
             "Microsoft.Extensions.FileProviders.Embedded": { },
             "Microsoft.Extensions.FileProviders.Physical": { },
+            "Microsoft.AspNet.FileProviders.Physical.VSRC1": { },
             "Microsoft.Extensions.FileSystemGlobbing": { }
         }
     },
