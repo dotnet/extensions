@@ -82,13 +82,13 @@ namespace Microsoft.Extensions.Configuration.Json
         [Fact]
         public void SetFileProvider_CheckPropertiesValueOnBuilder()
         {
-            var expectedBasePath = Directory.GetCurrentDirectory() + "\\";
+            var expectedBasePath = Directory.GetCurrentDirectory();
             var configurationBuilder = new ConfigurationBuilder();
 
             configurationBuilder.SetBasePath(expectedBasePath);
             var physicalProvider = configurationBuilder.GetFileProvider() as PhysicalFileProvider;
             Assert.NotNull(physicalProvider);
-            Assert.Equal(expectedBasePath, physicalProvider.Root);
+            Assert.Equal(EnsureTrailingSlash(expectedBasePath), physicalProvider.Root);
         }
 
         [Fact]
@@ -110,7 +110,18 @@ namespace Microsoft.Extensions.Configuration.Json
 #endif
 
             Assert.NotNull(physicalProvider);
-            Assert.Equal(expectedPath + "\\", physicalProvider.Root);
+            Assert.Equal(EnsureTrailingSlash(expectedPath), physicalProvider.Root);
+        }
+
+        private static string EnsureTrailingSlash(string path)
+        {
+            if (!string.IsNullOrEmpty(path) &&
+                path[path.Length - 1] != Path.DirectorySeparatorChar)
+            {
+                return path + Path.DirectorySeparatorChar;
+            }
+
+            return path;
         }
     }
 }
