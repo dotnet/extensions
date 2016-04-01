@@ -6,7 +6,9 @@
         "packages": {
             "dotnet-sql-cache": { },
             "Microsoft.Extensions.Caching.Abstractions": { },
+            "Microsoft.Extensions.Caching.Abstractions.VSRC1": { },
             "Microsoft.Extensions.Caching.Memory": { },
+            "Microsoft.Extensions.Caching.Memory.VSRC1": { },
             "Microsoft.Extensions.Caching.Redis": { },
             "Microsoft.Extensions.Caching.SqlServer": { }
         }
