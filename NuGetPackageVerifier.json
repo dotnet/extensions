@@ -5,6 +5,7 @@
         ],
         "packages": {
             "Microsoft.Extensions.Options": { },
+            "Microsoft.Extensions.OptionsModel.VSRC1": { },
             "Microsoft.Extensions.Options.ConfigurationExtensions": { }
         }
     },
