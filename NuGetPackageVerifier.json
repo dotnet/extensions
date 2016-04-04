@@ -7,7 +7,11 @@
             "Microsoft.Extensions.CommandLineUtils": { },
             "Microsoft.Extensions.ObjectPool": { },
             "Microsoft.Extensions.Primitives": { },
-            "Microsoft.Extensions.Primitives.VSRC1": { }
+            "Microsoft.Extensions.Primitives.VSRC1": {
+                "DOC_MISSING": {
+                    "lib/net451/Microsoft.Extensions.Primitives.VSRC1": "This project is temporary."
+                }
+            }
         }
     },
     "adx-nonshipping": {
