@@ -6,9 +6,17 @@
         "packages": {
             "dotnet-sql-cache": { },
             "Microsoft.Extensions.Caching.Abstractions": { },
-            "Microsoft.Extensions.Caching.Abstractions.VSRC1": { },
+            "Microsoft.Extensions.Caching.Abstractions.VSRC1": {
+                "DOC_MISSING": {
+                    "lib/net451/Microsoft.Extensions.Caching.Abstractions.VSRC1.dll": "This project is temporary."
+                }
+            },
             "Microsoft.Extensions.Caching.Memory": { },
-            "Microsoft.Extensions.Caching.Memory.VSRC1": { },
+            "Microsoft.Extensions.Caching.Memory.VSRC1": {
+                "DOC_MISSING": {
+                    "lib/net451/Microsoft.Extensions.Caching.Memory.VSRC1.dll": "This project is temporary."
+                }
+            },
             "Microsoft.Extensions.Caching.Redis": { },
             "Microsoft.Extensions.Caching.SqlServer": { }
         }
