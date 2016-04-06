@@ -62,7 +62,7 @@ namespace Microsoft.Extensions.Logging.Console
                 level = LogLevel.None;
                 return false;
             }
-            else if (Enum.TryParse<LogLevel>(value, out level))
+            else if (Enum.TryParse<LogLevel>(value, true, out level))
             {
                 return true;
             }
