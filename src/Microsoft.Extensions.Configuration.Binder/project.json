@@ -23,10 +23,7 @@
     "netstandard1.1": {
       "dependencies": {
         "System.ComponentModel.TypeConverter": "4.0.1-*"
-      },
-      "imports": [
-        "dotnet5.2"
-      ]
+      }
     }
   }
 }
