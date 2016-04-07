@@ -24,7 +24,7 @@
   "frameworks": {
     "netstandard1.1": {
       "imports": [
-        "dotnet5.2"
+        "dotnet"
       ]
     }
   }

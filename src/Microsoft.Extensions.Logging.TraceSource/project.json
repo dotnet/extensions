@@ -23,16 +23,15 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Runtime": { "type": "build" }
+        "System.Runtime": {
+          "type": "build"
+        }
       }
     },
     "netstandard1.3": {
       "dependencies": {
         "System.Diagnostics.TraceSource": "4.0.0-*"
-      },
-      "imports": [
-        "dotnet5.4"
-      ]
+      }
     }
   }
 }
