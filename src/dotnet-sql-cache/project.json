@@ -15,10 +15,7 @@
     "netstandardapp1.5": {
       "dependencies": {
         "System.Data.SqlClient": "4.1.0-*"
-      },
-      "imports": [
-        "dnxcore50"
-      ]
+      }
     }
   },
   "compilationOptions": {

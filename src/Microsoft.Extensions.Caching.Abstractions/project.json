@@ -22,10 +22,7 @@
         "System.Collections": "4.0.11-*",
         "System.Threading": "4.0.11-*",
         "System.Threading.Tasks": "4.0.11-*"
-      },
-      "imports": [
-        "dotnet5.1"
-      ]
+      }
     }
   },
   "version": "1.0.0-*",
