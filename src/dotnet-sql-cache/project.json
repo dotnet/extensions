@@ -3,7 +3,7 @@
     "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
     "Microsoft.Extensions.Logging": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
-    "NETStandard.Library": "1.0.0-*"
+    "NETStandard.Library": "1.5.0-*"
   },
   "description": "Command line tool to create tables and indexes in a Microsoft SQL Server database for distributed caching.",
   "tags": [
@@ -14,7 +14,7 @@
   "frameworks": {
     "netstandardapp1.5": {
       "dependencies": {
-        "System.Data.SqlClient": "4.0.0-*"
+        "System.Data.SqlClient": "4.1.0-*"
       },
       "imports": [
         "dnxcore50"
