@@ -21,7 +21,6 @@
   "frameworks": {
     "netstandard1.1": {
       "imports": [
-        "dotnet5.2",
         "portable-net45+win8"
       ],
       "dependencies": {
