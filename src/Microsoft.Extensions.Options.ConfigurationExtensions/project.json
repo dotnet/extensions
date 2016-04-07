@@ -20,10 +20,6 @@
     "url": "https://github.com/aspnet/options"
   },
   "frameworks": {
-    "netstandard1.1": {
-      "imports": [
-        "dotnet5.2"
-      ]
-    }
+    "netstandard1.1": {}
   }
 }
