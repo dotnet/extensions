@@ -29,10 +29,7 @@
         "System.Resources.ResourceManager": "4.0.1-*",
         "System.Runtime.Extensions": "4.1.0-*",
         "System.Threading": "4.0.11-*"
-      },
-      "imports": [
-        "dotnet5.1"
-      ]
+      }
     }
   }
 }
