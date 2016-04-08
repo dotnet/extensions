@@ -25,10 +25,7 @@
         "System.Reflection.Emit.Lightweight": "4.0.1-*",
         "System.Reflection.Extensions": "4.0.1-*",
         "System.Runtime.Extensions": "4.1.0-*"
-      },
-      "imports": [
-        "dotnet5.2"
-      ]
+      }
     }
   }
 }
