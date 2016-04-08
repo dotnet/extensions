@@ -28,10 +28,7 @@
     "netstandard1.0": {
       "dependencies": {
         "System.Runtime.Extensions": "4.1.0-*"
-      },
-      "imports": [
-        "dotnet5.1"
-      ]
+      }
     }
   }
 }
