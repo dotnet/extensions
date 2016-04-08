@@ -21,10 +21,6 @@
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*"
   },
   "frameworks": {
-    "netstandard1.1": {
-      "imports": [
-        "dotnet5.2"
-      ]
-    }
+    "netstandard1.1": {}
   }
 }
