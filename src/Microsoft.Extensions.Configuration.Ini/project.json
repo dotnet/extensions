@@ -24,16 +24,15 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Runtime": { "type": "build" }
+        "System.Runtime": {
+          "type": "build"
+        }
       }
     },
     "netstandard1.3": {
       "dependencies": {
         "System.IO.FileSystem": "4.0.1-*"
-      },
-      "imports": [
-        "dotnet5.4"
-      ]
+      }
     }
   }
 }

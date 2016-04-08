@@ -23,16 +23,15 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Collections": { "type": "build" }
+        "System.Collections": {
+          "type": "build"
+        }
       }
     },
     "netstandard1.3": {
       "dependencies": {
         "System.AppContext": "4.1.0-*"
-      },
-      "imports": [
-        "dotnet5.4"
-      ]
+      }
     }
   }
 }
