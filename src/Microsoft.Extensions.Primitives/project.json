@@ -24,9 +24,6 @@
       "dependencies": {
         "System.Runtime": "4.1.0-*",
         "System.Resources.ResourceManager": "4.0.1-*"
-      },
-      "runtimes": {
-        "any": {}
       }
     },
     "netcore50": {
@@ -41,14 +38,6 @@
           "type": "build",
           "version": "4.0.10"
         }
-      },
-      "runtimes": {
-        "win10-arm": {},
-        "win10-arm-aot": {},
-        "win10-x86": {},
-        "win10-x86-aot": {},
-        "win10-x64": {},
-        "win10-x64-aot": {}
       }
     }
   }
