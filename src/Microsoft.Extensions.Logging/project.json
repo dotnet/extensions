@@ -35,7 +35,11 @@
           "type": "build",
           "version": "1.0.1-*"
         },
-        "System.Threading": "4.0.10"
+        "System.Threading": "4.0.10",
+        "System.Runtime.Extensions": {
+          "type": "build",
+          "version": "4.0.10"
+        }
       }
     }
   }
