@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Extensions.FileProviders.Composite
+namespace Microsoft.Extensions.FileProviders
 {
     /// <summary>
     /// Represents a composition of <see cref="IDisposable"/>.
     /// </summary>
-    public class CompositeDisposable : IDisposable
+    internal class CompositeDisposable : IDisposable
     {
         private readonly IList<IDisposable> _disposables;
         /// <summary>

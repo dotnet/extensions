@@ -3,27 +3,29 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.FileProviders.Physical
 {
     public class PhysicalFilesWatcher : IDisposable
     {
-        private readonly ConcurrentDictionary<string, FileChangeToken> _tokenCache =
-            new ConcurrentDictionary<string, FileChangeToken>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, ChangeTokenInfo> _matchInfoCache =
+            new ConcurrentDictionary<string, ChangeTokenInfo>(StringComparer.OrdinalIgnoreCase);
         private readonly FileSystemWatcher _fileWatcher;
         private readonly object _lockObject = new object();
         private readonly string _root;
+        private readonly bool _pollForChanges;
 
-        public PhysicalFilesWatcher(string root)
-            : this(root, new FileSystemWatcher(root))
-        {
-        }
-
-        public PhysicalFilesWatcher(string root, FileSystemWatcher fileSystemWatcher)
+        public PhysicalFilesWatcher(
+            string root,
+            FileSystemWatcher fileSystemWatcher,
+            bool pollForChanges)
         {
             _root = root;
             _fileWatcher = fileSystemWatcher;
@@ -33,28 +35,85 @@ namespace Microsoft.Extensions.FileProviders.Physical
             _fileWatcher.Renamed += OnRenamed;
             _fileWatcher.Deleted += OnChanged;
             _fileWatcher.Error += OnError;
+
+            _pollForChanges = pollForChanges;
         }
 
-        internal IChangeToken CreateFileChangeToken(string filter)
+        public IChangeToken CreateFileChangeToken(string filter)
         {
-            filter = NormalizeFilter(filter);
-            var pattern = WildcardToRegexPattern(filter);
-
-            FileChangeToken changeToken;
-            if (!_tokenCache.TryGetValue(pattern, out changeToken))
+            if (filter == null)
             {
-                changeToken = _tokenCache.GetOrAdd(pattern, new FileChangeToken(pattern));
-                lock (_lockObject)
+                throw new ArgumentNullException(nameof(filter));
+            }
+
+            filter = NormalizePath(filter);
+
+            IChangeToken changeToken;
+            var isWildCard = filter.IndexOf('*') != -1;
+            if (isWildCard || IsDirectoryPath(filter))
+            {
+                changeToken = ResolveFileTokensForGlobbingPattern(filter);
+            }
+            else
+            {
+                changeToken = GetOrAddChangeToken(filter);
+            }
+
+            lock (_lockObject)
+            {
+                if (_matchInfoCache.Count > 0 && !_fileWatcher.EnableRaisingEvents)
                 {
-                    if (_tokenCache.Count > 0 && !_fileWatcher.EnableRaisingEvents)
-                    {
-                        // Perf: Turn on the file monitoring if there is something to monitor.
-                        _fileWatcher.EnableRaisingEvents = true;
-                    }
+                    // Perf: Turn on the file monitoring if there is something to monitor.
+                    _fileWatcher.EnableRaisingEvents = true;
                 }
             }
 
             return changeToken;
+        }
+
+        private IChangeToken GetOrAddChangeToken(string filePath)
+        {
+            ChangeTokenInfo tokenInfo;
+            if (!_matchInfoCache.TryGetValue(filePath, out tokenInfo))
+            {
+                var cancellationTokenSource = new CancellationTokenSource();
+                var cancellationChangeToken = new CancellationChangeToken(cancellationTokenSource.Token);
+                tokenInfo = new ChangeTokenInfo(cancellationTokenSource, cancellationChangeToken);
+                tokenInfo = _matchInfoCache.GetOrAdd(filePath, tokenInfo);
+            }
+
+            IChangeToken changeToken = tokenInfo.ChangeToken;
+            if (_pollForChanges)
+            {
+                // The expiry of CancellationChangeToken is controlled by this type and consequently we can cache it.
+                // PollingFileChangeToken on the other hand manages its own lifetime and consequently we cannot cache it.
+                changeToken = new CompositeFileChangeToken(
+                    new[]
+                    {
+                        changeToken,
+                        new PollingFileChangeToken(new FileInfo(filePath))
+                    });
+            }
+
+            return changeToken;
+        }
+
+        private IChangeToken ResolveFileTokensForGlobbingPattern(string filter)
+        {
+            var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+            matcher.AddInclude(filter);
+
+            var directoryBase = new DirectoryInfoWrapper(new DirectoryInfo(_root));
+            var result = matcher.Execute(directoryBase);
+
+            var changeTokens = new List<IChangeToken>();
+            foreach (var file in result.Files)
+            {
+                var changeToken = GetOrAddChangeToken(file.Path);
+                changeTokens.Add(changeToken);
+            }
+
+            return new CompositeFileChangeToken(changeTokens);
         }
 
         public void Dispose()
@@ -89,9 +148,9 @@ namespace Microsoft.Extensions.FileProviders.Physical
         private void OnError(object sender, ErrorEventArgs e)
         {
             // Notify all cache entries on error.
-            foreach (var token in _tokenCache.Values)
+            foreach (var path in _matchInfoCache.Keys)
             {
-                ReportChangeForMatchedEntries(token.Pattern);
+                ReportChangeForMatchedEntries(path);
             }
         }
 
@@ -104,30 +163,23 @@ namespace Microsoft.Extensions.FileProviders.Physical
             }
 
             var relativePath = fullPath.Substring(_root.Length);
-            if (_tokenCache.ContainsKey(relativePath))
-            {
-                ReportChangeForMatchedEntries(relativePath);
-            }
-            else
-            {
-                foreach (var token in _tokenCache.Values.Where(t => t.IsMatch(relativePath)))
-                {
-                    ReportChangeForMatchedEntries(token.Pattern);
-                }
-            }
+            ReportChangeForMatchedEntries(relativePath);
         }
 
-        private void ReportChangeForMatchedEntries(string pattern)
+        private void ReportChangeForMatchedEntries(string path)
         {
-            FileChangeToken changeToken;
-            if (_tokenCache.TryRemove(pattern, out changeToken))
+            path = NormalizePath(path);
+
+            ChangeTokenInfo matchInfo;
+            if (_matchInfoCache.TryRemove(path, out matchInfo))
             {
-                changeToken.Changed();
-                if (_tokenCache.Count == 0)
+                CancelToken(matchInfo);
+
+                if (_matchInfoCache.Count == 0)
                 {
                     lock (_lockObject)
                     {
-                        if (_tokenCache.Count == 0 && _fileWatcher.EnableRaisingEvents)
+                        if (_matchInfoCache.Count == 0 && _fileWatcher.EnableRaisingEvents)
                         {
                             // Perf: Turn off the file monitoring if no files to monitor.
                             _fileWatcher.EnableRaisingEvents = false;
@@ -137,54 +189,47 @@ namespace Microsoft.Extensions.FileProviders.Physical
             }
         }
 
-        private string NormalizeFilter(string filter)
+        private static string NormalizePath(string filter) => filter = filter.Replace('\\', '/');
+
+        private static bool IsDirectoryPath(string path)
         {
-            // If the searchPath ends with \ or /, we treat searchPath as a directory,
-            // and will include everything under it, recursively.
-            if (IsDirectoryPath(filter))
-            {
-                filter = filter + "**" + Path.DirectorySeparatorChar + "*";
-            }
-
-            filter = Path.DirectorySeparatorChar == '/' ?
-                filter.Replace('\\', Path.DirectorySeparatorChar) :
-                filter.Replace('/', Path.DirectorySeparatorChar);
-
-            return filter;
+            return path.Length > 0
+                && (path[path.Length - 1] == Path.DirectorySeparatorChar || path[path.Length - 1] == Path.AltDirectorySeparatorChar);
         }
 
-        private bool IsDirectoryPath(string path)
+        private static void CancelToken(ChangeTokenInfo matchInfo)
         {
-            return path != null && path.Length >= 1 && (path[path.Length - 1] == Path.DirectorySeparatorChar || path[path.Length - 1] == Path.AltDirectorySeparatorChar);
+            if (matchInfo.TokenSource.IsCancellationRequested)
+            {
+                return;
+            }
+
+            Task.Run(() =>
+            {
+                try
+                {
+                    matchInfo.TokenSource.Cancel();
+                }
+                catch
+                {
+
+                }
+            });
         }
 
-        private string WildcardToRegexPattern(string wildcard)
+        private struct ChangeTokenInfo
         {
-            var regex = Regex.Escape(wildcard);
-
-            if (Path.DirectorySeparatorChar == '/')
+            public ChangeTokenInfo(
+                CancellationTokenSource tokenSource,
+                CancellationChangeToken changeToken)
             {
-                // regex wildcard adjustments for *nix-style file systems.
-                regex = regex
-                    .Replace(@"\*\*/", "(.*/)?") //For recursive wildcards /**/, include the current directory.
-                    .Replace(@"\*\*", ".*") // For recursive wildcards that don't end in a slash e.g. **.txt would be treated as a .txt file at any depth
-                    .Replace(@"\*\.\*", @"\*") // "*.*" is equivalent to "*"
-                    .Replace(@"\*", @"[^/]*(/)?") // For non recursive searches, limit it any character that is not a directory separator
-                    .Replace(@"\?", "."); // ? translates to a single any character
-            }
-            else
-            {
-                // regex wildcard adjustments for Windows-style file systems.
-                regex = regex
-                    .Replace("/", @"\\") // On Windows, / is treated the same as \.
-                    .Replace(@"\*\*\\", @"(.*\\)?") //For recursive wildcards \**\, include the current directory.
-                    .Replace(@"\*\*", ".*") // For recursive wildcards that don't end in a slash e.g. **.txt would be treated as a .txt file at any depth
-                    .Replace(@"\*\.\*", @"\*") // "*.*" is equivalent to "*"
-                    .Replace(@"\*", @"[^\\]*(\\)?") // For non recursive searches, limit it any character that is not a directory separator
-                    .Replace(@"\?", "."); // ? translates to a single any character
+                TokenSource = tokenSource;
+                ChangeToken = changeToken;
             }
 
-            return regex;
+            public CancellationTokenSource TokenSource { get; }
+
+            public CancellationChangeToken ChangeToken { get; }
         }
     }
 }

@@ -5,8 +5,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.FileProviders.Physical;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.FileProviders.Physical;
 using Microsoft.Extensions.FileSystemGlobbing.Tests.TestUtility;
 using Xunit;
 
@@ -72,7 +72,7 @@ namespace Microsoft.Extensions.FileProviders
                 }
             }
         }
-        
+
         [Fact]
         public void GetFileInfoReturnsNotFoundFileInfoForRelativePathWithEmptySegmentsThatNavigates()
         {
@@ -159,7 +159,7 @@ namespace Microsoft.Extensions.FileProviders
 
                 using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
                     {
                         using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
@@ -188,7 +188,7 @@ namespace Microsoft.Extensions.FileProviders
 
                 using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
                     {
                         using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
@@ -213,6 +213,88 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public async Task WatcherWithPolling_ReturnsTrueForFileChangedWhenFileSystemWatcherDoesNotRaiseEvents()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                var fileName = Path.GetRandomFileName();
+                var fileLocation = Path.Combine(root.RootPath, fileName);
+                PollingFileChangeToken.PollingInterval = TimeSpan.FromMilliseconds(10);
+
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+                {
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: true))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var token = provider.Watch(fileName);
+                            File.WriteAllText(fileLocation, "some-content");
+                            await Task.Delay(WaitTimeForTokenToFire);
+                            Assert.True(token.HasChanged);
+                        }
+                    }
+                }
+            }
+        }
+
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public async Task WatcherWithPolling_ReturnsTrueForFileRemovedWhenFileSystemWatcherDoesNotRaiseEvents()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                var fileName = Path.GetRandomFileName();
+                var fileLocation = Path.Combine(root.RootPath, fileName);
+                PollingFileChangeToken.PollingInterval = TimeSpan.FromMilliseconds(10);
+
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+                {
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: true))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            root.CreateFile(fileName);
+                            var token = provider.Watch(fileName);
+                            File.Delete(fileLocation);
+
+                            await Task.Delay(WaitTimeForTokenToFire);
+                            Assert.True(token.HasChanged);
+                        }
+                    }
+                }
+            }
+        }
+
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public async Task WatcherWithPolling_ReturnsTrueForChangedFileWhenQueriedMultipleTimes()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                var fileName = Path.GetRandomFileName();
+                var fileLocation = Path.Combine(root.RootPath, fileName);
+                PollingFileChangeToken.PollingInterval = TimeSpan.FromMilliseconds(10);
+
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+                {
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: true))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            root.CreateFile(fileName);
+                            var token = provider.Watch(fileName);
+                            File.Delete(fileLocation);
+
+                            await Task.Delay(WaitTimeForTokenToFire);
+                            Assert.True(token.HasChanged);
+                        }
+                    }
+                }
+            }
+        }
+
         [Fact]
         public async Task TokensFiredOnFileDeleted()
         {
@@ -223,7 +305,7 @@ namespace Microsoft.Extensions.FileProviders
 
                 using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
                     {
                         using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
@@ -446,7 +528,7 @@ namespace Microsoft.Extensions.FileProviders
             {
                 using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
                     {
                         using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
@@ -473,12 +555,15 @@ namespace Microsoft.Extensions.FileProviders
         [Fact]
         public void TokenIsSameForSamePathCaseInsensitive()
         {
-            using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
+            using (var root = new DisposableFileSystem())
             {
-                var fileName = Guid.NewGuid().ToString();
-                var token = provider.Watch(fileName);
-                var lowerCaseToken = provider.Watch(fileName.ToLowerInvariant());
-                Assert.Equal(token, lowerCaseToken);
+                using (var provider = new PhysicalFileProvider(root.RootPath))
+                {
+                    var fileName = Guid.NewGuid().ToString();
+                    var token = provider.Watch(fileName);
+                    var lowerCaseToken = provider.Watch(fileName.ToLowerInvariant());
+                    Assert.Equal(token, lowerCaseToken);
+                }
             }
         }
 
@@ -489,7 +574,7 @@ namespace Microsoft.Extensions.FileProviders
             {
                 using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
                     {
                         using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
@@ -521,7 +606,7 @@ namespace Microsoft.Extensions.FileProviders
             {
                 using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
                     {
                         using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
@@ -627,7 +712,7 @@ namespace Microsoft.Extensions.FileProviders
             {
                 using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
                     {
                         using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
@@ -651,7 +736,7 @@ namespace Microsoft.Extensions.FileProviders
             {
                 using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
                     {
                         using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
@@ -675,14 +760,27 @@ namespace Microsoft.Extensions.FileProviders
             {
                 using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
                     {
                         using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
                             var directoryName = Guid.NewGuid().ToString();
+                            root.CreateFolder(directoryName)
+                                .CreateFile(Path.Combine(directoryName, "some-file"));
+                            var newDirectory = Path.GetRandomFileName();
+
                             var token = provider.Watch(directoryName + Path.DirectorySeparatorChar);
 
-                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, Path.Combine(root.RootPath, directoryName), Guid.NewGuid().ToString()));
+                            Directory.Move(
+                                Path.Combine(root.RootPath, directoryName),
+                                Path.Combine(root.RootPath, newDirectory));
+
+                            fileSystemWatcher.CallOnRenamed(new RenamedEventArgs(
+                                WatcherChangeTypes.Renamed,
+                                root.RootPath,
+                                newDirectory,
+                                directoryName));
+
                             await Task.Delay(WaitTimeForTokenToFire);
 
                             Assert.True(token.HasChanged);
@@ -699,7 +797,7 @@ namespace Microsoft.Extensions.FileProviders
             {
                 using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
                     {
                         using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
@@ -717,62 +815,27 @@ namespace Microsoft.Extensions.FileProviders
         }
 
         [Fact]
-        public async Task TokensFiredForRegularExpressionPatterns()
+        public async Task TokenFiredForGlobbingPatternsPointingToSubDirectory()
         {
             using (var root = new DisposableFileSystem())
             {
                 using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
-                    {
-                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
-                        {
-                            var token1 = provider.Watch("**/*");
-                            var pattern1tokenCount = 0;
-                            token1.RegisterChangeCallback(_ => { pattern1tokenCount++; }, null);
-
-                            var token2 = provider.Watch("*.cshtml");
-                            var pattern2tokenCount = 0;
-                            token2.RegisterChangeCallback(_ => { pattern2tokenCount++; }, null);
-
-                            var fileName = Guid.NewGuid().ToString();
-
-                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, fileName + ".cshtml"));
-                            await Task.Delay(WaitTimeForTokenToFire);
-
-                            Assert.Equal(1, pattern1tokenCount);
-                            Assert.Equal(1, pattern2tokenCount);
-
-                            token1 = provider.Watch("**/*");
-                            token1.RegisterChangeCallback(_ => { pattern1tokenCount++; }, null);
-                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, fileName + ".txt"));
-                            await Task.Delay(WaitTimeForTokenToFire);
-
-                            Assert.Equal(2, pattern1tokenCount);
-                            Assert.Equal(1, pattern2tokenCount);
-                        }
-                    }
-                }
-            }
-        }
-
-        [Fact]
-        public async Task TokenFiredForRegularExpressionPatternsPointingToSubDirectory()
-        {
-            using (var root = new DisposableFileSystem())
-            {
-                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
-                {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
                     {
                         using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
                             var subDirectoryName = Guid.NewGuid().ToString();
+                            var subSubDirectoryName = Guid.NewGuid().ToString();
+                            var fileName = Guid.NewGuid().ToString() + ".cshtml";
+
+                            root.CreateFolder(subDirectoryName)
+                                .CreateFolder(Path.Combine(subDirectoryName, subSubDirectoryName))
+                                .CreateFile(Path.Combine(subDirectoryName, subSubDirectoryName, fileName));
+
                             var pattern = string.Format(Path.Combine(subDirectoryName, "**", "*.cshtml"));
                             var token = provider.Watch(pattern);
 
-                            var subSubDirectoryName = Guid.NewGuid().ToString();
-                            var fileName = Guid.NewGuid().ToString() + ".cshtml";
                             fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, Path.Combine(root.RootPath, subDirectoryName, subSubDirectoryName), fileName));
                             await Task.Delay(WaitTimeForTokenToFire);
 
@@ -786,12 +849,15 @@ namespace Microsoft.Extensions.FileProviders
         [Fact]
         public void TokensWithForwardAndBackwardSlashesAreSame()
         {
-            using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
+            using (var root = new DisposableFileSystem())
             {
-                var token1 = provider.Watch(@"a/b\c");
-                var token2 = provider.Watch(@"a\b/c");
+                using (var provider = new PhysicalFileProvider(root.RootPath))
+                {
+                    var token1 = provider.Watch(@"a/b\c");
+                    var token2 = provider.Watch(@"a\b/c");
 
-                Assert.Equal(token1, token2);
+                    Assert.Equal(token1, token2);
+                }
             }
         }
 
@@ -802,7 +868,7 @@ namespace Microsoft.Extensions.FileProviders
             {
                 using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
                     {
                         using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
@@ -814,7 +880,7 @@ namespace Microsoft.Extensions.FileProviders
 
                             fileSystemWatcher.CallOnRenamed(new RenamedEventArgs(WatcherChangeTypes.Renamed, root.RootPath, newFileName, oldFileName));
                             await Task.Delay(WaitTimeForTokenToFire);
-                            
+
                             Assert.True(oldToken.HasChanged);
                             Assert.True(newToken.HasChanged);
                         }
@@ -830,7 +896,7 @@ namespace Microsoft.Extensions.FileProviders
             {
                 using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
                     {
                         using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
@@ -891,7 +957,7 @@ namespace Microsoft.Extensions.FileProviders
             {
                 using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
                     {
                         using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
@@ -929,7 +995,7 @@ namespace Microsoft.Extensions.FileProviders
 
                 using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
                     {
                         using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
@@ -956,7 +1022,7 @@ namespace Microsoft.Extensions.FileProviders
             {
                 using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
                 {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher))
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
                     {
                         using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
