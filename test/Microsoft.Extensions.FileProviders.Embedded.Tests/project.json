@@ -7,22 +7,29 @@
   "testRunner": "xunit",
   "resource": "File.txt;sub/**;Resources/**",
   "frameworks": {
-    "netstandardapp1.5": {
+    "netcoreapp1.0": {
       "imports": [
         "dnxcore50",
         "portable-net451+win8"
       ],
       "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        },
         "System.Reflection.Extensions": "4.0.1-*",
-        "NETStandard.Library": "1.5.0-*",
         "System.Diagnostics.Process": "4.1.0-*",
         "dotnet-test-xunit": "1.0.0-dev-*"
       }
     },
     "net451": {
       "frameworkAssemblies": {
-        "System.Runtime": { "type": "build" },
-        "System.Reflection": { "type": "build" }
+        "System.Runtime": {
+          "type": "build"
+        },
+        "System.Reflection": {
+          "type": "build"
+        }
       }
     }
   }
