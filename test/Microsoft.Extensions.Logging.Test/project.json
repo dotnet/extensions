@@ -14,13 +14,16 @@
   },
   "testRunner": "xunit",
   "frameworks": {
-    "netstandardapp1.5": {
+    "netcoreapp1.0": {
       "imports": [
         "dnxcore50",
         "portable-net451+win8"
       ],
       "dependencies": {
-        "NETStandard.Library": "1.5.0-*",
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        },
         "System.Diagnostics.Process": "4.1.0-*",
         "moq.netcore": "4.4.0-beta8",
         "dotnet-test-xunit": "1.0.0-dev-*"
@@ -33,7 +36,9 @@
         "xunit.runner.console": "2.1.0"
       },
       "frameworkAssemblies": {
-        "System.Runtime": { "type": "build" },
+        "System.Runtime": {
+          "type": "build"
+        },
         "System.Threading.Tasks": ""
       }
     }
