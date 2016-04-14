@@ -9,8 +9,7 @@
     "Microsoft.Extensions.Logging": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "Microsoft.Extensions.Logging.Filter": "1.0.0-*",
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
   },
   "content": [
     "logging.json"
@@ -21,9 +20,12 @@
         "Microsoft.Extensions.Logging.EventLog": "1.0.0-*"
       }
     },
-    "netstandardapp1.5": {
+    "netcoreapp1.0": {
       "dependencies": {
-        "NETStandard.Library": "1.5.0-*",
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        },
         "System.Console": "4.0.0-*"
       },
       "imports": [
