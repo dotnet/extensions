@@ -5,6 +5,7 @@
   },
   "compile": "../Microsoft.Extensions.FileSystemGlobbing.Tests/TestUtility/DisposableFileSystem.cs",
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.FileProviders.Physical": "1.0.0-*",
     "xunit": "2.1.0"
