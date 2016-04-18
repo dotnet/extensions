@@ -5,15 +5,26 @@ using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Options
 {
+    /// <summary>
+    /// Implementation of IOptions.
+    /// </summary>
+    /// <typeparam name="TOptions"></typeparam>
     public class OptionsManager<TOptions> : IOptions<TOptions> where TOptions : class, new()
     {
         private OptionsCache<TOptions> _optionsCache;
 
+        /// <summary>
+        /// Initializes a new instance with the specified options configurations.
+        /// </summary>
+        /// <param name="setups">The configuration actions to run.</param>
         public OptionsManager(IEnumerable<IConfigureOptions<TOptions>> setups)
         {
             _optionsCache = new OptionsCache<TOptions>(setups);
         }
 
+        /// <summary>
+        /// The configured options instance.
+        /// </summary>
         public virtual TOptions Value
         {
             get

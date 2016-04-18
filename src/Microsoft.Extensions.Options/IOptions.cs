@@ -3,8 +3,15 @@
 
 namespace Microsoft.Extensions.Options
 {
+    /// <summary>
+    /// Used to retreive configured TOptions instances.
+    /// </summary>
+    /// <typeparam name="TOptions">The type of options being requested.</typeparam>
     public interface IOptions<out TOptions> where TOptions : class, new()
     {
+        /// <summary>
+        /// The configured TOptions instance.
+        /// </summary>
         TOptions Value { get; }
     }
 }

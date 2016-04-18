@@ -6,12 +6,21 @@ using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Options
 {
+    /// <summary>
+    /// Implementation of IOptionsMonitor.
+    /// </summary>
+    /// <typeparam name="TOptions"></typeparam>
     public class OptionsMonitor<TOptions> : IOptionsMonitor<TOptions> where TOptions : class, new()
     {
         private OptionsCache<TOptions> _optionsCache;
         private readonly IEnumerable<IConfigureOptions<TOptions>> _setups;
         private readonly IEnumerable<IOptionsChangeTokenSource<TOptions>> _sources;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="setups">The configuration actions to run on an options instance.</param>
+        /// <param name="sources">The sources used to listen for changes to the options instance.</param>
         public OptionsMonitor(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IOptionsChangeTokenSource<TOptions>> sources)
         {
             _sources = sources;
@@ -19,6 +28,7 @@ namespace Microsoft.Extensions.Options
             _optionsCache = new OptionsCache<TOptions>(setups);
         }
 
+        /// <inheritdoc></inheritdoc>
         public TOptions CurrentValue
         {
             get
@@ -27,6 +37,7 @@ namespace Microsoft.Extensions.Options
             }
         }
 
+        /// <inheritdoc></inheritdoc>
         public IDisposable OnChange(Action<TOptions> listener)
         {
             var disposable = new ChangeTrackerDisposable();

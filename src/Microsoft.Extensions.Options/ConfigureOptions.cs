@@ -5,8 +5,16 @@ using System;
 
 namespace Microsoft.Extensions.Options
 {
+    /// <summary>
+    /// Implementation of IConfigureOptions.
+    /// </summary>
+    /// <typeparam name="TOptions"></typeparam>
     public class ConfigureOptions<TOptions> : IConfigureOptions<TOptions> where TOptions : class
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="action">The action to register.</param>
         public ConfigureOptions(Action<TOptions> action)
         {
             if (action == null)
@@ -17,8 +25,15 @@ namespace Microsoft.Extensions.Options
             Action = action;
         }
 
-        public Action<TOptions> Action { get; private set; }
+        /// <summary>
+        /// The configuration action.
+        /// </summary>
+        public Action<TOptions> Action { get; }
 
+        /// <summary>
+        /// Invokes the registered configure Action.
+        /// </summary>
+        /// <param name="options"></param>
         public virtual void Configure(TOptions options)
         {
             if (options == null)

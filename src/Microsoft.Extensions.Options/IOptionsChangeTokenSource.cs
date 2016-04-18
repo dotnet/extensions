@@ -5,6 +5,10 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.Options
 {
+    /// <summary>
+    /// Used to fetch IChangeTokens.
+    /// </summary>
+    /// <typeparam name="TOptions"></typeparam>
     public interface IOptionsChangeTokenSource<out TOptions>
     {
         /// <summary>
