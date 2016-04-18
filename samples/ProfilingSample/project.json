@@ -3,6 +3,7 @@
     "emitEntryPoint": true
   },
   "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-*"
   },
   "frameworks": {
