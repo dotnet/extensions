@@ -50,7 +50,7 @@
         "System.Diagnostics.Process": "4.1.0-*",
         "System.Diagnostics.TraceSource": "4.0.0-*",
         "moq.netcore": "4.4.0-beta8",
-        "dotnet-test-xunit": "1.0.0-dev-*"
+        "dotnet-test-xunit": "1.0.0-*"
       }
     },
     "net451": {
