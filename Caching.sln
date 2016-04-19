@@ -39,7 +39,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SqlServerCacheConcurrencySa
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Caching.SqlServer.Tests", "test\Microsoft.Extensions.Caching.SqlServer.Tests\Microsoft.Extensions.Caching.SqlServer.Tests.xproj", "{38EFEDCC-1076-4E1F-89C5-443C7FCCEE6A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "dotnet-sql-cache", "src\dotnet-sql-cache\dotnet-sql-cache.xproj", "{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Caching.SqlConfig.Tools", "src\Microsoft.Extensions.Caching.SqlConfig.Tools\Microsoft.Extensions.Caching.SqlConfig.Tools.xproj", "{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Caching.Abstractions.VSRC1", "src\Microsoft.Extensions.Caching.Abstractions.VSRC1\Microsoft.Extensions.Caching.Abstractions.VSRC1.xproj", "{8A74FC61-8FE7-4065-ADE7-4061DB4AF0F7}"
 EndProject
