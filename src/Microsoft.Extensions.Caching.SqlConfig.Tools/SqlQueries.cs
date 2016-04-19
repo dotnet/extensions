@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.Caching.SqlConfig
+namespace Microsoft.Extensions.Caching.SqlConfig.Tools
 {
     internal class SqlQueries
     {
