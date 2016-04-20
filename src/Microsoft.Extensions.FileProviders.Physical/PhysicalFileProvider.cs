@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.FileProviders
     /// </summary>
     public class PhysicalFileProvider : IFileProvider, IDisposable
     {
+        private const string PollingEnvironmentKey = "ASPNETCORE_POLL_FOR_FILE_CHANGES";
         private static readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars()
             .Where(c => c != Path.DirectorySeparatorChar && c != Path.AltDirectorySeparatorChar).ToArray();
         private static readonly char[] _pathSeparators = new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
@@ -25,7 +26,7 @@ namespace Microsoft.Extensions.FileProviders
         /// </summary>
         /// <param name="root">The root directory. This should be an absolute path.</param>
         public PhysicalFileProvider(string root)
-            : this(root, new PhysicalFilesWatcher(EnsureTrailingSlash(Path.GetFullPath(root))))
+            : this(root, CreateFileWatcher(root))
         {
         }
 
@@ -44,6 +45,16 @@ namespace Microsoft.Extensions.FileProviders
             }
 
             _filesWatcher = physicalFilesWatcher;
+        }
+
+        private static PhysicalFilesWatcher CreateFileWatcher(string root)
+        {
+            var environmentValue = Environment.GetEnvironmentVariable(PollingEnvironmentKey);
+            var pollForChanges = string.Equals(environmentValue, "1", StringComparison.Ordinal) ||
+                string.Equals(environmentValue, "true", StringComparison.OrdinalIgnoreCase);
+
+            root = EnsureTrailingSlash(Path.GetFullPath(root));
+            return new PhysicalFilesWatcher(root, new FileSystemWatcher(root), pollForChanges);
         }
 
         public void Dispose()

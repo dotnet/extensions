@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.Extensions.FileProviders.Composite
+namespace Microsoft.Extensions.FileProviders
 {
     /// <summary>
     /// Represents a composition of <see cref="IChangeToken"/>.
     /// </summary>
-    public class CompositeFileChangeToken : IChangeToken
+    internal class CompositeFileChangeToken : IChangeToken
     {
         private readonly IList<IChangeToken> _changeTokens;
 

@@ -22,12 +22,16 @@
       "version": "1.0.0-*",
       "type": "build"
     },
-    "Microsoft.Extensions.FileProviders.Abstractions": "1.0.0-*"
+    "Microsoft.Extensions.FileProviders.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.FileSystemGlobbing": "1.0.0-*"
   },
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
         "System.Runtime": {
+          "type": "build"
+        },
+        "System.Threading.Tasks": {
           "type": "build"
         }
       }
@@ -38,7 +42,6 @@
         "System.IO.FileSystem.Watcher": "4.0.0-*",
         "System.IO.FileSystem": "4.0.1-*",
         "System.Runtime.Extensions": "4.1.0-*",
-        "System.Text.RegularExpressions": "4.0.12-*",
         "System.Threading": "4.0.11-*"
       }
     }
