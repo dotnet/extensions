@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0-*",
+  "shared": "*.cs",
+  "dependencies": {
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-*"
+  },
+  "frameworks": {
+    "net451": { },
+    "netstandard1.5": {
+      "imports": [ "portable-net451+win8+dnxcore50" ]
+    }
+  }
+}

@@ -40,6 +40,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Proces
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Primitives.VSRC1", "src\Microsoft.Extensions.Primitives.VSRC1\Microsoft.Extensions.Primitives.VSRC1.xproj", "{E732FBBC-BFB3-4A3F-B20A-79BE09954F9F}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.DotnetToolDispatcher.Sources", "src\Microsoft.Extensions.DotnetToolDispatcher.Sources\Microsoft.Extensions.DotnetToolDispatcher.Sources.xproj", "{D9A0A539-4A22-4151-90B2-1D6AA4CD493D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -114,6 +116,10 @@ Global
 		{E732FBBC-BFB3-4A3F-B20A-79BE09954F9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E732FBBC-BFB3-4A3F-B20A-79BE09954F9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E732FBBC-BFB3-4A3F-B20A-79BE09954F9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9A0A539-4A22-4151-90B2-1D6AA4CD493D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9A0A539-4A22-4151-90B2-1D6AA4CD493D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9A0A539-4A22-4151-90B2-1D6AA4CD493D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9A0A539-4A22-4151-90B2-1D6AA4CD493D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -136,5 +142,6 @@ Global
 		{C46A8C00-CD50-4478-8639-6A6CF8CDD05B} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 		{6DDC4681-0D48-41F6-91EB-C47381F92FF1} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 		{E732FBBC-BFB3-4A3F-B20A-79BE09954F9F} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
+		{D9A0A539-4A22-4151-90B2-1D6AA4CD493D} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 	EndGlobalSection
 EndGlobal
