@@ -7,7 +7,7 @@ using System.Data.SqlClient;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Caching.SqlConfig
+namespace Microsoft.Extensions.Caching.SqlConfig.Tools
 {
     public class Program
     {

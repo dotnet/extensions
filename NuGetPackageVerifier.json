@@ -4,7 +4,7 @@
             "AdxVerificationCompositeRule"
         ],
         "packages": {
-            "dotnet-sql-cache": { },
+            "Microsoft.Extensions.Caching.SqlConfig.Tools": { },
             "Microsoft.Extensions.Caching.Abstractions": { },
             "Microsoft.Extensions.Caching.Abstractions.VSRC1": {
                 "DOC_MISSING": {
