@@ -251,21 +251,11 @@ CommonKey3:CommonKey4=IniValue6";
             File.WriteAllText(Path.Combine(_basePath, "reload.ini"), @"IniKey1 = IniValue1");
             File.WriteAllText(Path.Combine(_basePath, "reload.xml"), @"<settings XmlKey1=""XmlValue1""/>");
 
-            var config = new ConfigurationBuilder().AddIniFile(source =>
-            {
-                source.Path = "reload.ini";
-                source.ReloadOnChange = true;
-            })
-            .AddJsonFile(source =>
-            {
-                source.Path = "reload.json";
-                source.ReloadOnChange = true;
-            })
-            .AddXmlFile(source =>
-            {
-                source.Path = "reload.xml";
-                source.ReloadOnChange = true;
-            }).Build();
+            var config = new ConfigurationBuilder()
+                .AddIniFile("reload.ini", optional: false, reloadOnChange: true)
+                .AddJsonFile("reload.json", optional: false, reloadOnChange: true)
+                .AddXmlFile("reload.xml", optional: false, reloadOnChange: true)
+                .Build();
 
             Assert.Equal("JsonValue1", config["JsonKey1"]);
             Assert.Equal("IniValue1", config["IniKey1"]);

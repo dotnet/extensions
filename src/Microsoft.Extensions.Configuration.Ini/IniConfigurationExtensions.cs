@@ -58,6 +58,35 @@ namespace Microsoft.Extensions.Configuration
         }
 
         /// <summary>
+        /// Adds the INI configuration provider at <paramref name="path"/> to <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="path">Path relative to the base path stored in 
+        /// <see cref="IConfigurationBuilder.Properties"/> of <paramref name="builder"/>.</param>
+        /// <param name="optional">Whether the file is optional.</param>
+        /// <param name="reloadOnChange">Whether the configuration should be reloaded if the file changes.</param>
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        public static IConfigurationBuilder AddIniFile(this IConfigurationBuilder builder, string path, bool optional, bool reloadOnChange)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentException(Resources.Error_InvalidFilePath, nameof(path));
+            }
+
+            return AddIniFile(builder, source =>
+            {
+                source.Path = path;
+                source.Optional = optional;
+                source.ReloadOnChange = reloadOnChange;
+            });
+        }
+
+        /// <summary>
         /// Adds a INI configuration source to <paramref name="builder"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IConfigurationBuilder"/> to add to.</param>
