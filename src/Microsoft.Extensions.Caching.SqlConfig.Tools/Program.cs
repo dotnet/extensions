@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
             loggerFactory.AddConsole();
             _logger = loggerFactory.CreateLogger<Program>();
         }
-        
+
         public static int Main(string[] args)
         {
             return new Program().Run(args);
@@ -67,9 +67,7 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
                         _schemaName = schemaNameArg.Value;
                         _tableName = tableNameArg.Value;
 
-                        CreateTableAndIndexes();
-
-                        return 0;
+                        return CreateTableAndIndexes();
                     });
                 });
 
@@ -84,29 +82,32 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
             }
             catch (Exception exception)
             {
-                _logger.LogCritical("An error occurred. {Message}", exception.Message);
+                _logger.LogCritical("An error occurred. {ErrorMessage}", exception.Message);
                 return 1;
             }
         }
 
-        private void CreateTableAndIndexes()
+        private int CreateTableAndIndexes()
         {
+            ValidateConnectionString();
+
             using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
 
                 var sqlQueries = new SqlQueries(_schemaName, _tableName);
                 var command = new SqlCommand(sqlQueries.TableInfo, connection);
-                var reader = command.ExecuteReader(CommandBehavior.SingleRow);
-                if (reader.Read())
-                {
-                    _logger.LogWarning(
-                        $"Table with schema '{_schemaName}' and name '{_tableName}' already exists. " +
-                        "Provide a different table name and try again.");
-                    return;
-                }
 
-                reader.Dispose();
+                using (var reader = command.ExecuteReader(CommandBehavior.SingleRow))
+                {
+                    if (reader.Read())
+                    {
+                        _logger.LogWarning(
+                            $"Table with schema '{_schemaName}' and name '{_tableName}' already exists. " +
+                            "Provide a different table name and try again.");
+                        return 1;
+                    }
+                }
 
                 using (var transaction = connection.BeginTransaction())
                 {
@@ -127,10 +128,29 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("An error occurred while trying to create the table and index.", ex);
+                        _logger.LogError(
+                            "An error occurred while trying to create the table and index. {ErrorMessage}",
+                            ex.Message);
                         transaction.Rollback();
+
+                        return 1;
                     }
                 }
+            }
+
+            return 0;
+        }
+
+        private void ValidateConnectionString()
+        {
+            try
+            {
+                new SqlConnectionStringBuilder(_connectionString);
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(
+                    $"Invalid Sql server connection string '{_connectionString}'. {ex.Message}", ex);
             }
         }
     }
