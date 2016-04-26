@@ -346,6 +346,43 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         }
 
         [Fact]
+        public void ScopedServices_FromCachedScopeFactory_CanBeResolvedAndDisposed()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            collection.AddScoped<IFakeScopedService, FakeService>();
+            var provider = CreateServiceProvider(collection);
+            var cachedScopeFactory = provider.GetService<IServiceScopeFactory>();
+
+            // Act
+            for (var i = 0; i < 3; i++)
+            {
+                FakeService outerScopedService;
+                using (var outerScope = cachedScopeFactory.CreateScope())
+                {
+                    var innerScopeFactory = outerScope.ServiceProvider.GetService<IServiceScopeFactory>();
+
+                    FakeService innerScopedService;
+                    using (var innerScope = innerScopeFactory.CreateScope())
+                    {
+                        outerScopedService = outerScope.ServiceProvider.GetService<IFakeScopedService>() as FakeService;
+                        innerScopedService = innerScope.ServiceProvider.GetService<IFakeScopedService>() as FakeService;
+
+                        // Assert
+                        Assert.NotNull(outerScopedService);
+                        Assert.NotNull(innerScopedService);
+                        Assert.NotSame(outerScopedService, innerScopedService);
+                    }
+
+                    Assert.False(outerScopedService.Disposed);
+                    Assert.True(innerScopedService.Disposed);
+                }
+
+                Assert.True(outerScopedService.Disposed);
+            }
+        }
+
+        [Fact]
         public void DisposingScopeDisposesService()
         {
             // Arrange
