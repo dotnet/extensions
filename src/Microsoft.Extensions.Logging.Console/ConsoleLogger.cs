@@ -131,8 +131,8 @@ namespace Microsoft.Extensions.Logging.Console
                 // category and event id
                 // use default colors
                 WriteWithColor(
-                    logLevelColors.Foreground,
-                    logLevelColors.Background,
+                    DefaultConsoleColor,
+                    DefaultConsoleColor,
                     _loglevelPadding + logName + $"[{eventId}]",
                     newLine: true);
 
