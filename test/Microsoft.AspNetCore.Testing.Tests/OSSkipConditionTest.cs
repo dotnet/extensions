@@ -8,20 +8,12 @@ namespace Microsoft.AspNetCore.Testing.xunit
 {
     public class OSSkipConditionTest
     {
-        private IRuntimeEnvironment RuntimeEnvironment
-        {
-            get
-            {
-                return PlatformServices.Default.Runtime;
-            }
-        }
-
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         public void TestSkipLinux()
         {
             Assert.False(
-                RuntimeEnvironment.OperatingSystemPlatform == Platform.Linux,
+                PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Linux,
                 "Test should not be running on Linux");
         }
 
@@ -30,7 +22,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         public void TestSkipMacOSX()
         {
             Assert.False(
-                RuntimeEnvironment.OperatingSystemPlatform == Platform.Darwin,
+                PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Darwin,
                 "Test should not be running on MacOSX.");
         }
 
@@ -39,8 +31,8 @@ namespace Microsoft.AspNetCore.Testing.xunit
         public void RunTest_DoesNotRunOnWin7OrWin2008R2()
         {
             Assert.False(
-                RuntimeEnvironment.OperatingSystemPlatform == Platform.Windows &&
-                RuntimeEnvironment.OperatingSystemVersion == "6.1",
+                PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Windows &&
+                PlatformServices.Default.Runtime.OperatingSystemVersion == "6.1",
                 "Test should not be running on Win7 or Win2008R2.");
         }
 
@@ -49,7 +41,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         public void TestSkipWindows()
         {
             Assert.False(
-                RuntimeEnvironment.OperatingSystemPlatform == Platform.Windows,
+                PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Windows,
                 "Test should not be running on Windows.");
         }
     }

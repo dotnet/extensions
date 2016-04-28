@@ -12,12 +12,11 @@ namespace Microsoft.AspNetCore.Testing.xunit
         [Fact]
         public void Throws_OnUnrecognizedOperatingSystem()
         {
-            // Arrange
-            var osName = "Blah";
-            var env = new MockRuntimeEnvironment(osName, "2.5", Platform.Unknown);
-
             // Act
-            var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Windows, env);
+            var osSkipAttribute = new OSSkipConditionAttribute(
+                OperatingSystems.Windows,
+                Platform.Unknown,
+                "2.5");
 
             // Assert
             var exception = Assert.Throws<InvalidOperationException>(() => osSkipAttribute.IsMet);
@@ -27,11 +26,11 @@ namespace Microsoft.AspNetCore.Testing.xunit
         [Fact]
         public void Skips_WhenOnlyOperatingSystemIsSupplied()
         {
-            // Arrange
-            var env = new MockRuntimeEnvironment("Windows", "2.5", Platform.Windows);
-
             // Act
-            var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Windows, env);
+            var osSkipAttribute = new OSSkipConditionAttribute(
+                OperatingSystems.Windows,
+                Platform.Windows,
+                "2.5");
 
             // Assert
             Assert.False(osSkipAttribute.IsMet);
@@ -40,11 +39,11 @@ namespace Microsoft.AspNetCore.Testing.xunit
         [Fact]
         public void DoesNotSkip_WhenOperatingSystemDoesNotMatch()
         {
-            // Arrange
-            var env = new MockRuntimeEnvironment("Windows", "2.5", Platform.Windows);
-
             // Act
-            var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Linux, env);
+            var osSkipAttribute = new OSSkipConditionAttribute(
+                OperatingSystems.Linux,
+                Platform.Windows,
+                "2.5");
 
             // Assert
             Assert.True(osSkipAttribute.IsMet);
@@ -53,11 +52,12 @@ namespace Microsoft.AspNetCore.Testing.xunit
         [Fact]
         public void DoesNotSkip_WhenVersionsDoNotMatch()
         {
-            // Arrange
-            var env = new MockRuntimeEnvironment("Windows", "2.5", Platform.Windows);
-
             // Act
-            var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Windows, env, "10.0");
+            var osSkipAttribute = new OSSkipConditionAttribute(
+                OperatingSystems.Windows,
+                Platform.Windows,
+                "2.5",
+                "10.0");
 
             // Assert
             Assert.True(osSkipAttribute.IsMet);
@@ -66,11 +66,12 @@ namespace Microsoft.AspNetCore.Testing.xunit
         [Fact]
         public void DoesNotSkip_WhenOnlyVersionsMatch()
         {
-            // Arrange
-            var env = new MockRuntimeEnvironment("Windows", "2.5", Platform.Windows);
-
             // Act
-            var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Linux, env, "2.5");
+            var osSkipAttribute = new OSSkipConditionAttribute(
+                OperatingSystems.Linux,
+                Platform.Windows,
+                "2.5",
+                "2.5");
 
             // Assert
             Assert.True(osSkipAttribute.IsMet);
@@ -81,11 +82,12 @@ namespace Microsoft.AspNetCore.Testing.xunit
         [InlineData("blue", "Blue")]
         public void Skips_WhenVersionsMatches(string currentOSVersion, string skipVersion)
         {
-            // Arrange
-            var env = new MockRuntimeEnvironment("Windows", currentOSVersion, Platform.Windows);
-
             // Act
-            var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Windows, env, skipVersion);
+            var osSkipAttribute = new OSSkipConditionAttribute(
+                OperatingSystems.Windows,
+                Platform.Windows,
+                currentOSVersion,
+                skipVersion);
 
             // Assert
             Assert.False(osSkipAttribute.IsMet);
@@ -94,62 +96,15 @@ namespace Microsoft.AspNetCore.Testing.xunit
         [Fact]
         public void Skips_WhenVersionsMatchesOutOfMultiple()
         {
-            // Arrange
-            var env = new MockRuntimeEnvironment("Windows", "2.5", Platform.Windows);
-
             // Act
-            var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Windows, env, "10.0", "3.4", "2.5");
+            var osSkipAttribute = new OSSkipConditionAttribute(
+                OperatingSystems.Windows,
+                Platform.Windows,
+                "2.5",
+                "10.0", "3.4", "2.5");
 
             // Assert
             Assert.False(osSkipAttribute.IsMet);
-        }
-
-        private class MockRuntimeEnvironment : IRuntimeEnvironment
-        {
-            public MockRuntimeEnvironment(string operatingSystem, string version, Platform platform)
-            {
-                OperatingSystem = operatingSystem;
-                OperatingSystemVersion = version;
-                OperatingSystemPlatform = platform;
-            }
-
-            public string OperatingSystem { get; }
-
-            public string OperatingSystemVersion { get; }
-
-            public Platform OperatingSystemPlatform { get; }
-
-            public string RuntimeArchitecture
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public string RuntimePath
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public string RuntimeType
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public string RuntimeVersion
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
         }
     }
 }

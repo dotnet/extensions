@@ -13,20 +13,26 @@ namespace Microsoft.AspNetCore.Testing.xunit
     {
         private readonly OperatingSystems _excludedOperatingSystem;
         private readonly IEnumerable<string> _excludedVersions;
-        private readonly IRuntimeEnvironment _runtimeEnvironment;
+        private readonly Platform _osPlatform;
+        private readonly string _osVersion;
 
         public OSSkipConditionAttribute(OperatingSystems operatingSystem, params string[] versions) :
-            this(operatingSystem, TestPlatformHelper.RuntimeEnvironment, versions)
+            this(
+                operatingSystem,
+                PlatformServices.Default.Runtime.OperatingSystemPlatform,
+                PlatformServices.Default.Runtime.OperatingSystemVersion,
+                versions)
         {
         }
 
         // to enable unit testing
         internal OSSkipConditionAttribute(
-            OperatingSystems operatingSystem, IRuntimeEnvironment runtimeEnvironment, params string[] versions)
+            OperatingSystems operatingSystem, Platform osPlatform, string osVersion, params string[] versions)
         {
             _excludedOperatingSystem = operatingSystem;
             _excludedVersions = versions ?? Enumerable.Empty<string>();
-            _runtimeEnvironment = runtimeEnvironment;
+            _osPlatform = osPlatform;
+            _osVersion = osVersion;
         }
 
         public bool IsMet
@@ -51,10 +57,8 @@ namespace Microsoft.AspNetCore.Testing.xunit
 
         private OSInfo GetCurrentOSInfo()
         {
-            var currentOSVersion = _runtimeEnvironment.OperatingSystemVersion;
-
             OperatingSystems os;
-            switch (_runtimeEnvironment.OperatingSystemPlatform)
+            switch (_osPlatform)
             {
                 case Platform.Windows:
                     os = OperatingSystems.Windows;
@@ -66,13 +70,13 @@ namespace Microsoft.AspNetCore.Testing.xunit
                     os = OperatingSystems.MacOSX;
                     break;
                 default:
-                    throw new InvalidOperationException($"Unrecognized operating system '{_runtimeEnvironment.OperatingSystemPlatform}'.");
+                    throw new InvalidOperationException($"Unrecognized operating system '{_osPlatform}'.");
             }
 
             return new OSInfo()
             {
                 OperatingSystem = os,
-                Version = currentOSVersion
+                Version = _osVersion,
             };
         }
 

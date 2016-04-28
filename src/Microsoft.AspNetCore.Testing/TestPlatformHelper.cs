@@ -8,25 +8,16 @@ namespace Microsoft.AspNetCore.Testing
 {
     public static class TestPlatformHelper
     {
-        private static Lazy<IRuntimeEnvironment> _runtimeEnv = new Lazy<IRuntimeEnvironment>(
-            () => PlatformServices.Default.Runtime);
+        public static bool IsMono =>
+            PlatformServices.Default.Runtime.RuntimeType.Equals("Mono", StringComparison.OrdinalIgnoreCase);
 
-        private static Lazy<bool> _isMono = new Lazy<bool>(
-            () => RuntimeEnvironment.RuntimeType.Equals("Mono", StringComparison.OrdinalIgnoreCase));
+        public static bool IsWindows =>
+            PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Windows;
 
-        private static Lazy<bool> _isWindows = new Lazy<bool>(
-            () => RuntimeEnvironment.OperatingSystemPlatform == Platform.Windows);
-        private static Lazy<bool> _isLinux = new Lazy<bool>(
-            () => RuntimeEnvironment.OperatingSystemPlatform == Platform.Linux);
-        private static Lazy<bool> _isMac = new Lazy<bool>(
-            () => RuntimeEnvironment.OperatingSystemPlatform == Platform.Darwin);
+        public static bool IsLinux =>
+            PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Linux;
 
-        public static bool IsMono { get { return _isMono.Value; } }
-
-        public static bool IsWindows { get { return _isWindows.Value; } }
-        public static bool IsLinux { get { return _isLinux.Value; } }
-        public static bool IsMac { get { return _isMac.Value; } }
-
-        internal static IRuntimeEnvironment RuntimeEnvironment { get { return _runtimeEnv.Value; } }
+        public static bool IsMac =>
+            PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Darwin;
     }
 }
