@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 primitives.",
+  "description": "ASP.NET Core primitives.",
   "repository": {
     "type": "git",
     "url": "https://github.com/aspnet/common"
