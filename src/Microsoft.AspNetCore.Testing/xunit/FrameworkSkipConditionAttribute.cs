@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Testing.xunit
 {
@@ -39,13 +40,13 @@ namespace Microsoft.AspNetCore.Testing.xunit
             }
 
             if (excludedFrameworks.HasFlag(RuntimeFrameworks.CLR) &&
-                TestPlatformHelper.RuntimeEnvironment.RuntimeType.Equals("CLR", StringComparison.OrdinalIgnoreCase))
+                PlatformServices.Default.Runtime.RuntimeType.Equals("CLR", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
             if (excludedFrameworks.HasFlag(RuntimeFrameworks.CoreCLR) &&
-                TestPlatformHelper.RuntimeEnvironment.RuntimeType.Equals("CoreCLR", StringComparison.OrdinalIgnoreCase))
+                PlatformServices.Default.Runtime.RuntimeType.Equals("CoreCLR", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
