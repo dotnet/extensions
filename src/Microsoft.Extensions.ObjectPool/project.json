@@ -1,11 +1,13 @@
 {
   "version": "1.0.0-*",
   "description": "A simple object pool implementation.",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aspnet/common"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/aspnet/common"
+    }
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
