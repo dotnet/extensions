@@ -6,11 +6,6 @@
     "System.Data.SqlClient": "4.1.0-*"
   },
   "description": "Command line tool to create tables and indexes in a Microsoft SQL Server database for distributed caching.",
-  "tags": [
-    "cache",
-    "distributedcache",
-    "sqlserver"
-  ],
   "frameworks": {
     "netcoreapp1.0": {
       "imports": [
@@ -25,7 +20,7 @@
       }
     }
   },
-  "compilationOptions": {
+  "buildOptions": {
     "outputName": "dotnet-sql-cache",
     "emitEntryPoint": true,
     "warningsAsErrors": true,
@@ -36,8 +31,15 @@
     "xmlDoc": true
   },
   "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aspnet/caching"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/aspnet/caching"
+    },
+    "tags": [
+      "cache",
+      "distributedcache",
+      "sqlserver"
+    ]
   }
 }

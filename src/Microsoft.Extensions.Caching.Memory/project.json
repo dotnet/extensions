@@ -1,15 +1,17 @@
 {
   "version": "1.0.0-*",
   "description": "In-memory cache implementation of Microsoft.Extensions.Caching.Memory.IMemoryCache.",
-  "tags": [
-    "cache",
-    "memorycache"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aspnet/caching"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/aspnet/caching"
+    },
+    "tags": [
+      "cache",
+      "memorycache"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
