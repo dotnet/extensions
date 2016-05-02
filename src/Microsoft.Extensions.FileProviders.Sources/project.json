@@ -1,13 +1,15 @@
 {
   "version": "1.0.0-*",
   "description": "File provider shared source code for Microsoft.Extensions.FileProviders.",
-  "tags": [
-    "files",
-    "filesystem"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/filesystem"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/filesystem"
+    },
+    "tags": [
+      "files",
+      "filesystem"
+    ]
   },
   "shared": "**/*.cs",
   "frameworks": {

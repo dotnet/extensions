@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -9,13 +9,15 @@
     "xmlDoc": true
   },
   "description": "Abstractions of files and directories.\r\nCommonly used types:\r\nMicrosoft.Extensions.FileProviders.IDirectoryContents\r\nMicrosoft.Extensions.FileProviders.IFileInfo\r\nMicrosoft.Extensions.FileProviders.IFileProvider",
-  "tags": [
-    "files",
-    "filesystem"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/filesystem"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/filesystem"
+    },
+    "tags": [
+      "files",
+      "filesystem"
+    ]
   },
   "dependencies": {
     "Microsoft.Extensions.FileProviders.Sources": {
