@@ -1,12 +1,17 @@
 {
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*",
     "xunit": "2.1.0"
   },
   "testRunner": "xunit",
-  "resource": "File.txt;sub/**;Resources/**",
+  "buildOptions": {
+    "embed": {
+      "include": "File.txt;sub/**;Resources/**"
+    }
+  },
   "frameworks": {
     "netcoreapp1.0": {
       "imports": [
@@ -19,8 +24,7 @@
           "type": "platform"
         },
         "System.Reflection.Extensions": "4.0.1-*",
-        "System.Diagnostics.Process": "4.1.0-*",
-        "dotnet-test-xunit": "1.0.0-*"
+        "System.Diagnostics.Process": "4.1.0-*"
       }
     },
     "net451": {

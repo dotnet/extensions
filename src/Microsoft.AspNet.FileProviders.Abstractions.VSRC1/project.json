@@ -1,13 +1,15 @@
 {
   "version": "1.0.0-rc1-final",
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   },
   "description": "ASP.NET 5 file provider interfaces.",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/filesystem"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/filesystem"
+    }
   },
   "dependencies": {
     "Microsoft.Extensions.Primitives.VSRC1": "1.0.0-rc1-final"
