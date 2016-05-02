@@ -1,5 +1,5 @@
 {
-  "compilationOptions": {
+  "buildOptions": {
     "emitEntryPoint": true
   },
   "dependencies": {
@@ -12,9 +12,11 @@
     "Microsoft.Extensions.Logging.Filter": "1.0.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
   },
-  "content": [
-    "logging.json"
-  ],
+  "publishOptions": {
+    "include": [
+      "logging.json"
+    ]
+  },
   "frameworks": {
     "net451": {
       "dependencies": {

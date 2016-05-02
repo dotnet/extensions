@@ -1,18 +1,20 @@
 {
   "version": "1.0.0-*",
   "description": "Logging infrastructure default implementation for Microsoft.Extensions.Logging.",
-  "tags": [
-    "logging"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/logging"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/logging"
+    },
+    "tags": [
+      "logging"
+    ]
   },
   "dependencies": {
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*"
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "define": [
       "TRACE"

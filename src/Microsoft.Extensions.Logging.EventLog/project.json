@@ -1,19 +1,23 @@
 {
   "version": "1.0.0-*",
   "description": "Windows Event Log logger provider implementation for Microsoft.Extensions.Logging.",
-  "tags": [
-    "eventlog",
-    "logging",
-    "windowseventlog"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/logging"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/logging"
+    },
+    "tags": [
+      "eventlog",
+      "logging",
+      "windowseventlog"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [ "CS1591" ],
+    "nowarn": [
+      "CS1591"
+    ],
     "xmlDoc": true
   },
   "dependencies": {
@@ -22,7 +26,9 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.Runtime": { "type": "build" }
+        "System.Runtime": {
+          "type": "build"
+        }
       }
     }
   }
