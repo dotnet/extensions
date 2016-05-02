@@ -5,7 +5,7 @@
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
     "System.Diagnostics.DiagnosticSource": "4.0.0-*"
   },
-  "compilationOptions": {
+  "buildOptions": {
     "define": [
       "TRACE"
     ],
