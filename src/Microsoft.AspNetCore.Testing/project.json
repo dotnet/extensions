@@ -1,7 +1,7 @@
 {
   "description": "Various helpers for writing tests that use DNX or ASP.NET.",
   "version": "1.0.0-*",
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -9,9 +9,11 @@
     ],
     "xmlDoc": true
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/testing"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/testing"
+    }
   },
   "dependencies": {
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
