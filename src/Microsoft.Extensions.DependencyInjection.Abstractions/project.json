@@ -1,15 +1,17 @@
 {
   "version": "1.0.0-*",
   "description": "Abstractions for dependency injection.\r\nCommonly used types:\r\nMicrosoft.Extensions.DependencyInjection.IServiceCollection\r\nMicrosoft.Extensions.DependencyInjection.ServiceCollectionExtensions",
-  "tags": [
-    "dependencyinjection",
-    "di"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/dependencyinjection"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/dependencyinjection"
+    },
+    "tags": [
+      "dependencyinjection",
+      "di"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [

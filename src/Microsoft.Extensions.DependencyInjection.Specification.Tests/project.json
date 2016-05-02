@@ -1,16 +1,18 @@
 {
   "version": "1.0.0-*",
   "description": "Suite of xUnit.net tests to check for container compatibility with Microsoft.Extensions.DependencyInjection.",
-  "tags": [
-    "dependencyinjection",
-    "di"
-  ],
+  "packOptions": {
+    "tags": [
+      "dependencyinjection",
+      "di"
+    ]
+  },
   "dependencies": {
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
     "xunit.assert": "2.1.0",
     "xunit.extensibility.core": "2.1.0"
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
