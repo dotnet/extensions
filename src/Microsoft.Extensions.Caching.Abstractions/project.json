@@ -1,5 +1,5 @@
 {
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -8,11 +8,6 @@
     "xmlDoc": true
   },
   "description": "Caching abstractions for in-memory cache and distributed cache.\r\nCommonly used types:\r\nMicrosoft.Extensions.Caching.Distributed.IDistributedCache\r\nMicrosoft.Extensions.Caching.Memory.IMemoryCache",
-  "tags": [
-    "cache",
-    "memorycache",
-    "distributedcache"
-  ],
   "dependencies": {
     "Microsoft.Extensions.Primitives": "1.0.0-*"
   },
@@ -41,8 +36,15 @@
     }
   },
   "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aspnet/caching"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/aspnet/caching"
+    },
+    "tags": [
+      "cache",
+      "memorycache",
+      "distributedcache"
+    ]
   }
 }

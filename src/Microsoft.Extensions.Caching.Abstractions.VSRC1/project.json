@@ -1,5 +1,5 @@
 {
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   },
@@ -11,8 +11,10 @@
     "net451": {}
   },
   "version": "1.0.0-rc1-final",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aspnet/caching"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/aspnet/caching"
+    }
   }
 }

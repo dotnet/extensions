@@ -4,12 +4,7 @@
     "Microsoft.Extensions.Options": "1.0.0-*"
   },
   "description": "Distributed cache implementation of Microsoft.Extensions.Caching.Distributed.IDistributedCache using Microsoft SQL Server.",
-  "tags": [
-    "cache",
-    "distributedcache",
-    "sqlserver"
-  ],
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -25,8 +20,15 @@
     }
   },
   "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aspnet/caching"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/aspnet/caching"
+    },
+    "tags": [
+      "cache",
+      "distributedcache",
+      "sqlserver"
+    ]
   }
 }
