@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-rc1-final",
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   },
@@ -10,9 +10,11 @@
     "Microsoft.Extensions.Configuration.Binder": "1.0.0-rc1-final",
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-rc1-final"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aspnet/options"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/aspnet/options"
+    }
   },
   "frameworks": {
     "net451": {}

@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -13,9 +13,11 @@
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Primitives": "1.0.0-*"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aspnet/options"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/aspnet/options"
+    }
   },
   "frameworks": {
     "netstandard1.0": {
