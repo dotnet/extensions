@@ -1,15 +1,17 @@
 {
   "version": "1.0.0-*",
   "description": "Default implementation of dependency injection for Microsoft.Extensions.DependencyInjection.",
-  "tags": [
-    "dependencyinjection",
-    "di"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/dependencyinjection"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/dependencyinjection"
+    },
+    "tags": [
+      "dependencyinjection",
+      "di"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
