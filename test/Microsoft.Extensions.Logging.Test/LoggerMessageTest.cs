@@ -192,6 +192,121 @@ namespace Microsoft.Extensions.Logging
             Assert.Equal(expectedToString, actualLogValues.ToString());
         }
 
+        [Fact]
+        public void DefineMessage_WithNoParameters_ThrowsException_WhenFormatString_HasNamedParameters()
+        {
+            // Arrange
+            var formatString = "Action with name {ActionName} not found.";
+            var expectedMessage = $"The format string '{formatString}' does not have the expected number " +
+                    $"of named parameters. Expected 0 parameter(s) but found 1 parameter(s).";
+
+            // Act
+            var exception = Assert.Throws<ArgumentException>(() => LoggerMessage.Define(LogLevel.Error, 0, formatString));
+
+            // Assert
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        [InlineData(5)]
+        [InlineData(6)]
+        public void DefineMessage_ThrowsException_WhenExpectedFormatStringParameterCount_NotFound(
+            int expectedNamedParameterCount)
+        {
+            // Arrange
+            var formatString = "Action with name ActionName not found.";
+            var expectedMessage = $"The format string '{formatString}' does not have the expected number " +
+                    $"of named parameters. Expected {expectedNamedParameterCount} parameter(s) but found 0 parameter(s).";
+
+            // Act
+            Exception exception = null;
+            switch (expectedNamedParameterCount)
+            {
+                case 1:
+                    exception = Assert.Throws<ArgumentException>(
+                        () => LoggerMessage.Define<string>(LogLevel.Error, 0, formatString));
+                    break;
+                case 2:
+                    exception = Assert.Throws<ArgumentException>(
+                        () => LoggerMessage.Define<string, string>(LogLevel.Error, 0, formatString));
+                    break;
+                case 3:
+                    exception = Assert.Throws<ArgumentException>(
+                        () => LoggerMessage.Define<string, string, string>(LogLevel.Error, 0, formatString));
+                    break;
+                case 4:
+                    exception = Assert.Throws<ArgumentException>(
+                        () => LoggerMessage.Define<string, string, string, string>(LogLevel.Error, 0, formatString));
+                    break;
+                case 5:
+                    exception = Assert.Throws<ArgumentException>(
+                        () => LoggerMessage.Define<string, string, string, string, string>(LogLevel.Error, 0, formatString));
+                    break;
+                case 6:
+                    exception = Assert.Throws<ArgumentException>(
+                        () => LoggerMessage.Define<string, string, string, string, string, string>(LogLevel.Error, 0, formatString));
+                    break;
+                default:
+                    throw new ArgumentException($"Invalid value for '{nameof(expectedNamedParameterCount)}'");
+            }
+
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        [Fact]
+        public void DefineScope_WithNoParameters_ThrowsException_WhenFormatString_HasNamedParameters()
+        {
+            // Arrange
+            var formatString = "Starting request scope for request id {RequestId}";
+            var expectedMessage = $"The format string '{formatString}' does not have the expected number " +
+                    $"of named parameters. Expected 0 parameter(s) but found 1 parameter(s).";
+
+            // Act
+            var exception = Assert.Throws<ArgumentException>(() => LoggerMessage.DefineScope(formatString));
+
+            // Assert
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        public void DefineScope_ThrowsException_WhenExpectedFormatStringParameterCount_NotFound(
+            int expectedNamedParameterCount)
+        {
+            // Arrange
+            var formatString = "Starting request scope for request id RequestId";
+            var expectedMessage = $"The format string '{formatString}' does not have the expected number " +
+                    $"of named parameters. Expected {expectedNamedParameterCount} parameter(s) but found 0 parameter(s).";
+
+            // Act
+            Exception exception = null;
+            switch (expectedNamedParameterCount)
+            {
+                case 1:
+                    exception = Assert.Throws<ArgumentException>(
+                        () => LoggerMessage.DefineScope<string>(formatString));
+                    break;
+                case 2:
+                    exception = Assert.Throws<ArgumentException>(
+                        () => LoggerMessage.DefineScope<string, string>(formatString));
+                    break;
+                case 3:
+                    exception = Assert.Throws<ArgumentException>(
+                        () => LoggerMessage.DefineScope<string, string, string>(formatString));
+                    break;
+                default:
+                    throw new ArgumentException($"Invalid value for '{nameof(expectedNamedParameterCount)}'");
+            }
+
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
         public static IEnumerable<object[]> LogMessagesData => new[]
         {
             new object[] { LoggerMessage.Define(LogLevel.Error, 0, "Log "), 0 },
