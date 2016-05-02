@@ -1,11 +1,16 @@
 {
   "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/logging"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/logging"
+    },
+    "tags": [
+      "logging"
+    ]
   },
   "description": "Provides a common way to filter log messages across all registered logger providers.",
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "xmlDoc": true,
@@ -13,9 +18,6 @@
       "CS1591"
     ]
   },
-  "tags": [
-    "logging"
-  ],
   "dependencies": {
     "Microsoft.Extensions.Configuration.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*"

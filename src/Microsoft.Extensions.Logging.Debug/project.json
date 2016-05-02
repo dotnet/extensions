@@ -1,14 +1,16 @@
 {
   "version": "1.0.0-*",
   "description": "Debug output logger provider implementation for Microsoft.Extensions.Logging. This logger logs messages to a debugger monitor by writing messages with System.Diagnostics.Debug.WriteLine().",
-  "tags": [
-    "logging"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/logging"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/logging"
+    },
+    "tags": [
+      "logging"
+    ]
   },
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [

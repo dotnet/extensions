@@ -1,14 +1,16 @@
 {
   "version": "1.0.0-*",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet/logging"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet/logging"
+    },
+    "tags": [
+      "logging"
+    ]
   },
   "description": "Console logger provider implementation for Microsoft.Extensions.Logging.",
-  "tags": [
-    "logging"
-  ],
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
