@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -9,13 +9,15 @@
     "xmlDoc": true
   },
   "description": "JSON configuration provider implementation for Microsoft.Extensions.Configuration.",
-  "tags": [
-    "configuration",
-    "json"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aspnet/configuration"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/aspnet/configuration"
+    },
+    "tags": [
+      "configuration",
+      "json"
+    ]
   },
   "dependencies": {
     "Microsoft.Extensions.Configuration": "1.0.0-*",

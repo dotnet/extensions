@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
     "nowarn": [
@@ -9,12 +9,14 @@
     "xmlDoc": true
   },
   "description": "Abstractions of key-value pair based configuration.\r\nCommonly used types:\r\nMicrosoft.Extensions.Configuration.IConfiguration\r\nMicrosoft.Extensions.Configuration.IConfigurationBuilder\r\nMicrosoft.Extensions.Configuration.IConfigurationProvider\r\nMicrosoft.Extensions.Configuration.IConfigurationRoot\r\nMicrosoft.Extensions.Configuration.IConfigurationSection",
-  "tags": [
-    "configuration"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aspnet/configuration"
+  "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/aspnet/configuration"
+    },
+    "tags": [
+      "configuration"
+    ]
   },
   "dependencies": {
     "Microsoft.Extensions.Primitives": "1.0.0-*"
