@@ -1,9 +1,11 @@
 {
   "buildOptions": {
     "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "keyFile": "../../tools/Key.snk",
+    "compile": {
+      "include": "../Microsoft.Extensions.FileSystemGlobbing.Tests/TestUtility/DisposableFileSystem.cs",
+    }
   },
-  "compile": "../Microsoft.Extensions.FileSystemGlobbing.Tests/TestUtility/DisposableFileSystem.cs",
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
