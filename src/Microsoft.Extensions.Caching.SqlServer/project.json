@@ -13,7 +13,7 @@
     "xmlDoc": true
   },
   "frameworks": {
-    "netstandard1.1": {
+    "netstandard1.2": {
       "dependencies": {
         "System.Data.SqlClient": "4.1.0-*"
       }
