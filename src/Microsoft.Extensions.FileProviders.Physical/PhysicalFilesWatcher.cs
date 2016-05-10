@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileSystemGlobbing;
@@ -129,13 +130,24 @@ namespace Microsoft.Extensions.FileProviders.Physical
 
             if (Directory.Exists(e.FullPath))
             {
-                // If the renamed entity is a directory then notify tokens for every sub item.
-                foreach (var newLocation in Directory.EnumerateFileSystemEntries(e.FullPath, "*", SearchOption.AllDirectories))
+                try
                 {
-                    // Calculated previous path of this moved item.
-                    var oldLocation = Path.Combine(e.OldFullPath, newLocation.Substring(e.FullPath.Length + 1));
-                    OnFileSystemEntryChange(oldLocation);
-                    OnFileSystemEntryChange(newLocation);
+                    // If the renamed entity is a directory then notify tokens for every sub item.
+                    foreach (var newLocation in Directory.EnumerateFileSystemEntries(e.FullPath, "*", SearchOption.AllDirectories))
+                    {
+                        // Calculated previous path of this moved item.
+                        var oldLocation = Path.Combine(e.OldFullPath, newLocation.Substring(e.FullPath.Length + 1));
+                        OnFileSystemEntryChange(oldLocation);
+                        OnFileSystemEntryChange(newLocation);
+                    }
+                }
+                catch (Exception ex) when (
+                    ex is IOException ||
+                    ex is SecurityException ||
+                    ex is DirectoryNotFoundException ||
+                    ex is UnauthorizedAccessException)
+                {
+                    // Swallow the exception.
                 }
             }
         }
