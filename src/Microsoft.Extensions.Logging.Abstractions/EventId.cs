@@ -34,5 +34,17 @@ namespace Microsoft.Extensions.Logging
         {
             return new EventId(i);
         }
+
+        public override string ToString()
+        {
+            if (_name != null)
+            {
+                return _name;
+            }
+            else
+            {
+                return _id.ToString();
+            }
+        }
     }
 }

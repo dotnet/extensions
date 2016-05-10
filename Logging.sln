@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging", "src\Microsoft.Extensions.Logging\Microsoft.Extensions.Logging.xproj", "{19D1B6C5-8A62-4387-8816-C54874D1DF5F}"
 EndProject
@@ -29,6 +29,10 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.Testing.Tests", "test\Microsoft.Extensions.Logging.Testing.Tests\Microsoft.Extensions.Logging.Testing.Tests.xproj", "{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.Filter", "src\Microsoft.Extensions.Logging.Filter\Microsoft.Extensions.Logging.Filter.xproj", "{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.EventSource", "src\Microsoft.Extensions.Logging.EventSource\Microsoft.Extensions.Logging.EventSource.xproj", "{84073E58-1802-4525-A9E5-1E6A70DAF0B2}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.EventSource.Test", "test\Microsoft.Extensions.Logging.EventSource.Test\Microsoft.Extensions.Logging.EventSource.Test.xproj", "{F3B898C3-D441-4207-A92B-420D6E73CA5D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -162,6 +166,30 @@ Global
 		{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}.Release|x86.ActiveCfg = Release|Any CPU
 		{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}.Release|x86.Build.0 = Release|Any CPU
+		{84073E58-1802-4525-A9E5-1E6A70DAF0B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84073E58-1802-4525-A9E5-1E6A70DAF0B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84073E58-1802-4525-A9E5-1E6A70DAF0B2}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{84073E58-1802-4525-A9E5-1E6A70DAF0B2}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{84073E58-1802-4525-A9E5-1E6A70DAF0B2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{84073E58-1802-4525-A9E5-1E6A70DAF0B2}.Debug|x86.Build.0 = Debug|Any CPU
+		{84073E58-1802-4525-A9E5-1E6A70DAF0B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84073E58-1802-4525-A9E5-1E6A70DAF0B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84073E58-1802-4525-A9E5-1E6A70DAF0B2}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{84073E58-1802-4525-A9E5-1E6A70DAF0B2}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{84073E58-1802-4525-A9E5-1E6A70DAF0B2}.Release|x86.ActiveCfg = Release|Any CPU
+		{84073E58-1802-4525-A9E5-1E6A70DAF0B2}.Release|x86.Build.0 = Release|Any CPU
+		{F3B898C3-D441-4207-A92B-420D6E73CA5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3B898C3-D441-4207-A92B-420D6E73CA5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3B898C3-D441-4207-A92B-420D6E73CA5D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{F3B898C3-D441-4207-A92B-420D6E73CA5D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{F3B898C3-D441-4207-A92B-420D6E73CA5D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F3B898C3-D441-4207-A92B-420D6E73CA5D}.Debug|x86.Build.0 = Debug|Any CPU
+		{F3B898C3-D441-4207-A92B-420D6E73CA5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3B898C3-D441-4207-A92B-420D6E73CA5D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3B898C3-D441-4207-A92B-420D6E73CA5D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{F3B898C3-D441-4207-A92B-420D6E73CA5D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{F3B898C3-D441-4207-A92B-420D6E73CA5D}.Release|x86.ActiveCfg = Release|Any CPU
+		{F3B898C3-D441-4207-A92B-420D6E73CA5D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -178,5 +206,7 @@ Global
 		{379AA56B-E1A6-4133-9A45-7F70385F39FB} = {699DB330-0095-4266-B7B0-3EAB3710CA49}
 		{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F} = {09920C51-6220-4D8D-94DC-E70C13446187}
 		{0D190EE0-E305-403D-AC01-DEE71D8DBDB5} = {699DB330-0095-4266-B7B0-3EAB3710CA49}
+		{84073E58-1802-4525-A9E5-1E6A70DAF0B2} = {699DB330-0095-4266-B7B0-3EAB3710CA49}
+		{F3B898C3-D441-4207-A92B-420D6E73CA5D} = {09920C51-6220-4D8D-94DC-E70C13446187}
 	EndGlobalSection
 EndGlobal
