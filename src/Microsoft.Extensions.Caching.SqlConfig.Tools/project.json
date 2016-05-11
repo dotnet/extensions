@@ -1,4 +1,5 @@
 {
+  "version": "1.0.0-preview1-*",
   "dependencies": {
     "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
     "Microsoft.Extensions.Logging": "1.0.0-*",
@@ -30,7 +31,6 @@
     ],
     "xmlDoc": true
   },
-  "version": "1.0.0-*",
   "packOptions": {
     "repository": {
       "type": "git",

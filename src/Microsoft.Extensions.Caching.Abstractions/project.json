@@ -1,4 +1,5 @@
 {
+  "version": "1.0.0-rc2-*",
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
@@ -35,7 +36,6 @@
       }
     }
   },
-  "version": "1.0.0-*",
   "packOptions": {
     "repository": {
       "type": "git",
