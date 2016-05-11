@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.0.0-rc3-*",
   "description": "In-memory cache implementation of Microsoft.Extensions.Caching.Memory.IMemoryCache.",
   "packOptions": {
     "repository": {
