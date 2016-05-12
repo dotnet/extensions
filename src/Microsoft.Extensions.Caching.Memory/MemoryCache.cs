@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.Caching.Memory
         public ICacheEntry CreateEntry(object key)
         {
             CheckDisposed();
-            
+
             return new CacheEntry(
                 key,
                 _setEntry,
@@ -119,7 +119,7 @@ namespace Microsoft.Extensions.Caching.Memory
             _entryLock.EnterWriteLock();
             try
             {
-                
+
                 if (_entries.TryGetValue(entry.Key, out priorEntry))
                 {
                     _entries.Remove(entry.Key);
@@ -181,7 +181,7 @@ namespace Microsoft.Extensions.Caching.Memory
                         entry.LastAccessed = utcNow;
                         result = entry.Value;
 
-                        // When this entry is retrieved in the scope of creating another entry, 
+                        // When this entry is retrieved in the scope of creating another entry,
                         // that entry needs a copy of these expiration tokens.
                         entry.PropageOptions(CacheEntryHelper.Current);
                     }

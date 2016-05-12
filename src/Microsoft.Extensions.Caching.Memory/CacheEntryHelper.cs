@@ -7,7 +7,7 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 #endif
 
-using System.Collections.Generic;
+using System;
 using System.Threading;
 
 namespace Microsoft.Extensions.Caching.Memory
@@ -15,9 +15,9 @@ namespace Microsoft.Extensions.Caching.Memory
     internal class CacheEntryHelper
     {
 #if NETSTANDARD1_3 || NETCORE50
-        private static readonly AsyncLocal<Stack<CacheEntry>> _scopes = new AsyncLocal<Stack<CacheEntry>>();
+        private static readonly AsyncLocal<CacheEntryStack> _scopes = new AsyncLocal<CacheEntryStack>();
 
-        internal static Stack<CacheEntry> Scopes
+        internal static CacheEntryStack Scopes
         {
             get { return _scopes.Value; }
             set { _scopes.Value = value; }
@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.Caching.Memory
 #else
         private const string CacheEntryDataName = "CacheEntry.Scopes";
 
-        internal static Stack<CacheEntry> Scopes
+        internal static CacheEntryStack Scopes
         {
             get
             {
@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.Caching.Memory
                     return null;
                 }
 
-                return handle.Unwrap() as Stack<CacheEntry>;
+                return handle.Unwrap() as CacheEntryStack;
             }
             set
             {
@@ -49,31 +49,46 @@ namespace Microsoft.Extensions.Caching.Memory
         {
             get
             {
-                if (Scopes != null)
-                {
-                    if (Scopes.Count > 0)
-                    {
-                        return Scopes.Peek();
-                    }
-                }
-
-                return null;
+                var scopes = GetOrCreateScopes();
+                return scopes.Peek();
             }
         }
 
-        internal static void EnterScope(CacheEntry entry)
+        internal static IDisposable EnterScope(CacheEntry entry)
         {
-            if (Scopes == null)
+            var scopes = GetOrCreateScopes();
+
+            var scopeLease = new ScopeLease(scopes);
+            Scopes = scopes.Push(entry);
+
+            return scopeLease;
+        }
+
+        private static CacheEntryStack GetOrCreateScopes()
+        {
+            var scopes = Scopes;
+            if (scopes == null)
             {
-                Scopes = new Stack<CacheEntry>();
+                scopes = CacheEntryStack.Empty;
+                Scopes = scopes;
             }
 
-            Scopes.Push(entry);
+            return scopes;
         }
 
-        internal static CacheEntry LeaveScope()
+        private sealed class ScopeLease : IDisposable
         {
-            return Scopes.Pop();
+            readonly CacheEntryStack _cacheEntryStack;
+
+            public ScopeLease(CacheEntryStack cacheEntryStack)
+            {
+                _cacheEntryStack = cacheEntryStack;
+            }
+
+            public void Dispose()
+            {
+                Scopes = _cacheEntryStack;
+            }
         }
     }
 }

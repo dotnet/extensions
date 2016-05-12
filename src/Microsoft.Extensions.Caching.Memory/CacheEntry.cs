@@ -18,18 +18,19 @@ namespace Microsoft.Extensions.Caching.Memory
     internal class CacheEntry : ICacheEntry
     {
         private bool _added = false;
-
         private static readonly Action<object> ExpirationCallback = ExpirationTokensExpired;
-
         private readonly Action<CacheEntry> _notifyCacheOfExpiration;
-
         private readonly Action<CacheEntry> _notifyCacheEntryDisposed;
-
+        private IList<IDisposable> _expirationTokenRegistrations;
+        private EvictionReason _evictionReason;
         private IList<PostEvictionCallbackRegistration> _postEvictionCallbacks;
+        private bool _isExpired;
+
         internal IList<IChangeToken> _expirationTokens;
         internal DateTimeOffset? _absoluteExpiration;
         internal TimeSpan? _absoluteExpirationRelativeToNow;
         private TimeSpan? _slidingExpiration;
+        private IDisposable _scope;
 
         internal readonly object _lock = new object();
 
@@ -52,12 +53,12 @@ namespace Microsoft.Extensions.Caching.Memory
             {
                 throw new ArgumentNullException(nameof(notifyCacheOfExpiration));
             }
-            
+
             Key = key;
             _notifyCacheEntryDisposed = notifyCacheEntryDisposed;
             _notifyCacheOfExpiration = notifyCacheOfExpiration;
 
-            CacheEntryHelper.EnterScope(this);
+            _scope = CacheEntryHelper.EnterScope(this);
         }
 
         /// <summary>
@@ -163,42 +164,30 @@ namespace Microsoft.Extensions.Caching.Memory
 
         public object Value { get; set; }
 
-        private bool IsExpired { get; set; }
-
-        internal EvictionReason EvictionReason { get; private set; }
-
-        internal IList<IDisposable> ExpirationTokenRegistrations { get; set; }
-
         internal DateTimeOffset LastAccessed { get; set; }
-        
+
         public void Dispose()
         {
-            try
+            if (!_added)
             {
-                if (!_added)
-                {
-                    _added = true;
-                    _notifyCacheEntryDisposed(this);
-                }
-            }
-            finally
-            {
-                CacheEntryHelper.LeaveScope();
+                _added = true;
+                _scope.Dispose();
+                _notifyCacheEntryDisposed(this);
                 PropageOptions(CacheEntryHelper.Current);
             }
         }
 
         internal bool CheckExpired(DateTimeOffset now)
         {
-            return IsExpired || CheckForExpiredTime(now) || CheckForExpiredTokens();
+            return _isExpired || CheckForExpiredTime(now) || CheckForExpiredTokens();
         }
 
         internal void SetExpired(EvictionReason reason)
         {
-            IsExpired = true;
-            if (EvictionReason == EvictionReason.None)
+            _isExpired = true;
+            if (_evictionReason == EvictionReason.None)
             {
-                EvictionReason = reason;
+                _evictionReason = reason;
             }
             DetachTokens();
         }
@@ -249,12 +238,12 @@ namespace Microsoft.Extensions.Caching.Memory
                         var expirationToken = _expirationTokens[i];
                         if (expirationToken.ActiveChangeCallbacks)
                         {
-                            if (ExpirationTokenRegistrations == null)
+                            if (_expirationTokenRegistrations == null)
                             {
-                                ExpirationTokenRegistrations = new List<IDisposable>(1);
+                                _expirationTokenRegistrations = new List<IDisposable>(1);
                             }
                             var registration = expirationToken.RegisterChangeCallback(ExpirationCallback, this);
-                            ExpirationTokenRegistrations.Add(registration);
+                            _expirationTokenRegistrations.Add(registration);
                         }
                     }
                 }
@@ -276,10 +265,10 @@ namespace Microsoft.Extensions.Caching.Memory
         {
             lock(_lock)
             {
-                var registrations = ExpirationTokenRegistrations;
+                var registrations = _expirationTokenRegistrations;
                 if (registrations != null)
                 {
-                    ExpirationTokenRegistrations = null;
+                    _expirationTokenRegistrations = null;
                     for (int i = 0; i < registrations.Count; i++)
                     {
                         var registration = registrations[i];
@@ -313,7 +302,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
                 try
                 {
-                    registration.EvictionCallback?.Invoke(entry.Key, entry.Value, entry.EvictionReason, registration.State);
+                    registration.EvictionCallback?.Invoke(entry.Key, entry.Value, entry._evictionReason, registration.State);
                 }
                 catch (Exception)
                 {
@@ -334,9 +323,12 @@ namespace Microsoft.Extensions.Caching.Memory
             // We do this regardless of it gets cached because the tokens are associated with the value we'll return.
             if (_expirationTokens != null)
             {
-                foreach (var expirationToken in _expirationTokens)
+                lock (_lock)
                 {
-                    parent.AddExpirationToken(expirationToken);
+                    foreach (var expirationToken in _expirationTokens)
+                    {
+                        parent.AddExpirationToken(expirationToken);
+                    }
                 }
             }
 

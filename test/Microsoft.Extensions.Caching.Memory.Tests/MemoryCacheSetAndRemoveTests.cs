@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.Extensions.Caching.Memory
@@ -135,7 +136,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
             cache.Set(key, obj);
 
-            var result = cache.GetOrCreate(key, e => 
+            var result = cache.GetOrCreate(key, e =>
             {
                 invoked = true;
                 return obj1;
@@ -366,6 +367,41 @@ namespace Microsoft.Extensions.Caching.Memory
             cache.Remove(key);
             result = cache.Get(key);
             Assert.Null(result);
+        }
+
+        [Fact]
+        public void GetAndSet_AreThreadSafe()
+        {
+            var cache = CreateCache();
+            string key = "myKey";
+            var cts = new CancellationTokenSource();
+            var cts2 = new CancellationTokenSource();
+
+            cache.Set(key, new Guid(), new MemoryCacheEntryOptions().AddExpirationToken(new CancellationChangeToken(cts.Token)));
+
+            var task1 = Task.Run(() =>
+            {
+                while (!cts2.IsCancellationRequested)
+                {
+                    cache.Set(key, new Guid());
+                }
+            });
+
+            var task2 = Task.Run(() =>
+            {
+                while (!cts2.IsCancellationRequested)
+                {
+                    cache.Get(key);
+                }
+            });
+
+            var task3 = Task.Run(async () =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1));
+                cts2.Cancel();
+            });
+
+            Task.WaitAll(task1, task2, task3);
         }
 
         private class TestKey

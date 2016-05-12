@@ -3,8 +3,9 @@
 
 using System;
 using System.Linq;
-using Microsoft.Extensions.Internal;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory.Infrastructure;
+using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.Extensions.Caching.Memory
@@ -107,7 +108,7 @@ namespace Microsoft.Extensions.Caching.Memory
                 e.AddExpirationToken(expirationToken);
                 return obj;
             });
-            
+
             using (var entry = cache.CreateEntry(key))
             {
                 entry.SetValue(cache.Get(key1));
@@ -417,6 +418,78 @@ namespace Microsoft.Extensions.Caching.Memory
             Assert.Equal(1, ((CacheEntry)entry2)._expirationTokens.Count());
             Assert.NotNull(((CacheEntry)entry2)._absoluteExpiration);
             Assert.Equal(clock.UtcNow + TimeSpan.FromSeconds(15), ((CacheEntry)entry2)._absoluteExpiration);
+        }
+
+        [Fact]
+        public async Task LinkContexts_AreThreadSafe()
+        {
+            var cache = CreateCache();
+            var key1 = new object();
+            var key2 = new object();
+            var key3 = new object();
+            var key4 = new object();
+            var value1 = Guid.NewGuid();
+            var value2 = Guid.NewGuid();
+            var value3 = Guid.NewGuid();
+            var value4 = Guid.NewGuid();
+            TestExpirationToken t3 = null;
+            TestExpirationToken t4 = null;
+
+            Func<Task> func = async () =>
+            {
+                t3 = new TestExpirationToken() { ActiveChangeCallbacks = true };
+                t4 = new TestExpirationToken() { ActiveChangeCallbacks = true };
+
+                value1 = await cache.GetOrCreateAsync(key1, async e1 =>
+                {
+                    value2 = await cache.GetOrCreateAsync(key2, async e2 =>
+                    {
+                        await Task.WhenAll(
+                            Task.Run(() =>
+                            {
+                                value3 = cache.Set(key3, Guid.NewGuid(), t3);
+                            }),
+                            Task.Run(() =>
+                            {
+                                value4 = cache.Set(key4, Guid.NewGuid(), t4);
+                            }));
+
+                        return Guid.NewGuid();
+                    });
+
+                    return Guid.NewGuid();
+                });
+            };
+
+            await func();
+
+            Assert.NotNull(cache.Get(key1));
+            Assert.NotNull(cache.Get(key2));
+            Assert.Equal(value3, cache.Get(key3));
+            Assert.Equal(value4, cache.Get(key4));
+            Assert.NotEqual(value3, value4);
+
+            t3.Fire();
+            Assert.Equal(value4, cache.Get(key4));
+
+            Assert.Null(cache.Get(key1));
+            Assert.Null(cache.Get(key2));
+            Assert.Null(cache.Get(key3));
+
+            await func();
+
+            Assert.NotNull(cache.Get(key1));
+            Assert.NotNull(cache.Get(key2));
+            Assert.Equal(value3, cache.Get(key3));
+            Assert.Equal(value4, cache.Get(key4));
+            Assert.NotEqual(value3, value4);
+
+            t4.Fire();
+            Assert.Equal(value3, cache.Get(key3));
+
+            Assert.Null(cache.Get(key1));
+            Assert.Null(cache.Get(key2));
+            Assert.Null(cache.Get(key4));
         }
     }
 }
