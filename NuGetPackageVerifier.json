@@ -5,19 +5,9 @@
         ],
         "packages": {
             "Microsoft.Extensions.FileProviders.Abstractions": { },
-            "Microsoft.AspNet.FileProviders.Abstractions.VSRC1": {
-                "DOC_MISSING": {
-                    "lib/net451/Microsoft.AspNet.FileProviders.Abstractions.VSRC1.dll": "This project is temporary."
-                }
-            },
             "Microsoft.Extensions.FileProviders.Composite": { },
             "Microsoft.Extensions.FileProviders.Embedded": { },
             "Microsoft.Extensions.FileProviders.Physical": { },
-            "Microsoft.AspNet.FileProviders.Physical.VSRC1": {
-                "DOC_MISSING": {
-                    "lib/net451/Microsoft.AspNet.FileProviders.Physical.VSRC1.dll": "This project is temporary."
-                }
-            },
             "Microsoft.Extensions.FileSystemGlobbing": { }
         }
     },

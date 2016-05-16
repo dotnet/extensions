@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A1477614-E825-4204-A684-385004B63AEB}"
 EndProject
@@ -30,10 +30,6 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.FileProviders.Composite", "src\Microsoft.Extensions.FileProviders.Composite\Microsoft.Extensions.FileProviders.Composite.xproj", "{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.FileProviders.Composite.Tests", "test\Microsoft.Extensions.FileProviders.Composite.Tests\Microsoft.Extensions.FileProviders.Composite.Tests.xproj", "{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FileProviders.Abstractions.VSRC1", "src\Microsoft.AspNet.FileProviders.Abstractions.VSRC1\Microsoft.AspNet.FileProviders.Abstractions.VSRC1.xproj", "{19D0D8E8-ECF1-40D9-9677-73C50B6ED11A}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.FileProviders.Physical.VSRC1", "src\Microsoft.AspNet.FileProviders.Physical.VSRC1\Microsoft.AspNet.FileProviders.Physical.VSRC1.xproj", "{CE662D7D-0CC4-43D7-A25D-D3B6021436D3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -163,30 +159,6 @@ Global
 		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}.Release|x86.ActiveCfg = Release|Any CPU
 		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}.Release|x86.Build.0 = Release|Any CPU
-		{19D0D8E8-ECF1-40D9-9677-73C50B6ED11A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{19D0D8E8-ECF1-40D9-9677-73C50B6ED11A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{19D0D8E8-ECF1-40D9-9677-73C50B6ED11A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{19D0D8E8-ECF1-40D9-9677-73C50B6ED11A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{19D0D8E8-ECF1-40D9-9677-73C50B6ED11A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{19D0D8E8-ECF1-40D9-9677-73C50B6ED11A}.Debug|x86.Build.0 = Debug|Any CPU
-		{19D0D8E8-ECF1-40D9-9677-73C50B6ED11A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{19D0D8E8-ECF1-40D9-9677-73C50B6ED11A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{19D0D8E8-ECF1-40D9-9677-73C50B6ED11A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{19D0D8E8-ECF1-40D9-9677-73C50B6ED11A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{19D0D8E8-ECF1-40D9-9677-73C50B6ED11A}.Release|x86.ActiveCfg = Release|Any CPU
-		{19D0D8E8-ECF1-40D9-9677-73C50B6ED11A}.Release|x86.Build.0 = Release|Any CPU
-		{CE662D7D-0CC4-43D7-A25D-D3B6021436D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CE662D7D-0CC4-43D7-A25D-D3B6021436D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CE662D7D-0CC4-43D7-A25D-D3B6021436D3}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{CE662D7D-0CC4-43D7-A25D-D3B6021436D3}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{CE662D7D-0CC4-43D7-A25D-D3B6021436D3}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CE662D7D-0CC4-43D7-A25D-D3B6021436D3}.Debug|x86.Build.0 = Debug|Any CPU
-		{CE662D7D-0CC4-43D7-A25D-D3B6021436D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CE662D7D-0CC4-43D7-A25D-D3B6021436D3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CE662D7D-0CC4-43D7-A25D-D3B6021436D3}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{CE662D7D-0CC4-43D7-A25D-D3B6021436D3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{CE662D7D-0CC4-43D7-A25D-D3B6021436D3}.Release|x86.ActiveCfg = Release|Any CPU
-		{CE662D7D-0CC4-43D7-A25D-D3B6021436D3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -202,7 +174,5 @@ Global
 		{92C2C85C-D1A5-44BD-BE23-238E08471B4D} = {A1477614-E825-4204-A684-385004B63AEB}
 		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254} = {A1477614-E825-4204-A684-385004B63AEB}
 		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494} = {E399495E-82B8-4C06-8779-C1D02BEF4495}
-		{19D0D8E8-ECF1-40D9-9677-73C50B6ED11A} = {A1477614-E825-4204-A684-385004B63AEB}
-		{CE662D7D-0CC4-43D7-A25D-D3B6021436D3} = {A1477614-E825-4204-A684-385004B63AEB}
 	EndGlobalSection
 EndGlobal
