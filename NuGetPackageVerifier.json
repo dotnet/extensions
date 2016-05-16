@@ -5,11 +5,6 @@
         ],
         "packages": {
             "Microsoft.Extensions.Options": { },
-            "Microsoft.Extensions.OptionsModel.VSRC1": {
-                "DOC_MISSING": {
-                    "lib/net451/Microsoft.Extensions.OptionsModel.VSRC1.dll": "This project is temporary."
-                }
-            },
             "Microsoft.Extensions.Options.ConfigurationExtensions": { }
         }
     },
