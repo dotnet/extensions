@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NETSTANDARD1_3 || NETCORE50
+#if NETSTANDARD1_3
 #else
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Caching.Memory
 {
     internal class CacheEntryHelper
     {
-#if NETSTANDARD1_3 || NETCORE50
+#if NETSTANDARD1_3
         private static readonly AsyncLocal<CacheEntryStack> _scopes = new AsyncLocal<CacheEntryStack>();
 
         internal static CacheEntryStack Scopes
