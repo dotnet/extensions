@@ -24,7 +24,7 @@
   "frameworks": {
     "netstandard1.1": {
       "dependencies": {
-        "System.ComponentModel.TypeConverter": "4.0.1-*"
+        "System.ComponentModel.TypeConverter": "4.1.0-*"
       }
     }
   }
