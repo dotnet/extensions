@@ -4,7 +4,7 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-rc2-24027",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "type": "build",
@@ -38,7 +38,7 @@
       "type": "build",
       "version": "1.0.0-*"
     },
-    "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-preview1-002702",
     "xunit": "2.1.0"
   },
   "testRunner": "xunit",
@@ -50,11 +50,11 @@
       ],
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.0.0-rc2-3002702",
           "type": "platform"
         },
-        "System.Diagnostics.Process": "4.1.0-*",
-        "System.Diagnostics.TraceSource": "4.0.0-*",
+        "System.Diagnostics.Process": "4.1.0-rc2-24027",
+        "System.Diagnostics.TraceSource": "4.0.0-rc2-24027",
         "moq.netcore": "4.4.0-beta8"
       }
     },

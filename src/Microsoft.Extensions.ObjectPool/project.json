@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.0.0-rc2-final",
   "description": "A simple object pool implementation.",
   "packOptions": {
     "repository": {
@@ -20,10 +20,10 @@
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "System.Diagnostics.Debug": "4.0.11-*",
-        "System.Resources.ResourceManager": "4.0.1-*",
-        "System.Runtime.Extensions": "4.1.0-*",
-        "System.Threading": "4.0.11-*"
+        "System.Diagnostics.Debug": "4.0.11-rc2-24027",
+        "System.Resources.ResourceManager": "4.0.1-rc2-24027",
+        "System.Runtime.Extensions": "4.1.0-rc2-24027",
+        "System.Threading": "4.0.11-rc2-24027"
       }
     }
   }

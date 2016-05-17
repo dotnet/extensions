@@ -2,7 +2,7 @@
   "version": "1.0.0-*",
   "shared": "*.cs",
   "dependencies": {
-    "Microsoft.DotNet.Cli.Utils": "1.0.0-*"
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-preview1-002702"
   },
   "frameworks": {
     "net451": {},

@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.0.0-rc2-final",
   "buildOptions": {
     "define": [
       "TRACE"
@@ -15,11 +15,11 @@
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "System.Collections": "4.0.11-*",
-        "System.Console": "4.0.0-*",
-        "System.IO": "4.1.0-*",
-        "System.Linq": "4.1.0-*",
-        "System.Resources.ResourceManager": "4.0.1-*"
+        "System.Collections": "4.0.11-rc2-24027",
+        "System.Console": "4.0.0-rc2-24027",
+        "System.IO": "4.1.0-rc2-24027",
+        "System.Linq": "4.1.0-rc2-24027",
+        "System.Resources.ResourceManager": "4.0.1-rc2-24027"
       }
     }
   }
