@@ -110,6 +110,28 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hidden and system files only make sense on Windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Hidden and system files only make sense on Windows.")]
+        public void GetFileInfoReturnsNotFoundFileInfoForSystemFile()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                using (var provider = new PhysicalFileProvider(root.RootPath))
+                {
+                    var fileName = Guid.NewGuid().ToString();
+                    var filePath = Path.Combine(root.RootPath, fileName);
+                    File.Create(filePath);
+                    var fileInfo = new FileInfo(filePath);
+                    File.SetAttributes(filePath, fileInfo.Attributes | FileAttributes.System);
+
+                    var info = provider.GetFileInfo(fileName);
+
+                    Assert.IsType(typeof(NotFoundFileInfo), info);
+                }
+            }
+        }
+
         [Fact]
         public void GetFileInfoReturnsNotFoundFileInfoForFileNameStartingWithPeriod()
         {
