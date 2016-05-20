@@ -24,17 +24,21 @@ namespace Microsoft.Extensions.Logging.TraceSource
         /// Initializes a new instance of the <see cref="TraceSourceLoggerProvider"/> class.
         /// </summary>
         /// <param name="rootSourceSwitch"></param>
+        public TraceSourceLoggerProvider(SourceSwitch rootSourceSwitch)
+            : this(rootSourceSwitch, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TraceSourceLoggerProvider"/> class.
+        /// </summary>
+        /// <param name="rootSourceSwitch"></param>
         /// <param name="rootTraceListener"></param>
         public TraceSourceLoggerProvider(SourceSwitch rootSourceSwitch, TraceListener rootTraceListener)
         {
             if (rootSourceSwitch == null)
             {
                 throw new ArgumentNullException(nameof(rootSourceSwitch));
-            }
-
-            if (rootTraceListener == null)
-            {
-                throw new ArgumentNullException(nameof(rootTraceListener));
             }
 
             _rootSourceSwitch = rootSourceSwitch;
@@ -114,8 +118,11 @@ namespace Microsoft.Extensions.Logging.TraceSource
             if (!_disposed)
             {
                 _disposed = true;
-                _rootTraceListener.Flush();
-                _rootTraceListener.Dispose();
+                if (_rootTraceListener != null)
+                {
+                    _rootTraceListener.Flush();
+                    _rootTraceListener.Dispose();
+                }
             }
         }
     }
