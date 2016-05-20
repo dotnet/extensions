@@ -236,7 +236,7 @@ namespace Microsoft.Extensions.Logging.Console
                 case LogLevel.Critical:
                     return new ConsoleColors(ConsoleColor.White, ConsoleColor.Red);
                 case LogLevel.Error:
-                    return new ConsoleColors(ConsoleColor.Red, ConsoleColor.Black);
+                    return new ConsoleColors(ConsoleColor.Black, ConsoleColor.Red);
                 case LogLevel.Warning:
                     return new ConsoleColors(ConsoleColor.Yellow, ConsoleColor.Black);
                 case LogLevel.Information:

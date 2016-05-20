@@ -317,8 +317,8 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.Equal(3, sink.Writes.Count);
             var write = sink.Writes[0];
-            Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
-            Assert.Equal(ConsoleColor.Red, write.ForegroundColor);
+            Assert.Equal(ConsoleColor.Red, write.BackgroundColor);
+            Assert.Equal(ConsoleColor.Black, write.ForegroundColor);
             write = sink.Writes[1];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.ForegroundColor);
