@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Logging.Test
             var logger = factory.CreateLogger("Test");
 
             // Act
-            factory.AddTraceSource(testSwitch, new ConsoleTraceListener());
+            factory.AddTraceSource(testSwitch);
 
             // Assert
             Assert.True(logger.IsEnabled(LogLevel.Critical));
@@ -49,8 +49,8 @@ namespace Microsoft.Extensions.Logging.Test
             var logger = factory.CreateLogger("Test");
 
             // Act
-            factory.AddTraceSource(firstSwitch, new ConsoleTraceListener());
-            factory.AddTraceSource(secondSwitch, new ConsoleTraceListener());
+            factory.AddTraceSource(firstSwitch);
+            factory.AddTraceSource(secondSwitch);
 
             // Assert
             Assert.Equal(expected, logger.IsEnabled(LogLevel.Information));

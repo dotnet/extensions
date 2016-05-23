@@ -11,6 +11,23 @@ namespace Microsoft.Extensions.Logging
     {
         public static ILoggerFactory AddTraceSource(
             this ILoggerFactory factory,
+            string switchName)
+        {
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            if (switchName == null)
+            {
+                throw new ArgumentNullException(nameof(switchName));
+            }
+
+            return factory.AddTraceSource(new SourceSwitch(switchName));
+        }
+
+        public static ILoggerFactory AddTraceSource(
+            this ILoggerFactory factory,
             string switchName,
             TraceListener listener)
         {
@@ -30,6 +47,25 @@ namespace Microsoft.Extensions.Logging
             }
 
             return factory.AddTraceSource(new SourceSwitch(switchName), listener);
+        }
+
+        public static ILoggerFactory AddTraceSource(
+            this ILoggerFactory factory,
+            SourceSwitch sourceSwitch)
+        {
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            if (sourceSwitch == null)
+            {
+                throw new ArgumentNullException(nameof(sourceSwitch));
+            }
+
+            factory.AddProvider(new TraceSourceLoggerProvider(sourceSwitch));
+
+            return factory;
         }
 
         public static ILoggerFactory AddTraceSource(
