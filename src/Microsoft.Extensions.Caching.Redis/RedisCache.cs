@@ -74,6 +74,11 @@ namespace Microsoft.Extensions.Caching.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             Connect();
 
             var creationTime = DateTimeOffset.UtcNow;
@@ -95,6 +100,11 @@ namespace Microsoft.Extensions.Caching.Redis
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
             }
 
             await ConnectAsync();

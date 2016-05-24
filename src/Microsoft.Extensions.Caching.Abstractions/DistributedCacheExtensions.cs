@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Caching.Distributed
@@ -17,11 +18,16 @@ namespace Microsoft.Extensions.Caching.Distributed
         /// <param name="cache">The cache in which to store the data.</param>
         /// <param name="key">The key to store the data in.</param>
         /// <param name="value">The data to store in the cache.</param>
+        /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="key"/> or <paramref name="value"/> is null.</exception>
         public static void Set(this IDistributedCache cache, string key, byte[] value)
         {
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
+            }
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
             }
 
             cache.Set(key, value, new DistributedCacheEntryOptions());
@@ -34,14 +40,119 @@ namespace Microsoft.Extensions.Caching.Distributed
         /// <param name="key">The key to store the data in.</param>
         /// <param name="value">The data to store in the cache.</param>
         /// <returns>A task that represents the asynchronous set operation.</returns>
+        /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="key"/> or <paramref name="value"/> is null.</exception>
         public static Task SetAsync(this IDistributedCache cache, string key, byte[] value)
         {
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
 
             return cache.SetAsync(key, value, new DistributedCacheEntryOptions());
+        }
+
+        /// <summary>
+        /// Sets a string in the specified cache with the specified key.
+        /// </summary>
+        /// <param name="cache">The cache in which to store the data.</param>
+        /// <param name="key">The key to store the data in.</param>
+        /// <param name="value">The data to store in the cache.</param>
+        /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="key"/> or <paramref name="value"/> is null.</exception>
+        public static void SetString(this IDistributedCache cache, string key, string value)
+        {
+            cache.SetString(key, value, new DistributedCacheEntryOptions());
+        }
+
+        /// <summary>
+        /// Sets a string in the specified cache with the specified key.
+        /// </summary>
+        /// <param name="cache">The cache in which to store the data.</param>
+        /// <param name="key">The key to store the data in.</param>
+        /// <param name="value">The data to store in the cache.</param>
+        /// <param name="options">The cache options for the entry.</param>
+        /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="key"/> or <paramref name="value"/> is null.</exception>
+        public static void SetString(this IDistributedCache cache, string key, string value, DistributedCacheEntryOptions options)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+            cache.Set(key, Encoding.UTF8.GetBytes(value), options);
+        }
+
+        /// <summary>
+        /// Asynchronously sets a string in the specified cache with the specified key.
+        /// </summary>
+        /// <param name="cache">The cache in which to store the data.</param>
+        /// <param name="key">The key to store the data in.</param>
+        /// <param name="value">The data to store in the cache.</param>
+        /// <returns>A task that represents the asynchronous set operation.</returns>
+        /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="key"/> or <paramref name="value"/> is null.</exception>
+        public static Task SetStringAsync(this IDistributedCache cache, string key, string value)
+        {
+            return cache.SetStringAsync(key, value, new DistributedCacheEntryOptions());
+        }
+
+        /// <summary>
+        /// Asynchronously sets a string in the specified cache with the specified key.
+        /// </summary>
+        /// <param name="cache">The cache in which to store the data.</param>
+        /// <param name="key">The key to store the data in.</param>
+        /// <param name="value">The data to store in the cache.</param>
+        /// <param name="options">The cache options for the entry.</param>
+        /// <returns>A task that represents the asynchronous set operation.</returns>
+        /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="key"/> or <paramref name="value"/> is null.</exception>
+        public static Task SetStringAsync(this IDistributedCache cache, string key, string value, DistributedCacheEntryOptions options)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+            return cache.SetAsync(key, Encoding.UTF8.GetBytes(value), options);
+        }
+
+        /// <summary>
+        /// Gets a string from the specified cache with the specified key.
+        /// </summary>
+        /// <param name="cache">The cache in which to store the data.</param>
+        /// <param name="key">The key to get the stored data for.</param>
+        /// <returns>The string value from the stored cache key.</returns>
+        public static string GetString(this IDistributedCache cache, string key)
+        {
+            var data = cache.Get(key);
+            if (data == null)
+            {
+                return null;
+            }
+            return Encoding.UTF8.GetString(data, 0, data.Length);
+        }
+
+        /// <summary>
+        /// Asynchronously gets a string from the specified cache with the specified key.
+        /// </summary>
+        /// <param name="cache">The cache in which to store the data.</param>
+        /// <param name="key">The key to get the stored data for.</param>
+        /// <returns>A task that gets the string value from the stored cache key.</returns>
+        public static async Task<string> GetStringAsync(this IDistributedCache cache, string key)
+        {
+            var data = await cache.GetAsync(key);
+            if (data == null)
+            {
+                return null;
+            }
+            return Encoding.UTF8.GetString(data, 0, data.Length);
         }
     }
 }
