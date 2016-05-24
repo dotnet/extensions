@@ -144,7 +144,10 @@ namespace Microsoft.Extensions.Logging.Test
             var t = SetUp(null);
             var logger = t.Item1;
             var sink = t.Item2;
-            var expectedMessage = _paddingString + _state + Environment.NewLine;
+            var expectedMessage =
+                    _paddingString
+                    + _state
+                    + Environment.NewLine;
 
             // Act
             logger.Log(LogLevel.Information, 0, _state, null, _defaultFormatter);
@@ -297,7 +300,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(ConsoleColor.White, write.ForegroundColor);
             write = sink.Writes[1];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
             write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
@@ -321,7 +324,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(ConsoleColor.Black, write.ForegroundColor);
             write = sink.Writes[1];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
             write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
@@ -345,7 +348,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(ConsoleColor.Yellow, write.ForegroundColor);
             write = sink.Writes[1];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
             write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
@@ -369,7 +372,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(ConsoleColor.DarkGreen, write.ForegroundColor);
             write = sink.Writes[1];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
             write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
@@ -393,7 +396,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
             write = sink.Writes[1];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
             write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
@@ -417,7 +420,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
             write = sink.Writes[1];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
             write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
@@ -430,7 +433,7 @@ namespace Microsoft.Extensions.Logging.Test
             var t = SetUp(null);
             var logger = t.Item1;
             var sink = t.Item2;
-            var ex = new Exception();
+            var ex = new Exception("Exception message" + Environment.NewLine + "with a second line");
 
             // Act
             logger.Log(LogLevel.Critical, 0, _state, ex, _defaultFormatter);
@@ -468,7 +471,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(ConsoleColor.Yellow, write.ForegroundColor);
             write = sink.Writes[1];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
             write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
@@ -497,7 +500,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(ConsoleColor.DarkGreen, write.ForegroundColor);
             write = sink.Writes[1];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
             write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
@@ -530,7 +533,7 @@ namespace Microsoft.Extensions.Logging.Test
             var write = sink.Writes[2];
             Assert.Equal(expectedMessage, write.Message);
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.ForegroundColor);
+            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
 
         [Fact]
@@ -703,14 +706,98 @@ namespace Microsoft.Extensions.Logging.Test
             }
         }
 
+        [Fact]
+        public void WriteCore_NullMessageWithException()
+        {
+            // Arrange
+            var t = SetUp(null);
+            var logger = t.Item1;
+            var sink = t.Item2;
+            var ex = new Exception("Exception message" + Environment.NewLine + "with a second line");
+            string message = null;
+            var expected = ex.ToString() + Environment.NewLine;
+
+            // Act
+            logger.Log(LogLevel.Critical, 0, message, ex, (s,e) => s);
+            logger.Log(LogLevel.Error, 0, message, ex, (s,e) => s);
+            logger.Log(LogLevel.Warning, 0, message, ex, (s,e) => s);
+            logger.Log(LogLevel.Information, 0, message, ex, (s,e) => s);
+            logger.Log(LogLevel.Debug, 0, message, ex, (s,e) => s);
+            logger.Log(LogLevel.Trace, 0, message, ex, (s,e) => s);
+
+            // Assert
+            Assert.Equal(6, sink.Writes.Count);
+            Assert.Equal(expected, sink.Writes[0].Message);
+            Assert.Equal(expected, sink.Writes[1].Message);
+            Assert.Equal(expected, sink.Writes[2].Message);
+            Assert.Equal(expected, sink.Writes[3].Message);
+            Assert.Equal(expected, sink.Writes[4].Message);
+            Assert.Equal(expected, sink.Writes[5].Message);
+        }
+
+        [Fact]
+        public void WriteCore_MessageWithNullException()
+        {
+            // Arrange
+            var t = SetUp(null);
+            var logger = t.Item1;
+            var sink = t.Item2;
+            Exception ex = null;
+
+            // Act
+            logger.Log(LogLevel.Critical, 0, _state, ex, (s,e) => s);
+            logger.Log(LogLevel.Error, 0, _state, ex, (s,e) => s);
+            logger.Log(LogLevel.Warning, 0, _state, ex, (s,e) => s);
+            logger.Log(LogLevel.Information, 0, _state, ex, (s,e) => s);
+            logger.Log(LogLevel.Debug, 0, _state, ex, (s,e) => s);
+            logger.Log(LogLevel.Trace, 0, _state, ex, (s,e) => s);
+
+            // Assert
+            Assert.Equal(18, sink.Writes.Count);
+            Assert.Equal(GetMessage("crit", 0, ex), GetMessage(sink.Writes.GetRange(0, 3)));
+            Assert.Equal(GetMessage("fail", 0, ex), GetMessage(sink.Writes.GetRange(3, 3)));
+            Assert.Equal(GetMessage("warn", 0, ex), GetMessage(sink.Writes.GetRange(6, 3)));
+            Assert.Equal(GetMessage("info", 0, ex), GetMessage(sink.Writes.GetRange(9, 3)));
+            Assert.Equal(GetMessage("dbug", 0, ex), GetMessage(sink.Writes.GetRange(12, 3)));
+            Assert.Equal(GetMessage("trce", 0, ex), GetMessage(sink.Writes.GetRange(15, 3)));
+        }
+
+        [Fact]
+        public void WriteCore_NullMessageWithNullException()
+        {
+            // Arrange
+            var t = SetUp(null);
+            var logger = t.Item1;
+            var sink = t.Item2;
+            Exception ex = null;
+            string message = null;
+
+            // Act
+            logger.Log(LogLevel.Critical, 0, message, ex, (s,e) => s);
+            logger.Log(LogLevel.Error, 0, message, ex, (s,e) => s);
+            logger.Log(LogLevel.Warning, 0, message, ex, (s,e) => s);
+            logger.Log(LogLevel.Information, 0, message, ex, (s,e) => s);
+            logger.Log(LogLevel.Debug, 0, message, ex, (s,e) => s);
+            logger.Log(LogLevel.Trace, 0, message, ex, (s,e) => s);
+
+            // Assert
+            Assert.Equal(0, sink.Writes.Count);
+        }
+
         private string GetMessage(string logLevelString, int eventId, Exception exception)
         {
             var loglevelStringWithPadding = $"{logLevelString}: ";
 
             return
-                loglevelStringWithPadding + $"{_loggerName}[{eventId}]" + Environment.NewLine
-                + _paddingString + ReplaceMessageNewLinesWithPadding(_state.ToString())
-                + Environment.NewLine + ReplaceMessageNewLinesWithPadding(exception.ToString()) + Environment.NewLine;
+                loglevelStringWithPadding
+                + $"{_loggerName}[{eventId}]"
+                + Environment.NewLine
+                + _paddingString
+                + ReplaceMessageNewLinesWithPadding(_state.ToString())
+                + Environment.NewLine
+                + ( exception != null
+                    ? exception.ToString() + Environment.NewLine
+                    : string.Empty );
         }
 
         private string ReplaceMessageNewLinesWithPadding(string message)

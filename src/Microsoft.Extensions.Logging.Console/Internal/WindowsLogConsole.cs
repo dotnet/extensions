@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.Logging.Console.Internal
 {
     public class WindowsLogConsole : IConsole
     {
-        public void Write(string message, ConsoleColor? background, ConsoleColor? foreground)
+        private void SetColor(ConsoleColor? background, ConsoleColor? foreground)
         {
             if (background.HasValue)
             {
@@ -18,15 +18,25 @@ namespace Microsoft.Extensions.Logging.Console.Internal
             {
                 System.Console.ForegroundColor = foreground.Value;
             }
+        }
 
-            System.Console.Write(message);
-
+        private void ResetColor()
+        {
             System.Console.ResetColor();
+        }
+
+        public void Write(string message, ConsoleColor? background, ConsoleColor? foreground)
+        {
+            SetColor(background, foreground);
+            System.Console.Out.Write(message);
+            ResetColor();
         }
 
         public void WriteLine(string message, ConsoleColor? background, ConsoleColor? foreground)
         {
-            Write(message + Environment.NewLine, background, foreground);
+            SetColor(background, foreground);
+            System.Console.Out.WriteLine(message);
+            ResetColor();
         }
 
         public void Flush()

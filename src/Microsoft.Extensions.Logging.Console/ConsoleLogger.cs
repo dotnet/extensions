@@ -15,11 +15,10 @@ namespace Microsoft.Extensions.Logging.Console
         private static readonly object _lock = new object();
         private static readonly string _loglevelPadding = ": ";
         private static readonly string _messagePadding;
+        private static readonly string _newLineWithMessagePadding;
 
         // ConsoleColor does not have a value to specify the 'Default' color
         private readonly ConsoleColor? DefaultConsoleColor = null;
-
-        private const int _indentation = 2;
 
         private IConsole _console;
         private Func<string, LogLevel, bool> _filter;
@@ -28,6 +27,7 @@ namespace Microsoft.Extensions.Logging.Console
         {
             var logLevelString = GetLogLevelString(LogLevel.Information);
             _messagePadding = new string(' ', logLevelString.Length + _loglevelPadding.Length);
+            _newLineWithMessagePadding = Environment.NewLine + _messagePadding;
         }
 
         public ConsoleLogger(string name, Func<string, LogLevel, bool> filter, bool includeScopes)
@@ -97,99 +97,103 @@ namespace Microsoft.Extensions.Logging.Console
 
             var message = formatter(state, exception);
 
-            if (!string.IsNullOrEmpty(message))
+            if (!string.IsNullOrEmpty(message) || exception != null)
             {
-                WriteMessage(logLevel, Name, eventId.Id, message);
-            }
-
-            if (exception != null)
-            {
-                WriteException(logLevel, Name, eventId.Id, exception);
+                WriteMessage(logLevel, Name, eventId.Id, message, exception);
             }
         }
 
-        public virtual void WriteMessage(LogLevel logLevel, string logName, int eventId, string message)
+        public virtual void WriteMessage(LogLevel logLevel, string logName, int eventId, string message, Exception exception)
         {
-            // check if the message has any new line characters in it and provide the padding if necessary
-            message = ReplaceMessageNewLinesWithPadding(message);
-            var logLevelColors = GetLogLevelConsoleColors(logLevel);
-            var loglevelString = GetLogLevelString(logLevel);
+            var logLevelColors = default(ConsoleColors);
+            var logLevelString = string.Empty;
+            var logIdentifier = string.Empty;
+            var scopeInformation = string.Empty;
+            var exceptionText = string.Empty;
+            var printLog = false;
 
             // Example:
             // INFO: ConsoleApp.Program[10]
             //       Request received
-
-            lock (_lock)
+            if (!string.IsNullOrEmpty(message))
             {
-                // log level string
-                WriteWithColor(
-                    logLevelColors.Foreground,
-                    logLevelColors.Background,
-                    loglevelString,
-                    newLine: false);
-
+                logLevelColors = GetLogLevelConsoleColors(logLevel);
+                logLevelString = GetLogLevelString(logLevel);
                 // category and event id
-                // use default colors
-                WriteWithColor(
-                    DefaultConsoleColor,
-                    DefaultConsoleColor,
-                    _loglevelPadding + logName + $"[{eventId}]",
-                    newLine: true);
-
+                logIdentifier = _loglevelPadding + logName + "[" + eventId + "]";
                 // scope information
                 if (IncludeScopes)
                 {
-                    var scopeInformation = GetScopeInformation();
+                    scopeInformation = GetScopeInformation();
+                }
+                // message
+                message = _messagePadding + ReplaceMessageNewLinesWithPadding(message);
+                printLog = true;
+            }
+
+            // Example:
+            // System.InvalidOperationException
+            //    at Namespace.Class.Function() in File:line X
+            if (exception != null)
+            {
+                // exception message
+                exceptionText = exception.ToString();
+                printLog = true;
+            }
+
+            if (printLog)
+            {
+                lock (_lock)
+                {
+                    if (!string.IsNullOrEmpty(logLevelString))
+                    {
+                        // log level string
+                        Console.Write(
+                            logLevelString,
+                            logLevelColors.Background,
+                            logLevelColors.Foreground);
+                    }
+
+                    // use default colors from here on
+                    if (!string.IsNullOrEmpty(logIdentifier))
+                    {
+                        Console.WriteLine(
+                            logIdentifier,
+                            DefaultConsoleColor,
+                            DefaultConsoleColor);
+                    }
                     if (!string.IsNullOrEmpty(scopeInformation))
                     {
-                        WriteWithColor(
+                        Console.WriteLine(
+                            scopeInformation,
                             DefaultConsoleColor,
-                            DefaultConsoleColor,
-                            _messagePadding + scopeInformation,
-                            newLine: true);
+                            DefaultConsoleColor);
                     }
+                    if (!string.IsNullOrEmpty(message))
+                    {
+                        Console.WriteLine(
+                            message,
+                            DefaultConsoleColor,
+                            DefaultConsoleColor);
+                    }
+                    if (!string.IsNullOrEmpty(exceptionText))
+                    {
+                        Console.WriteLine(
+                            exceptionText,
+                            DefaultConsoleColor,
+                            DefaultConsoleColor);
+                    }
+
+                    // In case of AnsiLogConsole, the messages are not yet written to the console,
+                    // this would flush them instead.
+                    Console.Flush();
                 }
-
-                // message
-                WriteWithColor(
-                    DefaultConsoleColor,
-                    DefaultConsoleColor,
-                    _messagePadding + message,
-                    newLine: true);
-
-                // In case of AnsiLogConsole, the messages are not yet written to the console,
-                // this would flush them instead.
-                Console.Flush();
             }
         }
 
         private string ReplaceMessageNewLinesWithPadding(string message)
         {
-            return message.Replace(Environment.NewLine, Environment.NewLine + _messagePadding);
-        }
-
-        private void WriteException(LogLevel logLevel, string logName, int eventId, Exception ex)
-        {
-            var logLevelColors = GetLogLevelConsoleColors(logLevel);
-            var loglevelString = GetLogLevelString(logLevel);
-
-            // Example:
-            // System.InvalidOperationException
-            //    at Namespace.Class.Function() in File:line X
-
-            lock (_lock)
-            {
-                // exception message
-                WriteWithColor(
-                    DefaultConsoleColor,
-                    DefaultConsoleColor,
-                    ex.ToString(),
-                    newLine: true);
-
-                // In case of AnsiLogConsole, the messages are not yet written to the console,
-                // this would flush them instead.
-                Console.Flush();
-            }
+            return message.Replace(Environment.NewLine, _newLineWithMessagePadding);
         }
 
         public bool IsEnabled(LogLevel logLevel)
@@ -230,7 +234,8 @@ namespace Microsoft.Extensions.Logging.Console
 
         private ConsoleColors GetLogLevelConsoleColors(LogLevel logLevel)
         {
-            // do not change user's background color except for Critical
+            // We must explicitly set the background color if we are setting the foreground color,
+            // since just setting one can look bad on the users console.
             switch (logLevel)
             {
                 case LogLevel.Critical:
@@ -247,22 +252,6 @@ namespace Microsoft.Extensions.Logging.Console
                     return new ConsoleColors(ConsoleColor.Gray, ConsoleColor.Black);
                 default:
                     return new ConsoleColors(DefaultConsoleColor, DefaultConsoleColor);
-            }
-        }
-
-        private void WriteWithColor(
-            ConsoleColor? foreground,
-            ConsoleColor? background,
-            string message,
-            bool newLine = false)
-        {
-            if (newLine)
-            {
-                Console.WriteLine(message, background, foreground);
-            }
-            else
-            {
-                Console.Write(message, background, foreground);
             }
         }
 
@@ -284,6 +273,10 @@ namespace Microsoft.Extensions.Logging.Console
 
                 output.Insert(0, scopeLog);
                 current = current.Parent;
+            }
+            if (output.Length > 0)
+            {
+                output.Insert(0, _messagePadding);
             }
 
             return output.ToString();
