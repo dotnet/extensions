@@ -1,6 +1,13 @@
 {
   "version": "1.0.0-*",
-  "description": "A DiagnosticListener implementation which provides duck-typing through generated proxy types.",
+  "description": "Microsoft extension adapter feature to extend DiagnosticListener. Contains extension methods that extend System.Diagnostics.DiagnosticListener, and enables duck-typing based event handling by using dynamically generated proxy types.",
+  "packOptions": {
+    "tags": [
+      "diagnosticadapter",
+      "diagnosticlistener",
+      "diagnostics"
+    ]
+  },
   "dependencies": {
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
     "System.Diagnostics.DiagnosticSource": "4.0.0-*"
