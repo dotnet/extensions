@@ -243,7 +243,7 @@ namespace Microsoft.Extensions.Caching.Redis
                 Assert.Equal(value, result);
             }
 
-            Thread.Sleep(TimeSpan.FromSeconds(1));
+            Thread.Sleep(TimeSpan.FromSeconds(.6));
 
             result = cache.Get(key);
             Assert.Null(result);
