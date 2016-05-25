@@ -57,7 +57,6 @@ namespace Microsoft.Extensions.Configuration
             foreach (var source in _sources)
             {
                 var provider = source.Build(this);
-                provider.Load();
                 providers.Add(provider);
             }
             return new ConfigurationRoot(providers);

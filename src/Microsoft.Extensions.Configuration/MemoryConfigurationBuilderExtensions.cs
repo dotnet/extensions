@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration.Memory;
 
 namespace Microsoft.Extensions.Configuration
 {
-    public static class DefaultConfigurationBuilderExtensions
+    public static class MemoryConfigurationBuilderExtensions
     {
         /// <summary>
         /// Adds the memory configuration provider to <paramref name="configurationBuilder"/>.
