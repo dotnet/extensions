@@ -41,11 +41,7 @@ namespace SampleApp
             //
             //
             var loggingConfiguration = new ConfigurationBuilder()
-                .AddJsonFile(source =>
-                {
-                    source.Path = "logging.json";
-                    source.ReloadOnChange = true;
-                })
+                .AddJsonFile("logging.json", optional: false, reloadOnChange: true)
                 .Build();
             factory.AddConsole(loggingConfiguration);
 
