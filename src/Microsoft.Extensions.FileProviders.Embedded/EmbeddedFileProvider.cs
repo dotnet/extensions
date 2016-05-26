@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.FileProviders
         /// </summary>
         /// <param name="assembly"></param>
         public EmbeddedFileProvider(Assembly assembly)
-            : this(assembly, string.Empty)
+            : this(assembly, assembly?.GetName()?.Name)
         {
         }
 
