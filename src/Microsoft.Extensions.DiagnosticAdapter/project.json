@@ -2,6 +2,10 @@
   "version": "1.0.0-*",
   "description": "Microsoft extension adapter feature to extend DiagnosticListener. Contains extension methods that extend System.Diagnostics.DiagnosticListener, and enables duck-typing based event handling by using dynamically generated proxy types.",
   "packOptions": {
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/AspNet/EventNotification"
+    },
     "tags": [
       "diagnosticadapter",
       "diagnosticlistener",
