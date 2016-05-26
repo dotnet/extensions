@@ -536,13 +536,13 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         {
             // Arrange
             var collection = new ServiceCollection();
-            collection.AddTransient(typeof(IFakeOpenGenericService<AnotherClass>), typeof(FakeService));
+            collection.AddTransient(typeof(IFakeOpenGenericService<PocoClass>), typeof(FakeService));
             collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>));
-            collection.AddSingleton<AnotherClass>();
+            collection.AddSingleton<PocoClass>();
             var provider = CreateServiceProvider(collection);
 
             // Act
-            var service = provider.GetService<IFakeOpenGenericService<AnotherClass>>();
+            var service = provider.GetService<IFakeOpenGenericService<PocoClass>>();
 
             // Assert
             Assert.IsType<FakeService>(service);

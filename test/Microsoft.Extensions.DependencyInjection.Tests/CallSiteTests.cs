@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using Microsoft.Extensions.DependencyInjection.ServiceLookup;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
-using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
@@ -39,8 +38,8 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             // Closed Generic Descriptor
             yield return new object[]
             {
-                new[] { new ServiceDescriptor(typeof(IFakeOpenGenericService<AnotherClass>), typeof(FakeService), lifetime) },
-                typeof(IFakeOpenGenericService<AnotherClass>),
+                new[] { new ServiceDescriptor(typeof(IFakeOpenGenericService<PocoClass>), typeof(FakeService), lifetime) },
+                typeof(IFakeOpenGenericService<PocoClass>),
                 compare,
             };
             // Open Generic Descriptor

@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification.Fakes
         IFakeScopedService,
         IFakeServiceInstance,
         IFakeSingletonService,
-        IFakeOpenGenericService<AnotherClass>
+        IFakeOpenGenericService<PocoClass>
     {
     }
 }

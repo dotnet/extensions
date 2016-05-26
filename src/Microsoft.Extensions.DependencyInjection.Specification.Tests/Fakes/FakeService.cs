@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification.Fakes
 {
     public class FakeService : IFakeEveryService, IDisposable
     {
-        public AnotherClass Value { get; set; }
+        public PocoClass Value { get; set; }
 
         public bool Disposed { get; private set; }
 
