@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Optional contract used by <see cref="ServiceProviderExtensions.GetRequiredService{T}(IServiceProvider)"/>
+    /// Optional contract used by <see cref="ServiceProviderServiceExtensions.GetRequiredService{T}(IServiceProvider)"/>
     /// to resolve services if supported by <see cref="IServiceProvider"/>.
     /// </summary>
     public interface ISupportRequiredService

@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// <summary>
     /// Extension methods for adding services to an <see cref="IServiceCollection" />.
     /// </summary>
-    public static class ServiceCollectionExtensions
+    public static class ServiceCollectionServiceExtensions
     {
         /// <summary>
         /// Adds a transient service of the type specified in <paramref name="serviceType"/> with an

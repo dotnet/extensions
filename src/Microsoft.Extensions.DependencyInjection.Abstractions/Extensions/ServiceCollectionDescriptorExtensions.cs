@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection.Abstractions;
 
 namespace Microsoft.Extensions.DependencyInjection.Extensions
 {
-    public static class ServiceCollectionExtensions
+    public static class ServiceCollectionDescriptorExtensions
     {
         /// <summary>
         /// Adds the specified <paramref name="descriptor"/> to the <paramref name="collection"/>.

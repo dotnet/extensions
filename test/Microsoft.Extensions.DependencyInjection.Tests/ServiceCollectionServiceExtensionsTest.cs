@@ -11,7 +11,7 @@ using AbstractionResources = Microsoft.Extensions.DependencyInjection.Abstractio
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public class ServiceCollectionExtensionTest
+    public class ServiceCollectionServiceExtensionsTest
     {
         private static readonly FakeService _instance = new FakeService();
 
