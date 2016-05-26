@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.FileProviders
     /// <summary>
     /// Represents a non-existing file.
     /// </summary>
-    internal class NotFoundFileInfo : IFileInfo
+    public class NotFoundFileInfo : IFileInfo
     {
         public NotFoundFileInfo(string name)
         {

@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.FileProviders.Composite
             {
                 return _changeTokens[filter];
             }
-            return NoopChangeToken.Singleton;
+            return NullChangeToken.Singleton;
         }
     }
 }

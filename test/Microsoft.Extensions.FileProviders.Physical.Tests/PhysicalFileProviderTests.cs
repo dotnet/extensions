@@ -659,7 +659,7 @@ namespace Microsoft.Extensions.FileProviders
                 {
                     var token = provider.Watch(null);
 
-                    Assert.Same(NoopChangeToken.Singleton, token);
+                    Assert.Same(NullChangeToken.Singleton, token);
                 }
             }
         }
@@ -673,7 +673,7 @@ namespace Microsoft.Extensions.FileProviders
                 {
                     var token = provider.Watch(Path.Combine("a", "..", "..", root.DirectoryInfo.Name, "b"));
 
-                    Assert.Same(NoopChangeToken.Singleton, token);
+                    Assert.Same(NullChangeToken.Singleton, token);
                 }
             }
         }
@@ -722,7 +722,7 @@ namespace Microsoft.Extensions.FileProviders
                     var path = Path.Combine(root.RootPath, Guid.NewGuid().ToString());
                     var token = provider.Watch(path);
 
-                    Assert.Same(NoopChangeToken.Singleton, token);
+                    Assert.Same(NullChangeToken.Singleton, token);
                 }
             }
         }

@@ -6,11 +6,14 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.FileProviders
 {
-    internal class NoopChangeToken : IChangeToken
+    /// <summary>
+    /// An empty change token that doesn't raise any change callbacks
+    /// </summary>
+    public class NullChangeToken : IChangeToken
     {
-        public static NoopChangeToken Singleton { get; } = new NoopChangeToken();
+        public static NullChangeToken Singleton { get; } = new NullChangeToken();
 
-        private NoopChangeToken()
+        private NullChangeToken()
         {
         }
 

@@ -240,12 +240,12 @@ namespace Microsoft.Extensions.FileProviders
         {
             if (filter == null)
             {
-                return NoopChangeToken.Singleton;
+                return NullChangeToken.Singleton;
             }
 
             if (PathNavigatesAboveRoot(filter))
             {
-                return NoopChangeToken.Singleton;
+                return NullChangeToken.Singleton;
             }
 
             // Relative paths starting with a leading slash okay
@@ -257,7 +257,7 @@ namespace Microsoft.Extensions.FileProviders
             // Absolute paths not permitted.
             if (Path.IsPathRooted(filter))
             {
-                return NoopChangeToken.Singleton;
+                return NullChangeToken.Singleton;
             }
 
             return _filesWatcher.CreateFileChangeToken(filter);

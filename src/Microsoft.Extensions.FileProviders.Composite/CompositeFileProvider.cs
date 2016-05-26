@@ -91,7 +91,7 @@ namespace Microsoft.Extensions.FileProviders
             // There is no change token with active change callbacks
             if (changeTokens.Count == 0)
             {
-                return NoopChangeToken.Singleton;
+                return NullChangeToken.Singleton;
             }
             var CompositeFileChangeToken = new CompositeFileChangeToken(changeTokens);
             return CompositeFileChangeToken;

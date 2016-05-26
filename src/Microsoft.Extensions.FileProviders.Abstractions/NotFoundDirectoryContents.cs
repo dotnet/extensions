@@ -7,7 +7,10 @@ using System.Linq;
 
 namespace Microsoft.Extensions.FileProviders
 {
-    internal class NotFoundDirectoryContents : IDirectoryContents
+    /// <summary>
+    /// Represents a non-existing directory
+    /// </summary>
+    public class NotFoundDirectoryContents : IDirectoryContents
     {
         public bool Exists => false;
 

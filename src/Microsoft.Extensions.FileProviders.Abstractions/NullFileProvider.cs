@@ -29,6 +29,6 @@ namespace Microsoft.Extensions.FileProviders
         /// </summary>
         /// <param name="filter">Filter string used to determine what files or folders to monitor. This parameter is ignored.</param>
         /// <returns>A <see cref="IChangeToken"/> that does not register callbacks.</returns>
-        public IChangeToken Watch(string filter) => NoopChangeToken.Singleton;
+        public IChangeToken Watch(string filter) => NullChangeToken.Singleton;
     }
 }

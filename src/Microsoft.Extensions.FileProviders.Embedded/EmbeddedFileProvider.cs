@@ -149,7 +149,7 @@ namespace Microsoft.Extensions.FileProviders
 
         public IChangeToken Watch(string pattern)
         {
-            return NoopChangeToken.Singleton;
+            return NullChangeToken.Singleton;
         }
 
         private static bool HasInvalidPathChars(string path)
