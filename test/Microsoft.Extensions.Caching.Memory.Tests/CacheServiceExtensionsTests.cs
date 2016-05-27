@@ -30,19 +30,28 @@ namespace Microsoft.Extensions.Caching.Distributed
         }
 
         [Fact]
-        public void AddDistributedMemoryCache_RegistersDistributedCacheAsTransient()
+        public void AddDistributedMemoryCache_DoesntConflictWithMemoryCache()
         {
             // Arrange
             var services = new ServiceCollection();
+            services.AddDistributedMemoryCache();
+            services.AddMemoryCache();
+
+            var key = "key";
+            var memoryValue = "123";
+            var distributedValue = new byte[] { 1, 2, 3 };
 
             // Act
-            services.AddDistributedMemoryCache();
+            var serviceProvider = services.BuildServiceProvider();
+            var distributedCache = serviceProvider.GetService<IDistributedCache>();
+            var memoryCache = serviceProvider.GetService<IMemoryCache>();
+            memoryCache.Set(key, memoryValue);
+            distributedCache.Set(key, distributedValue);
 
             // Assert
-            var distributedCache = services.FirstOrDefault(desc => desc.ServiceType == typeof(IDistributedCache));
 
-            Assert.NotNull(distributedCache);
-            Assert.Equal(ServiceLifetime.Transient, distributedCache.Lifetime);
+            Assert.Equal(memoryValue, memoryCache.Get(key));
+            Assert.Equal(distributedValue, distributedCache.Get(key));
         }
 
         [Fact]
