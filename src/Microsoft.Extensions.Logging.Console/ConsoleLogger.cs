@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.Logging.Console.Internal;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.Extensions.Logging.Console
 {
@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.Logging.Console
             Filter = filter ?? ((category, logLevel) => true);
             IncludeScopes = includeScopes;
 
-            if (PlatformServices.Default.Runtime.OperatingSystem.Equals("Windows", StringComparison.OrdinalIgnoreCase))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 Console = new WindowsLogConsole();
             }
