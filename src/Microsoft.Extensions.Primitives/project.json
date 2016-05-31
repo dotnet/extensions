@@ -1,11 +1,14 @@
 {
   "version": "1.0.0-*",
-  "description": "ASP.NET 5 primitives.",
+  "description": "Primitives shared by framework extensions. Commonly used types include:\r\nMicrosoft.Extensions.Primitives.IChangeToken\r\nMicrosoft.Extensions.Primitives.StringValues\r\nMicrosoft.Extensions.Primitives.StringSegment",
   "packOptions": {
     "repository": {
       "type": "git",
       "url": "https://github.com/aspnet/common"
-    }
+    },
+    "tags": [
+      "primitives"
+    ]
   },
   "buildOptions": {
     "warningsAsErrors": true,

@@ -5,7 +5,10 @@
     "repository": {
       "type": "git",
       "url": "https://github.com/aspnet/common"
-    }
+    },
+    "tags": [
+      "pooling"
+    ]
   },
   "buildOptions": {
     "warningsAsErrors": true,

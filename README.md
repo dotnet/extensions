@@ -4,8 +4,6 @@ AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/snawy2a2vt0vd
 
 Travis:   [![Travis](https://travis-ci.org/aspnet/Common.svg?branch=dev)](https://travis-ci.org/aspnet/Common)
 
-The common repository includes multiple source files that are consumed through build-time NuGet packages.
-
-Each NuGet package includes exactly one source file.
+The Common repository includes projects containing commonly used primitives and utility types.
 
 This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
