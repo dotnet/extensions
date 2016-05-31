@@ -19,7 +19,12 @@
     "repository": {
       "type": "git",
       "url": "https://github.com/aspnet/options"
-    }
+    },
+    "tags": [
+      "aspnetcore",
+      "configuration",
+      "options"
+    ]
   },
   "frameworks": {
     "netstandard1.1": {}
