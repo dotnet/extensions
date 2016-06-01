@@ -357,6 +357,15 @@ namespace Microsoft.Extensions.Primitives
         /// <returns>The trimmed <see cref="StringSegment"/>.</returns>
         public StringSegment Trim()
         {
+            return TrimStart().TrimEnd();
+        }
+
+        /// <summary>
+        /// Removes all leading whitespaces.
+        /// </summary>
+        /// <returns>The trimmed <see cref="StringSegment"/>.</returns>
+        public StringSegment TrimStart()
+        {
             var trimmedStart = Offset;
             while (trimmedStart < Offset + Length)
             {
@@ -368,8 +377,17 @@ namespace Microsoft.Extensions.Primitives
                 trimmedStart++;
             }
 
+            return new StringSegment(Buffer, trimmedStart, Offset + Length - trimmedStart);
+        }
+
+        /// <summary>
+        /// Removes all trailing whitespaces.
+        /// </summary>
+        /// <returns>The trimmed <see cref="StringSegment"/>.</returns>
+        public StringSegment TrimEnd()
+        {
             var trimmedEnd = Offset + Length - 1;
-            while (trimmedEnd >= trimmedStart)
+            while (trimmedEnd >= Offset)
             {
                 if (!char.IsWhiteSpace(Buffer, trimmedEnd))
                 {
@@ -379,7 +397,7 @@ namespace Microsoft.Extensions.Primitives
                 trimmedEnd--;
             }
 
-            return new StringSegment(Buffer, trimmedStart, trimmedEnd - trimmedStart + 1);
+            return new StringSegment(Buffer, Offset, trimmedEnd - Offset + 1);
         }
 
         /// <summary>

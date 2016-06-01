@@ -460,6 +460,8 @@ namespace Microsoft.Extensions.Primitives
         [InlineData("      ", 1, 2, "")]
         [InlineData("\t\t\t", 0, 3, "")]
         [InlineData("\n\n\t\t  \t", 2, 3, "")]
+        [InlineData("      ", 1, 0, "")]
+        [InlineData("", 0, 0, "")]
         public void Trim_RemovesLeadingAndTrailingWhitespaces(string value, int start, int length, string expected)
         {
             // Arrange
@@ -472,5 +474,58 @@ namespace Microsoft.Extensions.Primitives
             Assert.Equal(expected, actual.Value);
         }
 
+        [Theory]
+        [InlineData("   value", 0, 8, "value")]
+        [InlineData("value   ", 0, 8, "value   ")]
+        [InlineData("\t\tvalue", 0, 7, "value")]
+        [InlineData("value\t\t", 0, 7, "value\t\t")]
+        [InlineData("\t\tvalue \t a", 1, 8, "value \t")]
+        [InlineData("   a     ", 0, 9, "a     ")]
+        [InlineData("value\t value  value ", 2, 13, "lue\t value  v")]
+        [InlineData("\x0009value \x0085", 0, 8, "value \x0085")]
+        [InlineData(" \f\t\u000B\u2028Hello \u2029\n\t ", 1, 13, "Hello \u2029\n\t")]
+        [InlineData("      ", 1, 2, "")]
+        [InlineData("\t\t\t", 0, 3, "")]
+        [InlineData("\n\n\t\t  \t", 2, 3, "")]
+        [InlineData("      ", 1, 0, "")]
+        [InlineData("", 0, 0, "")]
+        public void TrimStart_RemovesLeadingWhitespaces(string value, int start, int length, string expected)
+        {
+            // Arrange
+            var segment = new StringSegment(value, start, length);
+
+            // Act
+            var actual = segment.TrimStart();
+
+            // Assert
+            Assert.Equal(expected, actual.Value);
+        }
+
+        [Theory]
+        [InlineData("   value", 0, 8, "   value")]
+        [InlineData("value   ", 0, 8, "value")]
+        [InlineData("\t\tvalue", 0, 7, "\t\tvalue")]
+        [InlineData("value\t\t", 0, 7, "value")]
+        [InlineData("\t\tvalue \t a", 1, 8, "\tvalue")]
+        [InlineData("   a     ", 0, 9, "   a")]
+        [InlineData("value\t value  value ", 2, 13, "lue\t value  v")]
+        [InlineData("\x0009value \x0085", 0, 8, "\x0009value")]
+        [InlineData(" \f\t\u000B\u2028Hello \u2029\n\t ", 1, 13, "\f\t\u000B\u2028Hello")]
+        [InlineData("      ", 1, 2, "")]
+        [InlineData("\t\t\t", 0, 3, "")]
+        [InlineData("\n\n\t\t  \t", 2, 3, "")]
+        [InlineData("      ", 1, 0, "")]
+        [InlineData("", 0, 0, "")]
+        public void TrimEnd_RemovesTrailingWhitespaces(string value, int start, int length, string expected)
+        {
+            // Arrange
+            var segment = new StringSegment(value, start, length);
+
+            // Act
+            var actual = segment.TrimEnd();
+
+            // Assert
+            Assert.Equal(expected, actual.Value);
+        }
     }
 }
