@@ -359,14 +359,17 @@ CommonKey3:CommonKey4=IniValue6";
         public void DeletingFileWillReload(bool optional)
         {
             // Arrange
-            File.WriteAllText(Path.Combine(_basePath, "reload.json"), @"{""JsonKey1"": ""JsonValue1""}");
-            File.WriteAllText(Path.Combine(_basePath, "reload.ini"), @"IniKey1 = IniValue1");
-            File.WriteAllText(Path.Combine(_basePath, "reload.xml"), @"<settings XmlKey1=""XmlValue1""/>");
+            var iniFile = Path.Combine(_basePath, Path.GetRandomFileName());
+            var jsonFile = Path.Combine(_basePath, Path.GetRandomFileName());
+            var xmlFile = Path.Combine(_basePath, Path.GetRandomFileName());
 
+            File.WriteAllText(jsonFile, @"{""JsonKey1"": ""JsonValue1""}");
+            File.WriteAllText(iniFile, @"IniKey1 = IniValue1");
+            File.WriteAllText(xmlFile, @"<settings XmlKey1=""XmlValue1""/>");
             var config = new ConfigurationBuilder()
-                .AddIniFile("reload.ini", optional, reloadOnChange: true)
-                .AddJsonFile("reload.json", optional, reloadOnChange: true)
-                .AddXmlFile("reload.xml", optional, reloadOnChange: true)
+                .AddIniFile(Path.GetFileName(iniFile), optional, reloadOnChange: true)
+                .AddJsonFile(Path.GetFileName(jsonFile), optional, reloadOnChange: true)
+                .AddXmlFile(Path.GetFileName(xmlFile), optional, reloadOnChange: true)
                 .Build();
 
             Assert.Equal("JsonValue1", config["JsonKey1"]);
@@ -377,9 +380,9 @@ CommonKey3:CommonKey4=IniValue6";
 
             // Act & Assert
             // Delete files
-            File.Delete(Path.Combine(_basePath, "reload.json"));
-            File.Delete(Path.Combine(_basePath, "reload.ini"));
-            File.Delete(Path.Combine(_basePath, "reload.xml"));
+            File.Delete(jsonFile);
+            File.Delete(iniFile);
+            File.Delete(xmlFile);
 
             Thread.Sleep(1000);
 
