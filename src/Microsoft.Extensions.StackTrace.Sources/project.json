@@ -1,0 +1,8 @@
+﻿{
+  "version": "1.0.0-*",
+  "shared": "*.cs",
+  "frameworks": {
+    "net451": { },
+    "netstandard1.3": { }
+  }
+}

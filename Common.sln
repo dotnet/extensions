@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FEAA3936-5906-4383-B750-F07FE1B156C5}"
 EndProject
@@ -39,6 +39,10 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Process.Sources", "src\Microsoft.Extensions.Process.Sources\Microsoft.Extensions.Process.Sources.xproj", "{6DDC4681-0D48-41F6-91EB-C47381F92FF1}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.DotnetToolDispatcher.Sources", "src\Microsoft.Extensions.DotnetToolDispatcher.Sources\Microsoft.Extensions.DotnetToolDispatcher.Sources.xproj", "{D9A0A539-4A22-4151-90B2-1D6AA4CD493D}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.StackTrace.Sources", "src\Microsoft.Extensions.StackTrace.Sources\Microsoft.Extensions.StackTrace.Sources.xproj", "{B245CE2A-F918-4116-9D5C-4C21527D0AC5}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ClassLibraryWithPortablePdbs", "test\ClassLibraryWithPortablePdbs\ClassLibraryWithPortablePdbs.xproj", "{A2ABDB54-1E32-4BEE-81A1-C0353802A0C0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -114,6 +118,14 @@ Global
 		{D9A0A539-4A22-4151-90B2-1D6AA4CD493D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9A0A539-4A22-4151-90B2-1D6AA4CD493D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9A0A539-4A22-4151-90B2-1D6AA4CD493D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B245CE2A-F918-4116-9D5C-4C21527D0AC5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B245CE2A-F918-4116-9D5C-4C21527D0AC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B245CE2A-F918-4116-9D5C-4C21527D0AC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B245CE2A-F918-4116-9D5C-4C21527D0AC5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2ABDB54-1E32-4BEE-81A1-C0353802A0C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2ABDB54-1E32-4BEE-81A1-C0353802A0C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2ABDB54-1E32-4BEE-81A1-C0353802A0C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2ABDB54-1E32-4BEE-81A1-C0353802A0C0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -136,5 +148,7 @@ Global
 		{C46A8C00-CD50-4478-8639-6A6CF8CDD05B} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 		{6DDC4681-0D48-41F6-91EB-C47381F92FF1} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 		{D9A0A539-4A22-4151-90B2-1D6AA4CD493D} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
+		{B245CE2A-F918-4116-9D5C-4C21527D0AC5} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
+		{A2ABDB54-1E32-4BEE-81A1-C0353802A0C0} = {6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}
 	EndGlobalSection
 EndGlobal
