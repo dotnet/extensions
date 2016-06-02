@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration.Ini;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Configuration.Xml;
@@ -129,6 +128,17 @@ CommonKey3:CommonKey4=IniValue6";
             Assert.Equal("MemValue5", config["CommonKey1:CommonKey2:MemKey7"]);
 
             Assert.Equal("MemValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
+        }
+
+        [Fact]
+        public void CanReadUnicodeString()
+        {
+            var configurationBuilder = new ConfigurationBuilder();
+            var fileJson = Path.Combine(_basePath, Path.GetRandomFileName());
+            File.WriteAllText(fileJson, @"{ ""SiteTitle"" : ""???""}");
+
+            var config = configurationBuilder.AddJsonFile(fileJson).Build();
+            Assert.Equal("???", config.GetSection("SiteTitle").Value);
         }
 
         [Fact]
@@ -323,7 +333,7 @@ CommonKey3:CommonKey4=IniValue6";
             Assert.True(token.HasChanged);
         }
 
-        //[Fact] Reenable once FileWatcher fixed
+        //[Fact] Fails still for some reason
         public void DeletingFileWillFire()
         {
             var fileProvider = new PhysicalFileProvider(_basePath);
@@ -337,11 +347,16 @@ CommonKey3:CommonKey4=IniValue6";
             Assert.False(token2.HasChanged);
             File.Delete(Path.Combine(_basePath, "test.txt"));
             Thread.Sleep(1000);
-            Assert.True(token2.HasChanged, "Deleted");
+            var called = false;
+            token2.RegisterChangeCallback(_ => called = true, state: null);
+            Assert.True(called);
+            //Assert.True(token2.HasChanged, "Deleted");
         }
 
-        //[Fact] Reenable once FileWatcher fixed
-        public void DeletingFileWillReload()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void DeletingFileWillReload(bool optional)
         {
             // Arrange
             File.WriteAllText(Path.Combine(_basePath, "reload.json"), @"{""JsonKey1"": ""JsonValue1""}");
@@ -349,9 +364,9 @@ CommonKey3:CommonKey4=IniValue6";
             File.WriteAllText(Path.Combine(_basePath, "reload.xml"), @"<settings XmlKey1=""XmlValue1""/>");
 
             var config = new ConfigurationBuilder()
-                .AddIniFile("reload.ini", optional: false, reloadOnChange: true)
-                .AddJsonFile("reload.json", optional: false, reloadOnChange: true)
-                .AddXmlFile("reload.xml", optional: false, reloadOnChange: true)
+                .AddIniFile("reload.ini", optional, reloadOnChange: true)
+                .AddJsonFile("reload.json", optional, reloadOnChange: true)
+                .AddXmlFile("reload.xml", optional, reloadOnChange: true)
                 .Build();
 
             Assert.Equal("JsonValue1", config["JsonKey1"]);
@@ -372,6 +387,79 @@ CommonKey3:CommonKey4=IniValue6";
             Assert.Null(config["IniKey1"]);
             Assert.Null(config["XmlKey1"]);
             Assert.True(token.HasChanged);
+        }
+
+        [Fact]
+        public void CreatingWritingDeletingCreatingFileWillReload()
+        {
+            var iniFile = Path.Combine(_basePath, Path.GetRandomFileName());
+            var jsonFile = Path.Combine(_basePath, Path.GetRandomFileName());
+            var xmlFile = Path.Combine(_basePath, Path.GetRandomFileName());
+
+            // Arrange
+            var config = new ConfigurationBuilder()
+                .AddIniFile(Path.GetFileName(iniFile), optional: true, reloadOnChange: true)
+                .AddJsonFile(Path.GetFileName(jsonFile), optional: true, reloadOnChange: true)
+                .AddXmlFile(Path.GetFileName(xmlFile), optional: true, reloadOnChange: true)
+                .Build();
+
+            Assert.Null(config["JsonKey1"]);
+            Assert.Null(config["IniKey1"]);
+            Assert.Null(config["XmlKey1"]);
+
+            var createToken = config.GetReloadToken();
+
+            File.WriteAllText(jsonFile, @"{""JsonKey1"": ""JsonValue1""}");
+            File.WriteAllText(iniFile, @"IniKey1 = IniValue1");
+            File.WriteAllText(xmlFile, @"<settings XmlKey1=""XmlValue1""/>");
+
+            Thread.Sleep(500);
+
+            Assert.Equal("JsonValue1", config["JsonKey1"]);
+            Assert.Equal("IniValue1", config["IniKey1"]);
+            Assert.Equal("XmlValue1", config["XmlKey1"]);
+            Assert.True(createToken.HasChanged);
+
+            var writeToken = config.GetReloadToken();
+
+            File.WriteAllText(jsonFile, @"{""JsonKey1"": ""JsonValue2""}");
+            File.WriteAllText(iniFile, @"IniKey1 = IniValue2");
+            File.WriteAllText(xmlFile, @"<settings XmlKey1=""XmlValue2""/>");
+
+            Thread.Sleep(500);
+
+            Assert.Equal("JsonValue2", config["JsonKey1"]);
+            Assert.Equal("IniValue2", config["IniKey1"]);
+            Assert.Equal("XmlValue2", config["XmlKey1"]);
+            Assert.True(writeToken.HasChanged);
+
+            var deleteToken = config.GetReloadToken();
+
+            // Act & Assert
+            // Delete files
+            File.Delete(jsonFile);
+            File.Delete(iniFile);
+            File.Delete(xmlFile);
+
+            Thread.Sleep(500);
+
+            Assert.Null(config["JsonKey1"]);
+            Assert.Null(config["IniKey1"]);
+            Assert.Null(config["XmlKey1"]);
+            Assert.True(deleteToken.HasChanged);
+
+            var createAgainToken = config.GetReloadToken();
+
+            File.WriteAllText(jsonFile, @"{""JsonKey1"": ""JsonValue1""}");
+            File.WriteAllText(iniFile, @"IniKey1 = IniValue1");
+            File.WriteAllText(xmlFile, @"<settings XmlKey1=""XmlValue1""/>");
+
+            Thread.Sleep(500);
+
+            Assert.Equal("JsonValue1", config["JsonKey1"]);
+            Assert.Equal("IniValue1", config["IniKey1"]);
+            Assert.Equal("XmlValue1", config["XmlKey1"]);
+            Assert.True(createAgainToken.HasChanged);
         }
 
         [Fact]

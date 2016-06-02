@@ -25,23 +25,18 @@ namespace Microsoft.Extensions.Configuration
             {
                 ChangeToken.OnChange(
                     () => Source.FileProvider.Watch(Source.Path),
-                    () => Load());
+                    () => Load(reload: true));
             }
         }
 
         public FileConfigurationSource Source { get; }
 
-        /// <summary>
-        /// Loads the contents of the file at <see cref="Path"/>.
-        /// </summary>
-        /// <exception cref="FileNotFoundException">If Optional is <c>false</c> on the source and a
-        /// file does not exist at specified Path.</exception>
-        public override void Load()
+        private void Load(bool reload)
         {
             var file = Source.FileProvider?.GetFileInfo(Source.Path);
             if (file == null || !file.Exists)
             {
-                if (Source.Optional)
+                if (Source.Optional || reload) // Always optional on reload
                 {
                     Data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 }
@@ -59,6 +54,16 @@ namespace Microsoft.Extensions.Configuration
             }
             // REVIEW: Should we raise this in the base as well / instead?
             OnReload();
+        }
+
+        /// <summary>
+        /// Loads the contents of the file at <see cref="Path"/>.
+        /// </summary>
+        /// <exception cref="FileNotFoundException">If Optional is <c>false</c> on the source and a
+        /// file does not exist at specified Path.</exception>
+        public override void Load()
+        {
+            Load(reload: false);
         }
 
         public abstract void Load(Stream stream);
