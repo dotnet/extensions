@@ -16,10 +16,5 @@ namespace ClassLibraryWithPortablePdbs
         {
             throw new Exception();
         }
-
-        public void CallMethodThatThrows()
-        {
-            MethodThatThrows();
-        }
     }
 }

@@ -14,9 +14,7 @@ namespace Microsoft.Extensions.Internal.Test
         public static TheoryData CanGetStackTraceData => new TheoryData<Action, string>
         {
             { ThrowsException, nameof(ThrowsException) },
-            { CallsThrowsException, nameof(ThrowsException) },
             { new ExceptionType().MethodThatThrows, nameof(ExceptionType.MethodThatThrows) },
-            { new ExceptionType().CallMethodThatThrows, nameof(ExceptionType.MethodThatThrows) },
             { ExceptionType.StaticMethodThatThrows, nameof(ExceptionType.StaticMethodThatThrows) }
         };
 
@@ -42,11 +40,6 @@ namespace Microsoft.Extensions.Internal.Test
         public static void ThrowsException()
         {
             throw new Exception();
-        }
-
-        public static void CallsThrowsException()
-        {
-            ThrowsException();
         }
     }
 }
