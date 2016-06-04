@@ -287,6 +287,35 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
         }
 
         [Fact]
+        public void AlreadyInitializedListInterfaceBinding()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"AlreadyInitializedListInterface:0", "val0"},
+                {"AlreadyInitializedListInterface:1", "val1"},
+                {"AlreadyInitializedListInterface:2", "val2"},
+                {"AlreadyInitializedListInterface:x", "valx"}
+            };
+
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(input);
+            var config = configurationBuilder.Build();
+
+            var options = new OptionsWithLists();
+            config.Bind(options);
+
+            var list = options.AlreadyInitializedListInterface;
+
+            Assert.Equal(5, list.Count);
+
+            Assert.Equal("This was here too", list[0]);
+            Assert.Equal("val0", list[1]);
+            Assert.Equal("val1", list[2]);
+            Assert.Equal("val2", list[3]);
+            Assert.Equal("valx", list[4]);
+        }        
+
+        [Fact]
         public void CustomListBinding()
         {
             var input = new Dictionary<string, string>
@@ -765,6 +794,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             {
                 AlreadyInitializedList = new List<string>();
                 AlreadyInitializedList.Add("This was here before");
+                AlreadyInitializedListInterface = new List<string>();
+                AlreadyInitializedListInterface.Add("This was here too");
             }
 
             public CustomList CustomList { get; set; }
@@ -782,6 +813,8 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             public List<string> AlreadyInitializedList { get; set; }
 
             public List<NestedOptions> ObjectList { get; set; }
+            
+            public IList<string> AlreadyInitializedListInterface { get; set; }
         }
 
         private class OptionsWithDictionary
