@@ -1,7 +1,6 @@
 {
   "buildOptions": {
-    "warningsAsErrors": true,
-    "debugType": "full"
+    "warningsAsErrors": true
   },
   "dependencies": {
     "ClassLibraryWithPortablePdbs": "1.0.0",
