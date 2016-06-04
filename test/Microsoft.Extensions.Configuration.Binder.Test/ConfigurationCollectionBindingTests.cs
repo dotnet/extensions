@@ -420,6 +420,32 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             Assert.Equal("val_2", options.StringDictionary["def"]);
             Assert.Equal("val_3", options.StringDictionary["ghi"]);
         }
+        
+        [Fact]
+        public void AlreadyInitializedStringDictionaryBinding()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"AlreadyInitializedStringDictionaryInterface:abc", "val_1"},
+                {"AlreadyInitializedStringDictionaryInterface:def", "val_2"},
+                {"AlreadyInitializedStringDictionaryInterface:ghi", "val_3"}
+            };
+
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(input);
+            var config = configurationBuilder.Build();
+
+            var options = new OptionsWithDictionary();
+            config.Bind(options);
+
+            Assert.NotNull(options.AlreadyInitializedStringDictionaryInterface);
+            Assert.Equal(4, options.AlreadyInitializedStringDictionaryInterface.Count);
+
+            Assert.Equal("This was already here", options.AlreadyInitializedStringDictionaryInterface["123"]);
+            Assert.Equal("val_1", options.AlreadyInitializedStringDictionaryInterface["abc"]);
+            Assert.Equal("val_2", options.AlreadyInitializedStringDictionaryInterface["def"]);
+            Assert.Equal("val_3", options.AlreadyInitializedStringDictionaryInterface["ghi"]);
+        }
 
         [Fact]
         public void IntDictionaryBinding()
@@ -819,6 +845,12 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
 
         private class OptionsWithDictionary
         {
+            public OptionsWithDictionary()
+            {
+                AlreadyInitializedStringDictionaryInterface = new Dictionary<string, string>();
+                AlreadyInitializedStringDictionaryInterface["123"] = "This was already here";
+            }
+            
             public Dictionary<string, int> IntDictionary { get; set; }
 
             public Dictionary<string, string> StringDictionary { get; set; }
@@ -828,6 +860,12 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             public Dictionary<string, List<string>> ListDictionary { get; set; }
 
             public Dictionary<NestedOptions, string> NonStringKeyDictionary { get; set; }
+            
+            // This cannot be initialized because we cannot
+            // activate an interface
+            public IDictionary<string, string> StringDictionaryInterface { get; set; }
+            
+            public IDictionary<string, string> AlreadyInitializedStringDictionaryInterface { get; set; }
         }
     }
 }
