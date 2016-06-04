@@ -323,7 +323,14 @@ namespace Microsoft.Extensions.Configuration
 
         private static Type FindOpenGenericInterface(Type expected, Type actual)
         {
-            var interfaces = actual.GetTypeInfo().ImplementedInterfaces;
+            var actualTypeInfo = actual.GetTypeInfo();
+            if(actualTypeInfo.IsGenericType && 
+                actual.GetGenericTypeDefinition() == expected)
+            {
+                return actual;
+            } 
+             
+            var interfaces = actualTypeInfo.ImplementedInterfaces;
             foreach (var interfaceType in interfaces)
             {
                 if (interfaceType.GetTypeInfo().IsGenericType &&
