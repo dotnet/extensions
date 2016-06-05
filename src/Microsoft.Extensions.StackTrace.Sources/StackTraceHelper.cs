@@ -17,7 +17,9 @@ namespace Microsoft.Extensions.StackTrace.Sources
                 return frames;
             }
 
+#if NET451
             using (var portablePdbReader = new PortablePdbReader())
+#endif
             {
                 var needFileInfo = true;
                 var stackTrace = new System.Diagnostics.StackTrace(exception, needFileInfo);

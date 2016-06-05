@@ -21,6 +21,7 @@
             "Microsoft.Extensions.PropertyHelper.Sources": { },
             "Microsoft.Extensions.RuntimeEnvironment.Sources": { },
             "Microsoft.Extensions.SecurityHelper.Sources": { },
+            "Microsoft.Extensions.StackTrace.Sources": { },
             "Microsoft.Extensions.TypeNameHelper.Sources": { }
         }
     },
