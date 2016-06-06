@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
@@ -41,6 +42,7 @@ namespace SampleApp
             //
             //
             var loggingConfiguration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("logging.json", optional: false, reloadOnChange: true)
                 .Build();
             factory.AddConsole(loggingConfiguration);
@@ -120,9 +122,9 @@ namespace SampleApp
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogCritical("Unexpected critical error starting application", ex);
-                    _logger.LogError("Unexpected error", ex);
-                    _logger.LogWarning("Unexpected warning", ex);
+                    _logger.LogCritical(1, ex, "Unexpected critical error starting application");
+                    _logger.LogError(1, ex, "Unexpected error");
+                    _logger.LogWarning(1, ex, "Unexpected warning");
                 }
 
                 using (_logger.BeginScope("Main"))
