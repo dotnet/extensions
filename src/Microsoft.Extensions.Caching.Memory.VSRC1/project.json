@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0-rc1-final",
+  "description": "ASP.NET 5 in memory cache abstractions and implementation.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aspnet/caching"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
+  "dependencies": {
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-rc1-final",
+    "Microsoft.Extensions.Caching.Abstractions.VSRC1": "1.0.0-rc1-final",
+    "Microsoft.Extensions.OptionsModel.VSRC1": "1.0.0-rc1-final"
+  },
+  "frameworks": {
+    "net451": {}
+  }
+}
