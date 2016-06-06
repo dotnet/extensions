@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Testing.xunit
 {
@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         public void TestSkipLinux()
         {
             Assert.False(
-                PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Linux,
+                RuntimeInformation.IsOSPlatform(OSPlatform.Linux),
                 "Test should not be running on Linux");
         }
 
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         public void TestSkipMacOSX()
         {
             Assert.False(
-                PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Darwin,
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX),
                 "Test should not be running on MacOSX.");
         }
 
@@ -31,8 +31,8 @@ namespace Microsoft.AspNetCore.Testing.xunit
         public void RunTest_DoesNotRunOnWin7OrWin2008R2()
         {
             Assert.False(
-                PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Windows &&
-                PlatformServices.Default.Runtime.OperatingSystemVersion == "6.1",
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+                Microsoft.Extensions.Internal.RuntimeEnvironment.OperatingSystemVersion == "6.1",
                 "Test should not be running on Win7 or Win2008R2.");
         }
 
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         public void TestSkipWindows()
         {
             Assert.False(
-                PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Windows,
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
                 "Test should not be running on Windows.");
         }
     }

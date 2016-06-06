@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.PlatformAbstractions;
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Testing.xunit
@@ -10,26 +10,12 @@ namespace Microsoft.AspNetCore.Testing.xunit
     public class OSSkipConditionAttributeTest
     {
         [Fact]
-        public void Throws_OnUnrecognizedOperatingSystem()
-        {
-            // Act
-            var osSkipAttribute = new OSSkipConditionAttribute(
-                OperatingSystems.Windows,
-                Platform.Unknown,
-                "2.5");
-
-            // Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => osSkipAttribute.IsMet);
-            Assert.Equal($"Unrecognized operating system '{Platform.Unknown}'.", exception.Message);
-        }
-
-        [Fact]
         public void Skips_WhenOnlyOperatingSystemIsSupplied()
         {
             // Act
             var osSkipAttribute = new OSSkipConditionAttribute(
                 OperatingSystems.Windows,
-                Platform.Windows,
+                OperatingSystems.Windows,
                 "2.5");
 
             // Assert
@@ -42,7 +28,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
             // Act
             var osSkipAttribute = new OSSkipConditionAttribute(
                 OperatingSystems.Linux,
-                Platform.Windows,
+                OperatingSystems.Windows,
                 "2.5");
 
             // Assert
@@ -55,7 +41,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
             // Act
             var osSkipAttribute = new OSSkipConditionAttribute(
                 OperatingSystems.Windows,
-                Platform.Windows,
+                OperatingSystems.Windows,
                 "2.5",
                 "10.0");
 
@@ -69,7 +55,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
             // Act
             var osSkipAttribute = new OSSkipConditionAttribute(
                 OperatingSystems.Linux,
-                Platform.Windows,
+                OperatingSystems.Windows,
                 "2.5",
                 "2.5");
 
@@ -85,7 +71,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
             // Act
             var osSkipAttribute = new OSSkipConditionAttribute(
                 OperatingSystems.Windows,
-                Platform.Windows,
+                OperatingSystems.Windows,
                 currentOSVersion,
                 skipVersion);
 
@@ -99,7 +85,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
             // Act
             var osSkipAttribute = new OSSkipConditionAttribute(
                 OperatingSystems.Windows,
-                Platform.Windows,
+                OperatingSystems.Windows,
                 "2.5",
                 "10.0", "3.4", "2.5");
 

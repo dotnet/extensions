@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.PlatformAbstractions;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Testing.xunit
 {
@@ -13,21 +13,21 @@ namespace Microsoft.AspNetCore.Testing.xunit
     {
         private readonly OperatingSystems _excludedOperatingSystem;
         private readonly IEnumerable<string> _excludedVersions;
-        private readonly Platform _osPlatform;
+        private readonly OperatingSystems _osPlatform;
         private readonly string _osVersion;
 
         public OSSkipConditionAttribute(OperatingSystems operatingSystem, params string[] versions) :
             this(
                 operatingSystem,
-                PlatformServices.Default.Runtime.OperatingSystemPlatform,
-                PlatformServices.Default.Runtime.OperatingSystemVersion,
+                GetCurrentOS(),
+                GetCurrentOSVersion(),
                 versions)
         {
         }
 
         // to enable unit testing
         internal OSSkipConditionAttribute(
-            OperatingSystems operatingSystem, Platform osPlatform, string osVersion, params string[] versions)
+            OperatingSystems operatingSystem, OperatingSystems osPlatform, string osVersion, params string[] versions)
         {
             _excludedOperatingSystem = operatingSystem;
             _excludedVersions = versions ?? Enumerable.Empty<string>();
@@ -39,7 +39,11 @@ namespace Microsoft.AspNetCore.Testing.xunit
         {
             get
             {
-                var currentOSInfo = GetCurrentOSInfo();
+                var currentOSInfo = new OSInfo()
+                {
+                    OperatingSystem = _osPlatform,
+                    Version = _osVersion,
+                };
 
                 var skip = (_excludedOperatingSystem == currentOSInfo.OperatingSystem);
                 if (_excludedVersions.Any())
@@ -55,29 +59,34 @@ namespace Microsoft.AspNetCore.Testing.xunit
 
         public string SkipReason { get; set; } = "Test cannot run on this operating system.";
 
-        private OSInfo GetCurrentOSInfo()
+        static private OperatingSystems GetCurrentOS()
         {
-            OperatingSystems os;
-            switch (_osPlatform)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                case Platform.Windows:
-                    os = OperatingSystems.Windows;
-                    break;
-                case Platform.Linux:
-                    os = OperatingSystems.Linux;
-                    break;
-                case Platform.Darwin:
-                    os = OperatingSystems.MacOSX;
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unrecognized operating system '{_osPlatform}'.");
+                return OperatingSystems.Windows;
             }
-
-            return new OSInfo()
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                OperatingSystem = os,
-                Version = _osVersion,
-            };
+                return OperatingSystems.Linux;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return OperatingSystems.MacOSX;
+            }
+            throw new PlatformNotSupportedException();
+        }
+
+        static private string GetCurrentOSVersion()
+        {
+            // currently not used on other OS's
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return Microsoft.Extensions.Internal.RuntimeEnvironment.OperatingSystemVersion;
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
 
         private class OSInfo
