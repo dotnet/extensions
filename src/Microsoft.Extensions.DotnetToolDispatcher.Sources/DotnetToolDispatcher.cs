@@ -118,6 +118,6 @@ namespace Microsoft.Extensions.Internal
                 toolAssembly.GetName().Version.ToString();
 
             return informationalVersion;
-            }
+        }
     }
 }

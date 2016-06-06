@@ -4,15 +4,13 @@
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Extensions.Internal
 {
     public class SecurityHelperTests
     {
-        [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void AddingToAnonymousIdentityDoesNotKeepAnonymousIdentity()
         {
             var user = SecurityHelper.MergeUserPrincipal(new ClaimsPrincipal(), new GenericPrincipal(new GenericIdentity("Test1", "Alpha"), new string[0]));
@@ -25,8 +23,7 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal(1, user.Identities.Count());
         }
 
-        [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void AddingExistingIdentityChangesDefaultButPreservesPrior()
         {
             ClaimsPrincipal user = new GenericPrincipal(new GenericIdentity("Test1", "Alpha"), null);
@@ -50,8 +47,7 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal("Test1", user.Identities.Skip(2).First().Name);
         }
 
-        [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void AddingPreservesNewIdentitiesAndDropsEmpty()
         {
             var existingPrincipal = new ClaimsPrincipal(new ClaimsIdentity());
@@ -92,7 +88,6 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal(identityTwo, user.Identities.Skip(1).First());
             Assert.Equal(identityNoAuthTypeWithClaim, user.Identities.Skip(2).First());
             Assert.Equal(identityEmptyWithAuthType, user.Identities.Skip(3).First());
-
         }
     }
 }

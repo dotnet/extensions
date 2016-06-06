@@ -6,7 +6,6 @@
     "ClassLibraryWithPortablePdbs": "1.0.0",
     "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
-    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "type": "build",
       "version": "1.0.0-*"

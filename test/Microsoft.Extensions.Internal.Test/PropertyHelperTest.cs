@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Extensions.Internal
@@ -191,9 +190,7 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal("Foo", property.Name);
         }
 
-        // Blocked by: https://bugzilla.xamarin.com/show_bug.cgi?id=25717
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void PropertyHelper_WorksForStruct()
         {
             // Arrange
@@ -466,9 +463,7 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal("Hi", value);
         }
 
-        // Blocked by: https://bugzilla.xamarin.com/show_bug.cgi?id=25717
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void MakeNullSafeFastPropertyGetter_ValueType_Success()
         {
             // Arrange
