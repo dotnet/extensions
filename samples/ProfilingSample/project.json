@@ -14,11 +14,7 @@
           "version": "1.0.0-*",
           "type": "platform"
         }
-      },
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ]
+      }
     }
   }
 }
