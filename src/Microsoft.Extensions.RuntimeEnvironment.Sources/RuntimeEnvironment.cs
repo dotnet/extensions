@@ -7,19 +7,14 @@ namespace Microsoft.Extensions.Internal
 {
     internal static class RuntimeEnvironment
     {
-        static RuntimeEnvironment()
-        {
-            OperatingSystemVersion = Native.PlatformApis.GetOSVersion();
-
-            RuntimeType = GetRuntimeType();
-        }
+        private static readonly Lazy<string> _operatingSystemVersion = new Lazy<string>(() => Native.PlatformApis.GetOSVersion());
 
         /// <summary>
         /// Don't use in shipping packages
         /// </summary>
-        static public string OperatingSystemVersion { get; }
+        static public string OperatingSystemVersion => _operatingSystemVersion.Value;
 
-        static public string RuntimeType { get; }
+        static public string RuntimeType { get; } = GetRuntimeType();
 
         static private string GetRuntimeType()
         {
