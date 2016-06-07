@@ -37,10 +37,7 @@
         "System.Dynamic.Runtime": "4.0.11-*",
         "System.IO.FileSystem": "4.0.1-*",
         "System.Runtime.Serialization.Primitives": "4.1.1-*"
-      },
-      "imports": [
-        "portable-net451+win8"
-      ]
+      }
     }
   }
 }
