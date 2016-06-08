@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using ClassLibraryWithPortablePdbs;
 using Microsoft.Extensions.StackTrace.Sources;
 using Xunit;
@@ -34,6 +35,29 @@ namespace Microsoft.Extensions.Internal.Test
                 // Assert
                 Assert.Equal(expectedMethodName, frames.First().Method);
                 Assert.Equal(nameof(GetFrames_CanGetStackTrace), frames.Last().Method);
+            }
+        }
+
+        [Fact]
+        public void GetFrames_DoesNotFailForDynamicallyGeneratedAssemblies()
+        {
+            // Arrange
+            var action = (Action)Expression.Lambda(
+                Expression.Throw(
+                    Expression.New(typeof(Exception)))).Compile();
+
+            // Act
+            try
+            {
+                action();
+            }
+            catch (Exception exception)
+            {
+                var frames = StackTraceHelper.GetFrames(exception);
+
+                // Assert
+                Assert.Null(frames.First().FilePath);
+                Assert.Equal(nameof(GetFrames_DoesNotFailForDynamicallyGeneratedAssemblies), frames.Last().Method);
             }
         }
 

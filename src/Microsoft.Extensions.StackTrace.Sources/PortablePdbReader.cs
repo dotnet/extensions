@@ -20,6 +20,11 @@ namespace Microsoft.Extensions.StackTrace.Sources
 
         public void PopulateStackFrame(StackFrameInfo frameInfo, MethodBase method, int IlOffset)
         {
+            if (method.Module.Assembly.IsDynamic)
+            {
+                return;
+            }
+
             var metadataReader = GetMetadataReader(method.Module.Assembly.Location);
 
             if (metadataReader == null)
