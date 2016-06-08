@@ -30,11 +30,7 @@
           "type": "platform"
         },
         "System.Console": "4.0.0-*"
-      },
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ]
+      }
     }
   }
 }
