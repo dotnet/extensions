@@ -67,7 +67,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
             {
                 var pdbPath = GetPdbPath(assemblyPath);
 
-                if (!string.IsNullOrEmpty(pdbPath) && File.Exists(pdbPath))
+                if (!string.IsNullOrEmpty(pdbPath) && File.Exists(pdbPath) && IsPortable(pdbPath))
                 {
                     var pdbStream = File.OpenRead(pdbPath);
                     provider = MetadataReaderProvider.FromPortablePdbStream(pdbStream);
@@ -105,6 +105,17 @@ namespace Microsoft.Extensions.StackTrace.Sources
             }
 
             return null;
+        }
+
+        private static bool IsPortable(string pdbPath)
+        {
+            using (var pdbStream = File.OpenRead(pdbPath))
+            {
+                return pdbStream.ReadByte() == 'B' &&
+                    pdbStream.ReadByte() == 'S' &&
+                    pdbStream.ReadByte() == 'J' &&
+                    pdbStream.ReadByte() == 'B';
+            }
         }
 
         public void Dispose()
