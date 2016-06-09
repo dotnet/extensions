@@ -158,6 +158,33 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         }
 
         [Fact]
+        public void RegistrationOrderIsPreservedWhenServicesAreIEnumerableResolved()
+        {
+            // Arrange
+            var collection = new ServiceCollection();
+            collection.AddTransient(typeof(IFakeMultipleService), typeof(FakeOneMultipleService));
+            collection.AddTransient(typeof(IFakeMultipleService), typeof(FakeTwoMultipleService));
+
+            var provider = CreateServiceProvider(collection);
+
+            collection.Reverse();
+            var providerReversed = CreateServiceProvider(collection);
+
+            // Act
+            var services = provider.GetService<IEnumerable<IFakeMultipleService>>();
+            var servicesReversed = providerReversed.GetService<IEnumerable<IFakeMultipleService>>();
+
+            // Assert
+            Assert.Collection(services,
+                service => Assert.IsType<FakeOneMultipleService>(service),
+                service => Assert.IsType<FakeTwoMultipleService>(service));
+
+            Assert.Collection(servicesReversed,
+                service => Assert.IsType<FakeTwoMultipleService>(service),
+                service => Assert.IsType<FakeOneMultipleService>(service));
+        }
+
+        [Fact]
         public void OuterServiceCanHaveOtherServicesInjected()
         {
             // Arrange
