@@ -74,7 +74,16 @@ namespace Microsoft.Extensions.FileProviders
                 return null;
             }
 
-            var fullPath = Path.GetFullPath(Path.Combine(Root, path));
+            string fullPath;
+            try
+            {
+                fullPath = Path.GetFullPath(Path.Combine(Root, path));
+            }
+            catch
+            {
+                return null;
+            }
+
             if (!IsUnderneathRoot(fullPath))
             {
                 return null;

@@ -36,6 +36,32 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
+        public static TheoryData<string> InvalidPaths
+        {
+            get
+            {
+                return new TheoryData<string>
+                {
+                    Path.Combine(". .", "file"),
+                    Path.Combine(" ..", "file"),
+                    Path.Combine(".. ", "file"),
+                    Path.Combine(" .", "file"),
+                    Path.Combine(". ", "file"),
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidPaths))]
+        public void GetFileInfoReturnsNonExistentFileInfoForIllegalPath(string path)
+        {
+            using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
+            {
+                var info = provider.GetFileInfo(path);
+                Assert.False(info.Exists);
+            }
+        }
+
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Paths starting with / are considered relative.")]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Paths starting with / are considered relative.")]
@@ -415,6 +441,17 @@ namespace Microsoft.Extensions.FileProviders
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
                 var contents = provider.GetDirectoryContents(null);
+                Assert.IsType(typeof(NotFoundDirectoryContents), contents);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidPaths))]
+        public void GetDirectoryContentsReturnsNotFoundDirectoryContentsForInvalidPath(string path)
+        {
+            using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
+            {
+                var contents = provider.GetDirectoryContents(path);
                 Assert.IsType(typeof(NotFoundDirectoryContents), contents);
             }
         }
