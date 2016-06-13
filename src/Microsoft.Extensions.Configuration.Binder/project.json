@@ -3,9 +3,6 @@
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [
-      "CS1591"
-    ],
     "xmlDoc": true
   },
   "description": "Functionality to bind an object to data in configuration providers for Microsoft.Extensions.Configuration.",

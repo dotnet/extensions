@@ -6,12 +6,24 @@ using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Configuration
 {
+    /// <summary>
+    /// IComparer implementation used to order configuration keys.
+    /// </summary>
     public class ConfigurationKeyComparer : IComparer<string>
     {
         private static readonly string[] _keyDelimiterArray = new[] { ConfigurationPath.KeyDelimiter };
         
+        /// <summary>
+        /// The default instance.
+        /// </summary>
         public static ConfigurationKeyComparer Instance { get; } = new ConfigurationKeyComparer();
 
+        /// <summary>
+        /// Compares two strings.
+        /// </summary>
+        /// <param name="x">First string.</param>
+        /// <param name="y">Second string.</param>
+        /// <returns></returns>
         public int Compare(string x, string y)
         {
             var xParts = x?.Split(_keyDelimiterArray, StringSplitOptions.RemoveEmptyEntries) ?? new string[0];

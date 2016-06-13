@@ -7,6 +7,9 @@ using System.Xml;
 
 namespace Microsoft.Extensions.Configuration.Xml
 {
+    /// <summary>
+    /// Class responsible for encrypting and decrypting XML.
+    /// </summary>
     public class XmlDocumentDecryptor
     {
         /// <summary>
@@ -18,6 +21,9 @@ namespace Microsoft.Extensions.Configuration.Xml
         public static readonly XmlDocumentDecryptor Instance = new XmlDocumentDecryptor();
 #endif
 
+        /// <summary>
+        /// Initializes a XmlDocumentDecryptor.
+        /// </summary>
         // don't create an instance of this directly
         protected XmlDocumentDecryptor()
         {
@@ -70,6 +76,11 @@ namespace Microsoft.Extensions.Configuration.Xml
             }
         }
 
+        /// <summary>
+        /// Override to process encrypted XML.
+        /// </summary>
+        /// <param name="document">The document.</param>
+        /// <returns>An XmlReader which can read the document.</returns>
         protected virtual XmlReader DecryptDocumentAndCreateXmlReader(XmlDocument document)
         {
             // by default we don't know how to process encrypted XML

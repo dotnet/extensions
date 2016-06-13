@@ -10,8 +10,16 @@ using Microsoft.Extensions.Configuration.Binder;
 
 namespace Microsoft.Extensions.Configuration
 {
+    /// <summary>
+    /// Static helper class that allows binding strongly typed objects to configuration values.
+    /// </summary>
     public static class ConfigurationBinder
     {
+        /// <summary>
+        /// Attempts to bind the given object instance to configuration values by matching property names against configuration keys recursively.
+        /// </summary>
+        /// <param name="configuration">The configuration instance to bind.</param>
+        /// <param name="instance">The object to bind.</param>
         public static void Bind(this IConfiguration configuration, object instance)
         {
             if (configuration == null)
@@ -25,21 +33,51 @@ namespace Microsoft.Extensions.Configuration
             }
         }
 
+        /// <summary>
+        /// Extracts the value with the specified key and converts it to type T.
+        /// </summary>
+        /// <typeparam name="T">The type to convert the value to.</typeparam>
+        /// <param name="configuration">The configuration.</param>
+        /// <param name="key">The configuration key for the value to convert.</param>
+        /// <returns>The converted value.</returns>
         public static T GetValue<T>(this IConfiguration configuration, string key)
         {
             return GetValue(configuration, key, default(T));
         }
 
+        /// <summary>
+        /// Extracts the value with the specified key and converts it to type T.
+        /// </summary>
+        /// <typeparam name="T">The type to convert the value to.</typeparam>
+        /// <param name="configuration">The configuration.</param>
+        /// <param name="key">The configuration key for the value to convert.</param>
+        /// <param name="defaultValue">The default value to use if no value is found.</param>
+        /// <returns>The converted value.</returns>
         public static T GetValue<T>(this IConfiguration configuration, string key, T defaultValue)
         {
             return (T)GetValue(configuration, typeof(T), key, defaultValue);
         }
 
+        /// <summary>
+        /// Extracts the value with the specified key and converts it to the specified type.
+        /// </summary>
+        /// <param name="configuration">The configuration.</param>
+        /// <param name="type">The type to convert the value to.</param>
+        /// <param name="key">The configuration key for the value to convert.</param>
+        /// <returns>The converted value.</returns>
         public static object GetValue(this IConfiguration configuration, Type type, string key)
         {
             return GetValue(configuration, type, key, defaultValue: null);
         }
 
+        /// <summary>
+        /// Extracts the value with the specified key and converts it to the specified type.
+        /// </summary>
+        /// <param name="configuration">The configuration.</param>
+        /// <param name="type">The type to convert the value to.</param>
+        /// <param name="key">The configuration key for the value to convert.</param>
+        /// <param name="defaultValue">The default value to use if no value is found.</param>
+        /// <returns>The converted value.</returns>
         public static object GetValue(this IConfiguration configuration, Type type, string key, object defaultValue)
         {
             var value = configuration.GetSection(key).Value;

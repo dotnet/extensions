@@ -1,12 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-
 namespace Microsoft.Extensions.Configuration.Ini
 {
     /// <summary>
-    /// An INI file based <see cref="IConfigurationSource"/>.
+    /// Represents an INI file as an <see cref="IConfigurationSource"/>.
     /// Files are simple line structures (<a href="http://en.wikipedia.org/wiki/INI_file">INI Files on Wikipedia</a>)
     /// </summary>
     /// <examples>
@@ -19,6 +17,11 @@ namespace Microsoft.Extensions.Configuration.Ini
     /// </examples>
     public class IniConfigurationSource : FileConfigurationSource
     {
+        /// <summary>
+        /// Builds the <see cref="IniConfigurationProvider"/> for this source.
+        /// </summary>
+        /// <param name="builder">The <see cref="IConfigurationBuilder"/>.</param>
+        /// <returns>An <see cref="IniConfigurationProvider"/></returns>
         public override IConfigurationProvider Build(IConfigurationBuilder builder)
         {
             FileProvider = FileProvider ?? builder.GetFileProvider();

@@ -6,6 +6,9 @@ using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.Extensions.Configuration
 {
+    /// <summary>
+    /// Extension methods for <see cref="FileConfigurationProvider"/>.
+    /// </summary>
     public static class FileConfigurationExtensions
     {
         private static string FileProviderKey = "FileProvider";

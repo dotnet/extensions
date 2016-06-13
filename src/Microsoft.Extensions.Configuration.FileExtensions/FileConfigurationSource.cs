@@ -30,6 +30,11 @@ namespace Microsoft.Extensions.Configuration
         /// </summary>
         public bool ReloadOnChange { get; set; }
 
+        /// <summary>
+        /// Builds the <see cref="IConfigurationProvider"/> for this source.
+        /// </summary>
+        /// <param name="builder">The <see cref="IConfigurationBuilder"/>.</param>
+        /// <returns>A <see cref="IConfigurationProvider"/></returns>
         public abstract IConfigurationProvider Build(IConfigurationBuilder builder);
     }
 }

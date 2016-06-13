@@ -13,6 +13,10 @@ namespace Microsoft.Extensions.Configuration
     /// </summary>
     public abstract class FileConfigurationProvider : ConfigurationProvider
     {
+        /// <summary>
+        /// Initializes a new instance with the specified source.
+        /// </summary>
+        /// <param name="source">The source settings.</param>
         public FileConfigurationProvider(FileConfigurationSource source)
         {
             if (source == null)
@@ -29,6 +33,9 @@ namespace Microsoft.Extensions.Configuration
             }
         }
 
+        /// <summary>
+        /// The source settings for this provider.
+        /// </summary>
         public FileConfigurationSource Source { get; }
 
         private void Load(bool reload)
@@ -66,6 +73,10 @@ namespace Microsoft.Extensions.Configuration
             Load(reload: false);
         }
 
+        /// <summary>
+        /// Loads this provider's data from a stream.
+        /// </summary>
+        /// <param name="stream">The stream to read.</param>
         public abstract void Load(Stream stream);
     }
 }

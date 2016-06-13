@@ -21,8 +21,16 @@ namespace Microsoft.Extensions.Configuration.Ini
     /// </examples>
     public class IniConfigurationProvider : FileConfigurationProvider
     {
+        /// <summary>
+        /// Initializes a new instance with the specified source.
+        /// </summary>
+        /// <param name="source">The source settings.</param>
         public IniConfigurationProvider(IniConfigurationSource source) : base(source) { }
 
+        /// <summary>
+        /// Loads the INI data from a stream.
+        /// </summary>
+        /// <param name="stream">The stream to read.</param>
         public override void Load(Stream stream)
         {
             var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

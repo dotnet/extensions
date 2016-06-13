@@ -9,11 +9,18 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.Configuration
 {
+    /// <summary>
+    /// The root node for a configuration.
+    /// </summary>
     public class ConfigurationRoot : IConfigurationRoot
     {
         private IList<IConfigurationProvider> _providers;
         private ConfigurationReloadToken _changeToken = new ConfigurationReloadToken();
 
+        /// <summary>
+        /// Initializes a Configuration root with a list of providers.
+        /// </summary>
+        /// <param name="providers">The <see cref="IConfigurationProvider"/>s for this configuration.</param>
         public ConfigurationRoot(IList<IConfigurationProvider> providers)
         {
             if (providers == null)
@@ -29,6 +36,11 @@ namespace Microsoft.Extensions.Configuration
             }
         }
 
+        /// <summary>
+        /// Gets or sets the value corresponding to a configuration key.
+        /// </summary>
+        /// <param name="key">The configuration key.</param>
+        /// <returns>The configuration value.</returns>
         public string this[string key]
         {
             get
@@ -60,6 +72,10 @@ namespace Microsoft.Extensions.Configuration
             }
         }
 
+        /// <summary>
+        /// Gets the immediate children sub-sections.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<IConfigurationSection> GetChildren() => GetChildrenImplementation(null);
 
         internal IEnumerable<IConfigurationSection> GetChildrenImplementation(string path)
@@ -71,16 +87,32 @@ namespace Microsoft.Extensions.Configuration
                 .Select(key => GetSection(path == null ? key : ConfigurationPath.Combine(path, key)));
         }
 
+        /// <summary>
+        /// Returns a <see cref="IChangeToken"/> that can be used to observe when this configuration is reloaded.
+        /// </summary>
+        /// <returns></returns>
         public IChangeToken GetReloadToken()
         {
             return _changeToken;
         }
 
+        /// <summary>
+        /// Gets a configuration sub-section with the specified key.
+        /// </summary>
+        /// <param name="key">The key of the configuration section.</param>
+        /// <returns>The <see cref="IConfigurationSection"/>.</returns>
+        /// <remarks>
+        ///     This method will never return <c>null</c>. If no matching sub-section is found with the specified key,
+        ///     an empty <see cref="IConfigurationSection"/> will be returned.
+        /// </remarks>
         public IConfigurationSection GetSection(string key)
         {
             return new ConfigurationSection(this, key);
         }
 
+        /// <summary>
+        /// Force the configuration values to be reloaded from the underlying sources.
+        /// </summary>
         public void Reload()
         {
             foreach (var provider in _providers)

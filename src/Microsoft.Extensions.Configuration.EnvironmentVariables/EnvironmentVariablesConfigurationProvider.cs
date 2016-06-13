@@ -8,6 +8,9 @@ using System.Linq;
 
 namespace Microsoft.Extensions.Configuration.EnvironmentVariables
 {
+    /// <summary>
+    /// An environment variable based <see cref="ConfigurationProvider"/>.
+    /// </summary>
     public class EnvironmentVariablesConfigurationProvider : ConfigurationProvider
     {
         private const string MySqlServerPrefix = "MYSQLCONNSTR_";
@@ -20,15 +23,24 @@ namespace Microsoft.Extensions.Configuration.EnvironmentVariables
 
         private readonly string _prefix;
 
+        /// <summary>
+        /// Initializes a new instance.
+        /// </summary>
         public EnvironmentVariablesConfigurationProvider() : this(string.Empty)
         { }
 
-
+        /// <summary>
+        /// Initializes a new instance with the specified prefix.
+        /// </summary>
+        /// <param name="prefix">A prefix used to filter the environment variables.</param>
         public EnvironmentVariablesConfigurationProvider(string prefix)
         {
             _prefix = prefix ?? string.Empty;
         }
 
+        /// <summary>
+        /// Loads the environment variables.
+        /// </summary>
         public override void Load()
         {
             Load(Environment.GetEnvironmentVariables());

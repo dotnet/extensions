@@ -8,6 +8,9 @@ using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.Extensions.Configuration
 {
+    /// <summary>
+    /// Extension methods for adding <see cref="IniConfigurationProvider"/>.
+    /// </summary>
     public static class IniConfigurationExtensions
     {
         /// <summary>
