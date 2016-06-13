@@ -3,7 +3,6 @@
     "emitEntryPoint": true
   },
   "dependencies": {
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.Extensions.FileProviders.Physical": "1.0.0-*",
