@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.1.0-*",
   "description": "Abstractions for dependency injection.\r\nCommonly used types:\r\nMicrosoft.Extensions.DependencyInjection.IServiceCollection\r\nMicrosoft.Extensions.DependencyInjection.ServiceCollectionExtensions",
   "packOptions": {
     "repository": {
@@ -22,7 +22,7 @@
   "dependencies": {
     "Microsoft.Extensions.ActivatorUtilities.Sources": {
       "type": "build",
-      "version": "1.0.0-*"
+      "version": "1.1.0-*"
     }
   },
   "frameworks": {
