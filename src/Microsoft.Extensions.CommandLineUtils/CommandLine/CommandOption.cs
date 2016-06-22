@@ -60,6 +60,8 @@ namespace Microsoft.Extensions.CommandLineUtils
         public List<string> Values { get; private set; }
         public CommandOptionType OptionType { get; private set; }
 
+        public bool Inherited { get; set; }
+
         public bool TryParse(string value)
         {
             switch (OptionType)
