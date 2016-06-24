@@ -37,12 +37,12 @@ namespace Microsoft.Extensions.Logging.Console.Internal
 
             if (foreground.HasValue)
             {
-                _outputBuilder.Append("\x1B[39m"); // reset to default foreground color
+                _outputBuilder.Append("\x1B[39m\x1B[22m"); // reset to default foreground color
             }
 
             if (background.HasValue)
             {
-                _outputBuilder.Append("\x1B[0m"); // reset to the background color
+                _outputBuilder.Append("\x1B[49m"); // reset to the background color
             }
         }
 
@@ -79,21 +79,21 @@ namespace Microsoft.Extensions.Logging.Console.Internal
                 case ConsoleColor.Gray:
                     return "\x1B[37m";
                 case ConsoleColor.Red:
-                    return "\x1B[91m";
+                    return "\x1B[1m\x1B[31m";
                 case ConsoleColor.Green:
-                    return "\x1B[92m";
+                    return "\x1B[1m\x1B[32m";
                 case ConsoleColor.Yellow:
-                    return "\x1B[93m";
+                    return "\x1B[1m\x1B[33m";
                 case ConsoleColor.Blue:
-                    return "\x1B[94m";
+                    return "\x1B[1m\x1B[34m";
                 case ConsoleColor.Magenta:
-                    return "\x1B[95m";
+                    return "\x1B[1m\x1B[35m";
                 case ConsoleColor.Cyan:
-                    return "\x1B[96m";
+                    return "\x1B[1m\x1B[36m";
                 case ConsoleColor.White:
-                    return "\x1B[97m";
+                    return "\x1B[1m\x1B[37m";
                 default:
-                    return "\x1B[39m"; // default foreground color
+                    return "\x1B[39m\x1B[22m"; // default foreground color
             }
         }
 
@@ -102,23 +102,23 @@ namespace Microsoft.Extensions.Logging.Console.Internal
             switch (color)
             {
                 case ConsoleColor.Black:
-                    return "\x1B[100m";
+                    return "\x1B[40m";
                 case ConsoleColor.Red:
-                    return "\x1B[101m";
+                    return "\x1B[41m";
                 case ConsoleColor.Green:
-                    return "\x1B[102m";
+                    return "\x1B[42m";
                 case ConsoleColor.Yellow:
-                    return "\x1B[103m";
+                    return "\x1B[43m";
                 case ConsoleColor.Blue:
-                    return "\x1B[104m";
+                    return "\x1B[44m";
                 case ConsoleColor.Magenta:
-                    return "\x1B[105m";
+                    return "\x1B[45m";
                 case ConsoleColor.Cyan:
-                    return "\x1B[106m";
+                    return "\x1B[46m";
                 case ConsoleColor.White:
-                    return "\x1B[107m";
+                    return "\x1B[47m";
                 default:
-                    return "\x1B[0m"; // Use default background color
+                    return "\x1B[49m"; // Use default background color
             }
         }
     }

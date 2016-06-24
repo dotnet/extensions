@@ -87,7 +87,7 @@ namespace Microsoft.Extensions.Logging
             var message = "Request received";
             var expectedMessage = GetForegroundColorEscapeCode(ConsoleColor.DarkGreen)
                 + message
-                + "\x1B[39m"; //resets foreground color
+                + "\x1B[39m\x1B[22m"; //resets foreground color
 
             // Act
             console.WriteLine(message, background: null, foreground: ConsoleColor.DarkGreen);
@@ -106,7 +106,7 @@ namespace Microsoft.Extensions.Logging
             var message = "Request received";
             var expectedMessage = GetBackgroundColorEscapeCode(ConsoleColor.Red)
                 + message
-                + "\x1B[0m"; //resets background color
+                + "\x1B[49m"; //resets background color
 
             // Act
             console.WriteLine(message, background: ConsoleColor.Red, foreground: null);
@@ -126,8 +126,8 @@ namespace Microsoft.Extensions.Logging
             var expectedMessage = GetBackgroundColorEscapeCode(ConsoleColor.Red)
                 + GetForegroundColorEscapeCode(ConsoleColor.DarkGreen)
                 + "Request received"
-                + "\x1B[39m" //resets foreground color
-                + "\x1B[0m" //resets background color
+                + "\x1B[39m\x1B[22m" //resets foreground color
+                + "\x1B[49m" //resets background color
                 + Environment.NewLine;
 
             // Act
@@ -166,10 +166,8 @@ namespace Microsoft.Extensions.Logging
                     return "\x1B[33m";
                 case ConsoleColor.Gray:
                     return "\x1B[37m";
-                case ConsoleColor.White:
-                    return "\x1B[97m";
                 default:
-                    return "\x1B[37m";
+                    return "\x1B[39m";
             }
         }
 
@@ -178,7 +176,7 @@ namespace Microsoft.Extensions.Logging
             switch (color)
             {
                 case ConsoleColor.Red:
-                    return "\x1B[101m";
+                    return "\x1B[41m";
                 default:
                     return "\x1B[49m";
             }
