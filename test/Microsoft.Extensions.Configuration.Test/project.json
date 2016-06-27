@@ -4,9 +4,9 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.Extensions.Configuration": "1.0.0-*",
-    "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0-*",
+    "dotnet-test-xunit": "1.0.0-rc3-000000-00",
+    "Microsoft.Extensions.Configuration": "1.0.0",
+    "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0",
     "Microsoft.Extensions.Configuration.Test.Common": "1.0.0-*",
     "xunit": "2.1.0"
   },
@@ -14,10 +14,10 @@
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.0.0",
           "type": "platform"
         },
-        "System.Diagnostics.Process": "4.1.0-*"
+        "System.Diagnostics.Process": "4.1.0"
       },
       "imports": [
         "dnxcore50",
