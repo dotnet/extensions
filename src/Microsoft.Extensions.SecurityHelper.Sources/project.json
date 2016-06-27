@@ -1,12 +1,12 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.0.0-rtm-21431",
   "shared": "*.cs",
   "dependencies": {},
   "frameworks": {
     "net451": {},
     "netstandard1.3": {
       "dependencies": {
-        "System.Security.Claims": "4.0.1-*"
+        "System.Security.Claims": "4.0.1"
       }
     }
   }

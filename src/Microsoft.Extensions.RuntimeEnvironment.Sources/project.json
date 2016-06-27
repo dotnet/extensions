@@ -1,8 +1,8 @@
 {
-  "version": "1.0.0-*",
+  "version": "1.0.0-rtm-21431",
   "shared": "**/*.cs",
   "dependencies": {
-    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-*"
+    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0"
   },
   "frameworks": {
     "netstandard1.3": {},
