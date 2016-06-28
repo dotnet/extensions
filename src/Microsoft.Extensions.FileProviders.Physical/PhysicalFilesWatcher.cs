@@ -168,14 +168,24 @@ namespace Microsoft.Extensions.FileProviders.Physical
 
         private void OnFileSystemEntryChange(string fullPath)
         {
-            var fileSystemInfo = new FileInfo(fullPath);
-            if (FileSystemInfoHelper.IsHiddenFile(fileSystemInfo))
+            try
             {
-                return;
-            }
+                var fileSystemInfo = new FileInfo(fullPath);
+                if (FileSystemInfoHelper.IsHiddenFile(fileSystemInfo))
+                {
+                    return;
+                }
 
-            var relativePath = fullPath.Substring(_root.Length);
-            ReportChangeForMatchedEntries(relativePath);
+                var relativePath = fullPath.Substring(_root.Length);
+                ReportChangeForMatchedEntries(relativePath);
+            }
+            catch (Exception ex) when (
+                ex is IOException ||
+                ex is SecurityException ||
+                ex is UnauthorizedAccessException)
+            {
+                // Swallow the exception.
+            }
         }
 
         private void ReportChangeForMatchedEntries(string path)
