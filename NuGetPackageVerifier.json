@@ -9,6 +9,7 @@
             "Microsoft.Extensions.Logging.Console": { },
             "Microsoft.Extensions.Logging.Debug": { },
             "Microsoft.Extensions.Logging.EventLog": { },
+            "Microsoft.Extensions.Logging.EventSource": { },
             "Microsoft.Extensions.Logging.Filter": { },
             "Microsoft.Extensions.Logging.Testing": { },
             "Microsoft.Extensions.Logging.TraceSource": { }
