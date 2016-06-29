@@ -76,13 +76,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
             var type = method.DeclaringType;
             if (type != null)
             {
-                var typeName = TypeNameHelper.GetTypeDisplayName(type, fullName: false);
-                if (!string.IsNullOrEmpty(typeName) && !string.IsNullOrEmpty(type.Namespace))
-                {
-                    typeName = type.Namespace + "." + typeName;
-                }
-
-                methodDisplayInfo.DeclaringTypeName = typeName;
+                methodDisplayInfo.DeclaringTypeName = TypeNameHelper.GetTypeDisplayName(type);
             }
 
             // Method name
