@@ -14,5 +14,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
         public string Method { get; set; }
 
         public StackFrame StackFrame { get; set; }
+
+        public MethodDisplayInfo MethodDisplayInfo { get; set; }
     }
 }

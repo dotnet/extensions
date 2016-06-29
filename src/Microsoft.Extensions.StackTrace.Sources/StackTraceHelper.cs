@@ -3,6 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.StackTrace.Sources
 {
@@ -40,6 +43,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
                         FilePath = frame.GetFileName(),
                         LineNumber = frame.GetFileLineNumber(),
                         Method = method.Name,
+                        MethodDisplayInfo = GetMethodDisplayString(frame.GetMethod()),
                     };
 
 #if NET451
@@ -58,5 +62,69 @@ namespace Microsoft.Extensions.StackTrace.Sources
                 return frames;
             }
         }
+
+        internal static MethodDisplayInfo GetMethodDisplayString(MethodBase method)
+        {
+            // Special case: no method available
+            if (method == null)
+            {
+                return null;
+            }
+
+            var methodDisplayInfo = new MethodDisplayInfo();
+
+            // Type name
+            var type = method.DeclaringType;
+            if (type != null)
+            {
+                methodDisplayInfo.DeclaringTypeName = TypeNameHelper.GetTypeDisplayName(type);
+            }
+
+            // Method name
+            methodDisplayInfo.Name = method.Name;
+            if (method.IsGenericMethod)
+            {
+                var genericArguments = string.Join(", ", method.GetGenericArguments()
+                    .Select(arg => TypeNameHelper.GetTypeDisplayName(arg, fullName: false)));
+                methodDisplayInfo.GenericArguments += "<" + genericArguments + ">";
+            }
+
+            // Method parameters
+            methodDisplayInfo.Parameters = method.GetParameters().Select(parameter =>
+            {
+                var parameterType = parameter.ParameterType;
+
+                var prefix = string.Empty;
+                if (parameter.IsOut)
+                {
+                    prefix = "out";
+                }
+                else if (parameterType != null && parameterType.IsByRef)
+                {
+                    prefix = "ref";
+                }
+
+                var parameterTypeString = "?";
+                if (parameterType != null)
+                {
+                    if (parameterType.IsByRef)
+                    {
+                        parameterType = parameterType.GetElementType();
+                    }
+
+                    parameterTypeString = TypeNameHelper.GetTypeDisplayName(parameterType, fullName: false);
+                }
+
+                return new ParameterDisplayInfo
+                {
+                    Prefix = prefix,
+                    Name = parameter.Name,
+                    Type = parameterTypeString,
+                };
+            });
+
+            return methodDisplayInfo;
+        }
+
     }
 }
