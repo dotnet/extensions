@@ -120,9 +120,6 @@
   <data name="Error_EncryptedXmlNotSupported" xml:space="preserve">
     <value>Encrypted XML is not supported on this platform.</value>
   </data>
-  <data name="Error_FileNotFound" xml:space="preserve">
-    <value>The configuration file '{0}' was not found and is not optional.</value>
-  </data>
   <data name="Error_InvalidFilePath" xml:space="preserve">
     <value>File path must be a non-empty string.</value>
   </data>

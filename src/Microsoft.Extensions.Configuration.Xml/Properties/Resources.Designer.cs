@@ -27,22 +27,6 @@ namespace Microsoft.Extensions.Configuration.Xml
         }
 
         /// <summary>
-        /// The configuration file '{0}' was not found and is not optional.
-        /// </summary>
-        internal static string Error_FileNotFound
-        {
-            get { return GetString("Error_FileNotFound"); }
-        }
-
-        /// <summary>
-        /// The configuration file '{0}' was not found and is not optional.
-        /// </summary>
-        internal static string FormatError_FileNotFound(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_FileNotFound"), p0);
-        }
-
-        /// <summary>
         /// File path must be a non-empty string.
         /// </summary>
         internal static string Error_InvalidFilePath

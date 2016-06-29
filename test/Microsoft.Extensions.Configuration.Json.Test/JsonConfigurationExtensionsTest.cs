@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.Configuration.Json
 
             // Act and Assert
             var ex = Assert.Throws<FileNotFoundException>(() => new ConfigurationBuilder().AddJsonFile(path).Build());
-            Assert.Equal($"The configuration file '{path}' was not found and is not optional.", ex.Message);
+            Assert.True(ex.Message.StartsWith($"The configuration file '{path}' was not found and is not optional. The physical path is '"));
         }
     }
 }

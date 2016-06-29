@@ -117,13 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Error_InvalidFilePath" xml:space="preserve">
-    <value>File path must be a non-empty string.</value>
+  <data name="Error_ExpectedPhysicalPath" xml:space="preserve">
+    <value>The expected physical path was '{0}'.</value>
   </data>
-  <data name="Error_KeyIsDuplicated" xml:space="preserve">
-    <value>A duplicate key '{0}' was found.</value>
-  </data>
-  <data name="Error_UnrecognizedLineFormat" xml:space="preserve">
-    <value>Unrecognized line format: '{0}'.</value>
+  <data name="Error_FileNotFound" xml:space="preserve">
+    <value>The configuration file '{0}' was not found and is not optional.</value>
   </data>
 </root>
