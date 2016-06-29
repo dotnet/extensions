@@ -9,8 +9,8 @@
   },
   "dependencies": {
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0-*",
-    "xunit.assert": "2.1.0",
-    "xunit.extensibility.core": "2.1.0"
+    "xunit.assert": "2.2.0-*",
+    "xunit.extensibility.core": "2.2.0-*"
   },
   "buildOptions": {
     "warningsAsErrors": true,
@@ -22,9 +22,6 @@
   },
   "frameworks": {
     "netstandard1.1": {
-      "imports": [
-        "portable-net45+win8"
-      ],
       "dependencies": {
         "System.Threading": "4.0.11-*"
       }
