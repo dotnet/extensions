@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.EventLog;
 using Microsoft.Extensions.Logging.EventLog.Internal;
 using Xunit;
@@ -149,9 +148,7 @@ namespace Microsoft.Extensions.Logging
             }
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [Theory]
         [MemberData(nameof(WritesSplitMessagesData))]
         public void MessageExceedingMaxSize_WritesSplitMessages(int messageSize, string[] expectedMessages)
         {
