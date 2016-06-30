@@ -447,7 +447,7 @@ namespace Microsoft.Extensions.Internal
             app.Execute("-a", "top");
             Assert.Equal("top", top.Value());
             Assert.Null(nested.Value());
-            
+
             top.Values.Clear();
 
             app.Execute("subcmd", "-a", "nested");
@@ -500,6 +500,46 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal("G", globalOptionValue);
             Assert.Equal("N1", nest1OptionValue);
             Assert.Equal("N2", nest2OptionValue);
+        }
+
+        [Fact]
+        public void HelpTextIgnoresHiddenItems()
+        {
+            var app = new CommandLineApplication()
+            {
+                Name = "ninja-app",
+                Description = "You can't see it until it is too late"
+            };
+
+            app.Command("star", c =>
+            {
+                c.Option("--points <p>", "How many", CommandOptionType.MultipleValue);
+                c.ShowInHelpText = false;
+            });
+            app.Option("--smile", "Be a nice ninja", CommandOptionType.NoValue, o => { o.ShowInHelpText = false; });
+
+            var a = app.Argument("name", "Pseudonym, of course");
+            a.ShowInHelpText = false;
+
+            var help = app.GetHelpText();
+
+            Assert.Contains("ninja-app", help);
+            Assert.DoesNotContain("--points", help);
+            Assert.DoesNotContain("--smile", help);
+            Assert.DoesNotContain("name", help);
+        }
+
+        [Fact]
+        public void HelpTextUsesHelpOptionName()
+        {
+            var app = new CommandLineApplication
+            {
+                Name = "superhombre"
+            };
+
+            app.HelpOption("--ayuda-me");
+            var help = app.GetHelpText();
+            Assert.Contains("--ayuda-me", help);
         }
     }
 }

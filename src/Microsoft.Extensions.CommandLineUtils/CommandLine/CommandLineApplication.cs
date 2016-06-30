@@ -32,6 +32,7 @@ namespace Microsoft.Extensions.CommandLineUtils
         public string FullName { get; set; }
         public string Syntax { get; set; }
         public string Description { get; set; }
+        public bool ShowInHelpText { get; set; } = true;
         public readonly List<CommandOption> Options;
         public CommandOption OptionHelp { get; private set; }
         public CommandOption OptionVersion { get; private set; }
@@ -341,7 +342,7 @@ namespace Microsoft.Extensions.CommandLineUtils
             Console.WriteLine(GetHelpText(commandName));
         }
 
-        public string GetHelpText(string commandName = null)
+        public virtual string GetHelpText(string commandName = null)
         {
             var headerBuilder = new StringBuilder("Usage:");
             for (var cmd = this; cmd != null; cmd = cmd.Parent)
@@ -375,22 +376,23 @@ namespace Microsoft.Extensions.CommandLineUtils
             var commandsBuilder = new StringBuilder();
             var argumentsBuilder = new StringBuilder();
 
-            if (target.Arguments.Any())
+            var arguments = target.Arguments.Where(a => a.ShowInHelpText).ToList();
+            if (arguments.Any())
             {
                 headerBuilder.Append(" [arguments]");
 
                 argumentsBuilder.AppendLine();
                 argumentsBuilder.AppendLine("Arguments:");
-                var maxArgLen = target.Arguments.Max(a => a.Name.Length);
+                var maxArgLen = arguments.Max(a => a.Name.Length);
                 var outputFormat = string.Format("  {{0, -{0}}}{{1}}", maxArgLen + 2);
-                foreach (var arg in target.Arguments)
+                foreach (var arg in arguments)
                 {
                     argumentsBuilder.AppendFormat(outputFormat, arg.Name, arg.Description);
                     argumentsBuilder.AppendLine();
                 }
             }
 
-            var options = target.GetOptions().ToList();
+            var options = target.GetOptions().Where(o => o.ShowInHelpText).ToList();
             if (options.Any())
             {
                 headerBuilder.Append(" [options]");
@@ -406,15 +408,16 @@ namespace Microsoft.Extensions.CommandLineUtils
                 }
             }
 
-            if (target.Commands.Any())
+            var commands = target.Commands.Where(c => c.ShowInHelpText).ToList();
+            if (commands.Any())
             {
                 headerBuilder.Append(" [command]");
 
                 commandsBuilder.AppendLine();
                 commandsBuilder.AppendLine("Commands:");
-                var maxCmdLen = target.Commands.Max(c => c.Name.Length);
+                var maxCmdLen = commands.Max(c => c.Name.Length);
                 var outputFormat = string.Format("  {{0, -{0}}}{{1}}", maxCmdLen + 2);
-                foreach (var cmd in target.Commands.OrderBy(c => c.Name))
+                foreach (var cmd in commands.OrderBy(c => c.Name))
                 {
                     commandsBuilder.AppendFormat(outputFormat, cmd.Name, cmd.Description);
                     commandsBuilder.AppendLine();
@@ -423,7 +426,7 @@ namespace Microsoft.Extensions.CommandLineUtils
                 if (OptionHelp != null)
                 {
                     commandsBuilder.AppendLine();
-                    commandsBuilder.AppendFormat("Use \"{0} [command] --help\" for more information about a command.", Name);
+                    commandsBuilder.AppendFormat($"Use \"{target.Name} [command] --{OptionHelp.LongName}\" for more information about a command.");
                     commandsBuilder.AppendLine();
                 }
             }
