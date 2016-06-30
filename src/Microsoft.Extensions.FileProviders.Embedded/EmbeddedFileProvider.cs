@@ -49,8 +49,24 @@ namespace Microsoft.Extensions.FileProviders
 
             _baseNamespace = string.IsNullOrEmpty(baseNamespace) ? string.Empty : baseNamespace + ".";
             _assembly = assembly;
-            // REVIEW: Does this even make sense?
-            _lastModified = DateTimeOffset.MaxValue;
+
+            _lastModified = DateTimeOffset.UtcNow;
+
+#if NETSTANDARD1_5 || NET451
+            if (!string.IsNullOrEmpty(_assembly.Location))
+            {
+                try
+                {
+                    _lastModified = File.GetLastWriteTimeUtc(_assembly.Location);
+                }
+                catch (PathTooLongException)
+                {
+                }
+                catch (UnauthorizedAccessException)
+                {
+                }
+            }
+#endif
         }
 
         /// <summary>
