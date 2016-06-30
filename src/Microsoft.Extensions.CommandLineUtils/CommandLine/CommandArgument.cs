@@ -14,6 +14,7 @@ namespace Microsoft.Extensions.CommandLineUtils
         }
 
         public string Name { get; set; }
+        public bool Hidden { get; set; }
         public string Description { get; set; }
         public List<string> Values { get; private set; }
         public bool MultipleValues { get; set; }
