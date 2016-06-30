@@ -1,9 +1,9 @@
 {
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-*",
+    "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Microsoft.Extensions.FileProviders.Embedded": "1.1.0-*",
-    "xunit": "2.1.0"
+    "xunit": "2.2.0-*"
   },
   "testRunner": "xunit",
   "buildOptions": {
@@ -13,28 +13,14 @@
   },
   "frameworks": {
     "netcoreapp1.0": {
-      "imports": [
-        "dnxcore50",
-        "portable-net451+win8"
-      ],
       "dependencies": {
         "Microsoft.NETCore.App": {
           "version": "1.0.0-*",
           "type": "platform"
         },
-        "System.Reflection.Extensions": "4.0.1-*",
-        "System.Diagnostics.Process": "4.1.0-*"
+        "System.Reflection.Extensions": "4.0.1-*"
       }
     },
-    "net451": {
-      "frameworkAssemblies": {
-        "System.Runtime": {
-          "type": "build"
-        },
-        "System.Reflection": {
-          "type": "build"
-        }
-      }
-    }
+    "net451": {}
   }
 }
