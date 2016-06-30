@@ -514,18 +514,18 @@ namespace Microsoft.Extensions.Internal
             app.Command("star", c =>
             {
                 c.Option("--points <p>", "How many", CommandOptionType.MultipleValue);
-                c.Hidden = true;
+                c.ShowInHelpText = false;
             });
-            app.Option("--no-kill", "Be a nice ninja", CommandOptionType.NoValue, o => { o.Hidden = true; });
+            app.Option("--smile", "Be a nice ninja", CommandOptionType.NoValue, o => { o.ShowInHelpText = false; });
 
             var a = app.Argument("name", "Pseudonym, of course");
-            a.Hidden = true;
+            a.ShowInHelpText = false;
 
             var help = app.GetHelpText();
 
             Assert.Contains("ninja-app", help);
             Assert.DoesNotContain("--points", help);
-            Assert.DoesNotContain("--no-kill", help);
+            Assert.DoesNotContain("--smile", help);
             Assert.DoesNotContain("name", help);
         }
 

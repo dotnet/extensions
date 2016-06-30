@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.CommandLineUtils
         public string FullName { get; set; }
         public string Syntax { get; set; }
         public string Description { get; set; }
-        public bool Hidden { get; set; }
+        public bool ShowInHelpText { get; set; } = true;
         public readonly List<CommandOption> Options;
         public CommandOption OptionHelp { get; private set; }
         public CommandOption OptionVersion { get; private set; }
@@ -376,7 +376,7 @@ namespace Microsoft.Extensions.CommandLineUtils
             var commandsBuilder = new StringBuilder();
             var argumentsBuilder = new StringBuilder();
 
-            var arguments = target.Arguments.Where(a => !a.Hidden).ToList();
+            var arguments = target.Arguments.Where(a => a.ShowInHelpText).ToList();
             if (arguments.Any())
             {
                 headerBuilder.Append(" [arguments]");
@@ -392,7 +392,7 @@ namespace Microsoft.Extensions.CommandLineUtils
                 }
             }
 
-            var options = target.GetOptions().Where(o => !o.Hidden).ToList();
+            var options = target.GetOptions().Where(o => o.ShowInHelpText).ToList();
             if (options.Any())
             {
                 headerBuilder.Append(" [options]");
@@ -408,7 +408,7 @@ namespace Microsoft.Extensions.CommandLineUtils
                 }
             }
 
-            var commands = target.Commands.Where(c => !c.Hidden).ToList();
+            var commands = target.Commands.Where(c => c.ShowInHelpText).ToList();
             if (commands.Any())
             {
                 headerBuilder.Append(" [command]");
