@@ -81,7 +81,7 @@ namespace Microsoft.Extensions.Logging.Console
                 // to an old change token.
                 _settings = _settings.Reload();
 
-                var includeScopes = _settings.IncludeScopes;
+                var includeScopes = _settings?.IncludeScopes ?? false;
                 foreach (var logger in _loggers.Values)
                 {
                     if (_isLegacy)
@@ -112,7 +112,7 @@ namespace Microsoft.Extensions.Logging.Console
 
         private ConsoleLogger CreateLoggerImplementation(string name)
         {
-            return new ConsoleLogger(name, GetFilter(name, _settings), _settings.IncludeScopes, _messageQueue);
+            return new ConsoleLogger(name, GetFilter(name, _settings), _settings?.IncludeScopes ?? false, _messageQueue);
         }
 
         private Func<string, LogLevel, bool> GetFilter(string name, IConsoleLoggerSettings settings)
