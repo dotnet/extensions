@@ -28,7 +28,6 @@
     "System.Runtime.Extensions": "4.1.0-*"
   },
   "frameworks": {
-    // need to keep netstandard1.0 until ASP.NET Core 2.0 because it is a breaking change if we remove it
     "netstandard1.0": { },
     "netstandard1.5": {
       "dependencies": {
