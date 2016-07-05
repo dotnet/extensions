@@ -46,87 +46,89 @@ namespace Microsoft.Extensions.Configuration.CommandLine
             var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             string key, value;
 
-            var enumerator = Args.GetEnumerator();
-            while (enumerator.MoveNext())
+            using (var enumerator = Args.GetEnumerator())
             {
-                var currentArg = enumerator.Current;
-                var keyStartIndex = 0;
+                while (enumerator.MoveNext())
+                {
+                    var currentArg = enumerator.Current;
+                    var keyStartIndex = 0;
 
-                if (currentArg.StartsWith("--"))
-                {
-                    keyStartIndex = 2;
-                }
-                else if (currentArg.StartsWith("-"))
-                {
-                    keyStartIndex = 1;
-                }
-                else if (currentArg.StartsWith("/"))
-                {
-                    // "/SomeSwitch" is equivalent to "--SomeSwitch" when interpreting switch mappings
-                    // So we do a conversion to simplify later processing
-                    currentArg = string.Format("--{0}", currentArg.Substring(1));
-                    keyStartIndex = 2;
-                }
-
-                var separator = currentArg.IndexOf('=');
-
-                if (separator < 0)
-                {
-                    // If there is neither equal sign nor prefix in current arugment, it is an invalid format
-                    if (keyStartIndex == 0)
+                    if (currentArg.StartsWith("--"))
                     {
-                        throw new FormatException(Resources.FormatError_UnrecognizedArgumentFormat(currentArg));
+                        keyStartIndex = 2;
+                    }
+                    else if (currentArg.StartsWith("-"))
+                    {
+                        keyStartIndex = 1;
+                    }
+                    else if (currentArg.StartsWith("/"))
+                    {
+                        // "/SomeSwitch" is equivalent to "--SomeSwitch" when interpreting switch mappings
+                        // So we do a conversion to simplify later processing
+                        currentArg = string.Format("--{0}", currentArg.Substring(1));
+                        keyStartIndex = 2;
                     }
 
-                    // If the switch is a key in given switch mappings, interpret it
-                    if (_switchMappings != null && _switchMappings.ContainsKey(currentArg))
+                    var separator = currentArg.IndexOf('=');
+
+                    if (separator < 0)
                     {
-                        key = _switchMappings[currentArg];
+                        // If there is neither equal sign nor prefix in current arugment, it is an invalid format
+                        if (keyStartIndex == 0)
+                        {
+                            throw new FormatException(Resources.FormatError_UnrecognizedArgumentFormat(currentArg));
+                        }
+
+                        // If the switch is a key in given switch mappings, interpret it
+                        if (_switchMappings != null && _switchMappings.ContainsKey(currentArg))
+                        {
+                            key = _switchMappings[currentArg];
+                        }
+                        // If the switch starts with a single "-" and it isn't in given mappings , it is an invalid usage
+                        else if (keyStartIndex == 1)
+                        {
+                            throw new FormatException(Resources.FormatError_ShortSwitchNotDefined(currentArg));
+                        }
+                        // Otherwise, use the switch name directly as a key
+                        else
+                        {
+                            key = currentArg.Substring(keyStartIndex);
+                        }
+
+                        var previousKey = enumerator.Current;
+                        if (!enumerator.MoveNext())
+                        {
+                            throw new FormatException(Resources.FormatError_ValueIsMissing(previousKey));
+                        }
+
+                        value = enumerator.Current;
                     }
-                    // If the switch starts with a single "-" and it isn't in given mappings , it is an invalid usage
-                    else if (keyStartIndex == 1)
-                    {
-                        throw new FormatException(Resources.FormatError_ShortSwitchNotDefined(currentArg));
-                    }
-                    // Otherwise, use the switch name directly as a key
                     else
                     {
-                        key = currentArg.Substring(keyStartIndex);
+                        var keySegment = currentArg.Substring(0, separator);
+
+                        // If the switch is a key in given switch mappings, interpret it
+                        if (_switchMappings != null && _switchMappings.ContainsKey(keySegment))
+                        {
+                            key = _switchMappings[keySegment];
+                        }
+                        // If the switch starts with a single "-" and it isn't in given mappings , it is an invalid usage
+                        else if (keyStartIndex == 1)
+                        {
+                            throw new FormatException(Resources.FormatError_ShortSwitchNotDefined(currentArg));
+                        }
+                        // Otherwise, use the switch name directly as a key
+                        else
+                        {
+                            key = currentArg.Substring(keyStartIndex, separator - keyStartIndex);
+                        }
+
+                        value = currentArg.Substring(separator + 1);
                     }
 
-                    var previousKey = enumerator.Current;
-                    if (!enumerator.MoveNext())
-                    {
-                        throw new FormatException(Resources.FormatError_ValueIsMissing(previousKey));
-                    }
-
-                    value = enumerator.Current;
+                    // Override value when key is duplicated. So we always have the last argument win.
+                    data[key] = value;
                 }
-                else
-                {
-                    var keySegment = currentArg.Substring(0, separator);
-
-                    // If the switch is a key in given switch mappings, interpret it
-                    if (_switchMappings != null && _switchMappings.ContainsKey(keySegment))
-                    {
-                        key = _switchMappings[keySegment];
-                    }
-                    // If the switch starts with a single "-" and it isn't in given mappings , it is an invalid usage
-                    else if (keyStartIndex == 1)
-                    {
-                        throw new FormatException(Resources.FormatError_ShortSwitchNotDefined(currentArg));
-                    }
-                    // Otherwise, use the switch name directly as a key
-                    else
-                    {
-                        key = currentArg.Substring(keyStartIndex, separator - keyStartIndex);
-                    }
-
-                    value = currentArg.Substring(separator + 1);
-                }
-
-                // Override value when key is duplicated. So we always have the last argument win.
-                data[key] = value;
             }
 
             Data = data;
