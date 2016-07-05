@@ -19,7 +19,16 @@
         }
       }
     },
-    "net451": {}
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Security": {
+          "type": "build"
+        },
+        "System.Xml": {
+          "type": "build"
+         }
+      }
+    }
   },
   "testRunner": "xunit"
 }
