@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
-    "xunit.assert": "2.1.0-*"
+    "xunit.assert": "2.2.0-*"
   },
   "frameworks": {
     "netstandard1.1": {
