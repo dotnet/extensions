@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Logging.Console.Internal;
 using Microsoft.Extensions.Logging.Test.Console;
@@ -755,6 +756,25 @@ namespace Microsoft.Extensions.Logging.Test
             cancellationTokenSource.Cancel();
 
             Assert.True(logger.IsEnabled(LogLevel.Trace));
+        }
+
+        [Fact]
+        public void ConsoleLogger_Settings_LogLevelIgnoreCase()
+        {
+            var section = new Mock<IConfigurationSection>();
+            section.SetupGet(x => x["MyTest"])
+                .Returns("INFOrmAtiOn");
+
+            var configuration = new Mock<IConfiguration>();
+            configuration.Setup(x => x.GetSection("LogLevel"))
+                .Returns(section.Object);
+
+            var settings = new ConfigurationConsoleLoggerSettings(configuration.Object);
+
+            LogLevel logLevel = LogLevel.None;
+            settings.TryGetSwitch("MyTest", out logLevel);
+
+            Assert.Equal(LogLevel.Information, logLevel);
         }
 
         [Fact]
