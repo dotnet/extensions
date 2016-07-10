@@ -1,0 +1,81 @@
+use namespace="System.IO"
+use namespace="System.IO.Compression"
+use namespace="System.Linq"
+
+default BASE_DIR_LOCAL='${Directory.GetCurrentDirectory()}'
+default BUILD_DIR_LOCAL='${Path.Combine(BASE_DIR_LOCAL, "artifacts", "build")}'
+default ENCODERS_PACKAGE_NAME='Microsoft.Extensions.WebEncoders.Sources'
+
+var VERSION='0.1'
+var FULL_VERSION='0.1'
+use-standard-lifecycle
+k-standard-goals
+
+#repack-encoders target='compile' if='Directory.Exists("src")'
+  @{
+      // Target is a workaround for dotnet/cli#3831.
+      // Add contentFiles section to the NuGet spec for the WebEncoders.Source package.
+      var projectNupkg = Files
+        .Include(Path.Combine(BUILD_DIR_LOCAL, ENCODERS_PACKAGE_NAME + ".1.*.nupkg")) // Assuming the package version starts with 1.
+        .Where(path => !path.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase))
+        .OrderByDescending(f => f)    // On local builds multiple nupkgs are generated.
+        .First();
+
+      Log.Info("Repacking Nupkg: " + projectNupkg);
+
+      var extractToDirectory = projectNupkg + "-temp";
+      ZipFile.ExtractToDirectory(projectNupkg, extractToDirectory);
+
+      File.Delete(Path.Combine(extractToDirectory, "[Content_Types].xml"));
+
+      // Copy any/any content to any/netstandard1.0. This is a workaround for NuGet/Home#3118.
+      // Does not handle directories under contentFiles/any/any.
+      var sourceDirectory = Path.Combine(extractToDirectory, "contentFiles", "any", "any");
+      if (Directory.Exists(sourceDirectory))
+      {
+          var targetDirectory = Path.Combine(extractToDirectory, "contentFiles", "any", "netstandard1.0");
+          if (!Directory.Exists(targetDirectory))
+          {
+              Directory.CreateDirectory(targetDirectory);
+          }
+
+          foreach (var file in Directory.GetFiles(sourceDirectory))
+          {
+              var fileName = Path.GetFileName(file);
+              var targetFile = Path.Combine(targetDirectory, fileName);
+              File.Copy(file, targetFile, overwrite: false);
+          }
+      }
+
+      // Update the .nuspec file.
+      var nuspecFile = Files.Include(Path.Combine(extractToDirectory, "*.nuspec")).First();
+      var nuspec = new List<string>(File.ReadAllLines(nuspecFile));
+      var endOfMetadata = nuspec.FindIndex(l => l.Contains("</metadata>"));
+      var content = new[]
+      {
+          "    <contentFiles>",
+          "      <files include=\"**/*.resx\" buildAction=\"EmbeddedResource\" />",
+          "    </contentFiles>",
+      };
+      nuspec.InsertRange(endOfMetadata, content);
+
+      File.WriteAllLines(nuspecFile, nuspec);
+
+      // Repack.
+      var nugetExePath = Environment.GetEnvironmentVariable("KOREBUILD_NUGET_EXE");
+      if (string.IsNullOrEmpty(nugetExePath))
+      {
+          nugetExePath = Path.Combine(BASE_DIR_LOCAL, ".build", "nuget.exe");
+      }
+      ExecClr(nugetExePath, "pack " + nuspecFile + " -OutputDirectory " + BUILD_DIR_LOCAL);
+
+      try
+      {
+          // Delete temporary directory we used to repack.
+          Directory.Delete(extractToDirectory, true);
+      }
+      catch
+      {
+          // Don't care if we couldn't delete the temp directory.
+      }
+   }
