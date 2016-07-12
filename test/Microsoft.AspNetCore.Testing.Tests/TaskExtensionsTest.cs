@@ -16,10 +16,8 @@ namespace Microsoft.AspNetCore.Testing
             const double timeoutMilliseconds = 100;
             var sw = new Stopwatch();
             sw.Start();
-            await Assert.ThrowsAsync<TimeoutException>(async () => await Task.Run(() =>
-            {
-                while (true) { };
-            }).TimeoutAfter(TimeSpan.FromMilliseconds(timeoutMilliseconds)));
+            await Assert.ThrowsAsync<TimeoutException>(async () =>
+                await Task.Run(async () => await Task.Delay(1000)).TimeoutAfter(TimeSpan.FromMilliseconds(timeoutMilliseconds)));
             Assert.True(sw.ElapsedMilliseconds >= timeoutMilliseconds);
         }
     }
