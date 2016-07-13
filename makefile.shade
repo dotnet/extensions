@@ -1,6 +1,7 @@
 use namespace="System.IO"
 use namespace="System.IO.Compression"
 use namespace="System.Linq"
+use namespace="System.Xml.Linq"
 
 default BASE_DIR_LOCAL='${Directory.GetCurrentDirectory()}'
 default BUILD_DIR_LOCAL='${Path.Combine(BASE_DIR_LOCAL, "artifacts", "build")}'
@@ -26,6 +27,7 @@ k-standard-goals
       var extractToDirectory = projectNupkg + "-temp";
       ZipFile.ExtractToDirectory(projectNupkg, extractToDirectory);
 
+      // Do not preserve this generated file (with an escaped name).
       File.Delete(Path.Combine(extractToDirectory, "[Content_Types].xml"));
 
       // Copy any/any content to any/netstandard1.0. This is a workaround for NuGet/Home#3118.
@@ -49,17 +51,25 @@ k-standard-goals
 
       // Update the .nuspec file.
       var nuspecFile = Files.Include(Path.Combine(extractToDirectory, "*.nuspec")).First();
-      var nuspec = new List<string>(File.ReadAllLines(nuspecFile));
-      var endOfMetadata = nuspec.FindIndex(l => l.Contains("</metadata>"));
-      var content = new[]
+      var nuspec = XDocument.Load(nuspecFile);
+      XNamespace nuspecNamespace = "http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd";
+      var package = nuspec.Element(nuspecNamespace + "package");
+      if (package == null)
       {
-          "    <contentFiles>",
-          "      <files include=\"**/*.resx\" buildAction=\"EmbeddedResource\" />",
-          "    </contentFiles>",
-      };
-      nuspec.InsertRange(endOfMetadata, content);
+          // Try newer namespace.
+          nuspecNamespace = "http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd";
+          package = nuspec.Element(nuspecNamespace + "package");
+      }
 
-      File.WriteAllLines(nuspecFile, nuspec);
+      var metadata = package.Element(nuspecNamespace + "metadata");
+      var files = new XElement(
+          nuspecNamespace + "files",
+          new XAttribute("include", "**/*.resx"),
+          new XAttribute("buildAction", "EmbeddedResource"));
+      var contentFiles = new XElement(nuspecNamespace + "contentFiles", files);
+
+      metadata.Add(contentFiles);
+      nuspec.Save(nuspecFile);
 
       // Repack.
       var nugetExePath = Environment.GetEnvironmentVariable("KOREBUILD_NUGET_EXE");
