@@ -3,10 +3,10 @@
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    /// <summary>
-    /// Summary description for IServiceCallSite
-    /// </summary>
-    internal interface IServiceCallSite
+    internal class SingletonCallSite : ScopedCallSite
     {
+        public SingletonCallSite(IService key, IServiceCallSite serviceCallSite) : base(key, serviceCallSite)
+        {
+        }
     }
 }

@@ -3,10 +3,13 @@
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    /// <summary>
-    /// Summary description for IServiceCallSite
-    /// </summary>
-    internal interface IServiceCallSite
+    internal class TransientCallSite : IServiceCallSite
     {
+        internal IServiceCallSite Service { get; }
+
+        public TransientCallSite(IServiceCallSite service)
+        {
+            Service = service;
+        }
     }
 }

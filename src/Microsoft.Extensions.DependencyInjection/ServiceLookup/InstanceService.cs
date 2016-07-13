@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
@@ -12,33 +11,23 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     /// </summary>
     internal class InstanceService : IService, IServiceCallSite
     {
-        private readonly ServiceDescriptor _descriptor;
+        internal ServiceDescriptor Descriptor { get; }
 
         public InstanceService(ServiceDescriptor descriptor)
         {
-            _descriptor = descriptor;
+            Descriptor = descriptor;
         }
 
         public IService Next { get; set; }
 
         public ServiceLifetime Lifetime
         {
-            get { return _descriptor.Lifetime; }
+            get { return Descriptor.Lifetime; }
         }
 
         public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
         {
             return this;
-        }
-
-        public object Invoke(ServiceProvider provider)
-        {
-            return _descriptor.ImplementationInstance;
-        }
-
-        public Expression Build(Expression provider)
-        {
-            return Expression.Constant(_descriptor.ImplementationInstance, _descriptor.ServiceType);
         }
     }
 }

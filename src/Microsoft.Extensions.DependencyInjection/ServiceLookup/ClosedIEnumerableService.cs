@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
@@ -35,39 +34,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 list.Add(provider.GetResolveCallSite(service, callSiteChain));
                 service = service.Next;
             }
-            return new CallSite(_itemType, list.ToArray());
+            return new ClosedIEnumerableCallSite(_itemType, list.ToArray());
         }
 
-        private class CallSite : IServiceCallSite
-        {
-            private readonly Type _itemType;
-            private readonly IServiceCallSite[] _serviceCallSites;
-
-            public CallSite(Type itemType, IServiceCallSite[] serviceCallSites)
-            {
-                _itemType = itemType;
-                _serviceCallSites = serviceCallSites;
-            }
-
-            public object Invoke(ServiceProvider provider)
-            {
-                var array = Array.CreateInstance(_itemType, _serviceCallSites.Length);
-                for (var index = 0; index < _serviceCallSites.Length; index++)
-                {
-                    array.SetValue(_serviceCallSites[index].Invoke(provider), index);
-                }
-                return array;
-            }
-
-            public Expression Build(Expression provider)
-            {
-                return Expression.NewArrayInit(
-                    _itemType,
-                    _serviceCallSites.Select(callSite =>
-                        Expression.Convert(
-                            callSite.Build(provider),
-                            _itemType)));
-            }
-        }
     }
 }

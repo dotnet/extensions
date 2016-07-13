@@ -402,7 +402,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private static IEnumerable<Type> GetParameters(ConstructorCallSite constructorCallSite) =>
             constructorCallSite
-                .Constructor
+                .ConstructorInfo
                 .GetParameters()
                 .Select(p => p.ParameterType);
 
