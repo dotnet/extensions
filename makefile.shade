@@ -12,7 +12,7 @@ var FULL_VERSION='0.1'
 use-standard-lifecycle
 k-standard-goals
 
-#repack-encoders target='compile' if='Directory.Exists("src")'
+#repack-encoders target='compile' if='Directory.Exists("src") && !IsTravisCi'
   @{
       // Target is a workaround for dotnet/cli#3831.
       // Add contentFiles section to the NuGet spec for the WebEncoders.Source package.
