@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Logging.Testing
 {
-    public class TestSink
+    public class TestSink : ITestSink
     {
         public TestSink(
             Func<WriteContext, bool> writeEnabled = null,

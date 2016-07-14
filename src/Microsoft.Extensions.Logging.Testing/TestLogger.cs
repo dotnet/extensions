@@ -8,11 +8,11 @@ namespace Microsoft.Extensions.Logging.Testing
     public class TestLogger : ILogger
     {
         private object _scope;
-        private readonly TestSink _sink;
+        private readonly ITestSink _sink;
         private readonly string _name;
         private readonly bool _enabled;
 
-        public TestLogger(string name, TestSink sink, bool enabled)
+        public TestLogger(string name, ITestSink sink, bool enabled)
         {
             _sink = sink;
             _name = name;

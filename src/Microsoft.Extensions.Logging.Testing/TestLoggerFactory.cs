@@ -7,10 +7,10 @@ namespace Microsoft.Extensions.Logging.Testing
 {
     public class TestLoggerFactory : ILoggerFactory
     {
-        private readonly TestSink _sink;
+        private readonly ITestSink _sink;
         private readonly bool _enabled;
 
-        public TestLoggerFactory(TestSink sink, bool enabled)
+        public TestLoggerFactory(ITestSink sink, bool enabled)
         {
             _sink = sink;
             _enabled = enabled;
