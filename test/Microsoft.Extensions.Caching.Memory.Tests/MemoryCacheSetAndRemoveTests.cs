@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Caching.Memory
 {
     public class MemoryCacheSetAndRemoveTests
     {
-        private IMemoryCache CreateCache()
+        private static IMemoryCache CreateCache()
         {
             return new MemoryCache(new MemoryCacheOptions()
             {
@@ -403,6 +403,29 @@ namespace Microsoft.Extensions.Caching.Memory
 
             Task.WaitAll(task1, task2, task3);
         }
+
+#if NET451
+        private static void DomainFunc()
+        {
+            var expected = 20;
+            var cache = CreateCache();
+            cache.Set("value2", expected);
+            Assert.Equal(expected, cache.Get<int>("value2"));
+        }
+
+        [Fact]
+        public void GetAndSet_DifferentAppDomain()
+        {
+            var expected = 10;
+            var cache = CreateCache();
+            cache.Set("value", expected);
+
+            var domain = AppDomain.CreateDomain("newDomain");
+            domain.DoCallBack(DomainFunc);
+
+            Assert.Equal(expected, cache.Get<int>("value"));
+        }
+#endif
 
         private class TestKey
         {

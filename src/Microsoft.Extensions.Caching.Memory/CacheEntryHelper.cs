@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.Caching.Memory
             set { _scopes.Value = value; }
         }
 #else
-        private const string CacheEntryDataName = "CacheEntry.Scopes";
+        private static readonly string CacheEntryDataName = "CacheEntry.Scopes" + AppDomain.CurrentDomain.Id;
 
         internal static CacheEntryStack Scopes
         {
