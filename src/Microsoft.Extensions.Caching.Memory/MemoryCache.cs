@@ -183,7 +183,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
                         // When this entry is retrieved in the scope of creating another entry,
                         // that entry needs a copy of these expiration tokens.
-                        entry.PropageOptions(CacheEntryHelper.Current);
+                        entry.PropagateOptions(CacheEntryHelper.Current);
                     }
                 }
             }

@@ -173,7 +173,7 @@ namespace Microsoft.Extensions.Caching.Memory
                 _added = true;
                 _scope.Dispose();
                 _notifyCacheEntryDisposed(this);
-                PropageOptions(CacheEntryHelper.Current);
+                PropagateOptions(CacheEntryHelper.Current);
             }
         }
 
@@ -312,7 +312,7 @@ namespace Microsoft.Extensions.Caching.Memory
             }
         }
 
-        internal void PropageOptions(CacheEntry parent)
+        internal void PropagateOptions(CacheEntry parent)
         {
             if (parent == null)
             {
