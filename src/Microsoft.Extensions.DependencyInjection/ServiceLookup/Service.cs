@@ -117,6 +117,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
+        public Type ServiceType => _descriptor.ServiceType;
+
         private bool IsSuperset(IEnumerable<Type> left, IEnumerable<Type> right)
         {
             return new HashSet<Type>(left).IsSupersetOf(right);

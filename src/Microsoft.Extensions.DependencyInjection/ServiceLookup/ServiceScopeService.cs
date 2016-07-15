@@ -15,6 +15,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             get { return ServiceLifetime.Scoped; }
         }
 
+        public Type ServiceType => typeof(IServiceScopeFactory);
+
         public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
         {
             return this;

@@ -141,4 +141,13 @@
     <value>A suitable constructor for type '{0}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.</value>
     <comment>{0} = service type</comment>
   </data>
+  <data name="ScopedInSingletonException" xml:space="preserve">
+    <value>Cannot consume {2} service '{0}' from {3} '{1}'.</value>
+  </data>
+  <data name="ScopedResolvedFromRootException" xml:space="preserve">
+    <value>Cannot resolve '{0}' from root provider because it requires {2} service '{1}'.</value>
+  </data>
+  <data name="DirectScopedResolvedFromRootException" xml:space="preserve">
+    <value>Cannot resolve {1} service '{0}' from root provider.</value>
+  </data>
 </root>

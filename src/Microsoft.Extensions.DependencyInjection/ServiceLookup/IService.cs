@@ -13,5 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         ServiceLifetime Lifetime { get; }
 
         IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain);
+
+        Type ServiceType { get; }
     }
 }

@@ -17,6 +17,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     internal class ServiceProvider : IServiceProvider, IDisposable
     {
+        private readonly CallSiteValidator _callSiteValidator;
         private readonly ServiceTable _table;
         private bool _disposeCalled;
         private List<IDisposable> _transientDisposables;
@@ -29,9 +30,15 @@ namespace Microsoft.Extensions.DependencyInjection
         // CallSiteRuntimeResolver is stateless so can be shared between all instances
         private static readonly CallSiteRuntimeResolver _callSiteRuntimeResolver = new CallSiteRuntimeResolver();
 
-        public ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors)
+        public ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors, bool validateScopes)
         {
             Root = this;
+
+            if (validateScopes)
+            {
+                _callSiteValidator = new CallSiteValidator();
+            }
+
             _table = new ServiceTable(serviceDescriptors);
 
             _table.Add(typeof(IServiceProvider), new ServiceProviderService());
@@ -44,6 +51,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             Root = parent.Root;
             _table = parent._table;
+            _callSiteValidator = parent._callSiteValidator;
         }
 
         /// <summary>
@@ -54,6 +62,9 @@ namespace Microsoft.Extensions.DependencyInjection
         public object GetService(Type serviceType)
         {
             var realizedService = _table.RealizedServices.GetOrAdd(serviceType, _createServiceAccessor, this);
+
+            _callSiteValidator?.ValidateResolution(serviceType, this);
+
             return realizedService.Invoke(this);
         }
 
@@ -62,6 +73,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var callSite = serviceProvider.GetServiceCallSite(serviceType, new HashSet<Type>());
             if (callSite != null)
             {
+                serviceProvider._callSiteValidator?.ValidateCallSite(serviceType, callSite);
                 return RealizeService(serviceProvider._table, serviceType, callSite);
             }
 

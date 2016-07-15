@@ -25,6 +25,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             get { return ServiceLifetime.Transient; }
         }
 
+        public Type ServiceType => _itemType;
+
         public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
         {
             var list = new List<IServiceCallSite>();
@@ -36,6 +38,5 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
             return new ClosedIEnumerableCallSite(_itemType, list.ToArray());
         }
-
     }
 }
