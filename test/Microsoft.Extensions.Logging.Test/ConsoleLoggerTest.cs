@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Logging.Test
         private const string _state = "This is a test, and {curly braces} are just fine!";
         private Func<object, Exception, string> _defaultFormatter = (state, exception) => state.ToString();
 
-        private Tuple<ConsoleLogger, ConsoleSink> SetUp(Func<string, LogLevel, bool> filter, bool includeScopes = false)
+        private static Tuple<ConsoleLogger, ConsoleSink> SetUp(Func<string, LogLevel, bool> filter, bool includeScopes = false)
         {
             // Arrange
             var sink = new ConsoleSink();
@@ -641,6 +641,38 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.NotNull(disposable);
         }
+
+#if NET451
+        private static void DomainFunc()
+        {
+            var t = SetUp(filter: null, includeScopes: true);
+            var logger = t.Item1;
+            using (logger.BeginScope("newDomain scope"))
+            {
+                logger.LogInformation("Test");
+            }
+        }
+
+        [Fact]
+        public void ScopeWithChangingAppDomains_DoesNotAccessUnloadedAppDomain()
+        {
+            // Arrange
+            var t = SetUp(filter: null, includeScopes: true);
+            var logger = t.Item1;
+            var sink = t.Item2;
+            var domain = AppDomain.CreateDomain("newDomain");
+
+            // Act
+            domain.DoCallBack(DomainFunc);
+            AppDomain.Unload(domain);
+            var disposable = logger.BeginScope("Scope1");
+            logger.LogInformation("Test");
+
+            // Assert
+            Assert.NotNull(disposable);
+            Assert.Equal(4, sink.Writes.Count);
+        }
+#endif
 
         [Fact]
         public void ConsoleLogger_ReloadSettings_CanChangeLogLevel()

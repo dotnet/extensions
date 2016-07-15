@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.Logging.Console
         public ConsoleLogScope Parent { get; private set; }
 
 #if NET451
-        private static string FieldKey = typeof(ConsoleLogScope).FullName + ".Value";
+        private static readonly string FieldKey = $"{typeof(ConsoleLogScope).FullName}.Value.{AppDomain.CurrentDomain.Id}";
         public static ConsoleLogScope Current
         {
             get
