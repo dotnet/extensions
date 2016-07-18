@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.Extensions.Caching.SqlServer
@@ -54,10 +53,10 @@ namespace Microsoft.Extensions.Caching.SqlServer
         public async Task ReturnsNullValue_ForNonExistingCacheItem()
         {
             // Arrange
-            var sqlServerCache = GetCache();
+            var cache = GetSqlServerCache();
 
             // Act
-            var value = await sqlServerCache.GetAsync("NonExisting");
+            var value = await cache.GetAsync("NonExisting");
 
             // Assert
             Assert.Null(value);
@@ -70,12 +69,12 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var testClock = new TestClock();
             var key = Guid.NewGuid().ToString();
             var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
-            var sqlServerCache = GetCache(testClock);
+            var cache = GetSqlServerCache(GetCacheOptions(testClock));
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             {
-                return sqlServerCache.SetAsync(
+                return cache.SetAsync(
                     key,
                     expectedValue,
                     new DistributedCacheEntryOptions().SetAbsoluteExpiration(testClock.UtcNow.AddHours(-1)));
@@ -91,10 +90,10 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var key = new string('a', SqlParameterCollectionExtensions.CacheItemIdColumnWidth);
             var testClock = new TestClock();
             var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
-            var sqlServerCache = GetCache(testClock);
+            var cache = GetSqlServerCache(GetCacheOptions(testClock));
 
             // Act
-            await sqlServerCache.SetAsync(
+            await cache.SetAsync(
                 key, expectedValue,
                 new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30)));
 
@@ -103,7 +102,86 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Equal(expectedValue, cacheItem.Value);
 
             // Act
-            await sqlServerCache.RemoveAsync(key);
+            await cache.RemoveAsync(key);
+
+            // Assert
+            var cacheItemInfo = await GetCacheItemFromDatabaseAsync(key);
+            Assert.Null(cacheItemInfo);
+        }
+
+        [Fact]
+        public async Task SetCacheItem_SucceedsFor_NullAbsoluteAndSlidingExpirationTimes()
+        {
+            // Arrange
+            var key = Guid.NewGuid().ToString();
+            var testClock = new TestClock();
+            var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
+            var cacheOptions = GetCacheOptions(testClock);
+            var cache = GetSqlServerCache(cacheOptions);
+            var expectedExpirationTime = testClock.UtcNow.Add(cacheOptions.DefaultSlidingExpiration);
+
+            // Act
+            await cache.SetAsync(key, expectedValue, new DistributedCacheEntryOptions()
+            {
+                AbsoluteExpiration = null,
+                AbsoluteExpirationRelativeToNow = null,
+                SlidingExpiration = null
+            });
+
+            // Assert
+            await AssertGetCacheItemFromDatabaseAsync(
+                            cache,
+                            key,
+                            expectedValue,
+                            cacheOptions.DefaultSlidingExpiration,
+                            absoluteExpiration: null,
+                            expectedExpirationTime: expectedExpirationTime);
+
+            var cacheItem = await GetCacheItemFromDatabaseAsync(key);
+            Assert.Equal(expectedValue, cacheItem.Value);
+
+            // Act
+            await cache.RemoveAsync(key);
+
+            // Assert
+            var cacheItemInfo = await GetCacheItemFromDatabaseAsync(key);
+            Assert.Null(cacheItemInfo);
+        }
+
+        [Fact]
+        public async Task UpdatedDefaultSlidingExpiration_SetCacheItem_SucceedsFor_NullAbsoluteAndSlidingExpirationTimes()
+        {
+            // Arrange
+            var key = Guid.NewGuid().ToString();
+            var testClock = new TestClock();
+            var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
+            var cacheOptions = GetCacheOptions(testClock);
+            cacheOptions.DefaultSlidingExpiration = cacheOptions.DefaultSlidingExpiration.Add(TimeSpan.FromMinutes(10));
+            var cache = GetSqlServerCache(cacheOptions);
+            var expectedExpirationTime = testClock.UtcNow.Add(cacheOptions.DefaultSlidingExpiration);
+
+            // Act
+            await cache.SetAsync(key, expectedValue, new DistributedCacheEntryOptions()
+            {
+                AbsoluteExpiration = null,
+                AbsoluteExpirationRelativeToNow = null,
+                SlidingExpiration = null
+            });
+
+            // Assert
+            await AssertGetCacheItemFromDatabaseAsync(
+                            cache,
+                            key,
+                            expectedValue,
+                            cacheOptions.DefaultSlidingExpiration,
+                            absoluteExpiration: null,
+                            expectedExpirationTime: expectedExpirationTime);
+
+            var cacheItem = await GetCacheItemFromDatabaseAsync(key);
+            Assert.Equal(expectedValue, cacheItem.Value);
+
+            // Act
+            await cache.RemoveAsync(key);
 
             // Assert
             var cacheItemInfo = await GetCacheItemFromDatabaseAsync(key);
@@ -118,10 +196,10 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var key = new string('b', SqlParameterCollectionExtensions.CacheItemIdColumnWidth + 1);
             var testClock = new TestClock();
             var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
-            var sqlServerCache = GetCache(testClock);
+            var cache = GetSqlServerCache(GetCacheOptions(testClock));
 
             // Act
-            await sqlServerCache.SetAsync(
+            await cache.SetAsync(
                 key, expectedValue,
                 new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30)));
 
@@ -140,8 +218,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             // Arrange
             var testClock = new TestClock();
             var key = Guid.NewGuid().ToString();
-            var sqlServerCache = GetCache(testClock);
-            await sqlServerCache.SetAsync(
+            var cache = GetSqlServerCache(GetCacheOptions(testClock));
+            await cache.SetAsync(
                 key,
                 Encoding.UTF8.GetBytes("Hello, World!"),
                 new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(10)));
@@ -150,7 +228,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             testClock.Add(TimeSpan.FromHours(10));
 
             // Act
-            var value = await sqlServerCache.GetAsync(key);
+            var value = await cache.GetAsync(key);
 
             // Assert
             Assert.Null(value);
@@ -165,10 +243,10 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var testClock = new TestClock();
             var slidingExpirationWindow = TimeSpan.FromSeconds(10);
             var key = Guid.NewGuid().ToString();
-            var sqlServerCache = GetCache(testClock);
+            var cache = GetSqlServerCache(GetCacheOptions(testClock));
             var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
             var expectedExpirationTime = testClock.UtcNow.AddSeconds(expected);
-            await sqlServerCache.SetAsync(
+            await cache.SetAsync(
                 key,
                 expectedValue,
                 new DistributedCacheEntryOptions().SetSlidingExpiration(slidingExpirationWindow));
@@ -176,7 +254,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             testClock.Add(TimeSpan.FromSeconds(accessItemAt));
             // Act
             await AssertGetCacheItemFromDatabaseAsync(
-                sqlServerCache,
+                cache,
                 key,
                 expectedValue,
                 slidingExpirationWindow,
@@ -196,9 +274,9 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var slidingExpiration = TimeSpan.FromSeconds(5);
             var absoluteExpiration = utcNow.Add(TimeSpan.FromSeconds(20));
             var key = Guid.NewGuid().ToString();
-            var sqlServerCache = GetCache(testClock);
+            var cache = GetSqlServerCache(GetCacheOptions(testClock));
             var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
-            await sqlServerCache.SetAsync(
+            await cache.SetAsync(
                 key,
                 expectedValue,
                 // Set both sliding and absolute expiration
@@ -208,7 +286,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
             // Act
             utcNow = testClock.Add(TimeSpan.FromSeconds(accessItemAt)).UtcNow;
-            var value = await sqlServerCache.GetAsync(key);
+            var value = await cache.GetAsync(key);
 
             // Assert
             Assert.Null(value);
@@ -220,8 +298,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             // Arrange
             var testClock = new TestClock();
             var key = Guid.NewGuid().ToString();
-            var sqlServerCache = GetCache(testClock);
-            await sqlServerCache.SetAsync(
+            var cache = GetSqlServerCache(GetCacheOptions(testClock));
+            await cache.SetAsync(
                 key,
                 Encoding.UTF8.GetBytes("Hello, World!"),
                 new DistributedCacheEntryOptions().SetAbsoluteExpiration(relative: TimeSpan.FromSeconds(10)));
@@ -230,7 +308,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             testClock.Add(TimeSpan.FromHours(10));
 
             // Act
-            var value = await sqlServerCache.GetAsync(key);
+            var value = await cache.GetAsync(key);
 
             // Assert
             Assert.Null(value);
@@ -242,8 +320,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
             // Arrange
             var testClock = new TestClock();
             var key = Guid.NewGuid().ToString();
-            var sqlServerCache = GetCache(testClock);
-            await sqlServerCache.SetAsync(
+            var cache = GetSqlServerCache(GetCacheOptions(testClock));
+            await cache.SetAsync(
                 key,
                 Encoding.UTF8.GetBytes("Hello, World!"),
                 new DistributedCacheEntryOptions()
@@ -253,29 +331,10 @@ namespace Microsoft.Extensions.Caching.SqlServer
             testClock.Add(TimeSpan.FromHours(10));
 
             // Act
-            var value = await sqlServerCache.GetAsync(key);
+            var value = await cache.GetAsync(key);
 
             // Assert
             Assert.Null(value);
-        }
-
-        [Fact]
-        public async Task ThrowsException_OnNoSlidingOrAbsoluteExpirationOptions()
-        {
-            // Arrange
-            var key = Guid.NewGuid().ToString();
-            var sqlServerCache = GetCache();
-            var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
-
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            {
-                return sqlServerCache.SetAsync(
-                    key,
-                    expectedValue,
-                    new DistributedCacheEntryOptions());
-            });
-            Assert.Equal("Either absolute or sliding expiration needs to be provided.", exception.Message);
         }
 
         [Fact]
@@ -285,12 +344,12 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var testClock = new TestClock();
             var absoluteExpirationRelativeToUtcNow = TimeSpan.FromSeconds(10);
             var key = Guid.NewGuid().ToString();
-            var sqlServerCache = GetCache(testClock);
+            var cache = GetSqlServerCache(GetCacheOptions(testClock));
             var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
             var expectedAbsoluteExpiration = testClock.UtcNow.Add(absoluteExpirationRelativeToUtcNow);
 
             // Act
-            await sqlServerCache.SetAsync(
+            await cache.SetAsync(
                 key,
                 expectedValue,
                 new DistributedCacheEntryOptions()
@@ -298,7 +357,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
             // Assert
             await AssertGetCacheItemFromDatabaseAsync(
-                sqlServerCache,
+                cache,
                 key,
                 expectedValue,
                 slidingExpiration: null,
@@ -313,11 +372,11 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var testClock = new TestClock();
             var expectedAbsoluteExpiration = new DateTimeOffset(2025, 1, 1, 1, 0, 0, TimeSpan.Zero);
             var key = Guid.NewGuid().ToString();
-            var sqlServerCache = GetCache();
+            var cache = GetSqlServerCache();
             var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
 
             // Act
-            await sqlServerCache.SetAsync(
+            await cache.SetAsync(
                 key,
                 expectedValue,
                 new DistributedCacheEntryOptions()
@@ -325,7 +384,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
             // Assert
             await AssertGetCacheItemFromDatabaseAsync(
-                sqlServerCache,
+                cache,
                 key,
                 expectedValue,
                 slidingExpiration: null,
@@ -339,18 +398,18 @@ namespace Microsoft.Extensions.Caching.SqlServer
             // Arrange
             var testClock = new TestClock();
             var key = Guid.NewGuid().ToString();
-            var sqlServerCache = GetCache(testClock);
+            var cache = GetSqlServerCache(GetCacheOptions(testClock));
             var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
             var absoluteExpiration = testClock.UtcNow.Add(TimeSpan.FromSeconds(10));
 
             // Act & Assert
             // Creates a new item
-            await sqlServerCache.SetAsync(
+            await cache.SetAsync(
                 key,
                 expectedValue,
                 new DistributedCacheEntryOptions().SetAbsoluteExpiration(absoluteExpiration));
             await AssertGetCacheItemFromDatabaseAsync(
-                sqlServerCache,
+                cache,
                 key,
                 expectedValue,
                 slidingExpiration: null,
@@ -359,12 +418,12 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
             // Updates an existing item with new absolute expiration time
             absoluteExpiration = testClock.UtcNow.Add(TimeSpan.FromMinutes(30));
-            await sqlServerCache.SetAsync(
+            await cache.SetAsync(
                 key,
                 expectedValue,
                 new DistributedCacheEntryOptions().SetAbsoluteExpiration(absoluteExpiration));
             await AssertGetCacheItemFromDatabaseAsync(
-                sqlServerCache,
+                cache,
                 key,
                 expectedValue,
                 slidingExpiration: null,
@@ -378,20 +437,20 @@ namespace Microsoft.Extensions.Caching.SqlServer
             // Arrange
             var testClock = new TestClock();
             var key = Guid.NewGuid().ToString();
-            var sqlServerCache = GetCache(testClock);
+            var cache = GetSqlServerCache(GetCacheOptions(testClock));
             var expectedValue = new byte[SqlParameterCollectionExtensions.DefaultValueColumnWidth + 100];
             var absoluteExpiration = testClock.UtcNow.Add(TimeSpan.FromSeconds(10));
 
             // Act
             // Creates a new item
-            await sqlServerCache.SetAsync(
+            await cache.SetAsync(
                 key,
                 expectedValue,
                 new DistributedCacheEntryOptions().SetAbsoluteExpiration(absoluteExpiration));
 
             // Assert
             await AssertGetCacheItemFromDatabaseAsync(
-                sqlServerCache,
+                cache,
                 key,
                 expectedValue,
                 slidingExpiration: null,
@@ -406,18 +465,18 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var testClock = new TestClock();
             var slidingExpiration = TimeSpan.FromSeconds(10);
             var key = Guid.NewGuid().ToString();
-            var sqlServerCache = GetCache(testClock);
+            var cache = GetSqlServerCache(GetCacheOptions(testClock));
             var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
             // The operations Set and Refresh here extend the sliding expiration 2 times.
             var expectedExpiresAtTime = testClock.UtcNow.AddSeconds(15);
-            await sqlServerCache.SetAsync(
+            await cache.SetAsync(
                 key,
                 expectedValue,
                 new DistributedCacheEntryOptions().SetSlidingExpiration(slidingExpiration));
 
             // Act
             testClock.Add(TimeSpan.FromSeconds(5));
-            await sqlServerCache.RefreshAsync(key);
+            await cache.RefreshAsync(key);
 
             // Assert
             // verify if the expiration time in database is set as expected
@@ -437,9 +496,9 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var slidingExpiration = TimeSpan.FromSeconds(5);
             var absoluteExpiration = utcNow.Add(TimeSpan.FromSeconds(20));
             var key = Guid.NewGuid().ToString();
-            var sqlServerCache = GetCache(testClock);
+            var cache = GetSqlServerCache(GetCacheOptions(testClock));
             var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
-            await sqlServerCache.SetAsync(
+            await cache.SetAsync(
                 key,
                 expectedValue,
                 // Set both sliding and absolute expiration
@@ -455,7 +514,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             // Accessing item at time...
             utcNow = testClock.Add(TimeSpan.FromSeconds(5)).UtcNow;
             await AssertGetCacheItemFromDatabaseAsync(
-                sqlServerCache,
+                cache,
                 key,
                 expectedValue,
                 slidingExpiration,
@@ -465,7 +524,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             // Accessing item at time...
             utcNow = testClock.Add(TimeSpan.FromSeconds(5)).UtcNow;
             await AssertGetCacheItemFromDatabaseAsync(
-                sqlServerCache,
+                cache,
                 key,
                 expectedValue,
                 slidingExpiration,
@@ -476,7 +535,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             utcNow = testClock.Add(TimeSpan.FromSeconds(5)).UtcNow;
             // The expiration extension must not exceed the absolute expiration
             await AssertGetCacheItemFromDatabaseAsync(
-                sqlServerCache,
+                cache,
                 key,
                 expectedValue,
                 slidingExpiration,
@@ -492,16 +551,16 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var absoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
             var expectedExpiresAtTime = testClock.UtcNow.Add(absoluteExpirationRelativeToNow);
             var key = Guid.NewGuid().ToString();
-            var sqlServerCache = GetCache(testClock);
+            var cache = GetSqlServerCache(GetCacheOptions(testClock));
             var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
-            await sqlServerCache.SetAsync(
+            await cache.SetAsync(
                 key,
                 expectedValue,
                 new DistributedCacheEntryOptions().SetAbsoluteExpiration(absoluteExpirationRelativeToNow));
             testClock.Add(TimeSpan.FromSeconds(25));
 
             // Act
-            var value = await sqlServerCache.GetAsync(key);
+            var value = await cache.GetAsync(key);
 
             // Assert
             Assert.NotNull(value);
@@ -520,18 +579,18 @@ namespace Microsoft.Extensions.Caching.SqlServer
             var testClock = new TestClock();
             var slidingExpiration = TimeSpan.FromSeconds(10);
             var key = Guid.NewGuid().ToString();
-            var sqlServerCache = GetCache(testClock);
+            var cache = GetSqlServerCache(GetCacheOptions(testClock));
             var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
             // The operations Set and Refresh here extend the sliding expiration 2 times.
             var expectedExpiresAtTime = testClock.UtcNow.AddSeconds(15);
-            await sqlServerCache.SetAsync(
+            await cache.SetAsync(
                 key,
                 expectedValue,
                 new DistributedCacheEntryOptions().SetSlidingExpiration(slidingExpiration));
 
             // Act
             testClock.Add(TimeSpan.FromSeconds(5));
-            await sqlServerCache.RefreshAsync(key);
+            await cache.RefreshAsync(key);
 
             // Assert
             // verify if the expiration time in database is set as expected
@@ -547,14 +606,14 @@ namespace Microsoft.Extensions.Caching.SqlServer
         {
             // Arrange
             var key = Guid.NewGuid().ToString().ToLower(); // lower case
-            var sqlServerCache = GetCache();
-            await sqlServerCache.SetAsync(
+            var cache = GetSqlServerCache();
+            await cache.SetAsync(
                 key,
                 Encoding.UTF8.GetBytes("Hello, World!"),
                 new DistributedCacheEntryOptions().SetAbsoluteExpiration(relative: TimeSpan.FromHours(1)));
 
             // Act
-            var value = await sqlServerCache.GetAsync(key.ToUpper()); // key made upper case
+            var value = await cache.GetAsync(key.ToUpper()); // key made upper case
 
             // Assert
             Assert.Null(value);
@@ -565,15 +624,15 @@ namespace Microsoft.Extensions.Caching.SqlServer
         {
             // Arrange
             var key = string.Format("  {0}  ", Guid.NewGuid()); // with trailing spaces
-            var sqlServerCache = GetCache();
+            var cache = GetSqlServerCache();
             var expectedValue = Encoding.UTF8.GetBytes("Hello, World!");
-            await sqlServerCache.SetAsync(
+            await cache.SetAsync(
                 key,
                 expectedValue,
                 new DistributedCacheEntryOptions().SetAbsoluteExpiration(relative: TimeSpan.FromHours(1)));
 
             // Act
-            var value = await sqlServerCache.GetAsync(key);
+            var value = await cache.GetAsync(key);
 
             // Assert
             Assert.NotNull(value);
@@ -585,23 +644,33 @@ namespace Microsoft.Extensions.Caching.SqlServer
         {
             // Arrange
             var key = Guid.NewGuid().ToString();
-            var sqlServerCache = GetCache();
-            await sqlServerCache.SetAsync(
+            var cache = GetSqlServerCache();
+            await cache.SetAsync(
                 key,
                 Encoding.UTF8.GetBytes("Hello, World!"),
                 new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(10)));
 
             // Act
-            await sqlServerCache.RemoveAsync(key);
+            await cache.RemoveAsync(key);
 
             // Assert
             var cacheItemInfo = await GetCacheItemFromDatabaseAsync(key);
             Assert.Null(cacheItemInfo);
         }
 
-        private SqlServerCache GetCache(ISystemClock testClock = null)
+        private IDistributedCache GetSqlServerCache(SqlServerCacheOptions options = null)
         {
-            var options = new SqlServerCacheOptions()
+            if (options == null)
+            {
+                options = GetCacheOptions();
+            }
+
+            return new SqlServerCache(options);
+        }
+
+        private SqlServerCacheOptions GetCacheOptions(ISystemClock testClock = null)
+        {
+            return new SqlServerCacheOptions()
             {
                 ConnectionString = _connectionString,
                 SchemaName = _schemaName,
@@ -609,12 +678,10 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 SystemClock = testClock ?? new TestClock(),
                 ExpiredItemsDeletionInterval = TimeSpan.FromHours(2)
             };
-
-            return new SqlServerCache(new TestSqlServerCacheOptions(options));
         }
 
         private async Task AssertGetCacheItemFromDatabaseAsync(
-            SqlServerCache cache,
+            IDistributedCache cache,
             string key,
             byte[] expectedValue,
             TimeSpan? slidingExpiration,
@@ -669,24 +736,6 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 else
                 {
                     return null;
-                }
-            }
-        }
-
-        private class TestSqlServerCacheOptions : IOptions<SqlServerCacheOptions>
-        {
-            private readonly SqlServerCacheOptions _innerOptions;
-
-            public TestSqlServerCacheOptions(SqlServerCacheOptions innerOptions)
-            {
-                _innerOptions = innerOptions;
-            }
-
-            public SqlServerCacheOptions Value
-            {
-                get
-                {
-                    return _innerOptions;
                 }
             }
         }

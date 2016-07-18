@@ -55,6 +55,11 @@ namespace Microsoft.Extensions.Caching.Distributed
                 throw new ArgumentNullException(nameof(value));
             }
 
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             var memoryCacheEntryOptions = new MemoryCacheEntryOptions();
             memoryCacheEntryOptions.AbsoluteExpiration = options.AbsoluteExpiration;
             memoryCacheEntryOptions.AbsoluteExpirationRelativeToNow = options.AbsoluteExpirationRelativeToNow;
@@ -73,6 +78,11 @@ namespace Microsoft.Extensions.Caching.Distributed
             if (value == null)
             {
                 throw new ArgumentNullException(nameof(value));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
             }
 
             Set(key, value, options);

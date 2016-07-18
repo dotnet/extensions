@@ -37,6 +37,12 @@ namespace Microsoft.Extensions.Caching.SqlServer
         /// </summary>
         public string TableName { get; set; }
 
+        /// <summary>
+        /// The default sliding expiration set for a cache entry if neither Absolute or SlidingExpiration has been set explicitly.
+        /// By default, its 20 minutes.
+        /// </summary>
+        public TimeSpan DefaultSlidingExpiration { get; set; } = TimeSpan.FromMinutes(20);
+
         SqlServerCacheOptions IOptions<SqlServerCacheOptions>.Value
         {
             get

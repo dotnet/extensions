@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Microsoft.Extensions.Caching.Redis
 {
@@ -18,9 +19,9 @@ namespace Microsoft.Extensions.Caching.Redis
 
         private static volatile Process _redisServerProcess; // null implies if server exists it was not started by this code
         private static readonly object _redisServerProcessLock = new object();
-        public static int RedisPort = 6375; // override default so that do not interfere with anyone else's server
+        public static int RedisPort = 6379; // override default so that do not interfere with anyone else's server
 
-        public static RedisCache CreateCacheInstance(string instanceName)
+        public static IDistributedCache CreateCacheInstance(string instanceName)
         {
             return new RedisCache(new RedisCacheOptions()
             {
