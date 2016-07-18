@@ -1,0 +1,30 @@
+{
+  "buildOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "dotnet-test-xunit": "2.2.0-*",
+    "Microsoft.Extensions.Logging.AzureWebAppDiagnostics": "1.1.0-*",
+    "Microsoft.Extensions.Logging.TraceSource": "1.1.0-*",
+    "Moq": "4.6.25-*",
+    "xunit": "2.2.0-*"
+  },
+  "testRunner": "xunit",
+  "frameworks": {
+    "netcoreapp1.0": {
+      "imports": [
+        "dotnet5.4"
+      ],
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-*",
+          "type": "platform"
+        }
+      }
+    },
+    "net451": {
+      "dependencies": {
+      }
+    }
+  }
+}

@@ -3,13 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging.Abstractions.Internal;
 
 namespace Microsoft.Extensions.Logging
 {
     internal class Logger : ILogger
     {
-        private static readonly NullScope _nullScope = new NullScope();
-
         private readonly LoggerFactory _loggerFactory;
         private readonly string _name;
         private ILogger[] _loggers;
@@ -104,7 +103,7 @@ namespace Microsoft.Extensions.Logging
         {
             if (_loggers == null)
             {
-                return _nullScope;
+                return NullScope.Instance;
             }
 
             if (_loggers.Length == 1)
@@ -223,13 +222,6 @@ namespace Microsoft.Extensions.Logging
             internal void Add(IDisposable disposable)
             {
                 throw new NotImplementedException();
-            }
-        }
-
-        private class NullScope : IDisposable
-        {
-            public void Dispose()
-            {
             }
         }
     }
