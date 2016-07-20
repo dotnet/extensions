@@ -8,6 +8,11 @@ namespace Microsoft.Extensions.FileProviders.Physical
 {
     public class PhysicalFileInfo : IFileInfo
     {
+        private const int MaxBufferSize = 1024 * 64;
+        // Note: Buffer size must be greater than zero, even if the file size is zero
+        // otherwise FileStream constructor will throw
+        private const int MinBufferSize = 1;
+
         private readonly FileInfo _info;
 
         public PhysicalFileInfo(FileInfo info)
@@ -29,13 +34,13 @@ namespace Microsoft.Extensions.FileProviders.Physical
 
         public Stream CreateReadStream()
         {
-            // Note: Buffer size must be greater than zero, even if the file size is zero.
+            var bufferSize = (int)Math.Min(MaxBufferSize, Math.Max(MinBufferSize, Length));
             return new FileStream(
                 PhysicalPath,
                 FileMode.Open,
                 FileAccess.Read,
                 FileShare.ReadWrite,
-                1024 * 64,
+                bufferSize,
                 FileOptions.Asynchronous | FileOptions.SequentialScan);
         }
     }

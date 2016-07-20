@@ -14,8 +14,8 @@ namespace Microsoft.Extensions.FileProviders
                 return true;
             }
             else if (fileSystemInfo.Exists &&
-                (fileSystemInfo.Attributes.HasFlag(FileAttributes.Hidden) ||
-                fileSystemInfo.Attributes.HasFlag(FileAttributes.System)))
+                ((fileSystemInfo.Attributes & FileAttributes.Hidden) != 0 ||
+                 (fileSystemInfo.Attributes & FileAttributes.System) != 0))
             {
                 return true;
             }
