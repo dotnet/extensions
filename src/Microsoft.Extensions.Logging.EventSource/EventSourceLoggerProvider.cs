@@ -37,6 +37,9 @@ namespace Microsoft.Extensions.Logging.EventSourceLogger
         /// </summary>
         public ILogger CreateLogger(string categoryName)
         {
+            // need to check if the filter spec and internal event source level has changed
+            // and update the _defaultLevel if it has
+            _eventSource.ApplyFilterSpec();
             var newLogger = _loggers = new EventSourceLogger(categoryName, _factoryID, _eventSource, _loggers);
             newLogger.Level = ParseLevelSpecs(_filterSpec, _defaultLevel, newLogger.CategoryName);
             return newLogger;

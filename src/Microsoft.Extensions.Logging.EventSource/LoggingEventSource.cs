@@ -106,6 +106,7 @@ namespace Microsoft.Extensions.Logging.EventSourceLogger
         private string _filterSpec;
         private EventSourceLoggerProvider _loggingProviders;
         private object _lockObj = new object();
+        private bool _checkLevel;
 
         internal EventSourceLoggerProvider CreateLoggerProvider()
         {
@@ -226,9 +227,27 @@ namespace Microsoft.Extensions.Logging.EventSourceLogger
         private void SetFilterSpec(string filterSpec)
         {
             _filterSpec = filterSpec;
-            for (var cur = _loggingProviders; cur != null; cur = cur.Next)
+
+            // In .NET 4.5.2 the internal EventSource level hasn't been correctly set
+            // when this callback is invoked. To still have the logger behave correctly
+            // in .NET 4.5.2 we delay checking the level until the logger is used the first
+            // time after this callback.
+            _checkLevel = true;
+        }
+
+        [NonEvent]
+        internal void ApplyFilterSpec()
+        {
+            lock (_lockObj)
             {
-                cur.SetFilterSpec(filterSpec);
+                if (_checkLevel)
+                {
+                    for (var cur = _loggingProviders; cur != null; cur = cur.Next)
+                    {
+                        cur.SetFilterSpec(_filterSpec);
+                    }
+                    _checkLevel = false;
+                }
             }
         }
     }

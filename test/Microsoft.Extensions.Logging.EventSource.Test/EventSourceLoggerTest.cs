@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.Logging.Test
                 factory.AddEventSourceLogger();
 
                 var listenerSettings = new TestEventListener.ListenerSettings();
-                listenerSettings.Keywords = EventKeywords.None;
+                listenerSettings.Keywords = (EventKeywords)(-1);
                 listenerSettings.FilterSpec = null;
                 listenerSettings.Level = default(EventLevel);
                 testListener.EnableEvents(listenerSettings);
