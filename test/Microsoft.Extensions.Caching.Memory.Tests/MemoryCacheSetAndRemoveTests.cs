@@ -168,6 +168,46 @@ namespace Microsoft.Extensions.Caching.Memory
         }
 
         [Fact]
+        public void GetOrCreate_WillNotCreateEmptyValue_WhenFactoryThrows()
+        {
+            var cache = CreateCache();
+            string key = "myKey";
+            try
+            {
+                cache.GetOrCreate<int>(key, entry =>
+                {
+                    throw new Exception();
+                });
+            }
+            catch (Exception)
+            {
+            }
+
+            int obj;
+            Assert.False(cache.TryGetValue(key, out obj));
+        }
+
+        [Fact]
+        public async Task GetOrCreateAsync_WillNotCreateEmptyValue_WhenFactoryThrows()
+        {
+            var cache = CreateCache();
+            string key = "myKey";
+            try
+            {
+                await cache.GetOrCreateAsync<int>(key, entry =>
+                {
+                    throw new Exception();
+                });
+            }
+            catch (Exception)
+            {
+            }
+
+            int obj;
+            Assert.False(cache.TryGetValue(key, out obj));
+        }
+
+        [Fact]
         public void SetOverwritesAndInvokesCallbacks()
         {
             var cache = CreateCache();
