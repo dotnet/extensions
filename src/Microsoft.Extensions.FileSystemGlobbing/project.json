@@ -28,7 +28,7 @@
     }
   },
   "frameworks": {
-    "net451": {
+    "net45": {
       "dependencies": {}
     },
     "netstandard1.3": {
