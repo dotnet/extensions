@@ -73,11 +73,6 @@ namespace Microsoft.Extensions.Configuration
                 throw new ArgumentException(Resources.Error_InvalidFilePath, nameof(path));
             }
 
-            if (provider == null && Path.IsPathRooted(path))
-            {
-                provider = new PhysicalFileProvider(Path.GetDirectoryName(path));
-                path = Path.GetFileName(path);
-            } 
             var source = new IniConfigurationSource
             {
                 FileProvider = provider,
@@ -85,6 +80,7 @@ namespace Microsoft.Extensions.Configuration
                 Optional = optional,
                 ReloadOnChange = reloadOnChange
             };
+            source.ResolveFileProvider();
             builder.Add(source);
             return builder;
         }

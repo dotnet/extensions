@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration.Ini;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Configuration.Xml;
@@ -479,6 +480,42 @@ CommonKey3:CommonKey4=IniValue6";
             token2.RegisterChangeCallback(_ => called = true, state: null);
             Assert.True(called);
             //Assert.True(token2.HasChanged, "Deleted");
+        }
+
+        [Fact]
+        public async Task CreatingOptionalFileInNonExistentDirectoryWillReload()
+        {
+            var directory = Path.Combine(_basePath, Path.GetRandomFileName());
+
+            var iniFile = Path.Combine(directory, Path.GetRandomFileName());
+            var jsonFile = Path.Combine(directory, Path.GetRandomFileName());
+            var xmlFile = Path.Combine(directory, Path.GetRandomFileName());
+
+            // Arrange
+            var config = new ConfigurationBuilder()
+                .AddIniFile(iniFile, optional: true, reloadOnChange: true)
+                .AddJsonFile(jsonFile, optional: true, reloadOnChange: true)
+                .AddXmlFile(xmlFile, optional: true, reloadOnChange: true)
+                .Build();
+
+            Assert.Null(config["JsonKey1"]);
+            Assert.Null(config["IniKey1"]);
+            Assert.Null(config["XmlKey1"]);
+
+            var createToken = config.GetReloadToken();
+            Assert.False(createToken.HasChanged);
+
+            Directory.CreateDirectory(directory);
+            File.WriteAllText(jsonFile, @"{""JsonKey1"": ""JsonValue1""}");
+            File.WriteAllText(iniFile, @"IniKey1 = IniValue1");
+            File.WriteAllText(xmlFile, @"<settings XmlKey1=""XmlValue1""/>");
+
+            await Task.Delay(500);
+
+            Assert.Equal("JsonValue1", config["JsonKey1"]);
+            Assert.Equal("IniValue1", config["IniKey1"]);
+            Assert.Equal("XmlValue1", config["XmlKey1"]);
+            Assert.True(createToken.HasChanged);
         }
 
         [Theory]
