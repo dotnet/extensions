@@ -10,7 +10,8 @@ Contains common DI abstractions that ASP.NET Core and Entity Framework Core use.
 ### Using other containers with Microsoft.Extensions.DependencyInjection
 
 * [**Autofac**](http://autofac.readthedocs.org/en/latest/integration/aspnetcore.html)
-* [**DryIoc**](https://www.nuget.org/packages/DryIoc.AspNetCore.DependencyInjection)
+* [**DryIoc**](https://www.nuget.org/packages/DryIoc.Microsoft.DependencyInjection)  
+Note: RTM package is renamed to DryIoc.__Microsoft__.DependencyInjection (previously ...__AspNetCore__...)
 * [**Grace**](https://www.nuget.org/packages/Grace.DependencyInjection.Extensions)
 * [**LightInject**](https://github.com/seesharper/LightInject.Microsoft.DependencyInjection)
 * [**StructureMap**](https://github.com/structuremap/structuremap.dnx)
