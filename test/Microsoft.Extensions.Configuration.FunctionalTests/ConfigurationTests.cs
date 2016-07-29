@@ -510,7 +510,7 @@ CommonKey3:CommonKey4=IniValue6";
             File.WriteAllText(iniFile, @"IniKey1 = IniValue1");
             File.WriteAllText(xmlFile, @"<settings XmlKey1=""XmlValue1""/>");
 
-            await Task.Delay(500);
+            await Task.Delay(2000);
 
             Assert.Equal("JsonValue1", config["JsonKey1"]);
             Assert.Equal("IniValue1", config["IniKey1"]);
@@ -521,7 +521,7 @@ CommonKey3:CommonKey4=IniValue6";
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void DeletingFileWillReload(bool optional)
+        public async Task DeletingFileWillReload(bool optional)
         {
             // Arrange
             var iniFile = Path.Combine(_basePath, Path.GetRandomFileName());
@@ -549,7 +549,7 @@ CommonKey3:CommonKey4=IniValue6";
             File.Delete(iniFile);
             File.Delete(xmlFile);
 
-            Thread.Sleep(1000);
+            await Task.Delay(2000);
 
             Assert.Null(config["JsonKey1"]);
             Assert.Null(config["IniKey1"]);
@@ -557,8 +557,8 @@ CommonKey3:CommonKey4=IniValue6";
             Assert.True(token.HasChanged);
         }
 
-        //[Fact] Disabling for now, flaky on CI
-        public void CreatingWritingDeletingCreatingFileWillReload()
+        [Fact]
+        public async Task CreatingWritingDeletingCreatingFileWillReload()
         {
             var iniFile = Path.Combine(_basePath, Path.GetRandomFileName());
             var jsonFile = Path.Combine(_basePath, Path.GetRandomFileName());
@@ -581,7 +581,7 @@ CommonKey3:CommonKey4=IniValue6";
             File.WriteAllText(iniFile, @"IniKey1 = IniValue1");
             File.WriteAllText(xmlFile, @"<settings XmlKey1=""XmlValue1""/>");
 
-            Thread.Sleep(500);
+            await Task.Delay(2000);
 
             Assert.Equal("JsonValue1", config["JsonKey1"]);
             Assert.Equal("IniValue1", config["IniKey1"]);
@@ -594,7 +594,7 @@ CommonKey3:CommonKey4=IniValue6";
             File.WriteAllText(iniFile, @"IniKey1 = IniValue2");
             File.WriteAllText(xmlFile, @"<settings XmlKey1=""XmlValue2""/>");
 
-            Thread.Sleep(500);
+            await Task.Delay(2000);
 
             Assert.Equal("JsonValue2", config["JsonKey1"]);
             Assert.Equal("IniValue2", config["IniKey1"]);
@@ -609,7 +609,7 @@ CommonKey3:CommonKey4=IniValue6";
             File.Delete(iniFile);
             File.Delete(xmlFile);
 
-            Thread.Sleep(500);
+            await Task.Delay(2000);
 
             Assert.Null(config["JsonKey1"]);
             Assert.Null(config["IniKey1"]);
@@ -622,7 +622,7 @@ CommonKey3:CommonKey4=IniValue6";
             File.WriteAllText(iniFile, @"IniKey1 = IniValue1");
             File.WriteAllText(xmlFile, @"<settings XmlKey1=""XmlValue1""/>");
 
-            Thread.Sleep(500);
+            await Task.Delay(2000);
 
             Assert.Equal("JsonValue1", config["JsonKey1"]);
             Assert.Equal("IniValue1", config["IniKey1"]);
