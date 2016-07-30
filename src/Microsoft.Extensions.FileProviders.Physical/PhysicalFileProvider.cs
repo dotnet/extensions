@@ -18,6 +18,8 @@ namespace Microsoft.Extensions.FileProviders
         private const string PollingEnvironmentKey = "DOTNET_USE_POLLING_FILE_WATCHER";
         private static readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars()
             .Where(c => c != Path.DirectorySeparatorChar && c != Path.AltDirectorySeparatorChar).ToArray();
+        private static readonly char[] _invalidFilterChars = _invalidFileNameChars
+            .Where(c => c != '*' && c != '|' && c != '?').ToArray();
         private static readonly char[] _pathSeparators = new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
         private readonly PhysicalFilesWatcher _filesWatcher;
 
@@ -142,6 +144,11 @@ namespace Microsoft.Extensions.FileProviders
             return path.IndexOfAny(_invalidFileNameChars) != -1;
         }
 
+        private static bool HasInvalidFilterChars(string path)
+        {
+            return path.IndexOfAny(_invalidFilterChars) != -1;
+        }
+
         /// <summary>
         /// Locate a file at the given path by directly mapping path segments to physical directories.
         /// </summary>
@@ -154,11 +161,8 @@ namespace Microsoft.Extensions.FileProviders
                 return new NotFoundFileInfo(subpath);
             }
 
-            // Relative paths starting with a leading slash okay
-            if (subpath.StartsWith("/", StringComparison.Ordinal))
-            {
-                subpath = subpath.Substring(1);
-            }
+            // Relative paths starting with leading slashes are okay
+            subpath = subpath.TrimStart(_pathSeparators);
 
             // Absolute paths not permitted.
             if (Path.IsPathRooted(subpath))
@@ -195,11 +199,8 @@ namespace Microsoft.Extensions.FileProviders
                     return new NotFoundDirectoryContents();
                 }
 
-                // Relative paths starting with a leading slash okay
-                if (subpath.StartsWith("/", StringComparison.Ordinal))
-                {
-                    subpath = subpath.Substring(1);
-                }
+                // Relative paths starting with leading slashes are okay
+                subpath = subpath.TrimStart(_pathSeparators);
 
                 // Absolute paths not permitted.
                 if (Path.IsPathRooted(subpath))
@@ -247,24 +248,16 @@ namespace Microsoft.Extensions.FileProviders
 
         public IChangeToken Watch(string filter)
         {
-            if (filter == null)
+            if (filter == null || HasInvalidFilterChars(filter))
             {
                 return NullChangeToken.Singleton;
             }
 
-            if (PathNavigatesAboveRoot(filter))
-            {
-                return NullChangeToken.Singleton;
-            }
+            // Relative paths starting with leading slashes are okay
+            filter = filter.TrimStart(_pathSeparators);
 
-            // Relative paths starting with a leading slash okay
-            if (filter.StartsWith("/", StringComparison.Ordinal))
-            {
-                filter = filter.Substring(1);
-            }
-
-            // Absolute paths not permitted.
-            if (Path.IsPathRooted(filter))
+            // Absolute paths and paths traversing above root not permitted.
+            if (Path.IsPathRooted(filter) || PathNavigatesAboveRoot(filter))
             {
                 return NullChangeToken.Singleton;
             }

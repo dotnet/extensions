@@ -36,6 +36,63 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [InlineData("/")]
+        [InlineData("///")]
+        [InlineData("/\\/")]
+        [InlineData("\\/\\/")]
+        public void GetFileInfoReturnsPhysicalFileInfoForValidPathsWithLeadingSlashes_Windows(string path)
+        {
+            GetFileInfoReturnsPhysicalFileInfoForValidPathsWithLeadingSlashes(path);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Testing Unix specific behaviour on leading slashes.")]
+        [InlineData("/")]
+        [InlineData("///")]
+        public void GetFileInfoReturnsPhysicalFileInfoForValidPathsWithLeadingSlashes_Unix(string path)
+        {
+            GetFileInfoReturnsPhysicalFileInfoForValidPathsWithLeadingSlashes(path);
+        }
+
+        public void GetFileInfoReturnsPhysicalFileInfoForValidPathsWithLeadingSlashes(string path)
+        {
+            using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
+            {
+                var info = provider.GetFileInfo(path);
+                Assert.IsType(typeof(PhysicalFileInfo), info);
+            }
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [InlineData("/C:\\Windows\\System32")]
+        [InlineData("/\0/")]
+        public void GetFileInfoReturnsNotFoundFileInfoForIllegalPathWithLeadingSlashes_Windows(string path)
+        {
+            GetFileInfoReturnsNotFoundFileInfoForIllegalPathWithLeadingSlashes(path);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Testing Unix specific behaviour on leading slashes.")]
+        [InlineData("/\0/")]
+        public void GetFileInfoReturnsNotFoundFileInfoForIllegalPathWithLeadingSlashes_Unix(string path)
+        {
+            GetFileInfoReturnsNotFoundFileInfoForIllegalPathWithLeadingSlashes(path);
+        }
+
+        public void GetFileInfoReturnsNotFoundFileInfoForIllegalPathWithLeadingSlashes(string path)
+        {
+            using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
+            {
+                var info = provider.GetFileInfo(path);
+                Assert.IsType(typeof(NotFoundFileInfo), info);
+            }
+        }
+
         public static TheoryData<string> InvalidPaths
         {
             get
@@ -464,8 +521,58 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [InlineData("/")]
+        [InlineData("///")]
+        [InlineData("/\\/")]
+        [InlineData("\\/\\/")]
+        public void GetDirectoryContentsReturnsEnumerableDirectoryContentsForValidPathWithLeadingSlashes_Windows(string path)
+        {
+            GetDirectoryContentsReturnsEnumerableDirectoryContentsForValidPathWithLeadingSlashes(path);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Testing Unix specific behaviour on leading slashes.")]
+        [InlineData("/")]
+        [InlineData("///")]
+        public void GetDirectoryContentsReturnsEnumerableDirectoryContentsForValidPathWithLeadingSlashes_Unix(string path)
+        {
+            GetDirectoryContentsReturnsEnumerableDirectoryContentsForValidPathWithLeadingSlashes(path);
+        }
+
+        public void GetDirectoryContentsReturnsEnumerableDirectoryContentsForValidPathWithLeadingSlashes(string path)
+        {
+            using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
+            {
+                var contents = provider.GetDirectoryContents(path);
+                Assert.IsType(typeof(EnumerableDirectoryContents), contents);
+            }
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [InlineData("/C:\\Windows\\System32")]
+        [InlineData("/\0/")]
         [MemberData(nameof(InvalidPaths))]
+        public void GetDirectoryContentsReturnsNotFoundDirectoryContentsForInvalidPath_Windows(string path)
+        {
+            GetDirectoryContentsReturnsNotFoundDirectoryContentsForInvalidPath(path);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Testing Unix specific behaviour on leading slashes.")]
+        [InlineData("/\0/")]
+        [InlineData("/\\/")]
+        [InlineData("\\/\\/")]
+        [MemberData(nameof(InvalidPaths))]
+        public void GetDirectoryContentsReturnsNotFoundDirectoryContentsForInvalidPath_Unix(string path)
+        {
+            GetDirectoryContentsReturnsNotFoundDirectoryContentsForInvalidPath(path);
+        }
+
         public void GetDirectoryContentsReturnsNotFoundDirectoryContentsForInvalidPath(string path)
         {
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
@@ -868,8 +975,28 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [Fact]
-        public async Task TokenFiredForRelativePathStartingWithSlash()
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [InlineData("/")]
+        [InlineData("///")]
+        [InlineData("/\\/")]
+        [InlineData("\\/\\/")]
+        public async Task TokenFiredForRelativePathStartingWithSlash_Windows(string slashes)
+        {
+            await TokenFiredForRelativePathStartingWithSlash(slashes);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Testing Unix specific behaviour on leading slashes.")]
+        [InlineData("/")]
+        [InlineData("///")]
+        public async Task TokenFiredForRelativePathStartingWithSlash_Unix(string slashes)
+        {
+            await TokenFiredForRelativePathStartingWithSlash(slashes);
+        }
+
+        public async Task TokenFiredForRelativePathStartingWithSlash(string slashes)
         {
             using (var root = new DisposableFileSystem())
             {
@@ -880,12 +1007,54 @@ namespace Microsoft.Extensions.FileProviders
                         using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
                         {
                             var fileName = Guid.NewGuid().ToString();
-                            var token = provider.Watch("/" + fileName);
+                            var token = provider.Watch(slashes + fileName);
 
                             fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, fileName));
                             await Task.Delay(WaitTimeForTokenToFire);
 
                             Assert.True(token.HasChanged);
+                        }
+                    }
+                }
+            }
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [InlineData("/C:\\Windows\\System32")]
+        [InlineData("/\0/")]
+        public async Task TokenNotFiredForInvalidPathStartingWithSlash_Windows(string slashes)
+        {
+            await TokenNotFiredForInvalidPathStartingWithSlash(slashes);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Testing Unix specific behaviour on leading slashes.")]
+        [InlineData("/\0/")]
+        public async Task TokenNotFiredForInvalidPathStartingWithSlash_Unix(string slashes)
+        {
+            await TokenNotFiredForInvalidPathStartingWithSlash(slashes);
+        }
+
+        public async Task TokenNotFiredForInvalidPathStartingWithSlash(string slashes)
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+                {
+                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
+                    {
+                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+                        {
+                            var fileName = Guid.NewGuid().ToString();
+                            var token = provider.Watch(slashes + fileName);
+
+                            fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, fileName));
+                            await Task.Delay(WaitTimeForTokenToFire);
+
+                            Assert.IsType<NullChangeToken>(token);
+                            Assert.False(token.HasChanged);
                         }
                     }
                 }
