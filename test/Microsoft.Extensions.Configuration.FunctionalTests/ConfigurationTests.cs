@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration.Ini;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Configuration.Xml;
@@ -482,7 +483,8 @@ CommonKey3:CommonKey4=IniValue6";
             //Assert.True(token2.HasChanged, "Deleted");
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux)] // File watching is flaky on Linux CI
         public async Task CreatingOptionalFileInNonExistentDirectoryWillReload()
         {
             var directory = Path.Combine(_basePath, Path.GetRandomFileName());
