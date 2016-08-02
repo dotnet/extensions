@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
@@ -349,7 +350,41 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests
             var results = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(directoryPath)));
 
             var actual = results.Files.Select(match => match.Stem);
-            var expected = new string[] {
+            var expected = new string[]
+            {
+                "source1.cs",
+                "source2.cs",
+                "source3.cs",
+                "sub2/source4.cs",
+                "sub2/source5.cs",
+                "compiler/preprocess/preprocess-source1.cs",
+                "compiler/preprocess/sub/preprocess-source2.cs",
+                "compiler/preprocess/sub/sub/preprocess-source3.cs",
+                "compiler/shared/shared1.cs",
+                "compiler/shared/sub/shared2.cs",
+                "compiler/shared/sub/sub/sharedsub.cs"
+            };
+
+            Assert.Equal(
+                expected.OrderBy(e => e),
+                actual.OrderBy(e => e),
+                StringComparer.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void StemCorrectWithDifferentWildCards_WithInMemory()
+        {
+            var matcher = new Matcher();
+            matcher.AddInclude("sub/*.cs");
+            matcher.AddInclude("**/*.cs");
+
+            var files = GetFileList();
+            var directoryPath = "src/project";
+            var results = matcher.Match(directoryPath, files);
+
+            var actual = results.Files.Select(match => match.Stem);
+            var expected = new string[]
+            {
                 "source1.cs",
                 "source2.cs",
                 "source3.cs",
@@ -379,7 +414,8 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests
             var results = matcher.Execute(new DirectoryInfoWrapper(new DirectoryInfo(directoryPath)));
 
             var actual = results.Files.Select(match => match.Stem);
-            var expected = new string[] {
+            var expected = new string[]
+            {
                 "preprocess/preprocess-source1.cs",
                 "preprocess/sub/preprocess-source2.cs",
                 "preprocess/sub/sub/preprocess-source3.cs",
@@ -394,10 +430,37 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests
                 StringComparer.OrdinalIgnoreCase);
         }
 
-        private DisposableFileSystem CreateContext()
+        [Fact]
+        public void MultipleSubDirsAfterFirstWildcardMatch_HasCorrectStem_WithInMemory()
         {
-            var context = new DisposableFileSystem();
-            context.CreateFiles(
+            var matcher = new Matcher();
+            matcher.AddInclude("compiler/**/*.cs");
+
+            var files = GetFileList();
+            var directoryPath = "src/project";
+            var results = matcher.Match(directoryPath, files);
+
+            var actual = results.Files.Select(match => match.Stem);
+            var expected = new string[]
+            {
+                "preprocess/preprocess-source1.cs",
+                "preprocess/sub/preprocess-source2.cs",
+                "preprocess/sub/sub/preprocess-source3.cs",
+                "shared/shared1.cs",
+                "shared/sub/shared2.cs",
+                "shared/sub/sub/sharedsub.cs"
+            };
+
+            Assert.Equal(
+                expected.OrderBy(e => e),
+                actual.OrderBy(e => e),
+                StringComparer.OrdinalIgnoreCase);
+        }
+
+        private List<string> GetFileList()
+        {
+            return new List<string>
+            {
                 "src/project/source1.cs",
                 "src/project/sub/source2.cs",
                 "src/project/sub/source3.cs",
@@ -447,7 +510,14 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests
                 "res/resource2.text",
                 "res/resource3.text",
                 ".hidden/file1.hid",
-                ".hidden/sub/file2.hid");
+                ".hidden/sub/file2.hid"
+            };
+        }
+
+        private DisposableFileSystem CreateContext()
+        {
+            var context = new DisposableFileSystem();
+            context.CreateFiles(GetFileList().ToArray());
 
             return context;
         }
