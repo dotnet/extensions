@@ -170,14 +170,12 @@ namespace Microsoft.Extensions.Primitives
         }
 
         /// <inheritdoc />
-        public override int GetHashCode()
-        {
-            var hash = HashCodeCombiner.Start();
-            hash.Add(Value);
-            hash.Add(Offset);
-            hash.Add(Length);
-            return hash;
-        }
+        /// <remarks>
+        /// This GetHashCode is expensive since it allocates on every call.
+        /// However this is required to ensure we retain any behavior (such as hash code randomization) that
+        /// string.GetHashCode has.
+        /// </remarks>
+        public override int GetHashCode() => Value.GetHashCode();
 
         /// <summary>
         /// Checks if two specified <see cref="StringSegment"/> have the same value.
@@ -214,7 +212,7 @@ namespace Microsoft.Extensions.Primitives
                 throw new ArgumentNullException(nameof(text));
             }
 
-            int textLength = text.Length;
+            var textLength = text.Length;
             if (!HasValue || Length < textLength)
             {
                 return false;
@@ -236,7 +234,7 @@ namespace Microsoft.Extensions.Primitives
                 throw new ArgumentNullException(nameof(text));
             }
 
-            int textLength = text.Length;
+            var textLength = text.Length;
             if (!HasValue || Length < textLength)
             {
                 return false;

@@ -224,6 +224,61 @@ namespace Microsoft.Extensions.Primitives
             Assert.Equal(expectedResult, result);
         }
 
+        public static TheoryData GetHashCode_ReturnsSameValueForEqualSubstringsData
+        {
+            get
+            {
+                return new TheoryData<StringSegment, StringSegment>
+                {
+                    { new StringSegment("Test123", 0, 0), new StringSegment(string.Empty) },
+                    { new StringSegment("C`est si bon", 2, 3), new StringSegment("Yesterday", 1, 3) },
+                    { new StringSegment("Hello", 1, 4), new StringSegment("Hello world", 1, 4) },
+                    { new StringSegment("Hello"), new StringSegment("Hello", 0, 5) },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(GetHashCode_ReturnsSameValueForEqualSubstringsData))]
+        public void GetHashCode_ReturnsSameValueForEqualSubstrings(StringSegment segment1, StringSegment segment2)
+        {
+            // Act
+            var hashCode1 = segment1.GetHashCode();
+            var hashCode2 = segment2.GetHashCode();
+
+            // Assert
+            Assert.Equal(hashCode1, hashCode2);
+        }
+
+        public static TheoryData GetHashCode_ReturnsDifferentValuesForInequalSubstringsData
+        {
+            get
+            {
+                var testString = "Test123";
+                return new TheoryData<StringSegment, StringSegment>
+                {
+                    { new StringSegment(testString, 0, 1), new StringSegment(string.Empty) },
+                    { new StringSegment(testString, 0, 1), new StringSegment(testString, 1, 1) },
+                    { new StringSegment(testString, 1, 2), new StringSegment(testString, 1, 3) },
+                    { new StringSegment(testString, 0, 4), new StringSegment("TEST123", 0, 4) },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(GetHashCode_ReturnsDifferentValuesForInequalSubstringsData))]
+        public void GetHashCode_ReturnsDifferentValuesForInequalSubstrings(
+            StringSegment segment1,
+            StringSegment segment2)
+        {
+            // Act
+            var hashCode1 = segment1.GetHashCode();
+            var hashCode2 = segment2.GetHashCode();
+
+            // Assert
+            Assert.NotEqual(hashCode1, hashCode2);
+        }
+
         [Fact]
         public void StringSegment_EqualsString_Invalid()
         {
