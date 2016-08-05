@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Testing.xunit
     {
         public const string Win7 = "6.1";
 
-        public const string Win2008R2 = "6.1";
+        public const string Win2008R2 = Win7;
     }
 }

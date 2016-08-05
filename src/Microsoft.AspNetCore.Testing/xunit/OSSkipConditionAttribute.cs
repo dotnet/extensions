@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
                 if (_excludedVersions.Any())
                 {
                     skip = skip
-                        && _excludedVersions.Contains(currentOSInfo.Version, StringComparer.OrdinalIgnoreCase);
+                        && _excludedVersions.Any(ex => _osVersion.StartsWith(ex, StringComparison.OrdinalIgnoreCase));
                 }
 
                 // Since a test would be excuted only if 'IsMet' is true, return false if we want to skip

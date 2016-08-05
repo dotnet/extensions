@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         {
             Assert.False(
                 RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-                Microsoft.Extensions.Internal.RuntimeEnvironment.OperatingSystemVersion == "6.1",
+                Microsoft.Extensions.Internal.RuntimeEnvironment.OperatingSystemVersion.StartsWith("6.1"),
                 "Test should not be running on Win7 or Win2008R2.");
         }
 
