@@ -4,7 +4,7 @@
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Microsoft.Extensions.Caching.Redis": "1.1.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
-    "Moq": "4.6.25-*",
+    "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
   },
   "testRunner": "xunit",
