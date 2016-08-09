@@ -3,7 +3,7 @@ Logging
 
 **Package**: `Microsoft.Extensions.Logging`  
 NuGet (`master`): [![](http://img.shields.io/nuget/v/Microsoft.Extensions.Logging.svg?style=flat-square)](http://www.nuget.org/packages/Microsoft.Extensions.Logging) [![](http://img.shields.io/nuget/dt/Microsoft.Extensions.Logging.svg?style=flat-square)](http://www.nuget.org/packages/Microsoft.Extensions.Logging)  
-MyGet (`dev`): [![](http://img.shields.io/myget/aspnetvnext/v/Microsoft.Extensions.Logging.svg?style=flat-square)](https://www.myget.org/gallery/aspnetvnext)  
+MyGet (`dev`): [![](http://img.shields.io/dotnet.myget/aspnetcore-dev/v/Microsoft.Extensions.Logging.svg?style=flat-square)](https://dotnet.myget.org/feed/aspnetcore-dev/package/nuget/Microsoft.Extensions.Logging)
 
 AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/i0hdtuq4m6pwfp2s/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/Logging/branch/dev)  
 Travis:   [![Travis](https://travis-ci.org/aspnet/Logging.svg?branch=dev)](https://travis-ci.org/aspnet/Logging)
