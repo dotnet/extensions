@@ -30,6 +30,10 @@ namespace MemoryCacheSample
             // Retrieve
             bool found = cache.TryGetValue(key, out result);
 
+            // Store and Get using weak references
+            result = cache.SetWeak<object>(key, newObject);
+            result = cache.GetWeak<object>(key);
+
             // Delete
             cache.Remove(key);
 
