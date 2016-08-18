@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.Configuration
         /// with a specified prefix.
         /// </summary>
         /// <param name="configurationBuilder">The <see cref="IConfigurationBuilder"/> to add to.</param>
-        /// <param name="prefix">The prefix that environment variable names must start with.</param>
+        /// <param name="prefix">The prefix that environment variable names must start with. The prefix will be removed from the environment variable names.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         public static IConfigurationBuilder AddEnvironmentVariables(
             this IConfigurationBuilder configurationBuilder,
