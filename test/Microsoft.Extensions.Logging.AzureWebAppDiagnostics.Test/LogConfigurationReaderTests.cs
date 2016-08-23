@@ -116,7 +116,7 @@ namespace Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Logging/issues/474")]
         public void ConfigurationChange()
         {
             var tempFolder = Path.Combine(Path.GetTempPath(), "WebAppLoggerConfigurationChange");
