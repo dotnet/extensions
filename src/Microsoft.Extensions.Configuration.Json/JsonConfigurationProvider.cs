@@ -52,18 +52,21 @@ namespace Microsoft.Extensions.Configuration.Json
 
         private static string RetrieveErrorContext(JsonReaderException e, IEnumerable<string> fileContent)
         {
-            string errorLine;
+            string errorLine = null;
             if (e.LineNumber >= 2)
             {
                 var errorContext = fileContent.Skip(e.LineNumber - 2).Take(2).ToList();
-                errorLine = errorContext[0].Trim() + Environment.NewLine + errorContext[1].Trim();
+                // Handle situations when the line number reported is out of bounds
+                if (errorContext.Count() >= 2)
+                {
+                    errorLine = errorContext[0].Trim() + Environment.NewLine + errorContext[1].Trim();
+                }
             }
-            else
+            if (string.IsNullOrEmpty(errorLine))
             {
                 var possibleLineContent = fileContent.Skip(e.LineNumber - 1).FirstOrDefault();
                 errorLine = possibleLineContent ?? string.Empty;
             }
-
             return errorLine;
         }
 
