@@ -15,11 +15,10 @@ namespace Microsoft.Extensions.Logging.Internal
     /// </summary>
     public class LogValuesFormatter
     {
+        private const string NullValue = "(null)";
+        private static readonly object[] EmptyArray = new object[0];
         private readonly string _format;
         private readonly List<string> _valueNames = new List<string>();
-
-        public string OriginalFormat { get; private set; }
-        public List<string> ValueNames => _valueNames;
 
         public LogValuesFormatter(string format)
         {
@@ -59,6 +58,9 @@ namespace Microsoft.Extensions.Logging.Internal
 
             _format = sb.ToString();
         }
+
+        public string OriginalFormat { get; private set; }
+        public List<string> ValueNames => _valueNames;
 
         private static int FindBraceIndex(string format, char brace, int startIndex, int endIndex)
         {
@@ -124,6 +126,7 @@ namespace Microsoft.Extensions.Logging.Internal
 
                     if (value == null)
                     {
+                        values[i] = NullValue;
                         continue;
                     }
 
@@ -137,12 +140,12 @@ namespace Microsoft.Extensions.Logging.Internal
                     var enumerable = value as IEnumerable;
                     if (enumerable != null)
                     {
-                        values[i] = string.Join(", ", enumerable.Cast<object>().Where(obj => obj != null));
+                        values[i] = string.Join(", ", enumerable.Cast<object>().Select(o => o ?? NullValue));
                     }
                 }
             }
 
-            return string.Format(CultureInfo.InvariantCulture, _format, values);
+            return string.Format(CultureInfo.InvariantCulture, _format, values ?? EmptyArray);
         }
 
         public KeyValuePair<string, object> GetValue(object[] values, int index)

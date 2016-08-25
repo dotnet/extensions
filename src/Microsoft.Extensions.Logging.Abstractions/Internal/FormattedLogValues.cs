@@ -9,11 +9,12 @@ using System.Collections.Generic;
 namespace Microsoft.Extensions.Logging.Internal
 {
     /// <summary>
-    /// LogValues to enable formatting options supported by <see cref="M:string.Format"/>. 
+    /// LogValues to enable formatting options supported by <see cref="M:string.Format"/>.
     /// This also enables using {NamedformatItem} in the format string.
     /// </summary>
     public class FormattedLogValues : IReadOnlyList<KeyValuePair<string, object>>
     {
+        private const string NullFormat = "[null]";
         private static ConcurrentDictionary<string, LogValuesFormatter> _formatters = new ConcurrentDictionary<string, LogValuesFormatter>();
         private readonly LogValuesFormatter _formatter;
         private readonly object[] _values;
@@ -21,17 +22,12 @@ namespace Microsoft.Extensions.Logging.Internal
 
         public FormattedLogValues(string format, params object[] values)
         {
-            if (format == null)
-            {
-                throw new ArgumentNullException(nameof(format));
-            }
-
-            if (values.Length != 0)
+            if (values?.Length != 0 && format != null)
             {
                 _formatter = _formatters.GetOrAdd(format, f => new LogValuesFormatter(f));
             }
 
-            _originalMessage = format;
+            _originalMessage = format ?? NullFormat;
             _values = values;
         }
 

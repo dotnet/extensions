@@ -11,6 +11,7 @@ namespace Microsoft.Extensions.Logging.Test
     public class FormattedLogValuesTest
     {
         [Theory]
+        [InlineData("", "", null)]
         [InlineData("", "", new object[] { })]
         [InlineData("arg1 arg2", "{0} {1}", new object[] { "arg1", "arg2" })]
         [InlineData("arg1 arg2", "{Start} {End}", new object[] { "arg1", "arg2" })]
@@ -23,6 +24,26 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Original format is expected to be returned from GetValues.
             Assert.Equal(format, logValues.First(v => v.Key == "{OriginalFormat}").Value);
+        }
+
+        [Theory]
+        [InlineData("[null]", null, null)]
+        [InlineData("[null]", null, new object[] { })]
+        [InlineData("[null]", null, new object[] { null })]
+        [InlineData("[null]", null, new object[] { 1 })]
+        public void Log_NullFormat(string expected, string format, object[] args)
+        {
+            var logValues = new FormattedLogValues(format, args);
+            Assert.Equal(expected, logValues.ToString());
+        }
+
+        [Theory]
+        [InlineData("(null), (null) : (null)", "{0} : {1}", new object[] { new object[] { null, null }, null })]
+        [InlineData("(null)", "{0}", new object[] { null })]
+        public void LogValues_WithNulls(string expected, string format, object[] args)
+        {
+            var logValues = new FormattedLogValues(format, args);
+            Assert.Equal(expected, logValues.ToString());
         }
 
         [Theory]
@@ -83,7 +104,7 @@ namespace Microsoft.Extensions.Logging.Test
                     {
                         "The view '{ViewName}' was not found. Searched locations: {SearchedLocations}",
                         new object[] { "Index", null },
-                        "The view 'Index' was not found. Searched locations: "
+                        "The view 'Index' was not found. Searched locations: (null)"
                     },
                     // empty enumerable
                     {
@@ -101,13 +122,13 @@ namespace Microsoft.Extensions.Logging.Test
                     {
                         "The view '{ViewName}' was not found. Searched locations: {SearchedLocations}",
                         new object[] { "Index", new string[] { null } },
-                        "The view 'Index' was not found. Searched locations: "
+                        "The view 'Index' was not found. Searched locations: (null)"
                     },
                     // null value item in enumerable
                     {
                         "The view '{ViewName}' was not found. Searched locations: {SearchedLocations}",
                         new object[] { "Index", new string[] { null, "Views/Home/Index.cshtml" } },
-                        "The view 'Index' was not found. Searched locations: Views/Home/Index.cshtml"
+                        "The view 'Index' was not found. Searched locations: (null), Views/Home/Index.cshtml"
                     },
                     // multi item enumerable
                     {
@@ -151,7 +172,7 @@ namespace Microsoft.Extensions.Logging.Test
                         "The view '{ViewName}' was not found. Searched locations: {SearchedLocations}",
                         new object[] { "Index", new Uri[][] { null, new[] { new Uri("http://def") } } },
                         "The view 'Index' was not found. Searched locations: " +
-                        "System.Uri[]"
+                        "(null), System.Uri[]"
                     },
                     // non-string sub-enumerables
                     {

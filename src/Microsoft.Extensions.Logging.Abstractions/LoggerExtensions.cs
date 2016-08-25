@@ -352,11 +352,6 @@ namespace Microsoft.Extensions.Logging
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (messageFormat == null)
-            {
-                throw new ArgumentNullException(nameof(messageFormat));
-            }
-
             return logger.BeginScope(new FormattedLogValues(messageFormat, args));
         }
 

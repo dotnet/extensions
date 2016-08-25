@@ -58,7 +58,7 @@ namespace Microsoft.Extensions.Logging.Debug
                 return;
             }
 
-            if(formatter == null)
+            if (formatter == null)
             {
                 throw new ArgumentNullException(nameof(formatter));
             }
