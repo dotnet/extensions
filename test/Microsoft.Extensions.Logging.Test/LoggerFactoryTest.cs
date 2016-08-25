@@ -10,6 +10,36 @@ namespace Microsoft.Extensions.Logging.Test
     public class LoggerFactoryTest
     {
         [Fact]
+        public void AddProvider_ThrowsAfterDisposed()
+        {
+            var factory = new LoggerFactory();
+            factory.Dispose();
+            Assert.Throws<ObjectDisposedException>(() => factory.AddProvider(CreateProvider()));
+        }
+
+        [Fact]
+        public void CreateLogger_ThrowsAfterDisposed()
+        {
+            var factory = new LoggerFactory();
+            factory.Dispose();
+            Assert.Throws<ObjectDisposedException>(() => factory.CreateLogger("d"));
+        }
+
+        private class TestLoggerFactory : LoggerFactory
+        {
+            public bool Disposed => CheckDisposed();
+        }
+
+        [Fact]
+        public void Dispose_MultipleCallsNoop()
+        {
+            var factory = new TestLoggerFactory();
+            factory.Dispose();
+            Assert.True(factory.Disposed);
+            factory.Dispose();
+        }
+
+        [Fact]
         public void Dispose_ProvidersAreDisposed()
         {
             // Arrange

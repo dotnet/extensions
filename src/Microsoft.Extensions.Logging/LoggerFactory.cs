@@ -15,10 +15,15 @@ namespace Microsoft.Extensions.Logging
         private readonly Dictionary<string, Logger> _loggers = new Dictionary<string, Logger>(StringComparer.Ordinal);
         private ILoggerProvider[] _providers = new ILoggerProvider[0];
         private readonly object _sync = new object();
-        private bool _disposed = false;
+        private volatile bool _disposed;
 
         public ILogger CreateLogger(string categoryName)
         {
+            if (CheckDisposed())
+            {
+                throw new ObjectDisposedException(nameof(LoggerFactory));
+            }
+
             Logger logger;
             lock (_sync)
             {
@@ -33,6 +38,11 @@ namespace Microsoft.Extensions.Logging
 
         public void AddProvider(ILoggerProvider provider)
         {
+            if (CheckDisposed())
+            {
+                throw new ObjectDisposedException(nameof(LoggerFactory));
+            }
+
             lock (_sync)
             {
                 _providers = _providers.Concat(new[] { provider }).ToArray();
@@ -48,10 +58,17 @@ namespace Microsoft.Extensions.Logging
             return _providers;
         }
 
+        /// <summary>
+        /// Check if the factory has been disposed.
+        /// </summary>
+        /// <returns>True when <see cref="Dispose"/> as been called</returns>
+        protected virtual bool CheckDisposed() => _disposed;
+
         public void Dispose()
         {
             if (!_disposed)
             {
+                _disposed = true;
                 foreach (var provider in _providers)
                 {
                     try
@@ -63,8 +80,6 @@ namespace Microsoft.Extensions.Logging
                         // Swallow exceptions on dispose
                     }
                 }
-
-                _disposed = true;
             }
         }
     }
