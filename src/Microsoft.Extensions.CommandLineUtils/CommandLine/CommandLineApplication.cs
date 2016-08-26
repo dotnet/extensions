@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,6 +44,8 @@ namespace Microsoft.Extensions.CommandLineUtils
         public Func<string> LongVersionGetter { get; set; }
         public Func<string> ShortVersionGetter { get; set; }
         public readonly List<CommandLineApplication> Commands;
+        public TextWriter Out { get; set; } = Console.Out;
+        public TextWriter Error { get; set; } = Console.Error;
 
         public IEnumerable<CommandOption> GetOptions()
         {
@@ -327,7 +330,7 @@ namespace Microsoft.Extensions.CommandLineUtils
         {
             if (OptionHelp != null)
             {
-                Console.WriteLine(string.Format("Specify --{0} for a list of available options and commands.", OptionHelp.LongName));
+                Out.WriteLine(string.Format("Specify --{0} for a list of available options and commands.", OptionHelp.LongName));
             }
         }
 
@@ -339,7 +342,7 @@ namespace Microsoft.Extensions.CommandLineUtils
                 cmd.IsShowingInformation = true;
             }
 
-            Console.WriteLine(GetHelpText(commandName));
+            Out.WriteLine(GetHelpText(commandName));
         }
 
         public virtual string GetHelpText(string commandName = null)
@@ -451,8 +454,8 @@ namespace Microsoft.Extensions.CommandLineUtils
                 cmd.IsShowingInformation = true;
             }
 
-            Console.WriteLine(FullName);
-            Console.WriteLine(LongVersionGetter());
+            Out.WriteLine(FullName);
+            Out.WriteLine(LongVersionGetter());
         }
 
         public string GetFullNameAndVersion()
@@ -468,8 +471,8 @@ namespace Microsoft.Extensions.CommandLineUtils
                 rootCmd = rootCmd.Parent;
             }
 
-            Console.WriteLine(rootCmd.GetFullNameAndVersion());
-            Console.WriteLine();
+            Out.WriteLine(rootCmd.GetFullNameAndVersion());
+            Out.WriteLine();
         }
 
         private void HandleUnexpectedArg(CommandLineApplication command, string[] args, int index, string argTypeName)
