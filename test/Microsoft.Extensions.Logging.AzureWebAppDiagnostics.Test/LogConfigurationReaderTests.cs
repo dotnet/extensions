@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Test
         {
             var contextMock = new Mock<IWebAppContext>(MockBehavior.Strict);
             contextMock.SetupGet(c => c.IsRunningInAzureWebApp).Returns(false);
-            
+
             var configReader = new WebAppLogConfigurationReader(contextMock.Object);
 
             Assert.Same(WebAppLogConfiguration.Disabled, configReader.Current);
@@ -116,7 +116,7 @@ namespace Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Test
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Logging/issues/474")]
+        [Fact]
         public void ConfigurationChange()
         {
             var tempFolder = Path.Combine(Path.GetTempPath(), "WebAppLoggerConfigurationChange");
@@ -163,7 +163,7 @@ namespace Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Test
                         {
                             configChangedEvent.Set();
                         }
-                        catch(ObjectDisposedException)
+                        catch (ObjectDisposedException)
                         {
                             // This can happen if the file watcher triggers multiple times
                             // and there are in flight events that run after we dispose
@@ -175,11 +175,14 @@ namespace Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Test
                     Thread.Sleep(TimeSpan.FromSeconds(1));
                     settingsFileContent.AzureBlobEnabled = true;
                     settingsFileContent.AzureDriveTraceLevel = "Information";
-                    File.WriteAllText(settingsFile, JsonConvert.SerializeObject(settingsFileContent));
 
-                    var configChanged = configChangedEvent.WaitOne(DefaultTimeout);
+                    RetryHelper.Retry(() =>
+                    {
+                        // The .NET file watcher doesn't trigger all the times. We might have to retry the operation
+                        File.WriteAllText(settingsFile, JsonConvert.SerializeObject(settingsFileContent));
+                        return configChangedEvent.WaitOne(DefaultTimeout);
+                    });
 
-                    Assert.True(configChanged);
                     Assert.Same(config, configReader.Current);
 
                     Assert.False(config.FileLoggingEnabled);
