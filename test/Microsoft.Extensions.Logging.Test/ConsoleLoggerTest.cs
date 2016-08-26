@@ -15,8 +15,7 @@ namespace Microsoft.Extensions.Logging.Test
 {
     public class ConsoleLoggerTest
     {
-        private const int WritesPerMsg = 3;
-        private const int WritesPerError = 4;
+        private const int WritesPerMsg = 2;
         private readonly string _paddingString;
         private const string _loggerName = "test";
         private const string _state = "This is a test, and {curly braces} are just fine!";
@@ -70,10 +69,10 @@ namespace Microsoft.Extensions.Logging.Test
             logger.LogCritical(eventId: 0, message: null, exception: exception);
 
             // Assert
-            Assert.Equal(10, sink.Writes.Count);
+            Assert.Equal(6, sink.Writes.Count);
             Assert.Equal(GetMessage("crit", 0, "[null]", null     ), GetMessage(sink.Writes.GetRange(0 * WritesPerMsg, WritesPerMsg)));
             Assert.Equal(GetMessage("crit", 0, "[null]", null     ), GetMessage(sink.Writes.GetRange(1 * WritesPerMsg, WritesPerMsg)));
-            Assert.Equal(GetMessage("crit", 0, "[null]", exception), GetMessage(sink.Writes.GetRange(2 * WritesPerMsg, WritesPerError)));
+            Assert.Equal(GetMessage("crit", 0, "[null]", exception), GetMessage(sink.Writes.GetRange(2 * WritesPerMsg, WritesPerMsg)));
         }
 
         [Fact]
@@ -92,7 +91,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.LogCritical(eventId: 10, message: logMessage, exception: null);
 
             // Assert
-            Assert.Equal(12, sink.Writes.Count);
+            Assert.Equal(8, sink.Writes.Count);
             Assert.Equal(GetMessage("crit",  0, logMessage, null), GetMessage(sink.Writes.GetRange(0 * WritesPerMsg, WritesPerMsg)));
             Assert.Equal(GetMessage("crit", 10, logMessage, null), GetMessage(sink.Writes.GetRange(1 * WritesPerMsg, WritesPerMsg)));
             Assert.Equal(GetMessage("crit", 10, logMessage, null), GetMessage(sink.Writes.GetRange(2 * WritesPerMsg, WritesPerMsg)));
@@ -109,6 +108,7 @@ namespace Microsoft.Extensions.Logging.Test
             var sink = t.Item2;
             var eventId = 10;
             var exception = new InvalidOperationException("Invalid value");
+            var expectedHeader = CreateHeader(eventId);
             var expectedMessage =
                 _paddingString + message + Environment.NewLine;
             var expectedExceptionMessage =
@@ -118,9 +118,8 @@ namespace Microsoft.Extensions.Logging.Test
             logger.LogCritical(eventId, exception, message);
 
             // Assert
-            Assert.Equal(4, sink.Writes.Count);
-            Assert.Equal(expectedMessage, sink.Writes[2].Message);
-            Assert.Equal(expectedExceptionMessage, sink.Writes[3].Message);
+            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(expectedHeader + expectedMessage + expectedExceptionMessage, sink.Writes[1].Message);
         }
 
         [Fact]
@@ -141,6 +140,7 @@ namespace Microsoft.Extensions.Logging.Test
             var t = SetUp(null);
             var logger = t.Item1;
             var sink = t.Item2;
+            var expectedHeader = CreateHeader(0);
             var expectedMessage =
                     _paddingString
                     + _state
@@ -150,8 +150,8 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Information, 0, _state, null, _defaultFormatter);
 
             // Assert
-            Assert.Equal(3, sink.Writes.Count);
-            Assert.Equal(expectedMessage, sink.Writes[2].Message);
+            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(expectedHeader + expectedMessage, sink.Writes[1].Message);
         }
 
         [Fact]
@@ -172,7 +172,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Critical, 0, _state, null, _defaultFormatter);
 
             // Assert
-            Assert.Equal(3, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
         }
 
         [Fact]
@@ -193,7 +193,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Error, 0, _state, null, _defaultFormatter);
 
             // Assert
-            Assert.Equal(3, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
         }
 
         [Fact]
@@ -214,7 +214,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Warning, 0, _state, null, _defaultFormatter);
 
             // Assert
-            Assert.Equal(3, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
         }
 
         [Fact]
@@ -235,7 +235,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Information, 0, _state, null, _defaultFormatter);
 
             // Assert
-            Assert.Equal(3, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
         }
 
         [Fact]
@@ -256,7 +256,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Debug, 0, _state, null, _defaultFormatter);
 
             // Assert
-            Assert.Equal(3, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
         }
 
         [Fact]
@@ -276,7 +276,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Trace, 0, _state, null, _defaultFormatter);
 
             // Assert
-            Assert.Equal(18, sink.Writes.Count);
+            Assert.Equal(12, sink.Writes.Count);
         }
 
         [Fact]
@@ -291,14 +291,11 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Critical, 0, _state, null, _defaultFormatter);
 
             // Assert
-            Assert.Equal(3, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
             var write = sink.Writes[0];
             Assert.Equal(ConsoleColor.Red, write.BackgroundColor);
             Assert.Equal(ConsoleColor.White, write.ForegroundColor);
             write = sink.Writes[1];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
-            write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
@@ -315,14 +312,11 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Error, 0, _state, null, _defaultFormatter);
 
             // Assert
-            Assert.Equal(3, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
             var write = sink.Writes[0];
             Assert.Equal(ConsoleColor.Red, write.BackgroundColor);
             Assert.Equal(ConsoleColor.Black, write.ForegroundColor);
             write = sink.Writes[1];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
-            write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
@@ -339,14 +333,11 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Warning, 0, _state, null, _defaultFormatter);
 
             // Assert
-            Assert.Equal(3, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
             var write = sink.Writes[0];
             Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
             Assert.Equal(ConsoleColor.Yellow, write.ForegroundColor);
             write = sink.Writes[1];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
-            write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
@@ -363,14 +354,11 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Information, 0, _state, null, _defaultFormatter);
 
             // Assert
-            Assert.Equal(3, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
             var write = sink.Writes[0];
             Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
             Assert.Equal(ConsoleColor.DarkGreen, write.ForegroundColor);
             write = sink.Writes[1];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
-            write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
@@ -387,14 +375,11 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Debug, 0, _state, null, _defaultFormatter);
 
             // Assert
-            Assert.Equal(3, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
             var write = sink.Writes[0];
             Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
             Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
             write = sink.Writes[1];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
-            write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
@@ -411,14 +396,11 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Trace, 0, _state, null, _defaultFormatter);
 
             // Assert
-            Assert.Equal(3, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
             var write = sink.Writes[0];
             Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
             Assert.Equal(ConsoleColor.Gray, write.ForegroundColor);
             write = sink.Writes[1];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
-            write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
@@ -441,13 +423,13 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Trace, 0, _state, ex, _defaultFormatter);
 
             // Assert
-            Assert.Equal(24, sink.Writes.Count);
-            Assert.Equal(GetMessage("crit", 0, ex), GetMessage(sink.Writes.GetRange(0 * WritesPerError, WritesPerError)));
-            Assert.Equal(GetMessage("fail", 0, ex), GetMessage(sink.Writes.GetRange(1 * WritesPerError, WritesPerError)));
-            Assert.Equal(GetMessage("warn", 0, ex), GetMessage(sink.Writes.GetRange(2 * WritesPerError, WritesPerError)));
-            Assert.Equal(GetMessage("info", 0, ex), GetMessage(sink.Writes.GetRange(3 * WritesPerError, WritesPerError)));
-            Assert.Equal(GetMessage("dbug", 0, ex), GetMessage(sink.Writes.GetRange(4 * WritesPerError, WritesPerError)));
-            Assert.Equal(GetMessage("trce", 0, ex), GetMessage(sink.Writes.GetRange(5 * WritesPerError, WritesPerError)));
+            Assert.Equal(12, sink.Writes.Count);
+            Assert.Equal(GetMessage("crit", 0, ex), GetMessage(sink.Writes.GetRange(0 * WritesPerMsg, WritesPerMsg)));
+            Assert.Equal(GetMessage("fail", 0, ex), GetMessage(sink.Writes.GetRange(1 * WritesPerMsg, WritesPerMsg)));
+            Assert.Equal(GetMessage("warn", 0, ex), GetMessage(sink.Writes.GetRange(2 * WritesPerMsg, WritesPerMsg)));
+            Assert.Equal(GetMessage("info", 0, ex), GetMessage(sink.Writes.GetRange(3 * WritesPerMsg, WritesPerMsg)));
+            Assert.Equal(GetMessage("dbug", 0, ex), GetMessage(sink.Writes.GetRange(4 * WritesPerMsg, WritesPerMsg)));
+            Assert.Equal(GetMessage("trce", 0, ex), GetMessage(sink.Writes.GetRange(5 * WritesPerMsg, WritesPerMsg)));
         }
 
         [Fact]
@@ -462,14 +444,11 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Warning, 0, _state, null, _defaultFormatter);
 
             // Assert
-            Assert.Equal(3, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
             var write = sink.Writes[0];
             Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
             Assert.Equal(ConsoleColor.Yellow, write.ForegroundColor);
             write = sink.Writes[1];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
-            write = sink.Writes[2];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
@@ -491,17 +470,11 @@ namespace Microsoft.Extensions.Logging.Test
             }
 
             // Assert
-            Assert.Equal(4, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
             var write = sink.Writes[0];
             Assert.Equal(ConsoleColor.Black, write.BackgroundColor);
             Assert.Equal(ConsoleColor.DarkGreen, write.ForegroundColor);
             write = sink.Writes[1];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
-            write = sink.Writes[2];
-            Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
-            Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
-            write = sink.Writes[3];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
@@ -513,10 +486,12 @@ namespace Microsoft.Extensions.Logging.Test
             var t = SetUp(filter: null, includeScopes: true);
             var logger = t.Item1;
             var sink = t.Item2;
-            var expectedMessage =
+            var expectedHeader = CreateHeader(0);
+            var expectedScope =
                 _paddingString
                 + "=> RequestId: 100"
                 + Environment.NewLine;
+            var expectedMessage = _paddingString + _state + Environment.NewLine;
 
             // Act
             using (logger.BeginScope("RequestId: {RequestId}", 100))
@@ -525,10 +500,10 @@ namespace Microsoft.Extensions.Logging.Test
             }
 
             // Assert
-            Assert.Equal(4, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
             // scope
-            var write = sink.Writes[2];
-            Assert.Equal(expectedMessage, write.Message);
+            var write = sink.Writes[1];
+            Assert.Equal(expectedHeader + expectedScope + expectedMessage, write.Message);
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
@@ -540,10 +515,12 @@ namespace Microsoft.Extensions.Logging.Test
             var t = SetUp(filter: null, includeScopes: true);
             var logger = t.Item1;
             var sink = t.Item2;
-            var expectedMessage =
+            var expectedHeader = CreateHeader(0);
+            var expectedScope =
                 _paddingString
                 + "=> [null] => Request matched action: (null)"
                 + Environment.NewLine;
+            var expectedMessage = _paddingString + _state + Environment.NewLine;
 
             // Act
             using (logger.BeginScope(null))
@@ -555,10 +532,10 @@ namespace Microsoft.Extensions.Logging.Test
             }
 
             // Assert
-            Assert.Equal(4, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
             // scope
-            var write = sink.Writes[2];
-            Assert.Equal(expectedMessage, write.Message);
+            var write = sink.Writes[1];
+            Assert.Equal(expectedHeader + expectedScope + expectedMessage, write.Message);
         }
 
         [Fact]
@@ -568,10 +545,12 @@ namespace Microsoft.Extensions.Logging.Test
             var t = SetUp(filter: null, includeScopes: true);
             var logger = t.Item1;
             var sink = t.Item2;
-            var expectedMessage =
+            var expectedHeader = CreateHeader(0);
+            var expectedScope =
                 _paddingString
                 + "=> RequestId: 100 => Request matched action: Index"
                 + Environment.NewLine;
+            var expectedMessage = _paddingString + _state + Environment.NewLine;
 
             // Act
             using (logger.BeginScope("RequestId: {RequestId}", 100))
@@ -583,10 +562,10 @@ namespace Microsoft.Extensions.Logging.Test
             }
 
             // Assert
-            Assert.Equal(4, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
             // scope
-            var write = sink.Writes[2];
-            Assert.Equal(expectedMessage, write.Message);
+            var write = sink.Writes[1];
+            Assert.Equal(expectedHeader + expectedScope + expectedMessage, write.Message);
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
@@ -598,11 +577,13 @@ namespace Microsoft.Extensions.Logging.Test
             var t = SetUp(filter: null, includeScopes: true);
             var logger = t.Item1;
             var sink = t.Item2;
-            var expectedMessage1 =
+            var expectedHeader = CreateHeader(0);
+            var expectedMessage = _paddingString + _state + Environment.NewLine;
+            var expectedScope1 =
                 _paddingString
                 + "=> RequestId: 100 => Request matched action: Index"
                 + Environment.NewLine;
-            var expectedMessage2 =
+            var expectedScope2 =
                 _paddingString
                 + "=> RequestId: 100 => Created product: Car"
                 + Environment.NewLine;
@@ -622,14 +603,14 @@ namespace Microsoft.Extensions.Logging.Test
             }
 
             // Assert
-            Assert.Equal(8, sink.Writes.Count);
+            Assert.Equal(4, sink.Writes.Count);
             // scope
-            var write = sink.Writes[2];
-            Assert.Equal(expectedMessage1, write.Message);
+            var write = sink.Writes[1];
+            Assert.Equal(expectedHeader + expectedScope1 + expectedMessage, write.Message);
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
-            write = sink.Writes[6];
-            Assert.Equal(expectedMessage2, write.Message);
+            write = sink.Writes[3];
+            Assert.Equal(expectedHeader + expectedScope2 + expectedMessage, write.Message);
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
@@ -695,7 +676,7 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Assert
             Assert.NotNull(disposable);
-            Assert.Equal(4, sink.Writes.Count);
+            Assert.Equal(2, sink.Writes.Count);
         }
 #endif
 
@@ -810,7 +791,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Trace, 0, _state, ex, (s,e) => s);
 
             // Assert
-            Assert.Equal(18, sink.Writes.Count);
+            Assert.Equal(12, sink.Writes.Count);
             Assert.Equal(GetMessage("crit", 0, ex), GetMessage(sink.Writes.GetRange(0 * WritesPerMsg, WritesPerMsg)));
             Assert.Equal(GetMessage("fail", 0, ex), GetMessage(sink.Writes.GetRange(1 * WritesPerMsg, WritesPerMsg)));
             Assert.Equal(GetMessage("warn", 0, ex), GetMessage(sink.Writes.GetRange(2 * WritesPerMsg, WritesPerMsg)));
@@ -868,6 +849,11 @@ namespace Microsoft.Extensions.Logging.Test
         private string GetMessage(List<ConsoleContext> contexts)
         {
             return string.Join("", contexts.Select(c => c.Message));
+        }
+
+        private string CreateHeader(int eventId = 0)
+        {
+            return $": {_loggerName}[{eventId}]{Environment.NewLine}";
         }
 
         private class MockConsoleLoggerSettings : IConsoleLoggerSettings

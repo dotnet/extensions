@@ -23,6 +23,9 @@ namespace Microsoft.Extensions.Logging.Console
         private IConsole _console;
         private Func<string, LogLevel, bool> _filter;
 
+        [ThreadStatic]
+        private static StringBuilder _logBuilder;
+
         static ConsoleLogger()
         {
             var logLevelString = GetLogLevelString(LogLevel.Information);
@@ -105,12 +108,16 @@ namespace Microsoft.Extensions.Logging.Console
 
         public virtual void WriteMessage(LogLevel logLevel, string logName, int eventId, string message, Exception exception)
         {
+            var logBuilder = _logBuilder;
+            _logBuilder = null;
+
+            if (logBuilder == null)
+            {
+                logBuilder = new StringBuilder();
+            }
+
             var logLevelColors = default(ConsoleColors);
             var logLevelString = string.Empty;
-            var logIdentifier = string.Empty;
-            var scopeInformation = string.Empty;
-            var exceptionText = string.Empty;
-            var printLog = false;
 
             // Example:
             // INFO: ConsoleApp.Program[10]
@@ -120,15 +127,21 @@ namespace Microsoft.Extensions.Logging.Console
                 logLevelColors = GetLogLevelConsoleColors(logLevel);
                 logLevelString = GetLogLevelString(logLevel);
                 // category and event id
-                logIdentifier = _loglevelPadding + logName + "[" + eventId + "]";
+                logBuilder.Append(_loglevelPadding);
+                logBuilder.Append(logName);
+                logBuilder.Append("[");
+                logBuilder.Append(eventId);
+                logBuilder.AppendLine("]");
                 // scope information
                 if (IncludeScopes)
                 {
-                    scopeInformation = GetScopeInformation();
+                    GetScopeInformation(logBuilder);
                 }
                 // message
-                message = _messagePadding + ReplaceMessageNewLinesWithPadding(message);
-                printLog = true;
+                logBuilder.Append(_messagePadding);
+                var len = logBuilder.Length;
+                logBuilder.AppendLine(message);
+                logBuilder.Replace(Environment.NewLine, _newLineWithMessagePadding, len, message.Length);
             }
 
             // Example:
@@ -137,12 +150,12 @@ namespace Microsoft.Extensions.Logging.Console
             if (exception != null)
             {
                 // exception message
-                exceptionText = exception.ToString();
-                printLog = true;
+                logBuilder.AppendLine(exception.ToString());
             }
 
-            if (printLog)
+            if (logBuilder.Length > 0)
             {
+                var logMessage = logBuilder.ToString();
                 lock (_lock)
                 {
                     if (!string.IsNullOrEmpty(logLevelString))
@@ -155,45 +168,20 @@ namespace Microsoft.Extensions.Logging.Console
                     }
 
                     // use default colors from here on
-                    if (!string.IsNullOrEmpty(logIdentifier))
-                    {
-                        Console.WriteLine(
-                            logIdentifier,
-                            DefaultConsoleColor,
-                            DefaultConsoleColor);
-                    }
-                    if (!string.IsNullOrEmpty(scopeInformation))
-                    {
-                        Console.WriteLine(
-                            scopeInformation,
-                            DefaultConsoleColor,
-                            DefaultConsoleColor);
-                    }
-                    if (!string.IsNullOrEmpty(message))
-                    {
-                        Console.WriteLine(
-                            message,
-                            DefaultConsoleColor,
-                            DefaultConsoleColor);
-                    }
-                    if (!string.IsNullOrEmpty(exceptionText))
-                    {
-                        Console.WriteLine(
-                            exceptionText,
-                            DefaultConsoleColor,
-                            DefaultConsoleColor);
-                    }
+                    Console.Write(logMessage, DefaultConsoleColor, DefaultConsoleColor);
 
                     // In case of AnsiLogConsole, the messages are not yet written to the console,
                     // this would flush them instead.
                     Console.Flush();
                 }
             }
-        }
 
-        private string ReplaceMessageNewLinesWithPadding(string message)
-        {
-            return message.Replace(Environment.NewLine, _newLineWithMessagePadding);
+            logBuilder.Clear();
+            if (logBuilder.Capacity > 1024)
+            {
+                logBuilder.Capacity = 1024;
+            }
+            _logBuilder = logBuilder;
         }
 
         public bool IsEnabled(LogLevel logLevel)
@@ -255,14 +243,15 @@ namespace Microsoft.Extensions.Logging.Console
             }
         }
 
-        private string GetScopeInformation()
+        private void GetScopeInformation(StringBuilder builder)
         {
             var current = ConsoleLogScope.Current;
-            var output = new StringBuilder();
             string scopeLog = string.Empty;
+            var length = builder.Length;
+
             while (current != null)
             {
-                if (output.Length == 0)
+                if (length == builder.Length)
                 {
                     scopeLog = $"=> {current}";
                 }
@@ -271,15 +260,14 @@ namespace Microsoft.Extensions.Logging.Console
                     scopeLog = $"=> {current} ";
                 }
 
-                output.Insert(0, scopeLog);
+                builder.Insert(length, scopeLog);
                 current = current.Parent;
             }
-            if (output.Length > 0)
+            if (builder.Length > length)
             {
-                output.Insert(0, _messagePadding);
+                builder.Insert(length, _messagePadding);
+                builder.AppendLine();
             }
-
-            return output.ToString();
         }
 
         private struct ConsoleColors
