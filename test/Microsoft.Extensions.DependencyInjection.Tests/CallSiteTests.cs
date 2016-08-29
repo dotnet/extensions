@@ -80,9 +80,9 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [MemberData(nameof(TestServiceDescriptors), ServiceLifetime.Scoped)]
         [MemberData(nameof(TestServiceDescriptors), ServiceLifetime.Transient)]
         public void BuiltExpressionWillReturnResolvedServiceWhenAppropriate(
-            ServiceDescriptor[] desciptors, Type serviceType, Func<object, object, bool> compare)
+            ServiceDescriptor[] descriptors, Type serviceType, Func<object, object, bool> compare)
         {
-            var provider = new ServiceProvider(desciptors, validateScopes: true);
+            var provider = new ServiceProvider(descriptors, validateScopes: true);
 
             var callSite = provider.GetServiceCallSite(serviceType, new HashSet<Type>());
             var collectionCallSite = provider.GetServiceCallSite(typeof(IEnumerable<>).MakeGenericType(serviceType), new HashSet<Type>());
