@@ -42,8 +42,6 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Dotnet
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.StackTrace.Sources", "src\Microsoft.Extensions.StackTrace.Sources\Microsoft.Extensions.StackTrace.Sources.xproj", "{B245CE2A-F918-4116-9D5C-4C21527D0AC5}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ClassLibraryWithPortablePdbs", "test\ClassLibraryWithPortablePdbs\ClassLibraryWithPortablePdbs.xproj", "{A2ABDB54-1E32-4BEE-81A1-C0353802A0C0}"
-EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.WebEncoders.Sources", "src\Microsoft.Extensions.WebEncoders.Sources\Microsoft.Extensions.WebEncoders.Sources.xproj", "{C60445B0-452F-4321-9E66-847BCB4DEEC8}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.RazorViews.Sources", "src\Microsoft.Extensions.RazorViews.Sources\Microsoft.Extensions.RazorViews.Sources.xproj", "{F0749087-822C-4EDF-9091-96791D3C772E}"
@@ -126,10 +124,6 @@ Global
 		{B245CE2A-F918-4116-9D5C-4C21527D0AC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B245CE2A-F918-4116-9D5C-4C21527D0AC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B245CE2A-F918-4116-9D5C-4C21527D0AC5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A2ABDB54-1E32-4BEE-81A1-C0353802A0C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A2ABDB54-1E32-4BEE-81A1-C0353802A0C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A2ABDB54-1E32-4BEE-81A1-C0353802A0C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A2ABDB54-1E32-4BEE-81A1-C0353802A0C0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C60445B0-452F-4321-9E66-847BCB4DEEC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C60445B0-452F-4321-9E66-847BCB4DEEC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C60445B0-452F-4321-9E66-847BCB4DEEC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -161,7 +155,6 @@ Global
 		{6DDC4681-0D48-41F6-91EB-C47381F92FF1} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 		{D9A0A539-4A22-4151-90B2-1D6AA4CD493D} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 		{B245CE2A-F918-4116-9D5C-4C21527D0AC5} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
-		{A2ABDB54-1E32-4BEE-81A1-C0353802A0C0} = {6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}
 		{C60445B0-452F-4321-9E66-847BCB4DEEC8} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 		{F0749087-822C-4EDF-9091-96791D3C772E} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 	EndGlobalSection

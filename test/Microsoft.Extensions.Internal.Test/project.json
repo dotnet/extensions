@@ -6,7 +6,6 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "ClassLibraryWithPortablePdbs": "1.0.0",
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
