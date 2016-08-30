@@ -15,13 +15,22 @@ namespace Microsoft.Extensions.Logging
         /// Adds an Azure Web Apps diagnostics logger.
         /// </summary>
         /// <param name="factory">The extension method argument</param>
-        /// <param name="fileSizeLimitMb">A strictly positive value representing the maximum log size in megabytes. Once the log is full, no more message will be appended</param>
-        public static ILoggerFactory AddAzureWebAppDiagnostics(this ILoggerFactory factory, int fileSizeLimitMb = FileLoggerProvider.DefaultFileSizeLimitMb)
+        public static ILoggerFactory AddAzureWebAppDiagnostics(this ILoggerFactory factory)
+        {
+            return AddAzureWebAppDiagnostics(factory, new AzureWebAppDiagnosticsSettings());
+        }
+
+        /// <summary>
+        /// Adds an Azure Web Apps diagnostics logger.
+        /// </summary>
+        /// <param name="factory">The extension method argument</param>
+        /// <param name="settings">The setting object to configure loggers.</param>
+        public static ILoggerFactory AddAzureWebAppDiagnostics(this ILoggerFactory factory, AzureWebAppDiagnosticsSettings settings)
         {
             if (WebAppContext.Default.IsRunningInAzureWebApp)
             {
                 // Only add the provider if we're in Azure WebApp. That cannot change once the apps started
-                factory.AddProvider(new AzureWebAppDiagnosticsLoggerProvider(WebAppContext.Default, fileSizeLimitMb));
+                factory.AddProvider(new AzureWebAppDiagnosticsLoggerProvider(WebAppContext.Default, settings));
             }
             return factory;
         }

@@ -4,69 +4,81 @@
 using System;
 using System.IO;
 using Serilog;
+using Serilog.Core;
 using Serilog.Formatting.Display;
 using Serilog.Sinks.RollingFile;
 
 namespace Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Internal
 {
     /// <summary>
-    /// A file logger for Azure WebApp.
+    /// The logger provider that creates instances of <see cref="Serilog.Core.Logger"/>.
     /// </summary>
-    public class FileLoggerProvider : SerilogLoggerProvider
+    public class FileLoggerProvider
     {
-        /// <summary>
-        /// The default file size limit in megabytes
-        /// </summary>
-        public const int DefaultFileSizeLimitMb = 10;
+        private readonly int _fileSizeLimit;
+        private readonly int _retainedFileCountLimit;
+        private readonly int _backgroundQueueSize;
+        private readonly string _outputTemplate;
 
-        // Two days retention limit is okay because the file logger turns itself off after 12 hours (portal feature)
-        private const int RetainedFileCountLimit = 2; // Days (also number of files because we have 1 file/day)
-
-        private const string OutputTemplate = "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}] {Message}{NewLine}{Exception}";
         private const string FileNamePattern = "diagnostics-{Date}.txt";
 
         /// <summary>
         /// Creates a new instance of the <see cref="FileLoggerProvider"/> class.
         /// </summary>
-        /// <param name="configReader">A configuration reader</param>
         /// <param name="fileSizeLimit">A strictly positive value representing the maximum log size in megabytes. Once the log is full, no more message will be appended</param>
-        public FileLoggerProvider(IWebAppLogConfigurationReader configReader, int fileSizeLimit)
-            : base(configReader, (loggerConfiguration, webAppConfiguration) =>
-            {
-                if (string.IsNullOrEmpty(webAppConfiguration.FileLoggingFolder))
-                {
-                    throw new ArgumentNullException(nameof(webAppConfiguration.FileLoggingFolder), "The file logger path cannot be null or empty.");
-                }
-
-                var logsFolder = webAppConfiguration.FileLoggingFolder;
-                if (!Directory.Exists(logsFolder))
-                {
-                    Directory.CreateDirectory(logsFolder);
-                }
-                var logsFilePattern = Path.Combine(logsFolder, FileNamePattern);
-
-                var fileSizeLimitBytes = fileSizeLimit * 1024 * 1024;
-
-                var messageFormatter = new MessageTemplateTextFormatter(OutputTemplate, null);
-                var rollingFileSink = new RollingFileSink(logsFilePattern, messageFormatter, fileSizeLimitBytes, RetainedFileCountLimit);
-                var backgroundSink = new BackgroundSink(rollingFileSink, BackgroundSink.DefaultLogMessagesQueueSize);
-
-                loggerConfiguration.WriteTo.Sink(backgroundSink);
-            })
+        /// <param name="retainedFileCountLimit">A strictly positive value representing the maximum retained file count</param>
+        /// <param name="backgroundQueueSize">The maximum size of the background queue</param>
+        /// <param name="outputTemplate">A message template describing the output messages</param>
+        public FileLoggerProvider(int fileSizeLimit, int retainedFileCountLimit, int backgroundQueueSize, string outputTemplate)
         {
+            if (outputTemplate == null)
+            {
+                throw new ArgumentNullException(nameof(outputTemplate));
+            }
+            if (fileSizeLimit <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(fileSizeLimit), $"{nameof(fileSizeLimit)} should be positive.");
+            }
+            if (retainedFileCountLimit <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(retainedFileCountLimit), $"{nameof(retainedFileCountLimit)} should be positive.");
+            }
+
+            _fileSizeLimit = fileSizeLimit;
+            _retainedFileCountLimit = retainedFileCountLimit;
+            _backgroundQueueSize = backgroundQueueSize;
+            _outputTemplate = outputTemplate;
         }
 
         /// <inheritdoc />
-        protected override void OnConfigurationChanged(WebAppLogConfiguration newConfiguration)
+        public Logger ConfigureLogger(IWebAppLogConfigurationReader reader)
         {
-            if (!newConfiguration.FileLoggingEnabled)
+            var webAppConfiguration = reader.Current;
+            if (string.IsNullOrEmpty(webAppConfiguration.FileLoggingFolder))
             {
-                LevelSwitcher.MinimumLevel = LogLevelDisabled;
+                throw new ArgumentNullException(nameof(webAppConfiguration.FileLoggingFolder),
+                    "The file logger path cannot be null or empty.");
             }
-            else
+
+            var logsFolder = webAppConfiguration.FileLoggingFolder;
+            if (!Directory.Exists(logsFolder))
             {
-                LevelSwitcher.MinimumLevel = LogLevelToLogEventLevel(newConfiguration.FileLoggingLevel);
+                Directory.CreateDirectory(logsFolder);
             }
+            var logsFilePattern = Path.Combine(logsFolder, FileNamePattern);
+
+            var messageFormatter = new MessageTemplateTextFormatter(_outputTemplate, null);
+            var rollingFileSink = new RollingFileSink(logsFilePattern, messageFormatter, _fileSizeLimit, _retainedFileCountLimit);
+            var backgroundSink = new BackgroundSink(rollingFileSink, _backgroundQueueSize);
+
+            var loggerConfiguration = new LoggerConfiguration();
+            loggerConfiguration.WriteTo.Sink(backgroundSink);
+            loggerConfiguration.MinimumLevel.ControlledBy(new WebConfigurationReaderLevelSwitch(reader,
+                configuration =>
+                {
+                    return configuration.FileLoggingEnabled ? configuration.FileLoggingLevel : LogLevel.None;
+                }));
+            return loggerConfiguration.CreateLogger();
         }
     }
 }

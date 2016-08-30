@@ -17,7 +17,9 @@
     "Microsoft.Extensions.Logging": "1.1.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
     "Serilog.Extensions.Logging": "1.0.0",
-    "Serilog.Sinks.RollingFile": "2.1.0"
+    "Serilog.Sinks.RollingFile": "2.1.0",
+    "Serilog.Sinks.PeriodicBatching": "2.0.0",
+    "WindowsAzure.Storage": "7.2.0"
   },
   "frameworks": {
     "net451": {
@@ -31,7 +33,8 @@
       "dependencies": {
         "System.Console": "4.0.0-*",
         "System.Threading.Thread": "4.0.0-*"
-      }
+      },
+      "imports": [ "portable-net40+sl5+win8+wp8+wpa81", "portable-net45+win8+wp8+wpa81" ]
     }
   }
 }

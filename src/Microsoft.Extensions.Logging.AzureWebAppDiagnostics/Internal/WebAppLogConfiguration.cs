@@ -14,12 +14,12 @@ namespace Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Internal
         public static WebAppLogConfiguration Disabled { get; } = new WebAppLogConfigurationBuilder().Build();
 
         internal WebAppLogConfiguration(
-            bool isRunningInWebApp, 
+            bool isRunningInWebApp,
             bool fileLoggingEnabled,
-            LogLevel fileLoggingLevel, 
+            LogLevel fileLoggingLevel,
             string fileLoggingFolder,
-            bool blobLoggingEnabled, 
-            LogLevel blobLoggingLevel, 
+            bool blobLoggingEnabled,
+            LogLevel blobLoggingLevel,
             string blobContainerUrl)
         {
             IsRunningInWebApp = isRunningInWebApp;

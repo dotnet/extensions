@@ -17,7 +17,8 @@
           "version": "1.0.0-*",
           "type": "platform"
         }
-      }
+      },
+      "imports": [ "portable-net40+sl5+win8+wp8+wpa81", "portable-net45+win8+wp8+wpa81" ]
     },
     "net451": {}
   }

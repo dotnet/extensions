@@ -79,10 +79,7 @@ namespace Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Internal
             ReloadConfiguration();
             SubscribeToConfigurationChangeEvent();
 
-            if (OnConfigurationChanged != null)
-            {
-                OnConfigurationChanged(this, _latestConfiguration);
-            }
+            OnConfigurationChanged?.Invoke(this, _latestConfiguration);
         }
 
         private void SubscribeToConfigurationChangeEvent()
