@@ -127,6 +127,64 @@ namespace Microsoft.Extensions.Configuration
             }
         }
 
+        // Try to create an array/dictionary instance to back various collection interfaces
+        private static object AttemptBindToCollectionInterfaces(Type type, IConfiguration config)
+        {
+            var typeInfo = type.GetTypeInfo();
+
+            if (!typeInfo.IsInterface)
+            {
+                return null;
+            }
+
+            var collectionInterface = FindOpenGenericInterface(typeof(IReadOnlyList<>), type);
+            if (collectionInterface != null)
+            {
+                // IEnumerable<T> is guaranteed to have exactly one parameter
+                return BindArray(Array.CreateInstance(type.GetTypeInfo().GenericTypeArguments[0], 0), config);
+            }
+
+            collectionInterface = FindOpenGenericInterface(typeof(IReadOnlyDictionary<,>), type);
+            if (collectionInterface != null)
+            {
+                var dictionaryType = typeof(Dictionary<,>).MakeGenericType(typeInfo.GenericTypeArguments[0], typeInfo.GenericTypeArguments[1]);
+                var instance = Activator.CreateInstance(dictionaryType);
+                BindDictionary(instance, dictionaryType, config);
+                return instance;
+            }
+
+            collectionInterface = FindOpenGenericInterface(typeof(IDictionary<,>), type);
+            if (collectionInterface != null)
+            {
+                var instance = Activator.CreateInstance(typeof(Dictionary<,>).MakeGenericType(typeInfo.GenericTypeArguments[0], typeInfo.GenericTypeArguments[1]));
+                BindDictionary(instance, collectionInterface, config);
+                return instance;
+            }
+
+            collectionInterface = FindOpenGenericInterface(typeof(IReadOnlyCollection<>), type);
+            if (collectionInterface != null)
+            {
+                // ICollection<T> is guaranteed to have exactly one parameter
+                return BindArray(Array.CreateInstance(type.GetTypeInfo().GenericTypeArguments[0], 0), config);
+            }
+
+            collectionInterface = FindOpenGenericInterface(typeof(ICollection<>), type);
+            if (collectionInterface != null)
+            {
+                // ICollection<T> is guaranteed to have exactly one parameter
+                return BindArray(Array.CreateInstance(type.GetTypeInfo().GenericTypeArguments[0], 0), config);
+            }
+
+            collectionInterface = FindOpenGenericInterface(typeof(IEnumerable<>), type);
+            if (collectionInterface != null)
+            {
+                // IEnumerable<T> is guaranteed to have exactly one parameter
+                return BindArray(Array.CreateInstance(type.GetTypeInfo().GenericTypeArguments[0], 0), config);
+            }
+
+            return null;
+        }
+
         private static object BindInstance(Type type, object instance, IConfiguration config)
         {
             // if binding IConfigurationSection, break early
@@ -145,8 +203,16 @@ namespace Microsoft.Extensions.Configuration
 
             if (config != null && config.GetChildren().Any())
             {
+                // If we don't have an instance, try to create one
                 if (instance == null)
                 {
+                    // We are alrady done if binding to a new collection instance worked
+                    instance = AttemptBindToCollectionInterfaces(type, config);
+                    if (instance != null)
+                    {
+                        return instance;
+                    }
+
                     instance = CreateInstance(type);
                 }
 
@@ -188,7 +254,7 @@ namespace Microsoft.Extensions.Configuration
                 throw new InvalidOperationException(Resources.FormatError_CannotActivateAbstractOrInterface(type));
             }
 
-            if (typeInfo.IsArray)
+            if (type.IsArray)
             {
                 if (typeInfo.GetArrayRank() > 1)
                 {
@@ -247,7 +313,7 @@ namespace Microsoft.Extensions.Configuration
         {
             var typeInfo = collectionType.GetTypeInfo();
 
-            // ICollection<T> is guaranteed to have exacly one parameter
+            // ICollection<T> is guaranteed to have exactly one parameter
             var itemType = typeInfo.GenericTypeArguments[0];
             var addMethod = typeInfo.GetDeclaredMethod("Add");
 

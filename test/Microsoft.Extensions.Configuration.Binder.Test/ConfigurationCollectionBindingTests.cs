@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace Microsoft.Extensions.Configuration.Binder.Test
@@ -770,6 +771,177 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             Assert.Equal("10", options.JaggedArray[1][0]);
             Assert.Equal("11", options.JaggedArray[1][1]);
             Assert.Equal("12", options.JaggedArray[1][2]);
+        }
+
+        [Fact]
+        public void CanBindUninitializedIEnumerable()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"IEnumerable:0", "val0"},
+                {"IEnumerable:1", "val1"},
+                {"IEnumerable:2", "val2"},
+                {"IEnumerable:x", "valx"}
+            };
+
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(input);
+            var config = configurationBuilder.Build();
+
+            var options = new UnintializedCollectionsOptions();
+            config.Bind(options);
+
+            var array = options.IEnumerable.ToArray();
+
+            Assert.Equal(4, array.Length);
+
+            Assert.Equal("val0", array[0]);
+            Assert.Equal("val1", array[1]);
+            Assert.Equal("val2", array[2]);
+            Assert.Equal("valx", array[3]);
+        }
+
+        [Fact]
+        public void CanBindUninitializedICollection()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"ICollection:0", "val0"},
+                {"ICollection:1", "val1"},
+                {"ICollection:2", "val2"},
+                {"ICollection:x", "valx"}
+            };
+
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(input);
+            var config = configurationBuilder.Build();
+
+            var options = new UnintializedCollectionsOptions();
+            config.Bind(options);
+
+            var array = options.ICollection.ToArray();
+
+            Assert.Equal(4, array.Length);
+
+            Assert.Equal("val0", array[0]);
+            Assert.Equal("val1", array[1]);
+            Assert.Equal("val2", array[2]);
+            Assert.Equal("valx", array[3]);
+        }
+
+        [Fact]
+        public void CanBindUninitializedIReadOnlyCollection()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"IReadOnlyCollection:0", "val0"},
+                {"IReadOnlyCollection:1", "val1"},
+                {"IReadOnlyCollection:2", "val2"},
+                {"IReadOnlyCollection:x", "valx"}
+            };
+
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(input);
+            var config = configurationBuilder.Build();
+
+            var options = new UnintializedCollectionsOptions();
+            config.Bind(options);
+
+            var array = options.IReadOnlyCollection.ToArray();
+
+            Assert.Equal(4, array.Length);
+
+            Assert.Equal("val0", array[0]);
+            Assert.Equal("val1", array[1]);
+            Assert.Equal("val2", array[2]);
+            Assert.Equal("valx", array[3]);
+        }
+
+        [Fact]
+        public void CanBindUninitializedIReadOnlyList()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"IReadOnlyList:0", "val0"},
+                {"IReadOnlyList:1", "val1"},
+                {"IReadOnlyList:2", "val2"},
+                {"IReadOnlyList:x", "valx"}
+            };
+
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(input);
+            var config = configurationBuilder.Build();
+
+            var options = new UnintializedCollectionsOptions();
+            config.Bind(options);
+
+            var array = options.IReadOnlyList.ToArray();
+
+            Assert.Equal(4, array.Length);
+
+            Assert.Equal("val0", array[0]);
+            Assert.Equal("val1", array[1]);
+            Assert.Equal("val2", array[2]);
+            Assert.Equal("valx", array[3]);
+        }
+
+        [Fact]
+        public void CanBindUninitializedIDictionary()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"IDictionary:abc", "val_1"},
+                {"IDictionary:def", "val_2"},
+                {"IDictionary:ghi", "val_3"}
+            };
+
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(input);
+            var config = configurationBuilder.Build();
+
+            var options = new UnintializedCollectionsOptions();
+            config.Bind(options);
+
+            Assert.Equal(3, options.IDictionary.Count);
+
+            Assert.Equal("val_1", options.IDictionary["abc"]);
+            Assert.Equal("val_2", options.IDictionary["def"]);
+            Assert.Equal("val_3", options.IDictionary["ghi"]);
+        }
+
+        [Fact]
+        public void CanBindUninitializedIReadOnlyDictionary()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"IReadOnlyDictionary:abc", "val_1"},
+                {"IReadOnlyDictionary:def", "val_2"},
+                {"IReadOnlyDictionary:ghi", "val_3"}
+            };
+
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(input);
+            var config = configurationBuilder.Build();
+
+            var options = new UnintializedCollectionsOptions();
+            config.Bind(options);
+
+            Assert.Equal(3, options.IReadOnlyDictionary.Count);
+
+            Assert.Equal("val_1", options.IReadOnlyDictionary["abc"]);
+            Assert.Equal("val_2", options.IReadOnlyDictionary["def"]);
+            Assert.Equal("val_3", options.IReadOnlyDictionary["ghi"]);
+        }
+
+        private class UnintializedCollectionsOptions
+        {
+            public IEnumerable<string> IEnumerable { get; set; }
+            public IDictionary<string, string> IDictionary { get; set; }
+            public ICollection<string> ICollection { get; set; }
+            public IList<string> IList { get; set; }
+            public IReadOnlyCollection<string> IReadOnlyCollection { get; set; }
+            public IReadOnlyList<string> IReadOnlyList { get; set; }
+            public IReadOnlyDictionary<string, string> IReadOnlyDictionary { get; set; }
         }
 
         private class CustomList : List<string>
