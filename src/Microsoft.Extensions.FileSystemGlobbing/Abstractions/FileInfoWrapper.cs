@@ -5,28 +5,44 @@ using System.IO;
 
 namespace Microsoft.Extensions.FileSystemGlobbing.Abstractions
 {
+    /// <summary>
+    /// Wraps an instance of <see cref="System.IO.FileInfo" /> to provide implementation of <see cref="FileInfoBase" />.
+    /// </summary>
     public class FileInfoWrapper : FileInfoBase
     {
-        private FileInfo _fileInfo;
+        private readonly FileInfo _fileInfo;
 
+        /// <summary>
+        /// Initializes instance of <see cref="FileInfoWrapper" /> to wrap the specified object <see cref="System.IO.FileInfo" />.
+        /// </summary>
+        /// <param name="fileInfo">The <see cref="System.IO.FileInfo" /></param>
         public FileInfoWrapper(FileInfo fileInfo)
         {
             _fileInfo = fileInfo;
         }
 
-        public override string Name
-        {
-            get { return _fileInfo.Name; }
-        }
+        /// <summary>
+        /// The file name. (Overrides <see cref="FileSystemInfoBase.Name" />).
+        /// </summary>
+        /// <remarks>
+        /// Equals the value of <see cref="System.IO.FileInfo.Name" />.
+        /// </remarks>
+        public override string Name => _fileInfo.Name;
 
-        public override string FullName
-        {
-            get { return _fileInfo.FullName; }
-        }
+        /// <summary>
+        /// The full path of the file. (Overrides <see cref="FileSystemInfoBase.FullName" />).
+        /// </summary>
+        /// <remarks>
+        /// Equals the value of <see cref="System.IO.FileSystemInfo.Name" />.
+        /// </remarks>
+        public override string FullName => _fileInfo.FullName;
 
-        public override DirectoryInfoBase ParentDirectory
-        {
-            get { return new DirectoryInfoWrapper(_fileInfo.Directory); }
-        }
+        /// <summary>
+        /// The directory containing the file. (Overrides <see cref="FileSystemInfoBase.ParentDirectory" />).
+        /// </summary>
+        /// <remarks>
+        /// Equals the value of <see cref="System.IO.FileInfo.Directory" />.
+        /// </remarks>
+        public override DirectoryInfoBase ParentDirectory => new DirectoryInfoWrapper(_fileInfo.Directory);
     }
 }

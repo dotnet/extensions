@@ -7,17 +7,31 @@ using System.IO;
 
 namespace Microsoft.Extensions.FileSystemGlobbing.Abstractions
 {
+    /// <summary>
+    /// Wraps an instance of <see cref="System.IO.DirectoryInfo" /> and provides implementation of
+    /// <see cref="DirectoryInfoBase" />.
+    /// </summary>
     public class DirectoryInfoWrapper : DirectoryInfoBase
     {
         private readonly DirectoryInfo _directoryInfo;
         private readonly bool _isParentPath;
 
+        /// <summary>
+        /// Initializes an instance of <see cref="DirectoryInfoWrapper" />.
+        /// </summary>
+        /// <param name="directoryInfo">The <see cref="System.IO.DirectoryInfo" /></param>
+        /// <param name="isParentPath">
+        /// <c>true</c> when the <paramref name="directoryInfo" /> should be represented as the parent
+        /// directory with '..'
+        /// </param>
+        // TODO issue #229. Should isParentPath be exposed publically? It is an internal implementation detail
         public DirectoryInfoWrapper(DirectoryInfo directoryInfo, bool isParentPath = false)
         {
             _directoryInfo = directoryInfo;
             _isParentPath = isParentPath;
         }
 
+        /// <inheritdoc />
         public override IEnumerable<FileSystemInfoBase> EnumerateFileSystemInfos()
         {
             if (_directoryInfo.Exists)
@@ -37,13 +51,23 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Abstractions
             }
         }
 
+        /// <summary>
+        /// Returns an instance of <see cref="DirectoryInfoBase" /> that represents a subdirectory.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="name" /> equals '..', this returns the parent directory.
+        /// </remarks>
+        /// <param name="name">The directory name</param>
+        /// <returns>The directory</returns>
         public override DirectoryInfoBase GetDirectory(string name)
         {
             var isParentPath = string.Equals(name, "..", StringComparison.Ordinal);
 
             if (isParentPath)
             {
-                return new DirectoryInfoWrapper(new DirectoryInfo(Path.Combine(_directoryInfo.FullName, name)), isParentPath);
+                return new DirectoryInfoWrapper(
+                    new DirectoryInfo(Path.Combine(_directoryInfo.FullName, name)),
+                    isParentPath);
             }
             else
             {
@@ -61,29 +85,34 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Abstractions
                 {
                     // This shouldn't happen. The parameter name isn't supposed to contain wild card.
                     throw new InvalidOperationException(
-                        string.Format("More than one sub directories are found under {0} with name {1}.", _directoryInfo.FullName, name));
+                        string.Format("More than one sub directories are found under {0} with name {1}.",
+                            _directoryInfo.FullName, name));
                 }
             }
         }
 
+        /// <inheritdoc />
         public override FileInfoBase GetFile(string name)
-        {
-            return new FileInfoWrapper(new FileInfo(Path.Combine(_directoryInfo.FullName, name)));
-        }
+            => new FileInfoWrapper(new FileInfo(Path.Combine(_directoryInfo.FullName, name)));
 
-        public override string Name
-        {
-            get { return _isParentPath ? ".." : _directoryInfo.Name; }
-        }
+        /// <inheritdoc />
+        public override string Name => _isParentPath ? ".." : _directoryInfo.Name;
 
-        public override string FullName
-        {
-            get { return _directoryInfo.FullName; }
-        }
+        /// <summary>
+        /// Returns the full path to the directory.
+        /// </summary>
+        /// <remarks>
+        /// Equals the value of <seealso cref="System.IO.FileSystemInfo.FullName" />.
+        /// </remarks>
+        public override string FullName => _directoryInfo.FullName;
 
+        /// <summary>
+        /// Returns the parent directory.
+        /// </summary>
+        /// <remarks>
+        /// Equals the value of <seealso cref="System.IO.DirectoryInfo.Parent" />.
+        /// </remarks>
         public override DirectoryInfoBase ParentDirectory
-        {
-            get { return new DirectoryInfoWrapper(_directoryInfo.Parent); }
-        }
+            => new DirectoryInfoWrapper(_directoryInfo.Parent);
     }
 }

@@ -29,3 +29,4 @@ project.lock.json
 /.vs/
 .build
 .testPublish
+.idea/
