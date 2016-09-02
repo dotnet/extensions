@@ -3,9 +3,6 @@
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [
-      "CS1591"
-    ],
     "xmlDoc": true
   },
   "description": "Abstractions of files and directories.\r\nCommonly used types:\r\nMicrosoft.Extensions.FileProviders.IDirectoryContents\r\nMicrosoft.Extensions.FileProviders.IFileInfo\r\nMicrosoft.Extensions.FileProviders.IFileProvider",
