@@ -5,7 +5,10 @@ using System.IO;
 
 namespace Microsoft.Extensions.FileProviders
 {
-    public class FileSystemInfoHelper
+    /// <summary>
+    /// Helper functions for working with the filesystem
+    /// </summary>
+    public static class FileSystemInfoHelper
     {
         internal static bool IsHiddenFile(FileSystemInfo fileSystemInfo)
         {

@@ -20,6 +20,7 @@ namespace Microsoft.Extensions.FileProviders
     {
         private static readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars()
             .Where(c => c != '/' && c != '\\').ToArray();
+
         private readonly Assembly _assembly;
         private readonly string _baseNamespace;
         private readonly DateTimeOffset _lastModified;
@@ -28,7 +29,7 @@ namespace Microsoft.Extensions.FileProviders
         /// Initializes a new instance of the <see cref="EmbeddedFileProvider" /> class using the specified
         /// assembly and empty base namespace.
         /// </summary>
-        /// <param name="assembly"></param>
+        /// <param name="assembly">The assembly that contains the embedded resources.</param>
         public EmbeddedFileProvider(Assembly assembly)
             : this(assembly, assembly?.GetName()?.Name)
         {
@@ -75,7 +76,10 @@ namespace Microsoft.Extensions.FileProviders
         /// Locates a file at the given path.
         /// </summary>
         /// <param name="subpath">The path that identifies the file. </param>
-        /// <returns>The file information. Caller must check Exists property.</returns>
+        /// <returns>
+        /// The file information. Caller must check Exists property. A <see cref="NotFoundFileInfo" /> if the file could
+        /// not be found.
+        /// </returns>
         public IFileInfo GetFileInfo(string subpath)
         {
             if (string.IsNullOrEmpty(subpath))
@@ -121,10 +125,14 @@ namespace Microsoft.Extensions.FileProviders
 
         /// <summary>
         /// Enumerate a directory at the given path, if any.
-        /// This file provider uses a flat directory structure. Everything under the base namespace is considered to be one directory.
+        /// This file provider uses a flat directory structure. Everything under the base namespace is considered to be one
+        /// directory.
         /// </summary>
         /// <param name="subpath">The path that identifies the directory</param>
-        /// <returns>Contents of the directory. Caller must check Exists property.</returns>
+        /// <returns>
+        /// Contents of the directory. Caller must check Exists property. A <see cref="NotFoundDirectoryContents" /> if no
+        /// resources were found that match <paramref name="subpath" />
+        /// </returns>
         public IDirectoryContents GetDirectoryContents(string subpath)
         {
             // The file name is assumed to be the remainder of the resource name.
@@ -165,6 +173,11 @@ namespace Microsoft.Extensions.FileProviders
             return new EnumerableDirectoryContents(entries);
         }
 
+        /// <summary>
+        /// Embedded files do not change.
+        /// </summary>
+        /// <param name="pattern">This parameter is ignored</param>
+        /// <returns>A <see cref="NullChangeToken" /></returns>
         public IChangeToken Watch(string pattern)
         {
             return NullChangeToken.Singleton;

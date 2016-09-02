@@ -14,21 +14,40 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.FileProviders.Physical
 {
+    /// <summary>
+    ///     <para>
+    ///     A file watcher that watches a physical filesystem for changes.
+    ///     </para>
+    ///     <para>
+    ///     Triggers events on <see cref="IChangeToken" /> when files are created, change, renamed, or deleted.
+    ///     </para>
+    /// </summary>
     public class PhysicalFilesWatcher : IDisposable
     {
         private readonly ConcurrentDictionary<string, ChangeTokenInfo> _matchInfoCache =
             new ConcurrentDictionary<string, ChangeTokenInfo>(StringComparer.OrdinalIgnoreCase);
+
         private readonly FileSystemWatcher _fileWatcher;
         private readonly object _lockObject = new object();
         private readonly string _root;
         private readonly bool _pollForChanges;
 
+        /// <summary>
+        /// Initializes an instance of <see cref="PhysicalFilesWatcher" /> that watches files in <paramref name="rootDirectory" />.
+        /// Wraps an instance of <see cref="System.IO.FileSystemWatcher" />
+        /// </summary>
+        /// <param name="rootDirectory">Root directory for the watcher</param>
+        /// <param name="fileSystemWatcher">The wrapped watcher that is watching <paramref name="rootDirectory" /></param>
+        /// <param name="pollForChanges">
+        /// True when the watcher should use polling to trigger instances of
+        /// <see cref="IChangeToken" /> created by <see cref="CreateFileChangeToken(string)" />
+        /// </param>
         public PhysicalFilesWatcher(
-            string root,
+            string rootDirectory,
             FileSystemWatcher fileSystemWatcher,
             bool pollForChanges)
         {
-            _root = root;
+            _root = rootDirectory;
             _fileWatcher = fileSystemWatcher;
             _fileWatcher.IncludeSubdirectories = true;
             _fileWatcher.Created += OnChanged;
@@ -40,6 +59,20 @@ namespace Microsoft.Extensions.FileProviders.Physical
             _pollForChanges = pollForChanges;
         }
 
+        /// <summary>
+        ///     <para>
+        ///     Creates an instance of <see cref="IChangeToken" /> for all files and directories that match the
+        ///     <paramref name="filter" />
+        ///     </para>
+        ///     <para>
+        ///     Globbing patterns are relative to the root directory given in the constructor
+        ///     <seealso cref="PhysicalFilesWatcher(string, FileSystemWatcher, bool)" />. Globbing patterns 
+        ///     are interpreted by <seealso cref="Microsoft.Extensions.FileSystemGlobbing.Matcher" />.
+        ///     </para>
+        /// </summary>
+        /// <param name="filter">A globbing pattern for files and directories to watch</param>
+        /// <returns>A change token for all files that match the filter</returns>
+        /// <exception cref="ArgumentNullException">When <paramref name="filter" /> is null</exception>
         public IChangeToken CreateFileChangeToken(string filter)
         {
             if (filter == null)
@@ -117,6 +150,9 @@ namespace Microsoft.Extensions.FileProviders.Physical
             return new CompositeFileChangeToken(changeTokens);
         }
 
+        /// <summary>
+        /// Disposes the file watcher
+        /// </summary>
         public void Dispose()
         {
             _fileWatcher.Dispose();
@@ -133,7 +169,9 @@ namespace Microsoft.Extensions.FileProviders.Physical
                 try
                 {
                     // If the renamed entity is a directory then notify tokens for every sub item.
-                    foreach (var newLocation in Directory.EnumerateFileSystemEntries(e.FullPath, "*", SearchOption.AllDirectories))
+                    foreach (
+                        var newLocation in
+                        Directory.EnumerateFileSystemEntries(e.FullPath, "*", SearchOption.AllDirectories))
                     {
                         // Calculated previous path of this moved item.
                         var oldLocation = Path.Combine(e.OldFullPath, newLocation.Substring(e.FullPath.Length + 1));
@@ -216,7 +254,9 @@ namespace Microsoft.Extensions.FileProviders.Physical
         private static bool IsDirectoryPath(string path)
         {
             return path.Length > 0
-                && (path[path.Length - 1] == Path.DirectorySeparatorChar || path[path.Length - 1] == Path.AltDirectorySeparatorChar);
+                   &&
+                   (path[path.Length - 1] == Path.DirectorySeparatorChar ||
+                    path[path.Length - 1] == Path.AltDirectorySeparatorChar);
         }
 
         private static void CancelToken(ChangeTokenInfo matchInfo)
@@ -234,7 +274,6 @@ namespace Microsoft.Extensions.FileProviders.Physical
                 }
                 catch
                 {
-
                 }
             });
         }

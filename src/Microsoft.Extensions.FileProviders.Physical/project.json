@@ -3,9 +3,6 @@
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "nowarn": [
-      "CS1591"
-    ],
     "xmlDoc": true
   },
   "description": "File provider for physical files for Microsoft.Extensions.FileProviders.",

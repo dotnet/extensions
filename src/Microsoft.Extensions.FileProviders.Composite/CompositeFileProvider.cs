@@ -10,25 +10,25 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.Extensions.FileProviders
 {
     /// <summary>
-    /// Looks up files using a list of <see cref="IFileProvider"/>.
+    /// Looks up files using a collection of <see cref="IFileProvider"/>.
     /// </summary>
     public class CompositeFileProvider : IFileProvider
     {
         private readonly IFileProvider[] _fileProviders;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CompositeFileProvider" /> class using a list of file provider.
+        /// Initializes a new instance of the <see cref="CompositeFileProvider" /> class using a collection of file provider.
         /// </summary>
-        /// <param name="fileProviders"></param>
+        /// <param name="fileProviders">The collection of <see cref="IFileProvider" /></param>
         public CompositeFileProvider(params IFileProvider[] fileProviders)
         {
             _fileProviders = fileProviders ?? new IFileProvider[0];
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CompositeFileProvider" /> class using a list of file provider.
+        /// Initializes a new instance of the <see cref="CompositeFileProvider" /> class using a collection of file provider.
         /// </summary>
-        /// <param name="fileProviders"></param>
+        /// <param name="fileProviders">The collection of <see cref="IFileProvider" /></param>
         public CompositeFileProvider(IEnumerable<IFileProvider> fileProviders)
         {
             if (fileProviders == null)
