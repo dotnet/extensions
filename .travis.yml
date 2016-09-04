@@ -11,7 +11,9 @@ addons:
     - libunwind8
     - zlib1g
 env:
-  - KOREBUILD_DNU_RESTORE_CORECLR=true KOREBUILD_TEST_DNXCORE=true
+  global:
+    - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+    - DOTNET_CLI_TELEMETRY_OPTOUT: 1
 mono:
   - 4.0.5
 os:
@@ -27,7 +29,7 @@ branches:
 before_install:
   - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl; ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/; fi
 script:
-  - ./build.sh verify
+  - ./build.sh --quiet verify
 notifications:
   webhooks:
     secure: "f5AkDPK6qOC5C6X9cvblwgnTxO0gehlSoCcWMjF5yEywmZ1xPtNFzOSznCYsmFCZIzVDQNi/+T1KqrXV9SlQvOj5ESZbxC38Ej2etqorusiVco22l0LGgggXynJ6KSoNS9J5qNFxChmUXBK65TQJJ5CiMXOSOiJGX2X24zbJKKw="
