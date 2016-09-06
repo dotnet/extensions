@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Internal
 {
-    public static class TaskCache<T>
+    internal static class TaskCache<T>
     {
         /// <summary>
         /// Gets a completed <see cref="Task"/> with the value of <c>default(T)</c>.

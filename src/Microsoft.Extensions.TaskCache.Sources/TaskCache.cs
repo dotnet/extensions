@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Internal
 {
-    public static class TaskCache
+    internal static class TaskCache
     {
         /// <summary>
         /// A <see cref="Task"/> that's already completed successfully.
