@@ -44,6 +44,7 @@ namespace Microsoft.Extensions.CommandLineUtils
         public Func<string> LongVersionGetter { get; set; }
         public Func<string> ShortVersionGetter { get; set; }
         public readonly List<CommandLineApplication> Commands;
+        public bool AllowArgumentSeparator { get; set; }
         public TextWriter Out { get; set; } = Console.Out;
         public TextWriter Error { get; set; } = Console.Error;
 
@@ -146,10 +147,17 @@ namespace Microsoft.Extensions.CommandLineUtils
                     if (longOption != null)
                     {
                         processed = true;
-                        option = command.GetOptions().SingleOrDefault(opt => string.Equals(opt.LongName, longOption[0], StringComparison.Ordinal));
+                        var longOptionName = longOption[0];
+                        option = command.GetOptions().SingleOrDefault(opt => string.Equals(opt.LongName, longOptionName, StringComparison.Ordinal));
 
                         if (option == null)
                         {
+                            if (string.IsNullOrEmpty(longOptionName) && !command._throwOnUnexpectedArg  && AllowArgumentSeparator)
+                            {
+                                // skip over the '--' argument separator
+                                index++;
+                            }
+
                             HandleUnexpectedArg(command, args, index, argTypeName: "option");
                             break;
                         }
@@ -432,6 +440,11 @@ namespace Microsoft.Extensions.CommandLineUtils
                     commandsBuilder.AppendFormat($"Use \"{target.Name} [command] --{OptionHelp.LongName}\" for more information about a command.");
                     commandsBuilder.AppendLine();
                 }
+            }
+
+            if (target.AllowArgumentSeparator)
+            {
+                headerBuilder.Append(" [[--] <arg>...]");
             }
 
             headerBuilder.AppendLine();

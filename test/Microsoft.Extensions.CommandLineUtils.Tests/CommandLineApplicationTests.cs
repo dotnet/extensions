@@ -502,6 +502,33 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal("N2", nest2OptionValue);
         }
 
+        [Theory]
+        [InlineData(new string[0], new string[0], null)]
+        [InlineData(new[] { "--" }, new string[0], null)]
+        [InlineData(new[] { "-t", "val" }, new string[0], "val")]
+        [InlineData(new[] { "-t", "val", "--" }, new string[0], "val")]
+        [InlineData(new[] { "--top", "val", "--", "a" }, new[] { "a" }, "val")]
+        [InlineData(new[] { "--", "a", "--top", "val" }, new[] { "a", "--top", "val" }, null)]
+        [InlineData(new[] { "-t", "val", "--", "a", "--", "b" }, new[] { "a", "--", "b" }, "val")]
+        [InlineData(new[] { "--", "--help" }, new[] { "--help" }, null)]
+        [InlineData(new[] { "--", "--version" }, new[] { "--version" }, null)]
+        public void ArgumentSeparator(string[] input, string[] expectedRemaining, string topLevelValue)
+        {
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false)
+            {
+                AllowArgumentSeparator = true
+            };
+            var optHelp = app.HelpOption("--help");
+            var optVersion = app.VersionOption("--version", "1", "1.0");
+            var optTop = app.Option("-t|--top <TOP>", "arg for command", CommandOptionType.SingleValue);
+            app.Execute(input);
+
+            Assert.Equal(topLevelValue, optTop.Value());
+            Assert.False(optHelp.HasValue());
+            Assert.False(optVersion.HasValue());
+            Assert.Equal(expectedRemaining, app.RemainingArguments.ToArray());
+        }
+
         [Fact]
         public void HelpTextIgnoresHiddenItems()
         {
@@ -540,6 +567,18 @@ namespace Microsoft.Extensions.Internal
             app.HelpOption("--ayuda-me");
             var help = app.GetHelpText();
             Assert.Contains("--ayuda-me", help);
+        }
+
+        [Fact]
+        public void HelpTextShowsArgSeparator()
+        {
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false)
+            {
+                Name = "proxy-command",
+                AllowArgumentSeparator = true
+            };
+            app.HelpOption("-h|--help");
+            Assert.Contains("Usage: proxy-command [options] [[--] <arg>...]", app.GetHelpText());
         }
     }
 }
