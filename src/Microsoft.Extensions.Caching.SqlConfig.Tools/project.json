@@ -1,17 +1,17 @@
 {
   "version": "1.0.0-preview3-*",
   "dependencies": {
-    "Microsoft.Extensions.CommandLineUtils": "1.1.0-*",
-    "Microsoft.Extensions.Logging": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.1.0-*",
-    "System.Data.SqlClient": "4.1.0-*"
+    "Microsoft.Extensions.CommandLineUtils": "1.0.0",
+    "Microsoft.Extensions.Logging": "1.0.0",
+    "Microsoft.Extensions.Logging.Console": "1.0.0",
+    "System.Data.SqlClient": "4.1.0"
   },
   "description": "Command line tool to create tables and indexes in a Microsoft SQL Server database for distributed caching.",
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.0.0",
           "type": "platform"
         }
       }
