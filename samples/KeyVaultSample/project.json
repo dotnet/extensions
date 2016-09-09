@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0-*",
+  "buildOptions": {
+    "debugType": "portable",
+    "emitEntryPoint": true,
+    "copyToOutput": "settings.json"
+  },
+  "dependencies": {
+    "Microsoft.Extensions.Configuration": "1.1.0",
+    "Microsoft.Extensions.Configuration.Azure.KeyVault": "1.1.0",
+    "Microsoft.Extensions.Configuration.Json": "1.1.0"
+  },
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Threading.Tasks": {},
+        "System.Runtime": {}
+      }
+    }
+  },
+  "publishOptions": {
+  }
+}
