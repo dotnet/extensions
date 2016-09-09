@@ -40,6 +40,22 @@ namespace Microsoft.Extensions.Primitives
         }
 
         [Fact]
+        public void ChangesFireAfterExceptions()
+        {
+            TestChangeToken token = null;
+            var count = 0;
+            ChangeToken.OnChange(() => token = new TestChangeToken(), () =>
+            {
+                count++;
+                throw new Exception();
+            });
+            token.Changed();
+            Assert.Equal(1, count);
+            token.Changed();
+            Assert.Equal(2, count);
+        }
+
+        [Fact]
         public void HasChangeFiresChangeWithState()
         {
             var token = new TestChangeToken();
@@ -49,6 +65,27 @@ namespace Microsoft.Extensions.Primitives
             Assert.Null(callbackState);
             token.Changed();
             Assert.Equal(state, callbackState);
+        }
+
+        [Fact]
+        public void ChangesFireAfterExceptionsWithState()
+        {
+            TestChangeToken token = null;
+            var count = 0;
+            object state = new object();
+            object callbackState = null;
+            ChangeToken.OnChange(() => token = new TestChangeToken(), s =>
+            {
+                callbackState = s;
+                count++;
+                throw new Exception();
+            }, state);
+            token.Changed();
+            Assert.Equal(1, count);
+            Assert.NotNull(callbackState);
+            token.Changed();
+            Assert.Equal(2, count);
+            Assert.NotNull(callbackState);
         }
     }
 }

@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.Primitives
                 // If the token changes after we take the token, then we'll process the update immediately upon
                 // registering the callback.
                 var t = changeTokenProducer();
-                changeTokenConsumer();
+                try { changeTokenConsumer(); } catch { } // Uncaught exceptions are really bad here
                 t.RegisterChangeCallback(callback, null);
             };
 
@@ -70,7 +70,7 @@ namespace Microsoft.Extensions.Primitives
                 // If the token changes after we take the token, then we'll process the update immediately upon
                 // registering the callback.
                 var t = changeTokenProducer();
-                changeTokenConsumer((TState)s);
+                try { changeTokenConsumer((TState)s); } catch { } // Uncaught exceptions are really bad here
                 t.RegisterChangeCallback(callback, s);
             };
 
