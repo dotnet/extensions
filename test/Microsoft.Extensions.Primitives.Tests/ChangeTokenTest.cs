@@ -49,9 +49,9 @@ namespace Microsoft.Extensions.Primitives
                 count++;
                 throw new Exception();
             });
-            token.Changed();
+            Assert.Throws<Exception>(() => token.Changed());
             Assert.Equal(1, count);
-            token.Changed();
+            Assert.Throws<Exception>(() => token.Changed());
             Assert.Equal(2, count);
         }
 
@@ -80,10 +80,10 @@ namespace Microsoft.Extensions.Primitives
                 count++;
                 throw new Exception();
             }, state);
-            token.Changed();
+            Assert.Throws<Exception>(() => token.Changed());
             Assert.Equal(1, count);
             Assert.NotNull(callbackState);
-            token.Changed();
+            Assert.Throws<Exception>(() => token.Changed());
             Assert.Equal(2, count);
             Assert.NotNull(callbackState);
         }

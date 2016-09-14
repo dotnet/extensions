@@ -40,9 +40,10 @@ namespace Microsoft.Extensions.Primitives
                 {
                     changeTokenConsumer();
                 }
-                catch // Uncaught exceptions are really bad here
-                { }
-                t.RegisterChangeCallback(callback, null);
+                finally // We always want to ensure the callback is registered
+                {
+                    t.RegisterChangeCallback(callback, null);
+                }
             };
 
             return changeTokenProducer().RegisterChangeCallback(callback, null);
@@ -79,9 +80,10 @@ namespace Microsoft.Extensions.Primitives
                 {
                     changeTokenConsumer((TState)s);
                 }
-                catch // Uncaught exceptions are really bad here
-                { }
-                t.RegisterChangeCallback(callback, s);
+                finally // We always want to ensure the callback is registered
+                {
+                    t.RegisterChangeCallback(callback, s);
+                }
             };
 
             return changeTokenProducer().RegisterChangeCallback(callback, state);
