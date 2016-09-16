@@ -172,7 +172,7 @@ namespace Microsoft.Extensions.FileProviders
         }
 
         [Fact]
-        public void CreateReadStreamSuccedsOnEmptyFile()
+        public void CreateReadStreamSucceedsOnEmptyFile()
         {
             using (var root = new DisposableFileSystem())
             {
