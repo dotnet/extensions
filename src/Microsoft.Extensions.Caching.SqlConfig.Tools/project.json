@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-preview4-*",
+  "version": "1.0.0-preview3-*",
   "dependencies": {
     "Microsoft.Extensions.CommandLineUtils": "1.1.0-*",
     "Microsoft.Extensions.Logging": "1.1.0-*",
