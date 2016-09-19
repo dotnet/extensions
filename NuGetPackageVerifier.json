@@ -4,7 +4,6 @@
             "AdxVerificationCompositeRule"
         ],
         "packages": {
-            "Microsoft.Extensions.Caching.SqlConfig.Tools": { },
             "Microsoft.Extensions.Caching.Abstractions": { },
             "Microsoft.Extensions.Caching.Memory": { },
             "Microsoft.Extensions.Caching.Redis": { },
