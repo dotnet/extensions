@@ -37,3 +37,5 @@ nuget.exe
 node_modules
 **/[Cc]ompiler/[Rr]esources/**/*.js
 .vscode/
+*.nuget.props
+*.nuget.targets
