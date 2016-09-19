@@ -127,6 +127,14 @@ namespace Microsoft.Extensions.Configuration
             }
         }
 
+        private static object BindToCollection(TypeInfo typeInfo, IConfiguration config)
+        {
+            var type = typeof(List<>).MakeGenericType(typeInfo.GenericTypeArguments[0]);
+            var instance = Activator.CreateInstance(type);
+            BindCollection(instance, type, config);
+            return instance;
+        }
+
         // Try to create an array/dictionary instance to back various collection interfaces
         private static object AttemptBindToCollectionInterfaces(Type type, IConfiguration config)
         {
@@ -141,7 +149,7 @@ namespace Microsoft.Extensions.Configuration
             if (collectionInterface != null)
             {
                 // IEnumerable<T> is guaranteed to have exactly one parameter
-                return BindArray(Array.CreateInstance(type.GetTypeInfo().GenericTypeArguments[0], 0), config);
+                return BindToCollection(typeInfo, config);
             }
 
             collectionInterface = FindOpenGenericInterface(typeof(IReadOnlyDictionary<,>), type);
@@ -164,22 +172,22 @@ namespace Microsoft.Extensions.Configuration
             collectionInterface = FindOpenGenericInterface(typeof(IReadOnlyCollection<>), type);
             if (collectionInterface != null)
             {
-                // ICollection<T> is guaranteed to have exactly one parameter
-                return BindArray(Array.CreateInstance(type.GetTypeInfo().GenericTypeArguments[0], 0), config);
+                // IReadOnlyCollection<T> is guaranteed to have exactly one parameter
+                return BindToCollection(typeInfo, config);
             }
 
             collectionInterface = FindOpenGenericInterface(typeof(ICollection<>), type);
             if (collectionInterface != null)
             {
                 // ICollection<T> is guaranteed to have exactly one parameter
-                return BindArray(Array.CreateInstance(type.GetTypeInfo().GenericTypeArguments[0], 0), config);
+                return BindToCollection(typeInfo, config);
             }
 
             collectionInterface = FindOpenGenericInterface(typeof(IEnumerable<>), type);
             if (collectionInterface != null)
             {
                 // IEnumerable<T> is guaranteed to have exactly one parameter
-                return BindArray(Array.CreateInstance(type.GetTypeInfo().GenericTypeArguments[0], 0), config);
+                return BindToCollection(typeInfo, config);
             }
 
             return null;
