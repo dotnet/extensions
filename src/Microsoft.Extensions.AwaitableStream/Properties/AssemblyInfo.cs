@@ -1,9 +1,11 @@
-﻿using System.Reflection;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-// General Information about an assembly is controlled through the following
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Microsoft.Extensions.AwaitableStream")]
-[assembly: AssemblyTrademark("")]
+using System.Reflection;
+using System.Resources;
+
+[assembly: AssemblyMetadata("Serviceable", "True")]
+[assembly: NeutralResourcesLanguage("en-us")]
+[assembly: AssemblyCompany("Microsoft Corporation.")]
+[assembly: AssemblyCopyright("© Microsoft Corporation. All rights reserved.")]
+[assembly: AssemblyProduct("Microsoft .NET Extensions")]
