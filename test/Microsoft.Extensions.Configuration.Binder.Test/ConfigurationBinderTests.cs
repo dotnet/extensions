@@ -153,6 +153,21 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
         }
 
         [Fact]
+        public void EmptyStringIsNullable()
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {"empty", ""},
+            };
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
+            var config = configurationBuilder.Build();
+
+            Assert.Null(config.GetValue<bool?>("empty"));
+            Assert.Null(config.GetValue<int?>("empty"));
+        }
+
+        [Fact]
         public void GetScalarNullable()
         {
             var dic = new Dictionary<string, string>

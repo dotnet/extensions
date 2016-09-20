@@ -382,6 +382,10 @@ namespace Microsoft.Extensions.Configuration
         {
             if (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
+                if (string.IsNullOrEmpty(value))
+                {
+                    return null;
+                }
                 return ConvertValue(Nullable.GetUnderlyingType(type), value);
             }
 
