@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AwaitableStream.Internal;
 
 namespace Microsoft.Extensions.AwaitableStream
 {
@@ -21,9 +23,11 @@ namespace Microsoft.Extensions.AwaitableStream
 
         private Action _continuation;
         private CancellationTokenRegistration _registration;
+        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         // Set when the first read happens
         private TaskCompletionSource<object> _initialRead = new TaskCompletionSource<object>();
+        private Gate _readWaiting = new Gate();
 
         // Set when this stream is disposed
         private TaskCompletionSource<object> _producing = new TaskCompletionSource<object>();
@@ -37,9 +41,11 @@ namespace Microsoft.Extensions.AwaitableStream
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
+            var cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cancellationTokenSource.Token).Token;
             // Already cancelled to just throw
-            cancellationToken.ThrowIfCancellationRequested();
+            cancellation.ThrowIfCancellationRequested();
 
+            // Cancel the WriteAsync if the provided CancellationToken is fired.
             if (cancellationToken.CanBeCanceled && _registration == default(CancellationTokenRegistration))
             {
                 // We can register the very first time write is called since the same token is passed into
@@ -49,7 +55,7 @@ namespace Microsoft.Extensions.AwaitableStream
 
             // Wait for the first read operation.
             // This is important because the call to write async wants to call the continuation directly
-            // so that the continuation can consume the buffers directly without worrying about where 
+            // so that the continuation can consume the buffers directly without worrying about where
             // ownership lies. Once the call to WriteAsync returns, the caller owns the buffer so it can't
             // be stashed away without copying.
             await _initialRead.Task;
@@ -77,6 +83,13 @@ namespace Microsoft.Extensions.AwaitableStream
 
             // Call the continuation
             Complete();
+
+            // Wait for the next read
+            await _readWaiting;
+            Debug.Assert(!_readWaiting.IsCompleted, "The gate didn't close behind us!");
+
+            // Check that we haven't been cancelled
+            cancellation.ThrowIfCancellationRequested();
 
             if (!_consumeCalled)
             {
@@ -167,7 +180,7 @@ namespace Microsoft.Extensions.AwaitableStream
             }
 
             // This can happen for 2 reasons:
-            // 1. We consumed everything 
+            // 1. We consumed everything
             // 2. We own all the buffers with data, so no need to copy again.
             if (length == 0)
             {
@@ -229,24 +242,36 @@ namespace Microsoft.Extensions.AwaitableStream
 
         protected override void Dispose(bool disposing)
         {
-            // Mark the stream as "done" when it's disposed
+            // Tell the consumer we're done
             if (_producing.TrySetResult(null))
             {
+                // Open the read waiting gate
+                _readWaiting.Open();
+
                 // Trigger the callback so user code can react to this state change
                 Complete();
             }
 
             _registration.Dispose();
+
+            // Cancel all ongoing/future writes
+            _cancellationTokenSource.Cancel();
         }
 
         public void Cancel()
         {
-            // Tell the consumer we're done
+            // Tell the consumer we're cancelled
             if (_producing.TrySetCanceled())
             {
+                // Open the read waiting gate
+                _readWaiting.Open();
+
                 // Trigger the callback so user code can react to this state change
                 Complete();
             }
+
+            // Cancel all ongoing/future writes
+            _cancellationTokenSource.Cancel();
         }
 
         internal void OnCompleted(Action continuation)
@@ -257,8 +282,13 @@ namespace Microsoft.Extensions.AwaitableStream
                 continuation();
             }
 
-            // Set the initial read result
-            _initialRead.TrySetResult(null);
+            // For the first read, we open the _initialRead TCS, but NOT the readWaiting gate since we want that to block
+            // until the second read.
+            if(!_initialRead.TrySetResult(null))
+            {
+                // If we're here, it means initialRead was already RanToCompletion, so we should open the ReadWaiting gate instead.
+                _readWaiting.Open();
+            }
         }
 
         private void Complete()

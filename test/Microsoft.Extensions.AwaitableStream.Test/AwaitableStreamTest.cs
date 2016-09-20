@@ -287,6 +287,87 @@ namespace Microsoft.Extensions.AwaitableStream
             Assert.Equal(3, calls);
         }
 
+        [Fact]
+        public async Task CanAwaitDuringReadAsyncCallbackBeforeConsuming()
+        {
+            var stream = new CallbackStream(async (s, token) =>
+            {
+                var sw = new StreamWriter(s);
+                await sw.WriteAsync("Hello");
+                await sw.FlushAsync();
+                await sw.WriteAsync("World");
+                await sw.FlushAsync();
+            });
+
+            var awaitableStream = new AwaitableStream();
+            var ignore = Task.Run(async () =>
+            {
+                using (awaitableStream)
+                {
+                    await stream.CopyToAsync(awaitableStream);
+                }
+            });
+
+            var buffer = await awaitableStream.ReadAsync();
+
+            await Task.Yield();
+
+            // Consume nothing and read more data
+            awaitableStream.Consumed(0);
+            buffer = await awaitableStream.ReadAsync();
+
+            // The buffer should have everything, since we consumed nothing
+            var array = buffer.GetArraySegment();
+            var actualStr = Encoding.UTF8.GetString(array.Array, array.Offset, array.Count);
+            Assert.Equal("HelloWorld", actualStr);
+        }
+
+        [Fact]
+        public async Task DisposingTheAwaitableStreamCancelsAnActiveWrite()
+        {
+            var cancelledTcs = new TaskCompletionSource<object>();
+
+            var stream = new CallbackStream(async (s, token) =>
+            {
+                try
+                {
+                    var sw = new StreamWriter(s);
+                    await sw.WriteAsync("Hello");
+                    await sw.FlushAsync();
+                    await sw.WriteAsync("World");
+                    await sw.FlushAsync();
+                    cancelledTcs.SetException(new Exception("CallbackStream reached the end of the callback!"));
+                }
+                catch (OperationCanceledException)
+                {
+                    cancelledTcs.SetResult(null);
+                }
+                catch (Exception ex)
+                {
+                    cancelledTcs.SetException(ex);
+                }
+            });
+
+            using (var awaitableStream = new AwaitableStream())
+            {
+                var ignore = Task.Run(async () =>
+                {
+                    using (awaitableStream)
+                    {
+                        await stream.CopyToAsync(awaitableStream);
+                    }
+                });
+
+                var buffer = await awaitableStream.ReadAsync();
+
+                // Now dispose of the stream, which should throw OperationCanceledException in the CallbackStream above
+            }
+
+
+            var completedTask = await Task.WhenAny(cancelledTcs.Task, Task.Delay(100));
+            Assert.True(ReferenceEquals(cancelledTcs.Task, completedTask), "Timeout elapsed");
+        }
+
         private class CallbackStream : Stream
         {
             private readonly Func<Stream, CancellationToken, Task> _callback;
