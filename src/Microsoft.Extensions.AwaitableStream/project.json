@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "0.1.0-*",
   "packOptions": {
     "repository": {
@@ -14,15 +14,17 @@
     ],
     "xmlDoc": true
   },
-  "dependencies": {},
+  "dependencies": {
+  },
   "frameworks": {
     "netstandard1.0": {
       "imports": "dnxcore50",
       "dependencies": {
-        "System.IO": "4.1.0",
-        "System.Threading": "4.0.11",
         "System.Collections": "4.0.11",
-        "System.Runtime.Extensions": "4.1.0"
+        "System.IO": "4.1.0",
+        "System.Resources.ResourceManager": "4.0.1",
+        "System.Runtime.Extensions": "4.1.0",
+        "System.Threading": "4.0.11"
       }
     }
   }
