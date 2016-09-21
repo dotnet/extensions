@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Configuration.Xml
         /// <returns>A <see cref="XmlConfigurationProvider"/></returns>
         public override IConfigurationProvider Build(IConfigurationBuilder builder)
         {
-            FileProvider = FileProvider ?? builder.GetFileProvider();
+            EnsureDefaults(builder);
             return new XmlConfigurationProvider(this);
         }
     }

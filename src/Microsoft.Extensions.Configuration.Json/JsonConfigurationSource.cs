@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Configuration.Json
         /// <returns>A <see cref="JsonConfigurationProvider"/></returns>
         public override IConfigurationProvider Build(IConfigurationBuilder builder)
         {
-            FileProvider = FileProvider ?? builder.GetFileProvider();
+            EnsureDefaults(builder);
             return new JsonConfigurationProvider(this);
         }
     }

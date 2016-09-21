@@ -261,17 +261,6 @@ CommonKey3:CommonKey4=IniValue6";
         }
 
         [Fact]
-        public void CanReadUnicodeString()
-        {
-            var configurationBuilder = new ConfigurationBuilder();
-            var fileJson = Path.Combine(_basePath, Path.GetRandomFileName());
-            File.WriteAllText(fileJson, @"{ ""SiteTitle"" : ""???""}");
-
-            var config = configurationBuilder.AddJsonFile(fileJson).Build();
-            Assert.Equal("???", config.GetSection("SiteTitle").Value);
-        }
-
-        [Fact]
         public void LoadAndCombineKeyValuePairsFromDifferentConfigurationProvidersWithAbsolutePath()
         {
             // Arrange
@@ -312,7 +301,6 @@ CommonKey3:CommonKey4=IniValue6";
 
             Assert.Equal("MemValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
         }
-
 
         [Fact]
         public void CanOverrideValuesWithNewConfigurationProvider()
@@ -387,6 +375,108 @@ CommonKey3:CommonKey4=IniValue6";
         }
 
         [Fact]
+        public void OnLoadErrorWillBeCalledOnJsonParseError()
+        {
+            // Arrange
+            File.WriteAllText(Path.Combine(_basePath, "error.json"), @"{""JsonKey1"": ");
+
+            FileConfigurationProvider provider = null;
+            Exception jsonError = null;
+            Action<FileLoadExceptionContext> jsonLoadError = c =>
+            {
+                jsonError = c.Exception;
+                provider = c.Provider;
+            };
+
+            try
+            {
+                new ConfigurationBuilder().AddJsonFile("error.json")
+                    .SetFileLoadExceptionHandler(jsonLoadError)
+                    .Build();
+            }
+            catch (FormatException e)
+            {
+                Assert.Equal(e, jsonError);
+            }
+            Assert.NotNull(provider);
+        }
+
+        [Fact]
+        public void OnLoadErrorWillBeCalledOnXmlParseError()
+        {
+            // Arrange
+            File.WriteAllText(Path.Combine(_basePath, "error.xml"), @"gobblygook");
+
+            FileConfigurationProvider provider = null;
+            Exception error = null;
+            Action<FileLoadExceptionContext> loadError = c =>
+            {
+                error = c.Exception;
+                provider = c.Provider;
+            };
+
+            try
+            {
+                new ConfigurationBuilder().AddJsonFile("error.xml")
+                    .SetFileLoadExceptionHandler(loadError)
+                    .Build();
+            }
+            catch (FormatException e)
+            {
+                Assert.Equal(e, error);
+            }
+            Assert.NotNull(provider);
+        }
+
+        [Fact]
+        public void OnLoadErrorWillBeCalledOnIniLoadError()
+        {
+            // Arrange
+            File.WriteAllText(Path.Combine(_basePath, "error.ini"), @"IniKey1=IniValue1
+IniKey1=IniValue2");
+
+            FileConfigurationProvider provider = null;
+            Exception error = null;
+            Action<FileLoadExceptionContext> loadError = c =>
+            {
+                error = c.Exception;
+                provider = c.Provider;
+            };
+
+            try
+            {
+                new ConfigurationBuilder().AddIniFile("error.ini")
+                    .SetFileLoadExceptionHandler(loadError)
+                    .Build();
+            }
+            catch (FormatException e)
+            {
+                Assert.Equal(e, error);
+            }
+            Assert.NotNull(provider);
+        }
+
+        [Fact]
+        public void OnLoadErrorCanIgnoreErrors()
+        {
+            // Arrange
+            File.WriteAllText(Path.Combine(_basePath, "error.json"), @"{""JsonKey1"": ");
+
+            FileConfigurationProvider provider = null;
+            Action<FileLoadExceptionContext> jsonLoadError = c =>
+            {
+                provider = c.Provider;
+                c.Ignore = true;
+            };
+
+            new ConfigurationBuilder()
+                .Add(new JsonConfigurationSource { Path = "error.json", OnLoadException = jsonLoadError })
+                .Build();
+
+            Assert.NotNull(provider);
+        }
+
+        [Fact]
         public void CanSetValuesAndReloadValues()
         {
             // Arrange
@@ -426,6 +516,26 @@ CommonKey3:CommonKey4=IniValue6";
             // Recover values by reloading
             config.Reload();
             Assert.Equal("XmlValue6", config["CommonKey1:CommonKey2:CommonKey3:CommonKey4"]);
+        }
+
+        [Fact]
+        public async Task ReloadOnChangeWorksAfterError()
+        {
+            File.WriteAllText(Path.Combine(_basePath, "reload.json"), @"{""JsonKey1"": ""JsonValue1""}");
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("reload.json", optional: false, reloadOnChange: true)
+                .Build();
+            Assert.Equal("JsonValue1", config["JsonKey1"]);
+
+            // Introduce an error and make sure the old key is removed
+            File.WriteAllText(Path.Combine(_basePath, "reload.json"), @"{""JsonKey1"": ");
+            await Task.Delay(2000); // wait for notification
+            Assert.Null(config["JsonKey1"]);
+
+            // Update the file again to make sure the config is updated
+            File.WriteAllText(Path.Combine(_basePath, "reload.json"), @"{""JsonKey1"": ""JsonValue2""}");
+            await Task.Delay(1100); // wait for notification
+            Assert.Equal("JsonValue2", config["JsonKey1"]);
         }
 
         [Fact]
@@ -483,8 +593,7 @@ CommonKey3:CommonKey4=IniValue6";
             //Assert.True(token2.HasChanged, "Deleted");
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)] // File watching is flaky on Linux CI
+        [Fact]
         public async Task CreatingOptionalFileInNonExistentDirectoryWillReload()
         {
             var directory = Path.Combine(_basePath, Path.GetRandomFileName());
@@ -512,7 +621,7 @@ CommonKey3:CommonKey4=IniValue6";
             File.WriteAllText(iniFile, @"IniKey1 = IniValue1");
             File.WriteAllText(xmlFile, @"<settings XmlKey1=""XmlValue1""/>");
 
-            await Task.Delay(2000);
+            await Task.Delay(1100);
 
             Assert.Equal("JsonValue1", config["JsonKey1"]);
             Assert.Equal("IniValue1", config["IniKey1"]);
@@ -551,7 +660,7 @@ CommonKey3:CommonKey4=IniValue6";
             File.Delete(iniFile);
             File.Delete(xmlFile);
 
-            await Task.Delay(2000);
+            await Task.Delay(1100);
 
             Assert.Null(config["JsonKey1"]);
             Assert.Null(config["IniKey1"]);
@@ -559,8 +668,7 @@ CommonKey3:CommonKey4=IniValue6";
             Assert.True(token.HasChanged);
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)] // File watching is flaky on Linux CI
+        [Fact]
         public async Task CreatingWritingDeletingCreatingFileWillReload()
         {
             var iniFile = Path.Combine(_basePath, Path.GetRandomFileName());
@@ -584,7 +692,7 @@ CommonKey3:CommonKey4=IniValue6";
             File.WriteAllText(iniFile, @"IniKey1 = IniValue1");
             File.WriteAllText(xmlFile, @"<settings XmlKey1=""XmlValue1""/>");
 
-            await Task.Delay(2000);
+            await Task.Delay(1100);
 
             Assert.Equal("JsonValue1", config["JsonKey1"]);
             Assert.Equal("IniValue1", config["IniKey1"]);
@@ -597,7 +705,7 @@ CommonKey3:CommonKey4=IniValue6";
             File.WriteAllText(iniFile, @"IniKey1 = IniValue2");
             File.WriteAllText(xmlFile, @"<settings XmlKey1=""XmlValue2""/>");
 
-            await Task.Delay(2000);
+            await Task.Delay(1100);
 
             Assert.Equal("JsonValue2", config["JsonKey1"]);
             Assert.Equal("IniValue2", config["IniKey1"]);
@@ -612,7 +720,7 @@ CommonKey3:CommonKey4=IniValue6";
             File.Delete(iniFile);
             File.Delete(xmlFile);
 
-            await Task.Delay(2000);
+            await Task.Delay(1100);
 
             Assert.Null(config["JsonKey1"]);
             Assert.Null(config["IniKey1"]);
@@ -625,7 +733,7 @@ CommonKey3:CommonKey4=IniValue6";
             File.WriteAllText(iniFile, @"IniKey1 = IniValue1");
             File.WriteAllText(xmlFile, @"<settings XmlKey1=""XmlValue1""/>");
 
-            await Task.Delay(2000);
+            await Task.Delay(1100);
 
             Assert.Equal("JsonValue1", config["JsonKey1"]);
             Assert.Equal("IniValue1", config["IniKey1"]);

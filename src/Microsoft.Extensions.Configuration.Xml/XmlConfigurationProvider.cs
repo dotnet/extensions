@@ -33,12 +33,12 @@ namespace Microsoft.Extensions.Configuration.Xml
             var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             var readerSettings = new XmlReaderSettings()
-                {
-                    CloseInput = false, // caller will close the stream
-                    DtdProcessing = DtdProcessing.Prohibit,
-                    IgnoreComments = true,
-                    IgnoreWhitespace = true
-                };
+            {
+                CloseInput = false, // caller will close the stream
+                DtdProcessing = DtdProcessing.Prohibit,
+                IgnoreComments = true,
+                IgnoreWhitespace = true
+            };
 
             using (var reader = Decryptor.CreateDecryptingXmlReader(stream, readerSettings))
             {

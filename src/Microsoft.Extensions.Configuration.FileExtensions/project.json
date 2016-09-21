@@ -29,7 +29,8 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "System.AppContext": "4.1.0-*"
+        "System.AppContext": "4.1.0-*",
+        "System.Threading.Thread": "4.0.0-*"
       }
     }
   }
