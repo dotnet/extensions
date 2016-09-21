@@ -19,6 +19,8 @@ namespace Microsoft.Extensions.RazorViews
     /// </summary>
     internal abstract class BaseView
     {
+        private static readonly Encoding UTF8NoBOM = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
         /// <summary>
         /// The request context
         /// </summary>
@@ -63,7 +65,7 @@ namespace Microsoft.Extensions.RazorViews
             Context = context;
             Request = Context.Request;
             Response = Context.Response;
-            Output = new StreamWriter(Response.Body, Encoding.UTF8, 4096, leaveOpen: true);
+            Output = new StreamWriter(Response.Body, UTF8NoBOM, 4096, leaveOpen: true);
             await ExecuteAsync();
             Output.Dispose();
         }
