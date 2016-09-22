@@ -22,16 +22,21 @@ namespace Microsoft.AspNetCore.Testing
         //
         // UICulture => Language
         public CultureReplacer(string culture = _defaultCultureName, string uiCulture = _defaultUICultureName)
+            : this(new CultureInfo(culture), new CultureInfo(uiCulture))
+        {
+        }
+
+        public CultureReplacer(CultureInfo culture, CultureInfo uiCulture)
         {
             _originalCulture = CultureInfo.CurrentCulture;
             _originalUICulture = CultureInfo.CurrentUICulture;
             _threadId = Thread.CurrentThread.ManagedThreadId;
 #if NET451
-            Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-            Thread.CurrentThread.CurrentUICulture = new CultureInfo(uiCulture);
+            Thread.CurrentThread.CurrentCulture = culture;
+            Thread.CurrentThread.CurrentUICulture = uiCulture;
 #else
-            CultureInfo.CurrentCulture = new CultureInfo(culture);
-            CultureInfo.CurrentUICulture = new CultureInfo(uiCulture);
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = uiCulture;
 #endif
         }
 
