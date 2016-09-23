@@ -23,6 +23,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             public int Integer { get; set; }
             public bool Boolean { get; set; }
             public virtual string Virtual { get; set; }
+            public object Object { get; set; }
 
             public string PrivateSetter { get; private set; }
             public string ProtectedSetter { get; protected set; }
@@ -183,6 +184,23 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             Assert.True(config.GetValue<bool?>("Boolean"));
             Assert.Equal(-2, config.GetValue<int?>("Integer"));
             Assert.Equal(11, config.GetValue<int?>("Nested:Integer"));
+        }
+
+        [Fact]
+        public void CanBindToObjectProperty()
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {"Object", "whatever" }
+            };
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
+            var config = configurationBuilder.Build();
+
+            var options = new ComplexOptions();
+            config.Bind(options);
+
+            Assert.Equal("whatever", options.Object);
         }
 
         [Fact]

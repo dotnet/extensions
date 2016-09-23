@@ -380,6 +380,11 @@ namespace Microsoft.Extensions.Configuration
 
         private static object ConvertValue(Type type, string value)
         {
+            if (type == typeof(object))
+            {
+                return value;
+            }
+
             if (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
                 if (string.IsNullOrEmpty(value))
