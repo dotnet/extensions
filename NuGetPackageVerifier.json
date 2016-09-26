@@ -6,8 +6,7 @@
         "packages": {
             "Microsoft.Extensions.CommandLineUtils": { },
             "Microsoft.Extensions.ObjectPool": { },
-            "Microsoft.Extensions.Primitives": { },
-            "Microsoft.Extensions.AwaitableStream": { }
+            "Microsoft.Extensions.Primitives": { }
         }
     },
     "adx-nonshipping": {
@@ -19,6 +18,7 @@
             "Microsoft.Extensions.CopyOnWriteDictionary.Sources": { },
             "Microsoft.Extensions.DotnetToolDispatcher.Sources": { },
             "Microsoft.Extensions.HashCodeCombiner.Sources": { },
+            "Microsoft.Extensions.Process.Sources": { },
             "Microsoft.Extensions.PropertyActivator.Sources": { },
             "Microsoft.Extensions.PropertyHelper.Sources": { },
             "Microsoft.Extensions.RazorViews.Sources": { },
@@ -26,7 +26,8 @@
             "Microsoft.Extensions.SecurityHelper.Sources": { },
             "Microsoft.Extensions.StackTrace.Sources": { },
             "Microsoft.Extensions.TaskCache.Sources": { },
-            "Microsoft.Extensions.TypeNameHelper.Sources": { }
+            "Microsoft.Extensions.TypeNameHelper.Sources": { },
+            "Microsoft.Extensions.WebEncoders.Sources": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
