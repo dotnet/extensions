@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.FileProviders.Physical;
@@ -225,33 +224,30 @@ namespace Microsoft.Extensions.FileProviders
                 }
 
                 var fullPath = GetFullPath(subpath);
-                if (fullPath != null)
+                if (fullPath == null || !Directory.Exists(fullPath))
                 {
-                    var directoryInfo = new DirectoryInfo(fullPath);
-                    if (!directoryInfo.Exists)
-                    {
-                        return new NotFoundDirectoryContents();
-                    }
-
-                    var physicalInfos = directoryInfo
-                        .EnumerateFileSystemInfos()
-                        .Where(info => !FileSystemInfoHelper.IsHiddenFile(info));
-                    var virtualInfos = new List<IFileInfo>();
-                    foreach (var fileSystemInfo in physicalInfos)
-                    {
-                        var fileInfo = fileSystemInfo as FileInfo;
-                        if (fileInfo != null)
-                        {
-                            virtualInfos.Add(new PhysicalFileInfo(fileInfo));
-                        }
-                        else
-                        {
-                            virtualInfos.Add(new PhysicalDirectoryInfo((DirectoryInfo) fileSystemInfo));
-                        }
-                    }
-
-                    return new EnumerableDirectoryContents(virtualInfos);
+                    return new NotFoundDirectoryContents();
                 }
+
+                var contents = new DirectoryInfo(fullPath)
+                    .EnumerateFileSystemInfos()
+                    .Where(info => !FileSystemInfoHelper.IsHiddenFile(info))
+                    .Select<FileSystemInfo, IFileInfo>(info =>
+                    {
+                        // TODO use pattern matching in C# 7
+                        if (info is FileInfo)
+                        {
+                            return new PhysicalFileInfo((FileInfo)info);
+                        }
+                        else if (info is DirectoryInfo)
+                        {
+                            return new PhysicalDirectoryInfo((DirectoryInfo)info);
+                        }
+                        // shouldn't happen unless BCL introduces new implementation of base type
+                        throw new InvalidOperationException("Unexpected type of FileSystemInfo");
+                    });
+
+                return new EnumerableDirectoryContents(contents);
             }
             catch (DirectoryNotFoundException)
             {

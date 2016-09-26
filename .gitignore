@@ -30,3 +30,5 @@ project.lock.json
 .build
 .testPublish
 .idea/
+*.nuget.props
+*.nuget.targets
