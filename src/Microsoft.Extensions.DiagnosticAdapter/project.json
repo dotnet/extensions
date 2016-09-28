@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0-*",
-    "System.Diagnostics.DiagnosticSource": "4.0.0-*"
+    "NETStandard.Library": "1.6.1-*",
+    "System.Diagnostics.DiagnosticSource": "4.3.0-*"
   },
   "buildOptions": {
     "define": [
@@ -30,12 +31,9 @@
   "frameworks": {
     "netstandard1.1": {
       "dependencies": {
-        "System.ComponentModel": "4.0.1-*",
-        "System.Collections.Concurrent": "4.0.12-*",
-        "System.Reflection.Emit": "4.0.1-*",
-        "System.Reflection.Emit.Lightweight": "4.0.1-*",
-        "System.Reflection.Extensions": "4.0.1-*",
-        "System.Runtime.Extensions": "4.1.0-*"
+        "System.ComponentModel": "4.3.0-*",
+        "System.Reflection.Emit": "4.3.0-*",
+        "System.Reflection.Emit.Lightweight": "4.3.0-*"
       }
     }
   }
