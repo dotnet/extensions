@@ -20,8 +20,8 @@
       "version": "1.1.0-*",
       "type": "build"
     },
+    "NETStandard.Library": "1.6.1-*",
     "Newtonsoft.Json": "9.0.1",
-    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-*",
     "xunit": "2.2.0-*"
   },
   "frameworks": {
@@ -46,17 +46,8 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "System.Console": "4.0.0-*",
-        "System.Diagnostics.Process": "4.1.0-*",
-        "System.Globalization": "4.0.11-*",
-        "System.IO.FileSystem": "4.0.1-*",
-        "System.Linq": "4.1.0-*",
-        "System.Reflection": "4.1.0-*",
-        "System.Resources.ResourceManager": "4.0.1-*",
-        "System.Runtime.Extensions": "4.1.0-*",
-        "System.Runtime.InteropServices": "4.1.0-*",
-        "System.Threading.Thread": "4.0.0-*",
-        "System.Xml.XDocument": "4.0.11-*"
+        "System.Diagnostics.Process": "4.3.0-*",
+        "System.Threading.Thread": "4.3.0-*"
       }
     }
   }
