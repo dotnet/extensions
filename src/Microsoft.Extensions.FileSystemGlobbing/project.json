@@ -25,20 +25,13 @@
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
       "version": "1.1.0-*",
       "type": "build"
-    }
+    },
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net45": {
       "dependencies": {}
     },
-    "netstandard1.3": {
-      "dependencies": {
-        "System.Collections": "4.0.11-*",
-        "System.IO.FileSystem": "4.0.1-*",
-        "System.Linq": "4.1.0-*",
-        "System.Resources.ResourceManager": "4.0.1-*",
-        "System.Runtime.Extensions": "4.1.0-*"
-      }
-    }
+    "netstandard1.3": {}
   }
 }

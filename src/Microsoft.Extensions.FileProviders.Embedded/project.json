@@ -17,25 +17,18 @@
     ]
   },
   "dependencies": {
+    "Microsoft.Extensions.FileProviders.Abstractions": "1.1.0-*",
     "Microsoft.Extensions.FileProviders.Sources": {
       "version": "1.1.0-*",
       "type": "build"
     },
-    "Microsoft.Extensions.FileProviders.Abstractions": "1.1.0-*"
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "netstandard1.0": {
-      "dependencies": {
-        "System.Runtime.Extensions": "4.1.0-*"
-      }
+      "dependencies": {}
     },
-    "netstandard1.5": {
-      "dependencies": {
-        "System.IO.FileSystem": "4.0.1-*",
-        "System.Reflection": "4.1.0-*",
-        "System.Runtime.Extensions": "4.1.0-*"
-      }
-    },
-    "net451": { }
+    "netstandard1.5": {},
+    "net451": {}
   }
 }
