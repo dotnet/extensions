@@ -3,7 +3,8 @@
   "shared": "*.cs",
   "dependencies": {
     "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
-    "Microsoft.Extensions.PlatformAbstractions": "1.1.0-*"
+    "Microsoft.Extensions.PlatformAbstractions": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {},

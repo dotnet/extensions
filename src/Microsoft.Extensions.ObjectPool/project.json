@@ -18,16 +18,11 @@
     ],
     "xmlDoc": true
   },
-  "dependencies": {},
+  "dependencies": {
+    "NETStandard.Library": "1.6.1-*"
+  },
   "frameworks": {
     "net451": {},
-    "netstandard1.3": {
-      "dependencies": {
-        "System.Diagnostics.Debug": "4.0.11-*",
-        "System.Resources.ResourceManager": "4.0.1-*",
-        "System.Runtime.Extensions": "4.1.0-*",
-        "System.Threading": "4.0.11-*"
-      }
-    }
+    "netstandard1.3": {}
   }
 }
