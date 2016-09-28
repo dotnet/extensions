@@ -19,12 +19,15 @@
   },
   "dependencies": {
     "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*",
     "Newtonsoft.Json": "9.0.1"
   },
   "frameworks": {
     "net451": {
       "buildOptions": {
-        "define": [ "NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT" ]
+        "define": [
+          "NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT"
+        ]
       },
       "frameworkAssemblies": {
         "System.Runtime": {
@@ -32,11 +35,6 @@
         }
       }
     },
-    "netstandard1.3": {
-      "dependencies": {
-        "System.Threading": "4.0.11-*",
-        "System.Diagnostics.Tracing": "4.1.0-*"
-      }
-    }
+    "netstandard1.3": {}
   }
 }

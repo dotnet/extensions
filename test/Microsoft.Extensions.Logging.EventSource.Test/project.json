@@ -14,13 +14,15 @@
       "dependencies": {
         "Microsoft.NETCore.App": {
           "type": "platform",
-          "version": "1.0.0-*"
+          "version": "1.1.0-*"
         }
       }
     },
     "net451": {
       "buildOptions": {
-        "define": [ "NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT" ]
+        "define": [
+          "NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT"
+        ]
       }
     }
   }

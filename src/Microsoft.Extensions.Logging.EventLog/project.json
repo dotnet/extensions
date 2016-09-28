@@ -21,7 +21,8 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*"
+    "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {
