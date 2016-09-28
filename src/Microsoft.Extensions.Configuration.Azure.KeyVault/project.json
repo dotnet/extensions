@@ -18,10 +18,11 @@
     ]
   },
   "dependencies": {
+    "Microsoft.Azure.KeyVault": "1.0.0",
     "Microsoft.Extensions.Configuration": "1.1.0-*",
     "Microsoft.Extensions.Configuration.FileExtensions": "1.1.0-*",
     "Microsoft.IdentityModel.Clients.ActiveDirectory": "3.13.4",
-    "Microsoft.Azure.KeyVault": "1.0.0"
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {

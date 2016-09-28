@@ -16,13 +16,10 @@
     ]
   },
   "dependencies": {
-    "Microsoft.Extensions.Primitives": "1.1.0-*"
+    "Microsoft.Extensions.Primitives": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
-    "netstandard1.0": {
-      "dependencies": {
-        "System.Linq": "4.1.0-*"
-      }
-    }
+    "netstandard1.0": {}
   }
 }

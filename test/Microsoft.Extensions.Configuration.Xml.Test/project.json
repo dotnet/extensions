@@ -5,16 +5,16 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.Extensions.Configuration.Xml": "1.1.0-*",
-    "Microsoft.Extensions.Configuration.Test.Common": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
+    "Microsoft.Extensions.Configuration.Test.Common": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.Xml": "1.1.0-*",
     "xunit": "2.2.0-*"
   },
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.0-*",
+          "version": "1.1.0-*",
           "type": "platform"
         }
       }
@@ -26,7 +26,7 @@
         },
         "System.Xml": {
           "type": "build"
-         }
+        }
       }
     }
   },

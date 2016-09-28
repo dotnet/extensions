@@ -17,7 +17,8 @@
   },
   "dependencies": {
     "Microsoft.Extensions.Configuration": "1.1.0-*",
-    "Microsoft.Extensions.FileProviders.Physical": "1.1.0-*"
+    "Microsoft.Extensions.FileProviders.Physical": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {
@@ -29,8 +30,7 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "System.AppContext": "4.1.0-*",
-        "System.Threading.Thread": "4.0.0-*"
+        "System.Threading.Thread": "4.3.0-*"
       }
     }
   }

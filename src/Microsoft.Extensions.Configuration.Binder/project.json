@@ -16,12 +16,13 @@
     ]
   },
   "dependencies": {
-    "Microsoft.Extensions.Configuration": "1.1.0-*"
+    "Microsoft.Extensions.Configuration": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "netstandard1.1": {
       "dependencies": {
-        "System.ComponentModel.TypeConverter": "4.1.0-*"
+        "System.ComponentModel.TypeConverter": "4.3.0-*"
       }
     }
   }

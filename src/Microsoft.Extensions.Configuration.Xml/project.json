@@ -18,7 +18,8 @@
   },
   "dependencies": {
     "Microsoft.Extensions.Configuration": "1.1.0-*",
-    "Microsoft.Extensions.Configuration.FileExtensions": "1.1.0-*"
+    "Microsoft.Extensions.Configuration.FileExtensions": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {
@@ -36,9 +37,8 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "System.IO.FileSystem": "4.0.1-*",
-        "System.Xml.XmlDocument": "4.0.1-*",
-        "System.Xml.XmlSerializer": "4.0.11-*"
+        "System.Xml.XmlDocument": "4.3.0-*",
+        "System.Xml.XmlSerializer": "4.3.0-*"
       }
     }
   }

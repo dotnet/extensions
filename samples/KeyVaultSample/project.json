@@ -8,7 +8,8 @@
   "dependencies": {
     "Microsoft.Extensions.Configuration": "1.1.0-*",
     "Microsoft.Extensions.Configuration.Azure.KeyVault": "0.1.0-*",
-    "Microsoft.Extensions.Configuration.Json": "1.1.0-*"
+    "Microsoft.Extensions.Configuration.Json": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
     "net451": {
@@ -18,6 +19,5 @@
       }
     }
   },
-  "publishOptions": {
-  }
+  "publishOptions": {}
 }

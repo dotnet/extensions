@@ -7,7 +7,8 @@
   },
   "description": "Implementation of key-value pair based configuration for Microsoft.Extensions.Configuration. Includes the memory configuration provider.",
   "dependencies": {
-    "Microsoft.Extensions.Configuration.Abstractions": "1.1.0-*"
+    "Microsoft.Extensions.Configuration.Abstractions": "1.1.0-*",
+    "NETStandard.Library": "1.6.1-*"
   },
   "packOptions": {
     "repository": {
@@ -19,16 +20,6 @@
     ]
   },
   "frameworks": {
-    "netstandard1.1": {
-      "dependencies": {
-        "System.Collections": "4.0.11-*",
-        "System.Diagnostics.Debug": "4.0.11-*",
-        "System.IO": "4.1.0-*",
-        "System.Resources.ResourceManager": "4.0.1-*",
-        "System.Runtime.Extensions": "4.1.0-*",
-        "System.Runtime.InteropServices": "4.1.0-*",
-        "System.Threading": "4.0.11-*"
-      }
-    }
+    "netstandard1.1": {}
   }
 }
