@@ -129,7 +129,7 @@ namespace Microsoft.Extensions.Primitives
         public bool Equals(StringSegment other, StringComparison comparisonType)
         {
             int textLength = other.Length;
-            if (!HasValue || Length != textLength)
+            if (Length != textLength) 
             {
                 return false;
             }
@@ -175,7 +175,17 @@ namespace Microsoft.Extensions.Primitives
         /// However this is required to ensure we retain any behavior (such as hash code randomization) that
         /// string.GetHashCode has.
         /// </remarks>
-        public override int GetHashCode() => Value.GetHashCode();
+        public override int GetHashCode()
+        {
+            if (!HasValue)
+            {
+                return 0;
+            }
+            else
+            {
+                return Value.GetHashCode();
+            }
+        }
 
         /// <summary>
         /// Checks if two specified <see cref="StringSegment"/> have the same value.
