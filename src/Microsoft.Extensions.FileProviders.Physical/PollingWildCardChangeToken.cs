@@ -20,12 +20,13 @@ namespace Microsoft.Extensions.FileProviders.Physical
     {
         // Internal for unit testing.
         internal static readonly TimeSpan DefaultPollingInterval = TimeSpan.FromSeconds(4);
+        private static readonly byte[] Separator = Encoding.Unicode.GetBytes("|");
         private readonly object _enumerationLock = new object();
         private readonly DirectoryInfoBase _directoryInfo;
         private readonly Matcher _matcher;
         private bool _changed;
         private DateTime? _lastScanTimeUtc;
-        private byte[] _fileNameBuffer;
+        private byte[] _byteBuffer;
         private byte[] _previousHash;
 
         /// <summary>
@@ -100,14 +101,15 @@ namespace Microsoft.Extensions.FileProviders.Physical
             {
                 foreach (var file in files)
                 {
-                    if (_lastScanTimeUtc != null && _lastScanTimeUtc < GetLastWriteUtc(file.Path))
+                    var lastWriteTimeUtc = GetLastWriteUtc(file.Path);
+                    if (_lastScanTimeUtc != null && _lastScanTimeUtc < lastWriteTimeUtc)
                     {
                         // _lastScanTimeUtc is the greatest timestamp that any last writes could have been.
                         // If a file has a newer timestamp than this value, it must've changed.
                         return true;
                     }
 
-                    ComputeHash(sha256, file.Path);
+                    ComputeHash(sha256, file.Path, lastWriteTimeUtc);
                 }
 
                 var currentHash = sha256.GetHashAndReset();
@@ -153,16 +155,28 @@ namespace Microsoft.Extensions.FileProviders.Physical
             return true;
         }
 
-        private void ComputeHash(IncrementalHash sha256, string path)
+        private void ComputeHash(IncrementalHash sha256, string path, DateTime lastChangedUtc)
         {
             var byteCount = Encoding.Unicode.GetByteCount(path);
-            if (_fileNameBuffer == null || byteCount > _fileNameBuffer.Length)
+            if (_byteBuffer == null || byteCount > _byteBuffer.Length)
             {
-                _fileNameBuffer = new byte[Math.Max(byteCount, 256)];
+                _byteBuffer = new byte[Math.Max(byteCount, 256)];
             }
 
-            var length = Encoding.Unicode.GetBytes(path, 0, path.Length, _fileNameBuffer, 0);
-            sha256.AppendData(_fileNameBuffer, 0, length);
+            var length = Encoding.Unicode.GetBytes(path, 0, path.Length, _byteBuffer, 0);
+            sha256.AppendData(_byteBuffer, 0, length);
+            sha256.AppendData(Separator, 0, Separator.Length);
+
+            Debug.Assert(_byteBuffer.Length > sizeof(long));
+            unsafe
+            {
+                fixed (byte* b = _byteBuffer)
+                {
+                    *((long*)b) = lastChangedUtc.Ticks;
+                }
+            }
+            sha256.AppendData(_byteBuffer, 0, sizeof(long));
+            sha256.AppendData(Separator, 0, Separator.Length);
         }
 
         IDisposable IChangeToken.RegisterChangeCallback(Action<object> callback, object state) =>

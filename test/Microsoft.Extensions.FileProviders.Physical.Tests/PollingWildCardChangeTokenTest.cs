@@ -139,6 +139,34 @@ namespace Microsoft.Extensions.FileProviders.Physical
             Assert.True(result2);
         }
 
+        [Fact]
+        public void HasChanged_ReturnsTrueIfFileWasModifiedButRetainedAnOlderTimestamp()
+        {
+            // Arrange
+            var filePath1 = "1.txt";
+            var filePath2 = "2.txt";
+            var directoryInfo = new Mock<DirectoryInfoBase>();
+            directoryInfo.Setup(d => d.EnumerateFileSystemInfos())
+                .Returns(new[] { CreateFile(filePath1), CreateFile(filePath2) });
+            var clock = new TestClock();
+            var token = new TestablePollingWildCardChangeToken(directoryInfo.Object, "**/*.txt", clock);
+
+            // Act - 1
+            clock.Increment();
+            var result1 = token.HasChanged;
+
+            // Assert - 1
+            Assert.False(result1);
+
+            // Act - 2
+            token.FileTimestampLookup[filePath2] = clock.UtcNow.AddMilliseconds(-100);
+            clock.Increment();
+            var result2 = token.HasChanged;
+
+            // Assert - 2
+            Assert.True(result2);
+        }
+
         private static FileInfoBase CreateFile(string filePath)
         {
             var fileInfo = new Mock<FileInfoBase>();
