@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.FileProviders
@@ -13,8 +12,6 @@ namespace Microsoft.Extensions.FileProviders
     /// </summary>
     internal class CompositeFileChangeToken : IChangeToken
     {
-        private readonly IList<IChangeToken> _changeTokens;
-
         /// <summary>
         /// Creates a new instance of <see cref="CompositeFileChangeToken"/>.
         /// </summary>
@@ -25,16 +22,18 @@ namespace Microsoft.Extensions.FileProviders
             {
                 throw new ArgumentNullException(nameof(changeTokens));
             }
-            _changeTokens = changeTokens;
+
+            ChangeTokens = changeTokens;
         }
+
+        public IList<IChangeToken> ChangeTokens { get; }
 
         public IDisposable RegisterChangeCallback(Action<object> callback, object state)
         {
-            var disposables = new List<IDisposable>();
-            for (var i = 0; i < _changeTokens.Count; i++)
+            var disposables = new List<IDisposable>(ChangeTokens.Count);
+            for (var i = 0; i < ChangeTokens.Count; i++)
             {
-                var changeToken = _changeTokens[i];
-                var disposable = _changeTokens[i].RegisterChangeCallback(callback, state);
+                var disposable = ChangeTokens[i].RegisterChangeCallback(callback, state);
                 disposables.Add(disposable);
             }
             return new CompositeDisposable(disposables);
@@ -42,12 +41,34 @@ namespace Microsoft.Extensions.FileProviders
 
         public bool HasChanged
         {
-            get { return _changeTokens.Any(token => token.HasChanged); }
+            get
+            {
+                for (var i = 0; i < ChangeTokens.Count; i++)
+                {
+                    if (ChangeTokens[i].HasChanged)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
         }
 
         public bool ActiveChangeCallbacks
         {
-            get { return _changeTokens.Any(token => token.ActiveChangeCallbacks); }
+            get
+            {
+                for (var i = 0; i < ChangeTokens.Count; i++)
+                {
+                    if (ChangeTokens[i].ActiveChangeCallbacks)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
         }
     }
 }

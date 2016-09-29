@@ -3,13 +3,11 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileSystemGlobbing;
-using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.FileProviders.Physical
@@ -24,11 +22,13 @@ namespace Microsoft.Extensions.FileProviders.Physical
     /// </summary>
     public class PhysicalFilesWatcher : IDisposable
     {
-        private readonly ConcurrentDictionary<string, ChangeTokenInfo> _matchInfoCache =
+        private readonly ConcurrentDictionary<string, ChangeTokenInfo> _filePathTokenLookup =
+            new ConcurrentDictionary<string, ChangeTokenInfo>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, ChangeTokenInfo> _wildcardTokenLookup =
             new ConcurrentDictionary<string, ChangeTokenInfo>(StringComparer.OrdinalIgnoreCase);
 
         private readonly FileSystemWatcher _fileWatcher;
-        private readonly object _lockObject = new object();
+        private readonly object _fileWatcherLock = new object();
         private readonly string _root;
         private readonly bool _pollForChanges;
 
@@ -82,38 +82,37 @@ namespace Microsoft.Extensions.FileProviders.Physical
 
             filter = NormalizePath(filter);
 
+            var changeToken = GetOrAddChangeToken(filter);
+            TryEnableFileSystemWatcher();
+
+            return changeToken;
+        }
+
+        private IChangeToken GetOrAddChangeToken(string pattern)
+        {
             IChangeToken changeToken;
-            var isWildCard = filter.IndexOf('*') != -1;
-            if (isWildCard || IsDirectoryPath(filter))
+            var isWildCard = pattern.IndexOf('*') != -1;
+            if (isWildCard || IsDirectoryPath(pattern))
             {
-                changeToken = ResolveFileTokensForGlobbingPattern(filter);
+                changeToken = GetOrAddWildcardChangeToken(pattern);
             }
             else
             {
-                changeToken = GetOrAddChangeToken(filter);
-            }
-
-            lock (_lockObject)
-            {
-                if (_matchInfoCache.Count > 0 && !_fileWatcher.EnableRaisingEvents)
-                {
-                    // Perf: Turn on the file monitoring if there is something to monitor.
-                    _fileWatcher.EnableRaisingEvents = true;
-                }
+                changeToken = GetOrAddFilePathChangeToken(pattern);
             }
 
             return changeToken;
         }
 
-        private IChangeToken GetOrAddChangeToken(string filePath)
+        private IChangeToken GetOrAddFilePathChangeToken(string filePath)
         {
             ChangeTokenInfo tokenInfo;
-            if (!_matchInfoCache.TryGetValue(filePath, out tokenInfo))
+            if (!_filePathTokenLookup.TryGetValue(filePath, out tokenInfo))
             {
                 var cancellationTokenSource = new CancellationTokenSource();
                 var cancellationChangeToken = new CancellationChangeToken(cancellationTokenSource.Token);
                 tokenInfo = new ChangeTokenInfo(cancellationTokenSource, cancellationChangeToken);
-                tokenInfo = _matchInfoCache.GetOrAdd(filePath, tokenInfo);
+                tokenInfo = _filePathTokenLookup.GetOrAdd(filePath, tokenInfo);
             }
 
             IChangeToken changeToken = tokenInfo.ChangeToken;
@@ -132,22 +131,33 @@ namespace Microsoft.Extensions.FileProviders.Physical
             return changeToken;
         }
 
-        private IChangeToken ResolveFileTokensForGlobbingPattern(string filter)
+        private IChangeToken GetOrAddWildcardChangeToken(string pattern)
         {
-            var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
-            matcher.AddInclude(filter);
-
-            var directoryBase = new DirectoryInfoWrapper(new DirectoryInfo(_root));
-            var result = matcher.Execute(directoryBase);
-
-            var changeTokens = new List<IChangeToken>();
-            foreach (var file in result.Files)
+            ChangeTokenInfo tokenInfo;
+            if (!_wildcardTokenLookup.TryGetValue(pattern, out tokenInfo))
             {
-                var changeToken = GetOrAddChangeToken(file.Path);
-                changeTokens.Add(changeToken);
+                var cancellationTokenSource = new CancellationTokenSource();
+                var cancellationChangeToken = new CancellationChangeToken(cancellationTokenSource.Token);
+                var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+                matcher.AddInclude(pattern);
+                tokenInfo = new ChangeTokenInfo(cancellationTokenSource, cancellationChangeToken, matcher);
+                tokenInfo = _wildcardTokenLookup.GetOrAdd(pattern, tokenInfo);
             }
 
-            return new CompositeFileChangeToken(changeTokens);
+            IChangeToken changeToken = tokenInfo.ChangeToken;
+            if (_pollForChanges)
+            {
+                // The expiry of CancellationChangeToken is controlled by this type and consequently we can cache it.
+                // PollingFileChangeToken on the other hand manages its own lifetime and consequently we cannot cache it.
+                changeToken = new CompositeFileChangeToken(
+                    new[]
+                    {
+                        changeToken,
+                        new PollingWildCardChangeToken(_root, pattern)
+                    });
+            }
+
+            return changeToken;
         }
 
         /// <summary>
@@ -198,7 +208,7 @@ namespace Microsoft.Extensions.FileProviders.Physical
         private void OnError(object sender, ErrorEventArgs e)
         {
             // Notify all cache entries on error.
-            foreach (var path in _matchInfoCache.Keys)
+            foreach (var path in _filePathTokenLookup.Keys)
             {
                 ReportChangeForMatchedEntries(path);
             }
@@ -230,21 +240,54 @@ namespace Microsoft.Extensions.FileProviders.Physical
         {
             path = NormalizePath(path);
 
+            var matched = false;
             ChangeTokenInfo matchInfo;
-            if (_matchInfoCache.TryRemove(path, out matchInfo))
+            if (_filePathTokenLookup.TryRemove(path, out matchInfo))
             {
                 CancelToken(matchInfo);
+                matched = true;
+            }
 
-                if (_matchInfoCache.Count == 0)
+            foreach (var wildCardEntry in _wildcardTokenLookup)
+            {
+                var matchResult = wildCardEntry.Value.Matcher.Match(path);
+                if (matchResult.HasMatches &&
+                    _wildcardTokenLookup.TryRemove(wildCardEntry.Key, out matchInfo))
                 {
-                    lock (_lockObject)
-                    {
-                        if (_matchInfoCache.Count == 0 && _fileWatcher.EnableRaisingEvents)
-                        {
-                            // Perf: Turn off the file monitoring if no files to monitor.
-                            _fileWatcher.EnableRaisingEvents = false;
-                        }
-                    }
+                    CancelToken(matchInfo);
+                    matched = true;
+                }
+            }
+
+            if (matched)
+            {
+                TryDisableFileSystemWatcher();
+            }
+        }
+
+        private void TryDisableFileSystemWatcher()
+        {
+            lock (_fileWatcherLock)
+            {
+                if (_filePathTokenLookup.IsEmpty &&
+                    _wildcardTokenLookup.IsEmpty &&
+                    _fileWatcher.EnableRaisingEvents)
+                {
+                    // Perf: Turn off the file monitoring if no files to monitor.
+                    _fileWatcher.EnableRaisingEvents = false;
+                }
+            }
+        }
+
+        private void TryEnableFileSystemWatcher()
+        {
+            lock (_fileWatcherLock)
+            {
+                if ((!_filePathTokenLookup.IsEmpty || !_wildcardTokenLookup.IsEmpty) &&
+                    !_fileWatcher.EnableRaisingEvents)
+                {
+                    // Perf: Turn off the file monitoring if no files to monitor.
+                    _fileWatcher.EnableRaisingEvents = true;
                 }
             }
         }
@@ -253,10 +296,9 @@ namespace Microsoft.Extensions.FileProviders.Physical
 
         private static bool IsDirectoryPath(string path)
         {
-            return path.Length > 0
-                   &&
-                   (path[path.Length - 1] == Path.DirectorySeparatorChar ||
-                    path[path.Length - 1] == Path.AltDirectorySeparatorChar);
+            return path.Length > 0 &&
+                (path[path.Length - 1] == Path.DirectorySeparatorChar ||
+                path[path.Length - 1] == Path.AltDirectorySeparatorChar);
         }
 
         private static void CancelToken(ChangeTokenInfo matchInfo)
@@ -283,14 +325,25 @@ namespace Microsoft.Extensions.FileProviders.Physical
             public ChangeTokenInfo(
                 CancellationTokenSource tokenSource,
                 CancellationChangeToken changeToken)
+                : this(tokenSource, changeToken, matcher: null)
+            {
+            }
+
+            public ChangeTokenInfo(
+                CancellationTokenSource tokenSource,
+                CancellationChangeToken changeToken,
+                Matcher matcher)
             {
                 TokenSource = tokenSource;
                 ChangeToken = changeToken;
+                Matcher = matcher;
             }
 
             public CancellationTokenSource TokenSource { get; }
 
             public CancellationChangeToken ChangeToken { get; }
+
+            public Matcher Matcher { get; }
         }
     }
 }

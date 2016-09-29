@@ -1288,5 +1288,60 @@ namespace Microsoft.Extensions.FileProviders
                 }
             }
         }
+
+        [Fact]
+        public async Task WildCardToken_RaisesEventsForNewFilesAdded()
+        {
+            // Arrange
+            using (var root = new DisposableFileSystem())
+            using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+            using (var physicalFilesWatcher = new PhysicalFilesWatcher(
+                root.RootPath + Path.DirectorySeparatorChar,
+                fileSystemWatcher,
+                pollForChanges: false))
+            using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+            {
+                var token = provider.Watch("**/*.txt");
+                var directory = Path.Combine(root.RootPath, "subdir1", "subdir2");
+
+                // Act
+                fileSystemWatcher.CallOnCreated(new FileSystemEventArgs(WatcherChangeTypes.Created, directory, "a.txt"));
+                await Task.Delay(WaitTimeForTokenToFire);
+
+                // Assert
+                Assert.True(token.HasChanged);
+            }
+        }
+
+        [Fact]
+        public async Task WildCardToken_RaisesEventsWhenFileSystemWatcherDoesNotFire()
+        {
+            // Arrange
+            using (var root = new DisposableFileSystem())
+            using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+            using (var physicalFilesWatcher = new PhysicalFilesWatcher(
+                root.RootPath + Path.DirectorySeparatorChar,
+                fileSystemWatcher,
+                pollForChanges: true))
+            using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+            {
+                var filePath = Path.Combine(root.RootPath, "subdir1", "subdir2", "file.txt");
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+                File.WriteAllText(filePath, "some-content");
+                var token = provider.Watch("**/*.txt");
+                var compositeToken = Assert.IsType<CompositeFileChangeToken>(token);
+                Assert.Equal(2, compositeToken.ChangeTokens.Count);
+                var pollingChangeToken = Assert.IsType<PollingWildCardChangeToken>(compositeToken.ChangeTokens[1]);
+                pollingChangeToken.PollingInterval = TimeSpan.FromMilliseconds(WaitTimeForTokenToFire);
+
+                // Act
+                fileSystemWatcher.EnableRaisingEvents = false;
+                File.Delete(filePath);
+                await Task.Delay(WaitTimeForTokenToFire);
+
+                // Assert
+                Assert.True(token.HasChanged);
+            }
+        }
     }
 }

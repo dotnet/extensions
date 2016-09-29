@@ -10,6 +10,7 @@
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Testing": "1.1.0-*",
     "Microsoft.Extensions.FileProviders.Physical": "1.1.0-*",
+    "Moq": "4.6.38-alpha",
     "xunit": "2.2.0-*"
   },
   "testRunner": "xunit",

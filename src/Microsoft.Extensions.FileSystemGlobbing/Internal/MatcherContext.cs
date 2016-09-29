@@ -13,9 +13,9 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Internal
     public class MatcherContext
     {
         private readonly DirectoryInfoBase _root;
-        private readonly IList<IPatternContext> _includePatternContexts;
-        private readonly IList<IPatternContext> _excludePatternContexts;
-        private readonly IList<FilePatternMatch> _files;
+        private readonly List<IPatternContext> _includePatternContexts;
+        private readonly List<IPatternContext> _excludePatternContexts;
+        private readonly List<FilePatternMatch> _files;
 
         private readonly HashSet<string> _declaredLiteralFolderSegmentInString;
         private readonly HashSet<LiteralPathSegment> _declaredLiteralFolderSegments = new HashSet<LiteralPathSegment>();
@@ -26,10 +26,11 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Internal
 
         private readonly StringComparison _comparisonType;
 
-        public MatcherContext(IEnumerable<IPattern> includePatterns,
-                              IEnumerable<IPattern> excludePatterns,
-                              DirectoryInfoBase directoryInfo,
-                              StringComparison comparison)
+        public MatcherContext(
+            IEnumerable<IPattern> includePatterns,
+            IEnumerable<IPattern> excludePatterns,
+            DirectoryInfoBase directoryInfo,
+            StringComparison comparison)
         {
             _root = directoryInfo;
             _files = new List<FilePatternMatch>();
@@ -47,7 +48,7 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Internal
 
             Match(_root, parentRelativePath: null);
 
-            return new PatternMatchingResult(_files);
+            return new PatternMatchingResult(_files, _files.Count > 0);
         }
 
         private void Match(DirectoryInfoBase directory, string parentRelativePath)
