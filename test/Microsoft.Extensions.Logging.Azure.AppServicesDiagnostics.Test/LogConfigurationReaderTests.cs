@@ -9,7 +9,7 @@ using Moq;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Test
+namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Test
 {
     public class LogConfigurationReaderTests
     {

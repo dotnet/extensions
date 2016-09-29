@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Internal
+namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Internal
 {
     /// <summary>
     /// Represents the default implementation of the <see cref="IWebAppLogConfigurationReader"/>.

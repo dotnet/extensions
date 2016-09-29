@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Test
+namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Test
 {
     internal class TestSink : ILogEventSink
     {

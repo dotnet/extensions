@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Internal;
 using Serilog;
 using Xunit;
 
-namespace Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Test
+namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Test
 {
     public class BackgroundSinkTests
     {

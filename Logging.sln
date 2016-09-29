@@ -34,9 +34,9 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Loggin
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.EventSource.Test", "test\Microsoft.Extensions.Logging.EventSource.Test\Microsoft.Extensions.Logging.EventSource.Test.xproj", "{F3B898C3-D441-4207-A92B-420D6E73CA5D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.AzureWebAppDiagnostics", "src\Microsoft.Extensions.Logging.AzureWebAppDiagnostics\Microsoft.Extensions.Logging.AzureWebAppDiagnostics.xproj", "{854133D5-6252-4A0A-B682-BDBB83B62AE6}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics", "src\Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics\Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.xproj", "{854133D5-6252-4A0A-B682-BDBB83B62AE6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Test", "test\Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Test\Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Test.xproj", "{B4A43221-DE95-47BB-A2D4-2DC761FC9419}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Test", "test\Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Test\Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Test.xproj", "{B4A43221-DE95-47BB-A2D4-2DC761FC9419}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

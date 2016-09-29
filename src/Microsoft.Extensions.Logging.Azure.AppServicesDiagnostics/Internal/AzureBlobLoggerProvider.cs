@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.WindowsAzure.Storage.Blob;
 using Serilog;
 using Serilog.Core;
 using Serilog.Formatting.Display;
-using Microsoft.WindowsAzure.Storage.Blob;
 
-namespace Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Internal
+namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Internal
 {
     /// <summary>
     /// The implemenation of logger provider that creates instances of <see cref="Serilog.Core.Logger"/>.

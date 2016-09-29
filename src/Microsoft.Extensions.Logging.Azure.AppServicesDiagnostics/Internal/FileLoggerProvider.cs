@@ -8,7 +8,7 @@ using Serilog.Core;
 using Serilog.Formatting.Display;
 using Serilog.Sinks.RollingFile;
 
-namespace Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Internal
+namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Internal
 {
     /// <summary>
     /// The logger provider that creates instances of <see cref="Serilog.Core.Logger"/>.

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.Logging
+namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Test
 {
     internal static class RetryHelper
     {

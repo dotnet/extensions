@@ -5,7 +5,7 @@ using System;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Internal
+namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Internal
 {
     /// <summary>
     /// The <see cref="LoggingLevelSwitch"/> implementation that runs callback

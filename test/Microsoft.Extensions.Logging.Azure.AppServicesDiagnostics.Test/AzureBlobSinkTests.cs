@@ -12,12 +12,11 @@ using Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Internal;
 using Microsoft.WindowsAzure.Storage;
 using Moq;
 using Serilog.Events;
-using Serilog.Formatting;
 using Serilog.Formatting.Display;
 using Serilog.Parsing;
 using Xunit;
 
-namespace Microsoft.Extensions.Logging.AzureWebApps.Test
+namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Test
 {
     public class AzureBlobSinkTests
     {

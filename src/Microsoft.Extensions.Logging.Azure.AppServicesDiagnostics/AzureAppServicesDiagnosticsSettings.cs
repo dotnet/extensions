@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Internal;
 
-namespace Microsoft.Extensions.Logging.AzureWebAppDiagnostics
+namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics
 {
     /// <summary>
-    /// Settings for <see cref="AzureWebAppDiagnosticsLoggerProvider"/>.
+    /// Settings for <see cref="AzureAppServicesDiagnosticsLoggerProvider"/>.
     /// </summary>
-    public class AzureWebAppDiagnosticsSettings
+    public class AzureAppServicesDiagnosticsSettings
     {
         /// <summary>
         /// Gets or sets a strictly positive value representing the maximum log size in bytes. Once the log is full, no more message will be appended.
