@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Internal;
+using Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Internal;
 using Serilog;
 using Xunit;
 

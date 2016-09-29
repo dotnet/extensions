@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Internal;
+using Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Internal;
 using Microsoft.WindowsAzure.Storage;
 using Moq;
 using Serilog.Events;

@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Threading;
-using Microsoft.Extensions.Logging.AzureWebAppDiagnostics.Internal;
+using Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Internal;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
