@@ -235,8 +235,7 @@ namespace Microsoft.Extensions.Primitives
                     { new StringSegment("Test123", 0, 0), new StringSegment(string.Empty) },
                     { new StringSegment("C`est si bon", 2, 3), new StringSegment("Yesterday", 1, 3) },
                     { new StringSegment("Hello", 1, 4), new StringSegment("Hello world", 1, 4) },
-                    { new StringSegment("Hello"), new StringSegment("Hello", 0, 5) }
-                   
+                    { new StringSegment("Hello"), new StringSegment("Hello", 0, 5) },
                 };
             }
         }
@@ -263,7 +262,7 @@ namespace Microsoft.Extensions.Primitives
                     { new StringSegment(testString, 0, 1), new StringSegment(string.Empty) },
                     { new StringSegment(testString, 0, 1), new StringSegment(testString, 1, 1) },
                     { new StringSegment(testString, 1, 2), new StringSegment(testString, 1, 3) },
-                    { new StringSegment(testString, 0, 4), new StringSegment("TEST123", 0, 4) }                   
+                    { new StringSegment(testString, 0, 4), new StringSegment("TEST123", 0, 4) },
                 };
             }
         }
@@ -295,23 +294,22 @@ namespace Microsoft.Extensions.Primitives
             Assert.False(result);
         }
 
-        public static TheoryData<StringSegment, StringComparison, bool> DefaultEqualsStringSegmentData
+        public static TheoryData<StringSegment, StringComparison> DefaultStringSegmentEqualsStringSegmentData
         {
             get
             {
                 // candidate / comparer / expected result
-                return new TheoryData<StringSegment, StringComparison, bool>()
+                return new TheoryData<StringSegment, StringComparison>()
                 {
-                    { default(StringSegment), StringComparison.Ordinal, true },
-                    { new StringSegment(), StringComparison.Ordinal, true },
-                    { new StringSegment("Hello, World!", 1, 4), StringComparison.Ordinal, false }                  
+                    { default(StringSegment), StringComparison.Ordinal},
+                    { new StringSegment(), StringComparison.Ordinal},
                 };
             }
         }
 
         [Theory]
-        [MemberData(nameof(DefaultEqualsStringSegmentData))]       
-        public void DefaultStringSegment_EqualsStringSegment(StringSegment candidate, StringComparison comparison, bool expectedResult)
+        [MemberData(nameof(DefaultStringSegmentEqualsStringSegmentData))]       
+        public void DefaultStringSegment_EqualsStringSegment(StringSegment candidate, StringComparison comparison)
         {
             // Arrange
             var segment = default(StringSegment);
@@ -320,10 +318,24 @@ namespace Microsoft.Extensions.Primitives
             var result = segment.Equals(candidate, StringComparison.Ordinal);
 
             // Assert
-            Assert.Equal(expectedResult, result);
+            Assert.True(result);
         }
 
-        public static TheoryData<string, StringComparison, bool> DefaultEqualsStringData
+        [Fact]
+        public void DefaultStringSegment_DoesNotEqualStringSegment()
+        {
+            // Arrange
+            var segment = default(StringSegment);
+            var candidate = new StringSegment("Hello, World!", 1, 4);
+
+            // Act
+            var result = segment.Equals(candidate, StringComparison.Ordinal);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        public static TheoryData<string, StringComparison, bool> DefaultStringSegmentDoesNotEqualStringData
         {
             get
             {
@@ -331,14 +343,14 @@ namespace Microsoft.Extensions.Primitives
                 return new TheoryData<string, StringComparison, bool>()
                 {
                     { string.Empty, StringComparison.Ordinal, false },
-                    { "Hello, World!", StringComparison.Ordinal, false }
+                    { "Hello, World!", StringComparison.Ordinal, false },
                 };
             }
         }
 
         [Theory]
-        [MemberData(nameof(DefaultEqualsStringData))]       
-        public void DefaultStringSegment_EqualsString(string candidate, StringComparison comparison, bool expectedResult)
+        [MemberData(nameof(DefaultStringSegmentDoesNotEqualStringData))]       
+        public void DefaultStringSegment_DoesNotEqualString(string candidate, StringComparison comparison, bool expectedResult)
         {
             // Arrange
             var segment = default(StringSegment);
@@ -362,7 +374,7 @@ namespace Microsoft.Extensions.Primitives
                     { new StringSegment("HELlo, World!", 1, 4), StringComparison.OrdinalIgnoreCase, true },
                     { new StringSegment("ello, World!", 0, 4), StringComparison.Ordinal, true },
                     { new StringSegment("ello, World!", 0, 3), StringComparison.Ordinal, false },
-                    { new StringSegment("ello, World!", 1, 3), StringComparison.Ordinal, false }
+                    { new StringSegment("ello, World!", 1, 3), StringComparison.Ordinal, false },
                 };
             }
         }
