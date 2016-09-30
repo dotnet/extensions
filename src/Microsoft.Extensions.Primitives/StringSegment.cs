@@ -129,7 +129,7 @@ namespace Microsoft.Extensions.Primitives
         public bool Equals(StringSegment other, StringComparison comparisonType)
         {
             int textLength = other.Length;
-            if (Length != textLength) 
+            if (Length != textLength)
             {
                 return false;
             }
