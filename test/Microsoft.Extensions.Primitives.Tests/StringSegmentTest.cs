@@ -230,6 +230,8 @@ namespace Microsoft.Extensions.Primitives
             {
                 return new TheoryData<StringSegment, StringSegment>
                 {
+                    { default(StringSegment), default(StringSegment) },
+                    { default(StringSegment), new StringSegment() },
                     { new StringSegment("Test123", 0, 0), new StringSegment(string.Empty) },
                     { new StringSegment("C`est si bon", 2, 3), new StringSegment("Yesterday", 1, 3) },
                     { new StringSegment("Hello", 1, 4), new StringSegment("Hello world", 1, 4) },
@@ -287,6 +289,88 @@ namespace Microsoft.Extensions.Primitives
 
             // Act
             var result = segment.Equals(string.Empty, StringComparison.Ordinal);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        public static TheoryData<StringSegment> DefaultStringSegmentEqualsStringSegmentData
+        {
+            get
+            {
+                // candidate
+                return new TheoryData<StringSegment>()
+                {
+                    { default(StringSegment) },
+                    { new StringSegment() },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DefaultStringSegmentEqualsStringSegmentData))]       
+        public void DefaultStringSegment_EqualsStringSegment(StringSegment candidate)
+        {
+            // Arrange
+            var segment = default(StringSegment);
+           
+            // Act
+            var result = segment.Equals(candidate, StringComparison.Ordinal);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        public static TheoryData<StringSegment> DefaultStringSegmentDoesNotEqualStringSegmentData
+        {
+            get
+            {
+                // candidate
+                return new TheoryData<StringSegment>()
+                {
+                    { new StringSegment("Hello, World!", 1, 4) },
+                    { new StringSegment("Hello", 1, 0) },
+                    { new StringSegment(string.Empty) },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DefaultStringSegmentDoesNotEqualStringSegmentData))]
+        public void DefaultStringSegment_DoesNotEqualStringSegment(StringSegment candidate)
+        {
+            // Arrange
+            var segment = default(StringSegment);
+
+            // Act
+            var result = segment.Equals(candidate, StringComparison.Ordinal);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        public static TheoryData<string> DefaultStringSegmentDoesNotEqualStringData
+        {
+            get
+            {
+                // candidate
+                return new TheoryData<string>()
+                {
+                    { string.Empty },
+                    { "Hello, World!" },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DefaultStringSegmentDoesNotEqualStringData))]       
+        public void DefaultStringSegment_DoesNotEqualString(string candidate)
+        {
+            // Arrange
+            var segment = default(StringSegment);
+            
+            // Act
+            var result = segment.Equals(candidate, StringComparison.Ordinal);
 
             // Assert
             Assert.False(result);
