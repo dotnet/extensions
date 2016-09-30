@@ -42,6 +42,7 @@ namespace Microsoft.Extensions.Primitives
             fixed (char* value = _value)
             fixed (char* pDomainToken = s)
             {
+                //TODO: Use CopyBlockUnaligned when added https://github.com/dotnet/corefx/issues/12243
                 Unsafe.CopyBlock(value + _offset, pDomainToken, (uint)s.Length * 2);
                 _offset += s.Length;
             }
