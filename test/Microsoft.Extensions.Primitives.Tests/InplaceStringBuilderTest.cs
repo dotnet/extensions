@@ -14,9 +14,7 @@ namespace Microsoft.AspNetCore.Http.Tests.Internal
             var s2 = "56789";
 
             var formatter = new InplaceStringBuilder();
-            formatter.IncrementLength(s1);
-            formatter.IncrementLength(c1);
-            formatter.IncrementLength(s2);
+            formatter.Capacity += s1.Length + 1 + s2.Length;
             formatter.Append(s1);
             formatter.Append(c1);
             formatter.Append(s2);
@@ -29,7 +27,7 @@ namespace Microsoft.AspNetCore.Http.Tests.Internal
             var formatter = new InplaceStringBuilder(5);
             formatter.Append("123");
             var exception = Assert.Throws<InvalidOperationException>(() => formatter.Build());
-            Assert.Equal(exception.Message, "Entire reserved lenght was not used. Length: '5', written '3'.");
+            Assert.Equal(exception.Message, "Entire reserved length was not used. Length: '5', written '3'.");
         }
 
         [Fact]
@@ -38,8 +36,8 @@ namespace Microsoft.AspNetCore.Http.Tests.Internal
             var formatter = new InplaceStringBuilder(3);
             formatter.Append("123");
 
-            var exception = Assert.Throws<InvalidOperationException>(() => formatter.IncrementLength(1));
-            Assert.Equal(exception.Message, "Cannot append lenght after write started.");
+            var exception = Assert.Throws<InvalidOperationException>(() => formatter.Capacity = 5);
+            Assert.Equal(exception.Message, "Cannot append length after write started.");
         }
 
         [Fact]
@@ -48,7 +46,7 @@ namespace Microsoft.AspNetCore.Http.Tests.Internal
             var formatter = new InplaceStringBuilder(1);
 
             var exception = Assert.Throws<InvalidOperationException>(() => formatter.Append("123"));
-            Assert.Equal(exception.Message, "Not enough space to write '3' characters, only '1' left.");
+            Assert.Equal(exception.Message, "Not enough capacity to write '3' characters, only '1' left.");
         }
 
         [Fact]

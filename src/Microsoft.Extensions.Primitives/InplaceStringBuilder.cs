@@ -8,38 +8,36 @@ namespace Microsoft.Extensions.Primitives
 {
     public struct InplaceStringBuilder
     {
-        private int _length;
+        private int _capacity;
         private int _offset;
         private bool _writing;
         private string _value;
 
-        public InplaceStringBuilder(int length) : this()
+        public InplaceStringBuilder(int capacity) : this()
         {
-            _length = length;
+            _capacity = capacity;
         }
 
-        public void IncrementLength(string s)
+        public int Capacity
         {
-            IncrementLength(s.Length);
-        }
-
-        public void IncrementLength(char c)
-        {
-            IncrementLength(1);
-        }
-
-        public void IncrementLength(int length)
-        {
-            if (_writing)
+            get { return _capacity; }
+            set
             {
-                throw new InvalidOperationException("Cannot append lenght after write started.");
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+                if (_writing)
+                {
+                    throw new InvalidOperationException("Cannot change capacity after write started.");
+                }
+                _capacity = value;
             }
-            _length += length;
         }
 
         public unsafe void Append(string s)
         {
-            EnsureValue(s.Length);
+            EnsureCapacity(s.Length);
             fixed (char* value = _value)
             fixed (char* pDomainToken = s)
             {
@@ -50,32 +48,32 @@ namespace Microsoft.Extensions.Primitives
         }
         public unsafe void Append(char c)
         {
-            EnsureValue(1);
+            EnsureCapacity(1);
             fixed (char* value = _value)
             {
                 value[_offset++] = c;
             }
         }
 
-        private void EnsureValue(int length)
+        private void EnsureCapacity(int length)
         {
             if (_value == null)
             {
                 _writing = true;
-                _value = new string('\0', _length);
+                _value = new string('\0', _capacity);
             }
-            if (_offset + length > _length)
+            if (_offset + length > _capacity)
             {
-                throw new InvalidOperationException($"Not enough space to write '{length}' characters, only '{_length - _offset}' left.");
+                throw new InvalidOperationException($"Not enough capacity to write '{length}' characters, only '{_capacity - _offset}' left.");
             }
         }
 
         // Debugger calls ToString so this method should be used to get formatted value
         public string Build()
         {
-            if (_offset != _length)
+            if (_offset != _capacity)
             {
-                throw new InvalidOperationException($"Entire reserved lenght was not used. Length: '{_length}', written '{_offset}'.");
+                throw new InvalidOperationException($"Entire reserved length was not used. Length: '{_capacity}', written '{_offset}'.");
             }
             return _value;
         }
