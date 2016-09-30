@@ -97,11 +97,9 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
-            var options = new ConfigurationInterfaceOptions();
-            config.Bind(options);
+            var options = config.Bind<ConfigurationInterfaceOptions>();
 
-            var childOptions = new DerivedOptions();
-            options.Section.Bind(childOptions);
+            var childOptions = options.Section.Bind<DerivedOptions>();
 
             Assert.True(childOptions.Boolean);
             Assert.Equal(-2, childOptions.Integer);
@@ -129,15 +127,11 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
-            var options = new ConfigurationInterfaceOptions();
-            config.Bind(options);
+            var options = config.Bind<ConfigurationInterfaceOptions>();
 
-            var childOptions = new DerivedOptionsWithIConfigurationSection();
-            options.Section.Bind(childOptions);
+            var childOptions = options.Section.Bind<DerivedOptionsWithIConfigurationSection>();
 
-
-            var childDerivedOptions = new DerivedOptions();
-            childOptions.DerivedSection.Bind(childDerivedOptions);
+            var childDerivedOptions = childOptions.DerivedSection.Bind<DerivedOptions>();
 
             Assert.True(childOptions.Boolean);
             Assert.Equal(-2, childOptions.Integer);
