@@ -40,20 +40,20 @@ namespace Microsoft.Extensions.Primitives
         public unsafe void Append(string s)
         {
             EnsureCapacity(s.Length);
-            fixed (char* value = _value)
-            fixed (char* pDomainToken = s)
+            fixed (char* destination = _value)
+            fixed (char* source = s)
             {
                 //TODO: https://github.com/aspnet/Common/issues/158
-                Unsafe.CopyBlock(value + _offset, pDomainToken, (uint)s.Length * 2);
+                Unsafe.CopyBlock(destination + _offset, source, (uint)s.Length * 2);
                 _offset += s.Length;
             }
         }
         public unsafe void Append(char c)
         {
             EnsureCapacity(1);
-            fixed (char* value = _value)
+            fixed (char* destination = _value)
             {
-                value[_offset++] = c;
+                destination[_offset++] = c;
             }
         }
 
