@@ -6,8 +6,7 @@
         "packages": {
             "Microsoft.Extensions.CommandLineUtils": { },
             "Microsoft.Extensions.ObjectPool": { },
-            "Microsoft.Extensions.Primitives": { },
-            "Microsoft.Extensions.AwaitableStream": { }
+            "Microsoft.Extensions.Primitives": { }
         }
     },
     "adx-nonshipping": {
