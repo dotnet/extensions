@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.Http.Tests.Internal
             var s2 = "56789";
 
             var formatter = new InplaceStringBuilder();
-            formatter.AppendLength(s1);
-            formatter.AppendLength(c1);
-            formatter.AppendLength(s2);
+            formatter.IncrementLength(s1);
+            formatter.IncrementLength(c1);
+            formatter.IncrementLength(s2);
             formatter.Append(s1);
             formatter.Append(c1);
             formatter.Append(s2);
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Http.Tests.Internal
             var formatter = new InplaceStringBuilder(3);
             formatter.Append("123");
 
-            var exception = Assert.Throws<InvalidOperationException>(() => formatter.AppendLength(1));
+            var exception = Assert.Throws<InvalidOperationException>(() => formatter.IncrementLength(1));
             Assert.Equal(exception.Message, "Cannot append lenght after write started.");
         }
 

@@ -18,16 +18,17 @@ namespace Microsoft.Extensions.Primitives
             _length = length;
         }
 
-        public void AppendLength(string s)
+        public void IncrementLength(string s)
         {
-            AppendLength(s.Length);
-        }
-        public void AppendLength(char c)
-        {
-            AppendLength(1);
+            IncrementLength(s.Length);
         }
 
-        public void AppendLength(int length)
+        public void IncrementLength(char c)
+        {
+            IncrementLength(1);
+        }
+
+        public void IncrementLength(int length)
         {
             if (_writing)
             {
