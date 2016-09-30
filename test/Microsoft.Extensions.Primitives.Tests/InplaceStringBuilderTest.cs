@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Http.Tests.Internal
             formatter.Append(s1);
             formatter.Append(c1);
             formatter.Append(s2);
-            Assert.Equal("123456789", formatter.Build());
+            Assert.Equal("123456789", formatter.ToString());
         }
 
         [Fact]
@@ -26,18 +26,18 @@ namespace Microsoft.AspNetCore.Http.Tests.Internal
         {
             var formatter = new InplaceStringBuilder(5);
             formatter.Append("123");
-            var exception = Assert.Throws<InvalidOperationException>(() => formatter.Build());
+            var exception = Assert.Throws<InvalidOperationException>(() => formatter.ToString());
             Assert.Equal(exception.Message, "Entire reserved length was not used. Length: '5', written '3'.");
         }
 
         [Fact]
-        public void AppendLength_IfAppendWasCalled()
+        public void Capacity_ThrowsIfAppendWasCalled()
         {
             var formatter = new InplaceStringBuilder(3);
             formatter.Append("123");
 
             var exception = Assert.Throws<InvalidOperationException>(() => formatter.Capacity = 5);
-            Assert.Equal(exception.Message, "Cannot append length after write started.");
+            Assert.Equal(exception.Message, "Cannot change capacity after write started.");
         }
 
         [Fact]
@@ -47,28 +47,6 @@ namespace Microsoft.AspNetCore.Http.Tests.Internal
 
             var exception = Assert.Throws<InvalidOperationException>(() => formatter.Append("123"));
             Assert.Equal(exception.Message, "Not enough capacity to write '3' characters, only '1' left.");
-        }
-
-        [Fact]
-        public void ToString_ReturnsPartialyFormatedValue()
-        {
-            var formatter = new InplaceStringBuilder(5);
-            formatter.Append("123");
-
-            Assert.Equal("123\0\0", formatter.ToString());
-        }
-
-        [Fact]
-        public void ToString_ReturnedValueIsNotModified()
-        {
-            var formatter = new InplaceStringBuilder(5);
-            formatter.Append("123");
-
-            var s = formatter.ToString();
-            Assert.Equal("123\0\0", s);
-
-            formatter.Append("45");
-            Assert.Equal("123\0\0", s);
         }
     }
 }

@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.Extensions.Primitives
 {
+    [DebuggerDisplay("Value = {_value}")]
     public struct InplaceStringBuilder
     {
         private int _capacity;
@@ -41,7 +43,7 @@ namespace Microsoft.Extensions.Primitives
             fixed (char* value = _value)
             fixed (char* pDomainToken = s)
             {
-                //TODO: Use CopyBlockUnaligned when added https://github.com/dotnet/corefx/issues/12243
+                //TODO: https://github.com/aspnet/Common/issues/158
                 Unsafe.CopyBlock(value + _offset, pDomainToken, (uint)s.Length * 2);
                 _offset += s.Length;
             }
@@ -68,21 +70,13 @@ namespace Microsoft.Extensions.Primitives
             }
         }
 
-        // Debugger calls ToString so this method should be used to get formatted value
-        public string Build()
+        public override string ToString()
         {
             if (_offset != _capacity)
             {
                 throw new InvalidOperationException($"Entire reserved length was not used. Length: '{_capacity}', written '{_offset}'.");
             }
             return _value;
-        }
-
-        public override string ToString()
-        {
-            // Clone string so we won't be modifying returned string if called before
-            // whole value was written
-            return new string(_value.ToCharArray());
         }
     }
 }
