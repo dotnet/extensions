@@ -74,7 +74,7 @@ namespace Microsoft.Extensions.Primitives
         {
             if (_offset != _capacity)
             {
-                throw new InvalidOperationException($"Entire reserved length was not used. Length: '{_capacity}', written '{_offset}'.");
+                throw new InvalidOperationException($"Entire reserved capacity was not used. Capacity: '{_capacity}', written '{_offset}'.");
             }
             return _value;
         }

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Http.Tests.Internal
             var formatter = new InplaceStringBuilder(5);
             formatter.Append("123");
             var exception = Assert.Throws<InvalidOperationException>(() => formatter.ToString());
-            Assert.Equal(exception.Message, "Entire reserved length was not used. Length: '5', written '3'.");
+            Assert.Equal(exception.Message, "Entire reserved capacity was not used. Capacity: '5', written '3'.");
         }
 
         [Fact]
