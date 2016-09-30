@@ -1332,7 +1332,7 @@ namespace Microsoft.Extensions.FileProviders
                 var compositeToken = Assert.IsType<CompositeFileChangeToken>(token);
                 Assert.Equal(2, compositeToken.ChangeTokens.Count);
                 var pollingChangeToken = Assert.IsType<PollingWildCardChangeToken>(compositeToken.ChangeTokens[1]);
-                pollingChangeToken.PollingInterval = TimeSpan.FromMilliseconds(WaitTimeForTokenToFire);
+                pollingChangeToken.PollingInterval = TimeSpan.FromMilliseconds(10);
 
                 // Act
                 fileSystemWatcher.EnableRaisingEvents = false;
