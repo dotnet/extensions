@@ -16,13 +16,16 @@
     "nowarn": [
       "CS1591"
     ],
-    "xmlDoc": true
+    "xmlDoc": true,
+    "allowUnsafe": true
   },
   "dependencies": {
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
       "type": "build",
       "version": "1.1.0-*"
-    }
+    },
+    "System.Diagnostics.Debug": "4.0.11",
+    "System.Runtime.CompilerServices.Unsafe": "4.0.0"
   },
   "frameworks": {
     "netstandard1.0": {
