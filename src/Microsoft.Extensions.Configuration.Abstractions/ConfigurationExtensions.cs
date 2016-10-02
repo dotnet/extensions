@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Extensions.Configuration
 {
@@ -54,6 +55,18 @@ namespace Microsoft.Extensions.Configuration
                     stack.Push(child);
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether the section has a <see cref="IConfigurationSection.Value"/> or has children 
+        /// </summary>
+        public static bool Exists(this IConfigurationSection section)
+        {
+            if (section == null)
+            {
+                return false;
+            }
+            return section.Value != null || section.GetChildren().Any();
         }
     }
 }

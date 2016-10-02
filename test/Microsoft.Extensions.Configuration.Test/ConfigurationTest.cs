@@ -600,5 +600,66 @@ namespace Microsoft.Extensions.Configuration.Test
             Assert.Equal(1, children.First().GetChildren().Count());
             Assert.Equal(string.Empty, children.First().GetChildren().First().Key);
         }
+
+        [Fact]
+        public void SectionWithValueExists()
+        {
+            // Arrange
+            var dict = new Dictionary<string, string>()
+            {
+                {"Mem1", "Value1"},
+                {"Mem1:KeyInMem1", "ValueInMem1"},
+                {"Mem1:KeyInMem1:Deep1", "ValueDeep1"}
+            };
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dict);
+            var config = configurationBuilder.Build();
+
+            // Act
+            var sectionExists1 = config.GetSection("Mem1").Exists();
+            var sectionExists2 = config.GetSection("Mem1:KeyInMem1").Exists();
+            var sectionNotExists = config.GetSection("Mem2").Exists();
+
+            // Assert
+            Assert.True(sectionExists1);
+            Assert.True(sectionExists2);
+            Assert.False(sectionNotExists);
+        }
+
+        [Fact]
+        public void SectionWithChildrenExists()
+        {
+            // Arrange
+            var dict = new Dictionary<string, string>()
+            {
+                {"Mem1:KeyInMem1", "ValueInMem1"},
+                {"Mem1:KeyInMem1:Deep1", "ValueDeep1"},
+                {"Mem2:KeyInMem2:Deep1", "ValueDeep2"}
+            };
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dict);
+            var config = configurationBuilder.Build();
+
+            // Act
+            var sectionExists1 = config.GetSection("Mem1").Exists();
+            var sectionExists2 = config.GetSection("Mem2").Exists();
+            var sectionNotExists = config.GetSection("Mem3").Exists();
+
+            // Assert
+            Assert.True(sectionExists1);
+            Assert.True(sectionExists2);
+            Assert.False(sectionNotExists);
+        }
+
+        [Fact]
+        public void NullSectionDoesNotExist()
+        {
+            // Arrange
+            // Act
+            var sectionExists = ConfigurationExtensions.Exists(null);
+
+            // Assert
+            Assert.False(sectionExists);
+        }
     }
 }
