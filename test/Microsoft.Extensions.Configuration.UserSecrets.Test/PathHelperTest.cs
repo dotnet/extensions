@@ -7,13 +7,20 @@ using Xunit;
 
 namespace Microsoft.Extensions.Configuration.UserSecrets.Test
 {
-    public class PathHelperTest
+    public class PathHelperTest : IClassFixture<UserSecretsTestFixture>
     {
+        private readonly UserSecretsTestFixture _fixture;
+
+        public PathHelperTest(UserSecretsTestFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
         [Fact]
         public void Gives_Correct_Secret_Path()
         {
             string userSecretsId;
-            var projectPath = UserSecretHelper.GetTempSecretProject(out userSecretsId);
+            var projectPath = _fixture.GetTempSecretProject(out userSecretsId);
             var actualSecretPath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
 
             var root = Environment.GetEnvironmentVariable("APPDATA") ??         // On Windows it goes to %APPDATA%\Microsoft\UserSecrets\
@@ -24,8 +31,6 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
                 Path.Combine(root, ".microsoft", "usersecrets", userSecretsId, "secrets.json");
 
             Assert.Equal(expectedSecretPath, actualSecretPath);
-
-            UserSecretHelper.DeleteTempSecretProject(projectPath);
         }
 
         [Fact]
@@ -41,32 +46,37 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
             }
         }
 
+        // TODO remove in 2.0
+        #region LegacyApiTest
+
         [Fact]
         public void Throws_If_Project_Json_Not_Found()
         {
-            var projectPath = UserSecretHelper.GetTempSecretProject();
+            var projectPath = _fixture.GetTempSecretProject();
             File.Delete(Path.Combine(projectPath, "project.json"));
 
             Assert.Throws<InvalidOperationException>(() =>
             {
+#pragma warning disable CS0618
                 PathHelper.GetSecretsPath(projectPath);
+#pragma warning restore CS0618
             });
-
-            UserSecretHelper.DeleteTempSecretProject(projectPath);
         }
 
         [Fact]
         public void Throws_If_Project_Json_Does_Not_Contain_UserSecretId()
         {
-            var projectPath = UserSecretHelper.GetTempSecretProject();
+            var projectPath = _fixture.GetTempSecretProject();
             File.WriteAllText(Path.Combine(projectPath, "project.json"), "{}");
 
             Assert.Throws<InvalidOperationException>(() =>
             {
+#pragma warning disable CS0618
                 PathHelper.GetSecretsPath(projectPath);
+#pragma warning restore CS0618
             });
-
-            UserSecretHelper.DeleteTempSecretProject(projectPath);
         }
+
+        #endregion
     }
 }

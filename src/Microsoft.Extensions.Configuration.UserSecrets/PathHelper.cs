@@ -14,6 +14,18 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         internal const string Secrets_File_Name = "secrets.json";
         internal const string Config_File_Name = "project.json";
 
+        /// <summary>
+        ///     <para>
+        ///     This method is obsolete and will be removed in a future version. The recommended alternative is <see cref="PathHelper.GetSecretsPathFromSecretsId(string)"/>.
+        ///     </para>
+        ///     <para>
+        ///     Gets the path to the secrets file. If a directory is given, finds the user secrets id in the JSON named 'project.json'.
+        ///     </para>
+        /// </summary>
+        /// <param name="provider">The file provider</param>
+        /// <returns>The filepath to secrets file</returns>
+        // TODO remove in 2.0
+        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is Microsoft.Extensions.Configuration.UserSecrets.PathHelper.GetSecretsPathFromSecretsId(string).")]
         public static string GetSecretsPath(IFileProvider provider)
         {
             if (provider == null)
@@ -46,6 +58,18 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
             }
         }
 
+        /// <summary>
+        ///     <para>
+        ///     This method is obsolete and will be removed in a future version. The recommended alternative is <see cref="PathHelper.GetSecretsPathFromSecretsId(string)"/>.
+        ///     </para>
+        ///     <para>
+        ///     Gets the path to the secrets file. If a directory is given, finds the user secrets id in the JSON named 'project.json'.
+        ///     </para>
+        /// </summary>
+        /// <param name="projectPath">The project file</param>
+        /// <returns>The filepath to secrets file</returns>
+        // TODO remove in 2.0
+        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is Microsoft.Extensions.Configuration.UserSecrets.PathHelper.GetSecretsPathFromSecretsId(string).")]
         public static string GetSecretsPath(string projectPath)
         {
             if (projectPath == null)
