@@ -1,5 +1,5 @@
 ﻿using Microsoft.Azure.KeyVault;
-using Microsoft.Extensions.Configuration.Azure.KeyVault;
+using Microsoft.Extensions.Configuration.AzureKeyVault;
 
 namespace ConsoleApplication
 {

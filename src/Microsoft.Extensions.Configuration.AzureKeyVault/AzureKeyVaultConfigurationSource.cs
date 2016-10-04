@@ -3,7 +3,7 @@
 
 using Microsoft.Azure.KeyVault;
 
-namespace Microsoft.Extensions.Configuration.Azure.KeyVault
+namespace Microsoft.Extensions.Configuration.AzureKeyVault
 {
     /// <summary>
     /// Represents Azure KeyVault secrets as an <see cref="IConfigurationSource"/>.

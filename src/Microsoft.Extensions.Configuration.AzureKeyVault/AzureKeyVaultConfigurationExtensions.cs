@@ -5,7 +5,7 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault;
-using Microsoft.Extensions.Configuration.Azure.KeyVault;
+using Microsoft.Extensions.Configuration.AzureKeyVault;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 
 namespace Microsoft.Extensions.Configuration

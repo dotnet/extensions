@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault;
 
-namespace Microsoft.Extensions.Configuration.Azure.KeyVault
+namespace Microsoft.Extensions.Configuration.AzureKeyVault
 {
     /// <summary>
     /// An AzureKeyVault based <see cref="ConfigurationProvider"/>.

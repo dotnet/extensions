@@ -7,7 +7,7 @@
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>a538f609-e902-40ce-8459-4248f9f63558</ProjectGuid>
-    <RootNamespace>Microsoft.Extensions.Configuration.Azure.KeyVault</RootNamespace>
+    <RootNamespace>Microsoft.Extensions.Configuration.AzureKeyVault</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
   </PropertyGroup>

@@ -5,7 +5,7 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.Extensions.Configuration.Azure.KeyVault": "0.1.0-*",
+    "Microsoft.Extensions.Configuration.AzureKeyVault": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Test.Common": "1.0.0-*",
     "Moq": "4.6.36-*",
     "NETStandard.Library": "1.6.1-*",

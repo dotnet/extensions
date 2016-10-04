@@ -44,9 +44,9 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Config
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.FileExtensions.Test", "test\Microsoft.Extensions.Configuration.FileExtensions.Test\Microsoft.Extensions.Configuration.FileExtensions.Test.xproj", "{F7932F19-EB68-4C52-9CD1-3B51E48C2337}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.Azure.KeyVault", "src\Microsoft.Extensions.Configuration.Azure.KeyVault\Microsoft.Extensions.Configuration.Azure.KeyVault.xproj", "{A538F609-E902-40CE-8459-4248F9F63558}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.AzureKeyVault", "src\Microsoft.Extensions.Configuration.AzureKeyVault\Microsoft.Extensions.Configuration.AzureKeyVault.xproj", "{A538F609-E902-40CE-8459-4248F9F63558}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.Azure.KeyVault.Test", "test\Microsoft.Extensions.Configuration.Azure.KeyVault.Test\Microsoft.Extensions.Configuration.Azure.KeyVault.Test.xproj", "{DA9C1F35-3F92-4F3A-B3B1-A62CCE626D48}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.AzureKeyVault.Test", "test\Microsoft.Extensions.Configuration.AzureKeyVault.Test\Microsoft.Extensions.Configuration.AzureKeyVault.Test.xproj", "{DA9C1F35-3F92-4F3A-B3B1-A62CCE626D48}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{AB015580-541D-4E2D-B904-E71F8582CC68}"
 EndProject

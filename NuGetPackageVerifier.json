@@ -6,7 +6,7 @@
         "packages": {
             "Microsoft.Extensions.Configuration": { },
             "Microsoft.Extensions.Configuration.Abstractions": { },
-            "Microsoft.Extensions.Configuration.Azure.KeyVault": { },
+            "Microsoft.Extensions.Configuration.AzureKeyVault": { },
             "Microsoft.Extensions.Configuration.Binder": { },
             "Microsoft.Extensions.Configuration.CommandLine": { },
             "Microsoft.Extensions.Configuration.EnvironmentVariables": { },

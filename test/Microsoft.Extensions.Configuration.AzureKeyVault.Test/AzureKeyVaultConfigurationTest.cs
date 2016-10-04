@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration.Test;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Configuration.Azure.KeyVault.Test
+namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
 {
     public class AzureKeyVaultConfigurationTest
     {
