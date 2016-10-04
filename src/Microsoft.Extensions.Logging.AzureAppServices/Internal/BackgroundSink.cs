@@ -9,7 +9,7 @@ using Serilog.Events;
 
 // TODO: Might want to consider using https://github.com/jezzsantos/Serilog.Sinks.Async 
 // instead of this, once that supports netstandard
-namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Internal
+namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
 {
     /// <summary>
     /// A background sink for Serilog.

@@ -5,11 +5,11 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Internal;
+using Microsoft.Extensions.Logging.AzureAppServices.Internal;
 using Serilog;
 using Xunit;
 
-namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Test
+namespace Microsoft.Extensions.Logging.AzureAppServices.Test
 {
     public class BackgroundSinkTests
     {

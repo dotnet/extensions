@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Internal
+namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
 {
     /// <summary>
     /// Represents the default implementation of <see cref="IWebAppContext"/>.

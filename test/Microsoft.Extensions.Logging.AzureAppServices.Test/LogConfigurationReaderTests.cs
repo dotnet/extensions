@@ -4,12 +4,12 @@
 using System;
 using System.IO;
 using System.Threading;
-using Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Internal;
+using Microsoft.Extensions.Logging.AzureAppServices.Internal;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Test
+namespace Microsoft.Extensions.Logging.AzureAppServices.Test
 {
     public class LogConfigurationReaderTests
     {

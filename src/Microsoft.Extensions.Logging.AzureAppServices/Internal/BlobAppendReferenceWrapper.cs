@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
-namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Internal
+namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
 {
     /// <inheritdoc />
     public class BlobAppendReferenceWrapper : ICloudAppendBlob

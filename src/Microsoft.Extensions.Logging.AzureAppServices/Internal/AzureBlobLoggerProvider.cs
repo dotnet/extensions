@@ -7,7 +7,7 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Formatting.Display;
 
-namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Internal
+namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
 {
     /// <summary>
     /// The implemenation of logger provider that creates instances of <see cref="Serilog.Core.Logger"/>.

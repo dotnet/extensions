@@ -12,7 +12,7 @@ using Serilog.Events;
 using Serilog.Formatting;
 using Serilog.Sinks.PeriodicBatching;
 
-namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Internal
+namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
 {
     /// <summary>
     /// The <see cref="ILogEventSink"/> implemenation that stores messages by appending them to Azure Blob in batches.

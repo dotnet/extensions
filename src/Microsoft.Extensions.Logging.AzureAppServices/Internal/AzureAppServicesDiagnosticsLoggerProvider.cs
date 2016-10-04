@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 
-namespace Microsoft.Extensions.Logging.Azure.AppServicesDiagnostics.Internal
+namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
 {
     /// <summary>
     /// Logger provider for Azure WebApp.
