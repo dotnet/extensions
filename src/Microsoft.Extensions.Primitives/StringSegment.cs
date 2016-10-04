@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.Primitives
 {
@@ -21,7 +20,7 @@ namespace Microsoft.Extensions.Primitives
         {
             Buffer = buffer;
             Offset = 0;
-            Length = buffer != null ? buffer.Length : 0;
+            Length = buffer?.Length ?? 0;
         }
 
         /// <summary>
@@ -32,29 +31,44 @@ namespace Microsoft.Extensions.Primitives
         /// <param name="length">The length of the segment.</param>
         public StringSegment(string buffer, int offset, int length)
         {
-            if (buffer == null)
+            // This .ctor is specially arranged to allow it to inline
+            // If either offset or length is negative, then (offset | length) < 0.
+            // Testing them individually causes to many blocks for the inliner to decide its profitable
+            // Current result: Successfully inlined StringSegment:.ctor(ref, int, int):this(50 IL bytes)(depth 1)[profitable inline]
+            if (buffer == null || (offset | length) < 0 || offset > buffer.Length - length)
             {
-                throw new ArgumentNullException(nameof(buffer));
-            }
-
-            if (offset < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(offset));
-            }
-
-            if (length < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(length));
-            }
-
-            if (offset > buffer.Length - length)
-            {
-                throw new ArgumentException(Resources.Argument_InvalidOffsetLength);
+                ThrowInvalidArguments(buffer, offset, length);
             }
 
             Buffer = buffer;
             Offset = offset;
             Length = length;
+        }
+
+        private static void ThrowInvalidArguments(string buffer, int offset, int length)
+        {
+            // Only have single throw in method so is marked as "does not return" and isn't inlined to caller
+            throw GetInvalidArgumentException(buffer, offset, length);
+        }
+
+        private static Exception GetInvalidArgumentException(string buffer, int offset, int length)
+        {
+            if (buffer == null)
+            {
+                return ThrowHelper.GetArgumentNullException(ExceptionArgument.buffer);
+            }
+
+            if (offset < 0)
+            {
+                return ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.offset);
+            }
+
+            if (length < 0)
+            {
+                return ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.length);
+            }
+
+            return ThrowHelper.GetArgumentException(ExceptionResource.Argument_InvalidOffsetLength);
         }
 
         /// <summary>
@@ -157,7 +171,7 @@ namespace Microsoft.Extensions.Primitives
         {
             if (text == null)
             {
-                throw new ArgumentNullException(nameof(text));
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.text);
             }
 
             int textLength = text.Length;
@@ -219,7 +233,7 @@ namespace Microsoft.Extensions.Primitives
         {
             if (text == null)
             {
-                throw new ArgumentNullException(nameof(text));
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.text);
             }
 
             var textLength = text.Length;
@@ -241,7 +255,7 @@ namespace Microsoft.Extensions.Primitives
         {
             if (text == null)
             {
-                throw new ArgumentNullException(nameof(text));
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.text);
             }
 
             var textLength = text.Length;
@@ -264,17 +278,17 @@ namespace Microsoft.Extensions.Primitives
         {
             if (!HasValue)
             {
-                throw new ArgumentOutOfRangeException(nameof(offset));
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.offset);
             }
 
             if (offset < 0 || offset + length > Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(offset));
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.offset);
             }
 
             if (length < 0 || Offset + offset + length > Buffer.Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(length));
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.length);
             }
 
             return Buffer.Substring(Offset + offset, length);
@@ -291,17 +305,17 @@ namespace Microsoft.Extensions.Primitives
         {
             if (!HasValue)
             {
-                throw new ArgumentOutOfRangeException(nameof(offset));
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.offset);
             }
 
             if (offset < 0 || offset + length > Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(offset));
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.offset);
             }
 
             if (length < 0 || Offset + offset + length > Buffer.Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(length));
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.length);
             }
 
             return new StringSegment(Buffer, Offset + offset, length);
@@ -319,12 +333,12 @@ namespace Microsoft.Extensions.Primitives
         {
             if (start < 0 || Offset + start > Buffer.Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(start));
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.start);
             }
 
             if (count < 0 || Offset + start + count > Buffer.Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(count));
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count);
             }
             var index = Buffer.IndexOf(c, start + Offset, count);
             if (index != -1)
