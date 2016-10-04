@@ -12,6 +12,7 @@
             "Microsoft.Extensions.Configuration.FileExtensions": { },
             "Microsoft.Extensions.Configuration.Ini": { },
             "Microsoft.Extensions.Configuration.Json": { },
+            "Microsoft.Extensions.Configuration.UserSecrets": { },
             "Microsoft.Extensions.Configuration.Xml": { }
         }
     },
