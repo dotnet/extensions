@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -17,8 +18,7 @@ namespace Microsoft.Extensions.Caching.Memory
     /// </summary>
     public class MemoryCache : IMemoryCache
     {
-        private readonly Dictionary<object, CacheEntry> _entries;
-        private readonly ReaderWriterLockSlim _entryLock;
+        private readonly ConcurrentDictionary<object, CacheEntry> _entries;
         private bool _disposed;
 
         // We store the delegates locally to prevent allocations
@@ -43,8 +43,7 @@ namespace Microsoft.Extensions.Caching.Memory
             }
 
             var options = optionsAccessor.Value;
-            _entries = new Dictionary<object, CacheEntry>();
-            _entryLock = new ReaderWriterLockSlim();
+            _entries = new ConcurrentDictionary<object, CacheEntry>();
             _setEntry = SetEntry;
             _entryExpirationNotification = EntryExpired;
 
@@ -116,26 +115,18 @@ namespace Microsoft.Extensions.Caching.Memory
             var added = false;
             CacheEntry priorEntry;
 
-            _entryLock.EnterWriteLock();
-            try
+            if (_entries.TryRemove(entry.Key, out priorEntry))
             {
+                priorEntry.SetExpired(EvictionReason.Replaced);
+            }
 
-                if (_entries.TryGetValue(entry.Key, out priorEntry))
+            if (!entry.CheckExpired(utcNow))
+            {
+                if (_entries.TryAdd(entry.Key, entry))
                 {
-                    _entries.Remove(entry.Key);
-                    priorEntry.SetExpired(EvictionReason.Replaced);
-                }
-
-                if (!entry.CheckExpired(utcNow))
-                {
-                    _entries[entry.Key] = entry;
                     entry.AttachTokens();
                     added = true;
                 }
-            }
-            finally
-            {
-                _entryLock.ExitWriteLock();
             }
 
             if (priorEntry != null)
@@ -164,32 +155,24 @@ namespace Microsoft.Extensions.Caching.Memory
             bool found = false;
             CacheEntry expiredEntry = null;
             CheckDisposed();
-            _entryLock.EnterReadLock();
-            try
+            CacheEntry entry;
+            if (_entries.TryGetValue(key, out entry))
             {
-                CacheEntry entry;
-                if (_entries.TryGetValue(key, out entry))
+                // Check if expired due to expiration tokens, timers, etc. and if so, remove it.
+                if (entry.CheckExpired(utcNow))
                 {
-                    // Check if expired due to expiration tokens, timers, etc. and if so, remove it.
-                    if (entry.CheckExpired(utcNow))
-                    {
-                        expiredEntry = entry;
-                    }
-                    else
-                    {
-                        found = true;
-                        entry.LastAccessed = utcNow;
-                        result = entry.Value;
-
-                        // When this entry is retrieved in the scope of creating another entry,
-                        // that entry needs a copy of these expiration tokens.
-                        entry.PropagateOptions(CacheEntryHelper.Current);
-                    }
+                    expiredEntry = entry;
                 }
-            }
-            finally
-            {
-                _entryLock.ExitReadLock();
+                else
+                {
+                    found = true;
+                    entry.LastAccessed = utcNow;
+                    result = entry.Value;
+
+                    // When this entry is retrieved in the scope of creating another entry,
+                    // that entry needs a copy of these expiration tokens.
+                    entry.PropagateOptions(CacheEntryHelper.Current);
+                }
             }
 
             if (expiredEntry != null)
@@ -213,17 +196,9 @@ namespace Microsoft.Extensions.Caching.Memory
 
             CheckDisposed();
             CacheEntry entry;
-            _entryLock.EnterReadLock();
-            try
+            if (_entries.TryGetValue(key, out entry))
             {
-                if (_entries.TryGetValue(key, out entry))
-                {
-                    entry.SetExpired(EvictionReason.Removed);
-                }
-            }
-            finally
-            {
-                _entryLock.ExitReadLock();
+                entry.SetExpired(EvictionReason.Removed);
             }
 
             if (entry != null)
@@ -237,43 +212,27 @@ namespace Microsoft.Extensions.Caching.Memory
 
         private void RemoveEntry(CacheEntry entry)
         {
-            _entryLock.EnterWriteLock();
-            try
+            // Only remove it if someone hasn't modified it since our lookup
+            CacheEntry currentEntry;
+            if (_entries.TryGetValue(entry.Key, out currentEntry)
+                && object.ReferenceEquals(currentEntry, entry))
             {
-                // Only remove it if someone hasn't modified it since our lookup
-                CacheEntry currentEntry;
-                if (_entries.TryGetValue(entry.Key, out currentEntry)
-                    && object.ReferenceEquals(currentEntry, entry))
-                {
-                    _entries.Remove(entry.Key);
-                }
-            }
-            finally
-            {
-                _entryLock.ExitWriteLock();
+                _entries.TryRemove(entry.Key, out currentEntry);
             }
             entry.InvokeEvictionCallbacks();
         }
 
         private void RemoveEntries(List<CacheEntry> entries)
         {
-            _entryLock.EnterWriteLock();
-            try
+            foreach (var entry in entries)
             {
-                foreach (var entry in entries)
+                // Only remove it if someone hasn't modified it since our lookup
+                CacheEntry currentEntry;
+                if (_entries.TryGetValue(entry.Key, out currentEntry)
+                    && object.ReferenceEquals(currentEntry, entry))
                 {
-                    // Only remove it if someone hasn't modified it since our lookup
-                    CacheEntry currentEntry;
-                    if (_entries.TryGetValue(entry.Key, out currentEntry)
-                        && object.ReferenceEquals(currentEntry, entry))
-                    {
-                        _entries.Remove(entry.Key);
-                    }
+                    _entries.TryRemove(entry.Key, out currentEntry);
                 }
-            }
-            finally
-            {
-                _entryLock.ExitWriteLock();
             }
 
             foreach (var entry in entries)
@@ -306,21 +265,13 @@ namespace Microsoft.Extensions.Caching.Memory
         {
             List<CacheEntry> expiredEntries = new List<CacheEntry>();
 
-            cache._entryLock.EnterReadLock();
-            try
+            var now = cache._clock.UtcNow;
+            foreach (var entry in cache._entries)
             {
-                var now = cache._clock.UtcNow;
-                foreach (var entry in cache._entries.Values)
+                if (entry.Value.CheckExpired(now))
                 {
-                    if (entry.CheckExpired(now))
-                    {
-                        expiredEntries.Add(entry);
-                    }
+                    expiredEntries.Add(entry.Value);
                 }
-            }
-            finally
-            {
-                cache._entryLock.ExitReadLock();
             }
 
             cache.RemoveEntries(expiredEntries);
@@ -355,51 +306,43 @@ namespace Microsoft.Extensions.Caching.Memory
             List<CacheEntry> highPriEntries = new List<CacheEntry>();
             List<CacheEntry> neverRemovePriEntries = new List<CacheEntry>();
 
-            _entryLock.EnterReadLock();
-            try
+            // Sort items by expired & priority status
+            var now = _clock.UtcNow;
+            foreach (var entry in _entries)
             {
-                // Sort items by expired & priority status
-                var now = _clock.UtcNow;
-                foreach (var entry in _entries.Values)
+                if (entry.Value.CheckExpired(now))
                 {
-                    if (entry.CheckExpired(now))
+                    expiredEntries.Add(entry.Value);
+                }
+                else
+                {
+                    switch (entry.Value.Priority)
                     {
-                        expiredEntries.Add(entry);
-                    }
-                    else
-                    {
-                        switch (entry.Priority)
-                        {
-                            case CacheItemPriority.Low:
-                                lowPriEntries.Add(entry);
-                                break;
-                            case CacheItemPriority.Normal:
-                                normalPriEntries.Add(entry);
-                                break;
-                            case CacheItemPriority.High:
-                                highPriEntries.Add(entry);
-                                break;
-                            case CacheItemPriority.NeverRemove:
-                                neverRemovePriEntries.Add(entry);
-                                break;
-                            default:
-                                System.Diagnostics.Debug.Assert(false, "Not implemented: " + entry.Priority);
-                                break;
-                        }
+                        case CacheItemPriority.Low:
+                            lowPriEntries.Add(entry.Value);
+                            break;
+                        case CacheItemPriority.Normal:
+                            normalPriEntries.Add(entry.Value);
+                            break;
+                        case CacheItemPriority.High:
+                            highPriEntries.Add(entry.Value);
+                            break;
+                        case CacheItemPriority.NeverRemove:
+                            neverRemovePriEntries.Add(entry.Value);
+                            break;
+                        default:
+                            System.Diagnostics.Debug.Assert(false, "Not implemented: " + entry.Value.Priority);
+                            break;
                     }
                 }
-
-                int totalEntries = expiredEntries.Count + lowPriEntries.Count + normalPriEntries.Count + highPriEntries.Count + neverRemovePriEntries.Count;
-                int removalCountTarget = (int)(totalEntries * percentage);
-
-                ExpirePriorityBucket(removalCountTarget, expiredEntries, lowPriEntries);
-                ExpirePriorityBucket(removalCountTarget, expiredEntries, normalPriEntries);
-                ExpirePriorityBucket(removalCountTarget, expiredEntries, highPriEntries);
             }
-            finally
-            {
-                _entryLock.ExitReadLock();
-            }
+
+            int totalEntries = expiredEntries.Count + lowPriEntries.Count + normalPriEntries.Count + highPriEntries.Count + neverRemovePriEntries.Count;
+            int removalCountTarget = (int)(totalEntries * percentage);
+
+            ExpirePriorityBucket(removalCountTarget, expiredEntries, lowPriEntries);
+            ExpirePriorityBucket(removalCountTarget, expiredEntries, normalPriEntries);
+            ExpirePriorityBucket(removalCountTarget, expiredEntries, highPriEntries);
 
             RemoveEntries(expiredEntries);
         }
