@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         /// <inheritdoc />
         public virtual string GetKey(Secret secret)
         {
-            return secret.SecretIdentifier.Name.Replace("__", ConfigurationPath.KeyDelimiter);
+            return secret.SecretIdentifier.Name.Replace("--", ConfigurationPath.KeyDelimiter);
         }
 
         /// <inheritdoc />

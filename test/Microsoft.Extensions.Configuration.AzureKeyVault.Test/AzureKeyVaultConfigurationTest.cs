@@ -103,10 +103,10 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         }
 
         [Fact]
-        public void ReplaceDoubleUnderscoreInKeyName()
+        public void ReplaceDoubleMinusInKeyName()
         {
             var client = new Mock<IKeyVaultClient>(MockBehavior.Strict);
-            var secret1Id = GetSecretId("Section__Secret1");
+            var secret1Id = GetSecretId("Section--Secret1");
 
             client.Setup(c => c.GetSecretsAsync(VaultUri)).ReturnsAsync(new ListSecretsResponseMessage()
             {
