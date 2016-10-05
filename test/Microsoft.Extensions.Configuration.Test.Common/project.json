@@ -4,7 +4,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.Extensions.Configuration": "1.0.0",
+    "Microsoft.Extensions.Configuration": "1.0.1",
     "Microsoft.Extensions.FileProviders.Physical": "1.0.0"
   },
   "frameworks": {

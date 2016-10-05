@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.1",
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
@@ -7,7 +7,7 @@
   },
   "description": "Implementation of key-value pair based configuration for Microsoft.Extensions.Configuration. Includes the memory configuration provider.",
   "dependencies": {
-    "Microsoft.Extensions.Configuration.Abstractions": "1.0.0"
+    "Microsoft.Extensions.Configuration.Abstractions": "1.0.1"
   },
   "packOptions": {
     "repository": {

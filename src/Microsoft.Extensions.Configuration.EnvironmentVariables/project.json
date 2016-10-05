@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.1",
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
@@ -18,7 +18,7 @@
     ]
   },
   "dependencies": {
-    "Microsoft.Extensions.Configuration": "1.0.0"
+    "Microsoft.Extensions.Configuration": "1.0.1"
   },
   "frameworks": {
     "net451": {
