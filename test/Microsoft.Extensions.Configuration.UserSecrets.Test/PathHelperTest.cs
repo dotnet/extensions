@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
         {
             string userSecretsId;
             var projectPath = UserSecretHelper.GetTempSecretProject(out userSecretsId);
-            var actualSecretPath = PathHelper.GetSecretsPath(projectPath);
+            var actualSecretPath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
 
             var root = Environment.GetEnvironmentVariable("APPDATA") ??         // On Windows it goes to %APPDATA%\Microsoft\UserSecrets\
                         Environment.GetEnvironmentVariable("HOME");             // On Mac/Linux it goes to ~/.microsoft/usersecrets/
@@ -26,6 +26,19 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
             Assert.Equal(expectedSecretPath, actualSecretPath);
 
             UserSecretHelper.DeleteTempSecretProject(projectPath);
+        }
+
+        [Fact]
+        public void Throws_If_UserSecretId_Contains_Invalid_Characters()
+        {
+            foreach (var character in Path.GetInvalidPathChars())
+            {
+                var id = "Test" + character;
+                Assert.Throws<InvalidOperationException>(() =>
+                {
+                    PathHelper.GetSecretsPathFromSecretsId(id);
+                });
+            }
         }
 
         [Fact]
@@ -52,23 +65,6 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
             {
                 PathHelper.GetSecretsPath(projectPath);
             });
-
-            UserSecretHelper.DeleteTempSecretProject(projectPath);
-        }
-
-        [Fact]
-        public void Throws_If_UserSecretId_Contains_Invalid_Characters()
-        {
-            var projectPath = UserSecretHelper.GetTempSecretProject();
-
-            foreach (var character in Path.GetInvalidPathChars())
-            {
-                UserSecretHelper.SetTempSecretInProject(projectPath, "Test" + character);
-                Assert.Throws<InvalidOperationException>(() =>
-                {
-                    PathHelper.GetSecretsPath(projectPath);
-                });
-            }
 
             UserSecretHelper.DeleteTempSecretProject(projectPath);
         }

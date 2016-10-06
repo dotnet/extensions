@@ -4,17 +4,22 @@
 using System;
 using System.Linq;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.Extensions.Configuration.UserSecrets.Test
 {
+
     public class ConfigurationExtensionTest
     {
         private void SetSecret(string id, string key, string value)
         {
             var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(id);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(secretsFilePath));
+
             var secrets = new ConfigurationBuilder()
                 .AddJsonFile(secretsFilePath, optional: true)
                 .Build()
@@ -24,7 +29,6 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
 
             secrets[key] = value;
 
-            Directory.CreateDirectory(Path.GetDirectoryName(secretsFilePath));
 
             var contents = new JObject();
             if (secrets != null)
@@ -38,7 +42,6 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
             File.WriteAllText(secretsFilePath, contents.ToString(), Encoding.UTF8);
         }
 
-
         [Fact]
         public void AddUserSecrets_Does_Not_Fail_On_Non_Existing_File_Explicitly_Passed()
         {
@@ -49,9 +52,11 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
         [Fact]
         public void AddUserSecrets_Does_Not_Fail_On_Non_Existing_File()
         {
-            var projectPath = UserSecretHelper.GetTempSecretProject();
+            string userSecretsId;
+            var projectPath = UserSecretHelper.GetTempSecretProject(out userSecretsId);
 
             var builder = new ConfigurationBuilder().SetBasePath(projectPath).AddUserSecrets();
+
             var configuration = builder.Build();
             Assert.Equal(null, configuration["Facebook:AppSecret"]);
 
