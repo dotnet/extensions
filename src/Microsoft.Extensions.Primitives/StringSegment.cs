@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.Extensions.Primitives
 {
@@ -29,12 +30,12 @@ namespace Microsoft.Extensions.Primitives
         /// <param name="buffer">The original <see cref="string"/> used as buffer.</param>
         /// <param name="offset">The offset of the segment within the <paramref name="buffer"/>.</param>
         /// <param name="length">The length of the segment.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringSegment(string buffer, int offset, int length)
         {
-            // This .ctor is specially arranged to allow it to inline
+            // This .ctor is specially arranged to allow it to be very small when inlines 50 IL bytes
             // If either offset or length is negative, then (offset | length) < 0.
-            // Testing them individually causes to many blocks for the inliner to decide its profitable
-            // Current result: Successfully inlined StringSegment:.ctor(ref, int, int):this(50 IL bytes)(depth 1)[profitable inline]
+            // Testing them individually causes too many blocks for the inliner to decide its profitable
             if (buffer == null || (offset | length) < 0 || offset > buffer.Length - length)
             {
                 ThrowInvalidArguments(buffer, offset, length);
