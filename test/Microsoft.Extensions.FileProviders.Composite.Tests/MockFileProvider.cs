@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.FileProviders.Composite
             {
                 return new EnumerableDirectoryContents(filesInFolder);
             }
-            return new NotFoundDirectoryContents();
+            return NotFoundDirectoryContents.Singleton;
         }
 
         public IFileInfo GetFileInfo(string subpath)

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.FileProviders.Internal;
 using Microsoft.Extensions.FileProviders.Physical;
 using Microsoft.Extensions.FileSystemGlobbing.Tests.TestUtility;
 using Xunit;
@@ -547,7 +548,7 @@ namespace Microsoft.Extensions.FileProviders
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
                 var contents = provider.GetDirectoryContents(path);
-                Assert.IsType(typeof(EnumerableDirectoryContents), contents);
+                Assert.IsType<PhysicalDirectoryContents>(contents);
             }
         }
 

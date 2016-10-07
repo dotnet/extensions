@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.FileProviders.Internal;
 using Microsoft.Extensions.FileProviders.Physical;
 using Microsoft.Extensions.Primitives;
 
@@ -211,7 +212,7 @@ namespace Microsoft.Extensions.FileProviders
             {
                 if (subpath == null || HasInvalidPathChars(subpath))
                 {
-                    return new NotFoundDirectoryContents();
+                    return NotFoundDirectoryContents.Singleton;
                 }
 
                 // Relative paths starting with leading slashes are okay
@@ -220,34 +221,16 @@ namespace Microsoft.Extensions.FileProviders
                 // Absolute paths not permitted.
                 if (Path.IsPathRooted(subpath))
                 {
-                    return new NotFoundDirectoryContents();
+                    return NotFoundDirectoryContents.Singleton;
                 }
 
                 var fullPath = GetFullPath(subpath);
                 if (fullPath == null || !Directory.Exists(fullPath))
                 {
-                    return new NotFoundDirectoryContents();
+                    return NotFoundDirectoryContents.Singleton;
                 }
 
-                var contents = new DirectoryInfo(fullPath)
-                    .EnumerateFileSystemInfos()
-                    .Where(info => !FileSystemInfoHelper.IsHiddenFile(info))
-                    .Select<FileSystemInfo, IFileInfo>(info =>
-                    {
-                        // TODO use pattern matching in C# 7
-                        if (info is FileInfo)
-                        {
-                            return new PhysicalFileInfo((FileInfo)info);
-                        }
-                        else if (info is DirectoryInfo)
-                        {
-                            return new PhysicalDirectoryInfo((DirectoryInfo)info);
-                        }
-                        // shouldn't happen unless BCL introduces new implementation of base type
-                        throw new InvalidOperationException("Unexpected type of FileSystemInfo");
-                    });
-
-                return new EnumerableDirectoryContents(contents);
+                return new PhysicalDirectoryContents(fullPath);
             }
             catch (DirectoryNotFoundException)
             {
@@ -255,9 +238,8 @@ namespace Microsoft.Extensions.FileProviders
             catch (IOException)
             {
             }
-            return new NotFoundDirectoryContents();
+            return NotFoundDirectoryContents.Singleton;
         }
-
 
         /// <summary>
         ///     <para>Creates a <see cref="IChangeToken" /> for the specified <paramref name="filter" />.</para>

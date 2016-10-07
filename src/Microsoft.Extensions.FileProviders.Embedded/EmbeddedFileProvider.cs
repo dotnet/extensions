@@ -138,7 +138,7 @@ namespace Microsoft.Extensions.FileProviders
             // The file name is assumed to be the remainder of the resource name.
             if (subpath == null)
             {
-                return new NotFoundDirectoryContents();
+                return NotFoundDirectoryContents.Singleton;
             }
 
             // Relative paths starting with a leading slash okay
@@ -150,7 +150,7 @@ namespace Microsoft.Extensions.FileProviders
             // Non-hierarchal.
             if (!subpath.Equals(string.Empty))
             {
-                return new NotFoundDirectoryContents();
+                return NotFoundDirectoryContents.Singleton;
             }
 
             var entries = new List<IFileInfo>();

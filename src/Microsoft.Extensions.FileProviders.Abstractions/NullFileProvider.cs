@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.FileProviders
         /// </summary>
         /// <param name="subpath">A path under the root directory. This parameter is ignored.</param>
         /// <returns>A <see cref="IDirectoryContents"/> that does not exist and does not contain any contents.</returns>
-        public IDirectoryContents GetDirectoryContents(string subpath) => new NotFoundDirectoryContents();
+        public IDirectoryContents GetDirectoryContents(string subpath) => NotFoundDirectoryContents.Singleton;
 
         /// <summary>
         /// Locate a non-existent file.
