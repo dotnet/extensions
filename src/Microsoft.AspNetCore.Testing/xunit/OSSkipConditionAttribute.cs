@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Testing.xunit
 {
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly, AllowMultiple = true)]
     public class OSSkipConditionAttribute : Attribute, ITestCondition
     {
         private readonly OperatingSystems _excludedOperatingSystem;

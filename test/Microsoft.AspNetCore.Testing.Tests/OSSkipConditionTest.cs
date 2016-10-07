@@ -45,4 +45,16 @@ namespace Microsoft.AspNetCore.Testing.xunit
                 "Test should not be running on Windows.");
         }
     }
+
+    [OSSkipCondition(OperatingSystems.Windows)]
+    public class OSSkipConditionClassTest
+    {
+        [ConditionalFact]
+        public void TestSkipClassWindows()
+        {
+            Assert.False(
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
+                "Test should not be running on Windows.");
+        }
+    }
 }

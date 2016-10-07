@@ -46,8 +46,12 @@ namespace Microsoft.AspNetCore.Testing.xunit
 
         private string EvaluateSkipConditions(ITestMethod testMethod)
         {
+            var testClass = testMethod.TestClass.Class;
+            var assembly = testMethod.TestClass.TestCollection.TestAssembly.Assembly;
             var conditionAttributes = testMethod.Method
                 .GetCustomAttributes(typeof(ITestCondition))
+                .Concat(testClass.GetCustomAttributes(typeof(ITestCondition)))
+                .Concat(assembly.GetCustomAttributes(typeof(ITestCondition)))
                 .OfType<ReflectionAttributeInfo>()
                 .Select(attributeInfo => attributeInfo.Attribute);
 
