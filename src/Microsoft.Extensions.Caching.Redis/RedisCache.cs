@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
@@ -30,11 +31,16 @@ namespace Microsoft.Extensions.Caching.Redis
 
         private ConnectionMultiplexer _connection;
         private IDatabase _cache;
+        private readonly ILogger _logger;
 
         private readonly RedisCacheOptions _options;
         private readonly string _instance;
 
         public RedisCache(IOptions<RedisCacheOptions> optionsAccessor)
+            : this(optionsAccessor, loggerFactory: null)
+        { }
+
+        public RedisCache(IOptions<RedisCacheOptions> optionsAccessor, ILoggerFactory loggerFactory)
         {
             if (optionsAccessor == null)
             {
@@ -45,6 +51,7 @@ namespace Microsoft.Extensions.Caching.Redis
 
             // This allows partitioning a single backend cache for use with multiple apps/services.
             _instance = _options.InstanceName ?? string.Empty;
+            _logger = loggerFactory?.CreateLogger<RedisCache>();
         }
 
         public byte[] Get(string key)
@@ -84,20 +91,27 @@ namespace Microsoft.Extensions.Caching.Redis
                 throw new ArgumentNullException(nameof(options));
             }
 
-            Connect();
+            try
+            {
+                Connect();
 
-            var creationTime = DateTimeOffset.UtcNow;
+                var creationTime = DateTimeOffset.UtcNow;
 
-            var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
+                var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
-            var result = _cache.ScriptEvaluate(SetScript, new RedisKey[] { _instance + key },
-                new RedisValue[]
-                {
+                var result = _cache.ScriptEvaluate(SetScript, new RedisKey[] { _instance + key },
+                    new RedisValue[]
+                    {
                         absoluteExpiration?.Ticks ?? NotPresent,
                         options.SlidingExpiration?.Ticks ?? NotPresent,
                         GetExpirationInSeconds(creationTime, absoluteExpiration, options) ?? NotPresent,
                         value
-                });
+                    });
+            }
+            catch (Exception ex)
+            {
+                LogSuppressedException(ex);
+            }
         }
 
         public async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options)
@@ -117,20 +131,27 @@ namespace Microsoft.Extensions.Caching.Redis
                 throw new ArgumentNullException(nameof(options));
             }
 
-            await ConnectAsync();
+            try
+            {
+                await ConnectAsync();
 
-            var creationTime = DateTimeOffset.UtcNow;
+                var creationTime = DateTimeOffset.UtcNow;
 
-            var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
+                var absoluteExpiration = GetAbsoluteExpiration(creationTime, options);
 
-            await _cache.ScriptEvaluateAsync(SetScript, new RedisKey[] { _instance + key },
-                new RedisValue[]
-                {
+                await _cache.ScriptEvaluateAsync(SetScript, new RedisKey[] { _instance + key },
+                    new RedisValue[]
+                    {
                         absoluteExpiration?.Ticks ?? NotPresent,
                         options.SlidingExpiration?.Ticks ?? NotPresent,
                         GetExpirationInSeconds(creationTime, absoluteExpiration, options) ?? NotPresent,
                         value
-                });
+                    });
+            }
+            catch (Exception ex)
+            {
+                LogSuppressedException(ex);
+            }
         }
 
         public void Refresh(string key)
@@ -178,34 +199,41 @@ namespace Microsoft.Extensions.Caching.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            Connect();
+            try
+            {
+                Connect();
 
-            // This also resets the LRU status as desired.
-            // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
-            RedisValue[] results;
-            if (getData)
-            {
-                results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey);
-            }
-            else
-            {
-                results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey);
-            }
+                // This also resets the LRU status as desired.
+                // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
+                RedisValue[] results;
+                if (getData)
+                {
+                    results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey);
+                }
+                else
+                {
+                    results = _cache.HashMemberGet(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey);
+                }
 
-            // TODO: Error handling
-            if (results.Length >= 2)
-            {
-                // Note we always get back two results, even if they are all null.
-                // These operations will no-op in the null scenario.
-                DateTimeOffset? absExpr;
-                TimeSpan? sldExpr;
-                MapMetadata(results, out absExpr, out sldExpr);
-                Refresh(key, absExpr, sldExpr);
-            }
+                // TODO: Error handling
+                if (results.Length >= 2)
+                {
+                    // Note we always get back two results, even if they are all null.
+                    // These operations will no-op in the null scenario.
+                    DateTimeOffset? absExpr;
+                    TimeSpan? sldExpr;
+                    MapMetadata(results, out absExpr, out sldExpr);
+                    Refresh(key, absExpr, sldExpr);
+                }
 
-            if (results.Length >= 3 && results[2].HasValue)
+                if (results.Length >= 3 && results[2].HasValue)
+                {
+                    return results[2];
+                }
+            }
+            catch (Exception ex)
             {
-                return results[2];
+                LogSuppressedException(ex);
             }
 
             return null;
@@ -218,34 +246,41 @@ namespace Microsoft.Extensions.Caching.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            await ConnectAsync();
+            try
+            {
+                await ConnectAsync();
 
-            // This also resets the LRU status as desired.
-            // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
-            RedisValue[] results;
-            if (getData)
-            {
-                results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey);
-            }
-            else
-            {
-                results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey);
-            }
+                // This also resets the LRU status as desired.
+                // TODO: Can this be done in one operation on the server side? Probably, the trick would just be the DateTimeOffset math.
+                RedisValue[] results;
+                if (getData)
+                {
+                    results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey, DataKey);
+                }
+                else
+                {
+                    results = await _cache.HashMemberGetAsync(_instance + key, AbsoluteExpirationKey, SlidingExpirationKey);
+                }
 
-            // TODO: Error handling
-            if (results.Length >= 2)
-            {
-                // Note we always get back two results, even if they are all null.
-                // These operations will no-op in the null scenario.
-                DateTimeOffset? absExpr;
-                TimeSpan? sldExpr;
-                MapMetadata(results, out absExpr, out sldExpr);
-                await RefreshAsync(key, absExpr, sldExpr);
-            }
+                // TODO: Error handling
+                if (results.Length >= 2)
+                {
+                    // Note we always get back two results, even if they are all null.
+                    // These operations will no-op in the null scenario.
+                    DateTimeOffset? absExpr;
+                    TimeSpan? sldExpr;
+                    MapMetadata(results, out absExpr, out sldExpr);
+                    await RefreshAsync(key, absExpr, sldExpr);
+                }
 
-            if (results.Length >= 3 && results[2].HasValue)
+                if (results.Length >= 3 && results[2].HasValue)
+                {
+                    return results[2];
+                }
+            }
+            catch (Exception ex)
             {
-                return results[2];
+                LogSuppressedException(ex);
             }
 
             return null;
@@ -258,10 +293,16 @@ namespace Microsoft.Extensions.Caching.Redis
                 throw new ArgumentNullException(nameof(key));
             }
 
-            Connect();
+            try
+            {
+                Connect();
 
-            _cache.KeyDelete(_instance + key);
-            // TODO: Error handling
+                _cache.KeyDelete(_instance + key);
+            }
+            catch (Exception ex)
+            {
+                LogSuppressedException(ex);
+            }
         }
 
         public async Task RemoveAsync(string key)
@@ -270,11 +311,16 @@ namespace Microsoft.Extensions.Caching.Redis
             {
                 throw new ArgumentNullException(nameof(key));
             }
+            try
+            {
+                await ConnectAsync();
 
-            await ConnectAsync();
-
-            await _cache.KeyDeleteAsync(_instance + key);
-            // TODO: Error handling
+                await _cache.KeyDeleteAsync(_instance + key);
+            }
+            catch (Exception ex)
+            {
+                LogSuppressedException(ex);
+            }
         }
 
         private void MapMetadata(RedisValue[] results, out DateTimeOffset? absoluteExpiration, out TimeSpan? slidingExpiration)
@@ -379,6 +425,9 @@ namespace Microsoft.Extensions.Caching.Redis
 
             return absoluteExpiration;
         }
+
+        private void LogSuppressedException(Exception ex)
+            => _logger?.ExceptionSuppressed(ex);
 
         public void Dispose()
         {

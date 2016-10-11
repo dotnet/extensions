@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Caching.SqlServer
@@ -23,8 +24,13 @@ namespace Microsoft.Extensions.Caching.SqlServer
         private DateTimeOffset _lastExpirationScan;
         private readonly Action _deleteExpiredCachedItemsDelegate;
         private readonly TimeSpan _defaultSlidingExpiration;
+        private readonly ILogger _logger;
 
         public SqlServerCache(IOptions<SqlServerCacheOptions> options)
+            : this(options, loggerFactory: null)
+        { }
+
+        public SqlServerCache(IOptions<SqlServerCacheOptions> options, ILoggerFactory loggerFactory)
         {
             var cacheOptions = options.Value;
 
@@ -58,6 +64,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     "The sliding expiration value must be positive.");
             }
 
+            _logger = loggerFactory?.CreateLogger<SqlServerCache>();
             _systemClock = cacheOptions.SystemClock ?? new SystemClock();
             _expiredItemsDeletionInterval =
                 cacheOptions.ExpiredItemsDeletionInterval ?? DefaultExpiredItemsDeletionInterval;
@@ -92,11 +99,20 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 throw new ArgumentNullException(nameof(key));
             }
 
-            var value = _dbOperations.GetCacheItem(key);
+            try
+            {
+                var value = _dbOperations.GetCacheItem(key);
 
-            ScanForExpiredItemsIfRequired();
+                ScanForExpiredItemsIfRequired();
 
-            return value;
+                return value;
+            }
+            catch (Exception ex)
+            {
+                LogSuppressedException(ex);
+            }
+
+            return null;
         }
 
         public async Task<byte[]> GetAsync(string key)
@@ -106,11 +122,20 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 throw new ArgumentNullException(nameof(key));
             }
 
-            var value = await _dbOperations.GetCacheItemAsync(key);
+            try
+            {
+                var value = await _dbOperations.GetCacheItemAsync(key);
 
-            ScanForExpiredItemsIfRequired();
+                ScanForExpiredItemsIfRequired();
 
-            return value;
+                return value;
+            }
+            catch (Exception ex)
+            {
+                LogSuppressedException(ex);
+            }
+
+            return null;
         }
 
         public void Refresh(string key)
@@ -120,9 +145,16 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 throw new ArgumentNullException(nameof(key));
             }
 
-            _dbOperations.RefreshCacheItem(key);
+            try
+            {
+                _dbOperations.RefreshCacheItem(key);
 
-            ScanForExpiredItemsIfRequired();
+                ScanForExpiredItemsIfRequired();
+            }
+            catch (Exception ex)
+            {
+                LogSuppressedException(ex);
+            }
         }
 
         public async Task RefreshAsync(string key)
@@ -132,9 +164,16 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 throw new ArgumentNullException(nameof(key));
             }
 
-            await _dbOperations.RefreshCacheItemAsync(key);
+            try
+            {
+                await _dbOperations.RefreshCacheItemAsync(key);
 
-            ScanForExpiredItemsIfRequired();
+                ScanForExpiredItemsIfRequired();
+            }
+            catch (Exception ex)
+            {
+                LogSuppressedException(ex);
+            }
         }
 
         public void Remove(string key)
@@ -144,9 +183,16 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 throw new ArgumentNullException(nameof(key));
             }
 
-            _dbOperations.DeleteCacheItem(key);
+            try
+            {
+                _dbOperations.DeleteCacheItem(key);
 
-            ScanForExpiredItemsIfRequired();
+                ScanForExpiredItemsIfRequired();
+            }
+            catch (Exception ex)
+            {
+                LogSuppressedException(ex);
+            }
         }
 
         public async Task RemoveAsync(string key)
@@ -156,9 +202,16 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 throw new ArgumentNullException(nameof(key));
             }
 
-            await _dbOperations.DeleteCacheItemAsync(key);
+            try
+            {
+                await _dbOperations.DeleteCacheItemAsync(key);
 
-            ScanForExpiredItemsIfRequired();
+                ScanForExpiredItemsIfRequired();
+            }
+            catch (Exception ex)
+            {
+                LogSuppressedException(ex);
+            }
         }
 
         public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
@@ -179,10 +232,16 @@ namespace Microsoft.Extensions.Caching.SqlServer
             }
 
             GetOptions(ref options);
+            try
+            {
+                _dbOperations.SetCacheItem(key, value, options);
 
-            _dbOperations.SetCacheItem(key, value, options);
-
-            ScanForExpiredItemsIfRequired();
+                ScanForExpiredItemsIfRequired();
+            }
+            catch (Exception ex)
+            {
+                LogSuppressedException(ex);
+            }
         }
 
         public async Task SetAsync(
@@ -207,9 +266,16 @@ namespace Microsoft.Extensions.Caching.SqlServer
 
             GetOptions(ref options);
 
-            await _dbOperations.SetCacheItemAsync(key, value, options);
+            try
+            {
+                await _dbOperations.SetCacheItemAsync(key, value, options);
 
-            ScanForExpiredItemsIfRequired();
+                ScanForExpiredItemsIfRequired();
+            }
+            catch (Exception ex)
+            {
+                LogSuppressedException(ex);
+            }
         }
 
         // Called by multiple actions to see how long it's been since we last checked for expired items.
@@ -242,5 +308,8 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 };
             }
         }
+
+        private void LogSuppressedException(Exception ex)
+            => _logger?.ExceptionSuppressed(ex);
     }
 }
