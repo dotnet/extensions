@@ -621,7 +621,7 @@ IniKey1=IniValue2");
             File.WriteAllText(iniFile, @"IniKey1 = IniValue1");
             File.WriteAllText(xmlFile, @"<settings XmlKey1=""XmlValue1""/>");
 
-            await Task.Delay(1100);
+            await Task.Delay(2000);
 
             Assert.Equal("JsonValue1", config["JsonKey1"]);
             Assert.Equal("IniValue1", config["IniKey1"]);
