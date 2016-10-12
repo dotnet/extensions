@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Options
         TOptions CurrentValue { get; }
 
         /// <summary>
-        /// Registers the listener to be called whenever TOptions changes.
+        /// Registers a listener to be called whenever TOptions changes.
         /// </summary>
         /// <param name="listener">The action to be invoked when TOptions has changed.</param>
         /// <returns>An IDisposable which should be disposed to stop listening for changes.</returns>
