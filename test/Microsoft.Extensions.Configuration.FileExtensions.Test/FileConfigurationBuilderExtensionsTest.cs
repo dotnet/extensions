@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.Configuration.Json
 
             string expectedPath;
 
-#if NETCOREAPP1_0
+#if NETCOREAPP1_1
             expectedPath = AppContext.BaseDirectory;
 #else
             expectedPath = Path.GetFullPath(AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ?? 
