@@ -804,7 +804,7 @@ IniKey1=IniValue2");
             var builder = new ConfigurationBuilder();
             string filePath;
 
-#if NETCOREAPP1_1
+#if NETCOREAPP1_0
             filePath = AppContext.BaseDirectory;
 #else
             filePath = Path.GetFullPath(AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
