@@ -116,5 +116,15 @@ namespace Microsoft.Extensions.DependencyInjection
             var genericEnumerable = typeof(IEnumerable<>).MakeGenericType(serviceType);
             return (IEnumerable<object>)provider.GetRequiredService(genericEnumerable);
         }
+
+        /// <summary>
+        /// Creates a new <see cref="IServiceScope"/> that can be used to resolve scoped services.
+        /// </summary>
+        /// <param name="provider">The <see cref="IServiceProvider"/> to create the scope from.</param>
+        /// <returns>A <see cref="IServiceScope"/> that can be used to resolve scoped services.</returns>
+        public static IServiceScope CreateScope(this IServiceProvider provider)
+        {
+            return provider.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        }
     }
 }

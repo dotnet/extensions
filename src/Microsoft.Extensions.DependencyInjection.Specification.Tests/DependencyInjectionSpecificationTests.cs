@@ -109,8 +109,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Act
             var service1 = provider.GetService<IFakeService>();
 
-            var scopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
-            using (var scope = scopeFactory.CreateScope())
+            using (var scope = provider.CreateScope())
             {
                 var scopedService1 = scope.ServiceProvider.GetService<IFakeService>();
                 var scopedService2 = scope.ServiceProvider.GetService<IFakeService>();
@@ -333,8 +332,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var provider = CreateServiceProvider(collection);
 
             // Act
-            var scopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
-            using (var scope = scopeFactory.CreateScope())
+            using (var scope = provider.CreateScope())
             {
                 var providerScopedService = provider.GetService<IFakeScopedService>();
                 var scopedService1 = scope.ServiceProvider.GetService<IFakeScopedService>();
@@ -355,20 +353,16 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var provider = CreateServiceProvider(collection);
 
             // Act
-            var outerScopeFactory = provider.GetService<IServiceScopeFactory>();
-            using (var outerScope = outerScopeFactory.CreateScope())
+            using (var outerScope = provider.CreateScope())
+            using (var innerScope = outerScope.ServiceProvider.CreateScope())
             {
-                var innerScopeFactory = outerScope.ServiceProvider.GetService<IServiceScopeFactory>();
-                using (var innerScope = innerScopeFactory.CreateScope())
-                {
-                    var outerScopedService = outerScope.ServiceProvider.GetService<IFakeScopedService>();
-                    var innerScopedService = innerScope.ServiceProvider.GetService<IFakeScopedService>();
+                var outerScopedService = outerScope.ServiceProvider.GetService<IFakeScopedService>();
+                var innerScopedService = innerScope.ServiceProvider.GetService<IFakeScopedService>();
 
-                    // Assert
-                    Assert.NotNull(outerScopedService);
-                    Assert.NotNull(innerScopedService);
-                    Assert.NotSame(outerScopedService, innerScopedService);
-                }
+                // Assert
+                Assert.NotNull(outerScopedService);
+                Assert.NotNull(innerScopedService);
+                Assert.NotSame(outerScopedService, innerScopedService);
             }
         }
 
@@ -387,10 +381,8 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
                 FakeService outerScopedService;
                 using (var outerScope = cachedScopeFactory.CreateScope())
                 {
-                    var innerScopeFactory = outerScope.ServiceProvider.GetService<IServiceScopeFactory>();
-
                     FakeService innerScopedService;
-                    using (var innerScope = innerScopeFactory.CreateScope())
+                    using (var innerScope = outerScope.ServiceProvider.CreateScope())
                     {
                         outerScopedService = outerScope.ServiceProvider.GetService<IFakeScopedService>() as FakeService;
                         innerScopedService = innerScope.ServiceProvider.GetService<IFakeScopedService>() as FakeService;
@@ -426,8 +418,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
 
             // Act and Assert
             var transient3 = Assert.IsType<FakeService>(provider.GetService<IFakeService>());
-            var scopeFactory = provider.GetService<IServiceScopeFactory>();
-            using (var scope = scopeFactory.CreateScope())
+            using (var scope = provider.CreateScope())
             {
                 disposableService = (FakeService)scope.ServiceProvider.GetService<IFakeScopedService>();
                 transient1 = (FakeService)scope.ServiceProvider.GetService<IFakeService>();
@@ -496,8 +487,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             FakeService disposableService2;
 
             // Act and Assert
-            var scopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
-            using (var scope = scopeFactory.CreateScope())
+            using (var scope = provider.CreateScope())
             {
                 var service = scope.ServiceProvider.GetService<IFakeSingletonService>();
                 disposableService1 = Assert.IsType<FakeService>(service);
@@ -506,7 +496,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
 
             Assert.False(disposableService1.Disposed);
 
-            using (var scope = scopeFactory.CreateScope())
+            using (var scope = provider.CreateScope())
             {
                 var service = scope.ServiceProvider.GetService<IFakeSingletonService>();
                 disposableService2 = Assert.IsType<FakeService>(service);
@@ -526,18 +516,14 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var provider = CreateServiceProvider(collection);
 
             // Act
-            var outerScopeFactory = provider.GetService<IServiceScopeFactory>();
-            using (var outerScope = outerScopeFactory.CreateScope())
+            using (var outerScope = provider.CreateScope())
+            using (var innerScope = outerScope.ServiceProvider.CreateScope())
             {
-                var innerScopeFactory = outerScope.ServiceProvider.GetService<IServiceScopeFactory>();
-                using (var innerScope = innerScopeFactory.CreateScope())
-                {
-                    var outerScopedService = outerScope.ServiceProvider.GetService<IFakeScopedService>();
-                    var innerScopedService = innerScope.ServiceProvider.GetService<IFakeScopedService>();
+                var outerScopedService = outerScope.ServiceProvider.GetService<IFakeScopedService>();
+                var innerScopedService = innerScope.ServiceProvider.GetService<IFakeScopedService>();
 
-                    // Assert
-                    Assert.NotSame(outerScopedService, innerScopedService);
-                }
+                // Assert
+                Assert.NotSame(outerScopedService, innerScopedService);
             }
         }
 
