@@ -43,7 +43,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void TypeActivatorEnablesYouToCreateAnyTypeWithServicesEvenWhenNotInIocContainer(CreateInstanceFunc createFunc)
         {
             // Arrange
-            var serviceCollection = new ServiceCollection()
+            var serviceCollection = new TestServiceCollection()
                 .AddTransient<IFakeService, FakeService>();
             var serviceProvider = CreateServiceProvider(serviceCollection);
 
@@ -57,7 +57,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void TypeActivatorAcceptsAnyNumberOfAdditionalConstructorParametersToProvide(CreateInstanceFunc createFunc)
         {
             // Arrange
-            var serviceCollection = new ServiceCollection()
+            var serviceCollection = new TestServiceCollection()
                 .AddTransient<IFakeService, FakeService>();
             var serviceProvider = CreateServiceProvider(serviceCollection);
 
@@ -86,7 +86,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void TypeActivatorWorksWithCtorWithOptionalArgs(CreateInstanceFunc createFunc)
         {
             // Arrange
-            var provider = new ServiceCollection();
+            var provider = new TestServiceCollection();
             var serviceProvider = CreateServiceProvider(provider);
 
             // Act
@@ -102,7 +102,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         public void TypeActivatorCanDisambiguateConstructorsWithUniqueArguments(CreateInstanceFunc createFunc)
         {
             // Arrange
-            var serviceCollection = new ServiceCollection()
+            var serviceCollection = new TestServiceCollection()
                 .AddTransient<IFakeService, FakeService>();
             var serviceProvider = CreateServiceProvider(serviceCollection);
 
@@ -143,7 +143,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             // Arrange
             var expectedMessage = $"A suitable constructor for type '{typeof(AnotherClassAcceptingData).FullName}' could not be located. " +
                 "Ensure the type is concrete and services are registered for all parameters of a public constructor.";
-            var serviceCollection = new ServiceCollection()
+            var serviceCollection = new TestServiceCollection()
                 .AddTransient<IFakeService, FakeService>();
             var serviceProvider = CreateServiceProvider(serviceCollection);
 
@@ -198,7 +198,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             {
                 CreationCountFakeService.InstanceCount = 0;
 
-                var serviceCollection = new ServiceCollection()
+                var serviceCollection = new TestServiceCollection()
                     .AddTransient<IFakeService, FakeService>()
                     .AddTransient<CreationCountFakeService>();
 
@@ -225,7 +225,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
                 // Reset the count because test order is not guaranteed
                 CreationCountFakeService.InstanceCount = 0;
 
-                var serviceCollection = new ServiceCollection()
+                var serviceCollection = new TestServiceCollection()
                     .AddTransient<IFakeService, FakeService>()
                     .AddSingleton<CreationCountFakeService>();
                 var serviceProvider = CreateServiceProvider(serviceCollection);
@@ -252,7 +252,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
                 // Reset the count because test order is not guaranteed
                 CreationCountFakeService.InstanceCount = 0;
 
-                var serviceCollection = new ServiceCollection()
+                var serviceCollection = new TestServiceCollection()
                     .AddTransient<IFakeService, FakeService>();
                 var serviceProvider = CreateServiceProvider(serviceCollection);
 
@@ -275,7 +275,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         [MemberData(nameof(CreateInstanceFuncs))]
         public void UnRegisteredServiceAsConstructorParameterThrowsException(CreateInstanceFunc createFunc)
         {
-            var serviceCollection = new ServiceCollection()
+            var serviceCollection = new TestServiceCollection()
                 .AddSingleton<CreationCountFakeService>();
             var serviceProvider = CreateServiceProvider(serviceCollection);
 
