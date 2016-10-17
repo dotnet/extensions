@@ -26,5 +26,8 @@ nuget.exe
 *.sln.ide
 project.lock.json
 .vs
+.vscode/
 .build/
 .testPublish/
+*.nuget.props
+*.nuget.targets
