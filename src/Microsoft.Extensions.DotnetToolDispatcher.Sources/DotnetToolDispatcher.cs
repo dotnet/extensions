@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Internal
     {
         private const string DispatcherVersionArgumentName = "--dispatcher-version";
 
-        private static readonly string DefaultToolName = PlatformServices.Default.Application.ApplicationName;
+        private static readonly string DispatcherName = PlatformServices.Default.Application.ApplicationName;
 
         public static ICommand CreateDispatchCommand(
             IEnumerable<string> dispatchArgs,
@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.Internal
                     outputPath,
                     buildBasePath,
                     projectDirectory,
-                    DefaultToolName);
+                    DispatcherName);
 
         public static ICommand CreateDispatchCommand(
             IEnumerable<string> dispatchArgs,
@@ -58,7 +58,7 @@ namespace Microsoft.Extensions.Internal
                 buildBasePath,
                 projectDirectory);
 
-            var dispatcherVersionArgumentValue = ResolveDispatcherVersionArgumentValue(toolName);
+            var dispatcherVersionArgumentValue = ResolveDispatcherVersionArgumentValue(DispatcherName);
             var dispatchArgsList = new List<string>(dispatchArgs);
             dispatchArgsList.Add(DispatcherVersionArgumentName);
             dispatchArgsList.Add(dispatcherVersionArgumentValue);
@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.Internal
             !programArgs.Contains(DispatcherVersionArgumentName, StringComparer.OrdinalIgnoreCase);
 
         public static void EnsureValidDispatchRecipient(ref string[] programArgs) =>
-            EnsureValidDispatchRecipient(ref programArgs, DefaultToolName);
+            EnsureValidDispatchRecipient(ref programArgs, DispatcherName);
 
         public static void EnsureValidDispatchRecipient(ref string[] programArgs, string toolName)
         {
