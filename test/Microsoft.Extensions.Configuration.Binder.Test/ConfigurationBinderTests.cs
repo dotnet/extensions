@@ -222,20 +222,6 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
         }
 
         [Fact]
-        public void GetThrowsOnBadInteger()
-        {
-            var dic = new Dictionary<string, string>
-            {
-                {"NotNumber", "gib"}
-            };
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddInMemoryCollection(dic);
-            var config = configurationBuilder.Build();
-
-            Assert.Equal(0, config.GetValue<int>("Integer"));
-        }
-
-        [Fact]
         public void GetDefaultsWhenDataDoesNotExist()
         {
             var dic = new Dictionary<string, string>
