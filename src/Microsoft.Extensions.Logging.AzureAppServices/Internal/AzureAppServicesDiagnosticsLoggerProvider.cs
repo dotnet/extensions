@@ -38,7 +38,8 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
                     settings.FileSizeLimit,
                     settings.RetainedFileCountLimit,
                     settings.BackgroundQueueSize,
-                    settings.OutputTemplate);
+                    settings.OutputTemplate,
+                    settings.FileFlushPeriod);
 
                 _loggerFactory.AddSerilog(fileLoggerProvider.ConfigureLogger(_configurationReader));
                 if (!string.IsNullOrEmpty(config.BlobContainerUrl))

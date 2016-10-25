@@ -41,7 +41,14 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
         /// </summary>
         public string BlobName { get; set; } = "applicationLog.txt";
 
+        /// <summary>
         /// Gets of sets the maximum size of the background log message queue.
+        /// </summary>
         public int BackgroundQueueSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the period after which logs will be flushed to disk.
+        /// </summary>
+        public TimeSpan? FileFlushPeriod { get; set; } = TimeSpan.FromSeconds(1);
     }
 }

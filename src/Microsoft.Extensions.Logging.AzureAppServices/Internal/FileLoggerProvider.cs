@@ -6,6 +6,7 @@ using System.IO;
 using Serilog;
 using Serilog.Core;
 using Serilog.Formatting.Display;
+using Serilog.Sinks.File;
 using Serilog.Sinks.RollingFile;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
@@ -19,6 +20,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
         private readonly int _retainedFileCountLimit;
         private readonly int _backgroundQueueSize;
         private readonly string _outputTemplate;
+        private readonly TimeSpan? _flushPeriod;
 
         private const string FileNamePattern = "diagnostics-{Date}.txt";
 
@@ -29,7 +31,8 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
         /// <param name="retainedFileCountLimit">A strictly positive value representing the maximum retained file count</param>
         /// <param name="backgroundQueueSize">The maximum size of the background queue</param>
         /// <param name="outputTemplate">A message template describing the output messages</param>
-        public FileLoggerProvider(int fileSizeLimit, int retainedFileCountLimit, int backgroundQueueSize, string outputTemplate)
+        /// <param name="flushPeriod">A period after which logs will be flushed to disk</param>
+        public FileLoggerProvider(int fileSizeLimit, int retainedFileCountLimit, int backgroundQueueSize, string outputTemplate, TimeSpan? flushPeriod)
         {
             if (outputTemplate == null)
             {
@@ -48,6 +51,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
             _retainedFileCountLimit = retainedFileCountLimit;
             _backgroundQueueSize = backgroundQueueSize;
             _outputTemplate = outputTemplate;
+            _flushPeriod = flushPeriod;
         }
 
         /// <inheritdoc />
@@ -69,7 +73,17 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
 
             var messageFormatter = new MessageTemplateTextFormatter(_outputTemplate, null);
             var rollingFileSink = new RollingFileSink(logsFilePattern, messageFormatter, _fileSizeLimit, _retainedFileCountLimit);
-            var backgroundSink = new BackgroundSink(rollingFileSink, _backgroundQueueSize);
+
+            ILogEventSink flushingSink;
+            if (_flushPeriod != null)
+            {
+                flushingSink = new PeriodicFlushToDiskSink(rollingFileSink, _flushPeriod.Value);
+            }
+            else
+            {
+                flushingSink = rollingFileSink;
+            }
+            var backgroundSink = new BackgroundSink(flushingSink, _backgroundQueueSize);
 
             var loggerConfiguration = new LoggerConfiguration();
             loggerConfiguration.WriteTo.Sink(backgroundSink);
