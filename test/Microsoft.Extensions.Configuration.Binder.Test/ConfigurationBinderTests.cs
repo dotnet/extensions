@@ -97,9 +97,9 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
-            var options = config.Bind<ConfigurationInterfaceOptions>();
+            var options = config.Get<ConfigurationInterfaceOptions>();
 
-            var childOptions = options.Section.Bind<DerivedOptions>();
+            var childOptions = options.Section.Get<DerivedOptions>();
 
             Assert.True(childOptions.Boolean);
             Assert.Equal(-2, childOptions.Integer);
@@ -127,11 +127,11 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
-            var options = config.Bind<ConfigurationInterfaceOptions>();
+            var options = config.Get<ConfigurationInterfaceOptions>();
 
-            var childOptions = options.Section.Bind<DerivedOptionsWithIConfigurationSection>();
+            var childOptions = options.Section.Get<DerivedOptionsWithIConfigurationSection>();
 
-            var childDerivedOptions = childOptions.DerivedSection.Bind<DerivedOptions>();
+            var childDerivedOptions = childOptions.DerivedSection.Get<DerivedOptions>();
 
             Assert.True(childOptions.Boolean);
             Assert.Equal(-2, childOptions.Integer);
@@ -215,6 +215,24 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             Assert.Equal(0, config.GetValue<int>("Integer"));
             Assert.Equal(0, config.GetValue<int>("Nested:Integer"));
             Assert.Null(config.GetValue<ComplexOptions>("Object"));
+            Assert.False(config.GetSection("Boolean").Get<bool>());
+            Assert.Equal(0, config.GetSection("Integer").Get<int>());
+            Assert.Equal(0, config.GetSection("Nested:Integer").Get<int>());
+            Assert.Null(config.GetSection("Object").Get<ComplexOptions>());
+        }
+
+        [Fact]
+        public void GetThrowsOnBadInteger()
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {"NotNumber", "gib"}
+            };
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
+            var config = configurationBuilder.Build();
+
+            Assert.Equal(0, config.GetValue<int>("Integer"));
         }
 
         [Fact]
@@ -297,11 +315,13 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             // act
             config.Bind(options);
             var optionsValue = options.GetType().GetProperty("Value").GetValue(options);
-            var getValue = config.GetValue(type, "Value");
+            var getValueValue = config.GetValue(type, "Value");
+            var getValue = config.GetSection("Value").Get(type);
 
             // assert
             Assert.Equal(expectedValue, optionsValue);
             Assert.Equal(expectedValue, getValue);
+            Assert.Equal(expectedValue, getValueValue);
         }
 
         [Theory]
@@ -342,8 +362,11 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var exception = Assert.Throws<InvalidOperationException>(
                 () => config.Bind(options));
 
-            var getException = Assert.Throws<InvalidOperationException>(
+            var getValueException = Assert.Throws<InvalidOperationException>(
                 () => config.GetValue(type, "Value"));
+
+            var getException = Assert.Throws<InvalidOperationException>(
+                () => config.GetSection("Value").Get(type));
 
             // assert
             Assert.NotNull(exception.InnerException);
@@ -354,6 +377,9 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             Assert.Equal(
                 Resources.FormatError_FailedBinding(IncorrectValue, type),
                 getException.Message);
+            Assert.Equal(
+                Resources.FormatError_FailedBinding(IncorrectValue, type),
+                getValueException.Message);
         }
 
         [Fact]

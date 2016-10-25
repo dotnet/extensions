@@ -16,6 +16,47 @@ namespace Microsoft.Extensions.Configuration
     public static class ConfigurationBinder
     {
         /// <summary>
+        /// Attempts to bind the configuration instance to a new instance of type T.
+        /// If this configuration section has a value, that will be used.
+        /// Otherwise binding by matching property names against configuration keys recursively.
+        /// </summary>
+        /// <typeparam name="T">The type of the new instance to bind.</typeparam>
+        /// <param name="configuration">The configuration instance to bind.</param>
+        /// <returns>The new instance of T if successful, default(T) otherwise.</returns>
+        public static T Get<T>(this IConfiguration configuration)
+        {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            var result = configuration.Get(typeof(T));
+            if (result == null)
+            {
+                return default(T);
+            }
+            return (T)result;
+        }
+
+        /// <summary>
+        /// Attempts to bind the configuration instance to a new instance of type T.
+        /// If this configuration section has a value, that will be used.
+        /// Otherwise binding by matching property names against configuration keys recursively.
+        /// </summary>
+        /// <param name="configuration">The configuration instance to bind.</param>
+        /// <param name="type">The type of the new instance to bind.</param>
+        /// <returns>The new instance if successful, null otherwise.</returns>
+        public static object Get(this IConfiguration configuration, Type type)
+        {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            return BindInstance(type, instance: null, config: configuration);
+        }
+
+        /// <summary>
         /// Attempts to bind the given object instance to configuration values by matching property names against configuration keys recursively.
         /// </summary>
         /// <param name="configuration">The configuration instance to bind.</param>
@@ -31,24 +72,6 @@ namespace Microsoft.Extensions.Configuration
             {
                 BindInstance(instance.GetType(), instance, configuration);
             }
-        }
-
-        /// <summary>
-        /// Attempts to bind a new instance of T to configuration values by matching property names against configuration keys recursively.
-        /// </summary>
-        /// <typeparam name="T">The type of the new instance to bind.</typeparam>
-        /// <param name="configuration">The configuration instance to bind.</param>
-        /// <returns>The new instance of T</returns>
-        public static T Bind<T>(this IConfiguration configuration) where T : new()
-        {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
-
-            var instance = new T();
-            BindInstance(instance.GetType(), instance, configuration);
-            return instance;
         }
 
         /// <summary>
