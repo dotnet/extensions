@@ -34,6 +34,7 @@ namespace Microsoft.Extensions.CommandLineUtils
         public string Syntax { get; set; }
         public string Description { get; set; }
         public bool ShowInHelpText { get; set; } = true;
+        public string ExtendedHelpText { get; set; }
         public readonly List<CommandOption> Options;
         public CommandOption OptionHelp { get; private set; }
         public CommandOption OptionVersion { get; private set; }
@@ -457,7 +458,8 @@ namespace Microsoft.Extensions.CommandLineUtils
                 + headerBuilder.ToString()
                 + argumentsBuilder.ToString()
                 + optionsBuilder.ToString()
-                + commandsBuilder.ToString();
+                + commandsBuilder.ToString()
+                + target.ExtendedHelpText;
         }
 
         public void ShowVersion()

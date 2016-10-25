@@ -580,5 +580,23 @@ namespace Microsoft.Extensions.Internal
             app.HelpOption("-h|--help");
             Assert.Contains("Usage: proxy-command [options] [[--] <arg>...]", app.GetHelpText());
         }
+
+        [Fact]
+        public void HelpTextShowsExtendedHelp()
+        {
+            var app = new CommandLineApplication()
+            {
+                Name = "befuddle",
+                ExtendedHelpText = @"
+Remarks:
+  This command is so confusing that I want to include examples in the help text.
+
+Examples:
+  dotnet befuddle -- I Can Haz Confusion Arguments
+"
+            };
+
+            Assert.Contains(app.ExtendedHelpText, app.GetHelpText());
+        }
     }
 }
