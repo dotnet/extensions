@@ -18,13 +18,14 @@
     ]
   },
   "dependencies": {
-    "Microsoft.Azure.KeyVault": "1.0.0",
+    "Microsoft.IdentityModel.Clients.ActiveDirectory": "3.13.5",
+    "Microsoft.Azure.KeyVault": "2.0.2-preview",
     "Microsoft.Extensions.Configuration": "1.1.0-*",
     "Microsoft.Extensions.Configuration.FileExtensions": "1.1.0-*",
-    "Microsoft.IdentityModel.Clients.ActiveDirectory": "3.13.4",
     "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
+    "netstandard1.5": { },
     "net451": {
       "frameworkAssemblies": {
         "System.Threading.Tasks": {

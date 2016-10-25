@@ -51,7 +51,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             var secrets = await _client.GetSecretsAsync(_vault);
             do
             {
-                foreach (var secretItem in secrets.Value)
+                foreach (var secretItem in secrets)
                 {
                     if (!_manager.Load(secretItem))
                     {
@@ -63,8 +63,8 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
                     data.Add(key, value.Value);
                 }
 
-                secrets = secrets.NextLink != null ?
-                    await _client.GetSecretsNextAsync(secrets.NextLink) :
+                secrets = secrets.NextPageLink != null ?
+                    await _client.GetSecretsNextAsync(secrets.NextPageLink) :
                     null;
             } while (secrets != null);
 

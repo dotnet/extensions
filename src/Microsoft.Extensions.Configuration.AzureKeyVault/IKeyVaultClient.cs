@@ -3,6 +3,8 @@
 
 using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault;
+using Microsoft.Azure.KeyVault.Models;
+using Microsoft.Rest.Azure;
 
 namespace Microsoft.Extensions.Configuration.AzureKeyVault
 {
@@ -16,16 +18,16 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         /// <summary>List secrets in the specified vault</summary>
         /// <param name="vault">The URL for the vault containing the secrets.</param>
         /// <returns>A response message containing a list of secrets in the vault along with a link to the next page of secrets</returns>
-        Task<ListSecretsResponseMessage> GetSecretsAsync(string vault);
+        Task<IPage<SecretItem>> GetSecretsAsync(string vault);
 
         /// <summary>Gets a secret.</summary>
         /// <param name="secretIdentifier">The URL for the secret.</param>
         /// <returns>A response message containing the secret</returns>
-        Task<Secret> GetSecretAsync(string secretIdentifier);
+        Task<SecretBundle> GetSecretAsync(string secretIdentifier);
 
         /// <summary>List the next page of secrets</summary>
         /// <param name="nextLink">nextLink value from a previous call to GetSecrets or GetSecretsNext</param>
         /// <returns>A response message containing a list of secrets in the vault along with a link to the next page of secrets</returns>
-        Task<ListSecretsResponseMessage> GetSecretsNextAsync(string nextLink);
+        Task<IPage<SecretItem>> GetSecretsNextAsync(string nextLink);
     }
 }

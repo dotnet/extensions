@@ -3,6 +3,8 @@
 
 using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault;
+using Microsoft.Azure.KeyVault.Models;
+using Microsoft.Rest.Azure;
 
 namespace Microsoft.Extensions.Configuration.AzureKeyVault
 {
@@ -21,19 +23,19 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         }
 
         /// <inheritdoc />
-        public Task<ListSecretsResponseMessage> GetSecretsAsync(string vault)
+        public Task<IPage<SecretItem>> GetSecretsAsync(string vault)
         {
             return _keyVaultClientImplementation.GetSecretsAsync(vault);
         }
 
         /// <inheritdoc />
-        public Task<Secret> GetSecretAsync(string secretIdentifier)
+        public Task<SecretBundle> GetSecretAsync(string secretIdentifier)
         {
             return _keyVaultClientImplementation.GetSecretAsync(secretIdentifier);
         }
 
         /// <inheritdoc />
-        public Task<ListSecretsResponseMessage> GetSecretsNextAsync(string nextLink)
+        public Task<IPage<SecretItem>> GetSecretsNextAsync(string nextLink)
         {
             return _keyVaultClientImplementation.GetSecretsNextAsync(nextLink);
         }

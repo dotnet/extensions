@@ -62,7 +62,15 @@ namespace Microsoft.Extensions.Configuration
             return configurationBuilder.AddAzureKeyVault(vault, new KeyVaultClient(callback), manager);
         }
 
+        private static async Task<string> GetTokenFromClientSecret(string authority, string resource, string clientId, string clientSecret)
+        {
+            var authContext = new AuthenticationContext(authority);
+            var clientCred = new ClientCredential(clientId, clientSecret);
+            var result = await authContext.AcquireTokenAsync(resource, clientCred);
+            return result.AccessToken;
+        }
 
+#if NET451
         /// <summary>
         /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
         /// </summary>
@@ -110,6 +118,14 @@ namespace Microsoft.Extensions.Configuration
             return configurationBuilder.AddAzureKeyVault(vault, new KeyVaultClient(callback), manager);
         }
 
+        private static async Task<string> GetTokenFromClientCertificate(string authority, string resource, string clientId, X509Certificate2 certificate)
+        {
+            var authContext = new AuthenticationContext(authority);
+            var result = await authContext.AcquireTokenAsync(resource, new ClientAssertionCertificate(clientId, certificate));
+            return result.AccessToken;
+        }
+#endif
+
         /// <summary>
         /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
         /// </summary>
@@ -145,21 +161,6 @@ namespace Microsoft.Extensions.Configuration
             });
 
             return configurationBuilder;
-        }
-
-        private static async Task<string> GetTokenFromClientSecret(string authority, string resource, string clientId, string clientSecret)
-        {
-            var authContext = new AuthenticationContext(authority);
-            var clientCred = new ClientCredential(clientId, clientSecret);
-            var result = await authContext.AcquireTokenAsync(resource, clientCred);
-            return result.AccessToken;
-        }
-
-        private static async Task<string> GetTokenFromClientCertificate(string authority, string resource, string clientId, X509Certificate2 certificate)
-        {
-            var authContext = new AuthenticationContext(authority);
-            var result = await authContext.AcquireTokenAsync(resource, new ClientAssertionCertificate(clientId, certificate));
-            return result.AccessToken;
         }
     }
 }

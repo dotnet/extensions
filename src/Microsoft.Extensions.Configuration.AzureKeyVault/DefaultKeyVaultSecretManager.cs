@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Azure.KeyVault;
+using Microsoft.Azure.KeyVault.Models;
 
 namespace Microsoft.Extensions.Configuration.AzureKeyVault
 {
@@ -12,7 +13,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
     public class DefaultKeyVaultSecretManager : IKeyVaultSecretManager
     {
         /// <inheritdoc />
-        public virtual string GetKey(Secret secret)
+        public virtual string GetKey(SecretBundle secret)
         {
             return secret.SecretIdentifier.Name.Replace("--", ConfigurationPath.KeyDelimiter);
         }
