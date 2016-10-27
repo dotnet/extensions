@@ -133,6 +133,13 @@ namespace Microsoft.Extensions.DependencyInjection
         internal IServiceCallSite GetResolveCallSite(IService service, ISet<Type> callSiteChain)
         {
             IServiceCallSite serviceCallSite = service.CreateCallSite(this, callSiteChain);
+
+            // Instance services do not need caching/disposing
+            if (serviceCallSite is InstanceService)
+            {
+                return serviceCallSite;
+            }
+
             if (service.Lifetime == ServiceLifetime.Transient)
             {
                 return new TransientCallSite(serviceCallSite);

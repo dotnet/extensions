@@ -101,9 +101,34 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 exception.Message);
         }
 
+        [Fact]
+        public void DoesNotDisposeSingletonInstances()
+        {
+            var disposable = new Disposable();
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(disposable);
+
+            var provider = serviceCollection.BuildServiceProvider();
+            provider.GetService<Disposable>();
+
+            ((IDisposable)provider).Dispose();
+
+            Assert.False(disposable.Disposed);
+        }
+
         private abstract class AbstractFakeOpenGenericService<T> : IFakeOpenGenericService<T>
         {
             public abstract T Value { get; }
+        }
+
+        private class Disposable : IDisposable
+        {
+            public bool Disposed { get; set; }
+
+            public void Dispose()
+            {
+                Disposed = true;
+            }
         }
     }
 }
