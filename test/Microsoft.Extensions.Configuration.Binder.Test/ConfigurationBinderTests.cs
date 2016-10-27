@@ -497,6 +497,26 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             Assert.Equal("other stuff", ComplexOptions.StaticProperty);
         }
 
+        [Fact]
+        public void CanGetComplexOptionsWhichHasAlsoHasValue()
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {"obj", "whut" },
+                {"obj:Integer", "-2"},
+                {"obj:Boolean", "TRUe"},
+                {"obj:Nested:Integer", "11"}
+            };
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
+            var config = configurationBuilder.Build();
+
+            var options = config.GetSection("obj").Get<ComplexOptions>();
+            Assert.True(options.Boolean);
+            Assert.Equal(-2, options.Integer);
+            Assert.Equal(11, options.Nested.Integer);
+        }
+
         [Theory]
         [InlineData("ReadOnly")]
         [InlineData("PrivateSetter")]
