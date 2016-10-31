@@ -8,7 +8,7 @@ using System.IO;
 using System.Threading;
 using Newtonsoft.Json;
 
-namespace Microsoft.Extensions.Logging.EventSourceLogger
+namespace Microsoft.Extensions.Logging.EventSource
 {
     /// <summary>
     /// A logger that writes messages to EventSource instance.
@@ -19,9 +19,9 @@ namespace Microsoft.Extensions.Logging.EventSourceLogger
     /// </remarks>
     internal class EventSourceLogger : ILogger
     {
+        private static int _activityIds;
         private readonly LoggingEventSource _eventSource;
         private readonly int _factoryID;
-        private static int s_activityIds;
 
         public EventSourceLogger(string categoryName, int factoryID, LoggingEventSource eventSource, EventSourceLogger next)
         {
@@ -131,7 +131,7 @@ namespace Microsoft.Extensions.Logging.EventSourceLogger
                 return NoopDisposable.Instance;
             }
 
-            var id = Interlocked.Increment(ref s_activityIds);
+            var id = Interlocked.Increment(ref _activityIds);
 
             // If JsonMessage is on, use JSON format
             if (_eventSource.IsEnabled(EventLevel.Critical, LoggingEventSource.Keywords.JsonMessage))
@@ -188,7 +188,7 @@ namespace Microsoft.Extensions.Logging.EventSourceLogger
 
         private class NoopDisposable : IDisposable
         {
-            public static NoopDisposable Instance = new NoopDisposable();
+            public static readonly NoopDisposable Instance = new NoopDisposable();
 
             public void Dispose()
             {

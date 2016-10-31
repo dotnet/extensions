@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics.Tracing;
 
-namespace Microsoft.Extensions.Logging.EventSourceLogger
+namespace Microsoft.Extensions.Logging.EventSource
 {
     /// <summary>
     /// The provider for the <see cref="EventSourceLogger"/>.
@@ -32,9 +32,7 @@ namespace Microsoft.Extensions.Logging.EventSourceLogger
 
         public EventSourceLoggerProvider Next { get; }
 
-        /// <summary>
         /// <inheritdoc />
-        /// </summary>
         public ILogger CreateLogger(string categoryName)
         {
             // need to check if the filter spec and internal event source level has changed
@@ -51,7 +49,7 @@ namespace Microsoft.Extensions.Logging.EventSourceLogger
         }
 
         // Sets the filtering for a particular logger provider
-        public void SetFilterSpec(string filterSpec)
+        internal void SetFilterSpec(string filterSpec)
         {
             _filterSpec = filterSpec;
             _defaultLevel = GetDefaultLevel();

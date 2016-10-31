@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.Logging.EventSourceLogger;
+using Microsoft.Extensions.Logging.EventSource;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -421,7 +421,7 @@ namespace Microsoft.Extensions.Logging.Test
                 public string FilterSpec;
             }
 
-            private EventSource _loggingEventSource;
+            private System.Diagnostics.Tracing.EventSource _loggingEventSource;
 
             public TestEventListener()
             {
@@ -449,7 +449,7 @@ namespace Microsoft.Extensions.Logging.Test
                 EnableEvents(_loggingEventSource, settings.Level, settings.Keywords, args);
             }
 
-            protected override void OnEventSourceCreated(EventSource eventSource)
+            protected override void OnEventSourceCreated(System.Diagnostics.Tracing.EventSource eventSource)
             {
                 if (eventSource.Name == "Microsoft-Extensions-Logging")
                 {

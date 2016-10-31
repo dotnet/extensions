@@ -1,10 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 
-namespace Microsoft.Extensions.Logging.EventSourceLogger
+namespace Microsoft.Extensions.Logging.EventSource
 {
     /// <summary>
     /// The LoggingEventSource is the bridge form all ILogger based logging to EventSource/EventListener logging.
@@ -70,7 +69,7 @@ namespace Microsoft.Extensions.Logging.EventSourceLogger
     /// }
     /// </summary>
     [EventSource(Name = "Microsoft-Extensions-Logging")]
-    public class LoggingEventSource : EventSource
+    internal class LoggingEventSource : System.Diagnostics.Tracing.EventSource
     {
         /// <summary>
         /// This is public from an EventSource consumer point of view, but since these defintions
@@ -103,14 +102,14 @@ namespace Microsoft.Extensions.Logging.EventSourceLogger
 
         internal static readonly LogLevel LoggingDisabled = LogLevel.None + 1;
 
+        private readonly object _providerLock = new object();
         private string _filterSpec;
         private EventSourceLoggerProvider _loggingProviders;
-        private object _lockObj = new object();
         private bool _checkLevel;
 
         internal EventSourceLoggerProvider CreateLoggerProvider()
         {
-            lock (_lockObj)
+            lock (_providerLock)
             {
                 var newLoggerProvider = new EventSourceLoggerProvider(this, _loggingProviders);
                 _loggingProviders = newLoggerProvider;
@@ -197,24 +196,24 @@ namespace Microsoft.Extensions.Logging.EventSourceLogger
             WriteEvent(7, ID, FactoryID, LoggerName);
         }
 
-        /// <summary>
         /// <inheritdoc />
-        /// </summary>
         protected override void OnEventCommand(EventCommandEventArgs command)
         {
-            lock (_lockObj)
+            lock (_providerLock)
             {
-                if ((command.Command == EventCommand.Update || command.Command == EventCommand.Enable))
+                if (command.Command == EventCommand.Update || command.Command == EventCommand.Enable)
                 {
                     string filterSpec;
                     if (!command.Arguments.TryGetValue("FilterSpecs", out filterSpec))
-                        filterSpec = "";        // This means turn on everything.
+                    {
+                        filterSpec = string.Empty; // This means turn on everything.
+                    }
 
                     SetFilterSpec(filterSpec);
                 }
                 else if (command.Command == EventCommand.Update || command.Command == EventCommand.Disable)
                 {
-                    SetFilterSpec(null);        // This means disable everything.
+                    SetFilterSpec(null); // This means disable everything.
                 }
             }
         }
@@ -238,7 +237,7 @@ namespace Microsoft.Extensions.Logging.EventSourceLogger
         [NonEvent]
         internal void ApplyFilterSpec()
         {
-            lock (_lockObj)
+            lock (_providerLock)
             {
                 if (_checkLevel)
                 {
