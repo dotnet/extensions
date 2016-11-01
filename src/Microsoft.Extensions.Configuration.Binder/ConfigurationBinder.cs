@@ -244,16 +244,10 @@ namespace Microsoft.Extensions.Configuration
 
             var section = config as IConfigurationSection;
             var configValue = section?.Value;
-            object convertedValue;
-            Exception error;
-            if (configValue != null && TryConvertValue(type, configValue, out convertedValue, out error))
+            if (configValue != null)
             {
-                if (error != null)
-                {
-                    throw error;
-                }
                 // Leaf nodes are always reinitialized
-                return convertedValue;
+                return ConvertValue(type, configValue);
             }
 
             if (config != null && config.GetChildren().Any())
@@ -423,42 +417,6 @@ namespace Microsoft.Extensions.Configuration
             }
 
             return newArray;
-        }
-
-        private static bool TryConvertValue(Type type, string value, out object result, out Exception error)
-        {
-            error = null;
-            result = null;
-            if (type == typeof(object))
-            {
-                result = value;
-                return true;
-            }
-
-            if (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-            {
-                if (string.IsNullOrEmpty(value))
-                {
-                    return true;
-                }
-                return TryConvertValue(Nullable.GetUnderlyingType(type), value, out result, out error);
-            }
-
-            var converter = TypeDescriptor.GetConverter(type);
-            if (converter.CanConvertFrom(typeof(string)))
-            {
-                try
-                {
-                    result = converter.ConvertFromInvariantString(value);
-                }
-                catch (Exception ex)
-                {
-                    error = new InvalidOperationException(Resources.FormatError_FailedBinding(value, type), ex);
-                }
-                return true;
-            }
-
-            return false;
         }
 
         private static object ConvertValue(Type type, string value)

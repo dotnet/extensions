@@ -498,7 +498,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
         }
 
         [Fact]
-        public void CanGetComplexOptionsWhichHasAlsoHasValue()
+        public void GetComplexOptionsWhichHasAlsoHasValueThrows()
         {
             var dic = new Dictionary<string, string>
             {
@@ -511,10 +511,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
-            var options = config.GetSection("obj").Get<ComplexOptions>();
-            Assert.True(options.Boolean);
-            Assert.Equal(-2, options.Integer);
-            Assert.Equal(11, options.Nested.Integer);
+            Assert.Throws<InvalidOperationException>(() => config.GetSection("obj").Get<ComplexOptions>());
         }
 
         [Theory]
