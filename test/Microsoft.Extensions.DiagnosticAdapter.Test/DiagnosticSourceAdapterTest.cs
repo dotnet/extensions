@@ -9,6 +9,26 @@ namespace Microsoft.Extensions.DiagnosticAdapter
 {
     public class DiagnosticSourceAdapterTest
     {
+        public class Crash
+        {
+            public int CallCount { get; private set; }
+
+            public int Baz { get; private set; }
+
+            [DiagnosticName("Foo")]
+            public void OnFoo(string bar)
+            {
+                CallCount++;
+            }
+
+            [DiagnosticName("Bar")]
+            public void OnBar(int baz)
+            {
+                Baz = baz;
+                CallCount++;
+            }
+        }
+
         public class OneTarget
         {
             public int OneCallCount { get; private set; }
@@ -41,7 +61,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter
                 callCount++;
                 return true;
             };
-            
+
             var adapter = CreateAdapter(new OneTarget(), isEnabled);
 
             // Act & Assert
@@ -76,6 +96,52 @@ namespace Microsoft.Extensions.DiagnosticAdapter
 
             // Act & Assert
             Assert.False(adapter.IsEnabled("Two"));
+        }
+
+        [Fact]
+        public void CallingWriteWithNullForNonNullableConverts()
+        {
+            // Arrange
+            var target = new Crash();
+            var adapter = CreateAdapter(target);
+
+            // Act & Assert
+            Assert.Equal(0, target.CallCount);
+            adapter.Write("Bar", new { baz = (int?)null });
+            Assert.Equal(1, target.CallCount);
+            Assert.Equal(0, target.Baz);
+        }
+
+        [Fact]
+        public void CallingWriteWithNonConvertableTypeThrows()
+        {
+            // Arrange
+            var target = new Crash();
+            var adapter = CreateAdapter(target);
+
+            // Act & Assert
+            Assert.Equal(0, target.CallCount);
+            var exception = Assert.Throws<InvalidOperationException>(() => adapter.Write("Bar", new { baz = 1.12 }));
+            Assert.Equal(
+                 "Type 'System.Int32' must be an interface in order to support proxy generation from source type 'System.Double'.",
+                 exception.Message);
+            Assert.Equal(0, target.CallCount);
+        }
+
+        [Fact]
+        public void CallingWriteWithProxyTypeThrows()
+        {
+            // Arrange
+            var target = new Crash();
+            var adapter = CreateAdapter(target);
+
+            // Act & Assert
+            Assert.Equal(0, target.CallCount);
+            var exception = Assert.Throws<InvalidOperationException>(() => adapter.Write("Foo", new { bar = new Guid() }));
+            Assert.Equal(
+                "Type 'System.String' must be an interface in order to support proxy generation from source type 'System.Guid'.",
+                exception.Message);
+            Assert.Equal(0, target.CallCount);
         }
 
         [Fact]

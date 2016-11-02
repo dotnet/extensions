@@ -158,6 +158,12 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                         il.Emit(OpCodes.Castclass, inputType);
                         il.Emit(OpCodes.Callvirt, mapping.GetMethod);
 
+                        // If we have a value type box it to the target type.
+                        if (mapping.PropertyType.GetTypeInfo().IsValueType)
+                        {
+                            il.Emit(OpCodes.Box, mapping.PropertyType);
+                        }
+
                         var factoryMethod = ProxyFactoryGenericMethod.MakeGenericMethod(parameter.ParameterType);
                         il.Emit(OpCodes.Callvirt, factoryMethod);
                     }
