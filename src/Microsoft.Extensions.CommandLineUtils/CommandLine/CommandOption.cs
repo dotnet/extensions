@@ -59,6 +59,8 @@ namespace Microsoft.Extensions.CommandLineUtils
         public string Description { get; set; }
         public List<string> Values { get; private set; }
         public CommandOptionType OptionType { get; private set; }
+        public bool ShowInHelpText { get; set; } = true;
+        public bool Inherited { get; set; }
 
         public bool TryParse(string value)
         {

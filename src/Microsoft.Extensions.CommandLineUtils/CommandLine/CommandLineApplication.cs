@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,6 +33,8 @@ namespace Microsoft.Extensions.CommandLineUtils
         public string FullName { get; set; }
         public string Syntax { get; set; }
         public string Description { get; set; }
+        public bool ShowInHelpText { get; set; } = true;
+        public string ExtendedHelpText { get; set; }
         public readonly List<CommandOption> Options;
         public CommandOption OptionHelp { get; private set; }
         public CommandOption OptionVersion { get; private set; }
@@ -42,6 +45,22 @@ namespace Microsoft.Extensions.CommandLineUtils
         public Func<string> LongVersionGetter { get; set; }
         public Func<string> ShortVersionGetter { get; set; }
         public readonly List<CommandLineApplication> Commands;
+        public bool AllowArgumentSeparator { get; set; }
+        public TextWriter Out { get; set; } = Console.Out;
+        public TextWriter Error { get; set; } = Console.Error;
+
+        public IEnumerable<CommandOption> GetOptions()
+        {
+            var expr = Options.AsEnumerable();
+            var rootNode = this;
+            while (rootNode.Parent != null)
+            {
+                rootNode = rootNode.Parent;
+                expr = expr.Concat(rootNode.Options.Where(o => o.Inherited));
+            }
+
+            return expr;
+        }
 
         public CommandLineApplication Command(string name, Action<CommandLineApplication> configuration,
             bool throwOnUnexpectedArg = true)
@@ -53,13 +72,21 @@ namespace Microsoft.Extensions.CommandLineUtils
         }
 
         public CommandOption Option(string template, string description, CommandOptionType optionType)
-        {
-            return Option(template, description, optionType, _ => { });
-        }
+            => Option(template, description, optionType, _ => { }, inherited: false);
+
+        public CommandOption Option(string template, string description, CommandOptionType optionType, bool inherited)
+            => Option(template, description, optionType, _ => { }, inherited);
 
         public CommandOption Option(string template, string description, CommandOptionType optionType, Action<CommandOption> configuration)
+            => Option(template, description, optionType, configuration, inherited: false);
+
+        public CommandOption Option(string template, string description, CommandOptionType optionType, Action<CommandOption> configuration, bool inherited)
         {
-            var option = new CommandOption(template, optionType) { Description = description };
+            var option = new CommandOption(template, optionType)
+            {
+                Description = description,
+                Inherited = inherited
+            };
             Options.Add(option);
             configuration(option);
             return option;
@@ -95,7 +122,6 @@ namespace Microsoft.Extensions.CommandLineUtils
         {
             Invoke = () => invoke().Result;
         }
-
         public int Execute(params string[] args)
         {
             CommandLineApplication command = this;
@@ -122,10 +148,17 @@ namespace Microsoft.Extensions.CommandLineUtils
                     if (longOption != null)
                     {
                         processed = true;
-                        option = command.Options.SingleOrDefault(opt => string.Equals(opt.LongName, longOption[0], StringComparison.Ordinal));
+                        var longOptionName = longOption[0];
+                        option = command.GetOptions().SingleOrDefault(opt => string.Equals(opt.LongName, longOptionName, StringComparison.Ordinal));
 
                         if (option == null)
                         {
+                            if (string.IsNullOrEmpty(longOptionName) && !command._throwOnUnexpectedArg  && AllowArgumentSeparator)
+                            {
+                                // skip over the '--' argument separator
+                                index++;
+                            }
+
                             HandleUnexpectedArg(command, args, index, argTypeName: "option");
                             break;
                         }
@@ -161,12 +194,12 @@ namespace Microsoft.Extensions.CommandLineUtils
                     if (shortOption != null)
                     {
                         processed = true;
-                        option = command.Options.SingleOrDefault(opt => string.Equals(opt.ShortName, shortOption[0], StringComparison.Ordinal));
+                        option = command.GetOptions().SingleOrDefault(opt => string.Equals(opt.ShortName, shortOption[0], StringComparison.Ordinal));
 
                         // If not a short option, try symbol option
                         if (option == null)
                         {
-                            option = command.Options.SingleOrDefault(opt => string.Equals(opt.SymbolName, shortOption[0], StringComparison.Ordinal));
+                            option = command.GetOptions().SingleOrDefault(opt => string.Equals(opt.SymbolName, shortOption[0], StringComparison.Ordinal));
                         }
 
                         if (option == null)
@@ -306,17 +339,26 @@ namespace Microsoft.Extensions.CommandLineUtils
         {
             if (OptionHelp != null)
             {
-                Console.WriteLine(string.Format("Specify --{0} for a list of available options and commands.", OptionHelp.LongName));
+                Out.WriteLine(string.Format("Specify --{0} for a list of available options and commands.", OptionHelp.LongName));
             }
         }
 
         // Show full help
         public void ShowHelp(string commandName = null)
         {
-            var headerBuilder = new StringBuilder("Usage:");
             for (var cmd = this; cmd != null; cmd = cmd.Parent)
             {
                 cmd.IsShowingInformation = true;
+            }
+
+            Out.WriteLine(GetHelpText(commandName));
+        }
+
+        public virtual string GetHelpText(string commandName = null)
+        {
+            var headerBuilder = new StringBuilder("Usage:");
+            for (var cmd = this; cmd != null; cmd = cmd.Parent)
+            {
                 headerBuilder.Insert(6, string.Format(" {0}", cmd.Name));
             }
 
@@ -346,45 +388,48 @@ namespace Microsoft.Extensions.CommandLineUtils
             var commandsBuilder = new StringBuilder();
             var argumentsBuilder = new StringBuilder();
 
-            if (target.Arguments.Any())
+            var arguments = target.Arguments.Where(a => a.ShowInHelpText).ToList();
+            if (arguments.Any())
             {
                 headerBuilder.Append(" [arguments]");
 
                 argumentsBuilder.AppendLine();
                 argumentsBuilder.AppendLine("Arguments:");
-                var maxArgLen = MaxArgumentLength(target.Arguments);
+                var maxArgLen = arguments.Max(a => a.Name.Length);
                 var outputFormat = string.Format("  {{0, -{0}}}{{1}}", maxArgLen + 2);
-                foreach (var arg in target.Arguments)
+                foreach (var arg in arguments)
                 {
                     argumentsBuilder.AppendFormat(outputFormat, arg.Name, arg.Description);
                     argumentsBuilder.AppendLine();
                 }
             }
 
-            if (target.Options.Any())
+            var options = target.GetOptions().Where(o => o.ShowInHelpText).ToList();
+            if (options.Any())
             {
                 headerBuilder.Append(" [options]");
 
                 optionsBuilder.AppendLine();
                 optionsBuilder.AppendLine("Options:");
-                var maxOptLen = MaxOptionTemplateLength(target.Options);
+                var maxOptLen = options.Max(o => o.Template.Length);
                 var outputFormat = string.Format("  {{0, -{0}}}{{1}}", maxOptLen + 2);
-                foreach (var opt in target.Options)
+                foreach (var opt in options)
                 {
                     optionsBuilder.AppendFormat(outputFormat, opt.Template, opt.Description);
                     optionsBuilder.AppendLine();
                 }
             }
 
-            if (target.Commands.Any())
+            var commands = target.Commands.Where(c => c.ShowInHelpText).ToList();
+            if (commands.Any())
             {
                 headerBuilder.Append(" [command]");
 
                 commandsBuilder.AppendLine();
                 commandsBuilder.AppendLine("Commands:");
-                var maxCmdLen = MaxCommandLength(target.Commands);
+                var maxCmdLen = commands.Max(c => c.Name.Length);
                 var outputFormat = string.Format("  {{0, -{0}}}{{1}}", maxCmdLen + 2);
-                foreach (var cmd in target.Commands.OrderBy(c => c.Name))
+                foreach (var cmd in commands.OrderBy(c => c.Name))
                 {
                     commandsBuilder.AppendFormat(outputFormat, cmd.Name, cmd.Description);
                     commandsBuilder.AppendLine();
@@ -393,9 +438,14 @@ namespace Microsoft.Extensions.CommandLineUtils
                 if (OptionHelp != null)
                 {
                     commandsBuilder.AppendLine();
-                    commandsBuilder.AppendFormat("Use \"{0} [command] --help\" for more information about a command.", Name);
+                    commandsBuilder.AppendFormat($"Use \"{target.Name} [command] --{OptionHelp.LongName}\" for more information about a command.");
                     commandsBuilder.AppendLine();
                 }
+            }
+
+            if (target.AllowArgumentSeparator)
+            {
+                headerBuilder.Append(" [[--] <arg>...]");
             }
 
             headerBuilder.AppendLine();
@@ -404,7 +454,12 @@ namespace Microsoft.Extensions.CommandLineUtils
             nameAndVersion.AppendLine(GetFullNameAndVersion());
             nameAndVersion.AppendLine();
 
-            Console.Write("{0}{1}{2}{3}{4}", nameAndVersion, headerBuilder, argumentsBuilder, optionsBuilder, commandsBuilder);
+            return nameAndVersion.ToString()
+                + headerBuilder.ToString()
+                + argumentsBuilder.ToString()
+                + optionsBuilder.ToString()
+                + commandsBuilder.ToString()
+                + target.ExtendedHelpText;
         }
 
         public void ShowVersion()
@@ -414,8 +469,8 @@ namespace Microsoft.Extensions.CommandLineUtils
                 cmd.IsShowingInformation = true;
             }
 
-            Console.WriteLine(FullName);
-            Console.WriteLine(LongVersionGetter());
+            Out.WriteLine(FullName);
+            Out.WriteLine(LongVersionGetter());
         }
 
         public string GetFullNameAndVersion()
@@ -431,38 +486,8 @@ namespace Microsoft.Extensions.CommandLineUtils
                 rootCmd = rootCmd.Parent;
             }
 
-            Console.WriteLine(rootCmd.GetFullNameAndVersion());
-            Console.WriteLine();
-        }
-
-        private int MaxOptionTemplateLength(IEnumerable<CommandOption> options)
-        {
-            var maxLen = 0;
-            foreach (var opt in options)
-            {
-                maxLen = opt.Template.Length > maxLen ? opt.Template.Length : maxLen;
-            }
-            return maxLen;
-        }
-
-        private int MaxCommandLength(IEnumerable<CommandLineApplication> commands)
-        {
-            var maxLen = 0;
-            foreach (var cmd in commands)
-            {
-                maxLen = cmd.Name.Length > maxLen ? cmd.Name.Length : maxLen;
-            }
-            return maxLen;
-        }
-
-        private int MaxArgumentLength(IEnumerable<CommandArgument> arguments)
-        {
-            var maxLen = 0;
-            foreach (var arg in arguments)
-            {
-                maxLen = arg.Name.Length > maxLen ? arg.Name.Length : maxLen;
-            }
-            return maxLen;
+            Out.WriteLine(rootCmd.GetFullNameAndVersion());
+            Out.WriteLine();
         }
 
         private void HandleUnexpectedArg(CommandLineApplication command, string[] args, int index, string argTypeName)
