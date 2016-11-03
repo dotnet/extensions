@@ -7,39 +7,39 @@
     "dotnet-test-xunit": "1.0.0-rc3-000000-01",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "type": "build",
-      "version": "1.0.0-rtm-21431"
+      "version": "1.0.1"
     },
     "Microsoft.Extensions.CopyOnWriteDictionary.Sources": {
       "type": "build",
-      "version": "1.0.0-rtm-21431"
+      "version": "1.0.1"
     },
     "Microsoft.Extensions.DotnetToolDispatcher.Sources": {
       "type": "build",
-      "version": "1.0.0-rtm-21431"
+      "version": "1.0.1"
     },
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
       "type": "build",
-      "version": "1.0.0-rtm-21431"
+      "version": "1.0.1"
     },
     "Microsoft.Extensions.PropertyActivator.Sources": {
       "type": "build",
-      "version": "1.0.0-rtm-21431"
+      "version": "1.0.1"
     },
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "type": "build",
-      "version": "1.0.0-rtm-21431"
+      "version": "1.0.1"
     },
     "Microsoft.Extensions.SecurityHelper.Sources": {
       "type": "build",
-      "version": "1.0.0-rtm-21431"
+      "version": "1.0.1"
     },
     "Microsoft.Extensions.TypeNameHelper.Sources": {
       "type": "build",
-      "version": "1.0.0-rtm-21431"
+      "version": "1.0.1"
     },
     "Microsoft.Extensions.StackTrace.Sources": {
       "type": "build",
-      "version": "1.0.0-rtm-21431"
+      "version": "1.0.1"
     },
     "Microsoft.DotNet.Cli.Utils": "1.0.0-preview2-003121",
     "xunit": "2.1.0"
