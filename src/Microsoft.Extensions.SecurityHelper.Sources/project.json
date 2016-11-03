@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-rtm-21431",
+  "version": "1.0.1",
   "shared": "*.cs",
   "dependencies": {},
   "frameworks": {

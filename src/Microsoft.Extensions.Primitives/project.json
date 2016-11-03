@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Primitives shared by framework extensions. Commonly used types include:\r\nMicrosoft.Extensions.Primitives.IChangeToken\r\nMicrosoft.Extensions.Primitives.StringValues\r\nMicrosoft.Extensions.Primitives.StringSegment",
   "packOptions": {
     "repository": {
