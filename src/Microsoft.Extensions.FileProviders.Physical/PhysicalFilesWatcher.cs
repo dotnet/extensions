@@ -33,21 +33,21 @@ namespace Microsoft.Extensions.FileProviders.Physical
         private readonly bool _pollForChanges;
 
         /// <summary>
-        /// Initializes an instance of <see cref="PhysicalFilesWatcher" /> that watches files in <paramref name="rootDirectory" />.
+        /// Initializes an instance of <see cref="PhysicalFilesWatcher" /> that watches files in <paramref name="root" />.
         /// Wraps an instance of <see cref="System.IO.FileSystemWatcher" />
         /// </summary>
-        /// <param name="rootDirectory">Root directory for the watcher</param>
-        /// <param name="fileSystemWatcher">The wrapped watcher that is watching <paramref name="rootDirectory" /></param>
+        /// <param name="root">Root directory for the watcher</param>
+        /// <param name="fileSystemWatcher">The wrapped watcher that is watching <paramref name="root" /></param>
         /// <param name="pollForChanges">
         /// True when the watcher should use polling to trigger instances of
         /// <see cref="IChangeToken" /> created by <see cref="CreateFileChangeToken(string)" />
         /// </param>
         public PhysicalFilesWatcher(
-            string rootDirectory,
+            string root,
             FileSystemWatcher fileSystemWatcher,
             bool pollForChanges)
         {
-            _root = rootDirectory;
+            _root = root;
             _fileWatcher = fileSystemWatcher;
             _fileWatcher.IncludeSubdirectories = true;
             _fileWatcher.Created += OnChanged;
@@ -66,7 +66,7 @@ namespace Microsoft.Extensions.FileProviders.Physical
         ///     </para>
         ///     <para>
         ///     Globbing patterns are relative to the root directory given in the constructor
-        ///     <seealso cref="PhysicalFilesWatcher(string, FileSystemWatcher, bool)" />. Globbing patterns 
+        ///     <seealso cref="PhysicalFilesWatcher(string, FileSystemWatcher, bool)" />. Globbing patterns
         ///     are interpreted by <seealso cref="Microsoft.Extensions.FileSystemGlobbing.Matcher" />.
         ///     </para>
         /// </summary>
