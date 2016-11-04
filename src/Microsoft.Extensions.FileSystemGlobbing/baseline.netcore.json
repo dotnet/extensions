@@ -1,0 +1,1842 @@
+{
+  "AssemblyIdentity": "Microsoft.Extensions.FileSystemGlobbing, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.FilePatternMatch",
+      "Visibility": "Public",
+      "Kind": "Struct",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "System.IEquatable<Microsoft.Extensions.FileSystemGlobbing.FilePatternMatch>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Path",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Stem",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "other",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.FilePatternMatch"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IEquatable<Microsoft.Extensions.FileSystemGlobbing.FilePatternMatch>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.String"
+            },
+            {
+              "Name": "stem",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Matcher",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddInclude",
+          "Parameters": [
+            {
+              "Name": "pattern",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Matcher",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddExclude",
+          "Parameters": [
+            {
+              "Name": "pattern",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Matcher",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Execute",
+          "Parameters": [
+            {
+              "Name": "directoryInfo",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.PatternMatchingResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "comparisonType",
+              "Type": "System.StringComparison"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.MatcherExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddExcludePatterns",
+          "Parameters": [
+            {
+              "Name": "matcher",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Matcher"
+            },
+            {
+              "Name": "excludePatternsGroups",
+              "Type": "System.Collections.Generic.IEnumerable<System.String>[]",
+              "IsParams": true
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddIncludePatterns",
+          "Parameters": [
+            {
+              "Name": "matcher",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Matcher"
+            },
+            {
+              "Name": "includePatternsGroups",
+              "Type": "System.Collections.Generic.IEnumerable<System.String>[]",
+              "IsParams": true
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetResultsInFullPath",
+          "Parameters": [
+            {
+              "Name": "matcher",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Matcher"
+            },
+            {
+              "Name": "directoryPath",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IEnumerable<System.String>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.PatternMatchingResult",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Files",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.FileSystemGlobbing.FilePatternMatch>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Files",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.FileSystemGlobbing.FilePatternMatch>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "files",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.FileSystemGlobbing.FilePatternMatch>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.ILinearPattern",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.FileSystemGlobbing.Internal.IPattern"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Segments",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment>",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_CanProduceStem",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Match",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPattern",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreatePatternContextForInclude",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreatePatternContextForExclude",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Declare",
+          "Parameters": [
+            {
+              "Name": "onDeclare",
+              "Type": "System.Action<Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment, System.Boolean>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Test",
+          "Parameters": [
+            {
+              "Name": "directory",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Test",
+          "Parameters": [
+            {
+              "Name": "file",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileInfoBase"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternTestResult",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "PushDirectory",
+          "Parameters": [
+            {
+              "Name": "directory",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "PopDirectory",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.IRaggedPattern",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.FileSystemGlobbing.Internal.IPattern"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Segments",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_StartsWith",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Contains",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<System.Collections.Generic.IList<Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment>>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_EndsWith",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment>",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.MatcherContext",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Execute",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.PatternMatchingResult",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "includePatterns",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.FileSystemGlobbing.Internal.IPattern>"
+            },
+            {
+              "Name": "excludePatterns",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.FileSystemGlobbing.Internal.IPattern>"
+            },
+            {
+              "Name": "directoryInfo",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase"
+            },
+            {
+              "Name": "comparison",
+              "Type": "System.StringComparison"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternTestResult",
+      "Visibility": "Public",
+      "Kind": "Struct",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_IsSuccessful",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Stem",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Success",
+          "Parameters": [
+            {
+              "Name": "stem",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternTestResult",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Failed",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternTestResult",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.Patterns.PatternBuilder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ComparisonType",
+          "Parameters": [],
+          "ReturnType": "System.StringComparison",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Build",
+          "Parameters": [
+            {
+              "Name": "pattern",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPattern",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "comparisonType",
+              "Type": "System.StringComparison"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContext<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Declare",
+          "Parameters": [
+            {
+              "Name": "declare",
+              "Type": "System.Action<Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment, System.Boolean>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Test",
+          "Parameters": [
+            {
+              "Name": "file",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileInfoBase"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternTestResult",
+          "Virtual": true,
+          "Abstract": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Test",
+          "Parameters": [
+            {
+              "Name": "directory",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Abstract": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "PushDirectory",
+          "Parameters": [
+            {
+              "Name": "directory",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Abstract": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "PopDirectory",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "PushDataFrame",
+          "Parameters": [
+            {
+              "Name": "frame",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsStackEmpty",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Frame",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TFrame",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContextLinear",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContext<Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContextLinear+FrameData>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Test",
+          "Parameters": [
+            {
+              "Name": "file",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileInfoBase"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternTestResult",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "PushDirectory",
+          "Parameters": [
+            {
+              "Name": "directory",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Pattern",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Internal.ILinearPattern",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsLastSegment",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TestMatchingSegment",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CalculateStem",
+          "Parameters": [
+            {
+              "Name": "matchedFile",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileInfoBase"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "pattern",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Internal.ILinearPattern"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContextLinearExclude",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContextLinear",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Test",
+          "Parameters": [
+            {
+              "Name": "directory",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "pattern",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Internal.ILinearPattern"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContextLinearInclude",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContextLinear",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Declare",
+          "Parameters": [
+            {
+              "Name": "onDeclare",
+              "Type": "System.Action<Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment, System.Boolean>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Test",
+          "Parameters": [
+            {
+              "Name": "directory",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "pattern",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Internal.ILinearPattern"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContextRagged",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContext<Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContextRagged+FrameData>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Test",
+          "Parameters": [
+            {
+              "Name": "file",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileInfoBase"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternTestResult",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "PushDirectory",
+          "Parameters": [
+            {
+              "Name": "directory",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "PopDirectory",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Pattern",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Internal.IRaggedPattern",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsStartingGroup",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsEndingGroup",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TestMatchingSegment",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TestMatchingGroup",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileSystemInfoBase"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CalculateStem",
+          "Parameters": [
+            {
+              "Name": "matchedFile",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileInfoBase"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "pattern",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Internal.IRaggedPattern"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContextRaggedExclude",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContextRagged",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Test",
+          "Parameters": [
+            {
+              "Name": "directory",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "pattern",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Internal.IRaggedPattern"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContextRaggedInclude",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContextRagged",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Declare",
+          "Parameters": [
+            {
+              "Name": "onDeclare",
+              "Type": "System.Action<Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment, System.Boolean>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Test",
+          "Parameters": [
+            {
+              "Name": "directory",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPatternContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "pattern",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Internal.IRaggedPattern"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments.CurrentPathSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_CanProduceStem",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Match",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments.LiteralPathSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_CanProduceStem",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Value",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Match",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            },
+            {
+              "Name": "comparisonType",
+              "Type": "System.StringComparison"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments.ParentPathSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_CanProduceStem",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Match",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments.RecursiveWildcardSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_CanProduceStem",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Match",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments.WildcardPathSegment",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_CanProduceStem",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_BeginsWith",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Contains",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.List<System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_EndsWith",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Match",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "beginsWith",
+              "Type": "System.String"
+            },
+            {
+              "Name": "contains",
+              "Type": "System.Collections.Generic.List<System.String>"
+            },
+            {
+              "Name": "endsWith",
+              "Type": "System.String"
+            },
+            {
+              "Name": "comparisonType",
+              "Type": "System.StringComparison"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "MatchAll",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments.WildcardPathSegment",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileSystemInfoBase",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "EnumerateFileSystemInfos",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileSystemInfoBase>",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetDirectory",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetFile",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileInfoBase",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoWrapper",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "EnumerateFileSystemInfos",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileSystemInfoBase>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetDirectory",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetFile",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileInfoBase",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_FullName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ParentDirectory",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "directoryInfo",
+              "Type": "System.IO.DirectoryInfo"
+            },
+            {
+              "Name": "isParentPath",
+              "Type": "System.Boolean",
+              "DefaultValue": "False"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileInfoBase",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileSystemInfoBase",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileInfoWrapper",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileInfoBase",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_FullName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ParentDirectory",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "fileInfo",
+              "Type": "System.IO.FileInfo"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileSystemInfoBase",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_FullName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ParentDirectory",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContextLinear+FrameData",
+      "Visibility": "Public",
+      "Kind": "Struct",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_StemItems",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Stem",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "IsNotApplicable",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "SegmentIndex",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "InStem",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.Internal.PatternContexts.PatternContextRagged+FrameData",
+      "Visibility": "Public",
+      "Kind": "Struct",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_StemItems",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Stem",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "IsNotApplicable",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "SegmentGroupIndex",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "SegmentGroup",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Extensions.FileSystemGlobbing.Internal.IPathSegment>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "BacktrackAvailable",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "SegmentIndex",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "InStem",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}
