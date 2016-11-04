@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "description": "Diagnostics logger for Azure WebApps",
+  "description": "Logger implementation to support Azure App Services 'Diagnostics logs' and 'Log stream' features.",
   "packOptions": {
     "tags": [
       "logging"

@@ -54,11 +54,11 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
             }
             if (batchSizeLimit <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(batchSizeLimit), $"{nameof(batchSizeLimit)} should be a positive number.");
+                throw new ArgumentOutOfRangeException(nameof(batchSizeLimit), $"{nameof(batchSizeLimit)} must be a positive number.");
             }
             if (period <= TimeSpan.Zero)
             {
-                throw new ArgumentOutOfRangeException(nameof(period), $"{nameof(period)} should be longer than zero.");
+                throw new ArgumentOutOfRangeException(nameof(period), $"{nameof(period)} must be longer than zero.");
             }
 
             _appName = appName;

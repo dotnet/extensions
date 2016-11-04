@@ -40,11 +40,11 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
             }
             if (fileSizeLimit <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(fileSizeLimit), $"{nameof(fileSizeLimit)} should be positive.");
+                throw new ArgumentOutOfRangeException(nameof(fileSizeLimit), $"{nameof(fileSizeLimit)} must be positive.");
             }
             if (retainedFileCountLimit <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(retainedFileCountLimit), $"{nameof(retainedFileCountLimit)} should be positive.");
+                throw new ArgumentOutOfRangeException(nameof(retainedFileCountLimit), $"{nameof(retainedFileCountLimit)} must be positive.");
             }
 
             _fileSizeLimit = fileSizeLimit;
