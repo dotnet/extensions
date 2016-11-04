@@ -8,7 +8,8 @@ namespace Microsoft.Extensions.FileProviders
     /// <summary>
     /// Helper functions for working with the filesystem
     /// </summary>
-    public static class FileSystemInfoHelper
+    // TODO 2.0 make this internal
+    public class FileSystemInfoHelper
     {
         internal static bool IsHiddenFile(FileSystemInfo fileSystemInfo)
         {
