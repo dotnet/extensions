@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                 {
                     var error = cache[key];
                     Debug.Assert(error != null && error.IsError);
-                    throw new InvalidOperationException(error.Error);
+                    throw new InvalidProxyOperationException(error.Error);
                 }
 
                 Debug.Assert(context.Visited.ContainsKey(context.Key));

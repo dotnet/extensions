@@ -75,6 +75,22 @@ namespace Microsoft.Extensions.DiagnosticAdapter
         }
 
         /// <summary>
+        /// Unable to generate a proxy for method '{0}'. See Inner Exception for details.
+        /// </summary>
+        internal static string Converter_UnableToGenerateProxy
+        {
+            get { return GetString("Converter_UnableToGenerateProxy"); }
+        }
+
+        /// <summary>
+        /// Unable to generate a proxy for method '{0}'. See Inner Exception for details.
+        /// </summary>
+        internal static string FormatConverter_UnableToGenerateProxy(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Converter_UnableToGenerateProxy"), p0);
+        }
+
+        /// <summary>
         /// Proxy method generation doesn't support types with properties that vary only by case. The type '{0}' defines multiple properties named '{1}' that vary only by case.
         /// </summary>
         internal static string Converter_TypeMustNotHavePropertiesThatVaryByCase

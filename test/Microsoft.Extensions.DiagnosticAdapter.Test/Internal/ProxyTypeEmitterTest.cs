@@ -79,7 +79,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                 sourceType.FullName);
 
             // Act
-            var exception = Assert.Throws<InvalidOperationException>(
+            var exception = Assert.Throws<InvalidProxyOperationException>(
                 () => ProxyTypeEmitter.GetProxyType(new ProxyTypeCache(), targetType, sourceType));
 
             // Assert
@@ -99,7 +99,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                 typeof(Address).FullName);
 
             // Act
-            var exception = Assert.Throws<InvalidOperationException>(
+            var exception = Assert.Throws<InvalidProxyOperationException>(
                 () => ProxyTypeEmitter.GetProxyType(new ProxyTypeCache(), targetType, sourceType));
 
             // Assert
@@ -231,7 +231,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                 $"The property 'Item' on type '{targetType}' must not define a setter to support proxy generation.";
 
             // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(
+            var exception = Assert.Throws<InvalidProxyOperationException>(
                 () => ProxyTypeEmitter.GetProxyType(new ProxyTypeCache(), targetType, sourceType));
             Assert.Equal(expected, exception.Message);
         }

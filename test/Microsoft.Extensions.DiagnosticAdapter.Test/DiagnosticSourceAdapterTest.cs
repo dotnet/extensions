@@ -122,9 +122,10 @@ namespace Microsoft.Extensions.DiagnosticAdapter
             // Act & Assert
             Assert.Equal(0, target.CallCount);
             var exception = Assert.Throws<InvalidOperationException>(() => adapter.Write("Bar", new { baz = 1.12 }));
+            Assert.Equal("Unable to generate a proxy for method 'OnBar'. See Inner Exception for details.", exception.Message);
             Assert.Equal(
                  "Type 'System.Int32' must be an interface in order to support proxy generation from source type 'System.Double'.",
-                 exception.Message);
+                 exception.InnerException.Message);
             Assert.Equal(0, target.CallCount);
         }
 
@@ -138,9 +139,10 @@ namespace Microsoft.Extensions.DiagnosticAdapter
             // Act & Assert
             Assert.Equal(0, target.CallCount);
             var exception = Assert.Throws<InvalidOperationException>(() => adapter.Write("Foo", new { bar = new Guid() }));
+            Assert.Equal("Unable to generate a proxy for method 'OnFoo'. See Inner Exception for details.", exception.Message);
             Assert.Equal(
                 "Type 'System.String' must be an interface in order to support proxy generation from source type 'System.Guid'.",
-                exception.Message);
+                exception.InnerException.Message);
             Assert.Equal(0, target.CallCount);
         }
 

@@ -132,4 +132,7 @@
   <data name="Converter_TypeMustNotHavePropertiesThatVaryByCase" xml:space="preserve">
     <value>Proxy method generation doesn't support types with properties that vary only by case. The type '{0}' defines multiple properties named '{1}' that vary only by case.</value>
   </data>
+  <data name="Converter_UnableToGenerateProxy" xml:space="preserve">
+    <value>Unable to generate a proxy for method '{0}'. See Inner Exception for details.</value>
+  </data>
 </root>

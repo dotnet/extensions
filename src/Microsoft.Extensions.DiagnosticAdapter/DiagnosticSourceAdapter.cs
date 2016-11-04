@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using Microsoft.Extensions.DiagnosticAdapter.Internal;
 
 namespace Microsoft.Extensions.DiagnosticAdapter
 {
@@ -96,7 +97,16 @@ namespace Microsoft.Extensions.DiagnosticAdapter
             if (!succeeded)
             {
                 var newAdapter = _methodAdapter.Adapt(subscription.MethodInfo, parameters.GetType());
-                succeeded = newAdapter(_listener.Target, parameters);
+                try
+                {
+                    succeeded = newAdapter(_listener.Target, parameters);
+                }
+                catch (InvalidProxyOperationException ex)
+                {
+                    throw new InvalidOperationException(
+                        Resources.FormatConverter_UnableToGenerateProxy(subscription.MethodInfo.Name),
+                        ex);
+                }
                 Debug.Assert(succeeded);
 
                 subscription.Adapters.Add(newAdapter);
