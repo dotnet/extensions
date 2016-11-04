@@ -64,7 +64,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             get { return _outputTemplate; }
             set
             {
-                if (string.IsNullOrWhiteSpace(value))
+                if (string.IsNullOrEmpty(value))
                 {
                     throw new ArgumentException(nameof(value), $"{nameof(OutputTemplate)} must be non-empty string.");
                 }
@@ -115,7 +115,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             get { return _blobName; }
             set
             {
-                if (string.IsNullOrWhiteSpace(value))
+                if (string.IsNullOrEmpty(value))
                 {
                     throw new ArgumentException(nameof(value), $"{nameof(BlobName)} must be non-empty string.");
                 }
@@ -135,7 +135,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             {
                 if (value < 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(BackgroundQueueSize)} must be positive or 0.");
+                    throw new ArgumentOutOfRangeException(nameof(value), $"{nameof(BackgroundQueueSize)} must be non-negative.");
                 }
                 _backgroundQueueSize = value;
             }
