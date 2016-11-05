@@ -1,0 +1,317 @@
+{
+  "AssemblyIdentity": "Microsoft.Extensions.Options, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.OptionsServiceCollectionExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddOptions",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Configure<T0>",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<T0>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TOptions",
+              "ParameterPosition": 0,
+              "Class": true,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Options.ConfigureOptions<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Options.IConfigureOptions<T0>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Action",
+          "Parameters": [],
+          "ReturnType": "System.Action<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Configure",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "action",
+              "Type": "System.Action<T0>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "Class": true,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.Extensions.Options.IConfigureOptions<T0>",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Configure",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "Class": true,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.Extensions.Options.IOptions<T0>",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Value",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "New": true,
+          "Class": true,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.Extensions.Options.IOptionsMonitor<T0>",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_CurrentValue",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnChange",
+          "Parameters": [
+            {
+              "Name": "listener",
+              "Type": "System.Action<T0>"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.Extensions.Options.Options",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Create<T0>",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Options.IOptions<T0>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TOptions",
+              "ParameterPosition": 0,
+              "New": true,
+              "Class": true,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Options.OptionsManager<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Options.IOptions<T0>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Value",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Options.IOptions<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "setups",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Options.IConfigureOptions<T0>>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "New": true,
+          "Class": true,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.Extensions.Options.OptionsWrapper<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Options.IOptions<T0>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Value",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Options.IOptions<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "T0"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "New": true,
+          "Class": true,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    }
+  ]
+}

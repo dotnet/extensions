@@ -1,0 +1,72 @@
+{
+  "AssemblyIdentity": "Microsoft.Extensions.Options.ConfigurationExtensions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.OptionsConfigurationServiceCollectionExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Configure<T0>",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            },
+            {
+              "Name": "config",
+              "Type": "Microsoft.Extensions.Configuration.IConfiguration"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TOptions",
+              "ParameterPosition": 0,
+              "Class": true,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Options.ConfigureFromConfigurationOptions<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.Extensions.Options.ConfigureOptions<T0>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "config",
+              "Type": "Microsoft.Extensions.Configuration.IConfiguration"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "Class": true,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    }
+  ]
+}
