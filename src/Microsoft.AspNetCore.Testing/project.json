@@ -13,7 +13,10 @@
     "repository": {
       "type": "git",
       "url": "git://github.com/aspnet/testing"
-    }
+    },
+    "tags": [
+      "aspnetcore"
+    ]
   },
   "dependencies": {
     "Microsoft.Extensions.RuntimeEnvironment.Sources": {
