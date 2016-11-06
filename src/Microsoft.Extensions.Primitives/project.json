@@ -21,7 +21,7 @@
   "dependencies": {
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
       "type": "build",
-      "version": "1.0.0-rtm-21431"
+      "version": "1.0.1"
     }
   },
   "frameworks": {
