@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "description": "Suite of xUnit.net tests to check for container compatibility with Microsoft.Extensions.DependencyInjection.",
   "packOptions": {
     "tags": [
@@ -8,7 +8,9 @@
     ]
   },
   "dependencies": {
-    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0-*",
+    "Microsoft.Extensions.DependencyInjection.Abstractions": {
+      "target": "project"
+    },
     "NETStandard.Library": "1.6.1-*",
     "xunit.assert": "2.2.0-*",
     "xunit.extensibility.core": "2.2.0-*"

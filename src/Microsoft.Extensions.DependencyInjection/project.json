@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "description": "Default implementation of dependency injection for Microsoft.Extensions.DependencyInjection.",
   "packOptions": {
     "repository": {
@@ -20,7 +20,9 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0-*",
+    "Microsoft.Extensions.DependencyInjection.Abstractions": {
+      "target": "project"
+    },
     "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
