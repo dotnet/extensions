@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
@@ -10,10 +10,12 @@
   },
   "description": "Provides additional configuration specific functionality related to Options.",
   "dependencies": {
-    "Microsoft.Extensions.Configuration.Abstractions": "1.1.0-*",
-    "Microsoft.Extensions.Configuration.Binder": "1.1.0-*",
-    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0-*",
-    "Microsoft.Extensions.Options": "1.1.0-*",
+    "Microsoft.Extensions.Configuration.Abstractions": "1.2.0-*",
+    "Microsoft.Extensions.Configuration.Binder": "1.2.0-*",
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.2.0-*",
+    "Microsoft.Extensions.Options": {
+      "target": "project"
+    },
     "NETStandard.Library": "1.6.1-*"
   },
   "packOptions": {

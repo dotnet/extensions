@@ -5,9 +5,9 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.Extensions.DependencyInjection": "1.1.0-*",
-    "Microsoft.Extensions.Options": "1.1.0-*",
-    "Microsoft.Extensions.Options.ConfigurationExtensions": "1.1.0-*",
+    "Microsoft.Extensions.DependencyInjection": "1.2.0-*",
+    "Microsoft.Extensions.Options": "1.2.0-*",
+    "Microsoft.Extensions.Options.ConfigurationExtensions": "1.2.0-*",
     "xunit": "2.2.0-*"
   },
   "frameworks": {
