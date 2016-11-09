@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "description": "EventSource/EventListener logger provider implementation for Microsoft.Extensions.Logging.",
   "packOptions": {
     "tags": [
@@ -18,7 +18,9 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.Extensions.Logging.Abstractions": "1.1.0-*",
+    "Microsoft.Extensions.Logging.Abstractions": {
+      "target": "project"
+    },
     "NETStandard.Library": "1.6.1-*",
     "Newtonsoft.Json": "9.0.1"
   },

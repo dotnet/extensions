@@ -3,13 +3,13 @@
     "emitEntryPoint": true
   },
   "dependencies": {
-    "Microsoft.Extensions.Configuration.FileExtensions": "1.1.0-*",
-    "Microsoft.Extensions.Configuration.Json": "1.1.0-*",
-    "Microsoft.Extensions.FileProviders.Physical": "1.1.0-*",
-    "Microsoft.Extensions.Logging": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.1.0-*",
-    "Microsoft.Extensions.Logging.Filter": "1.1.0-*",
-    "Microsoft.Extensions.PlatformAbstractions": "1.1.0-*"
+    "Microsoft.Extensions.Configuration.FileExtensions": "1.2.0-*",
+    "Microsoft.Extensions.Configuration.Json": "1.2.0-*",
+    "Microsoft.Extensions.FileProviders.Physical": "1.2.0-*",
+    "Microsoft.Extensions.Logging": "1.2.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.2.0-*",
+    "Microsoft.Extensions.Logging.Filter": "1.2.0-*",
+    "Microsoft.Extensions.PlatformAbstractions": "1.2.0-*"
   },
   "publishOptions": {
     "include": [
@@ -19,7 +19,7 @@
   "frameworks": {
     "net451": {
       "dependencies": {
-        "Microsoft.Extensions.Logging.EventLog": "1.1.0-*"
+        "Microsoft.Extensions.Logging.EventLog": "1.2.0-*"
       }
     },
     "netcoreapp1.1": {
