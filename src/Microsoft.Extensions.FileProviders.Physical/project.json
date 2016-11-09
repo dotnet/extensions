@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "buildOptions": {
     "allowUnsafe": true,
     "warningsAsErrors": true,
@@ -18,12 +18,16 @@
     ]
   },
   "dependencies": {
-    "Microsoft.Extensions.FileProviders.Abstractions": "1.1.0-*",
-    "Microsoft.Extensions.FileProviders.Sources": {
-      "version": "1.1.0-*",
-      "type": "build"
+    "Microsoft.Extensions.FileProviders.Abstractions": {
+      "target": "project"
     },
-    "Microsoft.Extensions.FileSystemGlobbing": "1.1.0-*",
+    "Microsoft.Extensions.FileProviders.Sources": {
+      "type": "build",
+      "target": "project"
+    },
+    "Microsoft.Extensions.FileSystemGlobbing": {
+      "target": "project"
+    },
     "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {

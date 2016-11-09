@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
@@ -18,10 +18,10 @@
   },
   "dependencies": {
     "Microsoft.Extensions.FileProviders.Sources": {
-      "version": "1.1.0-*",
-      "type": "build"
+      "type": "build",
+      "target": "project"
     },
-    "Microsoft.Extensions.Primitives": "1.1.0-*",
+    "Microsoft.Extensions.Primitives": "1.2.0-*",
     "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {

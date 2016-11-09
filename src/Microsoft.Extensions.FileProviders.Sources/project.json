@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "description": "File provider shared source code for Microsoft.Extensions.FileProviders.",
   "packOptions": {
     "repository": {
