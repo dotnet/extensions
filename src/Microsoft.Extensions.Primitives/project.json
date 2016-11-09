@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "description": "Primitives shared by framework extensions. Commonly used types include:\r\nMicrosoft.Extensions.Primitives.IChangeToken\r\nMicrosoft.Extensions.Primitives.StringValues\r\nMicrosoft.Extensions.Primitives.StringSegment",
   "packOptions": {
     "repository": {
@@ -22,7 +22,7 @@
   "dependencies": {
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
       "type": "build",
-      "version": "1.1.0-*"
+      "target": "project"
     },
     "NETStandard.Library": "1.6.1-*",
     "System.Runtime.CompilerServices.Unsafe": "4.3.0-*"
