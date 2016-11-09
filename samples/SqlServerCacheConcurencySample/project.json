@@ -3,11 +3,11 @@
     "emitEntryPoint": true
   },
   "dependencies": {
-    "Microsoft.Extensions.Caching.SqlServer": "1.1.0-*",
-    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.1.0-*",
-    "Microsoft.Extensions.Configuration.Json": "1.1.0-*",
-    "Microsoft.Extensions.Options": "1.1.0-*",
-    "Microsoft.Extensions.PlatformAbstractions": "1.1.0-*"
+    "Microsoft.Extensions.Caching.SqlServer": "1.2.0-*",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.2.0-*",
+    "Microsoft.Extensions.Configuration.Json": "1.2.0-*",
+    "Microsoft.Extensions.Options": "1.2.0-*",
+    "Microsoft.Extensions.PlatformAbstractions": "1.2.0-*"
   },
   "publishOptions": {
     "include": [

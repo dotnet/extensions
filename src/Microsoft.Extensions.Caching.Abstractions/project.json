@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-*",
+  "version": "1.2.0-*",
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
@@ -10,7 +10,7 @@
   },
   "description": "Caching abstractions for in-memory cache and distributed cache.\r\nCommonly used types:\r\nMicrosoft.Extensions.Caching.Distributed.IDistributedCache\r\nMicrosoft.Extensions.Caching.Memory.IMemoryCache",
   "dependencies": {
-    "Microsoft.Extensions.Primitives": "1.1.0-*",
+    "Microsoft.Extensions.Primitives": "1.2.0-*",
     "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
