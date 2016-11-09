@@ -6,9 +6,9 @@
     "copyToOutput": "settings.json"
   },
   "dependencies": {
-    "Microsoft.Extensions.Configuration": "1.1.0-*",
+    "Microsoft.Extensions.Configuration": "1.2.0-*",
     "Microsoft.Extensions.Configuration.AzureKeyVault": "1.0.0-*",
-    "Microsoft.Extensions.Configuration.Json": "1.1.0-*",
+    "Microsoft.Extensions.Configuration.Json": "1.2.0-*",
     "NETStandard.Library": "1.6.1-*"
   },
   "frameworks": {
