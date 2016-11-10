@@ -66,6 +66,21 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
             Assert.Equal(randValue, config[configKey]);
         }
 
+
+        [Fact]
+        public void AddUserSecrets_FindsAssemblyAttributeFromType()
+        {
+            var randValue = Guid.NewGuid().ToString();
+            var configKey = "MyDummySetting";
+
+            SetSecret(UserSecretsTestFixture.TestSecretsId, configKey, randValue);
+            var config = new ConfigurationBuilder()
+                .AddUserSecrets<ConfigurationExtensionTest>()
+                .Build();
+
+            Assert.Equal(randValue, config[configKey]);
+        }
+
         [Fact]
         public void AddUserSecrets_ShowsAssemblyAttributeError_When_ProjectJson_Missing()
         {

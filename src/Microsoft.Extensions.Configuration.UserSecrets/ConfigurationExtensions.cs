@@ -17,8 +17,19 @@ namespace Microsoft.Extensions.Configuration
         private const string Secrets_File_Name = "secrets.json";
 
         /// <summary>
+        /// Adds the user secrets configuration source. Searches the assembly that contains type <typeparamref name="T"/>
+        /// for an instance of <see cref="UserSecretsIdAttribute"/>.
+        /// </summary>
+        /// <param name="configuration"></param>
+        /// <typeparam name="T">The type from the assembly to search for an instance of <see cref="UserSecretsIdAttribute"/>.</typeparam>
+        /// <returns></returns>
+        public static IConfigurationBuilder AddUserSecrets<T>(this IConfigurationBuilder configuration)
+            where T : class
+            => configuration.AddUserSecrets(typeof(T).GetTypeInfo().Assembly);
+
+        /// <summary>
         /// Adds the user secrets configuration source. Searches the assembly from <see cref="Assembly.GetEntryAssembly"/>
-        /// for an instance of <see cref="UserSecretsIdAttribute"/>
+        /// for an instance of <see cref="UserSecretsIdAttribute"/>.
         /// </summary>
         /// <param name="configuration"></param>
         /// <returns></returns>
@@ -30,6 +41,12 @@ namespace Microsoft.Extensions.Configuration
             }
 
             var entryAssembly = Assembly.GetEntryAssembly();
+            if (entryAssembly == null)
+            {
+                // can occur inside an app domain
+                throw new InvalidOperationException(Resources.Error_EntryAssemblyNull);
+            }
+
             var attribute = entryAssembly.GetCustomAttribute<UserSecretsIdAttribute>();
             if (attribute != null)
             {

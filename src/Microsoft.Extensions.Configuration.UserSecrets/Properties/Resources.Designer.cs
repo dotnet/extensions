@@ -27,6 +27,22 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         }
 
         /// <summary>
+        /// This method could not find a user secret ID because the application's entry assembly is not set. Try using the ".AddUserSecrets(Assembly assembly)" method instead.
+        /// </summary>
+        internal static string Error_EntryAssemblyNull
+        {
+            get { return GetString("Error_EntryAssemblyNull"); }
+        }
+
+        /// <summary>
+        /// This method could not find a user secret ID because the application's entry assembly is not set. Try using the ".AddUserSecrets(Assembly assembly)" method instead.
+        /// </summary>
+        internal static string FormatError_EntryAssemblyNull()
+        {
+            return GetString("Error_EntryAssemblyNull");
+        }
+
+        /// <summary>
         /// Invalid character '{0}' found in 'userSecretsId' value at index '{1}'.
         /// </summary>
         internal static string Error_Invalid_Character_In_UserSecrets_Id
