@@ -11,6 +11,22 @@ namespace Microsoft.Extensions.Configuration.FileExtensions
             = new ResourceManager("Microsoft.Extensions.Configuration.FileExtensions.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// The expected physical path was '{0}'.
+        /// </summary>
+        internal static string Error_ExpectedPhysicalPath
+        {
+            get { return GetString("Error_ExpectedPhysicalPath"); }
+        }
+
+        /// <summary>
+        /// The expected physical path was '{0}'.
+        /// </summary>
+        internal static string FormatError_ExpectedPhysicalPath(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_ExpectedPhysicalPath"), p0);
+        }
+
+        /// <summary>
         /// The configuration file '{0}' was not found and is not optional.
         /// </summary>
         internal static string Error_FileNotFound
@@ -24,22 +40,6 @@ namespace Microsoft.Extensions.Configuration.FileExtensions
         internal static string FormatError_FileNotFound(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("Error_FileNotFound"), p0);
-        }
-
-        /// <summary>
-        /// The expected physical path was '{0}'.
-        /// </summary>
-        internal static string Error_ExpectedPhysicalPath
-        {
-            get { return GetString("Error_FileNotFound"); }
-        }
-
-        /// <summary>
-        /// The expected physical path was '{0}'.
-        /// </summary>
-        internal static string FormatError_ExpectedPhysicalPath(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_ExpectedPhysicalPath"), p0);
         }
 
         private static string GetString(string name, params string[] formatterNames)

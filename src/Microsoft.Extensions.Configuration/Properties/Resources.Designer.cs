@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Configuration
             = new ResourceManager("Microsoft.Extensions.Configuration.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// A configuration provider is not registered. Please register one before setting a value.
+        /// A configuration source is not registered. Please register one before setting a value.
         /// </summary>
         internal static string Error_NoSources
         {
@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Configuration
         }
 
         /// <summary>
-        /// A configuration provider is not registered. Please register one before setting a value.
+        /// A configuration source is not registered. Please register one before setting a value.
         /// </summary>
         internal static string FormatError_NoSources()
         {
