@@ -6,7 +6,9 @@
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.2.0-*",
-    "Microsoft.Extensions.Configuration.Test.Common": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.Test.Common": {
+      "target": "project"
+    },
     "xunit": "2.2.0-*"
   },
   "frameworks": {

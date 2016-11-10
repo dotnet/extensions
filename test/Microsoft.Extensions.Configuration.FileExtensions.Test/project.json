@@ -5,7 +5,6 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
-    "Microsoft.Extensions.Configuration": "1.2.0-*",
     "Microsoft.Extensions.Configuration.FileExtensions": "1.2.0-*",
     "xunit": "2.2.0-*"
   },
