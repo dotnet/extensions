@@ -187,11 +187,6 @@ namespace Microsoft.Extensions.Configuration.Xml
         private static void AddAttributePair(XmlReader reader, Stack<string> prefixStack,
             IDictionary<string, string> data, XmlWriter writer)
         {
-            if (string.Equals(reader.LocalName, NameAttributeKey, StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
             prefixStack.Push(reader.LocalName);
             var key = ConfigurationPath.Combine(prefixStack.Reverse());
             if (data.ContainsKey(key))

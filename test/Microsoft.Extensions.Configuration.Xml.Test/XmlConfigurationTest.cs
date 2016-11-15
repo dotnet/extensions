@@ -123,8 +123,10 @@ namespace Microsoft.Extensions.Configuration.Xml.Test
 
             xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
+            Assert.Equal("DefaultConnection", xmlConfigSrc.Get("Data:DefaultConnection:Name"));
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
             Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
+            Assert.Equal("Inventory", xmlConfigSrc.Get("Data:Inventory:Name"));
             Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Get("Data:Inventory:ConnectionString"));
             Assert.Equal("MySql", xmlConfigSrc.Get("Data:Inventory:Provider"));
         }
@@ -147,6 +149,7 @@ namespace Microsoft.Extensions.Configuration.Xml.Test
 
             xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
+            Assert.Equal("Data", xmlConfigSrc.Get("Data:Name"));
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
             Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
             Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Get("Data:Inventory:ConnectionString"));
@@ -169,8 +172,10 @@ namespace Microsoft.Extensions.Configuration.Xml.Test
 
             xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml));
 
+            Assert.Equal("DefaultConnection", xmlConfigSrc.Get("Data:DefaultConnection:Name"));
             Assert.Equal("TestConnectionString", xmlConfigSrc.Get("Data:DefaultConnection:ConnectionString"));
             Assert.Equal("SqlClient", xmlConfigSrc.Get("Data:DefaultConnection:Provider"));
+            Assert.Equal("Inventory", xmlConfigSrc.Get("Data:Inventory:Name"));
             Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Get("Data:Inventory:ConnectionString"));
             Assert.Equal("MySql", xmlConfigSrc.Get("Data:Inventory:Provider"));
         }
