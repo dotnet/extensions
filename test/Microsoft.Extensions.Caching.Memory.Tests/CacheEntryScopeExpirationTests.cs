@@ -376,8 +376,8 @@ namespace Microsoft.Extensions.Caching.Memory
 
             Assert.Equal(1, ((CacheEntry)entry1)._expirationTokens.Count());
             Assert.Null(((CacheEntry)entry1)._absoluteExpiration);
-            Assert.Equal(1, ((CacheEntry)entry1)._expirationTokens.Count());
-            Assert.Null(((CacheEntry)entry1)._absoluteExpiration);
+            Assert.Equal(1, ((CacheEntry)entry)._expirationTokens.Count());
+            Assert.Null(((CacheEntry)entry)._absoluteExpiration);
         }
 
         [Fact]

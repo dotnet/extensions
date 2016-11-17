@@ -1,12 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NETSTANDARD1_3
-#else
-using System.Runtime.Remoting;
-using System.Runtime.Remoting.Messaging;
-#endif
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -22,7 +16,6 @@ namespace Microsoft.Extensions.Caching.Memory
         private readonly Action<CacheEntry> _notifyCacheOfExpiration;
         private readonly Action<CacheEntry> _notifyCacheEntryDisposed;
         private IList<IDisposable> _expirationTokenRegistrations;
-        private EvictionReason _evictionReason;
         private IList<PostEvictionCallbackRegistration> _postEvictionCallbacks;
         private bool _isExpired;
 
@@ -166,6 +159,8 @@ namespace Microsoft.Extensions.Caching.Memory
 
         internal DateTimeOffset LastAccessed { get; set; }
 
+        internal EvictionReason EvictionReason { get; private set; }
+
         public void Dispose()
         {
             if (!_added)
@@ -184,11 +179,11 @@ namespace Microsoft.Extensions.Caching.Memory
 
         internal void SetExpired(EvictionReason reason)
         {
-            _isExpired = true;
-            if (_evictionReason == EvictionReason.None)
+            if (EvictionReason == EvictionReason.None)
             {
-                _evictionReason = reason;
+                EvictionReason = reason;
             }
+            _isExpired = true;
             DetachTokens();
         }
 
@@ -302,7 +297,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
                 try
                 {
-                    registration.EvictionCallback?.Invoke(entry.Key, entry.Value, entry._evictionReason, registration.State);
+                    registration.EvictionCallback?.Invoke(entry.Key, entry.Value, entry.EvictionReason, registration.State);
                 }
                 catch (Exception)
                 {

@@ -2,16 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.Extensions.Caching.Memory
 {
     public class CompactTests
     {
-        private MemoryCache CreateCache()
+        private MemoryCache CreateCache(ISystemClock clock = null)
         {
             return new MemoryCache(new MemoryCacheOptions()
             {
+                Clock = clock,
                 CompactOnMemoryPressure = false,
             });
         }
@@ -67,10 +69,14 @@ namespace Microsoft.Extensions.Caching.Memory
         [Fact]
         public void CompactPrioritizesLRU()
         {
-            var cache = CreateCache();
+            var testClock = new TestClock();
+            var cache = CreateCache(testClock);
             cache.Set("key1", "value1");
+            testClock.Add(TimeSpan.FromSeconds(1));
             cache.Set("key2", "value2");
+            testClock.Add(TimeSpan.FromSeconds(1));
             cache.Set("key3", "value3");
+            testClock.Add(TimeSpan.FromSeconds(1));
             cache.Set("key4", "value4");
             Assert.Equal(4, cache.Count);
             cache.Compact(0.90);
