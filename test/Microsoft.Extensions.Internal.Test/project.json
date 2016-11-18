@@ -10,39 +10,39 @@
     "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "type": "build",
-      "version": "1.1.0-*"
+      "version": "1.1.0-rtm-22752"
     },
     "Microsoft.Extensions.CopyOnWriteDictionary.Sources": {
       "type": "build",
-      "version": "1.1.0-*"
+      "version": "1.1.0-rtm-22752"
     },
     "Microsoft.Extensions.DotnetToolDispatcher.Sources": {
       "type": "build",
-      "version": "1.1.0-*"
+      "version": "1.1.0-rtm-22752"
     },
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
       "type": "build",
-      "version": "1.1.0-*"
+      "version": "1.1.0-rtm-22752"
     },
     "Microsoft.Extensions.PropertyActivator.Sources": {
       "type": "build",
-      "version": "1.1.0-*"
+      "version": "1.1.0-rtm-22752"
     },
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "type": "build",
-      "version": "1.1.0-*"
+      "version": "1.1.0-rtm-22752"
     },
     "Microsoft.Extensions.SecurityHelper.Sources": {
       "type": "build",
-      "version": "1.1.0-*"
+      "version": "1.1.0-rtm-22752"
     },
     "Microsoft.Extensions.TypeNameHelper.Sources": {
       "type": "build",
-      "version": "1.1.0-*"
+      "version": "1.1.0-rtm-22752"
     },
     "Microsoft.Extensions.WebEncoders.Sources": {
       "type": "build",
-      "version": "1.1.0-*"
+      "version": "1.1.0-rtm-22752"
     },
     "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"
@@ -52,10 +52,10 @@
     "netcoreapp1.1": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.1.0-*",
+          "version": "1.1.0",
           "type": "platform"
         },
-        "System.Diagnostics.TraceSource": "4.3.0-*"
+        "System.Diagnostics.TraceSource": "4.3.0"
       }
     },
     "net451": {}
