@@ -1,8 +1,0 @@
-{
-  "version": "1.2.0-*",
-  "shared": "../Microsoft.Extensions.CommandLineUtils/CommandLine/*.cs",
-  "frameworks": {
-    "net451": {},
-    "netstandard1.3": {}
-  }
-}

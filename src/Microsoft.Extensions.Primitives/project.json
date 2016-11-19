@@ -17,13 +17,10 @@
       "CS1591"
     ],
     "xmlDoc": true,
-    "allowUnsafe": true
+    "allowUnsafe": true,
+    "compile": "../Microsoft.Extensions.HashCodeCombiner.Sources/**/*.cs"
   },
   "dependencies": {
-    "Microsoft.Extensions.HashCodeCombiner.Sources": {
-      "type": "build",
-      "target": "project"
-    },
     "NETStandard.Library": "1.6.1-*",
     "System.Runtime.CompilerServices.Unsafe": "4.3.0-*"
   },
