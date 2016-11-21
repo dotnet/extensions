@@ -194,7 +194,7 @@ namespace Microsoft.Extensions.Caching.Memory
             if (_entries.TryGetValue(key, out entry))
             {
                 // Check if expired due to expiration tokens, timers, etc. and if so, remove it.
-                // Allow a stale Replaced value to be returned due to a race with SetExpired during SetEntry.
+                // Allow a stale Replaced value to be returned due to concurrent calls to SetExpired during SetEntry.
                 if (entry.CheckExpired(utcNow) && entry.EvictionReason != EvictionReason.Replaced)
                 {
                     // TODO: For efficiency queue this up for batch removal
