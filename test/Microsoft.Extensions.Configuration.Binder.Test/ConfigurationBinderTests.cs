@@ -76,7 +76,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
         public class ConfigurationInterfaceOptions
         {
             public IConfigurationSection Section { get; set; }
-        }                
+        }
 
         public class DerivedOptionsWithIConfigurationSection : DerivedOptions
         {
@@ -388,10 +388,10 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
-            
+
             var instance = new ComplexOptions();
             config.Bind(instance);
-            
+
             Assert.True(instance.Boolean);
             Assert.Equal(-2, instance.Integer);
             Assert.Equal(11, instance.Nested.Integer);
@@ -431,10 +431,10 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
-            
+
             var instance = new DerivedOptions();
             config.Bind(instance);
-            
+
             Assert.True(instance.Boolean);
             Assert.Equal(-2, instance.Integer);
             Assert.Equal(11, instance.Nested.Integer);
@@ -498,7 +498,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
         }
 
         [Fact]
-        public void GetComplexOptionsWhichHasAlsoHasValueThrows()
+        public void CanGetComplexOptionsWhichHasAlsoHasValue()
         {
             var dic = new Dictionary<string, string>
             {
@@ -511,7 +511,11 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
-            Assert.Throws<InvalidOperationException>(() => config.GetSection("obj").Get<ComplexOptions>());
+            var options = config.GetSection("obj").Get<ComplexOptions>();
+            Assert.NotNull(options);
+            Assert.True(options.Boolean);
+            Assert.Equal(-2, options.Integer);
+            Assert.Equal(11, options.Nested.Integer);
         }
 
         [Theory]
