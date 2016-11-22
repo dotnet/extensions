@@ -20,6 +20,41 @@ namespace Microsoft.Extensions.Primitives
             Assert.Equal(0, segment.Length);
         }
 
+        [Fact]
+        public void StringSegmentConstructor_NullBuffer_Throws()
+        {
+            // Arrange, Act and Assert
+            var exception = Assert.Throws<ArgumentNullException>(() => new StringSegment(null, 0, 0));
+            Assert.Contains("buffer", exception.Message);
+        }
+
+        [Fact]
+        public void StringSegmentConstructor_NegativeOffset_Throws()
+        {
+            // Arrange, Act and Assert
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new StringSegment("", -1, 0));
+            Assert.Contains("offset", exception.Message);
+        }
+
+        [Fact]
+        public void StringSegmentConstructor_NegativeLength_Throws()
+        {
+            // Arrange, Act and Assert
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new StringSegment("", 0, -1));
+            Assert.Contains("length", exception.Message);
+        }
+
+        [Theory]
+        [InlineData(0, 10)]
+        [InlineData(10, 0)]
+        [InlineData(5, 5)]
+        [InlineData(int.MaxValue, int.MaxValue)]
+        public void StringSegmentConstructor_OffsetOrLengthOutOfBounds_Throws(int offset, int length)
+        {
+            // Arrange, Act and Assert
+            Assert.Throws<ArgumentException>(() => new StringSegment("lengthof9", offset, length));
+        }
+
         [Theory]
         [InlineData("", 0, 0)]
         [InlineData("abc", 2, 0)]
@@ -308,12 +343,12 @@ namespace Microsoft.Extensions.Primitives
         }
 
         [Theory]
-        [MemberData(nameof(DefaultStringSegmentEqualsStringSegmentData))]       
+        [MemberData(nameof(DefaultStringSegmentEqualsStringSegmentData))]
         public void DefaultStringSegment_EqualsStringSegment(StringSegment candidate)
         {
             // Arrange
             var segment = default(StringSegment);
-           
+
             // Act
             var result = segment.Equals(candidate, StringComparison.Ordinal);
 
@@ -363,12 +398,12 @@ namespace Microsoft.Extensions.Primitives
         }
 
         [Theory]
-        [MemberData(nameof(DefaultStringSegmentDoesNotEqualStringData))]       
+        [MemberData(nameof(DefaultStringSegmentDoesNotEqualStringData))]
         public void DefaultStringSegment_DoesNotEqualString(string candidate)
         {
             // Arrange
             var segment = default(StringSegment);
-            
+
             // Act
             var result = segment.Equals(candidate, StringComparison.Ordinal);
 

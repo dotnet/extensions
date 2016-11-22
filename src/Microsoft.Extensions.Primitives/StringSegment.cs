@@ -47,7 +47,7 @@ namespace Microsoft.Extensions.Primitives
                 throw new ArgumentOutOfRangeException(nameof(length));
             }
 
-            if (offset + length > buffer.Length)
+            if (offset > buffer.Length - length)
             {
                 throw new ArgumentException(Resources.Argument_InvalidOffsetLength);
             }
