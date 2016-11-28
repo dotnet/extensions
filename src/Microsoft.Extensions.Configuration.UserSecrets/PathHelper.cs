@@ -90,7 +90,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
                 throw new ArgumentNullException(nameof(userSecretsId));
             }
 
-            var badCharIndex = userSecretsId.IndexOfAny(Path.GetInvalidPathChars());
+            var badCharIndex = userSecretsId.IndexOfAny(Path.GetInvalidFileNameChars());
             if (badCharIndex != -1)
             {
                 throw new InvalidOperationException(

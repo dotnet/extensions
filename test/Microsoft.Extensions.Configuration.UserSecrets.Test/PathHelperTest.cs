@@ -3,17 +3,21 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Configuration.UserSecrets.Test
 {
     public class PathHelperTest : IClassFixture<UserSecretsTestFixture>
     {
         private readonly UserSecretsTestFixture _fixture;
+        private readonly ITestOutputHelper _output;
 
-        public PathHelperTest(UserSecretsTestFixture fixture)
+        public PathHelperTest(UserSecretsTestFixture fixture, ITestOutputHelper output)
         {
             _fixture = fixture;
+            _output = output;
         }
 
         [Fact]
@@ -36,13 +40,11 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
         [Fact]
         public void Throws_If_UserSecretId_Contains_Invalid_Characters()
         {
-            foreach (var character in Path.GetInvalidPathChars())
+            foreach (var character in Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars()))
             {
                 var id = "Test" + character;
-                Assert.Throws<InvalidOperationException>(() =>
-                {
-                    PathHelper.GetSecretsPathFromSecretsId(id);
-                });
+                _output.WriteLine($"Testing ID '{id}'");
+                Assert.Throws<InvalidOperationException>(() => PathHelper.GetSecretsPathFromSecretsId(id));
             }
         }
 
