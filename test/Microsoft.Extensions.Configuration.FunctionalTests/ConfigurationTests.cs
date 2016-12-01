@@ -600,7 +600,8 @@ IniKey1=IniValue2");
                 Path = jsonRootRelativeFile,
                 Optional = true,
                 ReloadOnChange = true,
-                OnLoadException = (context) => { ex = context.Exception; }
+                OnLoadException = (context) => { ex = context.Exception; },
+                ReloadDelay = 1000,
             };
             var config = CreateBuilder()
                 .Add(jsonSource)
@@ -611,7 +612,12 @@ IniKey1=IniValue2");
             var createToken = config.GetReloadToken();
             Assert.False(createToken.HasChanged);
 
+            await Task.Delay(2000);
+
             _fileSystem.CreateFolder(directory);
+
+            await Task.Delay(2000);
+
             _fileSystem.WriteFile(jsonRootRelativeFile, @"{""JsonKey1"": ""JsonValue1""}");
 
             await Task.Delay(4000);
