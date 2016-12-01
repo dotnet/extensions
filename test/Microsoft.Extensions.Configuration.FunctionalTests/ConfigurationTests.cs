@@ -596,7 +596,7 @@ IniKey1=IniValue2");
 
             // Arrange
             var config = new ConfigurationBuilder()
-                .AddJsonFile(jsonAbsoluteFile, optional: true, reloadOnChange: true)
+                .AddJsonFile(_fileProvider, jsonAbsoluteFile, optional: true, reloadOnChange: true)
                 .Build();
 
             Assert.Null(config["JsonKey1"]);
