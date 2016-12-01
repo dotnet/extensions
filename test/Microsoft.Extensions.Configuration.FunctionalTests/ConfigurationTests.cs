@@ -592,11 +592,10 @@ IniKey1=IniValue2");
         {
             var directory = Path.GetRandomFileName();
             var jsonRootRelativeFile = Path.Combine(directory, Path.GetRandomFileName());
-            var jsonAbsoluteFile = Path.Combine(_fileSystem.RootPath, jsonRootRelativeFile);
 
             // Arrange
-            var config = new ConfigurationBuilder()
-                .AddJsonFile(_fileProvider, jsonAbsoluteFile, optional: true, reloadOnChange: true)
+            var config = CreateBuilder()
+                .AddJsonFile(jsonRootRelativeFile, optional: true, reloadOnChange: true)
                 .Build();
 
             Assert.Null(config["JsonKey1"]);
