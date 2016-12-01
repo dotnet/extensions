@@ -591,34 +591,33 @@ IniKey1=IniValue2");
         public async Task CreatingOptionalFileInNonExistentDirectoryWillReload()
         {
             var directory = Path.GetRandomFileName();
-            var iniRootRelativeFile = Path.Combine(directory, Path.GetRandomFileName());
             var jsonRootRelativeFile = Path.Combine(directory, Path.GetRandomFileName());
-            var xmlRootRelativeFile = Path.Combine(directory, Path.GetRandomFileName());
 
             // Arrange
+            Exception ex = null;
+            var jsonSource = new JsonConfigurationSource
+            {
+                Path = jsonRootRelativeFile,
+                Optional = true,
+                ReloadOnChange = true,
+                OnLoadException = (context) => { ex = context.Exception; }
+            };
             var config = CreateBuilder()
-                .AddIniFile(iniRootRelativeFile, optional: true, reloadOnChange: true)
-                .AddJsonFile(jsonRootRelativeFile, optional: true, reloadOnChange: true)
-                .AddXmlFile(xmlRootRelativeFile, optional: true, reloadOnChange: true)
+                .Add(jsonSource)
                 .Build();
 
-            Assert.Null(config["IniKey1"]);
             Assert.Null(config["JsonKey1"]);
-            Assert.Null(config["XmlKey1"]);
 
             var createToken = config.GetReloadToken();
             Assert.False(createToken.HasChanged);
 
             _fileSystem.CreateFolder(directory);
-            _fileSystem.WriteFile(iniRootRelativeFile, @"IniKey1 = IniValue1");
             _fileSystem.WriteFile(jsonRootRelativeFile, @"{""JsonKey1"": ""JsonValue1""}");
-            _fileSystem.WriteFile(xmlRootRelativeFile, @"<settings XmlKey1=""XmlValue1""/>");
 
             await Task.Delay(4000);
 
-            Assert.Equal("IniValue1", config["IniKey1"]);
+            Assert.Null(ex);
             Assert.Equal("JsonValue1", config["JsonKey1"]);
-            Assert.Equal("XmlValue1", config["XmlKey1"]);
             Assert.True(createToken.HasChanged);
         }
 
