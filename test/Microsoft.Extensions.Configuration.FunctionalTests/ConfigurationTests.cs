@@ -592,19 +592,11 @@ IniKey1=IniValue2");
         {
             var directory = Path.GetRandomFileName();
             var jsonRootRelativeFile = Path.Combine(directory, Path.GetRandomFileName());
+            var jsonAbsoluteFile = Path.Combine(_fileSystem.RootPath, jsonRootRelativeFile);
 
             // Arrange
-            Exception ex = null;
-            var jsonSource = new JsonConfigurationSource
-            {
-                Path = jsonRootRelativeFile,
-                Optional = true,
-                ReloadOnChange = true,
-                OnLoadException = (context) => { ex = context.Exception; },
-                ReloadDelay = 1000,
-            };
-            var config = CreateBuilder()
-                .Add(jsonSource)
+            var config = new ConfigurationBuilder()
+                .AddJsonFile(jsonAbsoluteFile, optional: true, reloadOnChange: true)
                 .Build();
 
             Assert.Null(config["JsonKey1"]);
@@ -612,17 +604,14 @@ IniKey1=IniValue2");
             var createToken = config.GetReloadToken();
             Assert.False(createToken.HasChanged);
 
-            await Task.Delay(2000);
-
             _fileSystem.CreateFolder(directory);
 
-            await Task.Delay(2000);
+            await Task.Delay(500);
 
             _fileSystem.WriteFile(jsonRootRelativeFile, @"{""JsonKey1"": ""JsonValue1""}");
 
             await Task.Delay(4000);
 
-            Assert.Null(ex);
             Assert.Equal("JsonValue1", config["JsonKey1"]);
             Assert.True(createToken.HasChanged);
         }
