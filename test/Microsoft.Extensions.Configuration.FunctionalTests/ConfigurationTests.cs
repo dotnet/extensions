@@ -605,6 +605,9 @@ IniKey1=IniValue2");
             Assert.False(createToken.HasChanged);
 
             _fileSystem.CreateFolder(directory);
+
+            await Task.Delay(500);
+
             _fileSystem.WriteFile(jsonRootRelativeFile, @"{""JsonKey1"": ""JsonValue1""}");
 
             await Task.Delay(4000);
