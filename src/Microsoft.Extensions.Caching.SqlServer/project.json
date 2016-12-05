@@ -5,7 +5,7 @@
       "target": "project"
     },
     "Microsoft.Extensions.Options": "1.2.0-*",
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "description": "Distributed cache implementation of Microsoft.Extensions.Caching.Distributed.IDistributedCache using Microsoft SQL Server.",
   "buildOptions": {
@@ -19,7 +19,7 @@
   "frameworks": {
     "netstandard1.2": {
       "dependencies": {
-        "System.Data.SqlClient": "4.3.0-*"
+        "System.Data.SqlClient": "4.4.0-*"
       }
     }
   },
