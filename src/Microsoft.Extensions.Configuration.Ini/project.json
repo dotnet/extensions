@@ -23,7 +23,7 @@
     "Microsoft.Extensions.Configuration.FileExtensions": {
       "target": "project"
     },
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "net451": {

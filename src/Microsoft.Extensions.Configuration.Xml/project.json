@@ -23,7 +23,7 @@
     "Microsoft.Extensions.Configuration.FileExtensions": {
       "target": "project"
     },
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "frameworks": {
     "net451": {
@@ -41,8 +41,8 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "System.Xml.XmlDocument": "4.3.0-*",
-        "System.Xml.XmlSerializer": "4.3.0-*"
+        "System.Xml.XmlDocument": "4.4.0-*",
+        "System.Xml.XmlSerializer": "4.4.0-*"
       }
     }
   }
