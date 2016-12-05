@@ -11,7 +11,7 @@
     "Microsoft.Extensions.DependencyInjection.Abstractions": {
       "target": "project"
     },
-    "NETStandard.Library": "1.6.1-*",
+    "NETStandard.Library": "1.6.2-*",
     "xunit.assert": "2.2.0-*",
     "xunit.extensibility.core": "2.2.0-*"
   },
