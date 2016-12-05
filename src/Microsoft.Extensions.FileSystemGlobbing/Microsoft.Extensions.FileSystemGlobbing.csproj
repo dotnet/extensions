@@ -19,7 +19,7 @@
     <!-- workaround https://github.com/dotnet/sdk/issues/495 -->
     <!-- TODO use this package: <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="1.2.0-*" PrivateAssets="All" /> -->
     <!-- end workaround -->
-    <PackageReference Include="NETStandard.Library" Version="1.6.1" />
+    <PackageReference Include="NETStandard.Library" Version="1.6.2-*" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
