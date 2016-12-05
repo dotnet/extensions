@@ -21,7 +21,7 @@ Microsoft.Extensions.Primitives.StringSegment</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NETStandard.Library" Version="1.6.1"/>
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.3.0"/>
+    <PackageReference Include="NETStandard.Library" Version="1.6.2-*"/>
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.4.0-*"/>
   </ItemGroup>
 </Project>
