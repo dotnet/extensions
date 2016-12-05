@@ -16,7 +16,7 @@
     "Microsoft.Extensions.Options": {
       "target": "project"
     },
-    "NETStandard.Library": "1.6.1-*"
+    "NETStandard.Library": "1.6.2-*"
   },
   "packOptions": {
     "repository": {
