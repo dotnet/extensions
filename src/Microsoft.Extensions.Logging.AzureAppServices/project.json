@@ -20,7 +20,7 @@
     "Microsoft.Extensions.Logging.Abstractions": {
       "target": "project"
     },
-    "NETStandard.Library": "1.6.1-*",
+    "NETStandard.Library": "1.6.2-*",
     "Serilog.Extensions.Logging": "1.0.0",
     "Serilog.Sinks.PeriodicBatching": "2.0.0",
     "Serilog.Sinks.RollingFile": "3.1.0",
@@ -36,7 +36,7 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "System.Threading.Thread": "4.3.0-*"
+        "System.Threading.Thread": "4.4.0-*"
       },
       "imports": [
         "portable-net40+sl5+win8+wp8+wpa81",
