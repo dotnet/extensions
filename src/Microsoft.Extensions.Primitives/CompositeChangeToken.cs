@@ -6,9 +6,16 @@ using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Primitives
 {
+    /// <summary>
+    /// Represents a composition of <see cref="IChangeToken"/>.
+    /// </summary>
     public class CompositeChangeToken : IChangeToken
     {
-        public CompositeChangeToken(IList<IChangeToken> changeTokens)
+        /// <summary>
+        /// Creates a new instance of <see cref="CompositeChangeToken"/>.
+        /// </summary>
+        /// <param name="changeTokens">The list of <see cref="IChangeToken"/> to compose.</param>
+        public CompositeChangeToken(IReadOnlyList<IChangeToken> changeTokens)
         {
             if (changeTokens == null)
             {
@@ -18,7 +25,7 @@ namespace Microsoft.Extensions.Primitives
             ChangeTokens = changeTokens;
         }
 
-        public IList<IChangeToken> ChangeTokens { get; }
+        public IReadOnlyList<IChangeToken> ChangeTokens { get; }
 
         public IDisposable RegisterChangeCallback(Action<object> callback, object state)
         {
