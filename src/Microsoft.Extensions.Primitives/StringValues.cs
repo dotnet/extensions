@@ -464,7 +464,7 @@ namespace Microsoft.Extensions.Primitives
                 throw new NotSupportedException();
             }
 
-            void IDisposable.Dispose()
+            public void Dispose()
             {
             }
         }
