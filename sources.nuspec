@@ -8,8 +8,8 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$id$</description>
     <contentFiles>
-      <files include="contentFiles\cs\netstandard1.0\**\*.cs" buildAction="Compile" />
-      <files include="contentFiles\any\netstandard1.0\**\*.resx" buildAction="EmbeddedResource" />
+      <files include="contentFiles/cs/**/*.cs" buildAction="Compile" />
+      <files include="**/*.resx" buildAction="EmbeddedResource" />
     </contentFiles>
   </metadata>
   <files>
