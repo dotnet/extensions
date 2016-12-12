@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
@@ -28,11 +29,13 @@ namespace Microsoft.Extensions.Caching.Redis
         private const string DataKey = "data";
         private const long NotPresent = -1;
 
-        private ConnectionMultiplexer _connection;
+        private volatile ConnectionMultiplexer _connection;
         private IDatabase _cache;
 
         private readonly RedisCacheOptions _options;
         private readonly string _instance;
+
+        private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
 
         public RedisCache(IOptions<RedisCacheOptions> optionsAccessor)
         {
@@ -155,19 +158,45 @@ namespace Microsoft.Extensions.Caching.Redis
 
         private void Connect()
         {
-            if (_connection == null)
+            if (_connection != null)
             {
-                _connection = ConnectionMultiplexer.Connect(_options.Configuration);
-                _cache = _connection.GetDatabase();
+                return;
+            }
+
+            _connectionLock.Wait();
+            try
+            {
+                if (_connection == null)
+                {
+                    _connection = ConnectionMultiplexer.Connect(_options.Configuration);
+                    _cache = _connection.GetDatabase();
+                }
+            }
+            finally
+            {
+                _connectionLock.Release();
             }
         }
 
         private async Task ConnectAsync()
         {
-            if (_connection == null)
+            if (_connection != null)
             {
-                _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration);
-                _cache = _connection.GetDatabase();
+                return;
+            }
+
+            await _connectionLock.WaitAsync();
+            try
+            {
+                if (_connection == null)
+                {
+                    _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration);
+                    _cache = _connection.GetDatabase();
+                }
+            }
+            finally
+            {
+                _connectionLock.Release();
             }
         }
 
