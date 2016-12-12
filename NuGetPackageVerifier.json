@@ -1,23 +1,5 @@
 {
-    "adx": { // Packages written by the ADX team and that ship on NuGet.org
-        "rules": [
-            "AdxVerificationCompositeRule"
-        ],
-        "packages": {
-            "Microsoft.Extensions.Configuration": { },
-            "Microsoft.Extensions.Configuration.Abstractions": { },
-            "Microsoft.Extensions.Configuration.AzureKeyVault": { },
-            "Microsoft.Extensions.Configuration.Binder": { },
-            "Microsoft.Extensions.Configuration.CommandLine": { },
-            "Microsoft.Extensions.Configuration.EnvironmentVariables": { },
-            "Microsoft.Extensions.Configuration.FileExtensions": { },
-            "Microsoft.Extensions.Configuration.Ini": { },
-            "Microsoft.Extensions.Configuration.Json": { },
-            "Microsoft.Extensions.Configuration.UserSecrets": { },
-            "Microsoft.Extensions.Configuration.Xml": { }
-        }
-    },
-    "Default": { // Rules to run for packages not listed in any other set.
+    "Default": {
         "rules": [
             "DefaultCompositeRule"
         ]
