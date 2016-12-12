@@ -1,14 +1,4 @@
 {
-    "adx": { // Packages written by the ADX team and that ship on NuGet.org
-        "rules": [
-            "AdxVerificationCompositeRule"
-        ],
-        "packages": {
-            "Microsoft.Extensions.CommandLineUtils": { },
-            "Microsoft.Extensions.ObjectPool": { },
-            "Microsoft.Extensions.Primitives": { }
-        }
-    },
     "adx-nonshipping": {
         "rules": [],
         "packages": {
