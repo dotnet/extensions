@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.Extensions.FileProviders
+namespace Microsoft.Extensions.FileProviders.Embedded
 {
     internal class EnumerableDirectoryContents : IDirectoryContents
     {

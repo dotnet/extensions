@@ -1,9 +1,14 @@
 {
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk",
+    "compile": "../../shared/**/*.cs"
+  },
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.AspNetCore.Testing": "1.2.0-*",
     "Microsoft.Extensions.FileProviders.Composite": "1.2.0-*",
-    "Microsoft.Extensions.FileProviders.Sources": "1.2.0-*",
+    "Moq": "4.6.38-alpha",
     "xunit": "2.2.0-*"
   },
   "testRunner": "xunit",

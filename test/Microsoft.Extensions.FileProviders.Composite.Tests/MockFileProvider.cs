@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Primitives;
+using Moq;
 
 namespace Microsoft.Extensions.FileProviders.Composite
 {
@@ -31,15 +32,20 @@ namespace Microsoft.Extensions.FileProviders.Composite
 
         public IDirectoryContents GetDirectoryContents(string subpath)
         {
+            var contents = new Mock<IDirectoryContents>();
+            contents.Setup(m => m.Exists).Returns(true);
+
             if (string.IsNullOrEmpty(subpath))
             {
-                return new EnumerableDirectoryContents(_files);
+                contents.Setup(m => m.GetEnumerator()).Returns(_files.GetEnumerator());
+                return contents.Object;
             }
 
             var filesInFolder = _files.Where(f => f.Name.StartsWith(subpath, StringComparison.Ordinal));
             if (filesInFolder.Any())
             {
-                return new EnumerableDirectoryContents(filesInFolder);
+                contents.Setup(m => m.GetEnumerator()).Returns(filesInFolder.GetEnumerator());
+                return contents.Object;
             }
             return NotFoundDirectoryContents.Singleton;
         }

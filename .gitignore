@@ -27,6 +27,7 @@ nuget.exe
 debugSettings.json
 project.lock.json
 /.vs/
+.vscode/
 .build
 .testPublish
 .idea/

@@ -3,7 +3,8 @@
   "buildOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk",
-    "xmlDoc": true
+    "xmlDoc": true,
+    "compile": "../../shared/**/*.cs"
   },
   "description": "Composite file and directory providers for Microsoft.Extensions.FileProviders.",
   "packOptions": {
@@ -18,10 +19,6 @@
   },
   "dependencies": {
     "Microsoft.Extensions.FileProviders.Abstractions": {
-      "target": "project"
-    },
-    "Microsoft.Extensions.FileProviders.Sources": {
-      "type": "build",
       "target": "project"
     },
     "NETStandard.Library": "1.6.1-*"

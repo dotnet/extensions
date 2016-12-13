@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A1477614-E825-4204-A684-385004B63AEB}"
 EndProject
@@ -24,8 +24,6 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.FileProviders.Embedded.Tests", "test\Microsoft.Extensions.FileProviders.Embedded.Tests\Microsoft.Extensions.FileProviders.Embedded.Tests.xproj", "{6B6BA57A-B32D-430A-AF39-09CAA85308C2}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.FileProviders.Physical.Tests", "test\Microsoft.Extensions.FileProviders.Physical.Tests\Microsoft.Extensions.FileProviders.Physical.Tests.xproj", "{66FE5FDF-BBF9-4573-A7B7-53551731C0F9}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.FileProviders.Sources", "src\Microsoft.Extensions.FileProviders.Sources\Microsoft.Extensions.FileProviders.Sources.xproj", "{92C2C85C-D1A5-44BD-BE23-238E08471B4D}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.FileProviders.Composite", "src\Microsoft.Extensions.FileProviders.Composite\Microsoft.Extensions.FileProviders.Composite.xproj", "{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}"
 EndProject
@@ -123,18 +121,6 @@ Global
 		{66FE5FDF-BBF9-4573-A7B7-53551731C0F9}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{66FE5FDF-BBF9-4573-A7B7-53551731C0F9}.Release|x86.ActiveCfg = Release|Any CPU
 		{66FE5FDF-BBF9-4573-A7B7-53551731C0F9}.Release|x86.Build.0 = Release|Any CPU
-		{92C2C85C-D1A5-44BD-BE23-238E08471B4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{92C2C85C-D1A5-44BD-BE23-238E08471B4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{92C2C85C-D1A5-44BD-BE23-238E08471B4D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{92C2C85C-D1A5-44BD-BE23-238E08471B4D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{92C2C85C-D1A5-44BD-BE23-238E08471B4D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{92C2C85C-D1A5-44BD-BE23-238E08471B4D}.Debug|x86.Build.0 = Debug|Any CPU
-		{92C2C85C-D1A5-44BD-BE23-238E08471B4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{92C2C85C-D1A5-44BD-BE23-238E08471B4D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{92C2C85C-D1A5-44BD-BE23-238E08471B4D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{92C2C85C-D1A5-44BD-BE23-238E08471B4D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{92C2C85C-D1A5-44BD-BE23-238E08471B4D}.Release|x86.ActiveCfg = Release|Any CPU
-		{92C2C85C-D1A5-44BD-BE23-238E08471B4D}.Release|x86.Build.0 = Release|Any CPU
 		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -171,7 +157,6 @@ Global
 		{BA56E837-C793-4A7D-824D-84492028E066} = {A1477614-E825-4204-A684-385004B63AEB}
 		{6B6BA57A-B32D-430A-AF39-09CAA85308C2} = {E399495E-82B8-4C06-8779-C1D02BEF4495}
 		{66FE5FDF-BBF9-4573-A7B7-53551731C0F9} = {E399495E-82B8-4C06-8779-C1D02BEF4495}
-		{92C2C85C-D1A5-44BD-BE23-238E08471B4D} = {A1477614-E825-4204-A684-385004B63AEB}
 		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254} = {A1477614-E825-4204-A684-385004B63AEB}
 		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494} = {E399495E-82B8-4C06-8779-C1D02BEF4495}
 	EndGlobalSection
