@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Microsoft.Extensions.Primitives
 {
@@ -11,8 +12,8 @@ namespace Microsoft.Extensions.Primitives
     /// </summary>
     public class CompositeChangeToken : IChangeToken
     {
-        private readonly object _callbackLock = new object();
-        private List<CallbackState> _callbacks = new List<CallbackState>();
+        private static readonly Action<object> _onChangeDelegate = OnChange;
+        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private bool _registeredCallbackProxy;
         private bool _canBeChanged = true;
 
@@ -43,89 +44,8 @@ namespace Microsoft.Extensions.Primitives
                 return NullDisposable.Singleton;
             }
 
-            var changeTokenState = new CallbackState(callback, state, new CallbackDisposable());
-            _callbacks.Add(changeTokenState);
-
             EnsureCallbacksRegistered();
-
-            return changeTokenState.Disposable;
-        }
-
-        private void EnsureCallbacksRegistered()
-        {
-            lock (_callbackLock)
-            {
-                if (_registeredCallbackProxy)
-                {
-                    return;
-                }
-
-                for (var i = 0; i < ChangeTokens.Count; i++)
-                {
-                    ChangeTokens[i].RegisterChangeCallback(OnChange, null);
-                }
-
-                _registeredCallbackProxy = true;
-            }
-        }
-
-        private void OnChange(object state)
-        {
-            if (!_canBeChanged)
-            {
-                return;
-            }
-
-            _canBeChanged = false;
-            lock (_callbackLock)
-            {
-                for (var i = 0; i < _callbacks.Count; i++)
-                {
-                    var callbackState = _callbacks[i];
-                    if (callbackState.Disposable.Disposed)
-                    {
-                        continue;
-                    }
-
-                    callbackState.Callback(callbackState.State);
-                }
-            }
-        }
-
-        private class NullDisposable : IDisposable
-        {
-            public static readonly NullDisposable Singleton = new NullDisposable();
-
-            public bool Disposed { get; private set; }
-
-            public void Dispose()
-            {
-                Disposed = true;
-            }
-        }
-
-        private class CallbackDisposable : IDisposable
-        {
-            public bool Disposed { get; private set; }
-
-            public void Dispose()
-            {
-                Disposed = true;
-            }
-        }
-
-        private struct CallbackState
-        {
-            public CallbackState(Action<object> callback, object state, CallbackDisposable disposable)
-            {
-                Callback = callback;
-                State = state;
-                Disposable = disposable;
-            }
-
-            public Action<object> Callback { get; }
-            public object State { get; }
-            public CallbackDisposable Disposable { get; }
+            return _cancellationTokenSource.Token.Register(callback, state);
         }
 
         /// <inheritdoc />
@@ -161,5 +81,64 @@ namespace Microsoft.Extensions.Primitives
                 return false;
             }
         }
+
+        private void EnsureCallbacksRegistered()
+        {
+            if (_registeredCallbackProxy)
+            {
+                return;
+            }
+
+            for (var i = 0; i < ChangeTokens.Count; i++)
+            {
+                if (ActiveChangeCallbacks)
+                {
+                    ChangeTokens[i].RegisterChangeCallback(_onChangeDelegate, this);
+                }
+            }
+            _registeredCallbackProxy = true;
+        }
+
+        private static void OnChange(object state)
+        {
+            var compositeChangeTokenState = (CompositeChangeToken)state;
+            if (!compositeChangeTokenState._canBeChanged)
+            {
+                return;
+            }
+
+            compositeChangeTokenState._canBeChanged = false;
+            compositeChangeTokenState._cancellationTokenSource.Cancel();
+        }
+
+        private class NullDisposable : IDisposable
+        {
+            public static readonly NullDisposable Singleton = new NullDisposable();
+
+            public bool Disposed { get; private set; }
+
+            public void Dispose()
+            {
+                Disposed = true;
+            }
+        }
+
+        //private class CompositeDisposable : IDisposable
+        //{
+        //    private readonly IDisposable[] _disposables;
+
+        //    public CompositeDisposable(IDisposable[] disposables)
+        //    {
+        //        _disposables = disposables;
+        //    }
+
+        //    public void Dispose()
+        //    {
+        //        for (var i = 0; i < _disposables.Length; i++)
+        //        {
+        //            _disposables[i].Dispose();
+        //        }
+        //    }
+        //}
     }
 }

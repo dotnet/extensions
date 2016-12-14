@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Primitives.Tests
         {
             // Arrange 
             var firstChangeToken = new MockChangeToken();
-            var secondChangeToken = new MockChangeToken();
+            var secondChangeToken = new MockChangeToken() { ActiveChangeCallbacks = true };
             var thirdChangeToken = new MockChangeToken();
             var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { firstChangeToken, secondChangeToken, thirdChangeToken });
             var count1 = 0;
@@ -34,37 +34,6 @@ namespace Microsoft.Extensions.Primitives.Tests
             // Assert
             Assert.Equal(1, count1);
             Assert.Equal(1, count2);
-        }
-
-        [Fact]
-        public void RegisterChangeCallback_ReturnsACompositeDisposable()
-        {
-            // Arrange
-            var firstChangeToken = new Mock<IChangeToken>();
-            var secondChangeToken = new Mock<IChangeToken>();
-
-            object result = null;
-            object state = new object();
-            Action<object> callback = item => result = item;
-
-            var compositeDisposable = new MockDisposable();
-
-            var compositeChangeToken = new Mock<CompositeChangeToken>(new List<IChangeToken> { firstChangeToken.Object, secondChangeToken.Object });
-            compositeChangeToken.Setup(t => t.RegisterChangeCallback(callback, state))
-              .Returns(() =>
-              {
-                  var disposable = new MockDisposable();
-                  disposable.Dispose();
-                  compositeDisposable = disposable;
-                  return disposable;
-              });
-
-            // Act
-            compositeChangeToken.Object.RegisterChangeCallback(callback, state);
-            compositeDisposable.Dispose();
-
-            // Assert
-            Assert.True(compositeDisposable.Disposed);
         }
 
         [Fact]
@@ -122,7 +91,7 @@ namespace Microsoft.Extensions.Primitives.Tests
         }
 
         [Fact]
-        public async Task CallbackInvokedOnce_ConcurrentThreadsBlocked()
+        public async Task CallbackRaisedOnce_ConcurrentThreadsBlocked()
         {
             // Arrange
             var event1 = new AutoResetEvent(false);
@@ -130,7 +99,7 @@ namespace Microsoft.Extensions.Primitives.Tests
             var event3 = new AutoResetEvent(false);
 
             var firstChangeToken = new MockChangeToken();
-            var secondChangeToken = new MockChangeToken();
+            var secondChangeToken = new MockChangeToken() { ActiveChangeCallbacks = true };
             var count = 0;
             Action<object> callback = _ =>
             {
@@ -171,7 +140,7 @@ namespace Microsoft.Extensions.Primitives.Tests
             var event3 = new AutoResetEvent(false);
 
             var firstChangeToken = new MockChangeToken();
-            var secondChangeToken = new MockChangeToken();
+            var secondChangeToken = new MockChangeToken() { ActiveChangeCallbacks = true };
             var count = 0;
             Action<object> callback = _ =>
             {

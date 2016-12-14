@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Primitives.Tests
 {
-    public class MockChangeToken: IChangeToken
+    public class MockChangeToken : IChangeToken
     {
         private readonly List<Tuple<Action<object>, object, MockDisposable>> _callbacks = new List<Tuple<Action<object>, object, MockDisposable>>();
 
@@ -33,7 +33,15 @@ namespace Microsoft.Extensions.Primitives.Tests
         {
             foreach (var callback in _callbacks)
             {
-                callback.Item1(item);
+                if (callback.Item2 != null)
+                {
+                    callback.Item1(callback.Item2);
+                }
+
+                else
+                {
+                    callback.Item1(item);
+                }
             }
         }
     }
