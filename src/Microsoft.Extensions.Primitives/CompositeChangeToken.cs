@@ -122,23 +122,5 @@ namespace Microsoft.Extensions.Primitives
                 Disposed = true;
             }
         }
-
-        //private class CompositeDisposable : IDisposable
-        //{
-        //    private readonly IDisposable[] _disposables;
-
-        //    public CompositeDisposable(IDisposable[] disposables)
-        //    {
-        //        _disposables = disposables;
-        //    }
-
-        //    public void Dispose()
-        //    {
-        //        for (var i = 0; i < _disposables.Length; i++)
-        //        {
-        //            _disposables[i].Dispose();
-        //        }
-        //    }
-        //}
     }
 }
