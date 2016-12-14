@@ -2,6 +2,7 @@
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-*",
     "Microsoft.Extensions.Primitives": "1.2.0-*",
+    "Moq": "4.6.38-*",
     "xunit": "2.2.0-*"
   },
   "buildOptions": {
