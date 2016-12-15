@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26009.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A1477614-E825-4204-A684-385004B63AEB}"
 EndProject
@@ -11,23 +11,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.FileProviders.Abstractions", "src\Microsoft.Extensions.FileProviders.Abstractions\Microsoft.Extensions.FileProviders.Abstractions.xproj", "{DD94B7E8-3A59-4F84-98A0-8139BE259A87}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FileProviders.Abstractions", "src\Microsoft.Extensions.FileProviders.Abstractions\Microsoft.Extensions.FileProviders.Abstractions.csproj", "{DD94B7E8-3A59-4F84-98A0-8139BE259A87}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.FileSystemGlobbing", "src\Microsoft.Extensions.FileSystemGlobbing\Microsoft.Extensions.FileSystemGlobbing.xproj", "{970449A2-3BBB-4E87-8513-C41F109B1A3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FileSystemGlobbing", "src\Microsoft.Extensions.FileSystemGlobbing\Microsoft.Extensions.FileSystemGlobbing.csproj", "{970449A2-3BBB-4E87-8513-C41F109B1A3E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.FileSystemGlobbing.Tests", "test\Microsoft.Extensions.FileSystemGlobbing.Tests\Microsoft.Extensions.FileSystemGlobbing.Tests.xproj", "{45A5A942-4EFB-4839-AEA3-EB1D2BAB332C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FileSystemGlobbing.Tests", "test\Microsoft.Extensions.FileSystemGlobbing.Tests\Microsoft.Extensions.FileSystemGlobbing.Tests.csproj", "{45A5A942-4EFB-4839-AEA3-EB1D2BAB332C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.FileProviders.Embedded", "src\Microsoft.Extensions.FileProviders.Embedded\Microsoft.Extensions.FileProviders.Embedded.xproj", "{BD98C115-7FA6-4A78-8198-9650A4706B79}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FileProviders.Embedded", "src\Microsoft.Extensions.FileProviders.Embedded\Microsoft.Extensions.FileProviders.Embedded.csproj", "{BD98C115-7FA6-4A78-8198-9650A4706B79}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.FileProviders.Physical", "src\Microsoft.Extensions.FileProviders.Physical\Microsoft.Extensions.FileProviders.Physical.xproj", "{BA56E837-C793-4A7D-824D-84492028E066}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FileProviders.Physical", "src\Microsoft.Extensions.FileProviders.Physical\Microsoft.Extensions.FileProviders.Physical.csproj", "{BA56E837-C793-4A7D-824D-84492028E066}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.FileProviders.Embedded.Tests", "test\Microsoft.Extensions.FileProviders.Embedded.Tests\Microsoft.Extensions.FileProviders.Embedded.Tests.xproj", "{6B6BA57A-B32D-430A-AF39-09CAA85308C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FileProviders.Embedded.Tests", "test\Microsoft.Extensions.FileProviders.Embedded.Tests\Microsoft.Extensions.FileProviders.Embedded.Tests.csproj", "{6B6BA57A-B32D-430A-AF39-09CAA85308C2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.FileProviders.Physical.Tests", "test\Microsoft.Extensions.FileProviders.Physical.Tests\Microsoft.Extensions.FileProviders.Physical.Tests.xproj", "{66FE5FDF-BBF9-4573-A7B7-53551731C0F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FileProviders.Physical.Tests", "test\Microsoft.Extensions.FileProviders.Physical.Tests\Microsoft.Extensions.FileProviders.Physical.Tests.csproj", "{66FE5FDF-BBF9-4573-A7B7-53551731C0F9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.FileProviders.Composite", "src\Microsoft.Extensions.FileProviders.Composite\Microsoft.Extensions.FileProviders.Composite.xproj", "{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FileProviders.Composite", "src\Microsoft.Extensions.FileProviders.Composite\Microsoft.Extensions.FileProviders.Composite.csproj", "{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.FileProviders.Composite.Tests", "test\Microsoft.Extensions.FileProviders.Composite.Tests\Microsoft.Extensions.FileProviders.Composite.Tests.xproj", "{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FileProviders.Composite.Tests", "test\Microsoft.Extensions.FileProviders.Composite.Tests\Microsoft.Extensions.FileProviders.Composite.Tests.csproj", "{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
