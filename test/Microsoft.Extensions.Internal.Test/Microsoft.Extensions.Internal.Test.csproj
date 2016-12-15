@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp1.1;net451</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="**\*.cs" />
+    <Compile Include="..\..\shared\Microsoft.Extensions.ClosedGenericMatcher.Sources\**\*.cs" />
+    <Compile Include="..\..\shared\Microsoft.Extensions.CopyOnWriteDictionary.Sources\**\*.cs" />
+    <Compile Include="..\..\shared\Microsoft.Extensions.DotnetToolDispatcher.Sources\**\*.cs" />
+    <Compile Include="..\..\shared\Microsoft.Extensions.HashCodeCombiner.Sources\**\*.cs" />
+    <Compile Include="..\..\shared\Microsoft.Extensions.PropertyActivator.Sources\**\*.cs" />
+    <Compile Include="..\..\shared\Microsoft.Extensions.PropertyHelper.Sources\**\*.cs" />
+    <Compile Include="..\..\shared\Microsoft.Extensions.SecurityHelper.Sources\**\*.cs" />
+    <Compile Include="..\..\shared\Microsoft.Extensions.TypeNameHelper.Sources\**\*.cs" />
+    <Compile Include="..\..\shared\Microsoft.Extensions.WebEncoders.Sources\**\*.cs" />
+    <EmbeddedResource Include="**\*.resx" />
+    <EmbeddedResource Include="..\..\shared\*.Sources\**\*.resx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Cli.Utils" Version="1.0.0-preview2-1-003177"/>
+    <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.2.0-*"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20161123-03"/>
+    <PackageReference Include="Moq" Version="4.6.36-*"/>
+    <PackageReference Include="xunit" Version="2.2.0-beta4-build3444"/>
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-beta4-build1194"/>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
+    <PackageReference Include="Microsoft.NETCore.App" Version="1.1.0"/>
+    <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0"/>
+    <PackageReference Include="System.Security.Claims" Version="4.3.0"/>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>
