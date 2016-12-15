@@ -10,7 +10,7 @@ k-standard-goals
     @{
         foreach (var dir in Directory.GetDirectories(Directory.GetCurrentDirectory(), "src/*.Sources"))
         {
-            var nugetPath = E("KOREBUILD_NUGET_EXE") ?? ".build/NuGet.exe";
+            var nugetPath = E("KOREBUILD_NUGET_EXE") ?? ".build/nuget.exe";
             var outputDir = "artifacts/build/";
 
             var versionSuffix = E("DOTNET_BUILD_VERSION");
