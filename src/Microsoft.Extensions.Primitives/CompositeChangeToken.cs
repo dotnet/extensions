@@ -13,10 +13,10 @@ namespace Microsoft.Extensions.Primitives
     public class CompositeChangeToken : IChangeToken
     {
         private static readonly Action<object> _onChangeDelegate = OnChange;
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        public CancellationTokenSource _cancellationTokenSource;
+        private readonly object _callbackLock = new object();
         private bool _registeredCallbackProxy;
-        private bool _canBeChanged = true;
-
+        
         /// <summary>
         /// Creates a new instance of <see cref="CompositeChangeToken"/>.
         /// </summary>
@@ -29,6 +29,15 @@ namespace Microsoft.Extensions.Primitives
             }
 
             ChangeTokens = changeTokens;
+
+            ActiveChangeCallbacks = false;
+            for (var i = 0; i < ChangeTokens.Count; i++)
+            {
+                if (ChangeTokens[i].ActiveChangeCallbacks)
+                {
+                    ActiveChangeCallbacks = true;
+                }
+            }
         }
 
         /// <summary>
@@ -39,12 +48,7 @@ namespace Microsoft.Extensions.Primitives
         /// <inheritdoc />
         public virtual IDisposable RegisterChangeCallback(Action<object> callback, object state)
         {
-            if (!_canBeChanged)
-            {
-                return NullDisposable.Singleton;
-            }
-
-            EnsureCallbacksRegistered();
+            EnsureCallbacksInitialized();
             return _cancellationTokenSource.Token.Register(callback, state);
         }
 
@@ -53,6 +57,11 @@ namespace Microsoft.Extensions.Primitives
         {
             get
             {
+                if (_cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    return true;
+                }
+
                 for (var i = 0; i < ChangeTokens.Count; i++)
                 {
                     if (ChangeTokens[i].HasChanged)
@@ -66,60 +75,48 @@ namespace Microsoft.Extensions.Primitives
         }
 
         /// <inheritdoc />
-        public bool ActiveChangeCallbacks
-        {
-            get
-            {
-                for (var i = 0; i < ChangeTokens.Count; i++)
-                {
-                    if (ChangeTokens[i].ActiveChangeCallbacks)
-                    {
-                        return true;
-                    }
-                }
+        public bool ActiveChangeCallbacks { get; }
 
-                return false;
-            }
-        }
-
-        private void EnsureCallbacksRegistered()
+        private void EnsureCallbacksInitialized()
         {
             if (_registeredCallbackProxy)
             {
                 return;
             }
 
-            for (var i = 0; i < ChangeTokens.Count; i++)
+            lock (_callbackLock)
             {
-                if (ActiveChangeCallbacks)
+                if (_registeredCallbackProxy)
                 {
-                    ChangeTokens[i].RegisterChangeCallback(_onChangeDelegate, this);
+                    return;
+                }
+
+                _registeredCallbackProxy = true;
+                _cancellationTokenSource = new CancellationTokenSource();
+                for (var i = 0; i < ChangeTokens.Count; i++)
+                {
+                    if (ChangeTokens[i].ActiveChangeCallbacks)
+                    {
+                        var disposable = ChangeTokens[i].RegisterChangeCallback(_onChangeDelegate, this);
+                        disposable.Dispose();
+                    }
                 }
             }
-            _registeredCallbackProxy = true;
         }
 
         private static void OnChange(object state)
         {
             var compositeChangeTokenState = (CompositeChangeToken)state;
-            if (!compositeChangeTokenState._canBeChanged)
+            lock (compositeChangeTokenState._callbackLock)
             {
-                return;
-            }
+                try
+                {
+                    compositeChangeTokenState._cancellationTokenSource.Cancel();
+                }
 
-            compositeChangeTokenState._canBeChanged = false;
-            compositeChangeTokenState._cancellationTokenSource.Cancel();
-        }
-
-        private class NullDisposable : IDisposable
-        {
-            public static readonly NullDisposable Singleton = new NullDisposable();
-
-            public bool Disposed { get; private set; }
-
-            public void Dispose()
-            {
-                Disposed = true;
+                catch (Exception)
+                {
+                }
             }
         }
     }

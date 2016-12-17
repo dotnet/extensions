@@ -15,21 +15,26 @@ namespace Microsoft.Extensions.Primitives.Tests
         [Fact]
         public void RegisterChangeCallback_IsInvokedExactlyOnce()
         {
-            // Arrange 
-            var firstChangeToken = new MockChangeToken();
-            var secondChangeToken = new MockChangeToken() { ActiveChangeCallbacks = true };
-            var thirdChangeToken = new MockChangeToken();
-            var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { firstChangeToken, secondChangeToken, thirdChangeToken });
+            // Arrange
+            var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.Cancel();
+            var cancellationToken = cancellationTokenSource.Token;
+            var firstCancellationChangeToken = new CancellationChangeToken(cancellationToken);
+            var secondCancellationChangeToken = new CancellationChangeToken(cancellationToken);
+            var thirdCancellationChangeToken = new CancellationChangeToken(cancellationToken);
+
+            var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { firstCancellationChangeToken, secondCancellationChangeToken, thirdCancellationChangeToken });
+            //var firstChangeToken = new MockChangeToken();
+            //var secondChangeToken = new MockChangeToken() { ActiveChangeCallbacks = true };
+            //var thirdChangeToken = new MockChangeToken();
+            //var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { firstChangeToken, secondChangeToken, thirdChangeToken });
             var count1 = 0;
             var count2 = 0;
-
             compositeChangeToken.RegisterChangeCallback(_ => count1++, null);
             compositeChangeToken.RegisterChangeCallback(_ => count2++, null);
 
             // Act
-            firstChangeToken.RaiseCallback(null);
-            secondChangeToken.RaiseCallback(null);
-            thirdChangeToken.RaiseCallback(null);
+            cancellationTokenSource.Cancel();
 
             // Assert
             Assert.Equal(1, count1);
@@ -44,9 +49,11 @@ namespace Microsoft.Extensions.Primitives.Tests
             var secondChangeToken = new MockChangeToken { HasChanged = true };
             var thirdChangeToken = new MockChangeToken();
 
+            // Act
             var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { firstChangeToken, secondChangeToken, thirdChangeToken });
+            compositeChangeToken.RegisterChangeCallback(item => new object(), null);
 
-            // Act & Assert
+            // Assert
             Assert.True(compositeChangeToken.HasChanged);
         }
 
@@ -57,9 +64,11 @@ namespace Microsoft.Extensions.Primitives.Tests
             var firstChangeToken = new MockChangeToken();
             var secondChangeToken = new MockChangeToken();
 
+            // Act
             var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { firstChangeToken, secondChangeToken });
+            compositeChangeToken.RegisterChangeCallback(item => new object(), null);
 
-            // Act & Assert
+            // Assert
             Assert.False(compositeChangeToken.HasChanged);
         }
 
@@ -68,7 +77,7 @@ namespace Microsoft.Extensions.Primitives.Tests
         {
             // Arrange
             var firstChangeToken = new MockChangeToken();
-            var secondChangeToken = new MockChangeToken { ActiveChangeCallbacks = true };
+            var secondChangeToken = new MockChangeToken() { ActiveChangeCallbacks = true };
             var thirdChangeToken = new MockChangeToken();
 
             var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { firstChangeToken, secondChangeToken, thirdChangeToken });
@@ -94,12 +103,13 @@ namespace Microsoft.Extensions.Primitives.Tests
         public async Task CallbackRaisedOnce_ConcurrentThreadsBlocked()
         {
             // Arrange
-            var event1 = new AutoResetEvent(false);
-            var event2 = new AutoResetEvent(false);
-            var event3 = new AutoResetEvent(false);
+            var event1 = new ManualResetEvent(false);
+            var event2 = new ManualResetEvent(false);
+            var event3 = new ManualResetEvent(false);
 
-            var firstChangeToken = new MockChangeToken();
-            var secondChangeToken = new MockChangeToken() { ActiveChangeCallbacks = true };
+            var cancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = cancellationTokenSource.Token;
+            var cancellationChangeToken = new CancellationChangeToken(cancellationToken);
             var count = 0;
             Action<object> callback = _ =>
             {
@@ -108,20 +118,21 @@ namespace Microsoft.Extensions.Primitives.Tests
                 event1.WaitOne(5000);
             };
 
-            var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { firstChangeToken, secondChangeToken });
+            var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { cancellationChangeToken });
             compositeChangeToken.RegisterChangeCallback(callback, null);
 
             // Act
             var firstChange = Task.Run(() =>
             {
                 event2.WaitOne(5000);
-                firstChangeToken.RaiseCallback(null);
+                compositeChangeToken._cancellationTokenSource.Cancel();
             });
             var secondChange = Task.Run(() =>
             {
                 event3.WaitOne(5000);
-                secondChangeToken.RaiseCallback(null);
-            }).ContinueWith(x => event1.Set());
+                compositeChangeToken._cancellationTokenSource.Cancel();
+                event1.Set();
+            });
 
             event2.Set();
 
@@ -135,12 +146,13 @@ namespace Microsoft.Extensions.Primitives.Tests
         public async Task RegisterChangeCallbackOnce_ConcurrentThreadsBlocked()
         {
             // Arrange
-            var event1 = new AutoResetEvent(false);
-            var event2 = new AutoResetEvent(false);
-            var event3 = new AutoResetEvent(false);
+            var event1 = new ManualResetEvent(false);
+            var event2 = new ManualResetEvent(false);
+            var event3 = new ManualResetEvent(false);
 
-            var firstChangeToken = new MockChangeToken();
-            var secondChangeToken = new MockChangeToken() { ActiveChangeCallbacks = true };
+            var cancellationTokenSource = new CancellationTokenSource();
+            var cancellationChangeToken = new CancellationChangeToken(cancellationTokenSource.Token);
+
             var count = 0;
             Action<object> callback = _ =>
             {
@@ -149,20 +161,22 @@ namespace Microsoft.Extensions.Primitives.Tests
                 event1.WaitOne();
             };
 
-            var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { firstChangeToken, secondChangeToken });
+            var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { cancellationChangeToken });
             compositeChangeToken.RegisterChangeCallback(callback, null);
 
             // Act
             var firstChange = Task.Run(() =>
             {
                 event2.WaitOne(5000);
-                firstChangeToken.RaiseCallback(null);
+                cancellationTokenSource.Cancel();
             });
+
             var secondChange = Task.Run(() =>
             {
                 event3.WaitOne();
                 compositeChangeToken.RegisterChangeCallback(callback, null);
-            }).ContinueWith(x => event1.Set());
+                event1.Set();
+            });
 
             event2.Set();
 
