@@ -1,24 +1,24 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26009.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FEAA3936-5906-4383-B750-F07FE1B156C5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Internal.Test", "test\Microsoft.Extensions.Internal.Test\Microsoft.Extensions.Internal.Test.xproj", "{D81EAC23-B515-49FB-B04B-285A9C1C6583}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Internal.Test", "test\Microsoft.Extensions.Internal.Test\Microsoft.Extensions.Internal.Test.csproj", "{D81EAC23-B515-49FB-B04B-285A9C1C6583}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Primitives", "src\Microsoft.Extensions.Primitives\Microsoft.Extensions.Primitives.xproj", "{711B5F84-1EDC-49A7-9643-766CE93A0466}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Primitives", "src\Microsoft.Extensions.Primitives\Microsoft.Extensions.Primitives.csproj", "{711B5F84-1EDC-49A7-9643-766CE93A0466}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Primitives.Tests", "test\Microsoft.Extensions.Primitives.Tests\Microsoft.Extensions.Primitives.Tests.xproj", "{61F72E92-B3AE-4A10-B838-44F80AED40AE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Primitives.Tests", "test\Microsoft.Extensions.Primitives.Tests\Microsoft.Extensions.Primitives.Tests.csproj", "{61F72E92-B3AE-4A10-B838-44F80AED40AE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.ObjectPool", "src\Microsoft.Extensions.ObjectPool\Microsoft.Extensions.ObjectPool.xproj", "{C87DA599-4C1F-4B91-9C77-A10E79CD8701}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.ObjectPool", "src\Microsoft.Extensions.ObjectPool\Microsoft.Extensions.ObjectPool.csproj", "{C87DA599-4C1F-4B91-9C77-A10E79CD8701}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.ObjectPool.Test", "test\Microsoft.Extensions.ObjectPool.Test\Microsoft.Extensions.ObjectPool.Test.xproj", "{DA1D70F4-717A-4440-B388-B5BEE670C14D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.ObjectPool.Test", "test\Microsoft.Extensions.ObjectPool.Test\Microsoft.Extensions.ObjectPool.Test.csproj", "{DA1D70F4-717A-4440-B388-B5BEE670C14D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.CommandLineUtils.Tests", "test\Microsoft.Extensions.CommandLineUtils.Tests\Microsoft.Extensions.CommandLineUtils.Tests.xproj", "{7E6564C3-04E3-418C-B96A-463FE2906F09}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.CommandLineUtils.Tests", "test\Microsoft.Extensions.CommandLineUtils.Tests\Microsoft.Extensions.CommandLineUtils.Tests.csproj", "{7E6564C3-04E3-418C-B96A-463FE2906F09}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.CommandLineUtils", "src\Microsoft.Extensions.CommandLineUtils\Microsoft.Extensions.CommandLineUtils.xproj", "{C46A8C00-CD50-4478-8639-6A6CF8CDD05B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.CommandLineUtils", "src\Microsoft.Extensions.CommandLineUtils\Microsoft.Extensions.CommandLineUtils.csproj", "{C46A8C00-CD50-4478-8639-6A6CF8CDD05B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

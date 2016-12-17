@@ -1,32 +1,8 @@
-use namespace="System.IO"
 
-var VersionPrefix = '1.2.0'
 var VERSION='0.1'
 var FULL_VERSION='0.1'
 use-standard-lifecycle
 k-standard-goals
 
-#pack-sources target='compile'
-    @{
-        foreach (var dir in Directory.GetDirectories(Directory.GetCurrentDirectory(), "src/*.Sources"))
-        {
-            var nugetPath = E("KOREBUILD_NUGET_EXE") ?? ".build/NuGet.exe";
-            var outputDir = "artifacts/build/";
-
-            var versionSuffix = E("DOTNET_BUILD_VERSION");
-            var packageVersion = VersionPrefix;
-            if (!string.IsNullOrEmpty(versionSuffix))
-            {
-                packageVersion += "-" + versionSuffix;
-            }
-
-            NugetPack(nugetPath,
-                "sources.nuspec",
-                outputDir,
-                packageVersion,
-                "-BasePath \"" + dir + "\" -Properties id=" + Path.GetFileName(dir));
-        }
-    }
-
-macro name='NugetPack' nugetPath='string' nuspecFile='string' outputDir='string' packageVersion='string' extra='string'
-    nuget-pack
+#pack-sources target='build-pack'
+    dotnet command='msbuild shared/build.proj /t:Pack /v:n'
