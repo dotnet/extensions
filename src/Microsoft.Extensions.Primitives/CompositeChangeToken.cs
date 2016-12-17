@@ -16,7 +16,8 @@ namespace Microsoft.Extensions.Primitives
         public CancellationTokenSource _cancellationTokenSource;
         private readonly object _callbackLock = new object();
         private bool _registeredCallbackProxy;
-        
+        private List<IDisposable> _disposables;
+
         /// <summary>
         /// Creates a new instance of <see cref="CompositeChangeToken"/>.
         /// </summary>
@@ -46,10 +47,18 @@ namespace Microsoft.Extensions.Primitives
         public IReadOnlyList<IChangeToken> ChangeTokens { get; }
 
         /// <inheritdoc />
-        public virtual IDisposable RegisterChangeCallback(Action<object> callback, object state)
+        public IDisposable RegisterChangeCallback(Action<object> callback, object state)
         {
             EnsureCallbacksInitialized();
-            return _cancellationTokenSource.Token.Register(callback, state);
+            if (!_cancellationTokenSource.IsCancellationRequested)
+            {
+                return _cancellationTokenSource.Token.Register(callback, state);
+            }
+
+            else
+            {
+                return null;
+            }
         }
 
         /// <inheritdoc />
@@ -93,12 +102,13 @@ namespace Microsoft.Extensions.Primitives
 
                 _registeredCallbackProxy = true;
                 _cancellationTokenSource = new CancellationTokenSource();
+                _disposables = new List<IDisposable>();
                 for (var i = 0; i < ChangeTokens.Count; i++)
                 {
                     if (ChangeTokens[i].ActiveChangeCallbacks)
                     {
                         var disposable = ChangeTokens[i].RegisterChangeCallback(_onChangeDelegate, this);
-                        disposable.Dispose();
+                        _disposables.Add(disposable);
                     }
                 }
             }
@@ -117,6 +127,11 @@ namespace Microsoft.Extensions.Primitives
                 catch (Exception)
                 {
                 }
+            }
+
+            foreach (var disposable in compositeChangeTokenState._disposables)
+            {
+                disposable.Dispose();
             }
         }
     }
