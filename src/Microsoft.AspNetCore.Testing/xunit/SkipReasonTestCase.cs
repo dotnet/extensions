@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,22 +13,35 @@ namespace Microsoft.AspNetCore.Testing.xunit
 {
     internal class SkipReasonTestCase : LongLivedMarshalByRefObject, IXunitTestCase
     {
-        private readonly bool _isTheory;
-        private readonly string _skipReason;
-        private readonly IXunitTestCase _wrappedTestCase;
+        private string _displayName;
+        private bool _initialized;
+        private IMethodInfo _methodInfo;
+        private ITypeInfo[] _methodGenericTypes;
+        private Dictionary<string, List<string>> _traits;
 
-        public SkipReasonTestCase(bool isTheory, string skipReason, IXunitTestCase wrappedTestCase)
-        {
-            _isTheory = isTheory;
-            _skipReason = wrappedTestCase.SkipReason ?? skipReason;
-            _wrappedTestCase = wrappedTestCase;
-        }
+        public bool IsTheory { get; set; }
+
+        public string SkipReason { get; set; }
+
+        public string UniqueID { get; set; }
+
+        public ISourceInformation SourceInformation { get; set; }
+
+        public ITestMethod TestMethod { get; set; }
+
+        public object[] TestMethodArguments { get; set; }
 
         public string DisplayName
         {
             get
             {
-                return _wrappedTestCase.DisplayName;
+                EnsureInitialized();
+                return _displayName;
+            }
+            set
+            {
+                EnsureInitialized();
+                _displayName = value;
             }
         }
 
@@ -35,43 +49,22 @@ namespace Microsoft.AspNetCore.Testing.xunit
         {
             get
             {
-                return _wrappedTestCase.Method;
-            }
-        }
-
-        public string SkipReason
-        {
-            get
-            {
-                return _skipReason;
-            }
-        }
-
-        public ISourceInformation SourceInformation
-        {
-            get
-            {
-                return _wrappedTestCase.SourceInformation;
+                EnsureInitialized();
+                return _methodInfo;
             }
             set
             {
-                _wrappedTestCase.SourceInformation = value;
+                EnsureInitialized();
+                _methodInfo = value;
             }
         }
 
-        public ITestMethod TestMethod
+        protected ITypeInfo[] MethodGenericTypes
         {
             get
             {
-                return _wrappedTestCase.TestMethod;
-            }
-        }
-
-        public object[] TestMethodArguments
-        {
-            get
-            {
-                return _wrappedTestCase.TestMethodArguments;
+                EnsureInitialized();
+                return _methodGenericTypes;
             }
         }
 
@@ -79,21 +72,34 @@ namespace Microsoft.AspNetCore.Testing.xunit
         {
             get
             {
-                return _wrappedTestCase.Traits;
-            }
-        }
+                EnsureInitialized();
 
-        public string UniqueID
-        {
-            get
+                return _traits;
+            }
+            set
             {
-                return _wrappedTestCase.UniqueID;
+                EnsureInitialized();
+
+                _traits = value;
             }
         }
 
         public void Deserialize(IXunitSerializationInfo info)
         {
-            _wrappedTestCase.Deserialize(info);
+            UniqueID = info.GetValue<string>(nameof(UniqueID));
+            SkipReason = info.GetValue<string>(nameof(SkipReason));
+            IsTheory = info.GetValue<bool>(nameof(IsTheory));
+            TestMethod = info.GetValue<ITestMethod>(nameof(TestMethod));
+            TestMethodArguments = info.GetValue<object[]>(nameof(TestMethodArguments));
+        }
+
+        public void Serialize(IXunitSerializationInfo info)
+        {
+            info.AddValue(nameof(UniqueID), UniqueID);
+            info.AddValue(nameof(SkipReason), SkipReason);
+            info.AddValue(nameof(IsTheory), IsTheory);
+            info.AddValue(nameof(TestMethod), TestMethod);
+            info.AddValue(nameof(TestMethodArguments), TestMethodArguments);
         }
 
         public Task<RunSummary> RunAsync(
@@ -104,12 +110,12 @@ namespace Microsoft.AspNetCore.Testing.xunit
             CancellationTokenSource cancellationTokenSource)
         {
             TestCaseRunner<IXunitTestCase> runner;
-            if (_isTheory)
+            if (IsTheory)
             {
                 runner = new XunitTheoryTestCaseRunner(
                     this,
                     DisplayName,
-                    _skipReason,
+                    SkipReason,
                     constructorArguments,
                     diagnosticMessageSink,
                     messageBus,
@@ -121,7 +127,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
                 runner = new XunitTestCaseRunner(
                     this,
                     DisplayName,
-                    _skipReason,
+                    SkipReason,
                     constructorArguments,
                     TestMethodArguments,
                     messageBus,
@@ -132,9 +138,36 @@ namespace Microsoft.AspNetCore.Testing.xunit
             return runner.RunAsync();
         }
 
-        public void Serialize(IXunitSerializationInfo info)
+        private void EnsureInitialized()
         {
-            _wrappedTestCase.Serialize(info);
+            if (!_initialized)
+            {
+                _initialized = true;
+                Initialize();
+            }
+        }
+
+        private void Initialize()
+        {
+            Traits = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            Method = TestMethod.Method;
+
+            if (TestMethodArguments != null)
+            {
+                IReflectionMethodInfo reflectionMethod = Method as IReflectionMethodInfo;
+                if (reflectionMethod != null)
+                {
+                    TestMethodArguments = reflectionMethod.MethodInfo.ResolveMethodArguments(TestMethodArguments);
+                }
+
+                if (Method.IsGenericMethodDefinition)
+                {
+                    _methodGenericTypes = Method.ResolveGenericTypes(TestMethodArguments);
+                    Method = Method.MakeGenericMethod(MethodGenericTypes);
+                }
+            }
+
+            DisplayName = Method.GetDisplayNameWithArguments(TestMethod.Method.Name, TestMethodArguments, MethodGenericTypes);
         }
     }
 }

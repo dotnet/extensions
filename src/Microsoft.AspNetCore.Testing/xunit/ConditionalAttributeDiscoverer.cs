@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -39,7 +40,15 @@ namespace Microsoft.AspNetCore.Testing.xunit
 
             var testCases = innerDiscoverer
                 .Discover(discoveryOptions, testMethod, factAttribute)
-                .Select(testCase => new SkipReasonTestCase(isTheory, skipReason, testCase));
+                .Select(testCase => new SkipReasonTestCase
+                {
+                    IsTheory = isTheory,
+                    SkipReason = skipReason,
+                    SourceInformation = testCase.SourceInformation,
+                    TestMethod = testCase.TestMethod,
+                    TestMethodArguments = testCase.TestMethodArguments,
+                    UniqueID = testCase.UniqueID,
+                });
 
             return testCases;
         }
