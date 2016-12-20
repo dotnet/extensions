@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
 {
     /// <summary>
     /// Default implementation of <see cref="IKeyVaultSecretManager"/> that loads all secrets
-    /// and replaces '__' with ':" in key names.
+    /// and replaces '--' with ':" in key names.
     /// </summary>
     public class DefaultKeyVaultSecretManager : IKeyVaultSecretManager
     {
