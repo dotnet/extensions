@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "Microsoft.IdentityModel.Clients.ActiveDirectory": "3.13.5",
-    "Microsoft.Azure.KeyVault": "2.0.2-preview",
+    "Microsoft.Azure.KeyVault": "2.0.6",
     "Microsoft.Extensions.Configuration": {
       "target": "project"
     },
