@@ -13,8 +13,8 @@ namespace Microsoft.Extensions.Primitives
     public class CompositeChangeToken : IChangeToken
     {
         private static readonly Action<object> _onChangeDelegate = OnChange;
-        public CancellationTokenSource _cancellationTokenSource;
         private readonly object _callbackLock = new object();
+        private CancellationTokenSource _cancellationTokenSource;
         private bool _registeredCallbackProxy;
         private List<IDisposable> _disposables;
 
@@ -24,19 +24,13 @@ namespace Microsoft.Extensions.Primitives
         /// <param name="changeTokens">The list of <see cref="IChangeToken"/> to compose.</param>
         public CompositeChangeToken(IReadOnlyList<IChangeToken> changeTokens)
         {
-            if (changeTokens == null)
-            {
-                throw new ArgumentNullException(nameof(changeTokens));
-            }
-
-            ChangeTokens = changeTokens;
-
-            ActiveChangeCallbacks = false;
+            ChangeTokens = changeTokens ?? throw new ArgumentNullException(nameof(changeTokens));
             for (var i = 0; i < ChangeTokens.Count; i++)
             {
                 if (ChangeTokens[i].ActiveChangeCallbacks)
                 {
                     ActiveChangeCallbacks = true;
+                    break;
                 }
             }
         }
@@ -54,10 +48,9 @@ namespace Microsoft.Extensions.Primitives
             {
                 return _cancellationTokenSource.Token.Register(callback, state);
             }
-
             else
             {
-                return null;
+                return NullDisposable.Singleton;
             }
         }
 
@@ -100,7 +93,6 @@ namespace Microsoft.Extensions.Primitives
                     return;
                 }
 
-                _registeredCallbackProxy = true;
                 _cancellationTokenSource = new CancellationTokenSource();
                 _disposables = new List<IDisposable>();
                 for (var i = 0; i < ChangeTokens.Count; i++)
@@ -111,6 +103,7 @@ namespace Microsoft.Extensions.Primitives
                         _disposables.Add(disposable);
                     }
                 }
+                _registeredCallbackProxy = true;
             }
         }
 
@@ -123,15 +116,27 @@ namespace Microsoft.Extensions.Primitives
                 {
                     compositeChangeTokenState._cancellationTokenSource.Cancel();
                 }
-
-                catch (Exception)
+                catch
                 {
                 }
             }
 
-            foreach (var disposable in compositeChangeTokenState._disposables)
+            if (compositeChangeTokenState._disposables != null)
             {
-                disposable.Dispose();
+                for (int i = 0; i < compositeChangeTokenState._disposables.Count; i++)
+                {
+                    compositeChangeTokenState._disposables[i].Dispose();
+                }
+            }
+        }
+
+        private class NullDisposable : IDisposable
+        {
+            public static readonly NullDisposable Singleton = new NullDisposable();
+            public bool Disposed { get; private set; }
+            public void Dispose()
+            {
+                Disposed = true;
             }
         }
     }
