@@ -43,8 +43,7 @@ namespace Microsoft.Extensions.Primitives
             fixed (char* destination = _value)
             fixed (char* source = s)
             {
-                //TODO: https://github.com/aspnet/Common/issues/158
-                Unsafe.CopyBlock(destination + _offset, source, (uint)s.Length * 2);
+                Unsafe.CopyBlockUnaligned(destination + _offset, source, (uint)s.Length * 2);
                 _offset += s.Length;
             }
         }
