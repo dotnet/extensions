@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 
 namespace Microsoft.Extensions.Primitives
@@ -121,12 +122,10 @@ namespace Microsoft.Extensions.Primitives
                 }
             }
 
-            if (compositeChangeTokenState._disposables != null)
+            Debug.Assert(compositeChangeTokenState._disposables != null);
+            for (var i = 0; i < compositeChangeTokenState._disposables.Count; i++)
             {
-                for (int i = 0; i < compositeChangeTokenState._disposables.Count; i++)
-                {
-                    compositeChangeTokenState._disposables[i].Dispose();
-                }
+                compositeChangeTokenState._disposables[i].Dispose();
             }
         }
 

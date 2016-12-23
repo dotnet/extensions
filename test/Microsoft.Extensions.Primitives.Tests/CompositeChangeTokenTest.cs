@@ -13,14 +13,19 @@ namespace Microsoft.Extensions.Primitives
     public class CompositeChangeTokenTest
     {
         [Fact]
-        public void RegisterChangeCallback_IsInvokedExactlyOnce()
+        public void RegisteredCallbacks_AreInvokedExactlyOnce()
         {
             // Arrange
-            var cancellationTokenSource = new CancellationTokenSource();
-            var cancellationToken = cancellationTokenSource.Token;
-            var firstCancellationChangeToken = new CancellationChangeToken(cancellationToken);
-            var secondCancellationChangeToken = new CancellationChangeToken(cancellationToken);
-            var thirdCancellationChangeToken = new CancellationChangeToken(cancellationToken);
+            var firstCancellationTokenSource = new CancellationTokenSource();
+            var secondCancellationTokenSource = new CancellationTokenSource();
+            var thirdCancellationTokenSource = new CancellationTokenSource();
+            var firstCancellationToken = firstCancellationTokenSource.Token;
+            var secondCancellationToken = secondCancellationTokenSource.Token;
+            var thirdCancellationToken = thirdCancellationTokenSource.Token;
+
+            var firstCancellationChangeToken = new CancellationChangeToken(firstCancellationToken);
+            var secondCancellationChangeToken = new CancellationChangeToken(secondCancellationToken);
+            var thirdCancellationChangeToken = new CancellationChangeToken(thirdCancellationToken);
 
             var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { firstCancellationChangeToken, secondCancellationChangeToken, thirdCancellationChangeToken });           
             var count1 = 0;
@@ -29,9 +34,8 @@ namespace Microsoft.Extensions.Primitives
             compositeChangeToken.RegisterChangeCallback(_ => count2++, null);
 
             // Act
-            // callback should only be invoked once, as the token expires after the first callback
-            cancellationTokenSource.Cancel();
-            cancellationTokenSource.Cancel();
+            firstCancellationTokenSource.Cancel();
+            secondCancellationTokenSource.Cancel();
 
             // Assert
             Assert.Equal(1, count1);
