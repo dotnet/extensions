@@ -73,13 +73,11 @@ namespace Microsoft.AspNetCore.Testing.xunit
             get
             {
                 EnsureInitialized();
-
                 return _traits;
             }
             set
             {
                 EnsureInitialized();
-
                 _traits = value;
             }
         }
@@ -167,7 +165,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
                 }
             }
 
-            DisplayName = Method.GetDisplayNameWithArguments(TestMethod.Method.Name, TestMethodArguments, MethodGenericTypes);
+            DisplayName = Method.GetDisplayNameWithArguments($"{TestMethod.TestClass.Class.Name}.{TestMethod.Method.Name}", TestMethodArguments, MethodGenericTypes);
         }
     }
 }

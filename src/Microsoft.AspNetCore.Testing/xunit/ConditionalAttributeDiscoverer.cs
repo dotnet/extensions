@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         public IEnumerable<IXunitTestCase> Discover(
             ITestFrameworkDiscoveryOptions discoveryOptions,
             ITestMethod testMethod,
-            IAttributeInfo factAttribute)
+            IAttributeInfo attributeInfo)
         {
             var skipReason = EvaluateSkipConditions(testMethod);
 
@@ -39,11 +38,11 @@ namespace Microsoft.AspNetCore.Testing.xunit
             }
 
             var testCases = innerDiscoverer
-                .Discover(discoveryOptions, testMethod, factAttribute)
+                .Discover(discoveryOptions, testMethod, attributeInfo)
                 .Select(testCase => new SkipReasonTestCase
                 {
                     IsTheory = isTheory,
-                    SkipReason = skipReason,
+                    SkipReason = testCase.SkipReason ?? skipReason,
                     SourceInformation = testCase.SourceInformation,
                     TestMethod = testCase.TestMethod,
                     TestMethodArguments = testCase.TestMethodArguments,
