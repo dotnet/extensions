@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Primitives
             var secondCancellationChangeToken = new CancellationChangeToken(secondCancellationToken);
             var thirdCancellationChangeToken = new CancellationChangeToken(thirdCancellationToken);
 
-            var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { firstCancellationChangeToken, secondCancellationChangeToken, thirdCancellationChangeToken });           
+            var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { firstCancellationChangeToken, secondCancellationChangeToken, thirdCancellationChangeToken });
             var count1 = 0;
             var count2 = 0;
             compositeChangeToken.RegisterChangeCallback(_ => count1++, null);
@@ -54,7 +54,7 @@ namespace Microsoft.Extensions.Primitives
 
             // Act
             var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { firstChangeToken.Object, secondChangeToken.Object, thirdChangeToken.Object });
-            compositeChangeToken.RegisterChangeCallback(item => new object(), null);
+            compositeChangeToken.RegisterChangeCallback(item => {}, null);
 
             // Assert
             Assert.True(compositeChangeToken.HasChanged);
@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.Primitives
 
             // Act
             var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { firstChangeToken.Object, secondChangeToken.Object });
-            compositeChangeToken.RegisterChangeCallback(item => new object(), null);
+            compositeChangeToken.RegisterChangeCallback(item => {}, null);
 
             // Assert
             Assert.False(compositeChangeToken.HasChanged);
@@ -136,50 +136,6 @@ namespace Microsoft.Extensions.Primitives
             {
                 event3.WaitOne(5000);
                 cancellationTokenSource.Cancel();
-                event1.Set();
-            });
-
-            event2.Set();
-
-            await Task.WhenAll(firstChange, secondChange);
-
-            // Assert
-            Assert.Equal(1, count);
-        }
-
-        [Fact]
-        public async Task NewCallbacksCannotBeRegistered_WhenAChangeHasTriggeredCallback()
-        {
-            // Arrange
-            var event1 = new ManualResetEvent(false);
-            var event2 = new ManualResetEvent(false);
-            var event3 = new ManualResetEvent(false);
-
-            var cancellationTokenSource = new CancellationTokenSource();
-            var cancellationChangeToken = new CancellationChangeToken(cancellationTokenSource.Token);
-
-            var count = 0;
-            Action<object> callback = _ =>
-            {
-                count++;
-                event3.Set();
-                event1.WaitOne(5000);
-            };
-
-            var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { cancellationChangeToken });
-            compositeChangeToken.RegisterChangeCallback(callback, null);
-
-            // Act
-            var firstChange = Task.Run(() =>
-            {
-                event2.WaitOne(5000);
-                cancellationTokenSource.Cancel();
-            });
-
-            var secondChange = Task.Run(() =>
-            {
-                event3.WaitOne(5000);
-                compositeChangeToken.RegisterChangeCallback(callback, null);
                 event1.Set();
             });
 

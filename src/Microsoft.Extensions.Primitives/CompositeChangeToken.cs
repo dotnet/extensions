@@ -45,14 +45,7 @@ namespace Microsoft.Extensions.Primitives
         public IDisposable RegisterChangeCallback(Action<object> callback, object state)
         {
             EnsureCallbacksInitialized();
-            if (!_cancellationTokenSource.IsCancellationRequested)
-            {
-                return _cancellationTokenSource.Token.Register(callback, state);
-            }
-            else
-            {
-                return NullDisposable.Singleton;
-            }
+            return _cancellationTokenSource.Token.Register(callback, state);
         }
 
         /// <inheritdoc />
@@ -122,20 +115,11 @@ namespace Microsoft.Extensions.Primitives
                 }
             }
 
-            Debug.Assert(compositeChangeTokenState._disposables != null);
+            var disposables = compositeChangeTokenState._disposables;
+            Debug.Assert(disposables != null);
             for (var i = 0; i < compositeChangeTokenState._disposables.Count; i++)
             {
                 compositeChangeTokenState._disposables[i].Dispose();
-            }
-        }
-
-        private class NullDisposable : IDisposable
-        {
-            public static readonly NullDisposable Singleton = new NullDisposable();
-            public bool Disposed { get; private set; }
-            public void Dispose()
-            {
-                Disposed = true;
             }
         }
     }
