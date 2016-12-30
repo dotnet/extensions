@@ -10,9 +10,6 @@ namespace Microsoft.Extensions.Logging.Console
 {
     public class ConsoleLogger : ILogger
     {
-        // Writing to console is not an atomic operation in the current implementation and since multiple logger
-        // instances are created with a different name. Also since Console is global, using a static lock is fine.
-        private static readonly object _lock = new object();
         private static readonly string _loglevelPadding = ": ";
         private static readonly string _messagePadding;
         private static readonly string _newLineWithMessagePadding;
@@ -20,7 +17,7 @@ namespace Microsoft.Extensions.Logging.Console
         // ConsoleColor does not have a value to specify the 'Default' color
         private readonly ConsoleColor? DefaultConsoleColor = null;
 
-        private IConsole _console;
+        private readonly ConsoleLoggerProcessor _queueProcessor = new ConsoleLoggerProcessor();
         private Func<string, LogLevel, bool> _filter;
 
         [ThreadStatic]
@@ -56,16 +53,8 @@ namespace Microsoft.Extensions.Logging.Console
 
         public IConsole Console
         {
-            get { return _console; }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _console = value;
-            }
+            get { return _queueProcessor.Console; }
+            set { _queueProcessor.Console = value; }
         }
 
         public Func<string, LogLevel, bool> Filter
@@ -85,6 +74,8 @@ namespace Microsoft.Extensions.Logging.Console
         public bool IncludeScopes { get; set; }
 
         public string Name { get; }
+
+        public bool HasQueuedMessages => _queueProcessor.HasQueuedMessages;
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
@@ -155,25 +146,16 @@ namespace Microsoft.Extensions.Logging.Console
 
             if (logBuilder.Length > 0)
             {
-                var logMessage = logBuilder.ToString();
-                lock (_lock)
+                var hasLevel = !string.IsNullOrEmpty(logLevelString);
+                // Queue log message
+                _queueProcessor.EnqueueMessage(new LogMessageEntry()
                 {
-                    if (!string.IsNullOrEmpty(logLevelString))
-                    {
-                        // log level string
-                        Console.Write(
-                            logLevelString,
-                            logLevelColors.Background,
-                            logLevelColors.Foreground);
-                    }
-
-                    // use default colors from here on
-                    Console.Write(logMessage, DefaultConsoleColor, DefaultConsoleColor);
-
-                    // In case of AnsiLogConsole, the messages are not yet written to the console,
-                    // this would flush them instead.
-                    Console.Flush();
-                }
+                    Message = logBuilder.ToString(),
+                    MessageColor = DefaultConsoleColor,
+                    LevelString = hasLevel ? logLevelString : null,
+                    LevelBackground = hasLevel ? logLevelColors.Background : null,
+                    LevelForeground = hasLevel ? logLevelColors.Foreground : null
+                });
             }
 
             logBuilder.Clear();
