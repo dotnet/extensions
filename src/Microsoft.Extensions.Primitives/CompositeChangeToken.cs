@@ -62,6 +62,7 @@ namespace Microsoft.Extensions.Primitives
                 {
                     if (ChangeTokens[i].HasChanged)
                     {
+                        OnChange(this);
                         return true;
                     }
                 }
@@ -117,9 +118,9 @@ namespace Microsoft.Extensions.Primitives
 
             var disposables = compositeChangeTokenState._disposables;
             Debug.Assert(disposables != null);
-            for (var i = 0; i < compositeChangeTokenState._disposables.Count; i++)
+            for (var i = 0; i < disposables.Count; i++)
             {
-                compositeChangeTokenState._disposables[i].Dispose();
+                disposables[i].Dispose();
             }
         }
     }
