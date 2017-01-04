@@ -53,12 +53,9 @@ namespace Microsoft.Extensions.Primitives
         {
             get
             {
-                if (_cancellationTokenSource != null)
+                if (_cancellationTokenSource != null && _cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    if (_cancellationTokenSource.Token.IsCancellationRequested)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
 
                 for (var i = 0; i < ChangeTokens.Count; i++)
@@ -108,26 +105,29 @@ namespace Microsoft.Extensions.Primitives
         private static void OnChange(object state)
         {
             var compositeChangeTokenState = (CompositeChangeToken)state;
-            if (compositeChangeTokenState._cancellationTokenSource != null)
+            if (compositeChangeTokenState._cancellationTokenSource == null)
             {
-                lock (compositeChangeTokenState._callbackLock)
-                {
-                    try
-                    {
-                        compositeChangeTokenState._cancellationTokenSource.Cancel();
-                    }
-                    catch
-                    {
-                    }
-                }
+                return;
+            }
 
-                var disposables = compositeChangeTokenState._disposables;
-                Debug.Assert(disposables != null);
-                for (var i = 0; i < disposables.Count; i++)
+            lock (compositeChangeTokenState._callbackLock)
+            {
+                try
                 {
-                    disposables[i].Dispose();
+                    compositeChangeTokenState._cancellationTokenSource.Cancel();
+                }
+                catch
+                {
                 }
             }
+
+            var disposables = compositeChangeTokenState._disposables;
+            Debug.Assert(disposables != null);
+            for (var i = 0; i < disposables.Count; i++)
+            {
+                disposables[i].Dispose();
+            }
+
         }
     }
 }
