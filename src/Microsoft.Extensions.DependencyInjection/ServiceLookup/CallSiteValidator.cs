@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
@@ -9,14 +10,14 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     internal class CallSiteValidator: CallSiteVisitor<CallSiteValidator.CallSiteValidatorState, Type>
     {
         // Keys are services being resolved via GetService, values - first scoped service in their call site tree
-        private readonly Dictionary<Type, Type> _scopedServices = new Dictionary<Type, Type>();
+        private readonly ConcurrentDictionary<Type, Type> _scopedServices = new ConcurrentDictionary<Type, Type>();
 
         public void ValidateCallSite(Type serviceType, IServiceCallSite callSite)
         {
             var scoped = VisitCallSite(callSite, default(CallSiteValidatorState));
             if (scoped != null)
             {
-                _scopedServices.Add(serviceType, scoped);
+                _scopedServices[serviceType] = scoped;
             }
         }
 
