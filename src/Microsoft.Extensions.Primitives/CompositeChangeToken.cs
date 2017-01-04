@@ -53,9 +53,12 @@ namespace Microsoft.Extensions.Primitives
         {
             get
             {
-                if (_cancellationTokenSource.Token.IsCancellationRequested)
+                if (_cancellationTokenSource != null)
                 {
-                    return true;
+                    if (_cancellationTokenSource.Token.IsCancellationRequested)
+                    {
+                        return true;
+                    }
                 }
 
                 for (var i = 0; i < ChangeTokens.Count; i++)
@@ -105,22 +108,25 @@ namespace Microsoft.Extensions.Primitives
         private static void OnChange(object state)
         {
             var compositeChangeTokenState = (CompositeChangeToken)state;
-            lock (compositeChangeTokenState._callbackLock)
+            if (compositeChangeTokenState._cancellationTokenSource != null)
             {
-                try
+                lock (compositeChangeTokenState._callbackLock)
                 {
-                    compositeChangeTokenState._cancellationTokenSource.Cancel();
+                    try
+                    {
+                        compositeChangeTokenState._cancellationTokenSource.Cancel();
+                    }
+                    catch
+                    {
+                    }
                 }
-                catch
-                {
-                }
-            }
 
-            var disposables = compositeChangeTokenState._disposables;
-            Debug.Assert(disposables != null);
-            for (var i = 0; i < disposables.Count; i++)
-            {
-                disposables[i].Dispose();
+                var disposables = compositeChangeTokenState._disposables;
+                Debug.Assert(disposables != null);
+                for (var i = 0; i < disposables.Count; i++)
+                {
+                    disposables[i].Dispose();
+                }
             }
         }
     }
