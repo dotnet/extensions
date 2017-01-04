@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.Primitives
         {
             get
             {
-                if (_cancellationTokenSource.Token.IsCancellationRequested)
+                if (_cancellationTokenSource != null && _cancellationTokenSource.Token.IsCancellationRequested)
                 {
                     return true;
                 }
@@ -105,6 +105,11 @@ namespace Microsoft.Extensions.Primitives
         private static void OnChange(object state)
         {
             var compositeChangeTokenState = (CompositeChangeToken)state;
+            if (compositeChangeTokenState._cancellationTokenSource == null)
+            {
+                return;
+            }
+
             lock (compositeChangeTokenState._callbackLock)
             {
                 try
@@ -122,6 +127,7 @@ namespace Microsoft.Extensions.Primitives
             {
                 disposables[i].Dispose();
             }
+
         }
     }
 }

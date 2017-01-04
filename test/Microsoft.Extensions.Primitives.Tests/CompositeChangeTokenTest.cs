@@ -54,7 +54,6 @@ namespace Microsoft.Extensions.Primitives
 
             // Act
             var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { firstChangeToken.Object, secondChangeToken.Object, thirdChangeToken.Object });
-            compositeChangeToken.RegisterChangeCallback(item => {}, null);
 
             // Assert
             Assert.True(compositeChangeToken.HasChanged);
@@ -68,8 +67,7 @@ namespace Microsoft.Extensions.Primitives
             var secondChangeToken = new Mock<IChangeToken>();
 
             // Act
-            var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { firstChangeToken.Object, secondChangeToken.Object });
-            compositeChangeToken.RegisterChangeCallback(item => {}, null);
+            var compositeChangeToken = new CompositeChangeToken(new List<IChangeToken> { firstChangeToken.Object, secondChangeToken.Object });            
 
             // Assert
             Assert.False(compositeChangeToken.HasChanged);
