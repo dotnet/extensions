@@ -5,24 +5,26 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Configuration.UserSecrets
 {
     public class MsBuildTargetTest : IDisposable
     {
-        private const string SkipReason = "Not safe to run on CI. MSBuild and SDK not available yet.";
         private readonly string _tempDir;
         private readonly DirectoryInfo _solutionRoot;
+        private readonly ITestOutputHelper _output;
 
-        public MsBuildTargetTest()
+        public MsBuildTargetTest(ITestOutputHelper output)
         {
-            _tempDir = Path.Combine(Path.GetTempPath(), "usersecrettest", Guid.NewGuid().ToString());
+            _output = output;
+            _tempDir = Path.Combine(Path.GetTempPath(), "usersecretstest", Guid.NewGuid().ToString());
             Directory.CreateDirectory(_tempDir);
 
             _solutionRoot = new DirectoryInfo(AppContext.BaseDirectory);
             while (_solutionRoot != null)
             {
-                if (File.Exists(Path.Combine(_solutionRoot.FullName, "global.json")))
+                if (File.Exists(Path.Combine(_solutionRoot.FullName, "NuGet.config")))
                 {
                     break;
                 }
@@ -31,7 +33,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
             }
         }
 
-        [Fact(Skip = SkipReason)]
+        [Fact]
         public void GeneratesAssemblyAttributeFile()
         {
             if (_solutionRoot == null)
@@ -39,40 +41,33 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
                 Assert.True(false, "Could not identify solution root");
             }
             var target = Path.Combine(_solutionRoot.FullName, "src", "Microsoft.Extensions.Configuration.UserSecrets", "build", "netstandard1.0", "Microsoft.Extensions.Configuration.UserSecrets.targets");
+            Directory.CreateDirectory(Path.Combine(_tempDir, "obj"));
+            File.Copy(target, Path.Combine(_tempDir, "obj", "test.csproj.usersecretstest.targets")); // imitates how NuGet will import this target
             var testProj = Path.Combine(_tempDir, "test.csproj");
             // should represent a 'dotnet new' project
             File.WriteAllText(testProj, @"
-<Project xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-    <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" />
+<Project Sdk=""Microsoft.NET.Sdk"" ToolsVersion=""15.0"">
     <PropertyGroup>
-        <OutputType>Exe></OutputType>
+        <OutputType>Exe</OutputType>
         <UserSecretsId>xyz123</UserSecretsId>
-        <TargetFrameworks>netcoreapp1.0</TargetFrameworks>
+        <TargetFramework>netcoreapp1.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
         <Compile Include=""Program.cs""/>
-        <PackageReference Include=""Microsoft.NETCore.App"">
-            <Version>1.0.1</Version>
-        </PackageReference>
-        <PackageReference Include=""Microsoft.NET.Sdk"">
-            <Version>1.0.0-*</Version>
-            <PrivateAssets>All</PrivateAssets>
-        </PackageReference>
+        <PackageReference Include=""Microsoft.NETCore.App"" Version=""1.0.1"" />
     </ItemGroup>
-    <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
-    <ImportGroup Condition=""'$(TargetFramework)'!=''"">
-        <Import Project=""$(TestTarget)"" Condition=""'$(TestTarget)' != ''""/>
-    </ImportGroup>
 </Project>
 ");
+            _output.WriteLine($"Tempdir = {_tempDir}");
             File.WriteAllText(Path.Combine(_tempDir, "Program.cs"), "public class Program { public static void Main(){}}");
             var assemblyInfoFile = Path.Combine(_tempDir, "obj/Debug/netcoreapp1.0/UserSecretsAssemblyInfo.cs");
 
             var restoreInfo = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = $"restore3 \"{testProj}\" -s https://dotnet.myget.org/F/dotnet-core/api/v3/index.json /nologo /v:m",
-                UseShellExecute = false
+                Arguments = "restore",
+                UseShellExecute = false,
+                WorkingDirectory = _tempDir
             };
             var restore = Process.Start(restoreInfo);
             restore.WaitForExit();
@@ -80,26 +75,24 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
 
             Assert.False(File.Exists(assemblyInfoFile));
 
-            // TODO actually build a project
             var buildInfo = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = $"msbuild \"{testProj}\" /nologo /v:m \"/p:TestTarget={target}\" /p:TargetFramework=netcoreapp1.0 /t:GenerateUserSecretsAttribute",
-                UseShellExecute = false
+                Arguments = "build",
+                UseShellExecute = false,
+                WorkingDirectory = _tempDir
             };
-            var build = Process.Start(buildInfo);
-            build.WaitForExit();
-            Assert.Equal(0, build.ExitCode);
+            Process.Start(buildInfo).WaitForExit();
+            // build will fail because the test proj doesn't reference UserSecrets.dll
+            // but that's okay. We just want to verify the target generates code correctly
 
             Assert.True(File.Exists(assemblyInfoFile));
             var contents = File.ReadAllText(assemblyInfoFile);
             Assert.Contains("[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute(\"xyz123\")]", contents);
             var lastWrite = new FileInfo(assemblyInfoFile).LastWriteTimeUtc;
 
-            build = Process.Start(buildInfo);
-            build.WaitForExit();
-            Assert.Equal(0, build.ExitCode);
-            // assert that the target doesn't re-generate assembly file. Important for incremental build.
+            Process.Start(buildInfo).WaitForExit();
+            // asserts that the target doesn't re-generate assembly file. Important for incremental build.
             Assert.Equal(lastWrite, new FileInfo(assemblyInfoFile).LastWriteTimeUtc);
         }
 

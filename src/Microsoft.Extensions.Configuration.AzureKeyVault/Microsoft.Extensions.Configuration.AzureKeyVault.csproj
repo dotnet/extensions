@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>Azure KeyVault configuration provider implementation for Microsoft.Extensions.Configuration.</Description>
+    <VersionPrefix>1.1.0</VersionPrefix>
+    <TargetFrameworks>netstandard1.5;net451</TargetFrameworks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>configuration;azure;keyvault</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="**\*.cs" />
+    <EmbeddedResource Include="**\*.resx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Configuration\Microsoft.Extensions.Configuration.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Configuration.FileExtensions\Microsoft.Extensions.Configuration.FileExtensions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Configuration.Abstractions\Microsoft.Extensions.Configuration.Abstractions.csproj">
+      <FromP2P>true</FromP2P>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System.Collections">
+      <FromP2P>true</FromP2P>
+    </Reference>
+    <Reference Include="System.Threading.Tasks" />
+    <Reference Include="System.Runtime" />
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.13.5" />
+    <PackageReference Include="Microsoft.Azure.KeyVault" Version="2.0.6" />
+    <PackageReference Include="NETStandard.Library" Version="1.6.2-*" />
+  </ItemGroup>
+
+</Project>

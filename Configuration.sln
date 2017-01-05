@@ -1,60 +1,60 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26014.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F141E2D0-F9B8-4ADB-A19A-7B6FF4CA19A1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B54371FF-B920-46C8-8D55-6B19DBB43EBF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.Json", "src\Microsoft.Extensions.Configuration.Json\Microsoft.Extensions.Configuration.Json.xproj", "{4C4CD1BC-4411-4AFD-9D04-147053F0E259}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.Json", "src\Microsoft.Extensions.Configuration.Json\Microsoft.Extensions.Configuration.Json.csproj", "{4C4CD1BC-4411-4AFD-9D04-147053F0E259}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.Xml", "src\Microsoft.Extensions.Configuration.Xml\Microsoft.Extensions.Configuration.Xml.xproj", "{1BEC97C1-56B9-4B2B-A95A-C0DF72F1E96A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.Xml", "src\Microsoft.Extensions.Configuration.Xml\Microsoft.Extensions.Configuration.Xml.csproj", "{1BEC97C1-56B9-4B2B-A95A-C0DF72F1E96A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.Json.Test", "test\Microsoft.Extensions.Configuration.Json.Test\Microsoft.Extensions.Configuration.Json.Test.xproj", "{AE8F8C20-9ED9-4A16-9565-27DF77683789}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.Json.Test", "test\Microsoft.Extensions.Configuration.Json.Test\Microsoft.Extensions.Configuration.Json.Test.csproj", "{AE8F8C20-9ED9-4A16-9565-27DF77683789}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.Xml.Test", "test\Microsoft.Extensions.Configuration.Xml.Test\Microsoft.Extensions.Configuration.Xml.Test.xproj", "{0786C785-944A-4423-96A6-4E7BFDB4A1B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.Xml.Test", "test\Microsoft.Extensions.Configuration.Xml.Test\Microsoft.Extensions.Configuration.Xml.Test.csproj", "{0786C785-944A-4423-96A6-4E7BFDB4A1B0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.Test", "test\Microsoft.Extensions.Configuration.Test\Microsoft.Extensions.Configuration.Test.xproj", "{8777C77E-CA2A-42C1-90CD-2EA9CBF28937}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.Test", "test\Microsoft.Extensions.Configuration.Test\Microsoft.Extensions.Configuration.Test.csproj", "{8777C77E-CA2A-42C1-90CD-2EA9CBF28937}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration", "src\Microsoft.Extensions.Configuration\Microsoft.Extensions.Configuration.xproj", "{62BD48B5-BB0C-4C2C-9C4B-04CF75CDCCF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration", "src\Microsoft.Extensions.Configuration\Microsoft.Extensions.Configuration.csproj", "{62BD48B5-BB0C-4C2C-9C4B-04CF75CDCCF1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.FunctionalTests", "test\Microsoft.Extensions.Configuration.FunctionalTests\Microsoft.Extensions.Configuration.FunctionalTests.xproj", "{EAC77F15-F12E-496B-9184-1B1DA89BFFE9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.FunctionalTests", "test\Microsoft.Extensions.Configuration.FunctionalTests\Microsoft.Extensions.Configuration.FunctionalTests.csproj", "{EAC77F15-F12E-496B-9184-1B1DA89BFFE9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.Abstractions", "src\Microsoft.Extensions.Configuration.Abstractions\Microsoft.Extensions.Configuration.Abstractions.xproj", "{3F1CB08E-9FBD-4CAE-A78A-4AC43F24FC49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.Abstractions", "src\Microsoft.Extensions.Configuration.Abstractions\Microsoft.Extensions.Configuration.Abstractions.csproj", "{3F1CB08E-9FBD-4CAE-A78A-4AC43F24FC49}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.Test.Common", "test\Microsoft.Extensions.Configuration.Test.Common\Microsoft.Extensions.Configuration.Test.Common.xproj", "{29C120E5-F682-4BFB-826B-040A594802CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.Test.Common", "test\Microsoft.Extensions.Configuration.Test.Common\Microsoft.Extensions.Configuration.Test.Common.csproj", "{29C120E5-F682-4BFB-826B-040A594802CA}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.CommandLine", "src\Microsoft.Extensions.Configuration.CommandLine\Microsoft.Extensions.Configuration.CommandLine.xproj", "{D4B7CF9B-4229-44DC-800F-CC39150CEAB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.CommandLine", "src\Microsoft.Extensions.Configuration.CommandLine\Microsoft.Extensions.Configuration.CommandLine.csproj", "{D4B7CF9B-4229-44DC-800F-CC39150CEAB2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.Ini", "src\Microsoft.Extensions.Configuration.Ini\Microsoft.Extensions.Configuration.Ini.xproj", "{C555C5D5-BF4A-451E-AB43-EBF4DE885EC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.Ini", "src\Microsoft.Extensions.Configuration.Ini\Microsoft.Extensions.Configuration.Ini.csproj", "{C555C5D5-BF4A-451E-AB43-EBF4DE885EC7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.EnvironmentVariables", "src\Microsoft.Extensions.Configuration.EnvironmentVariables\Microsoft.Extensions.Configuration.EnvironmentVariables.xproj", "{A6A2C665-E5A4-4FD3-AD0C-E33E6CFFCB88}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.EnvironmentVariables", "src\Microsoft.Extensions.Configuration.EnvironmentVariables\Microsoft.Extensions.Configuration.EnvironmentVariables.csproj", "{A6A2C665-E5A4-4FD3-AD0C-E33E6CFFCB88}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.CommandLine.Test", "test\Microsoft.Extensions.Configuration.CommandLine.Test\Microsoft.Extensions.Configuration.CommandLine.Test.xproj", "{CE9C8903-AA8A-40E6-B03D-32A08A4A39AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.CommandLine.Test", "test\Microsoft.Extensions.Configuration.CommandLine.Test\Microsoft.Extensions.Configuration.CommandLine.Test.csproj", "{CE9C8903-AA8A-40E6-B03D-32A08A4A39AF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.Ini.Test", "test\Microsoft.Extensions.Configuration.Ini.Test\Microsoft.Extensions.Configuration.Ini.Test.xproj", "{80A8F10C-E9A6-4677-919D-FE5DB320FEDF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.Ini.Test", "test\Microsoft.Extensions.Configuration.Ini.Test\Microsoft.Extensions.Configuration.Ini.Test.csproj", "{80A8F10C-E9A6-4677-919D-FE5DB320FEDF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.EnvironmentVariables.Test", "test\Microsoft.Extensions.Configuration.EnvironmentVariables.Test\Microsoft.Extensions.Configuration.EnvironmentVariables.Test.xproj", "{7D0F805B-ADFF-4C47-A90C-24DD74416821}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.EnvironmentVariables.Test", "test\Microsoft.Extensions.Configuration.EnvironmentVariables.Test\Microsoft.Extensions.Configuration.EnvironmentVariables.Test.csproj", "{7D0F805B-ADFF-4C47-A90C-24DD74416821}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.Binder", "src\Microsoft.Extensions.Configuration.Binder\Microsoft.Extensions.Configuration.Binder.xproj", "{D506FD2F-59A0-4A26-AA6D-E81998B58B34}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.Binder", "src\Microsoft.Extensions.Configuration.Binder\Microsoft.Extensions.Configuration.Binder.csproj", "{D506FD2F-59A0-4A26-AA6D-E81998B58B34}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.Binder.Test", "test\Microsoft.Extensions.Configuration.Binder.Test\Microsoft.Extensions.Configuration.Binder.Test.xproj", "{AE6FFE9B-6378-4D57-AA24-7D257F18B235}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.Binder.Test", "test\Microsoft.Extensions.Configuration.Binder.Test\Microsoft.Extensions.Configuration.Binder.Test.csproj", "{AE6FFE9B-6378-4D57-AA24-7D257F18B235}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.FileExtensions", "src\Microsoft.Extensions.Configuration.FileExtensions\Microsoft.Extensions.Configuration.FileExtensions.xproj", "{881E7CBC-492C-47C5-98A6-61DD1C753EE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.FileExtensions", "src\Microsoft.Extensions.Configuration.FileExtensions\Microsoft.Extensions.Configuration.FileExtensions.csproj", "{881E7CBC-492C-47C5-98A6-61DD1C753EE6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.FileExtensions.Test", "test\Microsoft.Extensions.Configuration.FileExtensions.Test\Microsoft.Extensions.Configuration.FileExtensions.Test.xproj", "{F7932F19-EB68-4C52-9CD1-3B51E48C2337}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.FileExtensions.Test", "test\Microsoft.Extensions.Configuration.FileExtensions.Test\Microsoft.Extensions.Configuration.FileExtensions.Test.csproj", "{F7932F19-EB68-4C52-9CD1-3B51E48C2337}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.AzureKeyVault", "src\Microsoft.Extensions.Configuration.AzureKeyVault\Microsoft.Extensions.Configuration.AzureKeyVault.xproj", "{A538F609-E902-40CE-8459-4248F9F63558}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.AzureKeyVault", "src\Microsoft.Extensions.Configuration.AzureKeyVault\Microsoft.Extensions.Configuration.AzureKeyVault.csproj", "{A538F609-E902-40CE-8459-4248F9F63558}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.AzureKeyVault.Test", "test\Microsoft.Extensions.Configuration.AzureKeyVault.Test\Microsoft.Extensions.Configuration.AzureKeyVault.Test.xproj", "{DA9C1F35-3F92-4F3A-B3B1-A62CCE626D48}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.AzureKeyVault.Test", "test\Microsoft.Extensions.Configuration.AzureKeyVault.Test\Microsoft.Extensions.Configuration.AzureKeyVault.Test.csproj", "{DA9C1F35-3F92-4F3A-B3B1-A62CCE626D48}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{AB015580-541D-4E2D-B904-E71F8582CC68}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "KeyVaultSample", "samples\KeyVaultSample\KeyVaultSample.xproj", "{7AAC49A7-939A-40B1-A86A-705464B4667D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeyVaultSample", "samples\KeyVaultSample\KeyVaultSample.csproj", "{7AAC49A7-939A-40B1-A86A-705464B4667D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.UserSecrets", "src\Microsoft.Extensions.Configuration.UserSecrets\Microsoft.Extensions.Configuration.UserSecrets.xproj", "{58B6443B-1278-4DF9-B7BB-DDF3BFFCF868}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.UserSecrets", "src\Microsoft.Extensions.Configuration.UserSecrets\Microsoft.Extensions.Configuration.UserSecrets.csproj", "{58B6443B-1278-4DF9-B7BB-DDF3BFFCF868}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Configuration.UserSecrets.Test", "test\Microsoft.Extensions.Configuration.UserSecrets.Test\Microsoft.Extensions.Configuration.UserSecrets.Test.xproj", "{AC7FAD2A-5763-404D-B0FC-3CCA81A16B0A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.UserSecrets.Test", "test\Microsoft.Extensions.Configuration.UserSecrets.Test\Microsoft.Extensions.Configuration.UserSecrets.Test.csproj", "{AC7FAD2A-5763-404D-B0FC-3CCA81A16B0A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

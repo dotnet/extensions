@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>Abstractions of key-value pair based configuration.
+Commonly used types:
+Microsoft.Extensions.Configuration.IConfiguration
+Microsoft.Extensions.Configuration.IConfigurationBuilder
+Microsoft.Extensions.Configuration.IConfigurationProvider
+Microsoft.Extensions.Configuration.IConfigurationRoot
+Microsoft.Extensions.Configuration.IConfigurationSection</Description>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>configuration</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="**\*.cs" />
+    <EmbeddedResource Include="**\*.resx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Primitives" Version="1.2.0-*" />
+    <PackageReference Include="NETStandard.Library" Version="1.6.2-*" />
+  </ItemGroup>
+
+</Project>
