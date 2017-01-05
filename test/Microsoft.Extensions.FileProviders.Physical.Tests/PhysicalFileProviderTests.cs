@@ -6,10 +6,10 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.FileProviders.Internal;
 using Microsoft.Extensions.FileProviders.Physical;
-using Microsoft.Extensions.FileSystemGlobbing.Tests.TestUtility;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.Extensions.FileProviders
@@ -1444,7 +1444,7 @@ namespace Microsoft.Extensions.FileProviders
                 Directory.CreateDirectory(Path.GetDirectoryName(filePath));
                 File.WriteAllText(filePath, "some-content");
                 var token = provider.Watch("**/*.txt");
-                var compositeToken = Assert.IsType<CompositeFileChangeToken>(token);
+                var compositeToken = Assert.IsType<CompositeChangeToken>(token);
                 Assert.Equal(2, compositeToken.ChangeTokens.Count);
                 var pollingChangeToken = Assert.IsType<PollingWildCardChangeToken>(compositeToken.ChangeTokens[1]);
                 pollingChangeToken.PollingInterval = TimeSpan.FromMilliseconds(10);

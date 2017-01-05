@@ -120,7 +120,7 @@ namespace Microsoft.Extensions.FileProviders.Physical
             {
                 // The expiry of CancellationChangeToken is controlled by this type and consequently we can cache it.
                 // PollingFileChangeToken on the other hand manages its own lifetime and consequently we cannot cache it.
-                changeToken = new CompositeFileChangeToken(
+                changeToken = new CompositeChangeToken(
                     new[]
                     {
                         changeToken,
@@ -149,7 +149,7 @@ namespace Microsoft.Extensions.FileProviders.Physical
             {
                 // The expiry of CancellationChangeToken is controlled by this type and consequently we can cache it.
                 // PollingFileChangeToken on the other hand manages its own lifetime and consequently we cannot cache it.
-                changeToken = new CompositeFileChangeToken(
+                changeToken = new CompositeChangeToken(
                     new[]
                     {
                         changeToken,
