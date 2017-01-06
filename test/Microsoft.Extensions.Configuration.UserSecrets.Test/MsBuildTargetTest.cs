@@ -105,10 +105,11 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         {
             try
             {
-                //      Directory.Delete(_tempDir, recursive: true);
+                Directory.Delete(_tempDir, recursive: true);
             }
             catch
             {
+                Console.Error.WriteLine($"Failed to delete '{_tempDir}' during test cleanup");
             }
         }
     }
