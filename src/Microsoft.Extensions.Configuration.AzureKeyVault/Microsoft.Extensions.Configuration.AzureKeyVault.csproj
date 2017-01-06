@@ -4,7 +4,6 @@
 
   <PropertyGroup>
     <Description>Azure KeyVault configuration provider implementation for Microsoft.Extensions.Configuration.</Description>
-    <VersionPrefix>1.1.0</VersionPrefix>
     <TargetFrameworks>netstandard1.5;net451</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>configuration;azure;keyvault</PackageTags>
