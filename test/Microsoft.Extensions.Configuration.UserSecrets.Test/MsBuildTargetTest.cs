@@ -76,12 +76,12 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
             restore.WaitForExit();
             Assert.Equal(0, restore.ExitCode);
 
-            Assert.False(File.Exists(assemblyInfoFile));
+            Assert.False(File.Exists(assemblyInfoFile), $"{assemblyInfoFile} should not exist but does");
 
             var buildInfo = new ProcessStartInfo
             {
                 FileName = "dotnet",
-                Arguments = "build",
+                Arguments = "build --configuration Debug",
                 UseShellExecute = false,
                 WorkingDirectory = _tempDir
             };
@@ -89,7 +89,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
             build.WaitForExit();
             Assert.Equal(0, build.ExitCode);
 
-            Assert.True(File.Exists(assemblyInfoFile));
+            Assert.True(File.Exists(assemblyInfoFile), $"{assemblyInfoFile} should not exist but does not");
             var contents = File.ReadAllText(assemblyInfoFile);
             Assert.Contains("[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute(\"xyz123\")]", contents);
             var lastWrite = new FileInfo(assemblyInfoFile).LastWriteTimeUtc;
@@ -105,7 +105,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         {
             try
             {
-          //      Directory.Delete(_tempDir, recursive: true);
+                //      Directory.Delete(_tempDir, recursive: true);
             }
             catch
             {
