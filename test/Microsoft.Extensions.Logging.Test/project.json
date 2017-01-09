@@ -9,6 +9,7 @@
     "Microsoft.Extensions.Logging.Console": "1.2.0-*",
     "Microsoft.Extensions.Logging.Debug": "1.2.0-*",
     "Microsoft.Extensions.Logging.Filter": "1.2.0-*",
+    "Microsoft.Extensions.Logging.Testing": "1.2.0-*",
     "Microsoft.Extensions.Logging.TraceSource": "1.2.0-*",
     "Moq": "4.6.36-*",
     "xunit": "2.2.0-*"

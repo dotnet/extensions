@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.Logging
+namespace Microsoft.Extensions.Logging.Test
 {
     public static class TestLoggerExtensions
     {

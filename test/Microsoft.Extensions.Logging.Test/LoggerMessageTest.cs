@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.Logging.Test;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Microsoft.Extensions.Logging
+namespace Microsoft.Extensions.Logging.Test
 {
     public class LoggerMessageTest
     {

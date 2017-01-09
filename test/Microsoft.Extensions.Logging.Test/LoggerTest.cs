@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.Extensions.Logging
+namespace Microsoft.Extensions.Logging.Test
 {
     public class LoggerTest
     {

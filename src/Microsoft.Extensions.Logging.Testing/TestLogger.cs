@@ -10,13 +10,18 @@ namespace Microsoft.Extensions.Logging.Testing
         private object _scope;
         private readonly ITestSink _sink;
         private readonly string _name;
-        private readonly bool _enabled;
+        private readonly Func<LogLevel, bool> _filter;
 
         public TestLogger(string name, ITestSink sink, bool enabled)
+            : this(name, sink, _ => enabled)
+        {
+        }
+
+        public TestLogger(string name, ITestSink sink, Func<LogLevel, bool> filter)
         {
             _sink = sink;
             _name = name;
-            _enabled = enabled;
+            _filter = filter;
         }
 
         public string Name { get; set; }
@@ -36,6 +41,11 @@ namespace Microsoft.Extensions.Logging.Testing
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
+            if (!IsEnabled(logLevel))
+            {
+                return;
+            }
+
             _sink.Write(new WriteContext()
             {
                 LogLevel = logLevel,
@@ -50,7 +60,7 @@ namespace Microsoft.Extensions.Logging.Testing
 
         public bool IsEnabled(LogLevel logLevel)
         {
-            return _enabled;
+            return _filter(logLevel);
         }
 
         private class TestDisposable : IDisposable
