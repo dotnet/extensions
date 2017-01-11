@@ -320,9 +320,12 @@ namespace Microsoft.Extensions.Caching.Memory
             {
                 lock (_lock)
                 {
-                    foreach (var expirationToken in _expirationTokens)
+                    lock (parent._lock)
                     {
-                        parent.AddExpirationToken(expirationToken);
+                        foreach (var expirationToken in _expirationTokens)
+                        {
+                            parent.AddExpirationToken(expirationToken);
+                        }
                     }
                 }
             }
