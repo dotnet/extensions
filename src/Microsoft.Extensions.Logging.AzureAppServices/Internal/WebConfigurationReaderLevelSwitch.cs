@@ -13,6 +13,8 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
     /// </summary>
     public class WebConfigurationReaderLevelSwitch : LoggingLevelSwitch
     {
+        private readonly Func<WebAppLogConfiguration, LogLevel> _convert;
+
         /// <summary>
         /// The log level at which the logger is disabled.
         /// </summary>
@@ -23,12 +25,19 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
         /// </summary>
         /// <param name="reader"></param>
         /// <param name="convert"></param>
-        public WebConfigurationReaderLevelSwitch(IWebAppLogConfigurationReader reader, Func<WebAppLogConfiguration, LogLevel> convert )
+        public WebConfigurationReaderLevelSwitch(IWebAppLogConfigurationReader reader, Func<WebAppLogConfiguration, LogLevel> convert)
         {
-            reader.OnConfigurationChanged += (sender, configuration) =>
-            {
-                MinimumLevel = LogLevelToLogEventLevel(convert(configuration));
-            };
+            _convert = convert;
+
+            reader.OnConfigurationChanged += (sender, configuration) => ReadLevel(configuration);
+
+            // Make sure we initialize with correct level
+            ReadLevel(reader.Current);
+        }
+
+        private void ReadLevel(WebAppLogConfiguration configuration)
+        {
+            MinimumLevel = LogLevelToLogEventLevel(_convert(configuration));
         }
 
         /// <summary>

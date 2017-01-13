@@ -13,7 +13,10 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
         /// </summary>
         public static WebAppLogConfiguration Disabled { get; } = new WebAppLogConfigurationBuilder().Build();
 
-        internal WebAppLogConfiguration(
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WebAppLogConfiguration"/> class.
+        /// </summary>
+        public WebAppLogConfiguration(
             bool isRunningInWebApp,
             bool fileLoggingEnabled,
             LogLevel fileLoggingLevel,
