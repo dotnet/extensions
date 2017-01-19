@@ -55,8 +55,6 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         <TargetFramework>netcoreapp1.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include=""Program.cs""/>
-        <PackageReference Include=""Microsoft.NETCore.App"" Version=""1.0.1"" />
         <Reference Include=""$(MSBuildThisFileDirectory){libName}"" />
     </ItemGroup>
 </Project>
