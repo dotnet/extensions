@@ -14,14 +14,11 @@ Microsoft.Extensions.FileProviders.IFileProvider</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="**\*.cs" />
     <Compile Include="..\..\shared\**\*.cs" />
-    <EmbeddedResource Include="**\*.resx" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Primitives" Version="1.2.0-*" />
-    <PackageReference Include="NETStandard.Library" Version="1.6.2-*" />
   </ItemGroup>
 
 </Project>
