@@ -15,13 +15,8 @@ Microsoft.Extensions.Primitives.StringSegment</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.HashCodeCombiner.Sources\**\*.cs" />
-    <EmbeddedResource Include="**\*.resx" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NETStandard.Library" Version="1.6.2-*"/>
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.4.0-*"/>
   </ItemGroup>
+
 </Project>

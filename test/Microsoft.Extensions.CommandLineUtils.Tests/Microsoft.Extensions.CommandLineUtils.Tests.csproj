@@ -7,19 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="**\*.cs" />
-    <EmbeddedResource Include="**\*.resx" />
-    <ProjectReference Include="../../src/Microsoft.Extensions.CommandLineUtils/Microsoft.Extensions.CommandLineUtils.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20161123-03"/>
+    <ProjectReference Include="..\..\src\Microsoft.Extensions.CommandLineUtils\Microsoft.Extensions.CommandLineUtils.csproj" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*"/>
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*"/>
     <PackageReference Include="xunit" Version="2.2.0-*"/>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
-    <PackageReference Include="Microsoft.NETCore.App" Version="1.2.0-*"/>
   </ItemGroup>
 
 </Project>
