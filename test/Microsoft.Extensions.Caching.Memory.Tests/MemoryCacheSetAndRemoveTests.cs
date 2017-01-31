@@ -477,7 +477,11 @@ namespace Microsoft.Extensions.Caching.Memory
             var cache = CreateCache();
             cache.Set("value", expected);
 
-            var domain = AppDomain.CreateDomain("newDomain");
+            var domainInfo = new AppDomainSetup
+            {
+                ApplicationBase = AppDomain.CurrentDomain.BaseDirectory,
+            };
+            var domain = AppDomain.CreateDomain("newDomain", null, domainInfo);
             domain.DoCallBack(DomainFunc);
 
             Assert.Equal(expected, cache.Get<int>("value"));
