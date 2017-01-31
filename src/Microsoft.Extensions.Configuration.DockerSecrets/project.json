@@ -1,0 +1,26 @@
+{
+  "version": "1.2.0-*",
+  "buildOptions": {
+    "keyFile": "../../tools/Key.snk"
+  },
+
+  "dependencies": {
+    "NETStandard.Library": "1.6.1",
+    "Microsoft.Extensions.Configuration": {
+      "target": "project"
+    },
+    "Microsoft.Extensions.FileProviders.Physical": "1.2.0-*"
+  },
+
+  "frameworks": {
+    "netstandard1.3": {
+      "dependencies": {
+        "System.Threading.Thread": "4.3.0-*"
+      }
+    }
+  },
+
+  "tooling": {
+    "defaultNamespace": "Microsoft.Extensions.Configuration.DockerSecrets"
+  }
+}

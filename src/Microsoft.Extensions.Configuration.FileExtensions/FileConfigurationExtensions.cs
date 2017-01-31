@@ -27,12 +27,7 @@ namespace Microsoft.Extensions.Configuration
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (fileProvider == null)
-            {
-                throw new ArgumentNullException(nameof(fileProvider));
-            }
-
-            builder.Properties[FileProviderKey] = fileProvider;
+            builder.Properties[FileProviderKey] = fileProvider ?? throw new ArgumentNullException(nameof(fileProvider));
             return builder;
         }
 
@@ -48,8 +43,7 @@ namespace Microsoft.Extensions.Configuration
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            object provider;
-            if (builder.Properties.TryGetValue(FileProviderKey, out provider))
+            if (builder.Properties.TryGetValue(FileProviderKey, out object provider))
             {
                 return builder.Properties[FileProviderKey] as IFileProvider;
             }
@@ -114,8 +108,7 @@ namespace Microsoft.Extensions.Configuration
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            object handler;
-            if (builder.Properties.TryGetValue(FileLoadExceptionHandlerKey, out handler))
+            if (builder.Properties.TryGetValue(FileLoadExceptionHandlerKey, out object handler))
             {
                 return builder.Properties[FileLoadExceptionHandlerKey] as Action<FileLoadExceptionContext>;
             }

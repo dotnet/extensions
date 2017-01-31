@@ -484,7 +484,10 @@ IniKey1=IniValue2");
             };
 
             CreateBuilder()
-                .Add(new JsonConfigurationSource { Path = "error.json", OnLoadException = jsonLoadError })
+                .AddJsonFile(s => {
+                    s.Path = "error.json";
+                    s.OnLoadException = jsonLoadError;
+                })
                 .Build();
 
             Assert.NotNull(provider);

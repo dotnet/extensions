@@ -73,16 +73,23 @@ namespace Microsoft.Extensions.Configuration
                 throw new ArgumentException(Resources.Error_InvalidFilePath, nameof(path));
             }
 
-            var source = new XmlConfigurationSource
+            return builder.AddXmlFile(s =>
             {
-                FileProvider = provider,
-                Path = path,
-                Optional = optional,
-                ReloadOnChange = reloadOnChange
-            };
-            source.ResolveFileProvider();
-            builder.Add(source);
-            return builder;
+                s.FileProvider = provider;
+                s.Path = path;
+                s.Optional = optional;
+                s.ReloadOnChange = reloadOnChange;
+                s.ResolveFileProvider();
+            });
         }
+
+        /// <summary>
+        /// Adds a XML configuration source to <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="configureSource">Configures the source.</param>
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        public static IConfigurationBuilder AddXmlFile(this IConfigurationBuilder builder, Action<XmlConfigurationSource> configureSource)
+            => builder.Add(configureSource);
     }
 }
