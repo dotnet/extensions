@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>Provides additional configuration specific functionality related to Options.</Description>
+    <TargetFramework>netstandard1.1</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;configuration;options</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Options\Microsoft.Extensions.Options.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="1.2.0-*" />
+  </ItemGroup>
+
+</Project>
