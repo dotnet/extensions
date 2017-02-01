@@ -1,25 +1,25 @@
+
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D26F6F80-63EE-4081-A814-EF3DBABE24D9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{88B347C1-CCEC-4827-9564-FFF07C9BF7C7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.DependencyInjection", "src\Microsoft.Extensions.DependencyInjection\Microsoft.Extensions.DependencyInjection.xproj", "{07ABDD98-9974-48CB-8265-53D1A8EC9E34}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.DependencyInjection", "src\Microsoft.Extensions.DependencyInjection\Microsoft.Extensions.DependencyInjection.csproj", "{07ABDD98-9974-48CB-8265-53D1A8EC9E34}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.DependencyInjection.Tests", "test\Microsoft.Extensions.DependencyInjection.Tests\Microsoft.Extensions.DependencyInjection.Tests.xproj", "{20201277-5461-49EF-811B-63ED3CD274EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.DependencyInjection.Tests", "test\Microsoft.Extensions.DependencyInjection.Tests\Microsoft.Extensions.DependencyInjection.Tests.csproj", "{20201277-5461-49EF-811B-63ED3CD274EF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.DependencyInjection.Abstractions", "src\Microsoft.Extensions.DependencyInjection.Abstractions\Microsoft.Extensions.DependencyInjection.Abstractions.xproj", "{4E959D3B-2E0D-4296-B22C-D428DED294F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.DependencyInjection.Abstractions", "src\Microsoft.Extensions.DependencyInjection.Abstractions\Microsoft.Extensions.DependencyInjection.Abstractions.csproj", "{4E959D3B-2E0D-4296-B22C-D428DED294F0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{39447DAF-CDD6-456F-B473-1E9A9D21ADF5}"
 	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
 		NuGet.config = NuGet.config
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.DependencyInjection.Specification.Tests", "src\Microsoft.Extensions.DependencyInjection.Specification.Tests\Microsoft.Extensions.DependencyInjection.Specification.Tests.xproj", "{B9395B0F-E8E3-4913-BABF-E71A76F21231}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.DependencyInjection.Specification.Tests", "src\Microsoft.Extensions.DependencyInjection.Specification.Tests\Microsoft.Extensions.DependencyInjection.Specification.Tests.csproj", "{B9395B0F-E8E3-4913-BABF-E71A76F21231}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
