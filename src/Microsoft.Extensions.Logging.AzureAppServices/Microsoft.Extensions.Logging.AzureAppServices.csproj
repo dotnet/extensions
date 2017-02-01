@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>Logger implementation to support Azure App Services 'Diagnostics logs' and 'Log stream' features.</Description>
+    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>logging</PackageTags>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.3' ">$(PackageTargetFallback);portable-net40+sl5+win8+wp8+wpa81;portable-net45+win8+wp8+wpa81</PackageTargetFallback>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Logging\Microsoft.Extensions.Logging.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Logging.Abstractions\Microsoft.Extensions.Logging.Abstractions.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="1.2.0-*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.2.0-*" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="1.0.0" />
+    <PackageReference Include="Serilog.Sinks.PeriodicBatching" Version="2.0.0" />
+    <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.1.0" />
+    <PackageReference Include="WindowsAzure.Storage" Version="7.2.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <PackageReference Include="System.Threading.Thread" Version="4.4.0-*" />
+  </ItemGroup>
+
+</Project>

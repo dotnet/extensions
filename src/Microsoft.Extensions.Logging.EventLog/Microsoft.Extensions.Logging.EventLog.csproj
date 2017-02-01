@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>Windows Event Log logger provider implementation for Microsoft.Extensions.Logging.</Description>
+    <TargetFramework>net451</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>eventlog;logging;windowseventlog</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Logging.Abstractions\Microsoft.Extensions.Logging.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

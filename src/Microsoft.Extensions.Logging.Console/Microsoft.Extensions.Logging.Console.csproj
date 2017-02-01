@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>Console logger provider implementation for Microsoft.Extensions.Logging.</Description>
+    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>logging</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Logging.Abstractions\Microsoft.Extensions.Logging.Abstractions.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="1.2.0-*" />
+  </ItemGroup>
+
+</Project>

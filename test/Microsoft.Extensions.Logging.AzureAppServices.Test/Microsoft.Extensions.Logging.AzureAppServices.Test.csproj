@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp1.1</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)'=='Windows_NT'">$(TargetFrameworks);net451</TargetFrameworks>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">$(PackageTargetFallback);portable-net40+sl5+win8+wp8+wpa81;portable-net45+win8+wp8+wpa81</PackageTargetFallback>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.AzureAppServices\Microsoft.Extensions.Logging.AzureAppServices.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.TraceSource\Microsoft.Extensions.Logging.TraceSource.csproj" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*" />
+    <PackageReference Include="Moq" Version="4.6.36-*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*" />
+    <PackageReference Include="xunit" Version="2.2.0-*" />
+  </ItemGroup>
+
+</Project>

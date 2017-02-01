@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>EventSource/EventListener logger provider implementation for Microsoft.Extensions.Logging.</Description>
+    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>EventSource;logging;ETW</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Logging.Abstractions\Microsoft.Extensions.Logging.Abstractions.csproj" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <DefineConstants>$(DefineConstants);NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT</DefineConstants>
+  </PropertyGroup>
+
+</Project>

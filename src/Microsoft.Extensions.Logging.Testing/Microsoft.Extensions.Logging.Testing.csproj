@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <Description>Helpers for writing tests that use Microsoft.Extensions.Logging. Contains null implementations of the abstractions that do nothing, as well as test implementations that are observable.</Description>
+    <TargetFramework>netstandard1.1</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>logging;testing</PackageTags>
+    <PackageTargetFallback>$(PackageTargetFallback);dotnet</PackageTargetFallback>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Logging.Abstractions\Microsoft.Extensions.Logging.Abstractions.csproj" />
+    <PackageReference Include="xunit.assert" Version="2.2.0-*" />
+  </ItemGroup>
+
+</Project>

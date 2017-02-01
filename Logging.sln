@@ -1,42 +1,42 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26127.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging", "src\Microsoft.Extensions.Logging\Microsoft.Extensions.Logging.xproj", "{19D1B6C5-8A62-4387-8816-C54874D1DF5F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging", "src\Microsoft.Extensions.Logging\Microsoft.Extensions.Logging.csproj", "{19D1B6C5-8A62-4387-8816-C54874D1DF5F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{09920C51-6220-4D8D-94DC-E70C13446187}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.Test", "test\Microsoft.Extensions.Logging.Test\Microsoft.Extensions.Logging.Test.xproj", "{96B1D6A8-7E40-43C7-813F-898DC8192DDE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging.Test", "test\Microsoft.Extensions.Logging.Test\Microsoft.Extensions.Logging.Test.csproj", "{96B1D6A8-7E40-43C7-813F-898DC8192DDE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.Abstractions", "src\Microsoft.Extensions.Logging.Abstractions\Microsoft.Extensions.Logging.Abstractions.xproj", "{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging.Abstractions", "src\Microsoft.Extensions.Logging.Abstractions\Microsoft.Extensions.Logging.Abstractions.csproj", "{8221FA95-4B1A-44BF-925F-8AC1A317CC7C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8C1F5D80-88EA-4961-84DC-7AC6E13951F4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SampleApp", "samples\SampleApp\SampleApp.xproj", "{550E0247-0BDD-4016-A29B-250F075686FD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleApp", "samples\SampleApp\SampleApp.csproj", "{550E0247-0BDD-4016-A29B-250F075686FD}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.Console", "src\Microsoft.Extensions.Logging.Console\Microsoft.Extensions.Logging.Console.xproj", "{75A4DE6D-BBAA-4D59-829D-94009E759A18}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging.Console", "src\Microsoft.Extensions.Logging.Console\Microsoft.Extensions.Logging.Console.csproj", "{75A4DE6D-BBAA-4D59-829D-94009E759A18}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{699DB330-0095-4266-B7B0-3EAB3710CA49}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.TraceSource", "src\Microsoft.Extensions.Logging.TraceSource\Microsoft.Extensions.Logging.TraceSource.xproj", "{1A3EB66F-9E64-4676-852F-24995549ED8A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging.TraceSource", "src\Microsoft.Extensions.Logging.TraceSource\Microsoft.Extensions.Logging.TraceSource.csproj", "{1A3EB66F-9E64-4676-852F-24995549ED8A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.Debug", "src\Microsoft.Extensions.Logging.Debug\Microsoft.Extensions.Logging.Debug.xproj", "{FFEDC225-D5BD-44E0-B7A6-A98FCFECC694}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging.Debug", "src\Microsoft.Extensions.Logging.Debug\Microsoft.Extensions.Logging.Debug.csproj", "{FFEDC225-D5BD-44E0-B7A6-A98FCFECC694}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.EventLog", "src\Microsoft.Extensions.Logging.EventLog\Microsoft.Extensions.Logging.EventLog.xproj", "{5D211C4A-6421-48F8-8AF9-D3BDC7DECD97}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging.EventLog", "src\Microsoft.Extensions.Logging.EventLog\Microsoft.Extensions.Logging.EventLog.csproj", "{5D211C4A-6421-48F8-8AF9-D3BDC7DECD97}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.Testing", "src\Microsoft.Extensions.Logging.Testing\Microsoft.Extensions.Logging.Testing.xproj", "{379AA56B-E1A6-4133-9A45-7F70385F39FB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging.Testing", "src\Microsoft.Extensions.Logging.Testing\Microsoft.Extensions.Logging.Testing.csproj", "{379AA56B-E1A6-4133-9A45-7F70385F39FB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.Testing.Tests", "test\Microsoft.Extensions.Logging.Testing.Tests\Microsoft.Extensions.Logging.Testing.Tests.xproj", "{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging.Testing.Tests", "test\Microsoft.Extensions.Logging.Testing.Tests\Microsoft.Extensions.Logging.Testing.Tests.csproj", "{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.Filter", "src\Microsoft.Extensions.Logging.Filter\Microsoft.Extensions.Logging.Filter.xproj", "{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging.Filter", "src\Microsoft.Extensions.Logging.Filter\Microsoft.Extensions.Logging.Filter.csproj", "{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.EventSource", "src\Microsoft.Extensions.Logging.EventSource\Microsoft.Extensions.Logging.EventSource.xproj", "{84073E58-1802-4525-A9E5-1E6A70DAF0B2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging.EventSource", "src\Microsoft.Extensions.Logging.EventSource\Microsoft.Extensions.Logging.EventSource.csproj", "{84073E58-1802-4525-A9E5-1E6A70DAF0B2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.EventSource.Test", "test\Microsoft.Extensions.Logging.EventSource.Test\Microsoft.Extensions.Logging.EventSource.Test.xproj", "{F3B898C3-D441-4207-A92B-420D6E73CA5D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging.EventSource.Test", "test\Microsoft.Extensions.Logging.EventSource.Test\Microsoft.Extensions.Logging.EventSource.Test.csproj", "{F3B898C3-D441-4207-A92B-420D6E73CA5D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.AzureAppServices", "src\Microsoft.Extensions.Logging.AzureAppServices\Microsoft.Extensions.Logging.AzureAppServices.xproj", "{854133D5-6252-4A0A-B682-BDBB83B62AE6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging.AzureAppServices", "src\Microsoft.Extensions.Logging.AzureAppServices\Microsoft.Extensions.Logging.AzureAppServices.csproj", "{854133D5-6252-4A0A-B682-BDBB83B62AE6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Logging.AzureAppServices.Test", "test\Microsoft.Extensions.Logging.AzureAppServices.Test\Microsoft.Extensions.Logging.AzureAppServices.Test.xproj", "{B4A43221-DE95-47BB-A2D4-2DC761FC9419}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging.AzureAppServices.Test", "test\Microsoft.Extensions.Logging.AzureAppServices.Test\Microsoft.Extensions.Logging.AzureAppServices.Test.csproj", "{B4A43221-DE95-47BB-A2D4-2DC761FC9419}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
