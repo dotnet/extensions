@@ -1,14 +1,19 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26131.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8B66E199-1AFE-4B68-AC71-4521C46EC4CD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D75011A4-DEEE-48DE-BB83-CE042F2AC05B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.DiagnosticAdapter", "src\Microsoft.Extensions.DiagnosticAdapter\Microsoft.Extensions.DiagnosticAdapter.xproj", "{87808F3C-362E-4261-AA4A-EE40BA39D64E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.DiagnosticAdapter", "src\Microsoft.Extensions.DiagnosticAdapter\Microsoft.Extensions.DiagnosticAdapter.csproj", "{87808F3C-362E-4261-AA4A-EE40BA39D64E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.DiagnosticAdapter.Test", "test\Microsoft.Extensions.DiagnosticAdapter.Test\Microsoft.Extensions.DiagnosticAdapter.Test.xproj", "{02754747-C385-4662-AD58-49CE54C3D7AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.DiagnosticAdapter.Test", "test\Microsoft.Extensions.DiagnosticAdapter.Test\Microsoft.Extensions.DiagnosticAdapter.Test.csproj", "{02754747-C385-4662-AD58-49CE54C3D7AF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3000A721-AF6D-46D5-839C-60A2EC4A9693}"
+	ProjectSection(SolutionItems) = preProject
+		NuGet.config = NuGet.config
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
