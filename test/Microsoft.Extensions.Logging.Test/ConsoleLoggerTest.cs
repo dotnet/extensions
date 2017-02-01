@@ -666,7 +666,11 @@ namespace Microsoft.Extensions.Logging.Test
             var t = SetUp(filter: null, includeScopes: true);
             var logger = t.Item1;
             var sink = t.Item2;
-            var domain = AppDomain.CreateDomain("newDomain");
+            var setupInfo = new AppDomainSetup
+            {
+                ApplicationBase = AppDomain.CurrentDomain.BaseDirectory
+            };
+            var domain = AppDomain.CreateDomain("newDomain", null, setupInfo);
 
             // Act
             domain.DoCallBack(DomainFunc);
