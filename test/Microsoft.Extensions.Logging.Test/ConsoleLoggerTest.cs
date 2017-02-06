@@ -695,7 +695,7 @@ namespace Microsoft.Extensions.Logging.Test
                 Cancel = new CancellationTokenSource(),
                 Switches =
                 {
-                    ["Test"] = LogLevel.Information,
+                    ["Test"] = "Information",
                 }
             };
 
@@ -705,7 +705,7 @@ namespace Microsoft.Extensions.Logging.Test
             var logger = loggerFactory.CreateLogger("Test");
             Assert.False(logger.IsEnabled(LogLevel.Trace));
 
-            settings.Switches["Test"] = LogLevel.Trace;
+            settings.Switches["Test"] = "Trace";
 
             var cancellationTokenSource = settings.Cancel;
             settings.Cancel = new CancellationTokenSource();
@@ -726,7 +726,7 @@ namespace Microsoft.Extensions.Logging.Test
                 Cancel = new CancellationTokenSource(),
                 Switches =
                 {
-                    ["Test"] = LogLevel.Information,
+                    ["Test"] = "Information",
                 }
             };
 
@@ -739,7 +739,7 @@ namespace Microsoft.Extensions.Logging.Test
             // Act & Assert
             for (var i = 0; i < 10; i++)
             {
-                settings.Switches["Test"] = i % 2 == 0 ? LogLevel.Information : LogLevel.Trace;
+                settings.Switches["Test"] = i % 2 == 0 ? "Information" : "Trace";
 
                 var cancellationTokenSource = settings.Cancel;
                 settings.Cancel = new CancellationTokenSource();
@@ -748,6 +748,49 @@ namespace Microsoft.Extensions.Logging.Test
 
                 Assert.Equal(i % 2 == 1, logger.IsEnabled(LogLevel.Trace));
             }
+        }
+
+        [Fact]
+        public void ConsoleLogger_ReloadSettings_CanRecoverAfterFailedReload()
+        {
+            // Arrange
+            var settings = new MockConsoleLoggerSettings()
+            {
+                Cancel = new CancellationTokenSource(),
+                Switches =
+                {
+                    ["Test"] = "Information",
+                }
+            };
+
+            var loggerFactory = new LoggerFactory();
+            loggerFactory.AddConsole(settings);
+            loggerFactory.AddDebug();
+
+            var logger = loggerFactory.CreateLogger("Test");
+
+            // Act & Assert
+            Assert.True(logger.IsEnabled(LogLevel.Information));
+
+            settings.Switches["Test"] = "InvalidLevel";
+
+            // Trigger reload
+            var cancellationTokenSource = settings.Cancel;
+            settings.Cancel = new CancellationTokenSource();
+
+            cancellationTokenSource.Cancel();
+
+            Assert.False(logger.IsEnabled(LogLevel.Trace));
+
+            settings.Switches["Test"] = "Trace";
+
+            // Trigger reload
+            cancellationTokenSource = settings.Cancel;
+            settings.Cancel = new CancellationTokenSource();
+
+            cancellationTokenSource.Cancel();
+
+            Assert.True(logger.IsEnabled(LogLevel.Trace));
         }
 
         [Fact]
@@ -868,7 +911,7 @@ namespace Microsoft.Extensions.Logging.Test
 
             public IChangeToken ChangeToken => new CancellationChangeToken(Cancel.Token);
 
-            public IDictionary<string, LogLevel> Switches { get; } = new Dictionary<string, LogLevel>();
+            public IDictionary<string, string> Switches { get; } = new Dictionary<string, string>();
 
             public bool IncludeScopes { get; set; }
 
@@ -879,7 +922,12 @@ namespace Microsoft.Extensions.Logging.Test
 
             public bool TryGetSwitch(string name, out LogLevel level)
             {
-                return Switches.TryGetValue(name, out level);
+                if (Enum.TryParse(Switches[name], out level))
+                {
+                    return true;
+                }
+
+                throw new Exception("Failed to parse LogLevel");
             }
         }
 

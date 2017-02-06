@@ -47,20 +47,29 @@ namespace Microsoft.Extensions.Logging.Console
 
         private void OnConfigurationReload(object state)
         {
-            // The settings object needs to change here, because the old one is probably holding on
-            // to an old change token.
-            _settings = _settings.Reload();
-
-            foreach (var logger in _loggers.Values)
+            try
             {
-                logger.Filter = GetFilter(logger.Name, _settings);
-                logger.IncludeScopes = _settings.IncludeScopes;
+                // The settings object needs to change here, because the old one is probably holding on
+                // to an old change token.
+                _settings = _settings.Reload();
+
+                foreach (var logger in _loggers.Values)
+                {
+                    logger.Filter = GetFilter(logger.Name, _settings);
+                    logger.IncludeScopes = _settings.IncludeScopes;
+                }
             }
-
-            // The token will change each time it reloads, so we need to register again.
-            if (_settings?.ChangeToken != null)
+            catch (Exception ex)
             {
-                _settings.ChangeToken.RegisterChangeCallback(OnConfigurationReload, null);
+                System.Console.WriteLine($"Error while loading configuration changes.{Environment.NewLine}{ex}");
+            }
+            finally
+            {
+                // The token will change each time it reloads, so we need to register again.
+                if (_settings?.ChangeToken != null)
+                {
+                    _settings.ChangeToken.RegisterChangeCallback(OnConfigurationReload, null);
+                }
             }
         }
 
