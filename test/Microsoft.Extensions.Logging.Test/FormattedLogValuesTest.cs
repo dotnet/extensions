@@ -93,6 +93,23 @@ namespace Microsoft.Extensions.Logging.Test
             });
         }
 
+        [Fact]
+        public void CachedFormattersAreCapped()
+        {
+            for (var i = 0; i < FormattedLogValues.MaxCachedFormatters; ++i)
+            {
+                var ignore = new FormattedLogValues($"{i}{{i}}", i);
+            }
+
+            // check cached formatter
+            var formatter = new FormattedLogValues("0{i}", 0).Formatter;
+            Assert.Same(formatter, new FormattedLogValues("0{i}", 0).Formatter);
+
+            // check non-cached formatter
+            formatter = new FormattedLogValues("test {}", 0).Formatter;
+            Assert.NotSame(formatter, new FormattedLogValues("test {}", 0).Formatter);
+        }
+
         // message format, format arguments, expected message
         public static TheoryData<string, object[], string> FormatsEnumerableValuesData
         {
