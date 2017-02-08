@@ -89,7 +89,9 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
 
             var builder = new ConfigurationBuilder().SetBasePath(projectPath);
 
+#pragma warning disable CS0618
             var ex = Assert.Throws<InvalidOperationException>(() => builder.AddUserSecrets());
+#pragma warning restore CS0618
             Assert.Equal(Resources.FormatError_Missing_UserSecretsIdAttribute(Assembly.GetEntryAssembly().FullName), ex.Message);
         }
 
@@ -105,8 +107,9 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
         {
             string userSecretsId;
             var projectPath = _fixture.GetTempSecretProject(out userSecretsId);
-
+#pragma warning disable CS0618
             var builder = new ConfigurationBuilder().SetBasePath(projectPath).AddUserSecrets();
+#pragma warning restore CS0618
 
             var configuration = builder.Build();
             Assert.Equal(null, configuration["Facebook:AppSecret"]);
@@ -120,7 +123,9 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
 
             SetSecret(userSecretsId, "Facebook:AppSecret", "value1");
 
+#pragma warning disable CS0618
             var builder = new ConfigurationBuilder().SetBasePath(projectPath).AddUserSecrets();
+#pragma warning restore CS0618
 
             var configuration = builder.Build();
             Assert.Equal("value1", configuration["Facebook:AppSecret"]);

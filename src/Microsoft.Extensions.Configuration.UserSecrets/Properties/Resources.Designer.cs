@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         }
 
         /// <summary>
-        /// This method could not find a user secret ID because the application's entry assembly is not set. Try using the ".AddUserSecrets(Assembly assembly)" method instead.
+        /// This method could not find a user secret ID because the application's entry assembly is not set. Try using the ".AddUserSecrets(string userSecretsId)" or  ".AddUserSecrets&lt;TStartup&gt;()" method instead.
         /// </summary>
         internal static string Error_EntryAssemblyNull
         {
@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         }
 
         /// <summary>
-        /// This method could not find a user secret ID because the application's entry assembly is not set. Try using the ".AddUserSecrets(Assembly assembly)" method instead.
+        /// This method could not find a user secret ID because the application's entry assembly is not set. Try using the ".AddUserSecrets(string userSecretsId)" or  ".AddUserSecrets&lt;TStartup&gt;()" method instead.
         /// </summary>
         internal static string FormatError_EntryAssemblyNull()
         {

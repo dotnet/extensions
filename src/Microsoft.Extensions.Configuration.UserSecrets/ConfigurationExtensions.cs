@@ -28,11 +28,18 @@ namespace Microsoft.Extensions.Configuration
             => configuration.AddUserSecrets(typeof(T).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// <para>
+        /// This method is obsolete and will be removed in a future version.
+        /// The recommended alternative is <see cref="AddUserSecrets(IConfigurationBuilder, string)"/> or <see cref="AddUserSecrets{T}(IConfigurationBuilder)"/> .
+        /// </para>
+        /// <para>
         /// Adds the user secrets configuration source. Searches the assembly from <see cref="Assembly.GetEntryAssembly"/>
         /// for an instance of <see cref="UserSecretsIdAttribute"/>.
+        /// </para>
         /// </summary>
         /// <param name="configuration"></param>
         /// <returns></returns>
+        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is .AddUserSecrets(string userSecretsId) or .AddUserSecrets<TStartup>().")]
         public static IConfigurationBuilder AddUserSecrets(this IConfigurationBuilder configuration)
         {
             if (configuration == null)
