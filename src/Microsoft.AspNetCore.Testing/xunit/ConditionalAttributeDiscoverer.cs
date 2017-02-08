@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -25,11 +26,9 @@ namespace Microsoft.AspNetCore.Testing.xunit
         {
             var skipReason = EvaluateSkipConditions(testMethod);
 
-            var isTheory = false;
             IXunitTestCaseDiscoverer innerDiscoverer;
             if (testMethod.Method.GetCustomAttributes(typeof(TheoryAttribute)).Any())
             {
-                isTheory = true;
                 innerDiscoverer = new TheoryDiscoverer(_diagnosticMessageSink);
             }
             else
@@ -41,7 +40,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
                 .Discover(discoveryOptions, testMethod, attributeInfo)
                 .Select(testCase => new SkipReasonTestCase
                 {
-                    IsTheory = isTheory,
+                    IsTheory = typeof(XunitTheoryTestCase).GetTypeInfo().IsAssignableFrom(testCase.GetType().GetTypeInfo()),
                     SkipReason = testCase.SkipReason ?? skipReason,
                     SourceInformation = testCase.SourceInformation,
                     TestMethod = testCase.TestMethod,

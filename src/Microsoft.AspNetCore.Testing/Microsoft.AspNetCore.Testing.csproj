@@ -12,13 +12,14 @@
 
   <ItemGroup>
     <PackageReference Include="xunit" Version="2.2.0-*" />
-    <PackageReference Include="Microsoft.Extensions.RuntimeEnvironment.Sources" Version="1.2.0-*" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.Extensions.RuntimeEnvironment.Sources" Version="1.2.0-*" PrivateAssets="All" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
   </ItemGroup>
 
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
     <PackageReference Include="System.Diagnostics.Process" Version="4.4.0-*" />
+    <PackageReference Include="System.Reflection" Version="4.4.0-*" />
     <PackageReference Include="System.Threading.Thread" Version="4.4.0-*" />
   </ItemGroup>
 
