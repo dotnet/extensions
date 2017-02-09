@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Logging.Console
         // ConsoleColor does not have a value to specify the 'Default' color
         private readonly ConsoleColor? DefaultConsoleColor = null;
 
-        private readonly ConsoleLoggerProcessor _queueProcessor = new ConsoleLoggerProcessor();
+        private readonly ConsoleLoggerProcessor _queueProcessor;
         private Func<string, LogLevel, bool> _filter;
 
         [ThreadStatic]
@@ -31,6 +31,11 @@ namespace Microsoft.Extensions.Logging.Console
         }
 
         public ConsoleLogger(string name, Func<string, LogLevel, bool> filter, bool includeScopes)
+            : this(name, filter, includeScopes, new ConsoleLoggerProcessor())
+        {
+        }
+
+        internal ConsoleLogger(string name, Func<string, LogLevel, bool> filter, bool includeScopes, ConsoleLoggerProcessor loggerProcessor)
         {
             if (name == null)
             {
@@ -40,6 +45,8 @@ namespace Microsoft.Extensions.Logging.Console
             Name = name;
             Filter = filter ?? ((category, logLevel) => true);
             IncludeScopes = includeScopes;
+
+            _queueProcessor = loggerProcessor;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -54,7 +61,15 @@ namespace Microsoft.Extensions.Logging.Console
         public IConsole Console
         {
             get { return _queueProcessor.Console; }
-            set { _queueProcessor.Console = value; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _queueProcessor.Console = value;
+            }
         }
 
         public Func<string, LogLevel, bool> Filter
@@ -74,8 +89,6 @@ namespace Microsoft.Extensions.Logging.Console
         public bool IncludeScopes { get; set; }
 
         public string Name { get; }
-
-        public bool HasQueuedMessages => _queueProcessor.HasQueuedMessages;
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {

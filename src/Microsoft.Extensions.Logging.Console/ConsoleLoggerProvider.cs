@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging.Console.Internal;
 
 namespace Microsoft.Extensions.Logging.Console
 {
@@ -13,6 +14,7 @@ namespace Microsoft.Extensions.Logging.Console
 
         private readonly Func<string, LogLevel, bool> _filter;
         private IConsoleLoggerSettings _settings;
+        private readonly ConsoleLoggerProcessor _messageQueue = new ConsoleLoggerProcessor();
 
         public ConsoleLoggerProvider(Func<string, LogLevel, bool> filter, bool includeScopes)
         {
@@ -69,7 +71,7 @@ namespace Microsoft.Extensions.Logging.Console
 
         private ConsoleLogger CreateLoggerImplementation(string name)
         {
-            return new ConsoleLogger(name, GetFilter(name, _settings), _settings.IncludeScopes);
+            return new ConsoleLogger(name, GetFilter(name, _settings), _settings.IncludeScopes, _messageQueue);
         }
 
         private Func<string, LogLevel, bool> GetFilter(string name, IConsoleLoggerSettings settings)
@@ -111,6 +113,7 @@ namespace Microsoft.Extensions.Logging.Console
 
         public void Dispose()
         {
+            _messageQueue.Dispose();
         }
     }
 }

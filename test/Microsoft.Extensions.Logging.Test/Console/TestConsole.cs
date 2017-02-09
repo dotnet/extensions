@@ -48,11 +48,9 @@ namespace Microsoft.Extensions.Logging.Test.Console
         {
             Write(message + Environment.NewLine, background, foreground);
         }
-        public Action OnFlush { get; set; }
 
         public void Flush()
         {
-            OnFlush?.Invoke();
         }
 
         private void ResetColor()
