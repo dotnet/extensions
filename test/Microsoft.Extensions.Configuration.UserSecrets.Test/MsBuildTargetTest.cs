@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
             {
                 Assert.True(false, "Could not identify solution root");
             }
-            var target = Path.Combine(_solutionRoot.FullName, "src", "Microsoft.Extensions.Configuration.UserSecrets", "build", "netstandard1.0", "Microsoft.Extensions.Configuration.UserSecrets.targets");
+            var target = Path.Combine(_solutionRoot.FullName, "src", "Microsoft.Extensions.Configuration.UserSecrets", "build", "GenerateUserSecretsAttribute.targets");
             Directory.CreateDirectory(Path.Combine(_tempDir, "obj"));
             var libName = "Microsoft.Extensions.Configuration.UserSecrets.dll";
             File.Copy(Path.Combine(AppContext.BaseDirectory, libName), Path.Combine(_tempDir, libName));
@@ -48,7 +48,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
             var testProj = Path.Combine(_tempDir, "test.csproj");
             // should represent a 'dotnet new' project
             File.WriteAllText(testProj, $@"
-<Project Sdk=""Microsoft.NET.Sdk"" ToolsVersion=""15.0"">
+<Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <UserSecretsId>xyz123</UserSecretsId>
