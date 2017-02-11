@@ -103,12 +103,11 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             try
             {
-                if (callSiteChain.Contains(serviceType))
+                // ISet.Add returns false if serviceType already present in call Site Chain
+                if (!callSiteChain.Add(serviceType))
                 {
                     throw new InvalidOperationException(Resources.FormatCircularDependencyException(serviceType));
                 }
-
-                callSiteChain.Add(serviceType);
 
                 ServiceEntry entry;
                 if (_table.TryGetEntry(serviceType, out entry))
