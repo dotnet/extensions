@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Options
     /// Implementation of IOptions.
     /// </summary>
     /// <typeparam name="TOptions"></typeparam>
-    public class OptionsManager<TOptions> : IOptions<TOptions> where TOptions : class, new()
+    public class OptionsManager<TOptions> : IOptions<TOptions>, IOptionsSnapshot<TOptions> where TOptions : class, new()
     {
         private OptionsCache<TOptions> _optionsCache;
 

@@ -13,33 +13,7 @@ namespace Microsoft.Extensions.Options.Tests
     {
         public int SetupInvokeCount { get; set; }
 
-        public class FakeChangeToken : IChangeToken, IDisposable
-        {
-            public bool ActiveChangeCallbacks { get; set; }
-            public bool HasChanged { get; set; }
-            public IDisposable RegisterChangeCallback(Action<object> callback, object state)
-            {
-                _callback = () => callback(state);
-                return this;
-            }
-
-            public void InvokeChangeCallback()
-            {
-                if (_callback != null)
-                {
-                    _callback();
-                }
-            }
-
-            public void Dispose()
-            {
-                _callback = null;
-            }
-
-            private Action _callback;
-        }
-
-        public class CountIncrement : IConfigureOptions<FakeOptions>
+        private class CountIncrement : IConfigureOptions<FakeOptions>
         {
             private OptionsMonitorTest _test;
 
@@ -54,7 +28,6 @@ namespace Microsoft.Extensions.Options.Tests
                 options.Message += _test.SetupInvokeCount;
             }
         }
-
 
         public class FakeSource : IOptionsChangeTokenSource<FakeOptions>
         {
@@ -248,18 +221,6 @@ namespace Microsoft.Extensions.Options.Tests
             public string Message => _options?.Message;
         }
 
-        public class ControllerWithSnapshot
-        {
-            FakeOptions _options;
-
-            public ControllerWithSnapshot(IOptionsSnapshot<FakeOptions> snap)
-            {
-                _options = snap.Value;
-            }
-
-            public string Message => _options?.Message;
-        }
-
         [Fact]
         public void ControllerCanWatchOptionsThatTrackConfigChanges()
         {
@@ -280,39 +241,6 @@ namespace Microsoft.Extensions.Options.Tests
 
             config.Reload();
             Assert.Equal("2", controller.Message);
-        }
-
-        [Fact]
-        public void SnapshotOptionsDoNotChangeEvenWhenMonitorChanges()
-        {
-            var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
-
-            var services = new ServiceCollection().AddOptions();
-            services.AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
-            services.Configure<FakeOptions>(config);
-
-            var sp = services.BuildServiceProvider();
-
-            var monitor = sp.GetRequiredService<IOptionsMonitor<FakeOptions>>();
-            var snapshot = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
-
-            var options = monitor.CurrentValue;
-            Assert.Equal("1", options.Message);
-            Assert.Equal(options, snapshot.Value);
-
-            var token = config.GetReloadToken();
-
-            config.Reload();
-
-            Assert.NotEqual(monitor.CurrentValue, snapshot.Value);
-            Assert.Equal("2", monitor.CurrentValue.Message);
-            Assert.Equal("1", snapshot.Value.Message);
-
-            config.Reload();
-
-            Assert.NotEqual(monitor.CurrentValue, snapshot.Value);
-            Assert.Equal("3", monitor.CurrentValue.Message);
-            Assert.Equal("1", snapshot.Value.Message);
         }
     }
 }
