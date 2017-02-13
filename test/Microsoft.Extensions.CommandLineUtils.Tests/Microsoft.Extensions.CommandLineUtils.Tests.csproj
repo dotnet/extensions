@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.1;net452</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp1.1</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
