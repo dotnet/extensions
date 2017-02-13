@@ -101,7 +101,7 @@ i=ini_i.i.i.i
 
         public ArrayTests()
         {
-#if NET451
+#if NET452
             var basePath = AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
                 AppDomain.CurrentDomain.BaseDirectory ??
                 string.Empty;

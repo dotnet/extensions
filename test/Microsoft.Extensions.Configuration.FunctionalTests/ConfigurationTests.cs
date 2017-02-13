@@ -78,7 +78,7 @@ CommonKey3:CommonKey4=IniValue6";
         {
             _fileSystem = new DisposableFileSystem();
             _fileProvider = new PhysicalFileProvider(_fileSystem.RootPath);
-#if NET451
+#if NET452
             _basePath = AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
                 AppDomain.CurrentDomain.BaseDirectory ??
                 string.Empty;
