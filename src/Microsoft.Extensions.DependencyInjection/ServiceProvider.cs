@@ -19,6 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         private readonly CallSiteValidator _callSiteValidator;
         private readonly ServiceTable _table;
+        private readonly ServiceProviderOptions _options;
         private bool _disposeCalled;
         private List<IDisposable> _transientDisposables;
 
@@ -30,15 +31,16 @@ namespace Microsoft.Extensions.DependencyInjection
         // CallSiteRuntimeResolver is stateless so can be shared between all instances
         private static readonly CallSiteRuntimeResolver _callSiteRuntimeResolver = new CallSiteRuntimeResolver();
 
-        public ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors, bool validateScopes)
+        public ServiceProvider(IEnumerable<ServiceDescriptor> serviceDescriptors, ServiceProviderOptions options)
         {
             Root = this;
 
-            if (validateScopes)
+            if (options.ValidateScopes)
             {
                 _callSiteValidator = new CallSiteValidator();
             }
 
+            _options = options;
             _table = new ServiceTable(serviceDescriptors);
 
             _table.Add(typeof(IServiceProvider), new ServiceProviderService());

@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 "Ensure the type is concrete and services are registered for all parameters of a public constructor.";
             var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
             var service = new Service(descriptor);
-            var serviceProvider = new ServiceProvider(new[] { descriptor }, validateScopes: true);
+            var serviceProvider = new ServiceProvider(new[] { descriptor }, new ServiceProviderOptions { ValidateScopes = true });
 
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(() => service.CreateCallSite(serviceProvider, new HashSet<Type>()));
@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Arrange
             var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
             var service = new Service(descriptor);
-            var serviceProvider = new ServiceProvider(new[] { descriptor }, validateScopes: true);
+            var serviceProvider = new ServiceProvider(new[] { descriptor }, new ServiceProviderOptions { ValidateScopes = true });
 
             // Act
             var callSite = service.CreateCallSite(serviceProvider, new HashSet<Type>());
@@ -99,7 +99,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var type = typeof(TypeWithParameterizedAndNullaryConstructor);
             var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
             var service = new Service(descriptor);
-            var serviceProvider = new ServiceProvider(new[] { descriptor }, validateScopes: true);
+            var serviceProvider = new ServiceProvider(new[] { descriptor }, new ServiceProviderOptions { ValidateScopes = true });
 
             // Act
             var callSite = service.CreateCallSite(serviceProvider, new HashSet<Type>());

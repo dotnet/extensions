@@ -82,7 +82,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         public void BuiltExpressionWillReturnResolvedServiceWhenAppropriate(
             ServiceDescriptor[] descriptors, Type serviceType, Func<object, object, bool> compare)
         {
-            var provider = new ServiceProvider(descriptors, validateScopes: true);
+            var provider = new ServiceProvider(descriptors, new ServiceProviderOptions { ValidateScopes = true });
 
             var callSite = provider.GetServiceCallSite(serviceType, new HashSet<Type>());
             var collectionCallSite = provider.GetServiceCallSite(typeof(IEnumerable<>).MakeGenericType(serviceType), new HashSet<Type>());
@@ -111,7 +111,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             descriptors.AddScoped<ServiceB>();
             descriptors.AddScoped<ServiceC>();
 
-            var provider = new ServiceProvider(descriptors, validateScopes: true);
+            var provider = new ServiceProvider(descriptors, new ServiceProviderOptions { ValidateScopes = true });
             var callSite = provider.GetServiceCallSite(typeof(ServiceC), new HashSet<Type>());
             var compiledCallSite = CompileCallSite(callSite);
 
@@ -129,7 +129,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             descriptors.AddTransient<ClassWithThrowingCtor>();
             descriptors.AddTransient<IFakeService, FakeService>();
 
-            var provider = new ServiceProvider(descriptors, validateScopes: true);
+            var provider = new ServiceProvider(descriptors, new ServiceProviderOptions { ValidateScopes = true });
 
             var callSite1 = provider.GetServiceCallSite(typeof(ClassWithThrowingEmptyCtor), new HashSet<Type>());
             var compiledCallSite1 = CompileCallSite(callSite1);
