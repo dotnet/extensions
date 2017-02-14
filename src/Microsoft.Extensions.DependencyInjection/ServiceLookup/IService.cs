@@ -15,5 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain);
 
         Type ServiceType { get; }
+
+        Type ImplementationType { get; }
     }
 }

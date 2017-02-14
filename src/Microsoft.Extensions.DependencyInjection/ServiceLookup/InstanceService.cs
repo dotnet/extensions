@@ -16,6 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public InstanceService(ServiceDescriptor descriptor)
         {
             Descriptor = descriptor;
+            ImplementationType = descriptor.ImplementationInstance.GetType();
         }
 
         public IService Next { get; set; }
@@ -26,6 +27,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         public Type ServiceType => Descriptor.ServiceType;
+
+        public Type ImplementationType { get; }
 
         public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
         {

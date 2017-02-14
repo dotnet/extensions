@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override Type VisitTransient(TransientCallSite transientCallSite, CallSiteValidatorState state)
         {
-            return VisitCallSite(transientCallSite.Service, state);
+            return VisitCallSite(transientCallSite.ServiceCallSite, state);
         }
 
         protected override Type VisitConstructor(ConstructorCallSite constructorCallSite, CallSiteValidatorState state)

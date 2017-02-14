@@ -5,11 +5,13 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class TransientCallSite : IServiceCallSite
     {
-        internal IServiceCallSite Service { get; }
+        internal IService Service { get; }
+        internal IServiceCallSite ServiceCallSite { get; }
 
-        public TransientCallSite(IServiceCallSite service)
+        public TransientCallSite(IService key, IServiceCallSite serviceCallSite)
         {
-            Service = service;
+            Service = key;
+            ServiceCallSite = serviceCallSite;
         }
     }
 }

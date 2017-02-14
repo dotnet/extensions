@@ -25,6 +25,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             get { return _descriptor.Lifetime; }
         }
 
+        public Type ImplementationType => _descriptor.ImplementationType;
+
         public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
         {
             var constructors = _descriptor.ImplementationType.GetTypeInfo()

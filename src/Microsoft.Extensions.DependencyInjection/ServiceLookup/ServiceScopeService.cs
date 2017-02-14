@@ -17,6 +17,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public Type ServiceType => typeof(IServiceScopeFactory);
 
+        public Type ImplementationType => typeof(ServiceScopeFactory);
+
         public IServiceCallSite CreateCallSite(ServiceProvider provider, ISet<Type> callSiteChain)
         {
             return this;

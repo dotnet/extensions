@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         protected override object VisitTransient(TransientCallSite transientCallSite, ServiceProvider provider)
         {
             return provider.CaptureDisposable(
-                VisitCallSite(transientCallSite.Service, provider));
+                VisitCallSite(transientCallSite.ServiceCallSite, provider));
         }
 
         protected override object VisitConstructor(ConstructorCallSite constructorCallSite, ServiceProvider provider)

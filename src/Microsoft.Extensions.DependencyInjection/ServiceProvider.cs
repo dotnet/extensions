@@ -28,6 +28,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static readonly Func<Type, ServiceProvider, Func<ServiceProvider, object>> _createServiceAccessor = CreateServiceAccessor;
 
+        // For testing only
+        internal Action<object> _captureDisposableCallback;
+
         // CallSiteRuntimeResolver is stateless so can be shared between all instances
         private static readonly CallSiteRuntimeResolver _callSiteRuntimeResolver = new CallSiteRuntimeResolver();
 
@@ -143,7 +146,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (service.Lifetime == ServiceLifetime.Transient)
             {
-                return new TransientCallSite(serviceCallSite);
+                return new TransientCallSite(service, serviceCallSite);
             }
             else if (service.Lifetime == ServiceLifetime.Scoped)
             {
@@ -188,6 +191,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
         internal object CaptureDisposable(object service)
         {
+            _captureDisposableCallback?.Invoke(service);
+
             if (!object.ReferenceEquals(this, service))
             {
                 var disposable = service as IDisposable;

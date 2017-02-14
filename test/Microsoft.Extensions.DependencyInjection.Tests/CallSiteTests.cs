@@ -122,6 +122,49 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         }
 
         [Fact]
+        public void BuildExpressionElidesDisposableCaptureForNonDisposableServices()
+        {
+            var descriptors = new ServiceCollection();
+            descriptors.AddTransient<ServiceA>();
+            descriptors.AddTransient<ServiceB>();
+            descriptors.AddTransient<ServiceC>();
+
+            var disposables = new List<object>();
+            var provider = new ServiceProvider(descriptors, ServiceProviderOptions.Default);
+            provider._captureDisposableCallback = obj =>
+            {
+                disposables.Add(obj);
+            };
+            var callSite = provider.GetServiceCallSite(typeof(ServiceC), new HashSet<Type>());
+            var compiledCallSite = CompileCallSite(callSite);
+
+            var serviceC = (ServiceC)compiledCallSite(provider);
+
+            Assert.Equal(0, disposables.Count);
+        }
+
+        [Fact]
+        public void BuildExpressionElidesDisposableCaptureForEnumerableServices()
+        {
+            var descriptors = new ServiceCollection();
+            descriptors.AddTransient<ServiceA>();
+            descriptors.AddTransient<ServiceD>();
+
+            var disposables = new List<object>();
+            var provider = new ServiceProvider(descriptors, ServiceProviderOptions.Default);
+            provider._captureDisposableCallback = obj =>
+            {
+                disposables.Add(obj);
+            };
+            var callSite = provider.GetServiceCallSite(typeof(ServiceD), new HashSet<Type>());
+            var compiledCallSite = CompileCallSite(callSite);
+
+            var serviceD = (ServiceD)compiledCallSite(provider);
+
+            Assert.Equal(0, disposables.Count);
+        }
+
+        [Fact]
         public void BuiltExpressionRethrowsOriginalExceptionFromConstructor()
         {
             var descriptors = new ServiceCollection();
@@ -142,6 +185,14 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
             var ex2 = Assert.Throws<Exception>(() => compiledCallSite2(provider));
             Assert.Equal(nameof(ClassWithThrowingCtor), ex2.Message);
+        }
+
+        private class ServiceD
+        {
+            public ServiceD(IEnumerable<ServiceA> services)
+            {
+
+            }
         }
 
         private class ServiceA

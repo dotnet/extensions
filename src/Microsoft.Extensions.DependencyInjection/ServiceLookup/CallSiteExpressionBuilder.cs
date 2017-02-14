@@ -138,15 +138,24 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return Expression.NewArrayInit(
                 callSite.ItemType,
                 callSite.ServiceCallSites.Select(cs =>
-                    Expression.Convert(
+                    Convert(
                         VisitCallSite(cs, provider),
                         callSite.ItemType)));
         }
 
         protected override Expression VisitTransient(TransientCallSite callSite, ParameterExpression provider)
         {
+            var implType = callSite.Service.ImplementationType;
+
+            // Elide calls to GetCaptureDisposable if the implemenation type isn't disposable
+            if (implType != null &&
+                !typeof(IDisposable).GetTypeInfo().IsAssignableFrom(implType.GetTypeInfo()))
+            {
+                return VisitCallSite(callSite.ServiceCallSite, provider);
+            }
+
             return Expression.Invoke(GetCaptureDisposable(provider),
-                VisitCallSite(callSite.Service, provider));
+                VisitCallSite(callSite.ServiceCallSite, provider));
         }
 
         protected override Expression VisitConstructor(ConstructorCallSite callSite, ParameterExpression provider)
@@ -155,7 +164,18 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return Expression.New(
                 callSite.ConstructorInfo,
                 callSite.ParameterCallSites.Select((c, index) =>
-                        Expression.Convert(VisitCallSite(c, provider), parameters[index].ParameterType)));
+                        Convert(VisitCallSite(c, provider), parameters[index].ParameterType)));
+        }
+
+        private static Expression Convert(Expression expression, Type type)
+        {
+            // Don't convert if the expression is already assignable
+            if (type.GetTypeInfo().IsAssignableFrom(expression.Type.GetTypeInfo()))
+            {
+                return expression;
+            }
+
+            return Expression.Convert(expression, type);
         }
 
         protected override Expression VisitScoped(ScopedCallSite callSite, ParameterExpression provider)
