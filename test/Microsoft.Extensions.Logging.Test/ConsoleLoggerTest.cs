@@ -648,7 +648,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.NotNull(disposable);
         }
 
-#if NET451
+#if NET452
         private static void DomainFunc()
         {
             var t = SetUp(filter: null, includeScopes: true);
