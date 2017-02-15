@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.2' ">
-    <PackageReference Include="System.Data.SqlClient" Version="4.4.0-*" />
+    <PackageReference Include="System.Data.SqlClient" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
