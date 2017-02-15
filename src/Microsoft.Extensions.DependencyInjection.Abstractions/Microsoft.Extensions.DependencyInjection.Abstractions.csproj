@@ -14,7 +14,7 @@ Microsoft.Extensions.DependencyInjection.IServiceCollection</Description>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="1.2.0-*" PrivateAssets="All" />
-    <PackageReference Include="System.ComponentModel" Version="4.4.0-*" />
+    <PackageReference Include="System.ComponentModel" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
