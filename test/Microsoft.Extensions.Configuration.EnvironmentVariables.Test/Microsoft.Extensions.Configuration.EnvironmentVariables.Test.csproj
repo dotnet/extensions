@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\build\common.props" />
   <PropertyGroup>
     <TargetFrameworks>netcoreapp1.1;net452</TargetFrameworks>
@@ -12,7 +12,7 @@
     <PackageReference Include="xunit" Version="2.2.0-*" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
-    <PackageReference Include="System.Collections.NonGeneric" Version="4.4.0-*" />
+    <PackageReference Include="System.Collections.NonGeneric" Version="$(CoreFxVersion)" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />

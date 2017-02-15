@@ -15,7 +15,7 @@
   "frameworks": {
     "netstandard1.3": {
       "dependencies": {
-        "System.Threading.Thread": "4.3.0-*"
+        "System.Threading.Thread": "4.3.0"
       }
     }
   },
