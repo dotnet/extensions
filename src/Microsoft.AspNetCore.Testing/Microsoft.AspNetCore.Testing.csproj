@@ -18,9 +18,9 @@
 
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Diagnostics.Process" Version="4.4.0-*" />
-    <PackageReference Include="System.Reflection" Version="4.4.0-*" />
-    <PackageReference Include="System.Threading.Thread" Version="4.4.0-*" />
+    <PackageReference Include="System.Diagnostics.Process" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Reflection" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Threading.Thread" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
