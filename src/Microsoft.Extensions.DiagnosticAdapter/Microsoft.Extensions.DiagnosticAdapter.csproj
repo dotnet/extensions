@@ -12,10 +12,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="1.2.0-*" />
-    <PackageReference Include="System.ComponentModel" Version="4.4.0-*" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="4.4.0-*" />
-    <PackageReference Include="System.Reflection.Emit" Version="4.4.0-*" />
-    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.4.0-*" />
+    <PackageReference Include="System.ComponentModel" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Reflection.Emit" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
