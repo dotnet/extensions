@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\build\common.props" />
 
@@ -30,8 +30,8 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
-    <PackageReference Include="System.Diagnostics.TraceSource" Version="4.4.0-*"/>
-    <PackageReference Include="System.Security.Claims" Version="4.4.0-*"/>
+    <PackageReference Include="System.Diagnostics.TraceSource" Version="$(CoreFxVersion)"/>
+    <PackageReference Include="System.Security.Claims" Version="$(CoreFxVersion)"/>
   </ItemGroup>
 
 </Project>
