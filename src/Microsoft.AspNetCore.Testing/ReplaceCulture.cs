@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Testing
             UICulture = new CultureInfo(currentUICulture);
         }
 
-#if NET451
+#if NET452
         /// <summary>
         /// The <see cref="Thread.CurrentCulture"/> for the test. Defaults to en-GB.
         /// </summary>
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Testing
 #endif
         public CultureInfo Culture { get; }
 
-#if NET451
+#if NET452
         /// <summary>
         /// The <see cref="Thread.CurrentUICulture"/> for the test. Defaults to en-US.
         /// </summary>
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Testing
             _originalCulture = CultureInfo.CurrentCulture;
             _originalUICulture = CultureInfo.CurrentUICulture;
 
-#if NET451
+#if NET452
             Thread.CurrentThread.CurrentCulture = Culture;
             Thread.CurrentThread.CurrentUICulture = UICulture;
 #else
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Testing
 
         public override void After(MethodInfo methodUnderTest)
         {
-#if NET451
+#if NET452
             Thread.CurrentThread.CurrentCulture = _originalCulture;
             Thread.CurrentThread.CurrentUICulture = _originalUICulture;
 #else

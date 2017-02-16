@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Testing.Functional
                 {
                     var varKey = newEnvVar.Key;
                     var varValue = newEnvVar.Value;
-#if NET451
+#if NET452
                     psi.EnvironmentVariables[varKey] = varValue;
 
 #else

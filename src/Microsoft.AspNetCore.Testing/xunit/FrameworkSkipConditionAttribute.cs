@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
                 return true;
             }
 
-#if NET451
+#if NET452
             if (excludedFrameworks.HasFlag(RuntimeFrameworks.Mono) &&
                 TestPlatformHelper.IsMono)
             {
