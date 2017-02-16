@@ -1,0 +1,6 @@
+<Project>
+  <ItemGroup>
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.Extensions.Configuration.AzureKeyVault.Test\Microsoft.Extensions.Configuration.AzureKeyVault.Test.csproj" Condition="'$(OS)' != 'Windows_NT'"/>
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.Extensions.Configuration.Test.Common\Microsoft.Extensions.Configuration.Test.Common.csproj" />
+  </ItemGroup>
+</Project>
