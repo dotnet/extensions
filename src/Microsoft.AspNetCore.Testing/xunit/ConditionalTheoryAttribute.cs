@@ -8,7 +8,7 @@ using Xunit.Sdk;
 namespace Microsoft.AspNetCore.Testing.xunit
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    [XunitTestCaseDiscoverer("Microsoft.AspNetCore.Testing.xunit.ConditionalAttributeDiscoverer", "Microsoft.AspNetCore.Testing")]
+    [XunitTestCaseDiscoverer("Microsoft.AspNetCore.Testing.xunit." + nameof(ConditionalTheoryDiscoverer), "Microsoft.AspNetCore.Testing")]
     public class ConditionalTheoryAttribute : TheoryAttribute
     {
     }

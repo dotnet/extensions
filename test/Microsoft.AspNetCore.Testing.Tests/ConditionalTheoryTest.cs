@@ -16,13 +16,22 @@ namespace Microsoft.AspNetCore.Testing
         }
 
         private static int _conditionalTheoryRuns = 0;
+
         [ConditionalTheory]
         [InlineData(0)]
         [InlineData(1)]
+        [InlineData(2, Skip = "Skip these data")]
         public void ConditionalTheoryRunOncePerDataLine(int arg)
         {
             _conditionalTheoryRuns++;
             Assert.True(_conditionalTheoryRuns <= 2, $"Theory should run 2 times, but ran {_conditionalTheoryRuns} times.");
+        }
+
+        [ConditionalTheory, Trait("Color", "Blue")]
+        [InlineData(1)]
+        public void ConditionalTheoriesShouldPreserveTraits(int arg)
+        {
+            Assert.True(true);
         }
     }
 }
