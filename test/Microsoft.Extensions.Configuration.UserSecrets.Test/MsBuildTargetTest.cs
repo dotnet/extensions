@@ -31,15 +31,16 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
 
                 _solutionRoot = _solutionRoot.Parent;
             }
+
+            if (_solutionRoot == null)
+            {
+                throw new FileNotFoundException("Could not identify solution root");
+            }
         }
 
         [Fact]
         public void GeneratesAssemblyAttributeFile()
         {
-            if (_solutionRoot == null)
-            {
-                Assert.True(false, "Could not identify solution root");
-            }
             var target = Path.Combine(_solutionRoot.FullName, "src", "Microsoft.Extensions.Configuration.UserSecrets", "build", "GenerateUserSecretsAttribute.targets");
             Directory.CreateDirectory(Path.Combine(_tempDir, "obj"));
             var libName = "Microsoft.Extensions.Configuration.UserSecrets.dll";
@@ -63,40 +64,47 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
             File.WriteAllText(Path.Combine(_tempDir, "Program.cs"), "public class Program { public static void Main(){}}");
             var assemblyInfoFile = Path.Combine(_tempDir, "obj/Debug/netcoreapp1.0/UserSecretsAssemblyInfo.cs");
 
-            var restoreInfo = new ProcessStartInfo
-            {
-                FileName = "dotnet",
-                Arguments = "restore",
-                UseShellExecute = false,
-                WorkingDirectory = _tempDir
-            };
-            var restore = Process.Start(restoreInfo);
-            restore.WaitForExit();
-            Assert.Equal(0, restore.ExitCode);
+            AssertDotNet("restore");
 
             Assert.False(File.Exists(assemblyInfoFile), $"{assemblyInfoFile} should not exist but does");
 
-            var buildInfo = new ProcessStartInfo
-            {
-                FileName = "dotnet",
-                Arguments = "build --configuration Debug",
-                UseShellExecute = false,
-                WorkingDirectory = _tempDir
-            };
-            var build = Process.Start(buildInfo);
-            build.WaitForExit();
-            Assert.Equal(0, build.ExitCode);
+            AssertDotNet("build --configuration Debug");
 
             Assert.True(File.Exists(assemblyInfoFile), $"{assemblyInfoFile} should not exist but does not");
             var contents = File.ReadAllText(assemblyInfoFile);
             Assert.Contains("[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute(\"xyz123\")]", contents);
             var lastWrite = new FileInfo(assemblyInfoFile).LastWriteTimeUtc;
 
-            var rebuild = Process.Start(buildInfo);
-            rebuild.WaitForExit();
-            Assert.Equal(0, rebuild.ExitCode);
+            AssertDotNet("build --configuration Debug");
             // asserts that the target doesn't re-generate assembly file. Important for incremental build.
             Assert.Equal(lastWrite, new FileInfo(assemblyInfoFile).LastWriteTimeUtc);
+        }
+
+        private void AssertDotNet(string args)
+        {
+            void LogData(object obj, DataReceivedEventArgs e)
+            {
+                _output.WriteLine(e.Data);
+            }
+
+            var processInfo = new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = args,
+                UseShellExecute = false,
+                WorkingDirectory = _tempDir,
+                RedirectStandardOutput = true,
+            };
+            var process = new Process()
+            {
+                EnableRaisingEvents = true,
+                StartInfo = processInfo
+            };
+            process.OutputDataReceived += LogData;
+            process.Start();
+            process.WaitForExit();
+            process.OutputDataReceived -= LogData;
+            Assert.Equal(0, process.ExitCode);
         }
 
         public void Dispose()

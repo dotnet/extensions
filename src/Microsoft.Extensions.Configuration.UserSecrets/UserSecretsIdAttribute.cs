@@ -6,7 +6,14 @@ using System;
 namespace Microsoft.Extensions.Configuration.UserSecrets
 {
     /// <summary>
-    /// Represents the user secrets id.
+    /// <para>
+    /// Represents the user secrets ID.
+    /// </para>
+    /// <para>
+    /// In most cases, this attribute is automatically generated during compilation by MSBuild targets 
+    /// included in the UserSecrets NuGet package. These targets use the MSBuild property 'UserSecretsId'
+    /// to set the value for <see cref="UserSecretsId"/>.
+    /// </para>
     /// </summary>
     [AttributeUsage(AttributeTargets.Assembly, Inherited = false, AllowMultiple = false)]
     public class UserSecretsIdAttribute : Attribute
@@ -14,7 +21,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         /// <summary>
         /// Initializes an instance of <see cref="UserSecretsIdAttribute" />.
         /// </summary>
-        /// <param name="userSecretId">The user secrets id</param>
+        /// <param name="userSecretId">The user secrets ID.</param>
         public UserSecretsIdAttribute(string userSecretId)
         {
             if (string.IsNullOrEmpty(userSecretId))
@@ -26,7 +33,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         }
 
         /// <summary>
-        /// The user secrets id.
+        /// The user secrets ID.
         /// </summary>
         public string UserSecretsId { get; }
     }

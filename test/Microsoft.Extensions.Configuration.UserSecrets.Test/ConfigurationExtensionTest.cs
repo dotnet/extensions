@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Reflection;
@@ -11,24 +12,23 @@ using Microsoft.Extensions.Configuration.UserSecrets.Test;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-[assembly: UserSecretsId(UserSecretsTestFixture.TestSecretsId)]
+[assembly: UserSecretsId(ConfigurationExtensionTest.TestSecretsId)]
 
 namespace Microsoft.Extensions.Configuration.UserSecrets.Test
 {
-    public class ConfigurationExtensionTest : IClassFixture<UserSecretsTestFixture>
+    public class ConfigurationExtensionTest : IDisposable
     {
-        private readonly UserSecretsTestFixture _fixture;
+        public const string TestSecretsId = "d6076a6d3ab24c00b2511f10a56c68cc";
 
-        public ConfigurationExtensionTest(UserSecretsTestFixture fixture)
-        {
-            _fixture = fixture;
-        }
+        private List<string> _tmpDirectories = new List<string>();
 
         private void SetSecret(string id, string key, string value)
         {
             var secretsFilePath = PathHelper.GetSecretsPathFromSecretsId(id);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(secretsFilePath));
+            var dir = Path.GetDirectoryName(secretsFilePath);
+            Directory.CreateDirectory(dir);
+            _tmpDirectories.Add(dir);
 
             var secrets = new ConfigurationBuilder()
                 .AddJsonFile(secretsFilePath, optional: true)
@@ -38,7 +38,6 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
                 .ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase);
 
             secrets[key] = value;
-
 
             var contents = new JObject();
             if (secrets != null)
@@ -58,7 +57,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
             var randValue = Guid.NewGuid().ToString();
             var configKey = "MyDummySetting";
 
-            SetSecret(UserSecretsTestFixture.TestSecretsId, configKey, randValue);
+            SetSecret(TestSecretsId, configKey, randValue);
             var config = new ConfigurationBuilder()
                 .AddUserSecrets(typeof(ConfigurationExtensionTest).GetTypeInfo().Assembly)
                 .Build();
@@ -73,7 +72,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
             var randValue = Guid.NewGuid().ToString();
             var configKey = "MyDummySetting";
 
-            SetSecret(UserSecretsTestFixture.TestSecretsId, configKey, randValue);
+            SetSecret(TestSecretsId, configKey, randValue);
             var config = new ConfigurationBuilder()
                 .AddUserSecrets<ConfigurationExtensionTest>()
                 .Build();
@@ -82,68 +81,45 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
         }
 
         [Fact]
-        public void AddUserSecrets_ShowsAssemblyAttributeError_When_ProjectJson_Missing()
+        public void AddUserSecrets_With_SecretsId_Passed_Explicitly()
         {
-            var projectPath = _fixture.GetTempSecretProject();
-            File.Delete(Path.Combine(projectPath, "project.json"));
+            var userSecretsId = Guid.NewGuid().ToString();
+            SetSecret(userSecretsId, "Facebook:AppSecret", "value1");
 
-            var builder = new ConfigurationBuilder().SetBasePath(projectPath);
+            var builder = new ConfigurationBuilder().AddUserSecrets(userSecretsId);
+            var configuration = builder.Build();
 
-#pragma warning disable CS0618
-            var ex = Assert.Throws<InvalidOperationException>(() => builder.AddUserSecrets());
-#pragma warning restore CS0618
-            Assert.Equal(Resources.FormatError_Missing_UserSecretsIdAttribute(Assembly.GetEntryAssembly().FullName), ex.Message);
-        }
-
-        [Fact]
-        public void AddUserSecrets_Does_Not_Fail_On_Non_Existing_File_Explicitly_Passed()
-        {
-            var builder = new ConfigurationBuilder()
-                                .AddUserSecrets(userSecretsId: Guid.NewGuid().ToString());
+            Assert.Equal("value1", configuration["Facebook:AppSecret"]);
         }
 
         [Fact]
         public void AddUserSecrets_Does_Not_Fail_On_Non_Existing_File()
         {
-            string userSecretsId;
-            var projectPath = _fixture.GetTempSecretProject(out userSecretsId);
-#pragma warning disable CS0618
-            var builder = new ConfigurationBuilder().SetBasePath(projectPath).AddUserSecrets();
-#pragma warning restore CS0618
+            var userSecretsId = Guid.NewGuid().ToString();
+            var secretFilePath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
+            var builder = new ConfigurationBuilder().AddUserSecrets(userSecretsId);
 
             var configuration = builder.Build();
             Assert.Equal(null, configuration["Facebook:AppSecret"]);
+            Assert.False(File.Exists(secretFilePath));
         }
 
-        [Fact]
-        public void AddUserSecrets_With_An_Existing_Secret_File()
+        public void Dispose()
         {
-            string userSecretsId;
-            var projectPath = _fixture.GetTempSecretProject(out userSecretsId);
-
-            SetSecret(userSecretsId, "Facebook:AppSecret", "value1");
-
-#pragma warning disable CS0618
-            var builder = new ConfigurationBuilder().SetBasePath(projectPath).AddUserSecrets();
-#pragma warning restore CS0618
-
-            var configuration = builder.Build();
-            Assert.Equal("value1", configuration["Facebook:AppSecret"]);
-        }
-
-        [Fact]
-        public void AddUserSecrets_With_SecretsId_Passed_Explicitly()
-        {
-            string userSecretsId;
-            var projectPath = _fixture.GetTempSecretProject(out userSecretsId);
-
-            SetSecret(userSecretsId, "Facebook:AppSecret", "value1");
-
-            var builder = new ConfigurationBuilder()
-                                .AddUserSecrets(userSecretsId: userSecretsId);
-            var configuration = builder.Build();
-
-            Assert.Equal("value1", configuration["Facebook:AppSecret"]);
+            foreach (var dir in _tmpDirectories)
+            {
+                try
+                {
+                    if (Directory.Exists(dir))
+                    {
+                        Directory.Delete(dir, true);
+                    }
+                }
+                catch
+                {
+                    Console.WriteLine("Failed to delete " + dir);
+                }
+            }
         }
     }
 }

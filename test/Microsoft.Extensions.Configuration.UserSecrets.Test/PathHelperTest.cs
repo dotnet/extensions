@@ -5,24 +5,15 @@ using System;
 using System.IO;
 using System.Linq;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Configuration.UserSecrets.Test
 {
-    public class PathHelperTest : IClassFixture<UserSecretsTestFixture>
+    public class PathHelperTest
     {
-        private readonly UserSecretsTestFixture _fixture;
-
-        public PathHelperTest(UserSecretsTestFixture fixture)
-        {
-            _fixture = fixture;
-        }
-
         [Fact]
         public void Gives_Correct_Secret_Path()
         {
-            string userSecretsId;
-            var projectPath = _fixture.GetTempSecretProject(out userSecretsId);
+            var userSecretsId = "abcxyz123";
             var actualSecretPath = PathHelper.GetSecretsPathFromSecretsId(userSecretsId);
 
             var root = Environment.GetEnvironmentVariable("APPDATA") ??         // On Windows it goes to %APPDATA%\Microsoft\UserSecrets\
@@ -44,38 +35,5 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
                 Assert.Throws<InvalidOperationException>(() => PathHelper.GetSecretsPathFromSecretsId(id));
             }
         }
-
-        // TODO remove in 2.0
-        #region LegacyApiTest
-
-        [Fact]
-        public void Throws_If_Project_Json_Not_Found()
-        {
-            var projectPath = _fixture.GetTempSecretProject();
-            File.Delete(Path.Combine(projectPath, "project.json"));
-
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-#pragma warning disable CS0618
-                PathHelper.GetSecretsPath(projectPath);
-#pragma warning restore CS0618
-            });
-        }
-
-        [Fact]
-        public void Throws_If_Project_Json_Does_Not_Contain_UserSecretId()
-        {
-            var projectPath = _fixture.GetTempSecretProject();
-            File.WriteAllText(Path.Combine(projectPath, "project.json"), "{}");
-
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-#pragma warning disable CS0618
-                PathHelper.GetSecretsPath(projectPath);
-#pragma warning restore CS0618
-            });
-        }
-
-        #endregion
     }
 }

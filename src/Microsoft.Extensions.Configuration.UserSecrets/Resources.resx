@@ -120,19 +120,12 @@
   <data name="Common_StringNullOrEmpty" xml:space="preserve">
     <value>Value cannot be null or an empty string.</value>
   </data>
-  <data name="Error_EntryAssemblyNull" xml:space="preserve">
-    <value>This method could not find a user secret ID because the application's entry assembly is not set. Try using the ".AddUserSecrets(string userSecretsId)" or  ".AddUserSecrets&lt;TStartup&gt;()" method instead.</value>
-  </data>
   <data name="Error_Invalid_Character_In_UserSecrets_Id" xml:space="preserve">
-    <value>Invalid character '{0}' found in 'userSecretsId' value at index '{1}'.</value>
-  </data>
-  <data name="Error_Missing_Project_Json" xml:space="preserve">
-    <value>Unable to locate a project.json at '{0}'.</value>
-  </data>
-  <data name="Error_Missing_UserSecretId_In_Project_Json" xml:space="preserve">
-    <value>Missing 'userSecretsId' in '{0}'.</value>
+    <value>Invalid character '{0}' found in the user secrets ID at index '{1}'.</value>
   </data>
   <data name="Error_Missing_UserSecretsIdAttribute" xml:space="preserve">
-    <value>Could not find 'UserSecretsIdAttribute' on assembly '{0}'.</value>
+    <value>Could not find 'UserSecretsIdAttribute' on assembly '{0}'.
+Check that the project for '{0}' has set the property 'UserSecretsId' and
+that the project references the Microsoft.Extensions.Configuration.UserSecrets package.</value>
   </data>
 </root>

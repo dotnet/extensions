@@ -3,91 +3,31 @@
 
 using System;
 using System.IO;
-using Microsoft.Extensions.FileProviders;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Extensions.Configuration.UserSecrets
 {
+    /// <summary>
+    /// Provides paths for user secrets configuration files.
+    /// </summary>
     public class PathHelper
     {
-        internal const string Secrets_File_Name = "secrets.json";
-        internal const string Config_File_Name = "project.json";
+        internal const string SecretsFileName = "secrets.json";
 
         /// <summary>
-        ///     <para>
-        ///     This method is obsolete and will be removed in a future version. The recommended alternative is <see cref="PathHelper.GetSecretsPathFromSecretsId(string)"/>.
-        ///     </para>
-        ///     <para>
-        ///     Gets the path to the secrets file. If a directory is given, finds the user secrets id in the JSON named 'project.json'.
-        ///     </para>
+        /// <para>
+        /// Returns the path to the JSON file that stores user secrets.
+        /// </para>
+        /// <para>
+        /// This uses the current user profile to locate the secrets file on disk in a location outside of source control.
+        /// </para>
         /// </summary>
-        /// <param name="provider">The file provider</param>
-        /// <returns>The filepath to secrets file</returns>
-        // TODO remove in 2.0
-        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is Microsoft.Extensions.Configuration.UserSecrets.PathHelper.GetSecretsPathFromSecretsId(string).")]
-        public static string GetSecretsPath(IFileProvider provider)
-        {
-            if (provider == null)
-            {
-                throw new ArgumentNullException(nameof(provider));
-            }
-
-            var fileInfo = provider.GetFileInfo(Config_File_Name);
-            if (fileInfo == null || !fileInfo.Exists || string.IsNullOrEmpty(fileInfo.PhysicalPath))
-            {
-                throw new InvalidOperationException(
-                    string.Format(Resources.Error_Missing_Project_Json, provider.GetFileInfo("/")?.PhysicalPath ?? "unknown"));
-            }
-
-            using (var stream = fileInfo.CreateReadStream())
-            using (var streamReader = new StreamReader(stream))
-            using (var jsonReader = new JsonTextReader(streamReader))
-            {
-                var obj = JObject.Load(jsonReader);
-
-                var userSecretsId = obj.Value<string>("userSecretsId");
-
-                if (string.IsNullOrEmpty(userSecretsId))
-                {
-                    throw new InvalidOperationException(
-                        string.Format(Resources.Error_Missing_UserSecretId_In_Project_Json, fileInfo.Name));
-                }
-
-                return GetSecretsPathFromSecretsId(userSecretsId);
-            }
-        }
-
-        /// <summary>
-        ///     <para>
-        ///     This method is obsolete and will be removed in a future version. The recommended alternative is <see cref="PathHelper.GetSecretsPathFromSecretsId(string)"/>.
-        ///     </para>
-        ///     <para>
-        ///     Gets the path to the secrets file. If a directory is given, finds the user secrets id in the JSON named 'project.json'.
-        ///     </para>
-        /// </summary>
-        /// <param name="projectPath">The project file</param>
-        /// <returns>The filepath to secrets file</returns>
-        // TODO remove in 2.0
-        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is Microsoft.Extensions.Configuration.UserSecrets.PathHelper.GetSecretsPathFromSecretsId(string).")]
-        public static string GetSecretsPath(string projectPath)
-        {
-            if (projectPath == null)
-            {
-                throw new ArgumentNullException(nameof(projectPath));
-            }
-
-            using (var provider = new PhysicalFileProvider(projectPath))
-            {
-                return GetSecretsPath(provider);
-            }
-        }
-
+        /// <param name="userSecretsId">The user secret ID.</param>
+        /// <returns>The full path to the secret file.</returns>
         public static string GetSecretsPathFromSecretsId(string userSecretsId)
         {
-            if (userSecretsId == null)
+            if (string.IsNullOrEmpty(userSecretsId))
             {
-                throw new ArgumentNullException(nameof(userSecretsId));
+                throw new ArgumentException(Resources.Common_StringNullOrEmpty, nameof(userSecretsId));
             }
 
             var badCharIndex = userSecretsId.IndexOfAny(Path.GetInvalidFileNameChars());
@@ -105,11 +45,11 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
 
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPDATA")))
             {
-                return Path.Combine(root, "Microsoft", "UserSecrets", userSecretsId, Secrets_File_Name);
+                return Path.Combine(root, "Microsoft", "UserSecrets", userSecretsId, SecretsFileName);
             }
             else
             {
-                return Path.Combine(root, ".microsoft", "usersecrets", userSecretsId, Secrets_File_Name);
+                return Path.Combine(root, ".microsoft", "usersecrets", userSecretsId, SecretsFileName);
             }
         }
     }

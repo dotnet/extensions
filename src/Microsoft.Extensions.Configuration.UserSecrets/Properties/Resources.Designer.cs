@@ -27,23 +27,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         }
 
         /// <summary>
-        /// This method could not find a user secret ID because the application's entry assembly is not set. Try using the ".AddUserSecrets(string userSecretsId)" or  ".AddUserSecrets&lt;TStartup&gt;()" method instead.
-        /// </summary>
-        internal static string Error_EntryAssemblyNull
-        {
-            get { return GetString("Error_EntryAssemblyNull"); }
-        }
-
-        /// <summary>
-        /// This method could not find a user secret ID because the application's entry assembly is not set. Try using the ".AddUserSecrets(string userSecretsId)" or  ".AddUserSecrets&lt;TStartup&gt;()" method instead.
-        /// </summary>
-        internal static string FormatError_EntryAssemblyNull()
-        {
-            return GetString("Error_EntryAssemblyNull");
-        }
-
-        /// <summary>
-        /// Invalid character '{0}' found in 'userSecretsId' value at index '{1}'.
+        /// Invalid character '{0}' found in the user secrets ID at index '{1}'.
         /// </summary>
         internal static string Error_Invalid_Character_In_UserSecrets_Id
         {
@@ -51,7 +35,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         }
 
         /// <summary>
-        /// Invalid character '{0}' found in 'userSecretsId' value at index '{1}'.
+        /// Invalid character '{0}' found in the user secrets ID at index '{1}'.
         /// </summary>
         internal static string FormatError_Invalid_Character_In_UserSecrets_Id(object p0, object p1)
         {
@@ -59,39 +43,9 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         }
 
         /// <summary>
-        /// Unable to locate a project.json at '{0}'.
-        /// </summary>
-        internal static string Error_Missing_Project_Json
-        {
-            get { return GetString("Error_Missing_Project_Json"); }
-        }
-
-        /// <summary>
-        /// Unable to locate a project.json at '{0}'.
-        /// </summary>
-        internal static string FormatError_Missing_Project_Json(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_Missing_Project_Json"), p0);
-        }
-
-        /// <summary>
-        /// Missing 'userSecretsId' in '{0}'.
-        /// </summary>
-        internal static string Error_Missing_UserSecretId_In_Project_Json
-        {
-            get { return GetString("Error_Missing_UserSecretId_In_Project_Json"); }
-        }
-
-        /// <summary>
-        /// Missing 'userSecretsId' in '{0}'.
-        /// </summary>
-        internal static string FormatError_Missing_UserSecretId_In_Project_Json(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_Missing_UserSecretId_In_Project_Json"), p0);
-        }
-
-        /// <summary>
         /// Could not find 'UserSecretsIdAttribute' on assembly '{0}'.
+        /// Check that the project for '{0}' has set the property 'UserSecretsId' and
+        /// that the project references the Microsoft.Extensions.Configuration.UserSecrets package.
         /// </summary>
         internal static string Error_Missing_UserSecretsIdAttribute
         {
@@ -100,6 +54,8 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
 
         /// <summary>
         /// Could not find 'UserSecretsIdAttribute' on assembly '{0}'.
+        /// Check that the project for '{0}' has set the property 'UserSecretsId' and
+        /// that the project references the Microsoft.Extensions.Configuration.UserSecrets package.
         /// </summary>
         internal static string FormatError_Missing_UserSecretsIdAttribute(object p0)
         {
