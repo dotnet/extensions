@@ -33,10 +33,10 @@ namespace Microsoft.Extensions.Primitives
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringSegment(string buffer, int offset, int length)
         {
-            // This .ctor is specially arranged to allow it to be very small when inlines 50 IL bytes
-            // If either offset or length is negative, then (offset | length) < 0.
-            // Testing them individually causes too many blocks for the inliner to decide its profitable
-            if (buffer == null || (offset | length) < 0 || offset > buffer.Length - length)
+            // Validate arguments, check is minimal instructions with reduced branching for inlinable fast-path
+            // Negative values discovered though conversion to high values when converted to unsigned
+            // Failure should be rare and location determination and message is delegated to failure functions
+            if (buffer == null || (uint)offset > (uint)buffer.Length || (uint)length > (uint)(buffer.Length - offset))
             {
                 ThrowInvalidArguments(buffer, offset, length);
             }
