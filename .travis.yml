@@ -29,7 +29,7 @@ branches:
 before_install:
   - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl; ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/; fi
 script:
-  - ./build.sh --quiet verify
+  - ./build.sh
 notifications:
   webhooks:
     secure: "coEybV9xKA4cueha0jGUi/Pappum/Ixma0V6SYsov40WJ29z8OkHjF5/9Kul81vfVH2KCwUuu+4L/IilEjD6xhFxPvzaIldsn1APWycIQQPV+0xppUs+nOBZuth5yjKYIjz3ZBNUf2GvJiyhHVShtAZtxsE6oNuQ6ybXdzfXXSI="
