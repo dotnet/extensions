@@ -6,7 +6,6 @@
       "Microsoft.Extensions.ClosedGenericMatcher.Sources": {},
       "Microsoft.Extensions.CommandLineUtils.Sources": {},
       "Microsoft.Extensions.CopyOnWriteDictionary.Sources": {},
-      "Microsoft.Extensions.DotnetToolDispatcher.Sources": {},
       "Microsoft.Extensions.HashCodeCombiner.Sources": {},
       "Microsoft.Extensions.Process.Sources": {},
       "Microsoft.Extensions.PropertyActivator.Sources": {},

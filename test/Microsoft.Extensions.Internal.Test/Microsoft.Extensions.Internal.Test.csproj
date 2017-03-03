@@ -21,12 +21,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.Cli.Utils" Version="1.0.0-preview2-1-003177"/>
-    <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.2.0-*"/>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-*"/>
-    <PackageReference Include="Moq" Version="4.6.36-*"/>
-    <PackageReference Include="xunit" Version="2.2.0-*"/>
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-*"/>
+    <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="$(AspNetCoreVersion)"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)"/>
+    <PackageReference Include="Moq" Version="$(MoqVersion)"/>
+    <PackageReference Include="xunit" Version="$(XunitVersion)"/>
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)"/>
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
