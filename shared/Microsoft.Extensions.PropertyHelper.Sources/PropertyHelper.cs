@@ -38,6 +38,7 @@ namespace Microsoft.Extensions.Internal
             new ConcurrentDictionary<Type, PropertyHelper[]>();
 
         private Action<object, object> _valueSetter;
+        private Func<object, object> _valueGetter;
 
         /// <summary>
         /// Initializes a fast <see cref="PropertyHelper"/>.
@@ -52,7 +53,6 @@ namespace Microsoft.Extensions.Internal
 
             Property = property;
             Name = property.Name;
-            ValueGetter = MakeFastPropertyGetter(property);
         }
 
         /// <summary>
@@ -68,7 +68,18 @@ namespace Microsoft.Extensions.Internal
         /// <summary>
         /// Gets the property value getter.
         /// </summary>
-        public Func<object, object> ValueGetter { get; }
+        public Func<object, object> ValueGetter
+        {
+            get
+            {
+                if (_valueGetter == null)
+                {
+                    _valueGetter = MakeFastPropertyGetter(Property);
+                }
+
+                return _valueGetter;
+            }
+        }
 
         /// <summary>
         /// Gets the property value setter.
@@ -503,10 +514,13 @@ namespace Microsoft.Extensions.Internal
         // Indexed properties are not useful (or valid) for grabbing properties off an object.
         private static bool IsInterestingProperty(PropertyInfo property)
         {
-            return property.GetIndexParameters().Length == 0 &&
-                property.GetMethod != null &&
+            // For imporving application startup time, do not use GetIndexParameters() api early in this check as it
+            // creates a copy of parameter array and also we would like to check for the presence of a get method
+            // and short circuit asap.
+            return property.GetMethod != null &&
                 property.GetMethod.IsPublic &&
-                !property.GetMethod.IsStatic;
+                !property.GetMethod.IsStatic &&
+                property.GetMethod.GetParameters().Length == 0;
         }
     }
 }
