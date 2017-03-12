@@ -101,15 +101,7 @@ i=ini_i.i.i.i
 
         public ArrayTests()
         {
-#if NET452
-            var basePath = AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
-                AppDomain.CurrentDomain.BaseDirectory ??
-                string.Empty;
-#elif NETCOREAPP2_0
             var basePath = AppContext.BaseDirectory ?? string.Empty;
-#else
-#error Target framework needs to be updated
-#endif
             _iniConfigFilePath = Path.GetRandomFileName();
             _xmlConfigFilePath = Path.GetRandomFileName();
             _json1ConfigFilePath = Path.GetRandomFileName();

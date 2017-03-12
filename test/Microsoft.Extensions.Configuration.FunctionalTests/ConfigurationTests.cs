@@ -78,15 +78,7 @@ CommonKey3:CommonKey4=IniValue6";
         {
             _fileSystem = new DisposableFileSystem();
             _fileProvider = new PhysicalFileProvider(_fileSystem.RootPath);
-#if NET452
-            _basePath = AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
-                AppDomain.CurrentDomain.BaseDirectory ??
-                string.Empty;
-#elif NETCOREAPP2_0
             _basePath = AppContext.BaseDirectory ?? string.Empty;
-#else
-#error Target framework needs to be updated
-#endif
 
             _iniFile = Path.GetRandomFileName();
             _xmlFile = Path.GetRandomFileName();

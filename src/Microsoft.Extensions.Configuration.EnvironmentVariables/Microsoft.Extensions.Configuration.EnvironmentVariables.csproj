@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Environment variables configuration provider implementation for Microsoft.Extensions.Configuration.</Description>
-    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <TargetFramework>netstandard1.3</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>configuration;envvar;environmentvariable</PackageTags>
   </PropertyGroup>

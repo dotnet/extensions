@@ -3,13 +3,20 @@
 
 using System;
 using System.IO;
+using System.Xml;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration.Test;
 using Xunit;
 
+#if NET46
+using System.Security.Cryptography;
+using System.Security.Cryptography.Xml;
+using Microsoft.AspNetCore.Testing.xunit;
+#endif
+
 namespace Microsoft.Extensions.Configuration.Xml.Test
 {
-    public partial class XmlConfigurationTest
+    public class XmlConfigurationTest
     {
         [Fact]
         public void LoadKeyValuePairsFromValidXml()
@@ -393,5 +400,103 @@ namespace Microsoft.Extensions.Configuration.Xml.Test
         {
             var config = new ConfigurationBuilder().AddXmlFile("NotExistingConfig.xml", optional: true).Build();
         }
+
+#if NETCOREAPP2_0
+        [Fact]
+        public void LoadKeyValuePairsFromValidEncryptedXml_ThrowsPlatformNotSupported()
+        {
+            var xml = @"
+                <settings>
+                    <Data.Setting>
+                        <DefaultConnection>
+                            <Connection.String>Test.Connection.String</Connection.String>
+                            <Provider>SqlClient</Provider>
+                        </DefaultConnection>
+                        <Inventory>
+                            <EncryptedData Type=""http://www.w3.org/2001/04/xmlenc#Element"" xmlns=""http://www.w3.org/2001/04/xmlenc#"">
+                            <EncryptionMethod Algorithm=""http://www.w3.org/2001/04/xmlenc#aes256-cbc"" />
+                            <KeyInfo xmlns=""http://www.w3.org/2000/09/xmldsig#"">
+                                <EncryptedKey xmlns=""http://www.w3.org/2001/04/xmlenc#"">
+                                <EncryptionMethod Algorithm=""http://www.w3.org/2001/04/xmlenc#kw-aes256"" />
+                                <KeyInfo xmlns=""http://www.w3.org/2000/09/xmldsig#"">
+                                    <KeyName>myKey</KeyName>
+                                </KeyInfo>
+                                <CipherData>
+                                    <CipherValue>b0dxJI/o00vZgTNOJ6wUt0/6wCKWlQANAYE8cBsEzok4LQma7ErEnA==</CipherValue>
+                                </CipherData>
+                                </EncryptedKey>
+                            </KeyInfo>
+                            <CipherData>
+                                <CipherValue>iXzecb+Cha80LLrl4zON3o7HfpRc0NxlJsnBb6zbKFa1HqtNhy2VrTnrEsZUViBWRkRbl+MCix7TiaIs4NtLijNU5Ob8Ez3vcD4T/QcmPywBYJDJhj1OUUeJSKH+icjg</CipherValue>
+                            </CipherData>
+                            </EncryptedData>
+                            <Provider>MySql</Provider>
+                        </Inventory>
+                    </Data.Setting>
+                </settings>";
+
+            // Arrange
+            var xmlConfigSrc = new XmlConfigurationProvider(new XmlConfigurationSource());
+
+            // Act & assert
+            var ex = Assert.Throws<PlatformNotSupportedException>(() => xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml)));
+            Assert.Equal(Resources.Error_EncryptedXmlNotSupported, ex.Message);
+        }
+#elif NET46
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public void LoadKeyValuePairsFromValidEncryptedXml()
+        {
+            var xml = @"
+                <settings>
+                    <Data.Setting>
+                        <DefaultConnection>
+                            <Connection.String>Test.Connection.String</Connection.String>
+                            <Provider>SqlClient</Provider>
+                        </DefaultConnection>
+                        <Inventory>
+                            <ConnectionString>AnotherTestConnectionString</ConnectionString>
+                            <Provider>MySql</Provider>
+                        </Inventory>
+                    </Data.Setting>
+                </settings>";
+
+            // This AES key will be used to encrypt the 'Inventory' element
+            var aes = Aes.Create();
+            aes.KeySize = 128;
+            aes.GenerateKey();
+
+            // Perform the encryption
+            var xmlDocument = new XmlDocument();
+            xmlDocument.LoadXml(xml);
+            var encryptedXml = new EncryptedXml(xmlDocument);
+            encryptedXml.AddKeyNameMapping("myKey", aes);
+            var elementToEncrypt = (XmlElement)xmlDocument.SelectSingleNode("//Inventory");
+            EncryptedXml.ReplaceElement(elementToEncrypt, encryptedXml.Encrypt(elementToEncrypt, "myKey"), content: false);
+
+            // Quick sanity check: the document should no longer contain an 'Inventory' element
+            Assert.Null(xmlDocument.SelectSingleNode("//Inventory"));
+
+            // Arrange
+            var xmlConfigSrc = new XmlConfigurationProvider(new XmlConfigurationSource());
+            xmlConfigSrc.Decryptor = new EncryptedXmlDocumentDecryptor(doc =>
+            {
+                var innerEncryptedXml = new EncryptedXml(doc);
+                innerEncryptedXml.AddKeyNameMapping("myKey", aes);
+                return innerEncryptedXml;
+            });
+
+            // Act
+            xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xmlDocument.OuterXml));
+
+            // Assert
+            Assert.Equal("Test.Connection.String", xmlConfigSrc.Get("DATA.SETTING:DEFAULTCONNECTION:CONNECTION.STRING"));
+            Assert.Equal("SqlClient", xmlConfigSrc.Get("DATA.SETTING:DefaultConnection:Provider"));
+            Assert.Equal("AnotherTestConnectionString", xmlConfigSrc.Get("data.setting:inventory:connectionstring"));
+            Assert.Equal("MySql", xmlConfigSrc.Get("Data.setting:Inventory:Provider"));
+        }
+#else
+#error Target framework needs to be updated
+#endif
     }
 }
