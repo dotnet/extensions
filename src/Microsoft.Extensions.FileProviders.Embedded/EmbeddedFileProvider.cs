@@ -53,9 +53,8 @@ namespace Microsoft.Extensions.FileProviders
 
             _lastModified = DateTimeOffset.UtcNow;
 
-
 // need to keep netstandard1.0 until ASP.NET Core 2.0 because it is a breaking change if we remove it
-#if NETSTANDARD1_5 || NET451
+#if NETSTANDARD1_5 || NET46
             if (!string.IsNullOrEmpty(_assembly.Location))
             {
                 try
@@ -69,6 +68,9 @@ namespace Microsoft.Extensions.FileProviders
                 {
                 }
             }
+#elif NETSTANDARD1_0
+#else
+#error Target frameworks need to be updated.
 #endif
         }
 

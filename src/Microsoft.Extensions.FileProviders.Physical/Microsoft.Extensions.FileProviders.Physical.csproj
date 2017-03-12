@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>File provider for physical files for Microsoft.Extensions.FileProviders.</Description>
-    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <TargetFramework>netstandard1.3</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>files;filesystem</PackageTags>
@@ -14,9 +14,6 @@
     <Compile Include="..\..\shared\**\*.cs" />
     <ProjectReference Include="..\Microsoft.Extensions.FileProviders.Abstractions\Microsoft.Extensions.FileProviders.Abstractions.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.FileSystemGlobbing\Microsoft.Extensions.FileSystemGlobbing.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
     <PackageReference Include="System.IO.FileSystem.Watcher" Version="$(CoreFxVersion)" />
   </ItemGroup>
 

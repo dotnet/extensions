@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>File provider for files in embedded resources for Microsoft.Extensions.FileProviders.</Description>
-    <TargetFrameworks>netstandard1.0;netstandard1.5;net451</TargetFrameworks>
+    <TargetFrameworks>netstandard1.0;netstandard1.5;net46</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>files;filesystem</PackageTags>
   </PropertyGroup>

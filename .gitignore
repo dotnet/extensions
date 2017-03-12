@@ -33,3 +33,4 @@ project.lock.json
 .idea/
 *.nuget.props
 *.nuget.targets
+global.json

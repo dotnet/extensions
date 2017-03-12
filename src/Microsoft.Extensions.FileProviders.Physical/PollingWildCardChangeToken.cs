@@ -93,11 +93,7 @@ namespace Microsoft.Extensions.FileProviders.Physical
             var result = _matcher.Execute(_directoryInfo);
 
             var files = result.Files.OrderBy(f => f.Path, StringComparer.Ordinal);
-#if NET451
-            using (var sha256 = new IncrementalHash())
-#else
             using (var sha256 = IncrementalHash.CreateHash(HashAlgorithmName.SHA256))
-#endif
             {
                 foreach (var file in files)
                 {
