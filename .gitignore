@@ -39,3 +39,4 @@ node_modules
 .vscode/
 *.nuget.props
 *.nuget.targets
+global.json

@@ -4,19 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if NET452
-using Moq;
-#elif NETCOREAPP2_0
-#else
-#error Target framework needs to be updated
-#endif
 using Xunit;
 
 namespace Microsoft.Extensions.Internal
 {
     public class CopyOnWriteDictionaryHolderTest
     {
-#if NET452
         [Fact]
         public void ReadOperation_DelegatesToSourceDictionary_IfNoMutationsArePerformed()
         {
@@ -42,10 +35,6 @@ namespace Microsoft.Extensions.Internal
             Assert.False(holder.HasBeenCopied);
             Assert.Same(source, holder.ReadDictionary);
         }
-#elif NETCOREAPP2_0
-#else
-#error Target framework needs to be updated
-#endif
 
         [Fact]
         public void ReadOperation_DoesNotDelegateToSourceDictionary_OnceAValueIsChanged()
