@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -7,13 +10,12 @@ using BenchmarkDotNet.Attributes;
 namespace Microsoft.Extensions.DependencyInjection.Performance
 {
     [Config(typeof(CoreConfig))]
-    public class ResolvePerformance
+    public class ScopeValidationBenchmark
     {
         private const int OperationsPerInvoke = 50000;
 
         private IServiceProvider _transientSp;
-        private IServiceScope _scopedSp;
-        private IServiceProvider _singletonSp;
+        private IServiceProvider _transientSpScopeValidation;
 
         [Setup]
         public void Setup()
@@ -24,32 +26,14 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             services.AddTransient<C>();
             _transientSp = services.BuildServiceProvider();
 
-
             services = new ServiceCollection();
-            services.AddScoped<A>();
-            services.AddScoped<B>();
-            services.AddScoped<C>();
-            _scopedSp = services.BuildServiceProvider().CreateScope();
-
-
-            services = new ServiceCollection();
-            services.AddSingleton<A>();
-            services.AddSingleton<B>();
-            services.AddSingleton<C>();
-            _singletonSp = services.BuildServiceProvider();
+            services.AddTransient<A>();
+            services.AddTransient<B>();
+            services.AddTransient<C>();
+            _transientSpScopeValidation = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
         }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = OperationsPerInvoke)]
-        public void NoDI()
-        {
-            for (int i = 0; i < OperationsPerInvoke; i++)
-            {
-                var temp = new A(new B(new C()));
-                temp.Foo();
-            }
-        }
-
-        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
         public void Transient()
         {
             for (int i = 0; i < OperationsPerInvoke; i++)
@@ -60,21 +44,11 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         }
 
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
-        public void Scoped()
+        public void TransientWithScopeValidation()
         {
             for (int i = 0; i < OperationsPerInvoke; i++)
             {
-                var temp = _scopedSp.ServiceProvider.GetService<A>();
-                temp.Foo();
-            }
-        }
-
-        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
-        public void Singleton()
-        {
-            for (int i = 0; i < OperationsPerInvoke; i++)
-            {
-                var temp = _singletonSp.GetService<A>();
+                var temp = _transientSpScopeValidation.GetService<A>();
                 temp.Foo();
             }
         }
