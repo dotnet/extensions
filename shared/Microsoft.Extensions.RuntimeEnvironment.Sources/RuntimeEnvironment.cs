@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Internal
 
         static private string GetRuntimeType()
         {
-#if NET451
+#if NET46
             return Type.GetType("Mono.Runtime") != null ? "Mono" : "CLR";
 #else
             return "CoreCLR";
