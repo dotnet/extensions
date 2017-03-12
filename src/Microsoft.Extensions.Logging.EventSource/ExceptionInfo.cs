@@ -6,9 +6,7 @@ namespace Microsoft.Extensions.Logging.EventSource
     /// <summary>
     /// Represents information about exceptions that is captured by EventSourceLogger
     /// </summary>
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
     [System.Diagnostics.Tracing.EventData(Name ="ExceptionInfo")]
-#endif
     internal class ExceptionInfo
     {
         public string TypeName { get; set; }

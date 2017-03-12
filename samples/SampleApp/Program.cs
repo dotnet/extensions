@@ -34,7 +34,7 @@ namespace SampleApp
             _logger = factory.CreateLogger<Program>();
 
             // providers may be added to an ILoggerFactory at any time, existing ILoggers are updated
-#if NET451
+#if NET46
             factory.AddEventLog();
 #elif NETCOREAPP2_0
 #else

@@ -81,7 +81,6 @@ namespace Microsoft.Extensions.Logging.EventSource
                     message);
             }
 
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
             // See if they want the message as its component parts.
             if (_eventSource.IsEnabled(EventLevel.Critical, LoggingEventSource.Keywords.Message))
             {
@@ -96,7 +95,7 @@ namespace Microsoft.Extensions.Logging.EventSource
                     exceptionInfo,
                     arguments);
             }
-#endif
+
             // See if they want the json message
             if (_eventSource.IsEnabled(EventLevel.Critical, LoggingEventSource.Keywords.JsonMessage))
             {
@@ -142,12 +141,8 @@ namespace Microsoft.Extensions.Logging.EventSource
             }
             else
             {
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                 IEnumerable<KeyValuePair<string, string>> arguments = GetProperties(state);
                 _eventSource.ActivityStart(id, _factoryID, CategoryName, arguments);
-#else
-                _eventSource.ActivityStart(id, _factoryID, CategoryName);
-#endif
                 return new ActivityScope(_eventSource, CategoryName, id, _factoryID, false);
             }
         }

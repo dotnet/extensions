@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Console logger provider implementation for Microsoft.Extensions.Logging.</Description>
-    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <TargetFramework>netstandard1.3</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>logging</PackageTags>

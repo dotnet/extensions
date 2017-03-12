@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>TraceSource logger provider implementation for Microsoft.Extensions.Logging.  This logger logs messages to a trace listener by writing messages with System.Diagnostics.TraceSource.TraceEvent().</Description>
-    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;net46</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>logging;tracesource</PackageTags>

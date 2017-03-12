@@ -32,21 +32,6 @@ namespace Microsoft.Extensions.Logging.Test
 
                 // Use testListener.DumpEvents as necessary to examine what exactly the listener received
 
-#if NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
-                VerifyEvents(testListener,
-                    "E1FM", "E1JS",
-                     // Second event is omitted because default LogLevel == Debug
-                    "E3FM", "E3JS",
-                    "OuterScopeJsonStart",
-                    "E4FM", "E4JS",
-                    "E5FM", "E5JS",
-                    "InnerScopeJsonStart",
-                    "E6FM", "E6JS",
-                    "InnerScopeJsonStop",
-                    "E7FM", "E7JS",
-                    "OuterScopeJsonStop",
-                    "E8FM", "E8JS");
-#else
                 VerifyEvents(testListener,
                     "E1FM", "E1MSG", "E1JS",
                     // Second event is omitted because default LogLevel == Debug
@@ -60,7 +45,6 @@ namespace Microsoft.Extensions.Logging.Test
                     "E7FM", "E7MSG", "E7JS",
                     "OuterScopeJsonStop",
                     "E8FM", "E8MSG", "E8JS");
-#endif
             }
         }
 
@@ -165,29 +149,18 @@ namespace Microsoft.Extensions.Logging.Test
                 LogStuff(factory);
 
                 VerifyEvents(testListener,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                     "E1MSG",
                     // Second event is omitted because default LogLevel == Debug
                     "E3MSG",
-#endif
                     "OuterScopeStart",
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                     "E4MSG",
                     "E5MSG",
-#endif
                     "InnerScopeStart",
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                     "E6MSG",
-#endif
                     "InnerScopeStop",
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                     "E7MSG",
-#endif
-                    "OuterScopeStop"
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
-                    , "E8MSG"
-#endif
-                    );
+                    "OuterScopeStop",
+                    "E8MSG");
             }
         }
 
@@ -381,29 +354,15 @@ namespace Microsoft.Extensions.Logging.Test
 
         private static void VerifySingleEvent(string eventJson, string loggerName, string eventName, int? eventId, LogLevel? level, params string[] fragments)
         {
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
             Assert.True(eventJson.Contains(@"""__EVENT_NAME"":""" + eventName + @""""), $"Event name does not match. Expected {eventName}, event data is '{eventJson}'");
-#endif
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
             Assert.True(eventJson.Contains(@"""LoggerName"":""" + loggerName + @""""), $"Logger name does not match. Expected {loggerName}, event data is '{eventJson}'");
-#else
-            Assert.True(eventJson.Contains(@"""__payload2"":""" + loggerName + @""""), $"Logger name does not match. Expected {loggerName} in __payload2 property, event data is '{eventJson}'");
-#endif
             if (level.HasValue)
             {
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                 Assert.True(eventJson.Contains(@"""Level"":" + ((int)level.Value).ToString()), $"Log level does not match. Expected level {((int)level.Value).ToString()}, event data is '{eventJson}'");
-#else
-                Assert.True(eventJson.Contains(@"""__payload0"":" + ((int)level.Value).ToString()), $"Log level does not match. Expected level {((int)level.Value).ToString()} in __payload0 property, event data is '{eventJson}'");
-#endif
             }
             if (eventId.HasValue)
             {
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                 Assert.True(eventJson.Contains(@"""EventId"":""" + eventId.Value.ToString()), $"Event id does not match. Expected id {eventId.Value}, event data is '{eventJson}'");
-#else
-                Assert.True(eventJson.Contains(@"""__payload3"":""" + eventId.Value.ToString()), $"Event id does not match. Expected id {eventId.Value} in __payload3 property, event data is '{eventJson}'");
-#endif
             }
 
             for (int i = 0; i < fragments.Length; i++)
@@ -475,21 +434,13 @@ namespace Microsoft.Extensions.Logging.Test
 
                 writer.WriteStartObject();
 
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                 writer.WritePropertyName("__EVENT_NAME");
                 writer.WriteValue(eventWrittenArgs.EventName);
-#endif
 
                 string propertyName;
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                 for (int i = 0; i < eventWrittenArgs.PayloadNames.Count; i++)
                 {
                     propertyName = eventWrittenArgs.PayloadNames[i];
-#else
-                for (int i = 0; i < eventWrittenArgs.Payload.Count; i++)
-                {
-                    propertyName = "__payload" + i.ToString();
-#endif
 
                     writer.WritePropertyName(propertyName, true);
                     if (IsJsonProperty(eventWrittenArgs.EventId, i, propertyName))
@@ -498,7 +449,7 @@ namespace Microsoft.Extensions.Logging.Test
                     }
                     else
                     {
-                        if (eventWrittenArgs.Payload[i] == null || IsPrimitive(eventWrittenArgs.Payload[i].GetType()) )
+                        if (eventWrittenArgs.Payload[i] == null || IsPrimitive(eventWrittenArgs.Payload[i].GetType()))
                         {
                             writer.WriteValue(eventWrittenArgs.Payload[i]);
                         }
@@ -572,89 +523,49 @@ namespace Microsoft.Extensions.Logging.Test
         private static readonly IDictionary<string, Action<string>> EventVerifiers = new Dictionary<string, Action<string>>
         {
             { "E1FM", (e) => VerifySingleEvent(e, "Logger1", EventTypes.FormattedMessage, 1, LogLevel.Debug,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
+
                 @"""FormattedMessage"":""Logger1 Event1 Debug 1""") },
-#else
-                @"""__payload4"":""Logger1 Event1 Debug 1""") },
-#endif
             { "E1JS", (e) => VerifySingleEvent(e, "Logger1", EventTypes.MessageJson, 1, LogLevel.Debug,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                         @"""ArgumentsJson"":{""intParam"":""1""") },
-#else
-                        @"""__payload5"":{""intParam"":""1""") },
-#endif
             { "E1MSG", (e) => VerifySingleEvent(e, "Logger1", EventTypes.Message, 1, LogLevel.Debug,
                         @"{""Key"":""intParam"",""Value"":""1""}") },
 
             { "E2FM", (e) => VerifySingleEvent(e, "Logger2", EventTypes.FormattedMessage, 2, LogLevel.Trace,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                 @"""FormattedMessage"":""Logger2 Event2 Trace " + DoubleParam1.ToString() + " " + TimeParam.ToString("O") + " " + DoubleParam2.ToString()) },
-#else
-                @"""__payload4"":""Logger2 Event2 Trace " + DoubleParam1.ToString() + " " + TimeParam.ToString("O") + " " + DoubleParam2.ToString()) },
-#endif
             { "E2JS", (e) => VerifySingleEvent(e, "Logger2", EventTypes.MessageJson, 2, LogLevel.Trace,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                         @"""ArgumentsJson"":{""doubleParam"":""" + DoubleParam1.ToString() + @""",""timeParam"":"""
                         + TimeParam.ToString("O") +@""",""doubleParam2"":""" + DoubleParam2.ToString()) },
-#else
-                        @"""__payload5"":{""doubleParam"":""" + DoubleParam1.ToString() + @""",""timeParam"":"""
-                        + TimeParam.ToString("O") +@""",""doubleParam2"":""" + DoubleParam2.ToString()) },
-#endif
             { "E2MSG", (e) => VerifySingleEvent(e, "Logger2", EventTypes.Message, 2, LogLevel.Trace,
                 @"{""Key"":""doubleParam"",""Value"":""" + DoubleParam1.ToString() +@"""}",
                 @"{""Key"":""timeParam"",""Value"":""" + TimeParam.ToString("O") +@"""}",
                 @"{""Key"":""doubleParam2"",""Value"":""" + DoubleParam2.ToString() +@"""}") },
 
             { "E3FM", (e) => VerifySingleEvent(e, "Logger3", EventTypes.FormattedMessage, 3, LogLevel.Information,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                 @"""FormattedMessage"":""Logger3 Event3 Information foo bar baz") },
-#else
-                @"""__payload4"":""Logger3 Event3 Information foo bar baz") },
-#endif
             { "E3JS", (e) => VerifySingleEvent(e, "Logger3", EventTypes.MessageJson, 3, LogLevel.Information,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                         @"""ArgumentsJson"":{""string1Param"":""foo"",""string2Param"":""bar"",""string3Param"":""baz""") },
-#else
-                        @"""__payload5"":{""string1Param"":""foo"",""string2Param"":""bar"",""string3Param"":""baz""") },
-#endif
             { "E3MSG", (e) => VerifySingleEvent(e, "Logger3", EventTypes.Message, 3, LogLevel.Information,
                 @"{""Key"":""string1Param"",""Value"":""foo""}",
                 @"{""Key"":""string2Param"",""Value"":""bar""}",
                 @"{""Key"":""string3Param"",""Value"":""baz""}") },
 
             { "E4FM", (e) => VerifySingleEvent(e, "Logger1", EventTypes.FormattedMessage, 4, LogLevel.Error,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
+
                 @"""FormattedMessage"":""Logger1 Event4 Error foo " + GuidParam.ToString("D") + @"""") },
-#else
-                @"""__payload4"":""Logger1 Event4 Error foo " + GuidParam.ToString("D") + @"""") },
-#endif
 
             { "E4JS", (e) => VerifySingleEvent(e, "Logger1", EventTypes.MessageJson, 4, LogLevel.Error,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                 @"""ArgumentsJson"":{""stringParam"":""foo"",""guidParam"":""" + GuidParam.ToString("D") + @"""") },
-#else
-                @"""__payload5"":{""stringParam"":""foo"",""guidParam"":""" + GuidParam.ToString("D") + @"""") },
-#endif
 
             { "E4MSG", (e) => VerifySingleEvent(e, "Logger1", EventTypes.Message, 4, LogLevel.Error,
                 @"{""Key"":""stringParam"",""Value"":""foo""}",
                 @"{""Key"":""guidParam"",""Value"":""" + GuidParam.ToString("D") +@"""}") },
 
             { "E5FM", (e) => VerifySingleEvent(e, "Logger2", EventTypes.FormattedMessage, 5, LogLevel.Critical,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                 @"""FormattedMessage"":""Logger2 Event5 Critical bar 23 45") },
-#else
-                @"""__payload4"":""Logger2 Event5 Critical bar 23 45") },
-#endif
 
             { "E5JS", (e) => VerifySingleEvent(e, "Logger2", EventTypes.MessageJson, 5, LogLevel.Critical,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                 @"""ArgumentsJson"":{""stringParam"":""bar"",""int1Param"":""23"",""int2Param"":""45""",
                 @"""ExceptionJson"":{""TypeName"":""System.Exception"",""Message"":""oops"",""HResult"":""-2146233088"",""VerboseMessage"":""System.Exception: oops ---> System.Exception: inner oops") },
-#else
-                @"""__payload5"":{""stringParam"":""bar"",""int1Param"":""23"",""int2Param"":""45""",
-                @"""__payload4"":{""TypeName"":""System.Exception"",""Message"":""oops"",""HResult"":""-2146233088"",""VerboseMessage"":""System.Exception: oops ---> System.Exception: inner oops") },
-#endif
 
             { "E5MSG", (e) => VerifySingleEvent(e, "Logger2", EventTypes.Message, 5, LogLevel.Critical,
                  @"{""Key"":""stringParam"",""Value"":""bar""}",
@@ -663,43 +574,23 @@ namespace Microsoft.Extensions.Logging.Test
                 @"""Exception"":{""TypeName"":""System.Exception"",""Message"":""oops"",""HResult"":-2146233088,""VerboseMessage"":""System.Exception: oops ---> System.Exception: inner oops") },
 
             { "E6FM", (e) => VerifySingleEvent(e, "Logger2", EventTypes.FormattedMessage, 6, LogLevel.Warning,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                 @"""FormattedMessage"":""Logger2 Event6 Warning NoParams""") },
-#else
-                @"""__payload4"":""Logger2 Event6 Warning NoParams""") },
-#endif
             { "E6JS", (e) => VerifySingleEvent(e, "Logger2", EventTypes.MessageJson, 6, LogLevel.Warning) },
             { "E6MSG", (e) => VerifySingleEvent(e, "Logger2", EventTypes.Message, 6, LogLevel.Warning) },
 
             { "E7FM", (e) => VerifySingleEvent(e, "Logger3", EventTypes.FormattedMessage, 7, LogLevel.Information,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                 @"""FormattedMessage"":""Logger3 Event7 Information inner scope closed " + DoubleParam2.ToString() + " 37") },
-#else
-                @"""__payload4"":""Logger3 Event7 Information inner scope closed " + DoubleParam2.ToString() + " 37") },
-#endif
             { "E7JS", (e) => VerifySingleEvent(e, "Logger3", EventTypes.MessageJson, 7, LogLevel.Information,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                         @"""ArgumentsJson"":{""stringParam"":""inner scope closed"",""doubleParam"":""" + DoubleParam2.ToString() + @""",""intParam"":""37""") },
-#else
-                        @"""__payload5"":{""stringParam"":""inner scope closed"",""doubleParam"":""" + DoubleParam2.ToString() + @""",""intParam"":""37""") },
-#endif
             { "E7MSG", (e) => VerifySingleEvent(e, "Logger3", EventTypes.Message, 7, LogLevel.Information,
                 @"{""Key"":""stringParam"",""Value"":""inner scope closed""}",
                 @"{""Key"":""doubleParam"",""Value"":""" + DoubleParam2.ToString() +@"""}",
                 @"{""Key"":""intParam"",""Value"":""37""}") },
 
             { "E8FM", (e) => VerifySingleEvent(e, "Logger2", EventTypes.FormattedMessage, 8, LogLevel.Warning,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                 @"""FormattedMessage"":""Logger2 Event8 Warning Outer scope closed " + TimeParam.ToString("O")) },
-#else
-                @"""__payload4"":""Logger2 Event8 Warning Outer scope closed " + TimeParam.ToString("O")) },
-#endif
             { "E8JS", (e) => VerifySingleEvent(e, "Logger2", EventTypes.MessageJson, 8, LogLevel.Warning,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                         @"""ArgumentsJson"":{""stringParam"":""Outer scope closed"",""timeParam"":""" + TimeParam.ToString("O")) },
-#else
-                        @"""__payload5"":{""stringParam"":""Outer scope closed"",""timeParam"":""" + TimeParam.ToString("O")) },
-#endif
 
             { "E8MSG", (e) => VerifySingleEvent(e, "Logger2", EventTypes.Message, 8, LogLevel.Warning,
                 @"{""Key"":""stringParam"",""Value"":""Outer scope closed""}",
@@ -707,22 +598,14 @@ namespace Microsoft.Extensions.Logging.Test
 
 
             { "OuterScopeJsonStart", (e) => VerifySingleEvent(e, "Logger1", EventTypes.ActivityJsonStart, null, null,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                         @"""ArgumentsJson"":{""stringParam"":""scoped foo"",""intParam"":""13"",""doubleParam"":""" + DoubleParam1.ToString()) },
-#else
-                        @"""__payload3"":{""stringParam"":""scoped foo"",""intParam"":""13"",""doubleParam"":""" + DoubleParam1.ToString()) },
-#endif
             { "OuterScopeJsonStop", (e) => VerifySingleEvent(e, "Logger1", EventTypes.ActivityJsonStop, null, null) },
 
             { "OuterScopeStart", (e) => VerifySingleEvent(e, "Logger1", EventTypes.ActivityStart, null, null) },
             { "OuterScopeStop", (e) => VerifySingleEvent(e, "Logger1", EventTypes.ActivityStop, null, null) },
 
             { "InnerScopeJsonStart", (e) => VerifySingleEvent(e, "Logger3", EventTypes.ActivityJsonStart, null, null,
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
                         @"""ArgumentsJson"":{""timeParam"":""" + TimeParam.ToString() + @""",""guidParam"":""" + GuidParam.ToString("D")) },
-#else
-                        @"""__payload3"":{""timeParam"":""" + TimeParam.ToString() + @""",""guidParam"":""" + GuidParam.ToString("D")) },
-#endif
             { "InnerScopeJsonStop", (e) => VerifySingleEvent(e, "Logger3", EventTypes.ActivityJsonStop, null, null) },
 
             { "InnerScopeStart", (e) => VerifySingleEvent(e, "Logger3", EventTypes.ActivityStart, null, null) },

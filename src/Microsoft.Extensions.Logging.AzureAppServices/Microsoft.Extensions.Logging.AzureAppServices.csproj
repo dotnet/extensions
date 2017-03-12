@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Logger implementation to support Azure App Services 'Diagnostics logs' and 'Log stream' features.</Description>
-    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <TargetFramework>netstandard1.3</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>logging</PackageTags>
   </PropertyGroup>

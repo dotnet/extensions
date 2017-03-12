@@ -124,9 +124,7 @@ namespace Microsoft.Extensions.Logging.EventSource
             }
         }
 
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
         private LoggingEventSource() : base(EventSourceSettings.EtwSelfDescribingEventFormat) { }
-#endif
 
         /// <summary>
         /// FormattedMessage() is called when ILogger.Log() is called. and the FormattedMessage keyword is active
@@ -138,8 +136,6 @@ namespace Microsoft.Extensions.Logging.EventSource
             WriteEvent(1, Level, FactoryID, LoggerName, EventId, FormattedMessage);
         }
 
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
-
         /// <summary>
         /// Message() is called when ILogger.Log() is called. and the Message keyword is active
         /// This gives you the logged information in a programatic format (arguments are key-value pairs)
@@ -149,24 +145,15 @@ namespace Microsoft.Extensions.Logging.EventSource
         {
             WriteEvent(2, Level, FactoryID, LoggerName, EventId, Exception, Arguments);
         }
-#endif
 
         /// <summary>
         /// ActivityStart is called when ILogger.BeginScope() is called
         /// </summary>
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
         [Event(3, Keywords = Keywords.Message | Keywords.FormattedMessage, Level = EventLevel.LogAlways, ActivityOptions = EventActivityOptions.Recursive)]
         internal void ActivityStart(int ID, int FactoryID, string LoggerName, IEnumerable<KeyValuePair<string, string>> Arguments)
         {
             WriteEvent(3, ID, FactoryID, LoggerName, Arguments);
         }
-#else
-        [Event(3, Keywords = Keywords.Message | Keywords.FormattedMessage, Level = EventLevel.LogAlways)]
-        internal void ActivityStart(int ID, int FactoryID, string LoggerName)
-        {
-            WriteEvent(3, ID, FactoryID, LoggerName);
-        }
-#endif
 
         [Event(4, Keywords = Keywords.Message | Keywords.FormattedMessage, Level = EventLevel.LogAlways)]
         internal void ActivityStop(int ID, int FactoryID, string LoggerName)
@@ -180,11 +167,7 @@ namespace Microsoft.Extensions.Logging.EventSource
             WriteEvent(5, Level, FactoryID, LoggerName, EventId, ExceptionJson, ArgumentsJson);
         }
 
-#if !NO_EVENTSOURCE_COMPLEX_TYPE_SUPPORT
         [Event(6, Keywords = Keywords.JsonMessage | Keywords.FormattedMessage, Level = EventLevel.LogAlways, ActivityOptions = EventActivityOptions.Recursive)]
-#else
-        [Event(6, Keywords = Keywords.JsonMessage | Keywords.FormattedMessage, Level = EventLevel.LogAlways)]
-#endif
         internal void ActivityJsonStart(int ID, int FactoryID, string LoggerName, string ArgumentsJson)
         {
             WriteEvent(6, ID, FactoryID, LoggerName, ArgumentsJson);

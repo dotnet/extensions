@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Debug output logger provider implementation for Microsoft.Extensions.Logging. This logger logs messages to a debugger monitor by writing messages with System.Diagnostics.Debug.WriteLine().</Description>
-    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <TargetFramework>netstandard1.3</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>logging</PackageTags>

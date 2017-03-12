@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Logging.Console;
@@ -648,46 +649,6 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             Assert.NotNull(disposable);
         }
-
-#if NET452
-        private static void DomainFunc()
-        {
-            var t = SetUp(filter: null, includeScopes: true);
-            var logger = t.Item1;
-            using (logger.BeginScope("newDomain scope"))
-            {
-                logger.LogInformation("Test");
-            }
-        }
-
-        [Fact]
-        public void ScopeWithChangingAppDomains_DoesNotAccessUnloadedAppDomain()
-        {
-            // Arrange
-            var t = SetUp(filter: null, includeScopes: true);
-            var logger = t.Item1;
-            var sink = t.Item2;
-            var setupInfo = new AppDomainSetup
-            {
-                ApplicationBase = AppDomain.CurrentDomain.BaseDirectory
-            };
-            var domain = AppDomain.CreateDomain("newDomain", null, setupInfo);
-
-            // Act
-            domain.DoCallBack(DomainFunc);
-            AppDomain.Unload(domain);
-            var disposable = logger.BeginScope("Scope1");
-
-            logger.LogInformation("Test");
-
-            // Assert
-            Assert.NotNull(disposable);
-            Assert.Equal(2, sink.Writes.Count);
-        }
-#elif NETCOREAPP2_0
-#else
-#error Target framework needs to be updated
-#endif
 
         [Fact]
         public void ConsoleLogger_ReloadSettings_CanChangeLogLevel()

@@ -3,7 +3,7 @@
   <Import Project="..\..\build\dependencies.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net451;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net46;netcoreapp2.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
@@ -24,7 +24,7 @@
     <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.EventLog\Microsoft.Extensions.Logging.EventLog.csproj" />
   </ItemGroup>
 
