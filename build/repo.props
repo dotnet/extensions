@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.Extensions.DependencyInjection.Performance\Microsoft.Extensions.DependencyInjection.Performance.csproj" />
+  </ItemGroup>
+</Project>
