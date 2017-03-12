@@ -461,7 +461,7 @@ namespace Microsoft.Extensions.Caching.Memory
             Task.WaitAll(task0, task1, task2, task3);
         }
 
-#if NET452
+#if NET46
         private static void DomainFunc()
         {
             var expected = 20;

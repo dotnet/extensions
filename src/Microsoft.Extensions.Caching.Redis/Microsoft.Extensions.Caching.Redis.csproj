@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Distributed cache implementation of Microsoft.Extensions.Caching.Distributed.IDistributedCache using Redis.</Description>
-    <TargetFrameworks>net451;netstandard1.5</TargetFrameworks>
+    <TargetFrameworks>net46;netstandard1.5</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>cache;distributedcache;redis</PackageTags>
