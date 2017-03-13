@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.FileProviders.Internal
         private readonly string _directory;
 
         /// <summary>
-        /// Initializes an instance of <see cref="PhysicalDirectoryContents"/> 
+        /// Initializes an instance of <see cref="PhysicalDirectoryContents"/>
         /// </summary>
         /// <param name="directory">The directory</param>
         public PhysicalDirectoryContents(string directory)
@@ -57,14 +57,13 @@ namespace Microsoft.Extensions.FileProviders.Internal
                     .Where(info => !FileSystemInfoHelper.IsHiddenFile(info))
                     .Select<FileSystemInfo, IFileInfo>(info =>
                     {
-                        // TODO use pattern matching in C# 7
-                        if (info is FileInfo)
+                        if (info is FileInfo file)
                         {
-                            return new PhysicalFileInfo((FileInfo)info);
+                            return new PhysicalFileInfo(file);
                         }
-                        else if (info is DirectoryInfo)
+                        else if (info is DirectoryInfo dir)
                         {
-                            return new PhysicalDirectoryInfo((DirectoryInfo)info);
+                            return new PhysicalDirectoryInfo(dir);
                         }
                         // shouldn't happen unless BCL introduces new implementation of base type
                         throw new InvalidOperationException("Unexpected type of FileSystemInfo");
