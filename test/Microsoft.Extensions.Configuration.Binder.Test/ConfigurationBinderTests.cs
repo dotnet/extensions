@@ -242,7 +242,6 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             Assert.Same(config.GetValue("Object", foo), foo);
         }
 
-#if !NETCOREAPP1_1 // TypeConverter doesn't support this on DNXCORE
         [Fact]
         public void GetUri()
         {
@@ -258,7 +257,6 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
 
             Assert.Equal("http://www.bing.com", uri.OriginalString);
         }
-#endif
 
         [Theory]
         [InlineData("2147483647", typeof(int))]
@@ -277,9 +275,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
         [InlineData("2015-12-24T07:34:42-5:00", typeof(DateTime))]
         [InlineData("12/24/2015 13:44:55 +4", typeof(DateTimeOffset))]
         [InlineData("99.22:22:22.1234567", typeof(TimeSpan))]
-#if !NETCOREAPP1_1 // TypeConverter doesn't support this on DNXCORE
         [InlineData("http://www.bing.com", typeof(Uri))]
-#endif
         // enum test
         [InlineData("Constructor", typeof(AttributeTargets))]
         [InlineData("CA761232-ED42-11CE-BACD-00AA0057B223", typeof(Guid))]

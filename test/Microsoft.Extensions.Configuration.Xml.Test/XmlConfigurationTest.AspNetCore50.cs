@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NETCOREAPP1_1
+#if NETCOREAPP2_0
 // These tests only run on Core CLR.
 
 using System;
@@ -54,4 +54,7 @@ namespace Microsoft.Extensions.Configuration.Xml.Test
         }
     }
 }
+#elif NET452
+#else
+#error Target framework needs to be updated
 #endif

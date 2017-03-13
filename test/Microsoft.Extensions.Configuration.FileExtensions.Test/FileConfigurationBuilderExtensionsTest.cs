@@ -44,11 +44,13 @@ namespace Microsoft.Extensions.Configuration.Json
 
             string expectedPath;
 
-#if NETCOREAPP1_1
+#if NETCOREAPP2_0
             expectedPath = AppContext.BaseDirectory;
-#else
-            expectedPath = Path.GetFullPath(AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ?? 
+#elif NET452
+            expectedPath = Path.GetFullPath(AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") as string ??
                 AppDomain.CurrentDomain.BaseDirectory);
+#else
+#error Target framework needs to be updated
 #endif
 
             Assert.NotNull(physicalProvider);
