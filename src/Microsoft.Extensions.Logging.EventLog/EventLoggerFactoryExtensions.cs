@@ -12,6 +12,22 @@ namespace Microsoft.Extensions.Logging
     public static class EventLoggerFactoryExtensions
     {
         /// <summary>
+        /// Adds an event logger.
+        /// </summary>
+        /// <param name="factory">The extension method argument.</param>
+        public static LoggerFactory AddEventLog(this LoggerFactory factory)
+        {
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            factory.AddProvider("EventLog", new EventLogLoggerProvider());
+
+            return factory;
+        }
+
+        /// <summary>
         /// Adds an event logger that is enabled for <see cref="LogLevel"/>.Information or higher.
         /// </summary>
         /// <param name="factory">The extension method argument.</param>

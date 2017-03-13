@@ -1,8 +1,10 @@
 ﻿{
-  "IncludeScopes" : "false",
-  "LogLevel": {
-    "Default": "Debug",
-    "System": "Information",
-    "Microsoft": "Information"
+  "Logging": {
+    "IncludeScopes": "true",
+    "LogLevel": {
+      "Default": "Debug",
+      "System": "Information",
+      "Microsoft": "Information"
+    }
   }
 }

@@ -12,6 +12,16 @@ namespace Microsoft.Extensions.Logging
     public static class DebugLoggerFactoryExtensions
     {
         /// <summary>
+        /// Adds a debug logger.
+        /// </summary>
+        /// <param name="factory">The extension method argument.</param>
+        public static LoggerFactory AddDebug(this LoggerFactory factory)
+        {
+            factory.AddProvider("Debug", new DebugLoggerProvider());
+            return factory;
+        }
+
+        /// <summary>
         /// Adds a debug logger that is enabled for <see cref="LogLevel"/>.Information or higher.
         /// </summary>
         /// <param name="factory">The extension method argument.</param>

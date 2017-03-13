@@ -20,20 +20,22 @@ namespace SampleApp
 
         public Program()
         {
+            var loggingConfiguration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("logging.json", optional: false, reloadOnChange: true)
+                .Build();
+
             // A dependency injection based application would get ILoggerFactory injected instead.
-            // Create a logger factory with filter settings that can be applied across all logger providers.
-            var factory = new LoggerFactory()
-                .WithFilter(new FilterLoggerSettings
-                {
-                    { "Microsoft", LogLevel.Warning },
-                    { "System", LogLevel.Warning },
-                    { "SampleApp.Program", LogLevel.Debug }
-                });
+            // Create a logger factory with filters that can be applied across all logger providers.
+            var factory = new LoggerFactory(loggingConfiguration.GetSection("Logging"));
+            factory.AddFilter(new Dictionary<string, LogLevel>
+            {
+                { "Microsoft", LogLevel.Warning },
+                { "System", LogLevel.Warning },
+                { "SampleApp.Program", LogLevel.Debug }
+            });
 
-            // getting the logger immediately using the class's name is conventional
-            _logger = factory.CreateLogger<Program>();
-
-            // providers may be added to an ILoggerFactory at any time, existing ILoggers are updated
+            // providers may be added to a LoggerFactory before any loggers are created
 #if NET46
             factory.AddEventLog();
 #elif NETCOREAPP2_0
@@ -41,66 +43,10 @@ namespace SampleApp
 #error Target framework needs to be updated
 #endif
 
-            // How to configure the console logger to reload based on a configuration file.
-            //
-            //
-            var loggingConfiguration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("logging.json", optional: false, reloadOnChange: true)
-                .Build();
-            factory.AddConsole(loggingConfiguration);
+            factory.AddConsole();
 
-            // How to configure the console logger to use settings provided in code.
-            //
-            //
-            //var settings = new ConsoleLoggerSettings()
-            //{
-            //    IncludeScopes = true,
-            //    Switches =
-            //    {
-            //        ["Default"] = LogLevel.Debug,
-            //        ["Microsoft"] = LogLevel.Information,
-            //    }
-            //};
-            //factory.AddConsole(settings);
-
-            // How to manually wire up file-watching without a configuration file
-            //
-            //
-            //factory.AddConsole(new RandomReloadingConsoleSettings());
-        }
-
-        private class RandomReloadingConsoleSettings : IConsoleLoggerSettings
-        {
-            private PhysicalFileProvider _files = new PhysicalFileProvider(PlatformServices.Default.Application.ApplicationBasePath);
-
-            public RandomReloadingConsoleSettings()
-            {
-                Reload();
-            }
-
-            public IChangeToken ChangeToken { get; private set; }
-
-            public bool IncludeScopes { get; }
-
-            private Dictionary<string, LogLevel> Switches { get; set; }
-
-            public IConsoleLoggerSettings Reload()
-            {
-                ChangeToken = _files.Watch("logging.json");
-                Switches = new Dictionary<string, LogLevel>()
-                {
-                    ["Default"] = (LogLevel)(DateTimeOffset.Now.Second % 5 + 1),
-                    ["Microsoft"] = (LogLevel)(DateTimeOffset.Now.Second % 5 + 1),
-                };
-
-                return this;
-            }
-
-            public bool TryGetSwitch(string name, out LogLevel level)
-            {
-                return Switches.TryGetValue(name, out level);
-            }
+            // getting the logger using the class's name is conventional
+            _logger = factory.CreateLogger<Program>();
         }
 
         public static void Main(string[] args)

@@ -10,6 +10,15 @@ namespace Microsoft.Extensions.Logging
     public static class ConsoleLoggerExtensions
     {
         /// <summary>
+        /// Adds a console logger.
+        /// </summary>
+        public static LoggerFactory AddConsole(this LoggerFactory factory)
+        {
+            factory.AddProvider("Console", new ConsoleLoggerProvider(factory.Configuration));
+            return factory;
+        }
+
+        /// <summary>
         /// Adds a console logger that is enabled for <see cref="LogLevel"/>.Information or higher.
         /// </summary>
         public static ILoggerFactory AddConsole(this ILoggerFactory factory)

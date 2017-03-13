@@ -17,10 +17,10 @@ namespace Microsoft.Extensions.Logging.Test
             testSwitch.Level = SourceLevels.Warning;
 
             var factory = new LoggerFactory();
-            var logger = factory.CreateLogger("Test");
 
             // Act
             factory.AddTraceSource(testSwitch);
+            var logger = factory.CreateLogger("Test");
 
             // Assert
             Assert.True(logger.IsEnabled(LogLevel.Critical));
@@ -46,11 +46,11 @@ namespace Microsoft.Extensions.Logging.Test
             secondSwitch.Level = second;
 
             var factory = new LoggerFactory();
-            var logger = factory.CreateLogger("Test");
 
             // Act
             factory.AddTraceSource(firstSwitch);
             factory.AddTraceSource(secondSwitch);
+            var logger = factory.CreateLogger("Test");
 
             // Assert
             Assert.Equal(expected, logger.IsEnabled(LogLevel.Information));

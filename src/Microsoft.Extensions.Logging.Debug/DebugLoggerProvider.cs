@@ -12,6 +12,11 @@ namespace Microsoft.Extensions.Logging.Debug
     {
         private readonly Func<string, LogLevel, bool> _filter;
 
+        public DebugLoggerProvider()
+        {
+            _filter = (s, l) => true;
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DebugLoggerProvider"/> class.
         /// </summary>
@@ -21,14 +26,14 @@ namespace Microsoft.Extensions.Logging.Debug
             _filter = filter;
         }
 
-        /// <inheritdoc /> 
+        /// <inheritdoc />
         public ILogger CreateLogger(string name)
         {
             return new DebugLogger(name, _filter);
         }
 
         public void Dispose()
-        {            
+        {
         }
     }
 }

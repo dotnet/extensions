@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Console.Internal;
 
 namespace Microsoft.Extensions.Logging.Console
@@ -15,6 +16,10 @@ namespace Microsoft.Extensions.Logging.Console
         private readonly Func<string, LogLevel, bool> _filter;
         private IConsoleLoggerSettings _settings;
         private readonly ConsoleLoggerProcessor _messageQueue = new ConsoleLoggerProcessor();
+        private readonly bool _isLegacy;
+
+        private static readonly Func<string, LogLevel, bool> trueFilter = (cat, level) => true;
+        private static readonly Func<string, LogLevel, bool> falseFilter = (cat, level) => false;
 
         public ConsoleLoggerProvider(Func<string, LogLevel, bool> filter, bool includeScopes)
         {
@@ -28,6 +33,27 @@ namespace Microsoft.Extensions.Logging.Console
             {
                 IncludeScopes = includeScopes,
             };
+
+            _isLegacy = true;
+        }
+
+        public ConsoleLoggerProvider(IConfiguration configuration)
+        {
+            if (configuration != null)
+            {
+                _settings = new ConfigurationConsoleLoggerSettings(configuration);
+
+                if (_settings.ChangeToken != null)
+                {
+                    _settings.ChangeToken.RegisterChangeCallback(OnConfigurationReload, null);
+                }
+            }
+            else
+            {
+                _settings = new ConsoleLoggerSettings();
+            }
+
+            _isLegacy = false;
         }
 
         public ConsoleLoggerProvider(IConsoleLoggerSettings settings)
@@ -43,6 +69,8 @@ namespace Microsoft.Extensions.Logging.Console
             {
                 _settings.ChangeToken.RegisterChangeCallback(OnConfigurationReload, null);
             }
+
+            _isLegacy = true;
         }
 
         private void OnConfigurationReload(object state)
@@ -53,10 +81,14 @@ namespace Microsoft.Extensions.Logging.Console
                 // to an old change token.
                 _settings = _settings.Reload();
 
+                var includeScopes = _settings.IncludeScopes;
                 foreach (var logger in _loggers.Values)
                 {
-                    logger.Filter = GetFilter(logger.Name, _settings);
-                    logger.IncludeScopes = _settings.IncludeScopes;
+                    if (_isLegacy)
+                    {
+                        logger.Filter = GetFilter(logger.Name, _settings);
+                    }
+                    logger.IncludeScopes = includeScopes;
                 }
             }
             catch (Exception ex)
@@ -85,6 +117,12 @@ namespace Microsoft.Extensions.Logging.Console
 
         private Func<string, LogLevel, bool> GetFilter(string name, IConsoleLoggerSettings settings)
         {
+            // Filters are now handled in Logger.cs with the Configuration and AddFilter methods on LoggerFactory
+            if (!_isLegacy)
+            {
+                return trueFilter;
+            }
+
             if (_filter != null)
             {
                 return _filter;
@@ -102,7 +140,7 @@ namespace Microsoft.Extensions.Logging.Console
                 }
             }
 
-            return (n, l) => false;
+            return falseFilter;
         }
 
         private IEnumerable<string> GetKeyPrefixes(string name)

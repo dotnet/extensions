@@ -10,23 +10,37 @@ namespace Microsoft.Extensions.Logging
     internal class Logger : ILogger
     {
         private readonly LoggerFactory _loggerFactory;
-        private readonly string _name;
-        private ILogger[] _loggers;
+        private readonly string _categoryName;
+        private LoggerInformation[] _loggers;
+        private readonly Func<string, LogLevel, bool> _categoryFilter;
 
-        public Logger(LoggerFactory loggerFactory, string name)
+        public Logger(LoggerFactory loggerFactory, string categoryName, Func<string, LogLevel, bool> categoryFilter)
         {
             _loggerFactory = loggerFactory;
-            _name = name;
+            _categoryName = categoryName;
 
             var providers = loggerFactory.GetProviders();
             if (providers.Length > 0)
             {
-                _loggers = new ILogger[providers.Length];
+                _loggers = new LoggerInformation[providers.Length];
                 for (var index = 0; index < providers.Length; index++)
                 {
-                    _loggers[index] = providers[index].CreateLogger(name);
+                    _loggers[index] = new LoggerInformation
+                    {
+                        Logger = providers[index].Key.CreateLogger(categoryName),
+                        // Order of preference
+                        // 1. Custom Name
+                        // 2. Provider FullName
+                        ProviderNames = new List<string>
+                        {
+                            providers[index].Value,
+                            providers[index].Key.GetType().FullName
+                        }
+                    };
                 }
             }
+
+            _categoryFilter = categoryFilter;
         }
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
@@ -37,11 +51,24 @@ namespace Microsoft.Extensions.Logging
             }
 
             List<Exception> exceptions = null;
-            foreach (var logger in _loggers)
+            foreach (var loggerInfo in _loggers)
             {
+                // TODO: Try to noop if no filters set
+                if (!_categoryFilter(loggerInfo.ProviderNames[0], logLevel) ||
+                    !_categoryFilter(loggerInfo.ProviderNames[1], logLevel))
+                {
+                    continue;
+                }
+
+                // checks config and filters set on the LoggerFactory
+                if (!_loggerFactory.IsEnabled(loggerInfo.ProviderNames, _categoryName, logLevel))
+                {
+                    continue;
+                }
+
                 try
                 {
-                    logger.Log(logLevel, eventId, state, exception, formatter);
+                    loggerInfo.Logger.Log(logLevel, eventId, state, exception, formatter);
                 }
                 catch (Exception ex)
                 {
@@ -69,11 +96,23 @@ namespace Microsoft.Extensions.Logging
             }
 
             List<Exception> exceptions = null;
-            foreach (var logger in _loggers)
+            foreach (var loggerInfo in _loggers)
             {
+                if (!_categoryFilter(loggerInfo.ProviderNames[0], logLevel) ||
+                    !_categoryFilter(loggerInfo.ProviderNames[1], logLevel))
+                {
+                    continue;
+                }
+
+                // checks config and filters set on the LoggerFactory
+                if (!_loggerFactory.IsEnabled(loggerInfo.ProviderNames, _categoryName, logLevel))
+                {
+                    continue;
+                }
+
                 try
                 {
-                    if (logger.IsEnabled(logLevel))
+                    if (loggerInfo.Logger.IsEnabled(logLevel))
                     {
                         return true;
                     }
@@ -108,7 +147,7 @@ namespace Microsoft.Extensions.Logging
 
             if (_loggers.Length == 1)
             {
-                return _loggers[0].BeginScope(state);
+                return _loggers[0].Logger.BeginScope(state);
             }
 
             var loggers = _loggers;
@@ -119,7 +158,7 @@ namespace Microsoft.Extensions.Logging
             {
                 try
                 {
-                    var disposable = loggers[index].BeginScope(state);
+                    var disposable = loggers[index].Logger.BeginScope(state);
                     scope.SetDisposable(index, disposable);
                 }
                 catch (Exception ex)
@@ -140,23 +179,6 @@ namespace Microsoft.Extensions.Logging
             }
 
             return scope;
-        }
-
-        internal void AddProvider(ILoggerProvider provider)
-        {
-            var logger = provider.CreateLogger(_name);
-            int logIndex;
-            if (_loggers == null)
-            {
-                logIndex = 0;
-                _loggers = new ILogger[1];
-            }
-            else
-            {
-                logIndex = _loggers.Length;
-                Array.Resize(ref _loggers, logIndex + 1);
-            }
-            _loggers[logIndex] = logger;
         }
 
         private class Scope : IDisposable
@@ -223,6 +245,12 @@ namespace Microsoft.Extensions.Logging
             {
                 throw new NotImplementedException();
             }
+        }
+
+        private struct LoggerInformation
+        {
+            public ILogger Logger { get; set; }
+            public List<string> ProviderNames { get; set; }
         }
     }
 }
