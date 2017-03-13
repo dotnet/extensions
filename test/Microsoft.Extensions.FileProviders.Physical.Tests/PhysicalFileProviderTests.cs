@@ -4,9 +4,8 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.FileProviders.Internal;
 using Microsoft.Extensions.FileProviders.Physical;
 using Microsoft.Extensions.Primitives;
@@ -38,33 +37,24 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
         [InlineData("/")]
         [InlineData("///")]
         [InlineData("/\\/")]
         [InlineData("\\/\\/")]
         public void GetFileInfoReturnsPhysicalFileInfoForValidPathsWithLeadingSlashes_Windows(string path)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             GetFileInfoReturnsPhysicalFileInfoForValidPathsWithLeadingSlashes(path);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Testing Unix specific behaviour on leading slashes.")]
         [InlineData("/")]
         [InlineData("///")]
         public void GetFileInfoReturnsPhysicalFileInfoForValidPathsWithLeadingSlashes_Unix(string path)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             GetFileInfoReturnsPhysicalFileInfoForValidPathsWithLeadingSlashes(path);
         }
 
@@ -77,30 +67,21 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
         [InlineData("/C:\\Windows\\System32")]
         [InlineData("/\0/")]
         public void GetFileInfoReturnsNotFoundFileInfoForIllegalPathWithLeadingSlashes_Windows(string path)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             GetFileInfoReturnsNotFoundFileInfoForIllegalPathWithLeadingSlashes(path);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Testing Unix specific behaviour on leading slashes.")]
         [InlineData("/\0/")]
         public void GetFileInfoReturnsNotFoundFileInfoForIllegalPathWithLeadingSlashes_Unix(string path)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             GetFileInfoReturnsNotFoundFileInfoForIllegalPathWithLeadingSlashes(path);
         }
 
@@ -139,15 +120,11 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Paths starting with / are considered relative.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Paths starting with / are considered relative.")]
         public void GetFileInfoReturnsNotFoundFileInfoForAbsolutePath()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
                 var info = provider.GetFileInfo(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
@@ -214,15 +191,11 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hidden and system files only make sense on Windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Hidden and system files only make sense on Windows.")]
         public void GetFileInfoReturnsNotFoundFileInfoForHiddenFile()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             using (var root = new DisposableFileSystem())
             {
                 using (var provider = new PhysicalFileProvider(root.RootPath))
@@ -240,15 +213,11 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hidden and system files only make sense on Windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Hidden and system files only make sense on Windows.")]
         public void GetFileInfoReturnsNotFoundFileInfoForSystemFile()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             using (var root = new DisposableFileSystem())
             {
                 using (var provider = new PhysicalFileProvider(root.RootPath))
@@ -372,12 +341,6 @@ namespace Microsoft.Extensions.FileProviders
         [Fact]
         public async Task WatcherWithPolling_ReturnsTrueForFileChangedWhenFileSystemWatcherDoesNotRaiseEvents()
         {
-            if (TestPlatformHelper.IsMono)
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             using (var root = new DisposableFileSystem())
             {
                 var fileName = Path.GetRandomFileName();
@@ -403,12 +366,6 @@ namespace Microsoft.Extensions.FileProviders
         [Fact]
         public async Task WatcherWithPolling_ReturnsTrueForFileRemovedWhenFileSystemWatcherDoesNotRaiseEvents()
         {
-            if (TestPlatformHelper.IsMono)
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             using (var root = new DisposableFileSystem())
             {
                 var fileName = Path.GetRandomFileName();
@@ -436,12 +393,6 @@ namespace Microsoft.Extensions.FileProviders
         [Fact]
         public async Task WatcherWithPolling_ReturnsTrueForChangedFileWhenQueriedMultipleTimes()
         {
-            if (TestPlatformHelper.IsMono)
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             using (var root = new DisposableFileSystem())
             {
                 var fileName = Path.GetRandomFileName();
@@ -496,33 +447,24 @@ namespace Microsoft.Extensions.FileProviders
         }
 
         // On Unix the minimum invalid file path characters are / and \0
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData("/test:test")]
         [InlineData("/dir/name\"")]
         [InlineData("/dir>/name")]
         public void InvalidPath_DoesNotThrowWindows_GetFileInfo(string path)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             InvalidPath_DoesNotThrowGeneric_GetFileInfo(path);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData("/test:test\0")]
         [InlineData("/dir/\0name\"")]
         [InlineData("/dir>/name\0")]
         public void InvalidPath_DoesNotThrowUnix_GetFileInfo(string path)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             InvalidPath_DoesNotThrowGeneric_GetFileInfo(path);
         }
 
@@ -536,33 +478,24 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData("/test:test")]
         [InlineData("/dir/name\"")]
         [InlineData("/dir>/name")]
         public void InvalidPath_DoesNotThrowWindows_GetDirectoryContents(string path)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             InvalidPath_DoesNotThrowGeneric_GetDirectoryContents(path);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData("/test:test\0")]
         [InlineData("/dir/\0name\"")]
         [InlineData("/dir>/name\0")]
         public void InvalidPath_DoesNotThrowUnix_GetDirectoryContents(string path)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             InvalidPath_DoesNotThrowGeneric_GetDirectoryContents(path);
         }
 
@@ -586,33 +519,24 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
         [InlineData("/")]
         [InlineData("///")]
         [InlineData("/\\/")]
         [InlineData("\\/\\/")]
         public void GetDirectoryContentsReturnsEnumerableDirectoryContentsForValidPathWithLeadingSlashes_Windows(string path)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             GetDirectoryContentsReturnsEnumerableDirectoryContentsForValidPathWithLeadingSlashes(path);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Testing Unix specific behaviour on leading slashes.")]
         [InlineData("/")]
         [InlineData("///")]
         public void GetDirectoryContentsReturnsEnumerableDirectoryContentsForValidPathWithLeadingSlashes_Unix(string path)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             GetDirectoryContentsReturnsEnumerableDirectoryContentsForValidPathWithLeadingSlashes(path);
         }
 
@@ -625,34 +549,25 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
         [InlineData("/C:\\Windows\\System32")]
         [InlineData("/\0/")]
         [MemberData(nameof(InvalidPaths))]
         public void GetDirectoryContentsReturnsNotFoundDirectoryContentsForInvalidPath_Windows(string path)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             GetDirectoryContentsReturnsNotFoundDirectoryContentsForInvalidPath(path);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Testing Unix specific behaviour on leading slashes.")]
         [InlineData("/\0/")]
         [InlineData("/\\/")]
         [InlineData("\\/\\/")]
         [MemberData(nameof(InvalidPaths))]
         public void GetDirectoryContentsReturnsNotFoundDirectoryContentsForInvalidPath_Unix(string path)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             GetDirectoryContentsReturnsNotFoundDirectoryContentsForInvalidPath(path);
         }
 
@@ -718,15 +633,11 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hidden and system files only make sense on Windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Hidden and system files only make sense on Windows.")]
         public void GetDirectoryContentsDoesNotReturnFileInfoForHiddenFile()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             using (var root = new DisposableFileSystem())
             {
                 var directoryName = Guid.NewGuid().ToString();
@@ -747,15 +658,11 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hidden and system files only make sense on Windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Hidden and system files only make sense on Windows.")]
         public void GetDirectoryContentsDoesNotReturnFileInfoForSystemFile()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             using (var root = new DisposableFileSystem())
             {
                 var directoryName = Guid.NewGuid().ToString();
@@ -962,15 +869,13 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux,
+            SkipReason = "We treat forward slash differently so rooted path can happen only on windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX,
+            SkipReason = "We treat forward slash differently so rooted path can happen only on windows.")]
         public void NoopChangeTokenForAbsolutePathFilters()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             using (var root = new DisposableFileSystem())
             {
                 using (var provider = new PhysicalFileProvider(root.RootPath))
@@ -1068,33 +973,24 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
         [InlineData("/")]
         [InlineData("///")]
         [InlineData("/\\/")]
         [InlineData("\\/\\/")]
         public async Task TokenFiredForRelativePathStartingWithSlash_Windows(string slashes)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             await TokenFiredForRelativePathStartingWithSlash(slashes);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Testing Unix specific behaviour on leading slashes.")]
         [InlineData("/")]
         [InlineData("///")]
         public async Task TokenFiredForRelativePathStartingWithSlash_Unix(string slashes)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             await TokenFiredForRelativePathStartingWithSlash(slashes);
         }
 
@@ -1121,30 +1017,21 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Testing Windows specific behaviour on leading slashes.")]
         [InlineData("/C:\\Windows\\System32")]
         [InlineData("/\0/")]
         public async Task TokenNotFiredForInvalidPathStartingWithSlash_Windows(string slashes)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             await TokenNotFiredForInvalidPathStartingWithSlash(slashes);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Testing Unix specific behaviour on leading slashes.")]
         [InlineData("/\0/")]
         public async Task TokenNotFiredForInvalidPathStartingWithSlash_Unix(string slashes)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             await TokenNotFiredForInvalidPathStartingWithSlash(slashes);
         }
 
@@ -1332,15 +1219,11 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hidden and system files only make sense on Windows.")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Hidden and system files only make sense on Windows.")]
         public async Task TokensNotFiredForHiddenAndSystemFiles()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Temporary work around: https://github.com/aspnet/FileSystem/issues/254.
-                return;
-            }
-
             using (var root = new DisposableFileSystem())
             {
                 var hiddenFileName = Guid.NewGuid().ToString();
