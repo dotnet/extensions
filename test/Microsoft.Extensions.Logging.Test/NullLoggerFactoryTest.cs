@@ -3,7 +3,7 @@
 
 using Xunit;
 
-namespace Microsoft.Extensions.Logging.Testing
+namespace Microsoft.Extensions.Logging.Abstractions
 {
     public class NullLoggerFactoryTest
     {
