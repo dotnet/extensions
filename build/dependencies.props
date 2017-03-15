@@ -1,6 +1,13 @@
 <Project>
   <PropertyGroup>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <AspNetCoreVersion>1.2.0-*</AspNetCoreVersion>
+    <AzureKeyVaultVersion>2.0.6</AzureKeyVaultVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
+    <IdentityModelActiveDirectoryVersion>3.13.5</IdentityModelActiveDirectoryVersion>
+    <JsonNetVersion>9.0.1</JsonNetVersion>
+    <MoqVersion>4.7.1</MoqVersion>
+    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <TestSdkVersion>15.0.0</TestSdkVersion>
+    <XunitVersion>2.2.0</XunitVersion>
   </PropertyGroup>
 </Project>

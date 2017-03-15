@@ -4,8 +4,6 @@
     <TargetFramework>net451</TargetFramework>
     <DebugType>portable</DebugType>
     <OutputType>Exe</OutputType>
-    <!-- TODO remove rid when https://github.com/dotnet/sdk/issues/396 is resolved -->
-    <RuntimeIdentifier>win7-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
