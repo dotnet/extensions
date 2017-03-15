@@ -1,6 +1,9 @@
 <Project>
   <PropertyGroup>
+    <AspNetCoreVersion>1.2.0-*</AspNetCoreVersion>
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
+    <TestSdkVersion>15.0.0</TestSdkVersion>
+    <XunitVersion>2.2.0</XunitVersion>
   </PropertyGroup>
 </Project>
