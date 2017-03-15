@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\..\build\common.props" />
-  
+
   <PropertyGroup>
     <Description>Suite of xUnit.net tests to check for container compatibility with Microsoft.Extensions.DependencyInjection.</Description>
     <TargetFramework>netstandard1.1</TargetFramework>
@@ -12,8 +12,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.DependencyInjection.Abstractions\Microsoft.Extensions.DependencyInjection.Abstractions.csproj" />
-    <PackageReference Include="xunit.assert" Version="2.2.0-*" />
-    <PackageReference Include="xunit.extensibility.core" Version="2.2.0-*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.assert" Version="$(XunitVersion)" />
+    <PackageReference Include="xunit.extensibility.core" Version="$(XunitVersion)" />
   </ItemGroup>
 
 </Project>
