@@ -13,7 +13,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.Logging.Abstractions\Microsoft.Extensions.Logging.Abstractions.csproj" />
-    <PackageReference Include="xunit.assert" Version="2.2.0-*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.assert" Version="$(XunitVersion)" />
   </ItemGroup>
 
 </Project>

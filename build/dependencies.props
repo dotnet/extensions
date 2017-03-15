@@ -1,6 +1,15 @@
 <Project>
   <PropertyGroup>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <AspNetCoreVersion>1.2.0-*</AspNetCoreVersion>
     <CoreFxVersion>4.3.0</CoreFxVersion>
+    <JsonNetVersion>9.0.1</JsonNetVersion>
+    <MoqVersion>4.7.1</MoqVersion>
+    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <SerilogExtensionsLoggingVersion>1.4.0</SerilogExtensionsLoggingVersion>
+    <SerilogPeriodicBatchingVersion>2.0.0</SerilogPeriodicBatchingVersion>
+    <SerilogRollingFileVersion>3.1.0</SerilogRollingFileVersion>
+    <TestSdkVersion>15.0.0</TestSdkVersion>
+    <WindowsAzureStorageVersion>7.2.0</WindowsAzureStorageVersion>
+    <XunitVersion>2.2.0</XunitVersion>
   </PropertyGroup>
 </Project>
