@@ -7,7 +7,6 @@
     <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>logging</PackageTags>
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.3' ">$(PackageTargetFallback);portable-net40+sl5+win8+wp8+wpa81;portable-net45+win8+wp8+wpa81</PackageTargetFallback>
   </PropertyGroup>
 
   <ItemGroup>

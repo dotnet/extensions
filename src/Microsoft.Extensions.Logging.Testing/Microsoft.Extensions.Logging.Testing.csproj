@@ -8,7 +8,6 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>logging;testing</PackageTags>
-    <PackageTargetFallback>$(PackageTargetFallback);dotnet</PackageTargetFallback>
   </PropertyGroup>
 
   <ItemGroup>
