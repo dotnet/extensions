@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.Testing
         [MemberData(nameof(GetInts))]
         public void ConditionalTheoriesWithSkippedMemberData(int arg)
         {
+            Assert.True(false, "This should never run");
         }
 
         private static int _conditionalMemberDataRuns = 0;
@@ -62,6 +63,7 @@ namespace Microsoft.AspNetCore.Testing
         [MemberData(nameof(GetActionTestData))]
         public void ConditionalTheoryWithFuncs(Func<int, int> func)
         {
+            Assert.True(false, "This should never run");
         }
 
         public static TheoryData<Func<int, int>> GetActionTestData
