@@ -146,16 +146,24 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         protected override Expression VisitTransient(TransientCallSite callSite, ParameterExpression provider)
         {
             var implType = callSite.Service.ImplementationType;
-
             // Elide calls to GetCaptureDisposable if the implemenation type isn't disposable
+            return TryCaptureDisposible(
+                implType,
+                provider,
+                VisitCallSite(callSite.ServiceCallSite, provider));
+        }
+
+        private Expression TryCaptureDisposible(Type implType, ParameterExpression provider, Expression service)
+        {
+
             if (implType != null &&
                 !typeof(IDisposable).GetTypeInfo().IsAssignableFrom(implType.GetTypeInfo()))
             {
-                return VisitCallSite(callSite.ServiceCallSite, provider);
+                return service;
             }
 
             return Expression.Invoke(GetCaptureDisposable(provider),
-                VisitCallSite(callSite.ServiceCallSite, provider));
+                service);
         }
 
         protected override Expression VisitConstructor(ConstructorCallSite callSite, ParameterExpression provider)
@@ -184,7 +192,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 callSite.Key,
                 typeof(object));
 
-            var resolvedExpression = Expression.Variable(typeof(object), "resolved");
+            var resolvedVariable = Expression.Variable(typeof(object), "resolved");
 
             var resolvedServices = GetResolvedServices(provider);
 
@@ -192,26 +200,32 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 resolvedServices,
                 TryGetValueMethodInfo,
                 keyExpression,
-                resolvedExpression);
+                resolvedVariable);
+
+            var service = VisitCallSite(callSite.ServiceCallSite, provider);
+            var captureDisposible = TryCaptureDisposible(callSite.Key.ImplementationType, provider, service);
 
             var assignExpression = Expression.Assign(
-                resolvedExpression, VisitCallSite(callSite.ServiceCallSite, provider));
+                resolvedVariable, 
+                captureDisposible);
 
             var addValueExpression = Expression.Call(
                 resolvedServices,
                 AddMethodInfo,
                 keyExpression,
-                resolvedExpression);
+                resolvedVariable);
 
             var blockExpression = Expression.Block(
                 typeof(object),
                 new[] {
-                    resolvedExpression
+                    resolvedVariable
                 },
                 Expression.IfThen(
                     Expression.Not(tryGetValueExpression),
-                    Expression.Block(assignExpression, addValueExpression)),
-                resolvedExpression);
+                    Expression.Block(
+                        assignExpression,
+                        addValueExpression)),
+                resolvedVariable);
 
             return blockExpression;
         }

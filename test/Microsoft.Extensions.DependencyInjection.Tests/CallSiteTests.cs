@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using Microsoft.Extensions.DependencyInjection.ServiceLookup;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Xunit;
@@ -121,12 +120,19 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             Assert.Equal(serviceC, Invoke(callSite, provider));
         }
 
-        [Fact]
-        public void BuildExpressionElidesDisposableCaptureForNonDisposableServices()
+        [Theory]
+        [InlineData(ServiceLifetime.Scoped)]
+        [InlineData(ServiceLifetime.Transient)]
+        // We are not testing singleton here because singleton resolutions always got through 
+        // runtime resolver and there is no sense to eliminating call from there
+        public void BuildExpressionElidesDisposableCaptureForNonDisposableServices(ServiceLifetime lifetime)
         {
-            var descriptors = new ServiceCollection();
-            descriptors.AddTransient<ServiceA>();
-            descriptors.AddTransient<ServiceB>();
+            IServiceCollection descriptors = new ServiceCollection();
+            descriptors.Add(ServiceDescriptor.Describe(typeof(ServiceA), typeof(ServiceA), lifetime));
+            descriptors.Add(ServiceDescriptor.Describe(typeof(ServiceB), typeof(ServiceB), lifetime));
+            descriptors.Add(ServiceDescriptor.Describe(typeof(ServiceC), typeof(ServiceC), lifetime));
+
+            descriptors.AddScoped<ServiceB>();
             descriptors.AddTransient<ServiceC>();
 
             var disposables = new List<object>();
@@ -143,12 +149,16 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             Assert.Equal(0, disposables.Count);
         }
 
-        [Fact]
-        public void BuildExpressionElidesDisposableCaptureForEnumerableServices()
+        [Theory]
+        [InlineData(ServiceLifetime.Scoped)]
+        [InlineData(ServiceLifetime.Transient)]
+        // We are not testing singleton here because singleton resolutions always got through 
+        // runtime resolver and there is no sense to eliminating call from there
+        public void BuildExpressionElidesDisposableCaptureForEnumerableServices(ServiceLifetime lifetime)
         {
-            var descriptors = new ServiceCollection();
-            descriptors.AddTransient<ServiceA>();
-            descriptors.AddTransient<ServiceD>();
+            IServiceCollection descriptors = new ServiceCollection();
+            descriptors.Add(ServiceDescriptor.Describe(typeof(ServiceA), typeof(ServiceA), lifetime));
+            descriptors.Add(ServiceDescriptor.Describe(typeof(ServiceD), typeof(ServiceD), lifetime));
 
             var disposables = new List<object>();
             var provider = new ServiceProvider(descriptors, ServiceProviderOptions.Default);

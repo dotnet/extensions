@@ -49,6 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 if (!provider.ResolvedServices.TryGetValue(scopedCallSite.Key, out resolved))
                 {
                     resolved = VisitCallSite(scopedCallSite.ServiceCallSite, provider);
+                    provider.CaptureDisposable(resolved);
                     provider.ResolvedServices.Add(scopedCallSite.Key, resolved);
                 }
             }

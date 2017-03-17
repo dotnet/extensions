@@ -19,7 +19,6 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         private readonly CallSiteValidator _callSiteValidator;
         private readonly ServiceTable _table;
-        private readonly ServiceProviderOptions _options;
         private bool _disposeCalled;
         private List<IDisposable> _transientDisposables;
 
@@ -43,7 +42,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 _callSiteValidator = new CallSiteValidator();
             }
 
-            _options = options;
             _table = new ServiceTable(serviceDescriptors);
 
             _table.Add(typeof(IServiceProvider), new ServiceProviderService());
@@ -169,20 +167,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 _disposeCalled = true;
                 if (_transientDisposables != null)
                 {
-                    foreach (var disposable in _transientDisposables)
+                    for (int i = _transientDisposables.Count - 1; i >= 0; i--)
                     {
+                        var disposable = _transientDisposables[i];
                         disposable.Dispose();
                     }
 
                     _transientDisposables.Clear();
-                }
-
-                // PERF: We've enumerating the dictionary so that we don't allocate to enumerate.
-                // .Values allocates a ValueCollection on the heap, enumerating the dictionary allocates
-                // a struct enumerator
-                foreach (var entry in ResolvedServices)
-                {
-                    (entry.Value as IDisposable)?.Dispose();
                 }
 
                 ResolvedServices.Clear();

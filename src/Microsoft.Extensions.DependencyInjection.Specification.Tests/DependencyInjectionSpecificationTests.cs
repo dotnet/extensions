@@ -655,5 +655,30 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             Assert.Same(expected.MultipleService, actual.MultipleService);
             Assert.Same(expected.ScopedService, actual.ScopedService);
         }
+
+        [Fact]
+        public void DisposesInReverseOrderOfCreation()
+        {
+            // Arrange
+            var serviceCollection = new TestServiceCollection();
+            serviceCollection.AddSingleton<FakeDisposeCallback>();
+            serviceCollection.AddTransient<IFakeOuterService, FakeDisposableCallbackOuterService>();
+            serviceCollection.AddSingleton<IFakeMultipleService, FakeDisposableCallbackInnerService>();
+            serviceCollection.AddScoped<IFakeMultipleService, FakeDisposableCallbackInnerService>();
+            serviceCollection.AddTransient<IFakeMultipleService, FakeDisposableCallbackInnerService>();
+            serviceCollection.AddSingleton<IFakeService, FakeDisposableCallbackInnerService>();
+            var serviceProvider = CreateServiceProvider(serviceCollection);
+
+            var callback = serviceProvider.GetService<FakeDisposeCallback>();
+            var outer = serviceProvider.GetService<IFakeOuterService>();
+
+            // Act
+            ((IDisposable)serviceProvider).Dispose();
+
+            // Assert
+            Assert.Equal(outer, callback.Disposed[0]);
+            Assert.Equal(outer.MultipleServices.Reverse(), callback.Disposed.Skip(1).Take(3).OfType<IFakeMultipleService>());
+            Assert.Equal(outer.SingleService, callback.Disposed[4]);
+        }
     }
 }
