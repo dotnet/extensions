@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
 
@@ -455,7 +457,6 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal("nested", nested.Value());
         }
 
-
         [Fact]
         public void NestedInheritedOptions()
         {
@@ -597,6 +598,108 @@ Examples:
             };
 
             Assert.Contains(app.ExtendedHelpText, app.GetHelpText());
+        }
+
+        [Theory]
+        [InlineData(new[] { "--version", "--flag" }, "1.0")]
+        [InlineData(new[] { "-V", "-f" }, "1.0")]
+        [InlineData(new[] { "--help", "--flag" }, "some flag")]
+        [InlineData(new[] { "-h", "-f" }, "some flag")]
+        public void HelpAndVersionOptionStopProcessing(string[] input, string expectedOutData)
+        {
+            using (StringWriter outWriter = new StringWriter())
+            {
+                var app = new CommandLineApplication { Out = outWriter };
+                var optHelp = app.HelpOption("-h --help");
+                var optVersion = app.VersionOption("-V --version", "1", "1.0");
+                var optFlag = app.Option("-f |--flag", "some flag", CommandOptionType.NoValue);
+
+                app.Execute(input);
+
+                outWriter.Flush();
+                string outData = outWriter.ToString();
+                Assert.Contains(expectedOutData, outData);
+                Assert.False(optFlag.HasValue());
+            }
+        }
+
+        [Theory]
+        [InlineData("-f:File1", "-f:File2")]
+        [InlineData("--file:File1", "--file:File2")]
+        [InlineData("--file", "File1", "--file", "File2")]
+        public void ThrowsExceptionOnSingleValueOptionHavingTwoValues(params string[] inputOptions)
+        {
+            var app = new CommandLineApplication();
+            app.Option("-f |--file", "some file", CommandOptionType.SingleValue);
+
+            var exception = Assert.Throws<CommandParsingException>(() => app.Execute(inputOptions));
+
+            Assert.Equal("Unexpected value 'File2' for option 'file'", exception.Message);
+        }
+
+        [Theory]
+        [InlineData("-v")]
+        [InlineData("--verbose")]
+        public void NoValueOptionCanBeSet(string input)
+        {
+            var app = new CommandLineApplication();
+            var optVerbose = app.Option("-v |--verbose", "be verbose", CommandOptionType.NoValue);
+
+            app.Execute(input);
+
+            Assert.True(optVerbose.HasValue());
+        }
+
+        [Theory(Skip = "As of version 1.1.0 giving the help option aborts processing without settig it")]
+        [InlineData("-?")]
+        [InlineData("--help")]
+        public void HelpOptionCanBeSet(string input)
+        {
+            var app = new CommandLineApplication();
+            var optHelp = app.HelpOption("-? --help");
+
+            app.Execute(input);
+
+            Assert.True(optHelp.HasValue());
+        }
+
+        [Theory(Skip = "As of version 1.1.0 giving the help option aborts processing without settig it")]
+        [InlineData("-V")]
+        [InlineData("--Version")]
+        public void VersionOptionCanBeSet(string input)
+        {
+            var app = new CommandLineApplication();
+            var optVersion = app.VersionOption("-V --version", "1", "1.0");
+
+            app.Execute(input);
+
+            Assert.True(optVersion.HasValue());
+        }
+
+        [Theory]
+        [InlineData("-v:true")]
+        [InlineData("--verbose:true")]
+        public void ThrowsExceptionOnNoValueOptionHavingValue(string inputOption)
+        {
+            var app = new CommandLineApplication();
+            app.Option("-v |--verbose", "be verbose", CommandOptionType.NoValue);
+
+            var exception = Assert.Throws<CommandParsingException>(() => app.Execute(inputOption));
+
+            Assert.Equal("Unexpected value 'true' for option 'verbose'", exception.Message);
+        }
+
+        [Theory]
+        [InlineData((string)null)]
+        [InlineData("")]
+        [InlineData("-")]
+        public void ThrowsExceptionOnInvalidArgument(string inputOption)
+        {
+            var app = new CommandLineApplication();
+
+            var exception = Assert.Throws<CommandParsingException>(() => app.Execute(inputOption));
+
+            Assert.Equal($"Unrecognized option '{inputOption}'", exception.Message);
         }
     }
 }

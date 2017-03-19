@@ -134,9 +134,11 @@ namespace Microsoft.Extensions.CommandLineUtils
 
         public int Execute(params string[] args)
         {
-            var proc = new ArgsProcessor(this, args);
-            CommandLineApplication command = proc.ProcessArgs();
-            return command.Invoke();
+            using (var proc = new ArgsProcessor(this, args))
+            {
+                var command = proc.ProcessArgs();
+                return command.Invoke();
+            }
         }
 
         // Helper method that adds a help option
@@ -369,11 +371,10 @@ namespace Microsoft.Extensions.CommandLineUtils
             return option != null;
         }
 
-        private class ArgsProcessor
+        private sealed class ArgsProcessor : IDisposable
         {
             private enum ArgType
             {
-                None = 0,
                 Error,
                 ShortOption,
                 LongOption,
@@ -381,7 +382,7 @@ namespace Microsoft.Extensions.CommandLineUtils
                 ArgumentSeparator
             }
 
-            private class RawCommandLineArg
+            private sealed class RawCommandLineArg
             {
                 public RawCommandLineArg(string arg)
                 {
@@ -439,7 +440,7 @@ namespace Microsoft.Extensions.CommandLineUtils
                 }
             }
 
-            private class RawCommandLineArgEnumerator : IEnumerator<RawCommandLineArg>
+            private sealed class RawCommandLineArgEnumerator : IEnumerator<RawCommandLineArg>
             {
                 private readonly IEnumerator<string> _argsEnumerator;
                 private RawCommandLineArg _current;
@@ -476,7 +477,7 @@ namespace Microsoft.Extensions.CommandLineUtils
                 }
             }
 
-            private class CommandArgumentEnumerator : IEnumerator<CommandArgument>
+            private sealed class CommandArgumentEnumerator : IEnumerator<CommandArgument>
             {
                 private readonly IEnumerator<CommandArgument> _enumerator;
 
@@ -519,32 +520,34 @@ namespace Microsoft.Extensions.CommandLineUtils
             }
 
             private readonly CommandLineApplication _initialCommand;
-            private readonly string[] _args;
-            private RawCommandLineArgEnumerator _argsEnumerator;
+            private readonly RawCommandLineArgEnumerator _argsEnumerator;
             private CommandLineApplication _currentCommand;
             private CommandArgumentEnumerator _currentCommandArguments;
+            private bool _disposed;
 
             public ArgsProcessor(CommandLineApplication command, string[] args)
             {
-                this._initialCommand = command;
-                this._args = args;
+                _initialCommand = command;
+                _argsEnumerator = new RawCommandLineArgEnumerator(args);
             }
 
             public CommandLineApplication ProcessArgs()
             {
-                using (_argsEnumerator = new RawCommandLineArgEnumerator(_args))
+                if (_disposed)
                 {
-                    _currentCommand = _initialCommand;
-                    _currentCommandArguments = null;
-                    while (_argsEnumerator.MoveNext())
-                    {
-                        if (!ProcessCurrentArg())
-                        {
-                            return _currentCommand;
-                        }
-                    }
-                    return _currentCommand;
+                    throw new ObjectDisposedException(nameof(ArgsProcessor));
                 }
+                _currentCommand = _initialCommand;
+                _currentCommandArguments = null;
+                while (_argsEnumerator.MoveNext())
+                {
+                    if (!ProcessCurrentArg())
+                    {
+                        return _currentCommand;
+                    }
+                }
+                _argsEnumerator.Reset();
+                return _currentCommand;
             }
 
             private bool ProcessCurrentArg()
@@ -571,6 +574,7 @@ namespace Microsoft.Extensions.CommandLineUtils
                         }
                         break;
                     default:
+                        HandleUnexpectedArg("option");
                         return false;
                 }
                 return true;
@@ -586,25 +590,49 @@ namespace Microsoft.Extensions.CommandLineUtils
 
                 if (option.OptionType == CommandOptionType.NoValue)
                 {
-                    option.TryParse(_argsEnumerator.Current.ArgValue);
-                    if (option == _currentCommand.OptionHelp ||
-                        option == _currentCommand.OptionVersion)
+                    if (!option.TryParse(_argsEnumerator.Current.ArgValue))
                     {
+                        ThrowOnUnexpectedArgument(option, _argsEnumerator.Current.ArgValue);
+                    }
+
+                    if (option == _currentCommand.OptionHelp)
+                    {
+                        _currentCommand.ShowHelp();
                         return false;
                     }
+                    if (option == _currentCommand.OptionVersion)
+                    {
+                        _currentCommand.ShowVersion();
+                        return false;
+                    }
+                    return true;
                 }
 
                 if (_argsEnumerator.Current.ArgValue != null)
                 {
-                    return option.TryParse(_argsEnumerator.Current.ArgValue);
+                    if (!option.TryParse(_argsEnumerator.Current.ArgValue))
+                    {
+                        ThrowOnUnexpectedArgument(option, _argsEnumerator.Current.ArgValue);
+                    }
+                    return true;
                 }
 
                 if (TryReadValueFromNextArg(out string value))
                 {
-                    return option.TryParse(value);
+                    if (!option.TryParse(value))
+                    {
+                        ThrowOnUnexpectedArgument(option, value);
+                    }
+                    return true;
                 }
                 _currentCommand.ShowHint();
                 throw new CommandParsingException(_currentCommand, $"Missing value for option '{option.LongName}'");
+            }
+
+            private void ThrowOnUnexpectedArgument(CommandOption option, string value)
+            {
+                _currentCommand.ShowHint();
+                throw new CommandParsingException(_currentCommand, $"Unexpected value '{value}' for option '{option.LongName}'");
             }
 
             private bool ProcessCommandOrArgument()
@@ -679,6 +707,12 @@ namespace Microsoft.Extensions.CommandLineUtils
                 } while (_argsEnumerator.MoveNext());
             }
 
+            public void Dispose()
+            {
+                _disposed = true;
+                _argsEnumerator.Dispose();
+                _currentCommandArguments?.Dispose();
+            }
         }
     }
 }
