@@ -1,8 +1,11 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26131.1
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8B66E199-1AFE-4B68-AC71-4521C46EC4CD}"
+	ProjectSection(SolutionItems) = preProject
+		NuGet.config = NuGet.config
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D75011A4-DEEE-48DE-BB83-CE042F2AC05B}"
 EndProject
@@ -13,6 +16,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3000A721-AF6D-46D5-839C-60A2EC4A9693}"
 	ProjectSection(SolutionItems) = preProject
 		NuGet.config = NuGet.config
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{DAA55F05-C59E-4DCB-A7A8-F10A52196297}"
+	ProjectSection(SolutionItems) = preProject
+		build\common.props = build\common.props
+		build\dependencies.props = build\dependencies.props
 	EndProjectSection
 EndProject
 Global
@@ -36,5 +45,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{87808F3C-362E-4261-AA4A-EE40BA39D64E} = {8B66E199-1AFE-4B68-AC71-4521C46EC4CD}
 		{02754747-C385-4662-AD58-49CE54C3D7AF} = {D75011A4-DEEE-48DE-BB83-CE042F2AC05B}
+		{DAA55F05-C59E-4DCB-A7A8-F10A52196297} = {3000A721-AF6D-46D5-839C-60A2EC4A9693}
 	EndGlobalSection
 EndGlobal
