@@ -1,16 +1,24 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5525B6EA-8BBB-4437-BD09-419AE380BBA8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{09F799F3-E521-466F-B155-B89E2746C8C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Testing", "src\Microsoft.AspNetCore.Testing\Microsoft.AspNetCore.Testing.csproj", "{09BE5203-8042-4338-9713-E44169342E72}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Testing", "src\Microsoft.AspNetCore.Testing\Microsoft.AspNetCore.Testing.csproj", "{09BE5203-8042-4338-9713-E44169342E72}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Tests", "test\Sample.Tests\Sample.Tests.csproj", "{25D18D0B-119C-4AB4-BCA6-AC06179335FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.Tests", "test\Sample.Tests\Sample.Tests.csproj", "{25D18D0B-119C-4AB4-BCA6-AC06179335FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Testing.Tests", "test\Microsoft.AspNetCore.Testing.Tests\Microsoft.AspNetCore.Testing.Tests.csproj", "{C9F758D6-17A3-4BF1-BCCD-972B1DA959FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Testing.Tests", "test\Microsoft.AspNetCore.Testing.Tests\Microsoft.AspNetCore.Testing.Tests.csproj", "{C9F758D6-17A3-4BF1-BCCD-972B1DA959FC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{51D93BE9-A094-4ADD-911D-FA2A2E72D6D0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{7C1BE4D4-DBC3-4C9B-A024-E61463865F4B}"
+	ProjectSection(SolutionItems) = preProject
+		build\common.props = build\common.props
+		build\dependencies.props = build\dependencies.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,5 +46,6 @@ Global
 		{09BE5203-8042-4338-9713-E44169342E72} = {5525B6EA-8BBB-4437-BD09-419AE380BBA8}
 		{25D18D0B-119C-4AB4-BCA6-AC06179335FA} = {09F799F3-E521-466F-B155-B89E2746C8C9}
 		{C9F758D6-17A3-4BF1-BCCD-972B1DA959FC} = {09F799F3-E521-466F-B155-B89E2746C8C9}
+		{7C1BE4D4-DBC3-4C9B-A024-E61463865F4B} = {51D93BE9-A094-4ADD-911D-FA2A2E72D6D0}
 	EndGlobalSection
 EndGlobal
