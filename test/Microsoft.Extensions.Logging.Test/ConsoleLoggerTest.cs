@@ -684,6 +684,9 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.NotNull(disposable);
             Assert.Equal(2, sink.Writes.Count);
         }
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
 
         [Fact]

@@ -34,8 +34,11 @@ namespace SampleApp
             _logger = factory.CreateLogger<Program>();
 
             // providers may be added to an ILoggerFactory at any time, existing ILoggers are updated
-#if !NETCOREAPP1_1
+#if NET451
             factory.AddEventLog();
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
 
             // How to configure the console logger to reload based on a configuration file.

@@ -5,6 +5,7 @@
     <JsonNetVersion>9.0.1</JsonNetVersion>
     <MoqVersion>4.7.1</MoqVersion>
     <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+    <RuntimeFrameworkVersion>2.0.0-*</RuntimeFrameworkVersion>
     <SerilogExtensionsLoggingVersion>1.4.0</SerilogExtensionsLoggingVersion>
     <SerilogPeriodicBatchingVersion>2.1.0</SerilogPeriodicBatchingVersion>
     <SerilogRollingFileVersion>3.3.0</SerilogRollingFileVersion>

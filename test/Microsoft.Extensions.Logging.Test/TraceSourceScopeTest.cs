@@ -32,6 +32,9 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Same(a, c);
             Assert.Same(state, b);
         }
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
     }
 }
