@@ -11,5 +11,6 @@
     <TestSdkVersion>15.0.0</TestSdkVersion>
     <WindowsAzureStorageVersion>8.1.1</WindowsAzureStorageVersion>
     <XunitVersion>2.2.0</XunitVersion>
+    <XunitAbstractionsVersion>2.0.1</XunitAbstractionsVersion>
   </PropertyGroup>
 </Project>

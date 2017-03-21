@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="xunit.abstractions" Version="$(XunitAbstractionsVersion)" />
     <PackageReference Include="xunit.assert" Version="$(XunitVersion)" />
   </ItemGroup>
 
