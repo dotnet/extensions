@@ -8,6 +8,9 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>cache;distributedcache;sqlserver</PackageTags>
+
+    <!-- Temporary workaround for API Check crash that is part of aspnet/BuildTools#201. -->
+    <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
   <ItemGroup>
