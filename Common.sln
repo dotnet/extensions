@@ -18,8 +18,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Object
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.CommandLineUtils.Tests", "test\Microsoft.Extensions.CommandLineUtils.Tests\Microsoft.Extensions.CommandLineUtils.Tests.csproj", "{7E6564C3-04E3-418C-B96A-463FE2906F09}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.CommandLineUtils", "src\Microsoft.Extensions.CommandLineUtils\Microsoft.Extensions.CommandLineUtils.csproj", "{C46A8C00-CD50-4478-8639-6A6CF8CDD05B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,10 +48,6 @@ Global
 		{7E6564C3-04E3-418C-B96A-463FE2906F09}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E6564C3-04E3-418C-B96A-463FE2906F09}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E6564C3-04E3-418C-B96A-463FE2906F09}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C46A8C00-CD50-4478-8639-6A6CF8CDD05B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C46A8C00-CD50-4478-8639-6A6CF8CDD05B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C46A8C00-CD50-4478-8639-6A6CF8CDD05B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C46A8C00-CD50-4478-8639-6A6CF8CDD05B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -65,6 +59,5 @@ Global
 		{C87DA599-4C1F-4B91-9C77-A10E79CD8701} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 		{DA1D70F4-717A-4440-B388-B5BEE670C14D} = {6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}
 		{7E6564C3-04E3-418C-B96A-463FE2906F09} = {6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}
-		{C46A8C00-CD50-4478-8639-6A6CF8CDD05B} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 	EndGlobalSection
 EndGlobal

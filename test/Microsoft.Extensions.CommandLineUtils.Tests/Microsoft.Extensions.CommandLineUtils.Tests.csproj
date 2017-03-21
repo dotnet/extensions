@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Extensions.CommandLineUtils\Microsoft.Extensions.CommandLineUtils.csproj" />
+    <Compile Include="..\..\shared\Microsoft.Extensions.CommandLineUtils.Sources\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
