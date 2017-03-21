@@ -486,6 +486,9 @@ namespace Microsoft.Extensions.Caching.Memory
 
             Assert.Equal(expected, cache.Get<int>("value"));
         }
+#elif NETCOREAPP2_0
+#else
+#error Target framework needs to be updated
 #endif
 
         private class TestKey
