@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.CommandLineUtils
 {
-    public class CommandLineApplication
+    internal class CommandLineApplication
     {
         // Indicates whether the parser should throw an exception when it runs into an unexpected argument.
         // If this field is set to false, the parser will stop parsing when it sees an unexpected argument, and all

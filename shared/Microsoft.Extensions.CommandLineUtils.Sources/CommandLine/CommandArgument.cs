@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Microsoft.Extensions.CommandLineUtils
 {
-    public class CommandArgument
+    internal class CommandArgument
     {
         public CommandArgument()
         {

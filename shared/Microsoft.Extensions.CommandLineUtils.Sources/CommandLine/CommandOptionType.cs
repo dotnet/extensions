@@ -4,7 +4,7 @@
 
 namespace Microsoft.Extensions.CommandLineUtils
 {
-    public enum CommandOptionType
+    internal enum CommandOptionType
     {
         MultipleValue,
         SingleValue,

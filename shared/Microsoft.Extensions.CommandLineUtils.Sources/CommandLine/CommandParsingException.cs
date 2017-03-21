@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Extensions.CommandLineUtils
 {
-    public class CommandParsingException : Exception
+    internal class CommandParsingException : Exception
     {
         public CommandParsingException(CommandLineApplication command, string message)
             : base(message)
