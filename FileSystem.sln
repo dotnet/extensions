@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A1477614-E825-4204-A684-385004B63AEB}"
 EndProject
@@ -28,6 +28,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FileProviders.Composite", "src\Microsoft.Extensions.FileProviders.Composite\Microsoft.Extensions.FileProviders.Composite.csproj", "{CAAF52EF-F91B-474D-AC56-FE9D96FF8254}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FileProviders.Composite.Tests", "test\Microsoft.Extensions.FileProviders.Composite.Tests\Microsoft.Extensions.FileProviders.Composite.Tests.csproj", "{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{315EAB76-E28A-4A6C-84EE-041E68D90846}"
+	ProjectSection(SolutionItems) = preProject
+		build\common.props = build\common.props
+		build\dependencies.props = build\dependencies.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -85,5 +91,6 @@ Global
 		{66FE5FDF-BBF9-4573-A7B7-53551731C0F9} = {E399495E-82B8-4C06-8779-C1D02BEF4495}
 		{CAAF52EF-F91B-474D-AC56-FE9D96FF8254} = {A1477614-E825-4204-A684-385004B63AEB}
 		{C2EA9BD0-C986-4B60-9E45-5EA51E1EA494} = {E399495E-82B8-4C06-8779-C1D02BEF4495}
+		{315EAB76-E28A-4A6C-84EE-041E68D90846} = {1A060559-74DD-4B5A-BBA1-E8A441E729C1}
 	EndGlobalSection
 EndGlobal
