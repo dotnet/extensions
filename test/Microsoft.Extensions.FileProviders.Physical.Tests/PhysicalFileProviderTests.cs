@@ -1134,7 +1134,9 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        //Disabled until https://github.com/aspnet/FileSystem/issues/263 is resolved.
+        [OSSkipCondition(OperatingSystems.Windows)]
         public async Task TokensFiredForNewDirectoryContentsOnRename()
         {
             using (var root = new DisposableFileSystem())
