@@ -31,3 +31,4 @@ project.lock.json
 BenchmarkDotNet.Artifacts/
 BDN.Generated/
 binaries/
+global.json
