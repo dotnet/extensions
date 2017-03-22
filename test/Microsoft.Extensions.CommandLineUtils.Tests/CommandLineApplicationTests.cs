@@ -650,7 +650,7 @@ Examples:
             Assert.True(optVerbose.HasValue());
         }
 
-        [Fact(Skip = "As of version 1.1.0 giving the help option aborts processing without settig it")]
+        [Fact(Skip = "Until now giving the help option aborts processing without settig it")]
         public void HelpOptionCanBeSet()
         {
             var app = new CommandLineApplication();
@@ -661,7 +661,7 @@ Examples:
             Assert.True(optHelp.HasValue());
         }
 
-        [Fact(Skip = "As of version 1.1.0 giving the version option aborts processing without settig it")]
+        [Fact(Skip = "Until now giving the version option aborts processing without settig it")]
         public void VersionOptionCanBeSet()
         {
             var app = new CommandLineApplication();
