@@ -13,6 +13,10 @@ namespace Microsoft.Extensions.Internal
         private readonly IEqualityComparer<TKey> _comparer;
         private IDictionary<TKey, TValue> _innerDictionary;
 
+        public CopyOnWriteDictionary(IDictionary<TKey, TValue> sourceDictionary)
+            : this(sourceDictionary, EqualityComparer<TKey>.Default)
+        { }
+
         public CopyOnWriteDictionary(
             IDictionary<TKey, TValue> sourceDictionary,
             IEqualityComparer<TKey> comparer)
