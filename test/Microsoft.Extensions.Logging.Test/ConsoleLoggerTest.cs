@@ -769,12 +769,12 @@ namespace Microsoft.Extensions.Logging.Test
             var expected = ex.ToString() + Environment.NewLine;
 
             // Act
-            logger.Log(LogLevel.Critical, 0, message, ex, (s,e) => s);
-            logger.Log(LogLevel.Error, 0, message, ex, (s,e) => s);
-            logger.Log(LogLevel.Warning, 0, message, ex, (s,e) => s);
-            logger.Log(LogLevel.Information, 0, message, ex, (s,e) => s);
-            logger.Log(LogLevel.Debug, 0, message, ex, (s,e) => s);
-            logger.Log(LogLevel.Trace, 0, message, ex, (s,e) => s);
+            logger.Log(LogLevel.Critical, 0, message, ex, (s, e) => s);
+            logger.Log(LogLevel.Error, 0, message, ex, (s, e) => s);
+            logger.Log(LogLevel.Warning, 0, message, ex, (s, e) => s);
+            logger.Log(LogLevel.Information, 0, message, ex, (s, e) => s);
+            logger.Log(LogLevel.Debug, 0, message, ex, (s, e) => s);
+            logger.Log(LogLevel.Trace, 0, message, ex, (s, e) => s);
 
             // Assert
             Assert.Equal(6, sink.Writes.Count);
@@ -796,12 +796,12 @@ namespace Microsoft.Extensions.Logging.Test
             Exception ex = null;
 
             // Act
-            logger.Log(LogLevel.Critical, 0, _state, ex, (s,e) => s);
-            logger.Log(LogLevel.Error, 0, _state, ex, (s,e) => s);
-            logger.Log(LogLevel.Warning, 0, _state, ex, (s,e) => s);
-            logger.Log(LogLevel.Information, 0, _state, ex, (s,e) => s);
-            logger.Log(LogLevel.Debug, 0, _state, ex, (s,e) => s);
-            logger.Log(LogLevel.Trace, 0, _state, ex, (s,e) => s);
+            logger.Log(LogLevel.Critical, 0, _state, ex, (s, e) => s);
+            logger.Log(LogLevel.Error, 0, _state, ex, (s, e) => s);
+            logger.Log(LogLevel.Warning, 0, _state, ex, (s, e) => s);
+            logger.Log(LogLevel.Information, 0, _state, ex, (s, e) => s);
+            logger.Log(LogLevel.Debug, 0, _state, ex, (s, e) => s);
+            logger.Log(LogLevel.Trace, 0, _state, ex, (s, e) => s);
 
             // Assert
             Assert.Equal(12, sink.Writes.Count);
@@ -824,15 +824,27 @@ namespace Microsoft.Extensions.Logging.Test
             string message = null;
 
             // Act
-            logger.Log(LogLevel.Critical, 0, message, ex, (s,e) => s);
-            logger.Log(LogLevel.Error, 0, message, ex, (s,e) => s);
-            logger.Log(LogLevel.Warning, 0, message, ex, (s,e) => s);
-            logger.Log(LogLevel.Information, 0, message, ex, (s,e) => s);
-            logger.Log(LogLevel.Debug, 0, message, ex, (s,e) => s);
-            logger.Log(LogLevel.Trace, 0, message, ex, (s,e) => s);
+            logger.Log(LogLevel.Critical, 0, message, ex, (s, e) => s);
+            logger.Log(LogLevel.Error, 0, message, ex, (s, e) => s);
+            logger.Log(LogLevel.Warning, 0, message, ex, (s, e) => s);
+            logger.Log(LogLevel.Information, 0, message, ex, (s, e) => s);
+            logger.Log(LogLevel.Debug, 0, message, ex, (s, e) => s);
+            logger.Log(LogLevel.Trace, 0, message, ex, (s, e) => s);
 
             // Assert
             Assert.Equal(0, sink.Writes.Count);
+        }
+
+        [Fact]
+        public void LogAfterDisposeDoesNotThrow()
+        {
+            var sink = new ConsoleSink();
+            var console = new TestConsole(sink);
+            var processor = new ConsoleLoggerProcessor();
+            var logger = new ConsoleLogger(_loggerName, filter: null, includeScopes: false, loggerProcessor: processor);
+            logger.Console = console;
+            processor.Dispose();
+            logger.LogInformation("Logging after dispose");
         }
 
         private string GetMessage(string logLevelString, int eventId, Exception exception)
@@ -849,9 +861,9 @@ namespace Microsoft.Extensions.Logging.Test
                 + _paddingString
                 + ReplaceMessageNewLinesWithPadding(state?.ToString())
                 + Environment.NewLine
-                + ( exception != null
+                + (exception != null
                     ? exception.ToString() + Environment.NewLine
-                    : string.Empty );
+                    : string.Empty);
         }
 
         private string ReplaceMessageNewLinesWithPadding(string message)

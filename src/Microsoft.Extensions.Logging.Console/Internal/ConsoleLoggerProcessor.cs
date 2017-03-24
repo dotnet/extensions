@@ -27,7 +27,10 @@ namespace Microsoft.Extensions.Logging.Console.Internal
 
         public virtual void EnqueueMessage(LogMessageEntry message)
         {
-            _messageQueue.Add(message);
+            if (!_messageQueue.IsAddingCompleted)
+            {
+                _messageQueue.Add(message);
+            }
         }
 
         // for testing
