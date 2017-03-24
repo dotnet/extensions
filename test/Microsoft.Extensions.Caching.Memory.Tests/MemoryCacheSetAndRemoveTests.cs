@@ -461,36 +461,6 @@ namespace Microsoft.Extensions.Caching.Memory
             Task.WaitAll(task0, task1, task2, task3);
         }
 
-#if NET46
-        private static void DomainFunc()
-        {
-            var expected = 20;
-            var cache = CreateCache();
-            cache.Set("value2", expected);
-            Assert.Equal(expected, cache.Get<int>("value2"));
-        }
-
-        [Fact]
-        public void GetAndSet_DifferentAppDomain()
-        {
-            var expected = 10;
-            var cache = CreateCache();
-            cache.Set("value", expected);
-
-            var domainInfo = new AppDomainSetup
-            {
-                ApplicationBase = AppDomain.CurrentDomain.BaseDirectory,
-            };
-            var domain = AppDomain.CreateDomain("newDomain", null, domainInfo);
-            domain.DoCallBack(DomainFunc);
-
-            Assert.Equal(expected, cache.Get<int>("value"));
-        }
-#elif NETCOREAPP2_0
-#else
-#error Target framework needs to be updated
-#endif
-
         private class TestKey
         {
             public override bool Equals(object obj) => true;
