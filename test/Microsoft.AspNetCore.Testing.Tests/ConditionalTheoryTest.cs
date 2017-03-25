@@ -7,8 +7,15 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Testing
 {
-    public class ConditionalTheoryTest
+    public class ConditionalTheoryTest : IClassFixture<ConditionalTheoryTest.ConditionalTheoryAsserter>
     {
+        public ConditionalTheoryTest(ConditionalTheoryAsserter asserter)
+        {
+            Asserter = asserter;
+        }
+
+        public ConditionalTheoryAsserter Asserter { get; }
+
         [ConditionalTheory(Skip = "Test is always skipped.")]
         [InlineData(0)]
         public void ConditionalTheorySkip(int arg)
@@ -66,10 +73,47 @@ namespace Microsoft.AspNetCore.Testing
             Assert.True(false, "This should never run");
         }
 
+        [Fact]
+        public void TestAlwaysRun()
+        {
+            // This is required to ensure that this type at least gets initialized.
+            Assert.True(true);
+        }
+
+#if NETCOREAPP2_0
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
+        [MemberData(nameof(GetInts))]
+        public void ThisTestMustRunOnCoreCLR(int value)
+        {
+            Asserter.TestRan = true;
+        }
+#elif NET46
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
+        [MemberData(nameof(GetInts))]
+        public void ThisTestMustRunOnCLR(int value)
+        {
+            Asserter.TestRan = true;
+        }
+#else
+#error Target frameworks need to be updated.
+#endif
+
         public static TheoryData<Func<int, int>> GetActionTestData
             => new TheoryData<Func<int, int>>
             {
                 (i) => i * 1
             };
+
+        public class ConditionalTheoryAsserter : IDisposable
+        {
+            public bool TestRan { get; set; }
+
+            public void Dispose()
+            {
+                Assert.True(TestRan, "If this assertion fails, a conditional theory wasn't discovered.");
+            }
+        }
     }
 }

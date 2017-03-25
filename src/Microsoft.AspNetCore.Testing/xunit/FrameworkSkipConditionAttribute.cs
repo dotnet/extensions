@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Testing.xunit
 {
@@ -33,7 +32,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
                 return true;
             }
 
-#if NET452
+#if NET46
             if (excludedFrameworks.HasFlag(RuntimeFrameworks.Mono) &&
                 TestPlatformHelper.IsMono)
             {
@@ -44,11 +43,13 @@ namespace Microsoft.AspNetCore.Testing.xunit
             {
                 return false;
             }
-#else
+#elif NETSTANDARD1_3
             if (excludedFrameworks.HasFlag(RuntimeFrameworks.CoreCLR))
             {
                 return false;
             }
+#else
+#error Target frameworks need to be updated.
 #endif
             return true;
         }
