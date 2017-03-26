@@ -12,10 +12,7 @@ namespace Microsoft.Extensions.Caching.Memory
     {
         private static IMemoryCache CreateCache()
         {
-            return new MemoryCache(new MemoryCacheOptions()
-            {
-                CompactOnMemoryPressure = false,
-            });
+            return new MemoryCache(new MemoryCacheOptions());
         }
 
         [Fact]

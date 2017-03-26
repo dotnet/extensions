@@ -48,10 +48,6 @@ namespace Microsoft.Extensions.Caching.Memory
             _entryExpirationNotification = EntryExpired;
 
             _clock = options.Clock ?? new SystemClock();
-            if (options.CompactOnMemoryPressure)
-            {
-                GcNotification.Register(DoMemoryPreassureCollection, state: null);
-            }
             _expirationScanFrequency = options.ExpirationScanFrequency;
             _lastExpirationScan = _clock.UtcNow;
         }
@@ -274,20 +270,6 @@ namespace Microsoft.Extensions.Caching.Memory
                     cache.RemoveEntry(entry);
                 }
             }
-        }
-
-        /// This is called after a Gen2 garbage collection. We assume this means there was memory pressure.
-        /// Remove at least 10% of the total entries (or estimated memory?).
-        private bool DoMemoryPreassureCollection(object state)
-        {
-            if (_disposed)
-            {
-                return false;
-            }
-
-            Compact(0.10);
-
-            return true;
         }
 
         /// Remove at least the given percentage (0.10 for 10%) of the total entries (or estimated memory?), according to the following policy:
