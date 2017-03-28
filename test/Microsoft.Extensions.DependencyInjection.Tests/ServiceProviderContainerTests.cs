@@ -111,7 +111,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var provider = serviceCollection.BuildServiceProvider();
             provider.GetService<Disposable>();
 
-            ((IDisposable)provider).Dispose();
+            provider.Dispose();
 
             Assert.False(disposable.Disposed);
         }

@@ -397,7 +397,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 collection.Add(descriptor);
             }
 
-            return (ServiceProvider)collection.BuildServiceProvider();
+            return collection.BuildServiceProvider();
         }
 
         private static IEnumerable<Type> GetParameters(ConstructorCallSite constructorCallSite) =>

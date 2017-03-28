@@ -1,0 +1,9 @@
+[
+  {
+    "OldTypeId": "public static class Microsoft.Extensions.DependencyInjection.ServiceCollectionContainerBuilderExtensions",
+    "OldMemberId": "public static System.IServiceProvider BuildServiceProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection services)",
+    "NewTypeId": "public static class Microsoft.Extensions.DependencyInjection.ServiceCollectionContainerBuilderExtensions",
+    "NewMemberId": "public static Microsoft.Extensions.DependencyInjection.ServiceProvider BuildServiceProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection services)",
+    "Kind": "Modification"
+  }
+]
