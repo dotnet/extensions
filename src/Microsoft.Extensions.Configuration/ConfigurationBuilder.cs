@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Configuration
         private readonly IList<IConfigurationSource> _sources = new List<IConfigurationSource>();
 
         /// <summary>
-        /// Returns the sources used to obtain configuation values.
+        /// Returns the sources used to obtain configuration values.
         /// </summary>
         public IEnumerable<IConfigurationSource> Sources
         {
