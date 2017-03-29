@@ -16,5 +16,10 @@ namespace Microsoft.Extensions.Options
         /// </summary>
         /// <returns></returns>
         IChangeToken GetChangeToken();
+
+        /// <summary>
+        /// The name of the option instance being changed.
+        /// </summary>
+        string Name { get; }
     }
 }

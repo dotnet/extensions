@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Provides a strongly typed way of specifying and accessing settings using dependency injection.</Description>
-    <TargetFramework>netstandard1.0</TargetFramework>
+    <TargetFramework>netstandard1.1</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;options</PackageTags>
@@ -13,7 +13,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Primitives" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="System.ComponentModel" Version="$(CoreFxVersion)" />
-  </ItemGroup>
+    <PackageReference Include="System.ComponentModel" Version="$(CoreFxVersion)" />  </ItemGroup>
 
 </Project>

@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Extensions.Options
+﻿using System;
+
+namespace Microsoft.Extensions.Options
 {
     /// <summary>
     /// IOptions wrapper that returns the options instance.
@@ -19,5 +21,20 @@
         /// The options instance.
         /// </summary>
         public TOptions Value { get; }
+
+        public void Add(string name, TOptions options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TOptions Get(string name)
+        {
+            return Value;
+        }
+
+        public bool Remove(string name)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

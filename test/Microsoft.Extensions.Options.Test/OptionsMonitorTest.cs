@@ -38,6 +38,8 @@ namespace Microsoft.Extensions.Options.Tests
 
             public FakeChangeToken Token { get; set; }
 
+            public string Name { get; }
+
             public IChangeToken GetChangeToken()
             {
                 return Token;

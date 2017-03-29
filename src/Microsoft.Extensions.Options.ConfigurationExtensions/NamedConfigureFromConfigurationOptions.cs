@@ -6,21 +6,20 @@ using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.Options
 {
-    // REVIEW: consider deleting/obsoleting, not used by Configure anymore (in favor of name), left for breaking change)
-
     /// <summary>
     /// Configures an option instance by using ConfigurationBinder.Bind against an IConfiguration.
     /// </summary>
     /// <typeparam name="TOptions">The type of options to bind.</typeparam>
-    public class ConfigureFromConfigurationOptions<TOptions> : ConfigureOptions<TOptions>
+    public class NamedConfigureFromConfigurationOptions<TOptions> : ConfigureNamedOptions<TOptions>
         where TOptions : class
     {
         /// <summary>
         /// Constructor that takes the IConfiguration instance to bind against.
         /// </summary>
+        /// <param name="name">The name of the options instance.</param>
         /// <param name="config">The IConfiguration instance.</param>
-        public ConfigureFromConfigurationOptions(IConfiguration config) 
-            : base(options => ConfigurationBinder.Bind(config, options))
+        public NamedConfigureFromConfigurationOptions(string name, IConfiguration config)
+            : base(name, options => ConfigurationBinder.Bind(config, options))
         {
             if (config == null)
             {

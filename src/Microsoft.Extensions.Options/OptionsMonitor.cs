@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Options
     /// <typeparam name="TOptions"></typeparam>
     public class OptionsMonitor<TOptions> : IOptionsMonitor<TOptions> where TOptions : class, new()
     {
-        private OptionsCache<TOptions> _optionsCache;
+        private LegacyOptionsCache<TOptions> _optionsCache;
         private readonly IEnumerable<IConfigureOptions<TOptions>> _setups;
         private readonly IEnumerable<IOptionsChangeTokenSource<TOptions>> _sources;
         private List<Action<TOptions>> _listeners = new List<Action<TOptions>>();
@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Options
         {
             _sources = sources;
             _setups = setups;
-            _optionsCache = new OptionsCache<TOptions>(setups);
+            _optionsCache = new LegacyOptionsCache<TOptions>(setups);
 
             foreach (var source in _sources)
             {
@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.Options
 
         private void InvokeChanged()
         {
-            _optionsCache = new OptionsCache<TOptions>(_setups);
+            _optionsCache = new LegacyOptionsCache<TOptions>(_setups);
             foreach (var listener in _listeners)
             {
                 listener?.Invoke(_optionsCache.Value);

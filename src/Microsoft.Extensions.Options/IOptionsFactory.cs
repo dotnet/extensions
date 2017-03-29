@@ -1,17 +1,17 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.Extensions.Options
 {
     /// <summary>
-    /// Used to access the value of TOptions for the lifetime of a request.
+    /// Used to create TOptions instances.
     /// </summary>
-    /// <typeparam name="TOptions"></typeparam>
-    public interface IOptionsSnapshot<out TOptions> : IOptions<TOptions> where TOptions : class, new()
+    /// <typeparam name="TOptions">The type of options being requested.</typeparam>
+    public interface IOptionsFactory<TOptions> where TOptions : class, new()
     {
         /// <summary>
         /// Returns a configured TOptions instance with the given name.
         /// </summary>
-        TOptions Get(string name);
+        TOptions Create(string name);
     }
 }

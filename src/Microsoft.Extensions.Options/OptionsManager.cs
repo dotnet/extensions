@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -9,9 +9,9 @@ namespace Microsoft.Extensions.Options
     /// Implementation of IOptions.
     /// </summary>
     /// <typeparam name="TOptions"></typeparam>
-    public class OptionsManager<TOptions> : IOptions<TOptions>, IOptionsSnapshot<TOptions> where TOptions : class, new()
+    public class OptionsManager<TOptions> : IOptions<TOptions> where TOptions : class, new()
     {
-        private OptionsCache<TOptions> _optionsCache;
+        private LegacyOptionsCache<TOptions> _optionsCache;
 
         /// <summary>
         /// Initializes a new instance with the specified options configurations.
@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Options
         /// <param name="setups">The configuration actions to run.</param>
         public OptionsManager(IEnumerable<IConfigureOptions<TOptions>> setups)
         {
-            _optionsCache = new OptionsCache<TOptions>(setups);
+            _optionsCache = new LegacyOptionsCache<TOptions>(setups);
         }
 
         /// <summary>

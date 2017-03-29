@@ -19,7 +19,15 @@ namespace Microsoft.Extensions.Options
         /// Constructor taking the IConfiguration instance to watch.
         /// </summary>
         /// <param name="config">The configuration instance.</param>
-        public ConfigurationChangeTokenSource(IConfiguration config)
+        public ConfigurationChangeTokenSource(IConfiguration config) : this(Options.DefaultName, config)
+        { }
+
+        /// <summary>
+        /// Constructor taking the IConfiguration instance to watch.
+        /// </summary>
+        /// <param name="name">The name of the options instance being watche.</param>
+        /// <param name="config">The configuration instance.</param>
+        public ConfigurationChangeTokenSource(string name, IConfiguration config)
         {
             if (config == null)
             {
@@ -27,6 +35,8 @@ namespace Microsoft.Extensions.Options
             }
             _config = config;
         }
+
+        public string Name { get; }
 
         /// <summary>
         /// Returns the reloadToken from IConfiguration.
