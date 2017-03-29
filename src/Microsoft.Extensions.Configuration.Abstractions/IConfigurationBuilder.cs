@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Configuration
         Dictionary<string, object> Properties { get; }
 
         /// <summary>
-        /// Gets the sources used to obtain configuation values
+        /// Gets the sources used to obtain configuration values
         /// </summary>
         IEnumerable<IConfigurationSource> Sources { get; }
 
