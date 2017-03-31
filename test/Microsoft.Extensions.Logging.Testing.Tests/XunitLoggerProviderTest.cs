@@ -60,19 +60,43 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             Assert.Equal(expectedOutput, testTestOutputHelper.Output);
         }
 
+        [Fact]
+        public void LoggerProviderDoesNotThrowIfOutputHelperThrows()
+        {
+            var testTestOutputHelper = new TestTestOutputHelper();
+            var loggerFactory = new LoggerFactory();
+            loggerFactory.AddXunit(testTestOutputHelper);
+            testTestOutputHelper.Throw = true;
+
+            var logger = loggerFactory.CreateLogger("TestCategory");
+            logger.LogInformation("This is a" + Environment.NewLine + "multi-line" + Environment.NewLine + "message");
+
+            Assert.Equal(0, testTestOutputHelper.Output.Length);
+        }
+
         private class TestTestOutputHelper : ITestOutputHelper
         {
             private StringBuilder _output = new StringBuilder();
+
+            public bool Throw { get; set; }
 
             public string Output => _output.ToString();
 
             public void WriteLine(string message)
             {
+                if (Throw)
+                {
+                    throw new Exception("Boom!");
+                }
                 _output.AppendLine(message);
             }
 
             public void WriteLine(string format, params object[] args)
             {
+                if (Throw)
+                {
+                    throw new Exception("Boom!");
+                }
                 _output.AppendLine(string.Format(format, args));
             }
         }

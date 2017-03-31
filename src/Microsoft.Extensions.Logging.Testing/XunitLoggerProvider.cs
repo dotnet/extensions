@@ -56,12 +56,12 @@ namespace Microsoft.Extensions.Logging.Testing
             }
             var firstLinePrefix = $"| {_category} {logLevel}: ";
             var lines = formatter(state, exception).Split('\n');
-            _output.WriteLine(firstLinePrefix + lines.First().TrimEnd(NewLineChars));
+            WriteLine(firstLinePrefix + lines.First().TrimEnd(NewLineChars));
 
             var additionalLinePrefix = "|" + new string(' ', firstLinePrefix.Length - 1);
             foreach (var line in lines.Skip(1))
             {
-                _output.WriteLine(additionalLinePrefix + line.TrimEnd(NewLineChars));
+                WriteLine(additionalLinePrefix + line.TrimEnd(NewLineChars));
             }
         }
 
@@ -70,6 +70,21 @@ namespace Microsoft.Extensions.Logging.Testing
 
         public IDisposable BeginScope<TState>(TState state)
             => new NullScope();
+
+        private void WriteLine(string message)
+        {
+            try
+            {
+                _output.WriteLine(message);
+            }
+            catch (Exception)
+            {
+                // We could fail because we're on a background thread and our captured ITestOutputHelper is
+                // busted (if the test "completed" before the background thread fired).
+                // So, ignore this. There isn't really anything we can do but hope the
+                // caller has additional loggers registered
+            }
+        }
 
         private class NullScope : IDisposable
         {
