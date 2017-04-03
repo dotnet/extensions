@@ -52,10 +52,7 @@ namespace Microsoft.Extensions.Internal
 
         internal static ObjectFactory CreateFactory(Type instanceType, Type[] argumentTypes)
         {
-            ConstructorInfo constructor;
-            int?[] parameterMap;
-
-            FindApplicableConstructor(instanceType, argumentTypes, out constructor, out parameterMap);
+            FindApplicableConstructor(instanceType, argumentTypes, out ConstructorInfo constructor, out int?[] parameterMap);
 
             var provider = Expression.Parameter(typeof(IServiceProvider), "provider");
             var argumentArray = Expression.Parameter(typeof(object[]), "argumentArray");
@@ -157,8 +154,7 @@ namespace Microsoft.Extensions.Internal
                     continue;
                 }
 
-                int?[] tempParameterMap;
-                if (TryCreateParameterMap(constructor.GetParameters(), argumentTypes, out tempParameterMap))
+                if (TryCreateParameterMap(constructor.GetParameters(), argumentTypes, out int?[] tempParameterMap))
                 {
                     if (matchingConstructor != null)
                     {
@@ -230,12 +226,11 @@ namespace Microsoft.Extensions.Internal
 
             public int Match(object[] givenParameters)
             {
-
                 var applyIndexStart = 0;
                 var applyExactLength = 0;
                 for (var givenIndex = 0; givenIndex != givenParameters.Length; givenIndex++)
                 {
-                    var givenType = givenParameters[givenIndex] == null ? null : givenParameters[givenIndex].GetType().GetTypeInfo();
+                    var givenType = givenParameters[givenIndex]?.GetType().GetTypeInfo();
                     var givenMatched = false;
 
                     for (var applyIndex = applyIndexStart; givenMatched == false && applyIndex != _parameters.Length; ++applyIndex)
