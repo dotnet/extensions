@@ -29,8 +29,16 @@ namespace Microsoft.Extensions.Logging.Console.Internal
         {
             if (!_messageQueue.IsAddingCompleted)
             {
-                _messageQueue.Add(message);
+                try
+                {
+                    _messageQueue.Add(message);
+                    return;
+                }
+                catch (InvalidOperationException) { }
             }
+
+            // Adding is completed so just log the message
+            WriteMessage(message);
         }
 
         // for testing

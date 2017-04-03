@@ -836,15 +836,21 @@ namespace Microsoft.Extensions.Logging.Test
         }
 
         [Fact]
-        public void LogAfterDisposeDoesNotThrow()
+        public void LogAfterDisposeWritesLog()
         {
+            // Arrange
             var sink = new ConsoleSink();
             var console = new TestConsole(sink);
             var processor = new ConsoleLoggerProcessor();
             var logger = new ConsoleLogger(_loggerName, filter: null, includeScopes: false, loggerProcessor: processor);
             logger.Console = console;
+
+            // Act
             processor.Dispose();
             logger.LogInformation("Logging after dispose");
+
+            // Assert
+            Assert.True(sink.Writes.Count == 2);
         }
 
         private string GetMessage(string logLevelString, int eventId, Exception exception)
