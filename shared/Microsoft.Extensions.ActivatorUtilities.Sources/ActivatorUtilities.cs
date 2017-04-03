@@ -23,21 +23,24 @@ namespace Microsoft.Extensions.Internal
             int bestLength = -1;
             ConstructorMatcher bestMatcher = null;
 
-            foreach (var matcher in instanceType
-                .GetTypeInfo()
-                .DeclaredConstructors
-                .Where(c => !c.IsStatic && c.IsPublic)
-                .Select(constructor => new ConstructorMatcher(constructor)))
+            if (!instanceType.GetTypeInfo().IsAbstract)
             {
-                var length = matcher.Match(parameters);
-                if (length == -1)
+                foreach (var matcher in instanceType
+                    .GetTypeInfo()
+                    .DeclaredConstructors
+                    .Where(c => !c.IsStatic && c.IsPublic)
+                    .Select(constructor => new ConstructorMatcher(constructor)))
                 {
-                    continue;
-                }
-                if (bestLength < length)
-                {
-                    bestLength = length;
-                    bestMatcher = matcher;
+                    var length = matcher.Match(parameters);
+                    if (length == -1)
+                    {
+                        continue;
+                    }
+                    if (bestLength < length)
+                    {
+                        bestLength = length;
+                        bestMatcher = matcher;
+                    }
                 }
             }
 
