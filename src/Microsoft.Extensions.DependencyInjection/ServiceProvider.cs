@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
         private readonly CallSiteValidator _callSiteValidator;
         private readonly ServiceTable _table;
         private bool _disposeCalled;
-        private List<IDisposable> _transientDisposables;
+        private List<IDisposable> _disposables;
 
         internal ServiceProvider Root { get; }
         internal Dictionary<object, object> ResolvedServices { get; } = new Dictionary<object, object>();
@@ -164,15 +164,15 @@ namespace Microsoft.Extensions.DependencyInjection
                     return;
                 }
                 _disposeCalled = true;
-                if (_transientDisposables != null)
+                if (_disposables != null)
                 {
-                    for (int i = _transientDisposables.Count - 1; i >= 0; i--)
+                    for (int i = _disposables.Count - 1; i >= 0; i--)
                     {
-                        var disposable = _transientDisposables[i];
+                        var disposable = _disposables[i];
                         disposable.Dispose();
                     }
 
-                    _transientDisposables.Clear();
+                    _disposables.Clear();
                 }
 
                 ResolvedServices.Clear();
@@ -190,12 +190,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 {
                     lock (ResolvedServices)
                     {
-                        if (_transientDisposables == null)
+                        if (_disposables == null)
                         {
-                            _transientDisposables = new List<IDisposable>();
+                            _disposables = new List<IDisposable>();
                         }
 
-                        _transientDisposables.Add(disposable);
+                        _disposables.Add(disposable);
                     }
                 }
             }
