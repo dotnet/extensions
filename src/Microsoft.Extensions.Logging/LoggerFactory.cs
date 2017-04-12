@@ -485,7 +485,7 @@ namespace Microsoft.Extensions.Logging
                 level = LogLevel.None;
                 return false;
             }
-            else if (Enum.TryParse(value, out level))
+            else if (Enum.TryParse(value, true, out level))
             {
                 return true;
             }
