@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.CommandLineUtils
         public CommandOption OptionVersion { get; private set; }
         public readonly List<CommandArgument> Arguments;
         public readonly List<string> RemainingArguments;
-        public bool IsShowingInformation { get; protected set; }  // Is showing help or version?
+        public bool IsShowingInformation { get; protected set; } // Is showing help or version?
         public Func<int> Invoke { get; set; }
         public Func<string> LongVersionGetter { get; set; }
         public Func<string> ShortVersionGetter { get; set; }
@@ -65,7 +65,7 @@ namespace Microsoft.Extensions.CommandLineUtils
         public CommandLineApplication Command(string name, Action<CommandLineApplication> configuration,
             bool throwOnUnexpectedArg = true)
         {
-            var command = new CommandLineApplication(throwOnUnexpectedArg) { Name = name, Parent = this };
+            var command = new CommandLineApplication(throwOnUnexpectedArg) {Name = name, Parent = this};
             Commands.Add(command);
             configuration(command);
             return command;
@@ -77,10 +77,12 @@ namespace Microsoft.Extensions.CommandLineUtils
         public CommandOption Option(string template, string description, CommandOptionType optionType, bool inherited)
             => Option(template, description, optionType, _ => { }, inherited);
 
-        public CommandOption Option(string template, string description, CommandOptionType optionType, Action<CommandOption> configuration)
+        public CommandOption Option(string template, string description, CommandOptionType optionType,
+            Action<CommandOption> configuration)
             => Option(template, description, optionType, configuration, inherited: false);
 
-        public CommandOption Option(string template, string description, CommandOptionType optionType, Action<CommandOption> configuration, bool inherited)
+        public CommandOption Option(string template, string description, CommandOptionType optionType,
+            Action<CommandOption> configuration, bool inherited)
         {
             var option = new CommandOption(template, optionType)
             {
@@ -97,17 +99,24 @@ namespace Microsoft.Extensions.CommandLineUtils
             return Argument(name, description, _ => { }, multipleValues);
         }
 
-        public CommandArgument Argument(string name, string description, Action<CommandArgument> configuration, bool multipleValues = false)
+        public CommandArgument Argument(string name, string description, Action<CommandArgument> configuration,
+            bool multipleValues = false)
         {
             var lastArg = Arguments.LastOrDefault();
             if (lastArg != null && lastArg.MultipleValues)
             {
-                var message = string.Format("The last argument '{0}' accepts multiple values. No more argument can be added.",
+                var message = string.Format(
+                    "The last argument '{0}' accepts multiple values. No more argument can be added.",
                     lastArg.Name);
                 throw new InvalidOperationException(message);
             }
 
-            var argument = new CommandArgument { Name = name, Description = description, MultipleValues = multipleValues };
+            var argument = new CommandArgument
+            {
+                Name = name,
+                Description = description,
+                MultipleValues = multipleValues
+            };
             Arguments.Add(argument);
             configuration(argument);
             return argument;
@@ -122,178 +131,14 @@ namespace Microsoft.Extensions.CommandLineUtils
         {
             Invoke = () => invoke().Result;
         }
+
         public int Execute(params string[] args)
         {
-            CommandLineApplication command = this;
-            CommandOption option = null;
-            IEnumerator<CommandArgument> arguments = null;
-
-            for (var index = 0; index < args.Length; index++)
+            using (var proc = new ArgsProcessor(this, args))
             {
-                var arg = args[index];
-                var processed = false;
-                if (!processed && option == null)
-                {
-                    string[] longOption = null;
-                    string[] shortOption = null;
-
-                    if (arg.StartsWith("--"))
-                    {
-                        longOption = arg.Substring(2).Split(new[] { ':', '=' }, 2);
-                    }
-                    else if (arg.StartsWith("-"))
-                    {
-                        shortOption = arg.Substring(1).Split(new[] { ':', '=' }, 2);
-                    }
-                    if (longOption != null)
-                    {
-                        processed = true;
-                        var longOptionName = longOption[0];
-                        option = command.GetOptions().SingleOrDefault(opt => string.Equals(opt.LongName, longOptionName, StringComparison.Ordinal));
-
-                        if (option == null)
-                        {
-                            if (string.IsNullOrEmpty(longOptionName) && !command._throwOnUnexpectedArg  && AllowArgumentSeparator)
-                            {
-                                // skip over the '--' argument separator
-                                index++;
-                            }
-
-                            HandleUnexpectedArg(command, args, index, argTypeName: "option");
-                            break;
-                        }
-
-                        // If we find a help/version option, show information and stop parsing
-                        if (command.OptionHelp == option)
-                        {
-                            command.ShowHelp();
-                            return 0;
-                        }
-                        else if (command.OptionVersion == option)
-                        {
-                            command.ShowVersion();
-                            return 0;
-                        }
-
-                        if (longOption.Length == 2)
-                        {
-                            if (!option.TryParse(longOption[1]))
-                            {
-                                command.ShowHint();
-                                throw new CommandParsingException(command, $"Unexpected value '{longOption[1]}' for option '{option.LongName}'");
-                            }
-                            option = null;
-                        }
-                        else if (option.OptionType == CommandOptionType.NoValue)
-                        {
-                            // No value is needed for this option
-                            option.TryParse(null);
-                            option = null;
-                        }
-                    }
-                    if (shortOption != null)
-                    {
-                        processed = true;
-                        option = command.GetOptions().SingleOrDefault(opt => string.Equals(opt.ShortName, shortOption[0], StringComparison.Ordinal));
-
-                        // If not a short option, try symbol option
-                        if (option == null)
-                        {
-                            option = command.GetOptions().SingleOrDefault(opt => string.Equals(opt.SymbolName, shortOption[0], StringComparison.Ordinal));
-                        }
-
-                        if (option == null)
-                        {
-                            HandleUnexpectedArg(command, args, index, argTypeName: "option");
-                            break;
-                        }
-
-                        // If we find a help/version option, show information and stop parsing
-                        if (command.OptionHelp == option)
-                        {
-                            command.ShowHelp();
-                            return 0;
-                        }
-                        else if (command.OptionVersion == option)
-                        {
-                            command.ShowVersion();
-                            return 0;
-                        }
-
-                        if (shortOption.Length == 2)
-                        {
-                            if (!option.TryParse(shortOption[1]))
-                            {
-                                command.ShowHint();
-                                throw new CommandParsingException(command, $"Unexpected value '{shortOption[1]}' for option '{option.LongName}'");
-                            }
-                            option = null;
-                        }
-                        else if (option.OptionType == CommandOptionType.NoValue)
-                        {
-                            // No value is needed for this option
-                            option.TryParse(null);
-                            option = null;
-                        }
-                    }
-                }
-
-                if (!processed && option != null)
-                {
-                    processed = true;
-                    if (!option.TryParse(arg))
-                    {
-                        command.ShowHint();
-                        throw new CommandParsingException(command, $"Unexpected value '{arg}' for option '{option.LongName}'");
-                    }
-                    option = null;
-                }
-
-                if (!processed && arguments == null)
-                {
-                    var currentCommand = command;
-                    foreach (var subcommand in command.Commands)
-                    {
-                        if (string.Equals(subcommand.Name, arg, StringComparison.OrdinalIgnoreCase))
-                        {
-                            processed = true;
-                            command = subcommand;
-                            break;
-                        }
-                    }
-
-                    // If we detect a subcommand
-                    if (command != currentCommand)
-                    {
-                        processed = true;
-                    }
-                }
-                if (!processed)
-                {
-                    if (arguments == null)
-                    {
-                        arguments = new CommandArgumentEnumerator(command.Arguments.GetEnumerator());
-                    }
-                    if (arguments.MoveNext())
-                    {
-                        processed = true;
-                        arguments.Current.Values.Add(arg);
-                    }
-                }
-                if (!processed)
-                {
-                    HandleUnexpectedArg(command, args, index, argTypeName: "command or argument");
-                    break;
-                }
+                var command = proc.ProcessArgs();
+                return command.Invoke();
             }
-
-            if (option != null)
-            {
-                command.ShowHint();
-                throw new CommandParsingException(command, $"Missing value for option '{option.LongName}'");
-            }
-
-            return command.Invoke();
         }
 
         // Helper method that adds a help option
@@ -339,7 +184,8 @@ namespace Microsoft.Extensions.CommandLineUtils
         {
             if (OptionHelp != null)
             {
-                Out.WriteLine(string.Format("Specify --{0} for a list of available options and commands.", OptionHelp.LongName));
+                Out.WriteLine(string.Format("Specify --{0} for a list of available options and commands.",
+                    OptionHelp.LongName));
             }
         }
 
@@ -370,7 +216,8 @@ namespace Microsoft.Extensions.CommandLineUtils
             }
             else
             {
-                target = Commands.SingleOrDefault(cmd => string.Equals(cmd.Name, commandName, StringComparison.OrdinalIgnoreCase));
+                target = Commands.SingleOrDefault(
+                    cmd => string.Equals(cmd.Name, commandName, StringComparison.OrdinalIgnoreCase));
 
                 if (target != null)
                 {
@@ -438,7 +285,8 @@ namespace Microsoft.Extensions.CommandLineUtils
                 if (OptionHelp != null)
                 {
                     commandsBuilder.AppendLine();
-                    commandsBuilder.AppendFormat($"Use \"{target.Name} [command] --{OptionHelp.LongName}\" for more information about a command.");
+                    commandsBuilder.AppendFormat(
+                        $"Use \"{target.Name} [command] --{OptionHelp.LongName}\" for more information about a command.");
                     commandsBuilder.AppendLine();
                 }
             }
@@ -455,11 +303,11 @@ namespace Microsoft.Extensions.CommandLineUtils
             nameAndVersion.AppendLine();
 
             return nameAndVersion.ToString()
-                + headerBuilder.ToString()
-                + argumentsBuilder.ToString()
-                + optionsBuilder.ToString()
-                + commandsBuilder.ToString()
-                + target.ExtendedHelpText;
+                   + headerBuilder.ToString()
+                   + argumentsBuilder.ToString()
+                   + optionsBuilder.ToString()
+                   + commandsBuilder.ToString()
+                   + target.ExtendedHelpText;
         }
 
         public void ShowVersion()
@@ -490,65 +338,380 @@ namespace Microsoft.Extensions.CommandLineUtils
             Out.WriteLine();
         }
 
-        private void HandleUnexpectedArg(CommandLineApplication command, string[] args, int index, string argTypeName)
+        private bool TryGetCommand(string name, out CommandLineApplication command)
         {
-            if (command._throwOnUnexpectedArg)
-            {
-                command.ShowHint();
-                throw new CommandParsingException(command, $"Unrecognized {argTypeName} '{args[index]}'");
-            }
-            else
-            {
-                // All remaining arguments are stored for further use
-                command.RemainingArguments.AddRange(new ArraySegment<string>(args, index, args.Length - index));
-            }
+            command = Commands
+                .SingleOrDefault(
+                    c => string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase)
+                );
+            return command != null;
         }
 
-        private class CommandArgumentEnumerator : IEnumerator<CommandArgument>
+        private bool TryGetShortOption(string name, out CommandOption option)
         {
-            private readonly IEnumerator<CommandArgument> _enumerator;
+            option = GetOptions()
+                .SingleOrDefault(
+                    opt => string.Equals(opt.ShortName, name, StringComparison.Ordinal));
+            return option != null;
+        }
 
-            public CommandArgumentEnumerator(IEnumerator<CommandArgument> enumerator)
+        private bool TryGetSymbolOption(string name, out CommandOption option)
+        {
+            option = GetOptions()
+                .SingleOrDefault(
+                    opt => string.Equals(opt.SymbolName, name, StringComparison.Ordinal));
+            return option != null;
+        }
+
+        private bool TryGetGetLongOption(string name, out CommandOption option)
+        {
+            option = GetOptions()
+                .SingleOrDefault(
+                    opt => string.Equals(opt.LongName, name, StringComparison.Ordinal));
+            return option != null;
+        }
+
+        private sealed class ArgsProcessor : IDisposable
+        {
+            private enum ArgType
             {
-                _enumerator = enumerator;
+                Error,
+                ShortOption,
+                LongOption,
+                CommandOrArgument,
+                ArgumentSeparator
             }
 
-            public CommandArgument Current
+            private sealed class RawCommandLineArg
             {
-                get
+                public RawCommandLineArg(string arg)
                 {
-                    return _enumerator.Current;
+                    this.Arg = arg;
+                    ArgType = GetArgType(arg);
+                    if (ArgType == ArgType.LongOption || ArgType == ArgType.ShortOption)
+                    {
+                        string[] parts = arg.Split(new[] { ':', '=' }, 2);
+                        if (parts.Length > 1)
+                        {
+                            ArgValue = parts[1];
+                        }
+                        if (ArgType == ArgType.ShortOption)
+                        {
+                            ArgName = parts[0].Substring(1);
+                        }
+                        else
+                        {
+                            ArgName = parts[0].Substring(2);
+                        }
+                    }
+                }
+
+                public string Arg { get; private set; }
+                public string ArgName { get; private set; }
+                public string ArgValue { get; private set; }
+                public ArgType ArgType { get; private set; }
+
+                private static ArgType GetArgType(string arg)
+                {
+                    if (String.IsNullOrEmpty(arg) || arg == "-")
+                    {
+                        // null, "" or "-" are invalid
+                        return ArgType.Error;
+                    }
+                    if (arg[0] != '-')
+                    {
+                        // everything not starting with "-" is a command
+                        return ArgType.CommandOrArgument;
+                    }
+                    if (arg[1] != '-')
+                    {
+                        // everything starting with "-" and continuing
+                        // with something else is a short option
+                        return ArgType.ShortOption;
+                    }
+                    if (arg.Length == 2)
+                    {
+                        // at this point we have something starting wit "--"
+                        // if that's all it's an argument separator
+                        return ArgType.ArgumentSeparator;
+                    }
+                    // finally it has to be a long option
+                    return ArgType.LongOption;
                 }
             }
 
-            object IEnumerator.Current
+            private sealed class RawCommandLineArgEnumerator : IEnumerator<RawCommandLineArg>
             {
-                get
+                private readonly IEnumerator<string> _argsEnumerator;
+                private RawCommandLineArg _current;
+
+                public RawCommandLineArgEnumerator(string[] args)
                 {
-                    return Current;
+                    _argsEnumerator = ((IEnumerable<string>) args).GetEnumerator();
                 }
+
+                public RawCommandLineArg Current => _current;
+
+                object IEnumerator.Current => _current;
+
+                public void Dispose()
+                {
+                    _current = null;
+                    _argsEnumerator.Dispose();
+                }
+
+                public bool MoveNext()
+                {
+                    if (_argsEnumerator.MoveNext())
+                    {
+                        _current = new RawCommandLineArg(_argsEnumerator.Current);
+                        return true;
+                    }
+                    return false;
+                }
+
+                public void Reset()
+                {
+                    _current = null;
+                    _argsEnumerator.Reset();
+                }
+            }
+
+            private sealed class CommandArgumentEnumerator : IEnumerator<CommandArgument>
+            {
+                private readonly IEnumerator<CommandArgument> _enumerator;
+
+                public CommandArgumentEnumerator(IEnumerator<CommandArgument> enumerator)
+                {
+                    _enumerator = enumerator;
+                }
+
+                public CommandArgument Current
+                {
+                    get { return _enumerator.Current; }
+                }
+
+                object IEnumerator.Current
+                {
+                    get { return Current; }
+                }
+
+                public void Dispose()
+                {
+                    _enumerator.Dispose();
+                }
+
+                public bool MoveNext()
+                {
+                    if (Current == null || !Current.MultipleValues)
+                    {
+                        return _enumerator.MoveNext();
+                    }
+
+                    // If current argument allows multiple values, we don't move forward and
+                    // all later values will be added to current CommandArgument.Values
+                    return true;
+                }
+
+                public void Reset()
+                {
+                    _enumerator.Reset();
+                }
+            }
+
+            private readonly CommandLineApplication _initialCommand;
+            private readonly RawCommandLineArgEnumerator _argsEnumerator;
+            private CommandLineApplication _currentCommand;
+            private CommandArgumentEnumerator _currentCommandArguments;
+            private bool _disposed;
+
+            public ArgsProcessor(CommandLineApplication command, string[] args)
+            {
+                _initialCommand = command;
+                _argsEnumerator = new RawCommandLineArgEnumerator(args);
+            }
+
+            public CommandLineApplication ProcessArgs()
+            {
+                if (_disposed)
+                {
+                    throw new ObjectDisposedException(nameof(ArgsProcessor));
+                }
+                _currentCommand = _initialCommand;
+                _currentCommandArguments = null;
+                while (_argsEnumerator.MoveNext())
+                {
+                    if (!ProcessCurrentArg())
+                    {
+                        return _currentCommand;
+                    }
+                }
+                _argsEnumerator.Reset();
+                return _currentCommand;
+            }
+
+            private bool ProcessCurrentArg()
+            {
+                switch (_argsEnumerator.Current.ArgType)
+                {
+                    case ArgType.ArgumentSeparator:
+                        if (_argsEnumerator.MoveNext())
+                        {
+                            HandleUnexpectedArg("option");
+                        }
+                        return false;
+                    case ArgType.ShortOption:
+                    case ArgType.LongOption:
+                        if (!ProcessOption())
+                        {
+                            return false;
+                        }
+                        break;
+                    case ArgType.CommandOrArgument:
+                        if (!ProcessCommandOrArgument())
+                        {
+                            return false;
+                        }
+                        break;
+                    default:
+                        HandleUnexpectedArg("option");
+                        return false;
+                }
+                return true;
+            }
+
+            private bool ProcessOption()
+            {
+                if (!TryGetOption(out CommandOption option))
+                {
+                    HandleUnexpectedArg("option");
+                    return false;
+                }
+
+                if (option.OptionType == CommandOptionType.NoValue)
+                {
+                    if (!option.TryParse(_argsEnumerator.Current.ArgValue))
+                    {
+                        ThrowOnUnexpectedArgument(option, _argsEnumerator.Current.ArgValue);
+                    }
+
+                    if (option == _currentCommand.OptionHelp)
+                    {
+                        _currentCommand.ShowHelp();
+                        return false;
+                    }
+                    if (option == _currentCommand.OptionVersion)
+                    {
+                        _currentCommand.ShowVersion();
+                        return false;
+                    }
+                    return true;
+                }
+
+                if (_argsEnumerator.Current.ArgValue != null)
+                {
+                    if (!option.TryParse(_argsEnumerator.Current.ArgValue))
+                    {
+                        ThrowOnUnexpectedArgument(option, _argsEnumerator.Current.ArgValue);
+                    }
+                    return true;
+                }
+
+                if (TryReadValueFromNextArg(out string value))
+                {
+                    if (!option.TryParse(value))
+                    {
+                        ThrowOnUnexpectedArgument(option, value);
+                    }
+                    return true;
+                }
+                _currentCommand.ShowHint();
+                throw new CommandParsingException(_currentCommand, $"Missing value for option '{option.LongName}'");
+            }
+
+            private void ThrowOnUnexpectedArgument(CommandOption option, string value)
+            {
+                _currentCommand.ShowHint();
+                throw new CommandParsingException(_currentCommand, $"Unexpected value '{value}' for option '{option.LongName}'");
+            }
+
+            private bool ProcessCommandOrArgument()
+            {
+                if (_currentCommand.TryGetCommand(_argsEnumerator.Current.Arg, out var cmd))
+                {
+                    _currentCommand = cmd;
+                    _currentCommandArguments?.Dispose();
+                    _currentCommandArguments = null;
+                    return true;
+                }
+                if (_currentCommandArguments == null)
+                {
+                    _currentCommandArguments = new CommandArgumentEnumerator(_currentCommand.Arguments.GetEnumerator());
+                }
+                if (_currentCommandArguments.MoveNext())
+                {
+                    _currentCommandArguments.Current.Values.Add(_argsEnumerator.Current.Arg);
+                    return true;
+                }
+                HandleUnexpectedArg("command or argument");
+                return false;
+            }
+
+            private bool TryGetOption(out CommandOption option)
+            {
+                if (_argsEnumerator.Current.ArgType == ArgType.ShortOption)
+                {
+                    if (!_currentCommand.TryGetShortOption(_argsEnumerator.Current.ArgName, out option))
+                    {
+                        return _currentCommand.TryGetSymbolOption(_argsEnumerator.Current.ArgName, out option);
+                    }
+                    return true;
+                }
+                return _currentCommand.TryGetGetLongOption(_argsEnumerator.Current.ArgName, out option);
+            }
+
+            private bool TryReadValueFromNextArg(out string value)
+            {
+                if (_argsEnumerator.MoveNext())
+                {
+                    value = _argsEnumerator.Current.Arg;
+                    return true;
+                }
+
+                value = null;
+                return false;
+            }
+
+            private void HandleUnexpectedArg(string argTypeName)
+            {
+                if (_currentCommand._throwOnUnexpectedArg)
+                {
+                    _currentCommand.ShowHint();
+                    throw new CommandParsingException(_currentCommand,
+                        $"Unrecognized {argTypeName} '{_argsEnumerator.Current.Arg}'");
+                }
+
+                AddRemainingArguments();
+            }
+
+            private void AddRemainingArguments()
+            {
+                _currentCommand.RemainingArguments.AddRange(GetRemainingArguments());
+            }
+
+            private IEnumerable<string> GetRemainingArguments()
+            {
+                do
+                {
+                    yield return _argsEnumerator.Current.Arg;
+                } while (_argsEnumerator.MoveNext());
             }
 
             public void Dispose()
             {
-                _enumerator.Dispose();
-            }
-
-            public bool MoveNext()
-            {
-                if (Current == null || !Current.MultipleValues)
-                {
-                    return _enumerator.MoveNext();
-                }
-
-                // If current argument allows multiple values, we don't move forward and
-                // all later values will be added to current CommandArgument.Values
-                return true;
-            }
-
-            public void Reset()
-            {
-                _enumerator.Reset();
+                _disposed = true;
+                _argsEnumerator.Dispose();
+                _currentCommandArguments?.Dispose();
             }
         }
     }
