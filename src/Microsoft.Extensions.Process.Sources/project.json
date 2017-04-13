@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0-rtm-22752",
+  "version": "1.1.1",
   "shared": "*.cs",
   "frameworks": {
     "netstandard1.0": {}

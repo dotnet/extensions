@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Command-line parsing API. Commonly used types:\r\nMicrosoft.Extensions.CommandLineUtils.CommandLineApplication\r\nMicrosoft.Extensions.CommandLineUtils.CommandOption",
   "buildOptions": {
     "define": [
