@@ -57,15 +57,15 @@ namespace Microsoft.Extensions.StackTrace.Sources
             }
 
             var list = new List<Exception>();
-            if (ex.GetType().IsAssignableFrom(typeof(AggregateException)))
+            if (ex is AggregateException aggregateException)
             {
                 list.Add(ex);
-                var exception = (AggregateException) ex;
-                foreach (var innerException in exception.Flatten().InnerExceptions)
+                foreach (var innerException in aggregateException.Flatten().InnerExceptions)
                 {
                     list.Add(innerException);
                 }
             }
+
             else
             {
                 while (ex != null)
@@ -73,9 +73,9 @@ namespace Microsoft.Extensions.StackTrace.Sources
                     list.Add(ex);
                     ex = ex.InnerException;
                 }
+                list.Reverse();
             }
 
-            list.Reverse();
             return list;
         }
 
