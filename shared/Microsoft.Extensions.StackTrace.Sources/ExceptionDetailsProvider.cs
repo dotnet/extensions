@@ -57,11 +57,24 @@ namespace Microsoft.Extensions.StackTrace.Sources
             }
 
             var list = new List<Exception>();
-            while (ex != null)
+            if (ex.GetType().IsAssignableFrom(typeof(AggregateException)))
             {
                 list.Add(ex);
-                ex = ex.InnerException;
+                var exception = (AggregateException) ex;
+                foreach (var innerException in exception.Flatten().InnerExceptions)
+                {
+                    list.Add(innerException);
+                }
             }
+            else
+            {
+                while (ex != null)
+                {
+                    list.Add(ex);
+                    ex = ex.InnerException;
+                }
+            }
+
             list.Reverse();
             return list;
         }
