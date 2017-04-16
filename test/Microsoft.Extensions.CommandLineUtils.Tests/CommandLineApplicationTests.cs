@@ -607,7 +607,7 @@ Examples:
         [InlineData(new[] { "-h", "-f" }, "some flag")]
         public void HelpAndVersionOptionStopProcessing(string[] input, string expectedOutData)
         {
-            using (StringWriter outWriter = new StringWriter())
+            using (var outWriter = new StringWriter())
             {
                 var app = new CommandLineApplication { Out = outWriter };
                 app.HelpOption("-h --help");
@@ -617,7 +617,7 @@ Examples:
                 app.Execute(input);
 
                 outWriter.Flush();
-                string outData = outWriter.ToString();
+                var outData = outWriter.ToString();
                 Assert.Contains(expectedOutData, outData);
                 Assert.False(optFlag.HasValue());
             }
@@ -650,28 +650,6 @@ Examples:
             Assert.True(optVerbose.HasValue());
         }
 
-        [Fact(Skip = "Until now giving the help option aborts processing without settig it")]
-        public void HelpOptionCanBeSet()
-        {
-            var app = new CommandLineApplication();
-            var optHelp = app.HelpOption("-?");
-
-            app.Execute("-?");
-
-            Assert.True(optHelp.HasValue());
-        }
-
-        [Fact(Skip = "Until now giving the version option aborts processing without settig it")]
-        public void VersionOptionCanBeSet()
-        {
-            var app = new CommandLineApplication();
-            var optVersion = app.VersionOption("-V", "1", "1.0");
-
-            app.Execute("-V");
-
-            Assert.True(optVersion.HasValue());
-        }
-
         [Theory]
         [InlineData("-v:true")]
         [InlineData("--verbose:true")]
@@ -688,7 +666,7 @@ Examples:
         [Fact]
         public void ThrowsExceptionOnEmptyCommandOrArgument()
         {
-            string inputOption = String.Empty;
+            var inputOption = String.Empty;
             var app = new CommandLineApplication();
 
             var exception = Assert.Throws<CommandParsingException>(() => app.Execute(inputOption));
@@ -699,7 +677,7 @@ Examples:
         [Fact]
         public void ThrowsExceptionOnInvalidOption()
         {
-            string inputOption = "-";
+            var inputOption = "-";
             var app = new CommandLineApplication();
 
             var exception = Assert.Throws<CommandParsingException>(() => app.Execute(inputOption));
