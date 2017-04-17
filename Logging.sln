@@ -28,8 +28,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Loggin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging.Testing.Tests", "test\Microsoft.Extensions.Logging.Testing.Tests\Microsoft.Extensions.Logging.Testing.Tests.csproj", "{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging.Filter", "src\Microsoft.Extensions.Logging.Filter\Microsoft.Extensions.Logging.Filter.csproj", "{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging.EventSource", "src\Microsoft.Extensions.Logging.EventSource\Microsoft.Extensions.Logging.EventSource.csproj", "{84073E58-1802-4525-A9E5-1E6A70DAF0B2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging.EventSource.Test", "test\Microsoft.Extensions.Logging.EventSource.Test\Microsoft.Extensions.Logging.EventSource.Test.csproj", "{F3B898C3-D441-4207-A92B-420D6E73CA5D}"
@@ -158,18 +156,6 @@ Global
 		{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F}.Release|x86.ActiveCfg = Release|Any CPU
 		{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F}.Release|x86.Build.0 = Release|Any CPU
-		{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}.Debug|x86.Build.0 = Debug|Any CPU
-		{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}.Release|x86.ActiveCfg = Release|Any CPU
-		{0D190EE0-E305-403D-AC01-DEE71D8DBDB5}.Release|x86.Build.0 = Release|Any CPU
 		{84073E58-1802-4525-A9E5-1E6A70DAF0B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{84073E58-1802-4525-A9E5-1E6A70DAF0B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84073E58-1802-4525-A9E5-1E6A70DAF0B2}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -233,7 +219,6 @@ Global
 		{5D211C4A-6421-48F8-8AF9-D3BDC7DECD97} = {699DB330-0095-4266-B7B0-3EAB3710CA49}
 		{379AA56B-E1A6-4133-9A45-7F70385F39FB} = {699DB330-0095-4266-B7B0-3EAB3710CA49}
 		{6FA3EFAE-2DBC-4532-A5A0-C2EBD8DD672F} = {09920C51-6220-4D8D-94DC-E70C13446187}
-		{0D190EE0-E305-403D-AC01-DEE71D8DBDB5} = {699DB330-0095-4266-B7B0-3EAB3710CA49}
 		{84073E58-1802-4525-A9E5-1E6A70DAF0B2} = {699DB330-0095-4266-B7B0-3EAB3710CA49}
 		{F3B898C3-D441-4207-A92B-420D6E73CA5D} = {09920C51-6220-4D8D-94DC-E70C13446187}
 		{854133D5-6252-4A0A-B682-BDBB83B62AE6} = {699DB330-0095-4266-B7B0-3EAB3710CA49}

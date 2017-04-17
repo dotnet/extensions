@@ -13,7 +13,6 @@
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging\Microsoft.Extensions.Logging.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.Console\Microsoft.Extensions.Logging.Console.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.Debug\Microsoft.Extensions.Logging.Debug.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.Filter\Microsoft.Extensions.Logging.Filter.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.Testing\Microsoft.Extensions.Logging.Testing.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.TraceSource\Microsoft.Extensions.Logging.TraceSource.csproj" />
   </ItemGroup>
