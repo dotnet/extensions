@@ -181,6 +181,34 @@ namespace Microsoft.Extensions.Logging
             return scope;
         }
 
+        internal void AddProvider(string providerName, ILoggerProvider provider)
+        {
+            var logger = provider.CreateLogger(_categoryName);
+            int logIndex;
+            if (_loggers == null)
+            {
+                logIndex = 0;
+                _loggers = new LoggerInformation[1];
+            }
+            else
+            {
+                logIndex = _loggers.Length;
+                Array.Resize(ref _loggers, logIndex + 1);
+            }
+            _loggers[logIndex] = new LoggerInformation
+            {
+                Logger = logger,
+                // Order of preference
+                // 1. Custom Name
+                // 2. Provider FullName
+                ProviderNames = new List<string>
+                {
+                    providerName,
+                    provider.GetType().FullName
+                }
+            };
+        }
+
         private class Scope : IDisposable
         {
             private bool _isDisposed;

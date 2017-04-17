@@ -124,6 +124,11 @@ namespace Microsoft.Extensions.Logging
             lock (_sync)
             {
                 _providers = _providers.Concat(new[] { new KeyValuePair<ILoggerProvider, string>(provider, providerName) }).ToArray();
+
+                foreach (var logger in _loggers)
+                {
+                    logger.Value.AddProvider(providerName, provider);
+                }
             }
         }
 

@@ -101,6 +101,22 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal("provider2.Test-Error occurred while logging data.", exceptions[1].Message);
         }
 
+        [Fact]
+        public void LoggerCanGetProviderAfterItIsCreated()
+        {
+            // Arrange
+            var store = new List<string>();
+            var loggerFactory = new LoggerFactory();
+            var logger = loggerFactory.CreateLogger("Test");
+            loggerFactory.AddProvider(new CustomLoggerProvider("provider1", ThrowExceptionAt.None, store));
+
+            // Act
+            logger.LogInformation("Hello");
+
+            // Assert
+            Assert.Equal(new[] { "provider1.Test-Hello" }, store);
+        }
+
         private class CustomLoggerProvider : ILoggerProvider
         {
             private readonly string _providerName;
