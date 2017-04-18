@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\shared\Microsoft.Extensions.ActivatorUtilities.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.ClosedGenericMatcher.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.CopyOnWriteDictionary.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.DotnetToolDispatcher.Sources\**\*.cs" />
