@@ -292,7 +292,7 @@ namespace Microsoft.Extensions.Internal
                 {
                     return _constructor.Invoke(_parameterValues);
                 }
-                catch (Exception ex)
+                catch (TargetInvocationException ex)
                 {
                     ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
                     // The above line will always throw, but the compiler requires we throw explicitly.
