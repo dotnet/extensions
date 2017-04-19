@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Helpers for writing tests that use Microsoft.Extensions.Logging. Contains null implementations of the abstractions that do nothing, as well as test implementations that are observable.</Description>
-    <TargetFramework>netstandard1.1</TargetFramework>
+    <TargetFramework>netstandard1.3</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>logging;testing</PackageTags>
@@ -12,12 +12,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.Logging.Abstractions\Microsoft.Extensions.Logging.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Logging.Console\Microsoft.Extensions.Logging.Console.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="xunit.abstractions" Version="$(XunitAbstractionsVersion)" />
     <PackageReference Include="xunit.assert" Version="$(XunitVersion)" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="$(SerilogExtensionsLoggingVersion)" />
+    <PackageReference Include="Serilog.Sinks.File" Version="$(SerilogFileSinkVersion)" />
   </ItemGroup>
 
 </Project>
