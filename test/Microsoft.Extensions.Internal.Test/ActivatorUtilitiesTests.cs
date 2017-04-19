@@ -16,6 +16,15 @@ namespace Microsoft.Extensions.Internal
             var msg = "A suitable constructor for type 'Microsoft.Extensions.Internal.AbstractFoo' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.";
             Assert.Equal(msg, ex.Message);
         }
+
+        [Fact]
+        public void CreateInstance_CapturesInnerException_OfTargetInvocationException()
+        {
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => ActivatorUtilities.CreateInstance(default(IServiceProvider), typeof(Bar)));
+            var msg = "some error";
+            Assert.Equal(msg, ex.Message);
+        }
     }
 
     abstract class AbstractFoo
@@ -23,6 +32,14 @@ namespace Microsoft.Extensions.Internal
         // The constructor should be public, since that is checked as well.
         public AbstractFoo()
         {
+        }
+    }
+
+    class Bar
+    {
+        public Bar()
+        {
+            throw new InvalidOperationException("some error");
         }
     }
 }
