@@ -90,7 +90,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             }
         }
 
-        private static readonly Regex DurationRegex = new Regex(@"\d+\.\d+E?-?\d*s");
+        private static readonly Regex DurationRegex = new Regex(@"[^ ]+s$");
         private static string MakeConsistent(string input)
         {
             return string.Join(Environment.NewLine, input.Split(new[] { Environment.NewLine }, StringSplitOptions.None)
