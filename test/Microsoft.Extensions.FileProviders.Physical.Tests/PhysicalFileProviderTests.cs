@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.FileProviders.Internal;
 using Microsoft.Extensions.FileProviders.Physical;
@@ -1134,67 +1135,76 @@ namespace Microsoft.Extensions.FileProviders
             }
         }
 
-        [ConditionalFact]
-        //Disabled until https://github.com/aspnet/FileSystem/issues/263 is resolved.
-        [OSSkipCondition(OperatingSystems.Windows)]
+        [Fact]
         public async Task TokensFiredForNewDirectoryContentsOnRename()
         {
-            using (var root = new DisposableFileSystem())
+            var tcsShouldNotFire = new TaskCompletionSource<object>();
+            void Fail(object state)
             {
-                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
-                {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
-                    {
-                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
-                        {
-                            var oldDirectoryName = Guid.NewGuid().ToString();
-                            var oldSubDirectoryName = Guid.NewGuid().ToString();
-                            var oldSubDirectoryPath = Path.Combine(oldDirectoryName, oldSubDirectoryName);
-                            var oldFileName = Guid.NewGuid().ToString();
-                            var oldFilePath = Path.Combine(oldDirectoryName, oldSubDirectoryName, oldFileName);
-
-                            var newDirectoryName = Guid.NewGuid().ToString();
-                            var newSubDirectoryName = Guid.NewGuid().ToString();
-                            var newSubDirectoryPath = Path.Combine(newDirectoryName, newSubDirectoryName);
-                            var newFileName = Guid.NewGuid().ToString();
-                            var newFilePath = Path.Combine(newDirectoryName, newSubDirectoryName, newFileName);
-
-                            Directory.CreateDirectory(Path.Combine(root.RootPath, newDirectoryName));
-                            Directory.CreateDirectory(Path.Combine(root.RootPath, newDirectoryName, newSubDirectoryName));
-                            File.Create(Path.Combine(root.RootPath, newDirectoryName, newSubDirectoryName, newFileName));
-
-                            await Task.Delay(WaitTimeForTokenToFire);
-
-                            var oldDirectoryToken = provider.Watch(oldDirectoryName);
-                            var oldSubDirectoryToken = provider.Watch(oldSubDirectoryPath);
-                            var oldFileToken = provider.Watch(oldFilePath);
-
-                            var newDirectoryToken = provider.Watch(newDirectoryName);
-                            var newSubDirectoryToken = provider.Watch(newSubDirectoryPath);
-                            var newFileToken = provider.Watch(newFilePath);
-
-                            await Task.Delay(WaitTimeForTokenToFire);
-
-                            Assert.False(oldDirectoryToken.HasChanged);
-                            Assert.False(oldSubDirectoryToken.HasChanged);
-                            Assert.False(oldFileToken.HasChanged);
-                            Assert.False(newDirectoryToken.HasChanged);
-                            Assert.False(newSubDirectoryToken.HasChanged);
-                            Assert.False(newFileToken.HasChanged);
-
-                            fileSystemWatcher.CallOnRenamed(new RenamedEventArgs(WatcherChangeTypes.Renamed, root.RootPath, newDirectoryName, oldDirectoryName));
-                            await Task.Delay(WaitTimeForTokenToFire);
-
-                            Assert.True(oldDirectoryToken.HasChanged);
-                            Assert.False(oldSubDirectoryToken.HasChanged);
-                            Assert.False(oldFileToken.HasChanged);
-                            Assert.True(newDirectoryToken.HasChanged);
-                            Assert.True(newSubDirectoryToken.HasChanged);
-                            Assert.True(newFileToken.HasChanged);
-                        }
-                    }
-                }
+                tcsShouldNotFire.TrySetException(new InvalidOperationException("This token should not have fired"));
             }
+
+            using (var root = new DisposableFileSystem())
+            using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+            using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: false))
+            using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
+            {
+                var oldDirectoryName = Guid.NewGuid().ToString();
+                var oldSubDirectoryName = Guid.NewGuid().ToString();
+                var oldSubDirectoryPath = Path.Combine(oldDirectoryName, oldSubDirectoryName);
+                var oldFileName = Guid.NewGuid().ToString();
+                var oldFilePath = Path.Combine(oldDirectoryName, oldSubDirectoryName, oldFileName);
+
+                var newDirectoryName = Guid.NewGuid().ToString();
+                var newSubDirectoryName = Guid.NewGuid().ToString();
+                var newSubDirectoryPath = Path.Combine(newDirectoryName, newSubDirectoryName);
+                var newFileName = Guid.NewGuid().ToString();
+                var newFilePath = Path.Combine(newDirectoryName, newSubDirectoryName, newFileName);
+
+                Directory.CreateDirectory(Path.Combine(root.RootPath, newDirectoryName));
+                Directory.CreateDirectory(Path.Combine(root.RootPath, newDirectoryName, newSubDirectoryName));
+                File.Create(Path.Combine(root.RootPath, newDirectoryName, newSubDirectoryName, newFileName));
+
+                var oldDirectoryToken = provider.Watch(oldDirectoryName);
+                var oldDirectoryTcs = new TaskCompletionSource<object>();
+                oldDirectoryToken.RegisterChangeCallback(_ => oldDirectoryTcs.TrySetResult(true), null);
+                var oldSubDirectoryToken = provider.Watch(oldSubDirectoryPath);
+                oldSubDirectoryToken.RegisterChangeCallback(Fail, null);
+                var oldFileToken = provider.Watch(oldFilePath);
+                oldFileToken.RegisterChangeCallback(Fail, null);
+
+                var newDirectoryToken = provider.Watch(newDirectoryName);
+                var newDirectoryTcs = new TaskCompletionSource<object>();
+                newDirectoryToken.RegisterChangeCallback(_ => newDirectoryTcs.TrySetResult(true), null);
+                var newSubDirectoryToken = provider.Watch(newSubDirectoryPath);
+                var newSubDirectoryTcs = new TaskCompletionSource<object>();
+                newSubDirectoryToken.RegisterChangeCallback(_ => newSubDirectoryTcs.TrySetResult(true), null);
+                var newFileToken = provider.Watch(newFilePath);
+                var newFileTcs = new TaskCompletionSource<object>();
+                newFileToken.RegisterChangeCallback(_ => newFileTcs.TrySetResult(true), null);
+
+                Assert.False(oldDirectoryToken.HasChanged);
+                Assert.False(oldSubDirectoryToken.HasChanged);
+                Assert.False(oldFileToken.HasChanged);
+                Assert.False(newDirectoryToken.HasChanged);
+                Assert.False(newSubDirectoryToken.HasChanged);
+                Assert.False(newFileToken.HasChanged);
+
+                fileSystemWatcher.CallOnRenamed(new RenamedEventArgs(WatcherChangeTypes.Renamed, root.RootPath, newDirectoryName, oldDirectoryName));
+
+                await Task.WhenAll(oldDirectoryTcs.Task, newDirectoryTcs.Task, newSubDirectoryTcs.Task, newFileTcs.Task).TimeoutAfter(TimeSpan.FromSeconds(30));
+
+                Assert.False(oldSubDirectoryToken.HasChanged);
+                Assert.False(oldFileToken.HasChanged);
+                Assert.True(oldDirectoryToken.HasChanged);
+                Assert.True(newDirectoryToken.HasChanged);
+                Assert.True(newSubDirectoryToken.HasChanged);
+                Assert.True(newFileToken.HasChanged);
+            }
+
+            // wait a little to ensure these tokens don't fire even after disposing the watcher
+            var delay = Task.Delay(3000);
+            Assert.Same(delay, await Task.WhenAny(tcsShouldNotFire.Task, delay));
         }
 
         [Fact]
