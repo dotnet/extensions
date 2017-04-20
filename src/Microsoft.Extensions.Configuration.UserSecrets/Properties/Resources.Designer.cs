@@ -15,52 +15,46 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         /// </summary>
         internal static string Common_StringNullOrEmpty
         {
-            get { return GetString("Common_StringNullOrEmpty"); }
+            get => GetString("Common_StringNullOrEmpty");
         }
 
         /// <summary>
         /// Value cannot be null or an empty string.
         /// </summary>
         internal static string FormatCommon_StringNullOrEmpty()
-        {
-            return GetString("Common_StringNullOrEmpty");
-        }
+            => GetString("Common_StringNullOrEmpty");
 
         /// <summary>
         /// Invalid character '{0}' found in the user secrets ID at index '{1}'.
         /// </summary>
         internal static string Error_Invalid_Character_In_UserSecrets_Id
         {
-            get { return GetString("Error_Invalid_Character_In_UserSecrets_Id"); }
+            get => GetString("Error_Invalid_Character_In_UserSecrets_Id");
         }
 
         /// <summary>
         /// Invalid character '{0}' found in the user secrets ID at index '{1}'.
         /// </summary>
         internal static string FormatError_Invalid_Character_In_UserSecrets_Id(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_Invalid_Character_In_UserSecrets_Id"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("Error_Invalid_Character_In_UserSecrets_Id"), p0, p1);
 
         /// <summary>
         /// Could not find 'UserSecretsIdAttribute' on assembly '{0}'.
-        /// Check that the project for '{0}' has set the property 'UserSecretsId' and
-        /// that the project references the Microsoft.Extensions.Configuration.UserSecrets package.
+        /// Check that the project for '{0}' has set the 'UserSecretsId' build property.
+        /// If the 'UserSecretsId' property is already set then add a reference to the Microsoft.Extensions.Configuration.UserSecrets package.
         /// </summary>
         internal static string Error_Missing_UserSecretsIdAttribute
         {
-            get { return GetString("Error_Missing_UserSecretsIdAttribute"); }
+            get => GetString("Error_Missing_UserSecretsIdAttribute");
         }
 
         /// <summary>
         /// Could not find 'UserSecretsIdAttribute' on assembly '{0}'.
-        /// Check that the project for '{0}' has set the property 'UserSecretsId' and
-        /// that the project references the Microsoft.Extensions.Configuration.UserSecrets package.
+        /// Check that the project for '{0}' has set the 'UserSecretsId' build property.
+        /// If the 'UserSecretsId' property is already set then add a reference to the Microsoft.Extensions.Configuration.UserSecrets package.
         /// </summary>
         internal static string FormatError_Missing_UserSecretsIdAttribute(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_Missing_UserSecretsIdAttribute"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("Error_Missing_UserSecretsIdAttribute"), p0);
 
         private static string GetString(string name, params string[] formatterNames)
         {
