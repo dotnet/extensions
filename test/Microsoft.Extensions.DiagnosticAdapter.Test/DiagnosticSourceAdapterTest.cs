@@ -70,6 +70,26 @@ namespace Microsoft.Extensions.DiagnosticAdapter
         }
 
         [Fact]
+        public void IsEnabled_True_PredicateCalledForIsEnabled_WithContext()
+        {
+            // Arrange
+            var callCount = 0;
+            Func<string, object, object, bool> isEnabled = (name, arg1, arg2) =>
+            {
+                Assert.Equal("One", name);
+                Assert.Equal("Target info", arg1);
+                callCount++;
+                return true;
+            };
+
+            var adapter = CreateAdapter(new OneTarget(), isEnabled);
+
+            // Act & Assert
+            Assert.True(adapter.IsEnabled("One", "Target info"));
+            Assert.Equal(1, callCount);
+        }
+
+        [Fact]
         public void IsEnabled_False_PredicateCalledForIsEnabled()
         {
             // Arrange
@@ -89,6 +109,45 @@ namespace Microsoft.Extensions.DiagnosticAdapter
         }
 
         [Fact]
+        public void IsEnabled_False_PredicateCalledForIsEnabled_WithContext()
+        {
+            // Arrange
+            var callCount = 0;
+            Func<string, object, object, bool> isEnabled = (name, arg1, arg2) =>
+            {
+                Assert.Equal("One", name);
+                Assert.Equal("Target info", arg1);
+                callCount++;
+                return false;
+            };
+
+            var adapter = CreateAdapter(new OneTarget(), isEnabled);
+
+            // Act & Assert
+            Assert.False(adapter.IsEnabled("One", "Target info"));
+            Assert.Equal(1, callCount);
+        }
+
+        [Fact]
+        public void IsEnabled_RegisterWithoutContext_CallIsEnabledWithContext()
+        {
+            // Arrange
+            var callCount = 0;
+            Func<string, bool> isEnabled = (name) =>
+            {
+                Assert.Equal("One", name);
+                callCount++;
+                return false;
+            };
+
+            var adapter = CreateAdapter(new OneTarget(), (a, b, c) => isEnabled(a));
+
+            // Act & Assert
+            Assert.False(adapter.IsEnabled("One", new object(), new object()));
+            Assert.Equal(1, callCount);
+        }
+
+        [Fact]
         public void IsEnabled_FalseForNonenlistedEvent()
         {
             // Arrange
@@ -96,6 +155,26 @@ namespace Microsoft.Extensions.DiagnosticAdapter
 
             // Act & Assert
             Assert.False(adapter.IsEnabled("Two"));
+        }
+
+        [Fact]
+        public void IsEnabledWithContext_FalseForNonenlistedEvent()
+        {
+            // Arrange
+            var adapter = CreateAdapter(new OneTarget(), (Func<string, object, object, bool>)null);
+
+            // Act & Assert
+            Assert.False(adapter.IsEnabled("Two", "Target info"));
+        }
+
+        [Fact]
+        public void IsEnabledWithContext_TrueForListedEvent()
+        {
+            // Arrange
+            var adapter = CreateAdapter(new OneTarget(), (Func<string, object, object, bool>)null);
+
+            // Act & Assert
+            Assert.True(adapter.IsEnabled("One", "Target info"));
         }
 
         [Fact]
@@ -173,13 +252,12 @@ namespace Microsoft.Extensions.DiagnosticAdapter
         }
 
         [Fact]
-        public void Write_True_CallsIsEnabled()
+        public void Write_EnlistedDiagnosticName_DoesNotCallIsEnabled()
         {
             // Arrange
             var callCount = 0;
-            Func<string, bool> isEnabled = (name) =>
+            Func<string, object, object, bool> isEnabled = (name, arg1, arg2) =>
             {
-                Assert.Equal("One", name);
                 callCount++;
                 return true;
             };
@@ -191,18 +269,17 @@ namespace Microsoft.Extensions.DiagnosticAdapter
             adapter.Write("One", new { });
 
             // Assert
-            Assert.Equal(1, callCount);
+            Assert.Equal(0, callCount);
             Assert.Equal(1, target.OneCallCount);
         }
 
         [Fact]
-        public void Write_False_CallsIsEnabled()
+        public void Write_NonEnlistedDiagnosticName_DoesNotCallIsEnabled()
         {
             // Arrange
             var callCount = 0;
-            Func<string, bool> isEnabled = (name) =>
+            Func<string, object, object, bool> isEnabled = (name, arg1, arg2) =>
             {
-                Assert.Equal("One", name);
                 callCount++;
                 return false;
             };
@@ -211,10 +288,10 @@ namespace Microsoft.Extensions.DiagnosticAdapter
             var adapter = CreateAdapter(target, isEnabled);
 
             // Act
-            adapter.Write("One", new { });
+            adapter.Write("Two", new { });
 
             // Assert
-            Assert.Equal(1, callCount);
+            Assert.Equal(0, callCount);
             Assert.Equal(0, target.OneCallCount);
         }
 
@@ -468,6 +545,11 @@ namespace Microsoft.Extensions.DiagnosticAdapter
         }
 
         private static DiagnosticSourceAdapter CreateAdapter(object target, Func<string, bool> isEnabled = null)
+        {
+            return new DiagnosticSourceAdapter(target, isEnabled, new ProxyDiagnosticSourceMethodAdapter());
+        }
+
+        private static DiagnosticSourceAdapter CreateAdapter(object target, Func<string, object, object, bool> isEnabled)
         {
             return new DiagnosticSourceAdapter(target, isEnabled, new ProxyDiagnosticSourceMethodAdapter());
         }

@@ -21,5 +21,14 @@ namespace System.Diagnostics
             var adapter = new DiagnosticSourceAdapter(target, isEnabled);
             return diagnostic.Subscribe(adapter, adapter.IsEnabled);
         }
+
+        public static IDisposable SubscribeWithAdapter(
+            this DiagnosticListener diagnostic,
+            object target,
+            Func<string, object, object, bool> isEnabled)
+        {
+            var adapter = new DiagnosticSourceAdapter(target, isEnabled);
+            return diagnostic.Subscribe(adapter, adapter.IsEnabled);
+        }
     }
 }
