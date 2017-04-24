@@ -1,0 +1,7 @@
+[
+  {
+    "TypeId": "public static class Microsoft.Extensions.DependencyInjection.ServiceCollectionContainerBuilderExtensions",
+    "MemberId": "public static System.IServiceProvider BuildServiceProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection services)",
+    "Kind": "Removal"
+  }
+]
