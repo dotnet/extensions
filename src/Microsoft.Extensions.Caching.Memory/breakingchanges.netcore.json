@@ -1,0 +1,12 @@
+[
+  {
+    "TypeId": "public class Microsoft.Extensions.Caching.Memory.MemoryCacheOptions : Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Caching.Memory.MemoryCacheOptions>",
+    "MemberId": "public System.Boolean get_CompactOnMemoryPressure()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Extensions.Caching.Memory.MemoryCacheOptions : Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Caching.Memory.MemoryCacheOptions>",
+    "MemberId": "public System.Void set_CompactOnMemoryPressure(System.Boolean value)",
+    "Kind": "Removal"
+  }
+]
