@@ -18,8 +18,9 @@ namespace Microsoft.Extensions.Logging
         private KeyValuePair<ILoggerProvider, string>[] _providers = new KeyValuePair<ILoggerProvider, string>[0];
         private readonly object _sync = new object();
         private volatile bool _disposed;
-        private readonly IConfiguration _configuration;
+        private IConfiguration _configuration;
         private IChangeToken _changeToken;
+        private IDisposable _changeTokenRegistration;
         private Dictionary<string, LogLevel> _defaultFilter;
         private Func<string, string, LogLevel, bool> _genericFilters;
         private Dictionary<string, Func<string, LogLevel, bool>> _providerFilters = new Dictionary<string, Func<string, LogLevel, bool>>();
@@ -41,11 +42,40 @@ namespace Microsoft.Extensions.Logging
                 throw new ArgumentNullException(nameof(configuration));
             }
 
+            UseConfiguration(configuration);
+        }
+
+        /// <summary>
+        /// Replaces the <see cref="IConfiguration"/> used for filtering.
+        /// </summary>
+        /// <param name="configuration">The new configuration to use.</param>
+        /// <returns>The <see cref="LoggerFactory"/> so that additional calls can be chained.</returns>
+        public LoggerFactory UseConfiguration(IConfiguration configuration)
+        {
+            if (configuration == _configuration)
+            {
+                return this;
+            }
+
+            // unregister the previous configuration callback if there was one
+            _changeTokenRegistration?.Dispose();
+
             _configuration = configuration;
-            _changeToken = configuration.GetReloadToken();
-            _changeToken.RegisterChangeCallback(OnConfigurationReload, null);
+
+            if (configuration == null)
+            {
+                _changeToken = null;
+                _changeTokenRegistration = null;
+            }
+            else
+            {
+                _changeToken = _configuration.GetReloadToken();
+                _changeTokenRegistration = _changeToken?.RegisterChangeCallback(OnConfigurationReload, null);
+            }
 
             LoadDefaultConfigValues();
+
+            return this;
         }
 
         public ILogger CreateLogger(string categoryName)
@@ -132,8 +162,22 @@ namespace Microsoft.Extensions.Logging
             }
         }
 
-        public void AddFilter(string providerName, string categoryName, Func<LogLevel, bool> filter)
+        /// <summary>
+        /// Adds a filter that applies to <paramref name="providerName"/> and <paramref name="categoryName"/> with the given
+        /// <paramref name="filter"/>.
+        /// </summary>
+        /// <param name="providerName">The name of the provider.</param>
+        /// <param name="categoryName">The name of the logger category.</param>
+        /// <param name="filter">The filter that applies to logs for <paramref name="providerName"/> and <paramref name="categoryName"/>.
+        /// Returning true means allow log through, false means reject log.</param>
+        /// <returns>The <see cref="LoggerFactory"/> so that additional calls can be chained.</returns>
+        public LoggerFactory AddFilter(string providerName, string categoryName, Func<LogLevel, bool> filter)
         {
+            if (filter == null)
+            {
+                throw new ArgumentNullException(nameof(filter));
+            }
+
             lock (_sync)
             {
                 if (_categoryFilters.TryGetValue(categoryName, out var previousFilter))
@@ -166,46 +210,25 @@ namespace Microsoft.Extensions.Logging
                     };
                 }
             }
+
+            return this;
         }
 
-        public void AddFilter(string providerName, string categoryName, LogLevel minLevel)
+        /// <summary>
+        /// Adds a filter that applies to <paramref name="providerName"/> with the given <paramref name="filter"/>.
+        /// </summary>
+        /// <param name="providerName">The name of the provider.</param>
+        /// <param name="filter">The filter that applies to logs for <paramref name="providerName"/>.
+        /// The string argument is the category being logged to.
+        /// Returning true means allow log through, false means reject log.</param>
+        /// <returns>The <see cref="LoggerFactory"/> so that additional calls can be chained.</returns>
+        public LoggerFactory AddFilter(string providerName, Func<string, LogLevel, bool> filter)
         {
-            lock (_sync)
+            if (filter == null)
             {
-                if (_categoryFilters.TryGetValue(categoryName, out var previousFilter))
-                {
-                    _categoryFilters[categoryName] = (currentProviderName, level) =>
-                    {
-                        if (previousFilter(currentProviderName, level))
-                        {
-                            if (string.Equals(providerName, currentProviderName))
-                            {
-                                return level >= minLevel;
-                            }
-
-                            return true;
-                        }
-
-                        return false;
-                    };
-                }
-                else
-                {
-                    _categoryFilters[categoryName] = (currentProviderName, level) =>
-                    {
-                        if (string.Equals(providerName, currentProviderName))
-                        {
-                            return level >= minLevel;
-                        }
-
-                        return true;
-                    };
-                }
+                throw new ArgumentNullException(nameof(filter));
             }
-        }
 
-        public void AddFilter(string providerName, Func<string, LogLevel, bool> filter)
-        {
             lock (_sync)
             {
                 if (_providerFilters.TryGetValue(providerName, out var value))
@@ -225,46 +248,24 @@ namespace Microsoft.Extensions.Logging
                     _providerFilters[providerName] = (category, level) => filter(category, level);
                 }
             }
+
+            return this;
         }
 
-        public void AddFilter(string providerName, Func<LogLevel, bool> filter)
+        /// <summary>
+        /// Adds a filter that applies to all logs.
+        /// </summary>
+        /// <param name="filter">The filter that applies to logs.
+        /// The first string is the provider name and the second string is the category name being logged to.
+        /// Returning true means allow log through, false means reject log.</param>
+        /// <returns>The <see cref="LoggerFactory"/> so that additional calls can be chained.</returns>
+        public LoggerFactory AddFilter(Func<string, string, LogLevel, bool> filter)
         {
-            lock (_sync)
+            if (filter == null)
             {
-                if (_categoryFilters.TryGetValue("Default", out var value))
-                {
-                    _categoryFilters["Default"] = (currentProviderName, level) =>
-                    {
-                        if (value(currentProviderName, level))
-                        {
-                            if (string.Equals(providerName, currentProviderName))
-                            {
-                                return filter(level);
-                            }
-
-                            return true;
-                        }
-
-                        return false;
-                    };
-                }
-                else
-                {
-                    _categoryFilters["Default"] = (currentProviderName, level) =>
-                    {
-                        if (string.Equals(providerName, currentProviderName))
-                        {
-                            return filter(level);
-                        }
-
-                        return true;
-                    };
-                }
+                throw new ArgumentNullException(nameof(filter));
             }
-        }
 
-        public void AddFilter(Func<string, string, LogLevel, bool> filter)
-        {
             lock (_sync)
             {
                 var previousFilters = _genericFilters;
@@ -278,10 +279,23 @@ namespace Microsoft.Extensions.Logging
                     return false;
                 };
             }
+
+            return this;
         }
 
-        public void AddFilter(IDictionary<string, LogLevel> filter)
+        /// <summary>
+        /// Adds a filter to all logs.
+        /// </summary>
+        /// <param name="filter">The filter that applies to logs.
+        /// The key is the category and the <see cref="LogLevel"/> is the minimum level allowed.</param>
+        /// <returns>The <see cref="LoggerFactory"/> so that additional calls can be chained.</returns>
+        public LoggerFactory AddFilter(IDictionary<string, LogLevel> filter)
         {
+            if (filter == null)
+            {
+                throw new ArgumentNullException(nameof(filter));
+            }
+
             lock (_sync)
             {
                 foreach (var kvp in filter)
@@ -304,84 +318,39 @@ namespace Microsoft.Extensions.Logging
                     }
                 }
             }
+
+            return this;
         }
 
-        public void AddFilter(string providerName, IDictionary<string, LogLevel> filter)
+        /// <summary>
+        /// Adds a filter that applies to <paramref name="providerName"/> and <paramref name="categoryName"/>, allowing logs with the given
+        /// minimum <see cref="LogLevel"/> or higher.
+        /// </summary>
+        /// <param name="providerName">The name of the provider.</param>
+        /// <param name="categoryName">The name of the logger category.</param>
+        /// <param name="minLevel">The minimum <see cref="LogLevel"/> that logs from
+        /// <paramref name="providerName"/> and <paramref name="categoryName"/> are allowed.</param>
+        public LoggerFactory AddFilter(string providerName, string categoryName, LogLevel minLevel)
         {
-            lock (_sync)
-            {
-                foreach (var kvp in filter)
-                {
-                    if (_categoryFilters.TryGetValue(kvp.Key, out var currentFilter))
-                    {
-                        _categoryFilters[kvp.Key] = (currentProviderName, level) =>
-                        {
-                            if (currentFilter(currentProviderName, level))
-                            {
-                                if (string.Equals(providerName, currentProviderName))
-                                {
-                                    return level >= kvp.Value;
-                                }
-
-                                return true;
-                            }
-
-                            return false;
-                        };
-                    }
-                    else
-                    {
-                        _categoryFilters[kvp.Key] = (currentProviderName, level) =>
-                        {
-                            if (string.Equals(providerName, currentProviderName))
-                            {
-                                return level >= kvp.Value;
-                            }
-
-                            return true;
-                        };
-                    }
-                }
-            }
+            return AddFilter(providerName, categoryName, level => level >= minLevel);
         }
 
-        public void AddFilter(Func<string, bool> providerNames, IDictionary<string, LogLevel> filter)
+        /// <summary>
+        /// Adds a filter that applies to <paramref name="providerName"/> with the given
+        /// <paramref name="filter"/>.
+        /// </summary>
+        /// <param name="providerName">The name of the provider.</param>
+        /// <param name="filter">The filter that applies to logs for <paramref name="providerName"/>.
+        /// Returning true means allow log through, false means reject log.</param>
+        public LoggerFactory AddFilter(string providerName, Func<LogLevel, bool> filter)
         {
-            lock (_sync)
+            if (filter == null)
             {
-                foreach (var kvp in filter)
-                {
-                    if (_categoryFilters.TryGetValue(kvp.Key, out var currentFilter))
-                    {
-                        _categoryFilters[kvp.Key] = (providerName, level) =>
-                        {
-                            if (providerNames(providerName))
-                            {
-                                if (currentFilter(providerName, level))
-                                {
-                                    return level >= kvp.Value;
-                                }
-
-                                return false;
-                            }
-
-                            return true;
-                        };
-                    }
-                    else
-                    {
-                        _categoryFilters[kvp.Key] = (providerName, level) =>
-                        {
-                            if (providerNames(providerName))
-                            {
-                                return level >= kvp.Value;
-                            }
-
-                            return true;
-                        };
-                    }
-                }
+                throw new ArgumentNullException(nameof(filter));
             }
+
+            // Using 'Default' for the category name means this filter will apply for all category names
+            return AddFilter(providerName, "Default", filter);
         }
 
         // TODO: Figure out how to do this better, perhaps a new IConfigurableLogger interface?
@@ -479,7 +448,7 @@ namespace Microsoft.Extensions.Logging
             finally
             {
                 // The token will change each time it reloads, so we need to register again.
-                _changeToken.RegisterChangeCallback(OnConfigurationReload, null);
+                _changeTokenRegistration = _changeToken.RegisterChangeCallback(OnConfigurationReload, null);
             }
         }
 
@@ -519,6 +488,12 @@ namespace Microsoft.Extensions.Logging
         private void LoadDefaultConfigValues()
         {
             var replacementDefaultFilters = new Dictionary<string, LogLevel>();
+            if (_configuration == null)
+            {
+                _defaultFilter = replacementDefaultFilters;
+                return;
+            }
+
             var logLevelSection = _configuration.GetSection("LogLevel");
 
             if (logLevelSection != null)
@@ -546,6 +521,8 @@ namespace Microsoft.Extensions.Logging
             if (!_disposed)
             {
                 _disposed = true;
+
+                _changeTokenRegistration?.Dispose();
 
                 foreach (var provider in _providers)
                 {

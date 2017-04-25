@@ -21,15 +21,16 @@ namespace SampleApp
                 .AddJsonFile("logging.json", optional: false, reloadOnChange: true)
                 .Build();
 
-            // A dependency injection based application would get ILoggerFactory injected instead.
+            // A Web App based program would configure logging via the WebHostBuilder.
             // Create a logger factory with filters that can be applied across all logger providers.
-            var factory = new LoggerFactory(loggingConfiguration.GetSection("Logging"));
-            factory.AddFilter(new Dictionary<string, LogLevel>
-            {
-                { "Microsoft", LogLevel.Warning },
-                { "System", LogLevel.Warning },
-                { "SampleApp.Program", LogLevel.Debug }
-            });
+            var factory = new LoggerFactory()
+                .UseConfiguration(loggingConfiguration.GetSection("Logging"))
+                .AddFilter(new Dictionary<string, LogLevel>
+                {
+                    { "Microsoft", LogLevel.Warning },
+                    { "System", LogLevel.Warning },
+                    { "SampleApp.Program", LogLevel.Debug }
+                });
 
             // providers may be added to a LoggerFactory before any loggers are created
 #if NET46
