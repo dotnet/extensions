@@ -65,7 +65,6 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
             Assert.Equal(randValue, config[configKey]);
         }
 
-
         [Fact]
         public void AddUserSecrets_FindsAssemblyAttributeFromType()
         {
@@ -78,6 +77,32 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
                 .Build();
 
             Assert.Equal(randValue, config[configKey]);
+        }
+
+        [Fact]
+        public void AddUserSecrets_ThrowsIfAssemblyAttributeFromType()
+        {
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+                new ConfigurationBuilder().AddUserSecrets<string>());
+            Assert.Equal(Resources.FormatError_Missing_UserSecretsIdAttribute(typeof(string).GetTypeInfo().Assembly.GetName().Name),
+                ex.Message);
+
+            ex = Assert.Throws<InvalidOperationException>(() =>
+                new ConfigurationBuilder().AddUserSecrets(typeof(JObject).Assembly));
+            Assert.Equal(Resources.FormatError_Missing_UserSecretsIdAttribute(typeof(JObject).GetTypeInfo().Assembly.GetName().Name),
+                ex.Message);
+        }
+
+
+        [Fact]
+        public void AddUserSecrets_DoesNotThrowsIfOptional()
+        {
+            var config = new ConfigurationBuilder()
+                .AddUserSecrets<string>(optional: true)
+                .AddUserSecrets(typeof(List<>).Assembly, optional: true)
+                .Build();
+
+            Assert.Empty(config.AsEnumerable());
         }
 
         [Fact]
