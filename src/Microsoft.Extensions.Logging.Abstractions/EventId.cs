@@ -5,46 +5,53 @@ namespace Microsoft.Extensions.Logging
 {
     public struct EventId
     {
-        private int _id;
-        private string _name;
-
-        public EventId(int id, string name = null)
-        {
-            _id = id;
-            _name = name;
-        }
-
-        public int Id
-        {
-            get
-            {
-                return _id;
-            }
-        }
-
-        public string Name
-        {
-            get
-            {
-                return _name;
-            }
-        }
-
         public static implicit operator EventId(int i)
         {
             return new EventId(i);
         }
 
+        public static bool operator ==(EventId left, EventId right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(EventId left, EventId right)
+        {
+            return !left.Equals(right);
+        }
+
+        public EventId(int id, string name = null)
+        {
+            Id = id;
+            Name = name;
+        }
+
+        public int Id { get; }
+        public string Name { get; }
+
         public override string ToString()
         {
-            if (_name != null)
+            return Name ?? Id.ToString();
+        }
+
+        public bool Equals(EventId other)
+        {
+            return Id == other.Id;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
             {
-                return _name;
+                return false;
             }
-            else
-            {
-                return _id.ToString();
-            }
+
+            return obj is EventId eventId && Equals(eventId);
+        }
+
+        public override int GetHashCode()
+        {
+            return Id;
         }
     }
 }
