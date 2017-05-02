@@ -347,7 +347,7 @@ namespace Microsoft.Extensions.Internal
                 : (Expression)methodCall;
 
             // return new ObjectMethodExecutorAwaitable(
-            //     coercedMethodCall,
+            //     (object)coercedMethodCall,
             //     getAwaiterFunc,
             //     isCompletedFunc,
             //     getResultFunc,
