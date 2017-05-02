@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -39,7 +38,9 @@ namespace Microsoft.Extensions.Internal
             TargetTypeInfo = targetTypeInfo;
             MethodReturnType = methodInfo.ReturnType;
 
-            var isAwaitable = IsAwaitable(MethodReturnType,
+            var isAwaitable = IsAwaitableDirectlyOrViaCoercion(MethodReturnType,
+                out var coerceToAwaitableExpression,
+                out var coerceToAwaitableType,
                 out var getAwaiterMethod,
                 out var awaiterType,
                 out var awaiterResultType,
@@ -61,6 +62,8 @@ namespace Microsoft.Extensions.Internal
                 _executorAsync = GetExecutorAsync(
                     methodInfo,
                     targetTypeInfo,
+                    coerceToAwaitableExpression,
+                    coerceToAwaitableType,
                     getAwaiterMethod,
                     awaiterType,
                     awaiterResultType,
@@ -219,6 +222,8 @@ namespace Microsoft.Extensions.Internal
         private static MethodExecutorAsync GetExecutorAsync(
             MethodInfo methodInfo,
             TypeInfo targetTypeInfo,
+            Expression coerceToAwaitableExpression,
+            Type coerceToAwaitableType,
             MethodInfo getAwaiterMethod,
             Type awaiterType,
             Type awaiterResultType,
@@ -255,14 +260,15 @@ namespace Microsoft.Extensions.Internal
 
             // var getAwaiterFunc = (object awaitable) =>
             //     (object)((CustomAwaitableType)awaitable).GetAwaiter();
-            var customAwaiterParam = Expression.Parameter(typeof(object), "awaitable");
+            var customAwaitableParam = Expression.Parameter(typeof(object), "awaitable");
+            var postCoercionMethodReturnType = coerceToAwaitableType ?? methodInfo.ReturnType;
             var getAwaiterFunc = Expression.Lambda<Func<object, object>>(
                 Expression.Convert(
                     Expression.Call(
-                        Expression.Convert(customAwaiterParam, methodInfo.ReturnType),
+                        Expression.Convert(customAwaitableParam, postCoercionMethodReturnType),
                         getAwaiterMethod),
                     typeof(object)),
-                customAwaiterParam).Compile();
+                customAwaitableParam).Compile();
 
             // var isCompletedFunc = (object awaiter) =>
             //     ((CustomAwaiterType)awaiter).IsCompleted;
@@ -334,8 +340,14 @@ namespace Microsoft.Extensions.Internal
                     unsafeOnCompletedParam2).Compile();
             }
 
+            // If we need to pass the method call result through a coercer function to get an
+            // awaitable, then do so.
+            var coercedMethodCall = coerceToAwaitableExpression != null
+                ? Expression.Invoke(coerceToAwaitableExpression, methodCall)
+                : (Expression)methodCall;
+
             // return new ObjectMethodExecutorAwaitable(
-            //     (object)getCustomAwaitable(),
+            //     coercedMethodCall,
             //     getAwaiterFunc,
             //     isCompletedFunc,
             //     getResultFunc,
@@ -343,7 +355,7 @@ namespace Microsoft.Extensions.Internal
             //     unsafeOnCompletedFunc);
             var returnValueExpression = Expression.New(
                 _objectMethodExecutorAwaitableConstructor,
-                Expression.Convert(methodCall, typeof(object)),
+                Expression.Convert(coercedMethodCall, typeof(object)),
                 Expression.Constant(getAwaiterFunc),
                 Expression.Constant(isCompletedFunc),
                 Expression.Constant(getResultFunc),
@@ -352,6 +364,51 @@ namespace Microsoft.Extensions.Internal
 
             var lambda = Expression.Lambda<MethodExecutorAsync>(returnValueExpression, targetParameter, parametersParameter);
             return lambda.Compile();
+        }
+
+        private static bool IsAwaitableDirectlyOrViaCoercion(
+            Type type,
+            out Expression coerceToAwaitableExpression,
+            out Type coerceToAwaitableType,
+            out MethodInfo getAwaiterMethod,
+            out Type awaiterType,
+            out Type returnType,
+            out PropertyInfo isCompletedProperty,
+            out MethodInfo getResultMethod,
+            out MethodInfo onCompletedMethod,
+            out MethodInfo unsafeOnCompletedMethod)
+        {
+            if (IsAwaitable(type,
+                out getAwaiterMethod,
+                out awaiterType,
+                out returnType,
+                out isCompletedProperty,
+                out getResultMethod,
+                out onCompletedMethod,
+                out unsafeOnCompletedMethod))
+            {
+                coerceToAwaitableExpression = null;
+                coerceToAwaitableType = null;
+                return true;
+            }
+
+            // It's not directly awaitable, but maybe we can coerce it.
+            // Currently we support coercing FSharpAsync<T>.
+            if (ObjectMethodExecutorFSharpSupport.TryBuildCoercerFromFSharpAsyncToAwaitable(type,
+                out coerceToAwaitableExpression,
+                out coerceToAwaitableType))
+            {
+                return IsAwaitable(coerceToAwaitableType,
+                    out getAwaiterMethod,
+                    out awaiterType,
+                    out returnType,
+                    out isCompletedProperty,
+                    out getResultMethod,
+                    out onCompletedMethod,
+                    out unsafeOnCompletedMethod);
+            }
+
+            return false;
         }
 
         private static bool IsAwaitable(
