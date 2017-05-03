@@ -19,9 +19,13 @@ namespace Microsoft.Extensions.Logging
         ILogger CreateLogger(string categoryName);
 
         /// <summary>
+        /// <para>
+        /// This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddProvider() method on the Microsoft.Extensions.Logging.LoggerFactory instance.
+        /// </para>
         /// Adds an <see cref="ILoggerProvider"/> to the logging system.
         /// </summary>
         /// <param name="provider">The <see cref="ILoggerProvider"/>.</param>
+        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddProvider() method on the Microsoft.Extensions.Logging.LoggerFactory instance.")]
         void AddProvider(ILoggerProvider provider);
     }
 }

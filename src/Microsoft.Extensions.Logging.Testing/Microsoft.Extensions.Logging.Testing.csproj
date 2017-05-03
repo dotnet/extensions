@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.Logging.Console\Microsoft.Extensions.Logging.Console.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Logging\Microsoft.Extensions.Logging.csproj" />
   </ItemGroup>
 
   <ItemGroup>

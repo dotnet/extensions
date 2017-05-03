@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Logging
     public static class EventLoggerFactoryExtensions
     {
         /// <summary>
-        /// Adds an event logger.
+        /// Adds an event logger named 'EventLog' to the factory.
         /// </summary>
         /// <param name="factory">The extension method argument.</param>
         public static LoggerFactory AddEventLog(this LoggerFactory factory)
@@ -28,9 +28,36 @@ namespace Microsoft.Extensions.Logging
         }
 
         /// <summary>
+        /// Adds an event logger. Use <paramref name="settings"/> to enable logging for specific <see cref="LogLevel"/>s.
+        /// </summary>
+        /// <param name="factory">The extension method argument.</param>
+        /// <param name="settings">The <see cref="EventLogSettings"/>.</param>
+        public static LoggerFactory AddEventLog(
+            this LoggerFactory factory,
+            EventLogSettings settings)
+        {
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            factory.AddProvider(new EventLogLoggerProvider(settings));
+            return factory;
+        }
+
+        /// <summary>
+        /// <para>
+        /// This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddEventLog() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.
+        /// </para>
         /// Adds an event logger that is enabled for <see cref="LogLevel"/>.Information or higher.
         /// </summary>
         /// <param name="factory">The extension method argument.</param>
+        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddEventLog() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.")]
         public static ILoggerFactory AddEventLog(this ILoggerFactory factory)
         {
             if (factory == null)
@@ -42,10 +69,14 @@ namespace Microsoft.Extensions.Logging
         }
 
         /// <summary>
+        /// <para>
+        /// This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddEventLog() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.
+        /// </para>
         /// Adds an event logger that is enabled for <see cref="LogLevel"/>s of minLevel or higher.
         /// </summary>
         /// <param name="factory">The extension method argument.</param>
         /// <param name="minLevel">The minimum <see cref="LogLevel"/> to be logged</param>
+        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddEventLog() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.")]
         public static ILoggerFactory AddEventLog(this ILoggerFactory factory, LogLevel minLevel)
         {
             if (factory == null)
@@ -60,10 +91,14 @@ namespace Microsoft.Extensions.Logging
         }
 
         /// <summary>
+        /// <para>
+        /// This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddEventLog() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.
+        /// </para>
         /// Adds an event logger. Use <paramref name="settings"/> to enable logging for specific <see cref="LogLevel"/>s.
         /// </summary>
         /// <param name="factory">The extension method argument.</param>
         /// <param name="settings">The <see cref="EventLogSettings"/>.</param>
+        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddEventLog() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.")]
         public static ILoggerFactory AddEventLog(
             this ILoggerFactory factory,
             EventLogSettings settings)
