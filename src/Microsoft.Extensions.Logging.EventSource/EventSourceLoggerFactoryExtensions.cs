@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Logging
     public static class EventSourceLoggerFactoryExtensions
     {
         /// <summary>
-        /// Adds an event logger.
+        /// Adds an event logger named 'EventSource' to the factory.
         /// </summary>
         /// <param name="factory">The extension method argument.</param>
         public static LoggerFactory AddEventSourceLogger(this LoggerFactory factory)
@@ -29,9 +29,13 @@ namespace Microsoft.Extensions.Logging
         }
 
         /// <summary>
+        /// <para>
+        /// This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddEventSourceLogger() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.
+        /// </para>
         /// Adds an event logger that is enabled for <see cref="LogLevel"/>.Information or higher.
         /// </summary>
         /// <param name="factory">The extension method argument.</param>
+        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddEventSourceLogger() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.")]
         public static ILoggerFactory AddEventSourceLogger(this ILoggerFactory factory)
         {
             if (factory == null)
