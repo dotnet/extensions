@@ -71,7 +71,8 @@ namespace Microsoft.Extensions.Internal
 
         private static bool IsFSharpAsyncOpenGenericType(Type possibleFSharpAsyncGenericType)
         {
-            if (possibleFSharpAsyncGenericType?.FullName != "Microsoft.FSharp.Control.FSharpAsync`1")
+            var typeFullName = possibleFSharpAsyncGenericType?.FullName;
+            if (!string.Equals(typeFullName, "Microsoft.FSharp.Control.FSharpAsync`1", StringComparison.Ordinal))
             {
                 return false;
             }
@@ -143,8 +144,8 @@ namespace Microsoft.Extensions.Internal
         private static bool TypesHaveSameIdentity(Type type1, Type type2)
         {
             return type1.Assembly == type2.Assembly
-                && type1.Namespace == type2.Namespace
-                && type1.Name == type2.Name;
+                && string.Equals(type1.Namespace, type2.Namespace, StringComparison.Ordinal)
+                && string.Equals(type1.Name, type2.Name, StringComparison.Ordinal);
         }
     }
 }
