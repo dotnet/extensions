@@ -3,11 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.Extensions.Internal
 {
@@ -39,17 +36,10 @@ namespace Microsoft.Extensions.Internal
             TargetTypeInfo = targetTypeInfo;
             MethodReturnType = methodInfo.ReturnType;
 
-            var isAwaitable = IsAwaitable(MethodReturnType,
-                out var getAwaiterMethod,
-                out var awaiterType,
-                out var awaiterResultType,
-                out var awaiterIsCompletedProperty,
-                out var awaiterGetResultMethod,
-                out var awaiterOnCompletedMethod,
-                out var awaiterUnsafeOnCompletedMethod);
+            var isAwaitable = CoercedAwaitableInfo.IsTypeAwaitable(MethodReturnType, out var coercedAwaitableInfo);
 
             IsMethodAsync = isAwaitable;
-            AsyncResultType = isAwaitable ? awaiterResultType : null;
+            AsyncResultType = isAwaitable ? coercedAwaitableInfo.AwaitableInfo.ResultType : null;
 
             // Upstream code may prefer to use the sync-executor even for async methods, because if it knows
             // that the result is a specific Task<T> where T is known, then it can directly cast to that type
@@ -58,16 +48,7 @@ namespace Microsoft.Extensions.Internal
 
             if (IsMethodAsync)
             {
-                _executorAsync = GetExecutorAsync(
-                    methodInfo,
-                    targetTypeInfo,
-                    getAwaiterMethod,
-                    awaiterType,
-                    awaiterResultType,
-                    awaiterIsCompletedProperty,
-                    awaiterGetResultMethod,
-                    awaiterOnCompletedMethod,
-                    awaiterUnsafeOnCompletedMethod);
+                _executorAsync = GetExecutorAsync(methodInfo, targetTypeInfo, coercedAwaitableInfo);
             }
 
             _parameterDefaultValues = parameterDefaultValues;
@@ -219,13 +200,7 @@ namespace Microsoft.Extensions.Internal
         private static MethodExecutorAsync GetExecutorAsync(
             MethodInfo methodInfo,
             TypeInfo targetTypeInfo,
-            MethodInfo getAwaiterMethod,
-            Type awaiterType,
-            Type awaiterResultType,
-            PropertyInfo awaiterIsCompletedProperty,
-            MethodInfo awaiterGetResultMethod,
-            MethodInfo awaiterOnCompletedMethod,
-            MethodInfo awaiterUnsafeOnCompletedMethod)
+            CoercedAwaitableInfo coercedAwaitableInfo)
         {
             // Parameters to executor
             var targetParameter = Expression.Parameter(typeof(object), "target");
@@ -255,27 +230,29 @@ namespace Microsoft.Extensions.Internal
 
             // var getAwaiterFunc = (object awaitable) =>
             //     (object)((CustomAwaitableType)awaitable).GetAwaiter();
-            var customAwaiterParam = Expression.Parameter(typeof(object), "awaitable");
+            var customAwaitableParam = Expression.Parameter(typeof(object), "awaitable");
+            var awaitableInfo = coercedAwaitableInfo.AwaitableInfo;
+            var postCoercionMethodReturnType = coercedAwaitableInfo.CoercerResultType ?? methodInfo.ReturnType;
             var getAwaiterFunc = Expression.Lambda<Func<object, object>>(
                 Expression.Convert(
                     Expression.Call(
-                        Expression.Convert(customAwaiterParam, methodInfo.ReturnType),
-                        getAwaiterMethod),
+                        Expression.Convert(customAwaitableParam, postCoercionMethodReturnType),
+                        awaitableInfo.GetAwaiterMethod),
                     typeof(object)),
-                customAwaiterParam).Compile();
+                customAwaitableParam).Compile();
 
             // var isCompletedFunc = (object awaiter) =>
             //     ((CustomAwaiterType)awaiter).IsCompleted;
             var isCompletedParam = Expression.Parameter(typeof(object), "awaiter");
             var isCompletedFunc = Expression.Lambda<Func<object, bool>>(
                 Expression.MakeMemberAccess(
-                    Expression.Convert(isCompletedParam, awaiterType),
-                    awaiterIsCompletedProperty),
+                    Expression.Convert(isCompletedParam, awaitableInfo.AwaiterType),
+                    awaitableInfo.AwaiterIsCompletedProperty),
                 isCompletedParam).Compile();
 
             var getResultParam = Expression.Parameter(typeof(object), "awaiter");
             Func<object, object> getResultFunc;
-            if (awaiterResultType == typeof(void))
+            if (awaitableInfo.ResultType == typeof(void))
             {
                 // var getResultFunc = (object awaiter) =>
                 // {
@@ -285,8 +262,8 @@ namespace Microsoft.Extensions.Internal
                 getResultFunc = Expression.Lambda<Func<object, object>>(
                     Expression.Block(
                         Expression.Call(
-                            Expression.Convert(getResultParam, awaiterType),
-                            awaiterGetResultMethod),
+                            Expression.Convert(getResultParam, awaitableInfo.AwaiterType),
+                            awaitableInfo.AwaiterGetResultMethod),
                         Expression.Constant(null)
                     ),
                     getResultParam).Compile();
@@ -298,8 +275,8 @@ namespace Microsoft.Extensions.Internal
                 getResultFunc = Expression.Lambda<Func<object, object>>(
                     Expression.Convert(
                         Expression.Call(
-                            Expression.Convert(getResultParam, awaiterType),
-                            awaiterGetResultMethod),
+                            Expression.Convert(getResultParam, awaitableInfo.AwaiterType),
+                            awaitableInfo.AwaiterGetResultMethod),
                         typeof(object)),
                     getResultParam).Compile();
             }
@@ -311,14 +288,14 @@ namespace Microsoft.Extensions.Internal
             var onCompletedParam2 = Expression.Parameter(typeof(Action), "continuation");
             var onCompletedFunc = Expression.Lambda<Action<object, Action>>(
                 Expression.Call(
-                    Expression.Convert(onCompletedParam1, awaiterType),
-                    awaiterOnCompletedMethod,
+                    Expression.Convert(onCompletedParam1, awaitableInfo.AwaiterType),
+                    awaitableInfo.AwaiterOnCompletedMethod,
                     onCompletedParam2),
                 onCompletedParam1,
                 onCompletedParam2).Compile();
 
             Action<object, Action> unsafeOnCompletedFunc = null;
-            if (awaiterUnsafeOnCompletedMethod != null)
+            if (awaitableInfo.AwaiterUnsafeOnCompletedMethod != null)
             {
                 // var unsafeOnCompletedFunc = (object awaiter, Action continuation) => {
                 //     ((CustomAwaiterType)awaiter).UnsafeOnCompleted(continuation);
@@ -327,15 +304,21 @@ namespace Microsoft.Extensions.Internal
                 var unsafeOnCompletedParam2 = Expression.Parameter(typeof(Action), "continuation");
                 unsafeOnCompletedFunc = Expression.Lambda<Action<object, Action>>(
                     Expression.Call(
-                        Expression.Convert(unsafeOnCompletedParam1, awaiterType),
-                        awaiterUnsafeOnCompletedMethod,
+                        Expression.Convert(unsafeOnCompletedParam1, awaitableInfo.AwaiterType),
+                        awaitableInfo.AwaiterUnsafeOnCompletedMethod,
                         unsafeOnCompletedParam2),
                     unsafeOnCompletedParam1,
                     unsafeOnCompletedParam2).Compile();
             }
 
+            // If we need to pass the method call result through a coercer function to get an
+            // awaitable, then do so.
+            var coercedMethodCall = coercedAwaitableInfo.RequiresCoercion
+                ? Expression.Invoke(coercedAwaitableInfo.CoercerExpression, methodCall)
+                : (Expression)methodCall;
+
             // return new ObjectMethodExecutorAwaitable(
-            //     (object)getCustomAwaitable(),
+            //     (object)coercedMethodCall,
             //     getAwaiterFunc,
             //     isCompletedFunc,
             //     getResultFunc,
@@ -343,7 +326,7 @@ namespace Microsoft.Extensions.Internal
             //     unsafeOnCompletedFunc);
             var returnValueExpression = Expression.New(
                 _objectMethodExecutorAwaitableConstructor,
-                Expression.Convert(methodCall, typeof(object)),
+                Expression.Convert(coercedMethodCall, typeof(object)),
                 Expression.Constant(getAwaiterFunc),
                 Expression.Constant(isCompletedFunc),
                 Expression.Constant(getResultFunc),
@@ -352,103 +335,6 @@ namespace Microsoft.Extensions.Internal
 
             var lambda = Expression.Lambda<MethodExecutorAsync>(returnValueExpression, targetParameter, parametersParameter);
             return lambda.Compile();
-        }
-
-        private static bool IsAwaitable(
-            Type type,
-            out MethodInfo getAwaiterMethod,
-            out Type awaiterType,
-            out Type returnType,
-            out PropertyInfo isCompletedProperty,
-            out MethodInfo getResultMethod,
-            out MethodInfo onCompletedMethod,
-            out MethodInfo unsafeOnCompletedMethod)
-        {
-            // Based on Roslyn code: http://source.roslyn.io/#Microsoft.CodeAnalysis.Workspaces/Shared/Extensions/ISymbolExtensions.cs,db4d48ba694b9347
-
-            // Awaitable must have method matching "object GetAwaiter()"
-            getAwaiterMethod = type.GetRuntimeMethods().FirstOrDefault(m => 
-                m.Name.Equals("GetAwaiter", StringComparison.OrdinalIgnoreCase)
-                && m.GetParameters().Length == 0
-                && m.ReturnType != null);
-            if (getAwaiterMethod == null)
-            {
-                awaiterType = null;
-                isCompletedProperty = null;
-                onCompletedMethod = null;
-                unsafeOnCompletedMethod = null;
-                getResultMethod = null;
-                returnType = null;
-                return false;
-            }
-
-            awaiterType = getAwaiterMethod.ReturnType;
-
-            // Awaiter must have property matching "bool IsCompleted { get; }"
-            isCompletedProperty = awaiterType.GetRuntimeProperties().FirstOrDefault(p =>
-                p.Name.Equals("IsCompleted", StringComparison.OrdinalIgnoreCase)
-                && p.PropertyType == typeof(bool)
-                && p.GetMethod != null);
-            if (isCompletedProperty == null)
-            {
-                onCompletedMethod = null;
-                unsafeOnCompletedMethod = null;
-                getResultMethod = null;
-                returnType = null;
-                return false;
-            }
-
-            // Awaiter must implement INotifyCompletion
-            var awaiterInterfaces = awaiterType.GetInterfaces();
-            var implementsINotifyCompletion = awaiterInterfaces.Any(t => t == typeof(INotifyCompletion));
-            if (implementsINotifyCompletion)
-            {
-                // INotifyCompletion supplies a method matching "void OnCompleted(Action action)"
-                var interfaceMap = awaiterType.GetTypeInfo().GetRuntimeInterfaceMap(typeof(INotifyCompletion));
-                onCompletedMethod = interfaceMap.InterfaceMethods.Single(m =>
-                    m.Name.Equals("OnCompleted", StringComparison.OrdinalIgnoreCase)
-                    && m.ReturnType == typeof(void)
-                    && m.GetParameters().Length == 1
-                    && m.GetParameters()[0].ParameterType == typeof(Action));
-            }
-            else
-            {
-                onCompletedMethod = null;
-                unsafeOnCompletedMethod = null;
-                getResultMethod = null;
-                returnType = null;
-                return false;
-            }
-
-            // Awaiter optionally implements ICriticalNotifyCompletion
-            var implementsICriticalNotifyCompletion = awaiterInterfaces.Any(t => t == typeof(ICriticalNotifyCompletion));
-            if (implementsICriticalNotifyCompletion)
-            {
-                // ICriticalNotifyCompletion supplies a method matching "void UnsafeOnCompleted(Action action)"
-                var interfaceMap = awaiterType.GetTypeInfo().GetRuntimeInterfaceMap(typeof(ICriticalNotifyCompletion));
-                unsafeOnCompletedMethod = interfaceMap.InterfaceMethods.Single(m =>
-                    m.Name.Equals("UnsafeOnCompleted", StringComparison.OrdinalIgnoreCase)
-                    && m.ReturnType == typeof(void)
-                    && m.GetParameters().Length == 1
-                    && m.GetParameters()[0].ParameterType == typeof(Action));
-            }
-            else
-            {
-                unsafeOnCompletedMethod = null;
-            }
-
-            // Awaiter must have method matching "void GetResult" or "T GetResult()"
-            getResultMethod = awaiterType.GetRuntimeMethods().FirstOrDefault(m =>
-                m.Name.Equals("GetResult")
-                && m.GetParameters().Length == 0);
-            if (getResultMethod == null)
-            {
-                returnType = null;
-                return false;
-            }
-
-            returnType = getResultMethod.ReturnType;
-            return true;
         }
     }
 }

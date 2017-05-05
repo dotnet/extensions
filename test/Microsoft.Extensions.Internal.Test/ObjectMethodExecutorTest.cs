@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.FSharp.Control;
+using Microsoft.FSharp.Core;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -23,6 +25,7 @@ namespace Microsoft.Extensions.Internal
             var result = executor.Execute(
                 _targetObject,
                 new object[] { 10, 20 });
+            Assert.False(executor.IsMethodAsync);
             Assert.Equal(30, (int)result);
         }
 
@@ -33,6 +36,7 @@ namespace Microsoft.Extensions.Internal
             var result = executor.Execute(
                 _targetObject,
                 new object[] { 10 });
+            Assert.False(executor.IsMethodAsync);
             Assert.Same(null, result);
         }
 
@@ -44,6 +48,7 @@ namespace Microsoft.Extensions.Internal
                 _targetObject,
                 new object[] { 10 });
             var resultObject = Assert.IsType<TestObject>(result);
+            Assert.False(executor.IsMethodAsync);
             Assert.Equal("Hello", resultObject.value);
         }
 
@@ -56,6 +61,7 @@ namespace Microsoft.Extensions.Internal
                 _targetObject,
                 new object[] { parameter });
             var resultObject = Assert.IsType<TestObject>(result);
+            Assert.False(executor.IsMethodAsync);
             Assert.Equal("HelloWorld", resultObject.value);
         }
 
@@ -64,6 +70,7 @@ namespace Microsoft.Extensions.Internal
         {
             var executor = GetExecutorForMethod("ValueMethodWithReturnTypeThrowsException");
             var parameter = new TestObject();
+            Assert.False(executor.IsMethodAsync);
             Assert.Throws<NotImplementedException>(
                         () => executor.Execute(
                             _targetObject,
@@ -77,6 +84,7 @@ namespace Microsoft.Extensions.Internal
             var result = await executor.ExecuteAsync(
                 _targetObject,
                 new object[] { 10, 20 });
+            Assert.True(executor.IsMethodAsync);
             Assert.Equal(30, (int)result);
         }
 
@@ -88,6 +96,7 @@ namespace Microsoft.Extensions.Internal
                 _targetObject,
                 new object[] { 10 });
             var resultObject = Assert.IsType<TestObject>(result);
+            Assert.True(executor.IsMethodAsync);
             Assert.Equal("Hello", resultObject.value);
         }
 
@@ -100,6 +109,7 @@ namespace Microsoft.Extensions.Internal
                 _targetObject,
                 new object[] { parameter });
             var resultObject = Assert.IsType<TestObject>(result);
+            Assert.True(executor.IsMethodAsync);
             Assert.Equal("HelloWorld", resultObject.value);
         }
 
@@ -108,6 +118,7 @@ namespace Microsoft.Extensions.Internal
         {
             var executor = GetExecutorForMethod("ValueMethodWithReturnTypeThrowsExceptionAsync");
             var parameter = new TestObject();
+            Assert.True(executor.IsMethodAsync);
             await Assert.ThrowsAsync<NotImplementedException>(
                     async () => await executor.ExecuteAsync(
                             _targetObject,
@@ -119,6 +130,7 @@ namespace Microsoft.Extensions.Internal
         {
             var executor = GetExecutorForMethod("ValueMethodWithReturnVoidThrowsExceptionAsync");
             var parameter = new TestObject();
+            Assert.True(executor.IsMethodAsync);
             await Assert.ThrowsAsync<NotImplementedException>(
                     async () => await executor.ExecuteAsync(
                             _targetObject,
@@ -314,6 +326,78 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal("test result", result);
         }
 
+        [Fact]
+        public async void TargetMethodReturningFSharpAsync_CanBeInvokedViaExecute()
+        {
+            // Arrange
+            var executor = GetExecutorForMethod("FSharpAsyncMethod");
+
+            // Act
+            var fsharpAsync = (FSharpAsync<string>)executor.Execute(_targetObject, new object[] { "test result" });
+            var result = await FSharpAsync.StartAsTask(fsharpAsync,
+                FSharpOption<TaskCreationOptions>.None,
+                FSharpOption<CancellationToken>.None);
+
+            // Assert
+            Assert.True(executor.IsMethodAsync);
+            Assert.Same(typeof(string), executor.AsyncResultType);
+            Assert.Equal("test result", result);
+        }
+
+        [Fact]
+        public async void TargetMethodReturningFailingFSharpAsync_CanBeInvokedViaExecute()
+        {
+            // Arrange
+            var executor = GetExecutorForMethod("FSharpAsyncFailureMethod");
+
+            // Act
+            var fsharpAsync = (FSharpAsync<string>)executor.Execute(_targetObject, new object[] { "test result" });
+            var resultTask = FSharpAsync.StartAsTask(fsharpAsync,
+                FSharpOption<TaskCreationOptions>.None,
+                FSharpOption<CancellationToken>.None);
+
+            // Assert
+            Assert.True(executor.IsMethodAsync);
+            Assert.Same(typeof(string), executor.AsyncResultType);
+
+            var exception = await Assert.ThrowsAsync<AggregateException>(async () => await resultTask);
+            Assert.IsType(typeof(InvalidOperationException), exception.InnerException);
+            Assert.Equal("Test exception", exception.InnerException.Message);
+        }
+
+        [Fact]
+        public async void TargetMethodReturningFSharpAsync_CanBeInvokedViaExecuteAsync()
+        {
+            // Arrange
+            var executor = GetExecutorForMethod("FSharpAsyncMethod");
+
+            // Act
+            var result = await executor.ExecuteAsync(_targetObject, new object[] { "test result" });
+
+            // Assert
+            Assert.True(executor.IsMethodAsync);
+            Assert.Same(typeof(string), executor.AsyncResultType);
+            Assert.Equal("test result", result);
+        }
+
+        [Fact]
+        public async void TargetMethodReturningFailingFSharpAsync_CanBeInvokedViaExecuteAsync()
+        {
+            // Arrange
+            var executor = GetExecutorForMethod("FSharpAsyncFailureMethod");
+
+            // Act
+            var resultTask = executor.ExecuteAsync(_targetObject, new object[] { "test result" });
+
+            // Assert
+            Assert.True(executor.IsMethodAsync);
+            Assert.Same(typeof(string), executor.AsyncResultType);
+
+            var exception = await Assert.ThrowsAsync<AggregateException>(async () => await resultTask);
+            Assert.IsType(typeof(InvalidOperationException), exception.InnerException);
+            Assert.Equal("Test exception", exception.InnerException.Message);
+        }
+
         private ObjectMethodExecutor GetExecutorForMethod(string methodName)
         {
             var method = typeof(TestObject).GetMethod(methodName);
@@ -426,6 +510,17 @@ namespace Microsoft.Extensions.Internal
 
             public void MethodWithMultipleParameters(int valueTypeParam, string referenceTypeParam)
             {
+            }
+
+            public FSharpAsync<string> FSharpAsyncMethod(string parameter)
+            {
+                return FSharpAsync.AwaitTask(Task.FromResult(parameter));
+            }
+
+            public FSharpAsync<string> FSharpAsyncFailureMethod(string parameter)
+            {
+                return FSharpAsync.AwaitTask(
+                    Task.FromException<string>(new InvalidOperationException("Test exception")));
             }
         }
 
