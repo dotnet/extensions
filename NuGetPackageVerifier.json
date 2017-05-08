@@ -12,7 +12,6 @@
       "Microsoft.Extensions.PropertyActivator.Sources": {},
       "Microsoft.Extensions.PropertyHelper.Sources": {},
       "Microsoft.Extensions.RazorViews.Sources": {},
-      "Microsoft.Extensions.RuntimeEnvironment.Sources": {},
       "Microsoft.Extensions.SecurityHelper.Sources": {},
       "Microsoft.Extensions.StackTrace.Sources": {},
       "Microsoft.Extensions.TaskCache.Sources": {},
