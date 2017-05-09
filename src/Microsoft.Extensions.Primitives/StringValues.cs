@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Extensions.Internal;
@@ -11,24 +12,64 @@ namespace Microsoft.Extensions.Primitives
     /// <summary>
     /// Represents zero/null, one, or many strings in an efficient way.
     /// </summary>
-    public struct StringValues : IList<string>, IReadOnlyList<string>, IEquatable<StringValues>, IEquatable<string>, IEquatable<string[]>
+    public class StringValues : IList<string>, IReadOnlyList<string>, IEquatable<StringValues>, IEquatable<string>, IEquatable<string[]>
     {
         private static readonly string[] EmptyArray = new string[0];
         public static readonly StringValues Empty = new StringValues(EmptyArray);
 
         private readonly string _value;
         private readonly string[] _values;
+        private readonly Encoding _encoding;
+        private readonly byte[] _bytes;
 
         public StringValues(string value)
         {
             _value = value;
-            _values = null;
         }
 
         public StringValues(string[] values)
         {
-            _value = null;
             _values = values;
+        }
+
+        private StringValues(string value, Encoding encoding)
+        {
+            _value = value;
+            _encoding = encoding;
+            _bytes = _encoding.GetBytes(value);
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="StringValues"/> with one string and compute its encoded bytes with the specified Encoding.
+        /// </summary>
+        /// <param name="value">The string to be encoded.</param>
+        /// <param name="encoding">The <see cref="Encoding"/> to be use when computing pre-encoded bytes.</param>
+        /// <returns>A <see cref="StringValues"/> which contains the pre-encoded bytes.</returns>
+        public static StringValues CreatePreEncoded(string value, Encoding encoding)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+            if (encoding == null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
+            }
+
+            return new StringValues(value, encoding);
+        }
+
+        /// <summary>
+        /// Try to retrieve the pre-encoded bytes of the <see cref="StringValues"/>. The return value indicates whether pre-encoded bytes exist.
+        /// </summary>
+        /// <param name="bytes">If successful, <paramref name="bytes"/> contains the pre-encoded bytes of the <see cref="StringValues"/>.</param>
+        /// <param name="encoding">If successful, <paramref name="encoding"/> contains the <see cref="Encoding"/> used to compute the pre-encoded bytes.</param>
+        /// <returns><c>true</c> if <see cref="StringValues"/> contains pre-encoded bytes, otherwise <c>false</c>.</returns>
+        public bool TryGetPreEncoded(out byte[] bytes, out Encoding encoding)
+        {
+            bytes = _bytes;
+            encoding = _encoding;
+            return _bytes != null;
         }
 
         public static implicit operator StringValues(string value)
@@ -206,7 +247,7 @@ namespace Microsoft.Extensions.Primitives
 
         public Enumerator GetEnumerator()
         {
-            return new Enumerator(ref this);
+            return new Enumerator(this);
         }
 
         IEnumerator<string> IEnumerable<string>.GetEnumerator()
@@ -424,7 +465,7 @@ namespace Microsoft.Extensions.Primitives
             private string _current;
             private int _index;
 
-            public Enumerator(ref StringValues values)
+            public Enumerator(StringValues values)
             {
                 _values = values._values;
                 _current = values._value;

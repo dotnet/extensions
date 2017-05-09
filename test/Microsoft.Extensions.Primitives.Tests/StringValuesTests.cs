@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Xunit;
 
 namespace Microsoft.Extensions.Primitives
@@ -17,7 +18,6 @@ namespace Microsoft.Extensions.Primitives
             {
                 return new TheoryData<StringValues>
                 {
-                    new StringValues(),
                     new StringValues((string)null),
                     new StringValues((string[])null),
                     (string)null,
@@ -63,7 +63,6 @@ namespace Microsoft.Extensions.Primitives
             {
                 return new TheoryData<StringValues, string>
                 {
-                    { default(StringValues), (string)null },
                     { StringValues.Empty, (string)null },
                     { new StringValues(new string[] { }), (string)null },
                     { new StringValues(string.Empty), string.Empty },
@@ -79,7 +78,6 @@ namespace Microsoft.Extensions.Primitives
             {
                 return new TheoryData<StringValues, object>
                 {
-                    { default(StringValues), (object)null },
                     { StringValues.Empty, (object)null },
                     { new StringValues(new string[] { }), (object)null },
                     { new StringValues("abc"), (object)"abc" },
@@ -96,7 +94,6 @@ namespace Microsoft.Extensions.Primitives
             {
                 return new TheoryData<StringValues, string[]>
                 {
-                    { default(StringValues), new string[0] },
                     { StringValues.Empty, new string[0] },
                     { new StringValues(string.Empty), new[] { string.Empty } },
                     { new StringValues("abc"), new[] { "abc" } },
@@ -333,8 +330,6 @@ namespace Microsoft.Extensions.Primitives
             string[] empty = new string[0];
             Assert.Equal(empty, StringValues.Concat(stringValues, StringValues.Empty));
             Assert.Equal(empty, StringValues.Concat(StringValues.Empty, stringValues));
-            Assert.Equal(empty, StringValues.Concat(stringValues, new StringValues()));
-            Assert.Equal(empty, StringValues.Concat(new StringValues(), stringValues));
         }
 
         [Theory]
@@ -454,6 +449,72 @@ namespace Microsoft.Extensions.Primitives
 
             Assert.True(StringValues.Equals(stringValues, expected));
             Assert.False(StringValues.Equals(stringValues, notEqual));
+        }
+
+        [Theory]
+        [MemberData(nameof(DefaultOrNullStringValues))]
+        [MemberData(nameof(EmptyStringValues))]
+        [MemberData(nameof(FilledStringValues))]
+        public void TryGetConstant_NullDefaultEncodingAndEncodedBytes(StringValues stringValues)
+        {
+            Encoding encoding;
+            byte[] bytes;
+
+            Assert.False(stringValues.TryGetPreEncoded(out bytes, out encoding));
+            Assert.Null(encoding);
+            Assert.Null(bytes);
+        }
+
+        [Theory]
+        [MemberData(nameof(DefaultOrNullStringValues))]
+        [MemberData(nameof(EmptyStringValues))]
+        public void CreateConstant_ThrowsForNullOrEmpty(StringValues stringValues)
+        {
+            Assert.Throws<ArgumentNullException>(() => (StringValues.CreatePreEncoded(stringValues, Encoding.ASCII)));
+        }
+
+        [Fact]
+        public void CreateConstant_EncodesEmptyString()
+        {
+            var stringValueConstant = StringValues.CreatePreEncoded("", Encoding.ASCII);
+            byte[] bytes;
+            Encoding encoding;
+
+            stringValueConstant.TryGetPreEncoded(out bytes, out encoding);
+
+            Assert.NotNull(bytes);
+            Assert.Empty(bytes);
+        }
+
+        [Fact]
+        public void CreateConstant_EncodesUsingSpecifiedEncoding()
+        {
+            var testString = "foo bar";
+            var expectedBytes = Encoding.ASCII.GetBytes(testString);
+            byte[] outBytes;
+            Encoding outEncoding;
+
+            var constantStringValues = StringValues.CreatePreEncoded(testString, Encoding.ASCII);
+            constantStringValues.TryGetPreEncoded(out outBytes, out outEncoding);
+
+            Assert.Equal(expectedBytes, outBytes);
+            Assert.Equal(Encoding.ASCII, outEncoding);
+        }
+
+        [Fact]
+        public void TryGetConstant_ReturnsIdenticalBytesAndEncoding()
+        {
+            var encoding = Encoding.GetEncoding(20127); // US-ASCII
+            var constantStringValues = StringValues.CreatePreEncoded("foo bar", encoding);
+
+            byte[] bytes1, bytes2;
+            Encoding encoding1, encoding2;
+            constantStringValues.TryGetPreEncoded(out bytes1, out encoding1);
+            constantStringValues.TryGetPreEncoded(out bytes2, out encoding2);
+
+            Assert.Same(bytes1, bytes2);
+            Assert.Same(encoding, encoding1);
+            Assert.Same(encoding, encoding2);
         }
     }
 }
