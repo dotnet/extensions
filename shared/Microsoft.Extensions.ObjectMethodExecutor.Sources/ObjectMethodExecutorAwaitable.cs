@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Internal
     /// return, regardless of whether the underlying value is a System.Task, an FSharpAsync, or an
     /// application-defined custom awaitable.
     /// </summary>
-    public struct ObjectMethodExecutorAwaitable
+    internal struct ObjectMethodExecutorAwaitable
     {
         private readonly object _customAwaitable;
         private readonly Func<object, object> _getAwaiterMethod;
