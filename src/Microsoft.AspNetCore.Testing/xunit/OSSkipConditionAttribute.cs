@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
             // currently not used on other OS's
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                return Microsoft.Extensions.Internal.RuntimeEnvironment.OperatingSystemVersion;
+                return Environment.OSVersion.Version.ToString();
             }
             else
             {

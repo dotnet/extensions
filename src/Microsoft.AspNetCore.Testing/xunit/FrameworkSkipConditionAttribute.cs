@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
             {
                 return false;
             }
-#elif NETSTANDARD1_3
+#elif NETSTANDARD2_0
             if (excludedFrameworks.HasFlag(RuntimeFrameworks.CoreCLR))
             {
                 return false;

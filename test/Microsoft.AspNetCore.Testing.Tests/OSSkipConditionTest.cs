@@ -1,8 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Xunit;
+using System;
 using System.Runtime.InteropServices;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Testing.xunit
 {
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         {
             Assert.False(
                 RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-                Microsoft.Extensions.Internal.RuntimeEnvironment.OperatingSystemVersion.StartsWith("6.1"),
+                Environment.OSVersion.Version.ToString().StartsWith("6.1"),
                 "Test should not be running on Win7 or Win2008R2.");
         }
 
