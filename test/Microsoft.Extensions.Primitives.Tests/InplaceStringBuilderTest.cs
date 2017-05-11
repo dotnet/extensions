@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Http.Tests.Internal
             var formatter = new InplaceStringBuilder(5);
             formatter.Append("123");
             var exception = Assert.Throws<InvalidOperationException>(() => formatter.ToString());
-            Assert.Equal(exception.Message, "Entire reserved capacity was not used. Capacity: '5', written '3'.");
+            Assert.Equal("Entire reserved capacity was not used. Capacity: '5', written '3'.", exception.Message);
         }
 
         [Fact]
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Http.Tests.Internal
             formatter.Append("123");
 
             var exception = Assert.Throws<InvalidOperationException>(() => formatter.Capacity = 5);
-            Assert.Equal(exception.Message, "Cannot change capacity after write started.");
+            Assert.Equal("Cannot change capacity after write started.", exception.Message);
         }
 
         [Fact]
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Http.Tests.Internal
             var formatter = new InplaceStringBuilder(1);
 
             var exception = Assert.Throws<InvalidOperationException>(() => formatter.Append("123"));
-            Assert.Equal(exception.Message, "Not enough capacity to write '3' characters, only '1' left.");
+            Assert.Equal("Not enough capacity to write '3' characters, only '1' left.", exception.Message);
         }
     }
 }

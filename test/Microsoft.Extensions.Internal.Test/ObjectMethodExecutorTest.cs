@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.Internal
                 _targetObject,
                 new object[] { 10 });
             Assert.False(executor.IsMethodAsync);
-            Assert.Same(null, result);
+            Assert.Null(result);
         }
 
         [Fact]
@@ -182,7 +182,6 @@ namespace Microsoft.Extensions.Internal
             // Assert
             Assert.True(executor.IsMethodAsync);
             Assert.Same(typeof(int), executor.AsyncResultType);
-            Assert.NotNull(result);
             Assert.Equal(579, result);
         }
 

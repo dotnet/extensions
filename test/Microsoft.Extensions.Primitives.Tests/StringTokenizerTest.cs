@@ -27,7 +27,6 @@ namespace Microsoft.Extensions.Primitives
         [InlineData("a", new[] { "a" })]
         [InlineData("abc", new[] { "abc" })]
         [InlineData("a,b", new[] { "a", "b" })]
-        [InlineData("a,b", new[] { "a", "b" })]
         [InlineData("a,,b", new[] { "a", "", "b" })]
         [InlineData(",a,b", new[] { "", "a", "b" })]
         [InlineData(",,a,b", new[] { "", "", "a", "b" })]
@@ -45,7 +44,7 @@ namespace Microsoft.Extensions.Primitives
             // Assert
             Assert.Equal(expected, result);
         }
-        
+
         [Theory]
         [InlineData("", new[] { "" })]
         [InlineData("a", new[] { "a" })]
