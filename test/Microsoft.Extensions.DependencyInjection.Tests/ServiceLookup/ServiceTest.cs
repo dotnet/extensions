@@ -263,7 +263,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         [Theory]
         [InlineData(typeof(TypeWithMultipleParameterizedConstructors))]
         [InlineData(typeof(TypeWithSupersetConstructors))]
-        [InlineData(typeof(TypeWithSupersetConstructors))]
         public void CreateCallSite_ThrowsIfTypeHasNoConstructurWithResolvableParameters(Type type)
         {
             // Arrange
