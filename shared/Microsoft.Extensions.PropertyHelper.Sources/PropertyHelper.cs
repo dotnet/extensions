@@ -121,20 +121,20 @@ namespace Microsoft.Extensions.Internal
         /// Creates and caches fast property helpers that expose getters for every public get property on the
         /// underlying type.
         /// </summary>
-        /// <param name="instance">the instance to extract property accessors for.</param>
-        /// <returns>a cached array of all public property getters from the underlying type of target instance.
+        /// <param name="typeInfo">The type info to extract property accessors for.</param>
+        /// <returns>A cached array of all public property getters from the underlying type of target instance.
         /// </returns>
-        public static PropertyHelper[] GetProperties(object instance)
+        public static PropertyHelper[] GetProperties(TypeInfo typeInfo)
         {
-            return GetProperties(instance.GetType());
+            return GetProperties(typeInfo);
         }
 
         /// <summary>
         /// Creates and caches fast property helpers that expose getters for every public get property on the
         /// specified type.
         /// </summary>
-        /// <param name="type">the type to extract property accessors for.</param>
-        /// <returns>a cached array of all public property getters from the type of target instance.
+        /// <param name="type">The type to extract property accessors for.</param>
+        /// <returns>A cached array of all public property getters from the type of target instance.
         /// </returns>
         public static PropertyHelper[] GetProperties(Type type)
         {
@@ -341,7 +341,7 @@ namespace Microsoft.Extensions.Internal
 
             if (value != null)
             {
-                foreach (var helper in GetProperties(value))
+                foreach (var helper in GetProperties(value.GetType()))
                 {
                     dictionary[helper.Name] = helper.GetValue(value);
                 }
