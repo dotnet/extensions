@@ -38,12 +38,12 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
             await sink.DoEmitBatchInternalAsync(events.ToArray());
 
             Assert.Equal(1, buffers.Count);
-            Assert.Equal(@"Information Text 0
+            Assert.Equal(Encoding.UTF8.GetString(buffers[0]), @"Information Text 0
 Information Text 1
 Information Text 2
 Information Text 3
 Information Text 4
-", Encoding.UTF8.GetString(buffers[0]));
+");
         }
 
         [Fact]
@@ -104,7 +104,7 @@ Information Text 4
             await sink.DoEmitBatchInternalAsync(new[] {CreateEvent(DateTime.Now, "Text")});
 
             Assert.Equal(1, buffers.Count);
-            Assert.True(created);
+            Assert.Equal(true, created);
         }
 
         private static LogEvent CreateEvent(DateTime addHours, string text)
