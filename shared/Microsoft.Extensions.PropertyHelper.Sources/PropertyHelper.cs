@@ -126,7 +126,7 @@ namespace Microsoft.Extensions.Internal
         /// </returns>
         public static PropertyHelper[] GetProperties(TypeInfo typeInfo)
         {
-            return GetProperties(typeInfo);
+            return GetProperties(typeInfo.AsType());
         }
 
         /// <summary>
@@ -151,13 +151,13 @@ namespace Microsoft.Extensions.Internal
         /// hidden by definitions using the <c>new</c> keyword.
         /// </para>
         /// </summary>
-        /// <param name="instance">The instance to extract property accessors for.</param>
+        /// <param name="typeInfo">The type info to extract property accessors for.</param>
         /// <returns>
         /// A cached array of all public property getters from the instance's type.
         /// </returns>
-        public static PropertyHelper[] GetVisibleProperties(object instance)
+        public static PropertyHelper[] GetVisibleProperties(TypeInfo typeInfo)
         {
-            return GetVisibleProperties(instance.GetType(), CreateInstance, PropertiesCache, VisiblePropertiesCache);
+            return GetVisibleProperties(typeInfo.AsType(), CreateInstance, PropertiesCache, VisiblePropertiesCache);
         }
 
         /// <summary>
