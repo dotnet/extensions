@@ -122,7 +122,7 @@ namespace Microsoft.Extensions.Internal
         /// underlying type.
         /// </summary>
         /// <param name="typeInfo">The type info to extract property accessors for.</param>
-        /// <returns>A cached array of all public property getters from the underlying type of target instance.
+        /// <returns>A cached array of all public properties of the specified type.
         /// </returns>
         public static PropertyHelper[] GetProperties(TypeInfo typeInfo)
         {
@@ -134,7 +134,7 @@ namespace Microsoft.Extensions.Internal
         /// specified type.
         /// </summary>
         /// <param name="type">The type to extract property accessors for.</param>
-        /// <returns>A cached array of all public property getters from the type of target instance.
+        /// <returns>A cached array of all public properties of the specified type.
         /// </returns>
         public static PropertyHelper[] GetProperties(Type type)
         {
@@ -153,7 +153,7 @@ namespace Microsoft.Extensions.Internal
         /// </summary>
         /// <param name="typeInfo">The type info to extract property accessors for.</param>
         /// <returns>
-        /// A cached array of all public property getters from the instance's type.
+        /// A cached array of all public properties of the specified type.
         /// </returns>
         public static PropertyHelper[] GetVisibleProperties(TypeInfo typeInfo)
         {
@@ -172,7 +172,7 @@ namespace Microsoft.Extensions.Internal
         /// </summary>
         /// <param name="type">The type to extract property accessors for.</param>
         /// <returns>
-        /// A cached array of all public property getters from the type.
+        /// A cached array of all public properties of the specified type.
         /// </returns>
         public static PropertyHelper[] GetVisibleProperties(Type type)
         {
