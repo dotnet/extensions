@@ -59,7 +59,7 @@ namespace Microsoft.Extensions.FileProviders
             GetFileInfoReturnsPhysicalFileInfoForValidPathsWithLeadingSlashes(path);
         }
 
-        public void GetFileInfoReturnsPhysicalFileInfoForValidPathsWithLeadingSlashes(string path)
+        private void GetFileInfoReturnsPhysicalFileInfoForValidPathsWithLeadingSlashes(string path)
         {
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
@@ -86,7 +86,7 @@ namespace Microsoft.Extensions.FileProviders
             GetFileInfoReturnsNotFoundFileInfoForIllegalPathWithLeadingSlashes(path);
         }
 
-        public void GetFileInfoReturnsNotFoundFileInfoForIllegalPathWithLeadingSlashes(string path)
+        private void GetFileInfoReturnsNotFoundFileInfoForIllegalPathWithLeadingSlashes(string path)
         {
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
@@ -469,7 +469,7 @@ namespace Microsoft.Extensions.FileProviders
             InvalidPath_DoesNotThrowGeneric_GetFileInfo(path);
         }
 
-        public void InvalidPath_DoesNotThrowGeneric_GetFileInfo(string path)
+        private void InvalidPath_DoesNotThrowGeneric_GetFileInfo(string path)
         {
             using (var provider = new PhysicalFileProvider(Directory.GetCurrentDirectory()))
             {
@@ -500,7 +500,7 @@ namespace Microsoft.Extensions.FileProviders
             InvalidPath_DoesNotThrowGeneric_GetDirectoryContents(path);
         }
 
-        public void InvalidPath_DoesNotThrowGeneric_GetDirectoryContents(string path)
+        private void InvalidPath_DoesNotThrowGeneric_GetDirectoryContents(string path)
         {
             using (var provider = new PhysicalFileProvider(Directory.GetCurrentDirectory()))
             {
@@ -541,7 +541,7 @@ namespace Microsoft.Extensions.FileProviders
             GetDirectoryContentsReturnsEnumerableDirectoryContentsForValidPathWithLeadingSlashes(path);
         }
 
-        public void GetDirectoryContentsReturnsEnumerableDirectoryContentsForValidPathWithLeadingSlashes(string path)
+        private void GetDirectoryContentsReturnsEnumerableDirectoryContentsForValidPathWithLeadingSlashes(string path)
         {
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
@@ -572,7 +572,7 @@ namespace Microsoft.Extensions.FileProviders
             GetDirectoryContentsReturnsNotFoundDirectoryContentsForInvalidPath(path);
         }
 
-        public void GetDirectoryContentsReturnsNotFoundDirectoryContentsForInvalidPath(string path)
+        private void GetDirectoryContentsReturnsNotFoundDirectoryContentsForInvalidPath(string path)
         {
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
@@ -995,7 +995,7 @@ namespace Microsoft.Extensions.FileProviders
             await TokenFiredForRelativePathStartingWithSlash(slashes);
         }
 
-        public async Task TokenFiredForRelativePathStartingWithSlash(string slashes)
+        private async Task TokenFiredForRelativePathStartingWithSlash(string slashes)
         {
             using (var root = new DisposableFileSystem())
             {
@@ -1036,7 +1036,7 @@ namespace Microsoft.Extensions.FileProviders
             await TokenNotFiredForInvalidPathStartingWithSlash(slashes);
         }
 
-        public async Task TokenNotFiredForInvalidPathStartingWithSlash(string slashes)
+        private async Task TokenNotFiredForInvalidPathStartingWithSlash(string slashes)
         {
             using (var root = new DisposableFileSystem())
             {

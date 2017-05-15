@@ -51,7 +51,7 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests.PatternContexts
                     var mockSegment = segment as LiteralPathSegment;
 
                     Assert.NotNull(mockSegment);
-                    Assert.Equal(false, last);
+                    Assert.False(last);
                     Assert.Equal(expectSegment, mockSegment.Value);
                 }
                 else

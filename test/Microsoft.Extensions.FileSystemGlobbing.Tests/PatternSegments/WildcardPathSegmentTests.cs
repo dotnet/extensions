@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests.PatternSegments
         }
 
         [Theory]
-        [MemberData("GetPositiveOrdinalIgnoreCaseDataSample")]
+        [MemberData(nameof(GetPositiveOrdinalIgnoreCaseDataSample))]
         public void PositiveOrdinalIgnoreCaseMatch(string testSample, object segment)
         {
             var wildcardPathSegment = (WildcardPathSegment)segment;
@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests.PatternSegments
         }
 
         [Theory]
-        [MemberData("GetNegativeOrdinalIgnoreCaseDataSample")]
+        [MemberData(nameof(GetNegativeOrdinalIgnoreCaseDataSample))]
         public void NegativeOrdinalIgnoreCaseMatch(string testSample, object segment)
         {
             var wildcardPathSegment = (WildcardPathSegment)segment;
@@ -48,7 +48,7 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests.PatternSegments
         }
 
         [Theory]
-        [MemberData("GetPositiveOrdinalDataSample")]
+        [MemberData(nameof(GetPositiveOrdinalDataSample))]
         public void PositiveOrdinalMatch(string testSample, object segment)
         {
             var wildcardPathSegment = (WildcardPathSegment)segment;
@@ -58,7 +58,7 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests.PatternSegments
         }
 
         [Theory]
-        [MemberData("GetNegativeOrdinalDataSample")]
+        [MemberData(nameof(GetNegativeOrdinalDataSample))]
         public void NegativeOrdinalMatch(string testSample, object segment)
         {
             var wildcardPathSegment = (WildcardPathSegment)segment;
