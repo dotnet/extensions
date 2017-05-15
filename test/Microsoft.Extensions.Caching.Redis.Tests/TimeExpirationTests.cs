@@ -11,13 +11,13 @@ using Xunit;
 
 namespace Microsoft.Extensions.Caching.Redis
 {
-    // TODO: Disabled due to CI failure
-    // These tests require Redis server to be started on the machine. Make sure to change the value of
-    // "RedisTestConfig.RedisPort" accordingly.
-    // public
-    class TimeExpirationTests
+    public class TimeExpirationTests
     {
-        [Fact]
+        private const string SkipReason = "TODO: Disabled due to CI failure. " +
+            "These tests require Redis server to be started on the machine. Make sure to change the value of" +
+            "\"RedisTestConfig.RedisPort\" accordingly.";
+
+        [Fact(Skip = SkipReason)]
         public void AbsoluteExpirationInThePastThrows()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.Caching.Redis
                 expected.ToString(CultureInfo.CurrentCulture));
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void AbsoluteExpirationExpires()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.Caching.Redis
             Assert.Null(result);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void AbsoluteSubSecondExpirationExpiresImmidately()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.Caching.Redis
             Assert.Null(result);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void NegativeRelativeExpirationThrows()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -85,7 +85,7 @@ namespace Microsoft.Extensions.Caching.Redis
             TimeSpan.FromMinutes(-1));
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void ZeroRelativeExpirationThrows()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -102,7 +102,7 @@ namespace Microsoft.Extensions.Caching.Redis
                 TimeSpan.Zero);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void RelativeExpirationExpires()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -122,7 +122,7 @@ namespace Microsoft.Extensions.Caching.Redis
             Assert.Null(result);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void RelativeSubSecondExpirationExpiresImmediately()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -135,7 +135,7 @@ namespace Microsoft.Extensions.Caching.Redis
             Assert.Null(result);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void NegativeSlidingExpirationThrows()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -148,7 +148,7 @@ namespace Microsoft.Extensions.Caching.Redis
             }, nameof(DistributedCacheEntryOptions.SlidingExpiration), "The sliding expiration value must be positive.", TimeSpan.FromMinutes(-1));
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void ZeroSlidingExpirationThrows()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -165,7 +165,7 @@ namespace Microsoft.Extensions.Caching.Redis
                 TimeSpan.Zero);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void SlidingExpirationExpiresIfNotAccessed()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -183,7 +183,7 @@ namespace Microsoft.Extensions.Caching.Redis
             Assert.Null(result);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void SlidingSubSecondExpirationExpiresImmediately()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -196,7 +196,7 @@ namespace Microsoft.Extensions.Caching.Redis
             Assert.Null(result);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void SlidingExpirationRenewedByAccess()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -221,7 +221,7 @@ namespace Microsoft.Extensions.Caching.Redis
             Assert.Null(result);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void SlidingExpirationRenewedByAccessUntilAbsoluteExpiration()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);

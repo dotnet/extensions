@@ -14,10 +14,10 @@ using Xunit;
 
 namespace Microsoft.Extensions.Caching.SqlServer
 {
-    // This requires SQL Server database to be setup
-    // public
-    class SqlServerCacheWithDatabaseTest
+    public class SqlServerCacheWithDatabaseTest
     {
+        private const string SkipReason = "This requires SQL Server database to be setup";
+
         private const string ConnectionStringKey = "ConnectionString";
         private const string SchemaNameKey = "SchemaName";
         private const string TableNameKey = "TableName";
@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             _connectionString = configuration[ConnectionStringKey];
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task ReturnsNullValue_ForNonExistingCacheItem()
         {
             // Arrange
@@ -62,7 +62,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(value);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task SetWithAbsoluteExpirationSetInThePast_Throws()
         {
             // Arrange
@@ -82,7 +82,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Equal("The absolute expiration value must be in the future.", exception.Message);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task SetCacheItem_SucceedsFor_KeyEqualToMaximumSize()
         {
             // Arrange
@@ -109,7 +109,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(cacheItemInfo);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task SetCacheItem_SucceedsFor_NullAbsoluteAndSlidingExpirationTimes()
         {
             // Arrange
@@ -148,7 +148,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(cacheItemInfo);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task UpdatedDefaultSlidingExpiration_SetCacheItem_SucceedsFor_NullAbsoluteAndSlidingExpirationTimes()
         {
             // Arrange
@@ -188,7 +188,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(cacheItemInfo);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task SetCacheItem_FailsFor_KeyGreaterThanMaximumSize()
         {
             // Arrange
@@ -209,7 +209,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
         }
 
         // Arrange
-        [Theory]
+        [Theory(Skip = SkipReason)]
         [InlineData(10, 11)]
         [InlineData(10, 30)]
         public async Task SetWithSlidingExpiration_ReturnsNullValue_ForExpiredCacheItem(
@@ -234,7 +234,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(value);
         }
 
-        [Theory]
+        [Theory(Skip = SkipReason)]
         [InlineData(5, 15)]
         [InlineData(10, 20)]
         public async Task SetWithSlidingExpiration_ExtendsExpirationTime(int accessItemAt, int expected)
@@ -262,7 +262,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 expectedExpirationTime: expectedExpirationTime);
         }
 
-        [Theory]
+        [Theory(Skip = SkipReason)]
         [InlineData(8)]
         [InlineData(50)]
         public async Task SetWithSlidingExpirationAndAbsoluteExpiration_ReturnsNullValue_ForExpiredCacheItem(
@@ -292,7 +292,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(value);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task SetWithAbsoluteExpirationRelativeToNow_ReturnsNullValue_ForExpiredCacheItem()
         {
             // Arrange
@@ -314,7 +314,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(value);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task SetWithAbsoluteExpiration_ReturnsNullValue_ForExpiredCacheItem()
         {
             // Arrange
@@ -337,7 +337,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(value);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task DoesNotThrowException_WhenOnlyAbsoluteExpirationSupplied_AbsoluteExpirationRelativeToNow()
         {
             // Arrange
@@ -365,7 +365,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 expectedExpirationTime: expectedAbsoluteExpiration);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task DoesNotThrowException_WhenOnlyAbsoluteExpirationSupplied_AbsoluteExpiration()
         {
             // Arrange
@@ -392,7 +392,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 expectedExpirationTime: expectedAbsoluteExpiration);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task SetCacheItem_UpdatesAbsoluteExpirationTime()
         {
             // Arrange
@@ -431,7 +431,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 expectedExpirationTime: absoluteExpiration);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task SetCacheItem_WithValueLargerThan_DefaultColumnWidth()
         {
             // Arrange
@@ -458,7 +458,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 expectedExpirationTime: absoluteExpiration);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task ExtendsExpirationTime_ForSlidingExpiration()
         {
             // Arrange
@@ -487,7 +487,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Equal(expectedExpiresAtTime, cacheItemInfo.ExpiresAtTime);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task GetItem_SlidingExpirationDoesNot_ExceedAbsoluteExpirationIfSet()
         {
             // Arrange
@@ -543,7 +543,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 expectedExpirationTime: absoluteExpiration);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task DoestNotExtendsExpirationTime_ForAbsoluteExpiration()
         {
             // Arrange
@@ -572,7 +572,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Equal(expectedExpiresAtTime, cacheItemInfo.ExpiresAtTime);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task RefreshItem_ExtendsExpirationTime_ForSlidingExpiration()
         {
             // Arrange
@@ -601,7 +601,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Equal(expectedExpiresAtTime, cacheItemInfo.ExpiresAtTime);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task GetCacheItem_IsCaseSensitive()
         {
             // Arrange
@@ -619,7 +619,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Null(value);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task GetCacheItem_DoesNotTrimTrailingSpaces()
         {
             // Arrange
@@ -639,7 +639,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
             Assert.Equal(expectedValue, value);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public async Task DeletesCacheItem_OnExplicitlyCalled()
         {
             // Arrange

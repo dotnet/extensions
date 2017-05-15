@@ -8,13 +8,13 @@ using Xunit;
 
 namespace Microsoft.Extensions.Caching.Redis
 {
-    // TODO: Disabled due to CI failure
-    // These tests require Redis server to be started on the machine. Make sure to change the value of
-    // "RedisTestConfig.RedisPort" accordingly.
-    // public
-    class RedisCacheSetAndRemoveTests
+    public class RedisCacheSetAndRemoveTests
     {
-        [Fact]
+        private const string SkipReason = "TODO: Disabled due to CI failure. " +
+            "These tests require Redis server to be started on the machine. Make sure to change the value of" +
+            "\"RedisTestConfig.RedisPort\" accordingly.";
+
+        [Fact(Skip = SkipReason)]
         public void GetMissingKeyReturnsNull()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.Caching.Redis
             Assert.Null(result);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void SetAndGetReturnsObject()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.Caching.Redis
             Assert.Equal(value, result);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void SetAndGetWorksWithCaseSensitiveKeys()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -54,7 +54,7 @@ namespace Microsoft.Extensions.Caching.Redis
             Assert.Null(result);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void SetAlwaysOverwrites()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.Caching.Redis
             Assert.Equal(value2, result);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void RemoveRemoves()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
@@ -87,7 +87,7 @@ namespace Microsoft.Extensions.Caching.Redis
             Assert.Null(result);
         }
 
-        [Fact]
+        [Fact(Skip = SkipReason)]
         public void SetNullValueThrows()
         {
             var cache = RedisTestConfig.CreateCacheInstance(GetType().Name);
