@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Configuration.Test
         [Fact]
         public void GetLastSegmenGetSectionKeyTests()
         {
-            Assert.Equal(null, ConfigurationPath.GetSectionKey(null));
+            Assert.Null(ConfigurationPath.GetSectionKey(null));
             Assert.Equal("", ConfigurationPath.GetSectionKey(""));
             Assert.Equal("", ConfigurationPath.GetSectionKey(":::"));
             Assert.Equal("c", ConfigurationPath.GetSectionKey("a::b:::c"));
@@ -33,12 +33,12 @@ namespace Microsoft.Extensions.Configuration.Test
         [Fact]
         public void GetParentPathTests()
         {
-            Assert.Equal(null, ConfigurationPath.GetParentPath(null));
-            Assert.Equal(null, ConfigurationPath.GetParentPath(""));
+            Assert.Null(ConfigurationPath.GetParentPath(null));
+            Assert.Null(ConfigurationPath.GetParentPath(""));
             Assert.Equal("::", ConfigurationPath.GetParentPath(":::"));
             Assert.Equal("a::b::", ConfigurationPath.GetParentPath("a::b:::c"));
             Assert.Equal("a:::b", ConfigurationPath.GetParentPath("a:::b:"));
-            Assert.Equal(null, ConfigurationPath.GetParentPath("key"));
+            Assert.Null(ConfigurationPath.GetParentPath("key"));
             Assert.Equal("", ConfigurationPath.GetParentPath(":key"));
             Assert.Equal(":", ConfigurationPath.GetParentPath("::key"));
             Assert.Equal("parent", ConfigurationPath.GetParentPath("parent:key"));

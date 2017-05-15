@@ -108,7 +108,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
 
             Assert.Equal("Section", options.Section.Key);
             Assert.Equal("Section", options.Section.Path);
-            Assert.Equal(null, options.Section.Value);
+            Assert.Null(options.Section.Value);
         }
 
         [Fact]
@@ -144,7 +144,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             Assert.Equal("Section", options.Section.Path);
             Assert.Equal("DerivedSection", childOptions.DerivedSection.Key);
             Assert.Equal("Section:DerivedSection", childOptions.DerivedSection.Path);
-            Assert.Equal(null, options.Section.Value);
+            Assert.Null(options.Section.Value);
         }
 
         [Fact]

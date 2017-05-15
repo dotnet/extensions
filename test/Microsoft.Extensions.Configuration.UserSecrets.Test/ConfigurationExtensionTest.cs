@@ -125,7 +125,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Test
             var builder = new ConfigurationBuilder().AddUserSecrets(userSecretsId);
 
             var configuration = builder.Build();
-            Assert.Equal(null, configuration["Facebook:AppSecret"]);
+            Assert.Null(configuration["Facebook:AppSecret"]);
             Assert.False(File.Exists(secretFilePath));
         }
 
