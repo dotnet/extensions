@@ -12,14 +12,17 @@ namespace Microsoft.Extensions.Options
     public class OptionsFactory<TOptions> : IOptionsFactory<TOptions> where TOptions : class, new()
     {
         private readonly IEnumerable<IConfigureOptions<TOptions>> _setups;
+        private readonly IEnumerable<IInitializeOptions<TOptions>> _initializers;
 
         /// <summary>
         /// Initializes a new instance with the specified options configurations.
         /// </summary>
         /// <param name="setups">The configuration actions to run.</param>
-        public OptionsFactory(IEnumerable<IConfigureOptions<TOptions>> setups)
+        /// <param name="initializers">The initialization actions to run.</param>
+        public OptionsFactory(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IInitializeOptions<TOptions>> initializers)
         {
             _setups = setups;
+            _initializers = initializers;
         }
 
         public TOptions Create(string name)
@@ -31,10 +34,14 @@ namespace Microsoft.Extensions.Options
                 {
                     namedSetup.Configure(name, options);
                 }
-                else
+                else if (name == Options.DefaultName)
                 {
                     setup.Configure(options);
                 }
+            }
+            foreach (var init in _initializers)
+            {
+                init.Initialize(name, options);
             }
             return options;
         }

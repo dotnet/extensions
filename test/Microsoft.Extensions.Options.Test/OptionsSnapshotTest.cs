@@ -209,6 +209,107 @@ namespace Microsoft.Extensions.Options.Tests
         }
 
         [Fact]
+        public void CanConfigureAndInitializeAllDefaultAndNamedOptions()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.ConfigureAll<FakeOptions>(o => o.Message += "Default");
+            services.Configure<FakeOptions>(o => o.Message += "0");
+            services.Configure<FakeOptions>("1", o => o.Message += "1");
+            services.InitializeAll<FakeOptions>(o => o.Message += "Initialize");
+            services.Initialize<FakeOptions>(o => o.Message += "2");
+            services.Initialize<FakeOptions>("1", o => o.Message += "3");
+
+            var sp = services.BuildServiceProvider();
+            var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
+            Assert.Equal("DefaultInitialize", option.Get("Default").Message);
+            Assert.Equal("Default0Initialize2", option.Value.Message);
+            Assert.Equal("Default1Initialize3", option.Get("1").Message);
+        }
+
+        [Fact]
+        public void CanInitializeAllOptions()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.InitializeAll<FakeOptions>(o => o.Message = "Default");
+
+            var sp = services.BuildServiceProvider();
+            var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
+            Assert.Equal("Default", option.Get("1").Message);
+            Assert.Equal("Default", option.Get("2").Message);
+        }
+
+        [Fact]
+        public void CanConfigureAndInitializeAllOptions()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.ConfigureAll<FakeOptions>(o => o.Message = "D");
+            services.InitializeAll<FakeOptions>(o => o.Message += "f");
+            services.ConfigureAll<FakeOptions>(o => o.Message += "e");
+            services.InitializeAll<FakeOptions>(o => o.Message += "ault");
+
+            var sp = services.BuildServiceProvider();
+            var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
+            Assert.Equal("Default", option.Get("1").Message);
+            Assert.Equal("Default", option.Get("2").Message);
+        }
+
+        [Fact]
+        public void NamedSnapshotsInitializesInRegistrationOrder()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.Initialize<FakeOptions>("-", o => o.Message += "-");
+            services.InitializeAll<FakeOptions>(o => o.Message += "A");
+            services.Initialize<FakeOptions>("+", o => o.Message += "+");
+            services.InitializeAll<FakeOptions>(o => o.Message += "B");
+            services.InitializeAll<FakeOptions>(o => o.Message += "C");
+            services.Initialize<FakeOptions>("+", o => o.Message += "+");
+            services.Initialize<FakeOptions>("-", o => o.Message += "-");
+
+            var sp = services.BuildServiceProvider();
+            var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
+            Assert.Equal("ABC", option.Get("1").Message);
+            Assert.Equal("A+BC+", option.Get("+").Message);
+            Assert.Equal("-ABC-", option.Get("-").Message);
+        }
+
+        [Fact]
+        public void CanInitializeAllDefaultAndNamedOptions()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.InitializeAll<FakeOptions>(o => o.Message += "Default");
+            services.Initialize<FakeOptions>(o => o.Message += "0");
+            services.Initialize<FakeOptions>("1", o => o.Message += "1");
+
+            var sp = services.BuildServiceProvider();
+            var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
+            Assert.Equal("Default", option.Get("Default").Message);
+            Assert.Equal("Default0", option.Value.Message);
+            Assert.Equal("Default1", option.Get("1").Message);
+        }
+
+        [Fact]
+        public void CustomIConfigureOptionsShouldOnlyAffectDefaultInstance()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.AddSingleton<IConfigureOptions<FakeOptions>, CustomSetup>();
+
+            var sp = services.BuildServiceProvider();
+            var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
+            Assert.Equal("", option.Get("NotDefault").Message);
+            Assert.Equal("Stomp", option.Get(Options.DefaultName).Message);
+            Assert.Equal("Stomp", option.Value.Message);
+            Assert.Equal("Stomp", sp.GetRequiredService<IOptions<FakeOptions>>().Value.Message);
+        }
+
+        private class CustomSetup : IConfigureOptions<FakeOptions>
+        {
+            public void Configure(FakeOptions options)
+            {
+                options.Message = "Stomp";
+            }
+        }
+
+        [Fact]
         public void EnsureAddOptionsLifetimes()
         {
             var services = new ServiceCollection().AddOptions();

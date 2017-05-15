@@ -34,6 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Registers an action used to configure a particular type of options.
+        /// Note: These are run before all <seealso cref="Initialize{TOptions}(IServiceCollection, Action{TOptions})"/>.
         /// </summary>
         /// <typeparam name="TOptions">The options type to be configured.</typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
@@ -44,6 +45,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Registers an action used to configure a particular type of options.
+        /// Note: These are run before all <seealso cref="Initialize{TOptions}(IServiceCollection, Action{TOptions})"/>.
         /// </summary>
         /// <typeparam name="TOptions">The options type to be configured.</typeparam>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
@@ -67,7 +69,62 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
+        /// <summary>
+        /// Registers an action used to configure all instances of a particular type of options.
+        /// </summary>
+        /// <typeparam name="TOptions">The options type to be configured.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+        /// <param name="configureOptions">The action used to configure the options.</param>
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
         public static IServiceCollection ConfigureAll<TOptions>(this IServiceCollection services, Action<TOptions> configureOptions) where TOptions : class
             => services.Configure(name: null, configureOptions: configureOptions);
+
+        /// <summary>
+        /// Registers an action used to initialize a particular type of options.
+        /// Note: These are run after all <seealso cref="Configure{TOptions}(IServiceCollection, Action{TOptions})"/>.
+        /// </summary>
+        /// <typeparam name="TOptions">The options type to be Initialized.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+        /// <param name="initializeOptions">The action used to initialize the options.</param>
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection Initialize<TOptions>(this IServiceCollection services, Action<TOptions> initializeOptions) where TOptions : class
+            => services.Initialize(Options.Options.DefaultName, initializeOptions);
+
+        /// <summary>
+        /// Registers an action used to initialize a particular type of options.
+        /// Note: These are run after all <seealso cref="Configure{TOptions}(IServiceCollection, Action{TOptions})"/>.
+        /// </summary>
+        /// <typeparam name="TOptions">The options type to be initialized.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+        /// <param name="name">The name of the options instance.</param>
+        /// <param name="initializeOptions">The action used to initialize the options.</param>
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection Initialize<TOptions>(this IServiceCollection services, string name, Action<TOptions> initializeOptions)
+            where TOptions : class
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (initializeOptions == null)
+            {
+                throw new ArgumentNullException(nameof(initializeOptions));
+            }
+
+            services.AddSingleton<IInitializeOptions<TOptions>>(new InitializeOptions<TOptions>(name, initializeOptions));
+            return services;
+        }
+
+        /// <summary>
+        /// Registers an action used to initialize all instances of a particular type of options.
+        /// Note: These are run after all <seealso cref="Configure{TOptions}(IServiceCollection, Action{TOptions})"/>.
+        /// </summary>
+        /// <typeparam name="TOptions">The options type to be configured.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+        /// <param name="initializeOptions">The action used to configure the options.</param>
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection InitializeAll<TOptions>(this IServiceCollection services, Action<TOptions> initializeOptions) where TOptions : class
+            => services.Initialize(name: null, initializeOptions: initializeOptions);
     }
 }
