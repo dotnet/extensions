@@ -9,6 +9,30 @@ namespace Microsoft.Extensions.Primitives
     public class StringSegmentTest
     {
         [Fact]
+        public void StringSegment_Empty()
+        {
+            // Arrange & Act
+            var segment = StringSegment.Empty;
+
+            // Assert
+            Assert.True(segment.HasValue);
+            Assert.Same(string.Empty, segment.Value);
+            Assert.Equal(0, segment.Offset);
+            Assert.Equal(0, segment.Length);
+        }
+
+        [Fact]
+        public void StringSegment_ImplicitConvertFromString()
+        {
+            StringSegment segment = "Hello";
+
+            Assert.True(segment.HasValue);
+            Assert.Equal(0, segment.Offset);
+            Assert.Equal(5, segment.Length);
+            Assert.Equal("Hello", segment.Value);
+        }
+
+        [Fact]
         public void StringSegment_StringCtor_AllowsNullBuffers()
         {
             // Arrange & Act
@@ -136,6 +160,33 @@ namespace Microsoft.Extensions.Primitives
             Assert.False(hasValue);
         }
 
+        [Theory]
+        [InlineData("a", 0, 1, 0, 'a')]
+        [InlineData("abc", 1, 1, 0, 'b')]
+        [InlineData("abcdef", 1, 4, 0, 'b')]
+        [InlineData("abcdef", 1, 4, 1, 'c')]
+        [InlineData("abcdef", 1, 4, 2, 'd')]
+        [InlineData("abcdef", 1, 4, 3, 'e')]
+        public void StringSegment_Indexer_InRange(string value, int offset, int length, int index, char expected)
+        {
+            var segment = new StringSegment(value, offset, length);
+
+            var result = segment[index];
+
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData("", 0, 0, 0)]
+        [InlineData("a", 0, 1, -1)]
+        [InlineData("a", 0, 1, 1)]
+        public void StringSegment_Indexer_OutOfRangeThrows(string value, int offset, int length, int index)
+        {
+            var segment = new StringSegment(value, offset, length);
+
+            Assert.Throws<IndexOutOfRangeException>(() => segment[index]);
+        }
+
         public static TheoryData<string, StringComparison, bool> EndsWithData
         {
             get
@@ -257,6 +308,46 @@ namespace Microsoft.Extensions.Primitives
 
             // Assert
             Assert.Equal(expectedResult, result);
+        }
+
+        [Fact]
+        public void StringSegment_StaticEquals_Valid()
+        {
+            var segment1 = new StringSegment("My Car Is Cool", 3, 3);
+            var segment2 = new StringSegment("Your Carport is blue", 5, 3);
+
+            Assert.True(StringSegment.Equals(segment1, segment2));
+        }
+
+        [Fact]
+        public void StringSegment_StaticEquals_Invalid()
+        {
+            var segment1 = new StringSegment("My Car Is Cool", 3, 4);
+            var segment2 = new StringSegment("Your Carport is blue", 5, 4);
+
+            Assert.False(StringSegment.Equals(segment1, segment2));
+        }
+
+        [Fact]
+        public void StringSegment_IsNullOrEmpty_Valid()
+        {
+            Assert.True(StringSegment.IsNullOrEmpty(null));
+            Assert.True(StringSegment.IsNullOrEmpty(string.Empty));
+            Assert.True(StringSegment.IsNullOrEmpty(new StringSegment(null)));
+            Assert.True(StringSegment.IsNullOrEmpty(new StringSegment(string.Empty)));
+            Assert.True(StringSegment.IsNullOrEmpty(StringSegment.Empty));
+            Assert.True(StringSegment.IsNullOrEmpty(new StringSegment(string.Empty, 0, 0)));
+            Assert.True(StringSegment.IsNullOrEmpty(new StringSegment("Hello", 0, 0)));
+            Assert.True(StringSegment.IsNullOrEmpty(new StringSegment("Hello", 3, 0)));
+        }
+
+        [Fact]
+        public void StringSegment_IsNullOrEmpty_Invalid()
+        {
+            Assert.False(StringSegment.IsNullOrEmpty("A"));
+            Assert.False(StringSegment.IsNullOrEmpty("ABCDefg"));
+            Assert.False(StringSegment.IsNullOrEmpty(new StringSegment("A", 0 , 1)));
+            Assert.False(StringSegment.IsNullOrEmpty(new StringSegment("ABCDefg", 3, 2)));
         }
 
         public static TheoryData GetHashCode_ReturnsSameValueForEqualSubstringsData

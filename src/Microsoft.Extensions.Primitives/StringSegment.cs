@@ -12,6 +12,11 @@ namespace Microsoft.Extensions.Primitives
     public struct StringSegment : IEquatable<StringSegment>, IEquatable<string>
     {
         /// <summary>
+        /// A <see cref="StringSegment"/> for <see cref="string.Empty"/>.
+        /// </summary>
+        public static readonly StringSegment Empty = string.Empty;
+
+        /// <summary>
         /// Initializes an instance of the <see cref="StringSegment"/> struct.
         /// </summary>
         /// <param name="buffer">
@@ -113,6 +118,24 @@ namespace Microsoft.Extensions.Primitives
             get { return Buffer != null; }
         }
 
+        /// <summary>
+        /// Gets the <see cref="char"/> at a specified position in the current <see cref="StringSegment"/>.
+        /// </summary>
+        /// <param name="index">The offset into the <see cref="StringSegment"/></param>
+        /// <returns>The <see cref="char"/> at a specified position.</returns>
+        public char this[int index]
+        {
+            get
+            {
+                if (index < 0 || (uint)index >= (uint)Length)
+                {
+                    throw new IndexOutOfRangeException();
+                }
+
+                return Buffer[Offset + index];
+            }
+        }
+
         /// <inheritdoc />
         public override bool Equals(object obj)
         {
@@ -150,6 +173,21 @@ namespace Microsoft.Extensions.Primitives
             }
 
             return string.Compare(Buffer, Offset, other.Buffer, other.Offset, textLength, comparisonType) == 0;
+        }
+
+        // This handles StringSegment.Equals(string, StringSegment, StringComparison) and StringSegment.Equals(StringSegment, string, StringComparison)
+        // via the implicit type converter
+        /// <summary>
+        /// Determines whether two specified StringSegment objects have the same value. A parameter specifies the culture, case, and
+        /// sort rules used in the comparison.
+        /// </summary>
+        /// <param name="a">The first StringSegment to compare.</param>
+        /// <param name="b">The second StringSegment to compare.</param>
+        /// <param name="comparisonType">One of the enumeration values that specifies the rules for the comparison.</param>
+        /// <returns><code>true</code> if the objects are equal; otherwise, <code>false</code>.</returns>
+        public static bool Equals(StringSegment a, StringSegment b, StringComparison comparisonType)
+        {
+            return a.Equals(b, comparisonType);
         }
 
         /// <summary>
@@ -224,6 +262,16 @@ namespace Microsoft.Extensions.Primitives
             return !left.Equals(right);
         }
 
+        // PERF: Do NOT add a implicit converter from StringSegment to String. That would negate most of the perf safety.
+        /// <summary>
+        /// Creates a new <see cref="StringSegment"/> from the given <see cref="string"/>.
+        /// </summary>
+        /// <param name="value">The <see cref="string"/> to convert to a <see cref="StringSegment"/></param>
+        public static implicit operator StringSegment(string value)
+        {
+            return new StringSegment(value);
+        }
+
         /// <summary>
         /// Checks if the beginning of this <see cref="StringSegment"/> matches the specified <see cref="string"/> when compared using the specified <paramref name="comparisonType"/>.
         /// </summary>
@@ -293,6 +341,18 @@ namespace Microsoft.Extensions.Primitives
             }
 
             return Buffer.Substring(Offset + offset, length);
+        }
+
+        /// <summary>
+        /// Retrieves a <see cref="StringSegment"/> that represents a substring from this <see cref="StringSegment"/>.
+        /// The <see cref="StringSegment"/> starts at the position specified by <paramref name="offset"/>.
+        /// </summary>
+        /// <param name="offset">The zero-based starting character position of a substring in this <see cref="StringSegment"/>.</param>
+        /// <returns>A <see cref="StringSegment"/> that begins at <paramref name="offset"/> in this <see cref="StringSegment"/>
+        /// whose length is the remainder.</returns>
+        public StringSegment Subsegment(int offset)
+        {
+            return Subsegment(offset, Length - offset);
         }
 
         /// <summary>
@@ -421,6 +481,16 @@ namespace Microsoft.Extensions.Primitives
             }
 
             return new StringSegment(Buffer, Offset, trimmedEnd - Offset + 1);
+        }
+
+        /// <summary>
+        /// Indicates whether the specified StringSegment is null or an Empty string.
+        /// </summary>
+        /// <param name="value">The StringSegment to test.</param>
+        /// <returns></returns>
+        public static bool IsNullOrEmpty(StringSegment value)
+        {
+            return !value.HasValue || value.Length == 0;
         }
 
         /// <summary>
