@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.Internal
 
         /// <summary>
         /// Initializes a fast <see cref="PropertyHelper"/>.
-        /// This constructor does not cache the helper. For caching, use <see cref="GetProperties(object)"/>.
+        /// This constructor does not cache the helper. For caching, use <see cref="GetProperties(Type)"/>.
         /// </summary>
         public PropertyHelper(PropertyInfo property)
         {
