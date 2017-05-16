@@ -111,8 +111,8 @@ namespace Microsoft.Extensions.Internal
             var anonymous = new { foo = "bar" };
 
             // Act
-            var helpers1 = PropertyHelper.GetProperties(anonymous);
-            var helpers2 = PropertyHelper.GetProperties(anonymous);
+            var helpers1 = PropertyHelper.GetProperties(anonymous.GetType().GetTypeInfo());
+            var helpers2 = PropertyHelper.GetProperties(anonymous.GetType().GetTypeInfo());
 
             // Assert
             Assert.Equal(1, helpers1.Length);
@@ -127,7 +127,7 @@ namespace Microsoft.Extensions.Internal
             var anonymous = new { bar_baz2 = "foo" };
 
             // Act + Assert
-            var helper = Assert.Single(PropertyHelper.GetProperties(anonymous));
+            var helper = Assert.Single(PropertyHelper.GetProperties(anonymous.GetType().GetTypeInfo()));
             Assert.Equal("bar_baz2", helper.Name);
         }
 
@@ -138,7 +138,7 @@ namespace Microsoft.Extensions.Internal
             var anonymous = new PrivateProperties();
 
             // Act + Assert
-            var helper = Assert.Single(PropertyHelper.GetProperties(anonymous));
+            var helper = Assert.Single(PropertyHelper.GetProperties(anonymous.GetType().GetTypeInfo()));
             Assert.Equal("Prop1", helper.Name);
         }
 
@@ -149,7 +149,7 @@ namespace Microsoft.Extensions.Internal
             var anonymous = new Static();
 
             // Act + Assert
-            var helper = Assert.Single(PropertyHelper.GetProperties(anonymous));
+            var helper = Assert.Single(PropertyHelper.GetProperties(anonymous.GetType().GetTypeInfo()));
             Assert.Equal("Prop5", helper.Name);
         }
 
@@ -160,7 +160,7 @@ namespace Microsoft.Extensions.Internal
             var anonymous = new SetOnly();
 
             // Act + Assert
-            var helper = Assert.Single(PropertyHelper.GetProperties(anonymous));
+            var helper = Assert.Single(PropertyHelper.GetProperties(anonymous.GetType().GetTypeInfo()));
             Assert.Equal("Prop6", helper.Name);
         }
 
@@ -200,8 +200,8 @@ namespace Microsoft.Extensions.Internal
             anonymous.StringProp = "Five";
 
             // Act + Assert
-            var helper1 = Assert.Single(PropertyHelper.GetProperties(anonymous).Where(prop => prop.Name == "IntProp"));
-            var helper2 = Assert.Single(PropertyHelper.GetProperties(anonymous).Where(prop => prop.Name == "StringProp"));
+            var helper1 = Assert.Single(PropertyHelper.GetProperties(anonymous.GetType().GetTypeInfo()).Where(prop => prop.Name == "IntProp"));
+            var helper2 = Assert.Single(PropertyHelper.GetProperties(anonymous.GetType().GetTypeInfo()).Where(prop => prop.Name == "StringProp"));
             Assert.Equal(3, helper1.GetValue(anonymous));
             Assert.Equal("Five", helper2.GetValue(anonymous));
         }
@@ -213,7 +213,7 @@ namespace Microsoft.Extensions.Internal
             var derived = new DerivedClass { PropA = "propAValue", PropB = "propBValue" };
 
             // Act
-            var helpers = PropertyHelper.GetProperties(derived).ToArray();
+            var helpers = PropertyHelper.GetProperties(derived.GetType().GetTypeInfo()).ToArray();
 
             // Assert
             Assert.NotNull(helpers);
@@ -233,7 +233,7 @@ namespace Microsoft.Extensions.Internal
             var derived = new DerivedClassWithNew { PropA = "propAValue" };
 
             // Act
-            var helpers = PropertyHelper.GetProperties(derived).ToArray();
+            var helpers = PropertyHelper.GetProperties(derived.GetType().GetTypeInfo()).ToArray();
 
             // Assert
             Assert.NotNull(helpers);
@@ -253,7 +253,7 @@ namespace Microsoft.Extensions.Internal
             var derived = new DerivedClassWithOverride { PropA = "propAValue", PropB = "propBValue" };
 
             // Act
-            var helpers = PropertyHelper.GetProperties(derived).ToArray();
+            var helpers = PropertyHelper.GetProperties(derived.GetType().GetTypeInfo()).ToArray();
 
             // Assert
             Assert.NotNull(helpers);
@@ -365,6 +365,54 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal(typeof(string), result[1].Property.PropertyType);
         }
 
+        [Fact]
+        public void GetVisibleProperties_NoHiddenPropertyWithTypeInfoInput()
+        {
+            // Arrange
+            var type = typeof(string);
+
+            // Act
+            var result = PropertyHelper.GetVisibleProperties(type.GetTypeInfo()).ToArray();
+
+            // Assert
+            Assert.Equal(1, result.Length);
+            Assert.Equal("Length", result[0].Name);
+            Assert.Equal(typeof(int), result[0].Property.PropertyType);
+        }
+
+        [Fact]
+        public void GetVisibleProperties_HiddenPropertyWithTypeInfoInput()
+        {
+            // Arrange
+            var type = typeof(DerivedHiddenProperty);
+
+            // Act
+            var result = PropertyHelper.GetVisibleProperties(type.GetTypeInfo()).ToArray();
+
+            // Assert
+            Assert.Equal(2, result.Length);
+            Assert.Equal("Id", result[0].Name);
+            Assert.Equal(typeof(string), result[0].Property.PropertyType);
+            Assert.Equal("Name", result[1].Name);
+            Assert.Equal(typeof(string), result[1].Property.PropertyType);
+        }
+
+        [Fact]
+        public void GetVisibleProperties_HiddenProperty_TwoLevelsWithTypeInfoInput()
+        {
+            // Arrange
+            var type = typeof(DerivedHiddenProperty2);
+
+            // Act
+            var result = PropertyHelper.GetVisibleProperties(type.GetTypeInfo()).ToArray();
+
+            // Assert
+            Assert.Equal(2, result.Length);
+            Assert.Equal("Id", result[0].Name);
+            Assert.Equal(typeof(Guid), result[0].Property.PropertyType);
+            Assert.Equal("Name", result[1].Name);
+            Assert.Equal(typeof(string), result[1].Property.PropertyType);
+        }
 
         [Fact]
         public void MakeFastPropertySetter_SetsPropertyValues_ForPublicAndNobPublicProperties()
