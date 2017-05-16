@@ -20,12 +20,12 @@ namespace Microsoft.Extensions.Configuration
         public bool ActiveChangeCallbacks => true;
 
         /// <summary>
-        /// Gets a value that indicates if a change has occured.
+        /// Gets a value that indicates if a change has occurred.
         /// </summary>
         public bool HasChanged => _cts.IsCancellationRequested;
 
         /// <summary>
-        /// Registers for a callback that will be invoked when the entry has changed. Microsoft.Extensions.Primitives.IChangeToken.HasChanged
+        /// Registers for a callback that will be invoked when the entry has changed. <see cref="Microsoft.Extensions.Primitives.IChangeToken.HasChanged"/>
         /// MUST be set before the callback is invoked.
         /// </summary>
         /// <param name="callback">The callback to invoke.</param>
