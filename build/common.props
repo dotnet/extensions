@@ -20,4 +20,7 @@
     <PackageReference Include="NETStandard.Library" Version="$(BundledNETStandardPackageVersion)" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)'=='net461'">
+    <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" />
+  </ItemGroup>
 </Project>
