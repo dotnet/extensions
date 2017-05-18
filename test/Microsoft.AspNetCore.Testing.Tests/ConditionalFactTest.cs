@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             Asserter.TestRan = true;
         }
-#elif NET461
+#elif NET461 || NET46
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
         public void ThisTestMustRunOnCLR()

@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             Asserter.TestRan = true;
         }
-#elif NET461
+#elif NET461 || NET46
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
         [MemberData(nameof(GetInts))]
