@@ -70,7 +70,7 @@ namespace Microsoft.Extensions.Configuration
             return result.AccessToken;
         }
 
-#if NET46
+#if NET461
         /// <summary>
         /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Azure KeyVault.
         /// </summary>

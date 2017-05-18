@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Configuration.Xml
         /// <summary>
         /// Accesses the singleton decryptor instance.
         /// </summary>
-#if NET46
+#if NET461
         public static readonly XmlDocumentDecryptor Instance = new EncryptedXmlDocumentDecryptor();
 #elif NETSTANDARD1_3
         public static readonly XmlDocumentDecryptor Instance = new XmlDocumentDecryptor();
@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.Configuration.Xml
             // us that it did so, so we need to perform a check to see if EncryptedXml
             // will actually do anything. The below check for an encrypted data blob
             // is the same one that EncryptedXml would have performed.
-#if NET46
+#if NET461
             var namespaceManager = new XmlNamespaceManager(document.NameTable);
             namespaceManager.AddNamespace("enc", "http://www.w3.org/2001/04/xmlenc#");
             return (document.SelectSingleNode("//enc:EncryptedData", namespaceManager) != null);

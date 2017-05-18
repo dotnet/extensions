@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>XML configuration provider implementation for Microsoft.Extensions.Configuration.</Description>
-    <TargetFrameworks>net46;netstandard1.3</TargetFrameworks>
+    <TargetFrameworks>net461;netstandard1.3</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>configuration;xml</PackageTags>
   </PropertyGroup>
@@ -14,7 +14,7 @@
     <ProjectReference Include="..\Microsoft.Extensions.Configuration.FileExtensions\Microsoft.Extensions.Configuration.FileExtensions.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <Reference Include="System.Security" />
     <Reference Include="System.Xml" />
   </ItemGroup>

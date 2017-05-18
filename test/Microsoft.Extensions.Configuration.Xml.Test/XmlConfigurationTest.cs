@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration.Test;
 using Xunit;
 
-#if NET46
+#if NET461
 using System.Security.Cryptography;
 using System.Security.Cryptography.Xml;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -442,7 +442,7 @@ namespace Microsoft.Extensions.Configuration.Xml.Test
             var ex = Assert.Throws<PlatformNotSupportedException>(() => xmlConfigSrc.Load(TestStreamHelpers.StringToStream(xml)));
             Assert.Equal(Resources.Error_EncryptedXmlNotSupported, ex.Message);
         }
-#elif NET46
+#elif NET461
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void LoadKeyValuePairsFromValidEncryptedXml()
