@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
@@ -65,7 +66,7 @@ namespace Microsoft.Extensions.Configuration.Json
                 case JTokenType.Bytes:
                 case JTokenType.Raw:
                 case JTokenType.Null:
-                    VisitPrimitive(token);
+                    VisitPrimitive(token.Value<JValue>());
                     break;
 
                 default:
@@ -87,7 +88,7 @@ namespace Microsoft.Extensions.Configuration.Json
             }
         }
 
-        private void VisitPrimitive(JToken data)
+        private void VisitPrimitive(JValue data)
         {
             var key = _currentPath;
 
@@ -95,7 +96,7 @@ namespace Microsoft.Extensions.Configuration.Json
             {
                 throw new FormatException(Resources.FormatError_KeyIsDuplicated(key));
             }
-            _data[key] = data.ToString();
+            _data[key] = data.ToString(CultureInfo.InvariantCulture);
         }
 
         private void EnterContext(string context)

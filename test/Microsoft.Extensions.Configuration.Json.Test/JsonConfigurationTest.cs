@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Configuration.Test;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.Extensions.Configuration
@@ -48,6 +48,28 @@ namespace Microsoft.Extensions.Configuration
 }";
             var jsonConfigSrc = LoadProvider(json);
             Assert.Equal(string.Empty, jsonConfigSrc.Get("name"));
+        }
+
+        [Fact]
+        public void LoadWithCulture()
+        {
+            var previousCulture = CultureInfo.CurrentCulture;
+
+            try
+            {
+                CultureInfo.CurrentCulture = new CultureInfo("fr-FR");
+
+                var json = @"
+{
+    'number': 3.14
+}";
+                var jsonConfigSrc = LoadProvider(json);
+                Assert.Equal("3.14", jsonConfigSrc.Get("number"));
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = previousCulture;
+            }
         }
 
         [Fact]
