@@ -236,6 +236,7 @@ namespace Microsoft.Extensions.Primitives
             }
             else
             {
+                // TODO: PERF; Note that .NET Core strings use randomized hash codes for security reasons.
                 return Value.GetHashCode();
             }
         }
@@ -318,11 +319,24 @@ namespace Microsoft.Extensions.Primitives
 
         /// <summary>
         /// Retrieves a substring from this <see cref="StringSegment"/>.
+        /// The substring starts at the position specified by <paramref name="offset"/> and has the remaining length.
+        /// </summary>
+        /// <param name="offset">The zero-based starting character position of a substring in this <see cref="StringSegment"/>.</param>
+        /// <returns>A <see cref="string"/> that is equivalent to the substring of remaining length that begins at
+        /// <paramref name="offset"/> in this <see cref="StringSegment"/></returns>
+        public string Substring(int offset)
+        {
+            return Substring(offset, Length - offset);
+        }
+
+        /// <summary>
+        /// Retrieves a substring from this <see cref="StringSegment"/>.
         /// The substring starts at the position specified by <paramref name="offset"/> and has the specified <paramref name="length"/>.
         /// </summary>
         /// <param name="offset">The zero-based starting character position of a substring in this <see cref="StringSegment"/>.</param>
         /// <param name="length">The number of characters in the substring.</param>
-        /// <returns>A <see cref="string"/> that is equivalent to the substring of length <paramref name="length"/> that begins at <paramref name="offset"/> in this <see cref="StringSegment"/></returns>
+        /// <returns>A <see cref="string"/> that is equivalent to the substring of length <paramref name="length"/> that begins at
+        /// <paramref name="offset"/> in this <see cref="StringSegment"/></returns>
         public string Substring(int offset, int length)
         {
             if (!HasValue)
@@ -435,6 +449,88 @@ namespace Microsoft.Extensions.Primitives
         }
 
         /// <summary>
+        /// Reports the zero-based index of the first occurrence in this instance of any character in a specified array
+        /// of Unicode characters. The search starts at a specified character position and examines a specified number
+        /// of character positions.
+        /// </summary>
+        /// <param name="anyOf">A Unicode character array containing one or more characters to seek.</param>
+        /// <param name="startIndex">The search starting position.</param>
+        /// <param name="count">The number of character positions to examine.</param>
+        /// <returns>The zero-based index position of the first occurrence in this instance where any character in anyOf
+        /// was found; -1 if no character in anyOf was found.</returns>
+        public int IndexOfAny(char[] anyOf, int startIndex, int count)
+        {
+            if (!HasValue)
+            {
+                return -1;
+            }
+
+            if (startIndex < 0 || Offset + startIndex > Buffer.Length)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.start);
+            }
+
+            if (count < 0 || Offset + startIndex + count > Buffer.Length)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count);
+            }
+
+            var index = Buffer.IndexOfAny(anyOf, Offset + startIndex, count);
+            if (index == -1)
+            {
+                return index;
+            }
+
+            return index - Offset;
+        }
+
+        /// <summary>
+        /// Reports the zero-based index of the first occurrence in this instance of any character in a specified array
+        /// of Unicode characters. The search starts at a specified character position.
+        /// </summary>
+        /// <param name="anyOf">A Unicode character array containing one or more characters to seek.</param>
+        /// <param name="startIndex">The search starting position.</param>
+        /// <returns>The zero-based index position of the first occurrence in this instance where any character in anyOf
+        /// was found; -1 if no character in anyOf was found.</returns>
+        public int IndexOfAny(char[] anyOf, int startIndex)
+        {
+            return IndexOfAny(anyOf, startIndex, Length - startIndex);
+        }
+
+        /// <summary>
+        /// Reports the zero-based index of the first occurrence in this instance of any character in a specified array
+        /// of Unicode characters.
+        /// </summary>
+        /// <param name="anyOf">A Unicode character array containing one or more characters to seek.</param>
+        /// <returns>The zero-based index position of the first occurrence in this instance where any character in anyOf
+        /// was found; -1 if no character in anyOf was found.</returns>
+        public int IndexOfAny(char[] anyOf)
+        {
+            return IndexOfAny(anyOf, 0, Length);
+        }
+
+        /// <summary>
+        /// Reports the zero-based index position of the last occurrence of a specified Unicode character within this instance.
+        /// </summary>
+        /// <param name="value">The Unicode character to seek.</param>
+        /// <returns>The zero-based index position of value if that character is found, or -1 if it is not.</returns>
+        public int LastIndexOf(char value)
+        {
+            if (!HasValue)
+            {
+                return -1;
+            }
+
+            var index = Buffer.LastIndexOf(value, Offset + Length - 1, Length);
+            if (index == -1)
+            {
+                return -1;
+            }
+
+            return index - Offset;
+        }
+
+        /// <summary>
         /// Removes all leading and trailing whitespaces.
         /// </summary>
         /// <returns>The trimmed <see cref="StringSegment"/>.</returns>
@@ -481,6 +577,18 @@ namespace Microsoft.Extensions.Primitives
             }
 
             return new StringSegment(Buffer, Offset, trimmedEnd - Offset + 1);
+        }
+
+        /// <summary>
+        /// Splits a string into StringSegments that are based on the characters in an array.
+        /// </summary>
+        /// <param name="chars">A character array that delimits the substrings in this string, an empty array that
+        /// contains no delimiters, or null.</param>
+        /// <returns>An <see cref="StringTokenizer"/> whose elements contain the StringSegmeents from this instance
+        /// that are delimited by one or more characters in separator.</returns>
+        public StringTokenizer Split(char[] chars)
+        {
+            return new StringTokenizer(this, chars);
         }
 
         /// <summary>

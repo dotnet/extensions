@@ -39,14 +39,40 @@ namespace Microsoft.Extensions.Primitives
 
         public unsafe void Append(string s)
         {
-            EnsureCapacity(s.Length);
+            if (s == null)
+            {
+                throw new ArgumentNullException(nameof(s));
+            }
+
+            Append(s, 0, s.Length);
+        }
+
+        public void Append(StringSegment segment)
+        {
+            Append(segment.Buffer, segment.Offset, segment.Length);
+        }
+
+        public unsafe void Append(string s, int offset, int count)
+        {
+            if (s == null)
+            {
+                throw new ArgumentNullException(nameof(s));
+            }
+
+            if (offset < 0 || s.Length - offset < count)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
+            EnsureCapacity(count);
             fixed (char* destination = _value)
             fixed (char* source = s)
             {
-                Unsafe.CopyBlockUnaligned(destination + _offset, source, (uint)s.Length * 2);
-                _offset += s.Length;
+                Unsafe.CopyBlockUnaligned(destination + _offset, source + offset, (uint)count * 2);
+                _offset += count;
             }
         }
+
         public unsafe void Append(char c)
         {
             EnsureCapacity(1);

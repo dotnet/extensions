@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Primitives
     /// </summary>
     public struct StringTokenizer :  IEnumerable<StringSegment>
     {
-        private readonly string _value;
+        private readonly StringSegment _value;
         private readonly char[] _separators;
 
         /// <summary>
@@ -20,7 +20,16 @@ namespace Microsoft.Extensions.Primitives
         /// </summary>
         /// <param name="value">The <c>string</c> to tokenize.</param>
         /// <param name="separators">The characters to tokenize by.</param>
-        public StringTokenizer(string value, char[] separators)
+        public StringTokenizer(string value, char[] separators) : this((StringSegment)value, separators)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="StringTokenizer"/>.
+        /// </summary>
+        /// <param name="value">The <c>StringSegment</c> to tokenize.</param>
+        /// <param name="separators">The characters to tokenize by.</param>
+        public StringTokenizer(StringSegment value, char[] separators)
         {
             if (value == null)
             {
@@ -44,7 +53,7 @@ namespace Microsoft.Extensions.Primitives
 
         public struct Enumerator : IEnumerator<StringSegment>
         {
-            private readonly string _value;
+            private readonly StringSegment _value;
             private readonly char[] _separators;
             private int _index;
 
@@ -79,7 +88,7 @@ namespace Microsoft.Extensions.Primitives
                     next = _value.Length;
                 }
 
-                Current = new StringSegment(_value, _index, next - _index);
+                Current = _value.Subsegment(_index, next - _index);
                 _index = next + 1;
 
                 return true;

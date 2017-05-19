@@ -548,6 +548,19 @@ namespace Microsoft.Extensions.Primitives
         }
 
         [Fact]
+        public void StringSegment_SubstringOffset_Valid()
+        {
+            // Arrange
+            var segment = new StringSegment("Hello, World!", 1, 4);
+
+            // Act
+            var result = segment.Substring(offset: 1);
+
+            // Assert
+            Assert.Equal("llo", result);
+        }
+
+        [Fact]
         public void StringSegment_Substring_Valid()
         {
             // Arrange
@@ -588,6 +601,20 @@ namespace Microsoft.Extensions.Primitives
 
             // Act & Assert
             Assert.Throws<ArgumentOutOfRangeException>(() => segment.Substring(2, 3));
+        }
+
+        [Fact]
+        public void StringSegment_SubsegmentOffset_Valid()
+        {
+            // Arrange
+            var segment = new StringSegment("Hello, World!", 1, 4);
+
+            // Act
+            var result = segment.Subsegment(offset: 1);
+
+            // Assert
+            Assert.Equal(new StringSegment("Hello, World!", 2, 3), result);
+            Assert.Equal("llo", result.Value);
         }
 
         [Fact]
@@ -683,6 +710,86 @@ namespace Microsoft.Extensions.Primitives
 
             // Act
             var result = segment.IndexOf('!', 15, 5);
+
+            // Assert
+            Assert.Equal(-1, result);
+        }
+
+        [Fact]
+        public void IndexOfAny_ComputesIndex_RelativeToTheCurrentSegment()
+        {
+            // Arrange
+            var segment = new StringSegment("Hello, World!", 1, 10);
+
+            // Act
+            var result = segment.IndexOfAny(new[] { ',' });
+
+            // Assert
+            Assert.Equal(4, result);
+        }
+
+        [Fact]
+        public void IndexOfAny_ReturnsMinusOne_IfElementNotInSegment()
+        {
+            // Arrange
+            var segment = new StringSegment("Hello, World!", 1, 3);
+
+            // Act
+            var result = segment.IndexOfAny(new[] { ',' });
+
+            // Assert
+            Assert.Equal(-1, result);
+        }
+
+        [Fact]
+        public void IndexOfAny_SkipsANumberOfCaracters_IfStartIsProvided()
+        {
+            // Arrange
+            const string buffer = "Hello, World!, Hello people!";
+            var segment = new StringSegment(buffer, 3, buffer.Length - 3);
+
+            // Act
+            var result = segment.IndexOfAny(new[] { '!' }, 15);
+
+            // Assert
+            Assert.Equal(buffer.Length - 4, result);
+        }
+
+        [Fact]
+        public void IndexOfAny_SearchOnlyInsideTheRange_IfStartAndCountAreProvided()
+        {
+            // Arrange
+            const string buffer = "Hello, World!, Hello people!";
+            var segment = new StringSegment(buffer, 3, buffer.Length - 3);
+
+            // Act
+            var result = segment.IndexOfAny(new[] { '!' }, 15, 5);
+
+            // Assert
+            Assert.Equal(-1, result);
+        }
+
+        [Fact]
+        public void LastIndexOf_ComputesIndex_RelativeToTheCurrentSegment()
+        {
+            // Arrange
+            var segment = new StringSegment("Hello, World, how, are, you!", 1, 14);
+
+            // Act
+            var result = segment.LastIndexOf(',');
+
+            // Assert
+            Assert.Equal(11, result);
+        }
+
+        [Fact]
+        public void LastIndexOf_ReturnsMinusOne_IfElementNotInSegment()
+        {
+            // Arrange
+            var segment = new StringSegment("Hello, World!", 1, 3);
+
+            // Act
+            var result = segment.LastIndexOf(',');
 
             // Assert
             Assert.Equal(-1, result);

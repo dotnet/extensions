@@ -12,13 +12,17 @@ namespace Microsoft.AspNetCore.Http.Tests.Internal
             var s1 = "123";
             var c1 = '4';
             var s2 = "56789";
+            var seg = new StringSegment("890123", 2, 2);
 
             var formatter = new InplaceStringBuilder();
-            formatter.Capacity += s1.Length + 1 + s2.Length;
+            formatter.Capacity += s1.Length + 1 + s2.Length + seg.Length;
             formatter.Append(s1);
             formatter.Append(c1);
-            formatter.Append(s2);
-            Assert.Equal("123456789", formatter.ToString());
+            formatter.Append(s2, 0, 2);
+            formatter.Append(s2, 2, 2);
+            formatter.Append(s2, 4, 1);
+            formatter.Append(seg);
+            Assert.Equal("12345678901", formatter.ToString());
         }
 
         [Fact]
