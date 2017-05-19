@@ -149,6 +149,30 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
         }
 
         [Fact]
+        public void GetEnumDictionary()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"EnumDictionary:abc", "val_1"},
+                {"EnumDictionary:def", "val_2"},
+                {"EnumDictionary:ghi", "val_3"}
+            };
+
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(input);
+            var config = configurationBuilder.Build();
+
+            var options = new Dictionary<KeyEnum, string>();
+            config.GetSection("EnumDictionary").Bind(options);
+
+            Assert.Equal(3, options.Count);
+
+            Assert.Equal("val_1", options[KeyEnum.abc]);
+            Assert.Equal("val_2", options[KeyEnum.def]);
+            Assert.Equal("val_3", options[KeyEnum.ghi]);
+        }
+
+        [Fact]
         public void GetStringList()
         {
             var input = new Dictionary<string, string>
@@ -963,6 +987,13 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             public List<string> ListInNestedOption { get; set; }
 
             public int[] ArrayInNestedOption { get; set; }
+        }
+
+        private enum KeyEnum
+        {
+            abc,
+            def,
+            ghi
         }
 
         private class OptionsWithArrays

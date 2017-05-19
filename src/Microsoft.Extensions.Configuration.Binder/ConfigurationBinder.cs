@@ -343,10 +343,11 @@ namespace Microsoft.Extensions.Configuration
             // IDictionary<K,V> is guaranteed to have exactly two parameters
             var keyType = typeInfo.GenericTypeArguments[0];
             var valueType = typeInfo.GenericTypeArguments[1];
+            var keyTypeIsEnum = keyType.GetTypeInfo().IsEnum;
 
-            if (keyType != typeof(string))
+            if (keyType != typeof(string) && !keyTypeIsEnum)
             {
-                // We only support string keys
+                // We only support string and enum keys
                 return;
             }
 
@@ -359,8 +360,16 @@ namespace Microsoft.Extensions.Configuration
                     config: child);
                 if (item != null)
                 {
-                    var key = child.Key;
-                    addMethod.Invoke(dictionary, new[] { key, item });
+                    if (keyType == typeof(string))
+                    {
+                        var key = child.Key;
+                        addMethod.Invoke(dictionary, new[] { key, item });
+                    }
+                    else if (keyTypeIsEnum)
+                    {
+                        var key = Convert.ToInt32(Enum.Parse(keyType, child.Key));
+                        addMethod.Invoke(dictionary, new[] { key, item });
+                    }
                 }
             }
         }
