@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -143,7 +144,7 @@ namespace Microsoft.Extensions.Caching.Distributed
                 throw new NotImplementedException();
             }
 
-            public Task<byte[]> GetAsync(string key)
+            public Task<byte[]> GetAsync(string key, CancellationToken token = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
@@ -153,7 +154,7 @@ namespace Microsoft.Extensions.Caching.Distributed
                 throw new NotImplementedException();
             }
 
-            public Task RefreshAsync(string key)
+            public Task RefreshAsync(string key, CancellationToken token = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
@@ -163,7 +164,7 @@ namespace Microsoft.Extensions.Caching.Distributed
                 throw new NotImplementedException();
             }
 
-            public Task RemoveAsync(string key)
+            public Task RemoveAsync(string key, CancellationToken token = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }
@@ -173,7 +174,7 @@ namespace Microsoft.Extensions.Caching.Distributed
                 throw new NotImplementedException();
             }
 
-            public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options)
+            public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }

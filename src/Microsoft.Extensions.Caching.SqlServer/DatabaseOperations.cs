@@ -8,6 +8,7 @@ using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Internal;
+using System.Threading;
 
 namespace Microsoft.Extensions.Caching.SqlServer
 {
@@ -61,16 +62,18 @@ namespace Microsoft.Extensions.Caching.SqlServer
             }
         }
 
-        public async Task DeleteCacheItemAsync(string key)
+        public async Task DeleteCacheItemAsync(string key, CancellationToken token = default(CancellationToken))
         {
+            token.ThrowIfCancellationRequested();
+
             using (var connection = new SqlConnection(ConnectionString))
             {
                 var command = new SqlCommand(SqlQueries.DeleteCacheItem, connection);
                 command.Parameters.AddCacheItemId(key);
 
-                await connection.OpenAsync();
+                await connection.OpenAsync(token);
 
-                await command.ExecuteNonQueryAsync();
+                await command.ExecuteNonQueryAsync(token);
             }
         }
 
@@ -79,9 +82,11 @@ namespace Microsoft.Extensions.Caching.SqlServer
             return GetCacheItem(key, includeValue: true);
         }
 
-        public virtual async Task<byte[]> GetCacheItemAsync(string key)
+        public virtual async Task<byte[]> GetCacheItemAsync(string key, CancellationToken token = default(CancellationToken))
         {
-            return await GetCacheItemAsync(key, includeValue: true);
+            token.ThrowIfCancellationRequested();
+
+            return await GetCacheItemAsync(key, includeValue: true, token: token);
         }
 
         public void RefreshCacheItem(string key)
@@ -89,9 +94,11 @@ namespace Microsoft.Extensions.Caching.SqlServer
             GetCacheItem(key, includeValue: false);
         }
 
-        public async Task RefreshCacheItemAsync(string key)
+        public async Task RefreshCacheItemAsync(string key, CancellationToken token = default(CancellationToken))
         {
-            await GetCacheItemAsync(key, includeValue: false);
+            token.ThrowIfCancellationRequested();
+
+            await GetCacheItemAsync(key, includeValue: false, token:token);
         }
 
         public virtual void DeleteExpiredCacheItems()
@@ -147,8 +154,10 @@ namespace Microsoft.Extensions.Caching.SqlServer
             }
         }
 
-        public virtual async Task SetCacheItemAsync(string key, byte[] value, DistributedCacheEntryOptions options)
+        public virtual async Task SetCacheItemAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default(CancellationToken))
         {
+            token.ThrowIfCancellationRequested();
+
             var utcNow = SystemClock.UtcNow;
 
             var absoluteExpiration = GetAbsoluteExpiration(utcNow, options);
@@ -164,11 +173,11 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     .AddAbsoluteExpiration(absoluteExpiration)
                     .AddWithValue("UtcNow", SqlDbType.DateTimeOffset, utcNow);
 
-                await connection.OpenAsync();
+                await connection.OpenAsync(token);
 
                 try
                 {
-                    await upsertCommand.ExecuteNonQueryAsync();
+                    await upsertCommand.ExecuteNonQueryAsync(token);
                 }
                 catch (SqlException ex)
                 {
@@ -247,8 +256,10 @@ namespace Microsoft.Extensions.Caching.SqlServer
             return value;
         }
 
-        protected virtual async Task<byte[]> GetCacheItemAsync(string key, bool includeValue)
+        protected virtual async Task<byte[]> GetCacheItemAsync(string key, bool includeValue, CancellationToken token = default(CancellationToken))
         {
+            token.ThrowIfCancellationRequested();
+
             var utcNow = SystemClock.UtcNow;
 
             string query;
@@ -272,33 +283,35 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     .AddCacheItemId(key)
                     .AddWithValue("UtcNow", SqlDbType.DateTimeOffset, utcNow);
 
-                await connection.OpenAsync();
+                await connection.OpenAsync(token);
 
                 var reader = await command.ExecuteReaderAsync(
-                    CommandBehavior.SequentialAccess | CommandBehavior.SingleRow | CommandBehavior.SingleResult);
+                    CommandBehavior.SequentialAccess | CommandBehavior.SingleRow | CommandBehavior.SingleResult,
+                    token);
 
-                if (await reader.ReadAsync())
+                if (await reader.ReadAsync(token))
                 {
-                    var id = await reader.GetFieldValueAsync<string>(Columns.Indexes.CacheItemIdIndex);
+                    var id = await reader.GetFieldValueAsync<string>(Columns.Indexes.CacheItemIdIndex, token);
 
                     expirationTime = await reader.GetFieldValueAsync<DateTimeOffset>(
                         Columns.Indexes.ExpiresAtTimeIndex);
 
-                    if (!await reader.IsDBNullAsync(Columns.Indexes.SlidingExpirationInSecondsIndex))
+                    if (!await reader.IsDBNullAsync(Columns.Indexes.SlidingExpirationInSecondsIndex, token))
                     {
                         slidingExpiration = TimeSpan.FromSeconds(
-                            await reader.GetFieldValueAsync<long>(Columns.Indexes.SlidingExpirationInSecondsIndex));
+                            await reader.GetFieldValueAsync<long>(Columns.Indexes.SlidingExpirationInSecondsIndex, token));
                     }
 
-                    if (!await reader.IsDBNullAsync(Columns.Indexes.AbsoluteExpirationIndex))
+                    if (!await reader.IsDBNullAsync(Columns.Indexes.AbsoluteExpirationIndex, token))
                     {
                         absoluteExpiration = await reader.GetFieldValueAsync<DateTimeOffset>(
-                            Columns.Indexes.AbsoluteExpirationIndex);
+                            Columns.Indexes.AbsoluteExpirationIndex,
+                            token);
                     }
 
                     if (includeValue)
                     {
-                        value = await reader.GetFieldValueAsync<byte[]>(Columns.Indexes.CacheItemValueIndex);
+                        value = await reader.GetFieldValueAsync<byte[]>(Columns.Indexes.CacheItemValueIndex, token);
                     }
                 }
                 else

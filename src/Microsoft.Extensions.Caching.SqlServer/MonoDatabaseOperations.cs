@@ -4,6 +4,7 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Internal;
@@ -79,8 +80,10 @@ namespace Microsoft.Extensions.Caching.SqlServer
             return value;
         }
 
-        protected override async Task<byte[]> GetCacheItemAsync(string key, bool includeValue)
+        protected override async Task<byte[]> GetCacheItemAsync(string key, bool includeValue, CancellationToken token = default(CancellationToken))
         {
+            token.ThrowIfCancellationRequested();
+
             var utcNow = SystemClock.UtcNow;
 
             string query;
@@ -104,24 +107,25 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     .AddCacheItemId(key)
                     .AddWithValue("UtcNow", SqlDbType.DateTime, utcNow.UtcDateTime);
 
-                await connection.OpenAsync();
+                await connection.OpenAsync(token);
 
                 var reader = await command.ExecuteReaderAsync(
-                    CommandBehavior.SingleRow | CommandBehavior.SingleResult);
+                    CommandBehavior.SingleRow | CommandBehavior.SingleResult,
+                    token);
 
-                if (await reader.ReadAsync())
+                if (await reader.ReadAsync(token))
                 {
                     var id = reader.GetString(Columns.Indexes.CacheItemIdIndex);
 
                     expirationTime = DateTimeOffset.Parse(reader[Columns.Indexes.ExpiresAtTimeIndex].ToString());
 
-                    if (!await reader.IsDBNullAsync(Columns.Indexes.SlidingExpirationInSecondsIndex))
+                    if (!await reader.IsDBNullAsync(Columns.Indexes.SlidingExpirationInSecondsIndex, token))
                     {
                         slidingExpiration = TimeSpan.FromSeconds(
                             Convert.ToInt64(reader[Columns.Indexes.SlidingExpirationInSecondsIndex].ToString()));
                     }
 
-                    if (!await reader.IsDBNullAsync(Columns.Indexes.AbsoluteExpirationIndex))
+                    if (!await reader.IsDBNullAsync(Columns.Indexes.AbsoluteExpirationIndex, token))
                     {
                         absoluteExpiration = DateTimeOffset.Parse(
                             reader[Columns.Indexes.AbsoluteExpirationIndex].ToString());
@@ -179,8 +183,10 @@ namespace Microsoft.Extensions.Caching.SqlServer
             }
         }
 
-        public override async Task SetCacheItemAsync(string key, byte[] value, DistributedCacheEntryOptions options)
+        public override async Task SetCacheItemAsync(string key, byte[] value, DistributedCacheEntryOptions options, CancellationToken token = default(CancellationToken))
         {
+            token.ThrowIfCancellationRequested();
+
             var utcNow = SystemClock.UtcNow;
 
             var absoluteExpiration = GetAbsoluteExpiration(utcNow, options);
@@ -196,11 +202,11 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     .AddAbsoluteExpirationMono(absoluteExpiration)
                     .AddWithValue("UtcNow", SqlDbType.DateTime, utcNow.UtcDateTime);
 
-                await connection.OpenAsync();
+                await connection.OpenAsync(token);
 
                 try
                 {
-                    await upsertCommand.ExecuteNonQueryAsync();
+                    await upsertCommand.ExecuteNonQueryAsync(token);
                 }
                 catch (SqlException ex)
                 {
