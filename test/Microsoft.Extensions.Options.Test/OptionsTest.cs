@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options.Infrastructure;
 using Xunit;
 
 namespace Microsoft.Extensions.Options.Tests
@@ -338,6 +339,62 @@ namespace Microsoft.Extensions.Options.Tests
 
             var sp = services.BuildServiceProvider();
             Assert.Equal("Override", sp.GetRequiredService<IOptions<FakeOptions>>().Value.Message);
+        }
+
+        [Fact]
+        public void CanConfigureDefaultOptions()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.Add(ServiceDescriptor.Transient(typeof(IConfigureOptions<>), typeof(ConfigureDefaults<>)));
+            services.Add(ServiceDescriptor.Transient(typeof(IConfigureNamedOptions<>), typeof(ConfigureDefaults<>)));
+            services.AddTransient<ConfigureDefaultOptions<FakeOptions>, TestDefault>();
+
+            var sp = services.BuildServiceProvider();
+
+            Assert.Equal("Default", sp.GetRequiredService<IOptions<FakeOptions>>().Value.Message);
+            Assert.Equal("Default", sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>().Value.Message);
+        }
+
+        private class TestDefault : ConfigureDefaultOptions<FakeOptions>
+        {
+            public TestDefault() : base(o => o.Message = "Default") { }
+        }
+
+        [Fact]
+        public void CanConfigureDefaultOptionsWithConfig()
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {"Message", "FromConfig"},
+                {"NamedMessage", "FromConfigNamed"}
+            };
+            var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
+            var config = builder.Build();
+
+            var services = new ServiceCollection().AddOptions().AddSingleton<IConfiguration>(config);
+            services.Add(ServiceDescriptor.Transient(typeof(IConfigureOptions<>), typeof(ConfigureDefaults<>)));
+            services.Add(ServiceDescriptor.Transient(typeof(IConfigureNamedOptions<>), typeof(ConfigureDefaults<>)));
+            services.AddTransient<ConfigureDefaultOptions<FakeOptions>, TestConfigDefault>();
+            services.AddTransient<ConfigureDefaultOptions<FakeOptions>, TestNamedConfigDefault>();
+
+            var sp = services.BuildServiceProvider();
+
+            Assert.Equal("FromConfig", sp.GetRequiredService<IOptions<FakeOptions>>().Value.Message);
+            Assert.Equal("FromConfig", sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>().Value.Message);
+            Assert.Equal("FromConfigNamed", sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>().Get("Name").Message);
+            Assert.Equal("", sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>().Get("Unknown").Message);
+        }
+
+        private class TestConfigDefault : ConfigureDefaultOptions<FakeOptions>
+        {
+            public TestConfigDefault(IConfiguration config) : base(options => options.Message = config["Message"])
+            { }
+        }
+
+        private class TestNamedConfigDefault : ConfigureDefaultOptions<FakeOptions>
+        {
+            public TestNamedConfigDefault(IConfiguration config) : base("Name", options => options.Message = config["NamedMessage"])
+            { }
         }
     }
 }
