@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.FileProviders.Internal;
 using Microsoft.Extensions.FileProviders.Physical;
+using Microsoft.Extensions.FileProviders.Physical.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.FileProviders
@@ -20,12 +21,6 @@ namespace Microsoft.Extensions.FileProviders
     public class PhysicalFileProvider : IFileProvider, IDisposable
     {
         private const string PollingEnvironmentKey = "DOTNET_USE_POLLING_FILE_WATCHER";
-
-        private static readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars()
-            .Where(c => c != Path.DirectorySeparatorChar && c != Path.AltDirectorySeparatorChar).ToArray();
-
-        private static readonly char[] _invalidFilterChars = _invalidFileNameChars
-            .Where(c => c != '*' && c != '|' && c != '?').ToArray();
 
         private static readonly char[] _pathSeparators = new[]
             {Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar};
@@ -49,7 +44,7 @@ namespace Microsoft.Extensions.FileProviders
             }
             var fullRoot = Path.GetFullPath(root);
             // When we do matches in GetFullPath, we want to only match full directory names.
-            Root = EnsureTrailingSlash(fullRoot);
+            Root = PathUtils.EnsureTrailingSlash(fullRoot);
             if (!Directory.Exists(Root))
             {
                 throw new DirectoryNotFoundException(Root);
@@ -64,7 +59,7 @@ namespace Microsoft.Extensions.FileProviders
             var pollForChanges = string.Equals(environmentValue, "1", StringComparison.Ordinal) ||
                                  string.Equals(environmentValue, "true", StringComparison.OrdinalIgnoreCase);
 
-            root = EnsureTrailingSlash(Path.GetFullPath(root));
+            root = PathUtils.EnsureTrailingSlash(Path.GetFullPath(root));
             return new PhysicalFilesWatcher(root, new FileSystemWatcher(root), pollForChanges);
         }
 
@@ -83,7 +78,7 @@ namespace Microsoft.Extensions.FileProviders
 
         private string GetFullPath(string path)
         {
-            if (PathNavigatesAboveRoot(path))
+            if (PathUtils.PathNavigatesAboveRoot(path))
             {
                 return null;
             }
@@ -106,59 +101,9 @@ namespace Microsoft.Extensions.FileProviders
             return fullPath;
         }
 
-        private bool PathNavigatesAboveRoot(string path)
-        {
-            var tokenizer = new StringTokenizer(path, _pathSeparators);
-            var depth = 0;
-
-            foreach (var segment in tokenizer)
-            {
-                if (segment.Equals(".") || segment.Equals(""))
-                {
-                    continue;
-                }
-                else if (segment.Equals(".."))
-                {
-                    depth--;
-
-                    if (depth == -1)
-                    {
-                        return true;
-                    }
-                }
-                else
-                {
-                    depth++;
-                }
-            }
-
-            return false;
-        }
-
         private bool IsUnderneathRoot(string fullPath)
         {
             return fullPath.StartsWith(Root, StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static string EnsureTrailingSlash(string path)
-        {
-            if (!string.IsNullOrEmpty(path) &&
-                path[path.Length - 1] != Path.DirectorySeparatorChar)
-            {
-                return path + Path.DirectorySeparatorChar;
-            }
-
-            return path;
-        }
-
-        private static bool HasInvalidPathChars(string path)
-        {
-            return path.IndexOfAny(_invalidFileNameChars) != -1;
-        }
-
-        private static bool HasInvalidFilterChars(string path)
-        {
-            return path.IndexOfAny(_invalidFilterChars) != -1;
         }
 
         /// <summary>
@@ -168,7 +113,7 @@ namespace Microsoft.Extensions.FileProviders
         /// <returns>The file information. Caller must check Exists property. </returns>
         public IFileInfo GetFileInfo(string subpath)
         {
-            if (string.IsNullOrEmpty(subpath) || HasInvalidPathChars(subpath))
+            if (string.IsNullOrEmpty(subpath) || PathUtils.HasInvalidPathChars(subpath))
             {
                 return new NotFoundFileInfo(subpath);
             }
@@ -210,7 +155,7 @@ namespace Microsoft.Extensions.FileProviders
         {
             try
             {
-                if (subpath == null || HasInvalidPathChars(subpath))
+                if (subpath == null || PathUtils.HasInvalidPathChars(subpath))
                 {
                     return NotFoundDirectoryContents.Singleton;
                 }
@@ -257,19 +202,13 @@ namespace Microsoft.Extensions.FileProviders
         /// </returns>
         public IChangeToken Watch(string filter)
         {
-            if (filter == null || HasInvalidFilterChars(filter))
+            if (filter == null || PathUtils.HasInvalidFilterChars(filter))
             {
                 return NullChangeToken.Singleton;
             }
 
             // Relative paths starting with leading slashes are okay
             filter = filter.TrimStart(_pathSeparators);
-
-            // Absolute paths and paths traversing above root not permitted.
-            if (Path.IsPathRooted(filter) || PathNavigatesAboveRoot(filter))
-            {
-                return NullChangeToken.Singleton;
-            }
 
             return _filesWatcher.CreateFileChangeToken(filter);
         }

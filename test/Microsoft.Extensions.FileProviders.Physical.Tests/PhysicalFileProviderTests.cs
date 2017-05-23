@@ -348,7 +348,11 @@ namespace Microsoft.Extensions.FileProviders
                 var fileLocation = Path.Combine(root.RootPath, fileName);
                 PollingFileChangeToken.PollingInterval = TimeSpan.FromMilliseconds(10);
 
-                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+                // emptyRoot is not used for creating and modifying files,
+                // but is passed into the MockFileSystemWatcher so FileSystemWatcher events aren't triggered
+                // during file changes in the test
+                using (var emptyRoot = new DisposableFileSystem())
+                using (var fileSystemWatcher = new MockFileSystemWatcher(emptyRoot.RootPath))
                 {
                     using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: true))
                     {
@@ -373,34 +377,11 @@ namespace Microsoft.Extensions.FileProviders
                 var fileLocation = Path.Combine(root.RootPath, fileName);
                 PollingFileChangeToken.PollingInterval = TimeSpan.FromMilliseconds(10);
 
-                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
-                {
-                    using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: true))
-                    {
-                        using (var provider = new PhysicalFileProvider(root.RootPath, physicalFilesWatcher))
-                        {
-                            root.CreateFile(fileName);
-                            var token = provider.Watch(fileName);
-                            File.Delete(fileLocation);
-
-                            await Task.Delay(WaitTimeForTokenToFire);
-                            Assert.True(token.HasChanged);
-                        }
-                    }
-                }
-            }
-        }
-
-        [Fact]
-        public async Task WatcherWithPolling_ReturnsTrueForChangedFileWhenQueriedMultipleTimes()
-        {
-            using (var root = new DisposableFileSystem())
-            {
-                var fileName = Path.GetRandomFileName();
-                var fileLocation = Path.Combine(root.RootPath, fileName);
-                PollingFileChangeToken.PollingInterval = TimeSpan.FromMilliseconds(10);
-
-                using (var fileSystemWatcher = new MockFileSystemWatcher(root.RootPath))
+                // emptyRoot is not used for creating and modifying files,
+                // but is passed into the MockFileSystemWatcher so FileSystemWatcher events aren't triggered
+                // during file changes in the test
+                using (var emptyRoot = new DisposableFileSystem())
+                using (var fileSystemWatcher = new MockFileSystemWatcher(emptyRoot.RootPath))
                 {
                     using (var physicalFilesWatcher = new PhysicalFilesWatcher(root.RootPath + Path.DirectorySeparatorChar, fileSystemWatcher, pollForChanges: true))
                     {

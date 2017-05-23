@@ -7,6 +7,7 @@ using System.IO;
 using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.FileProviders.Physical.Internal;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Primitives;
 
@@ -82,6 +83,12 @@ namespace Microsoft.Extensions.FileProviders.Physical
 
             filter = NormalizePath(filter);
 
+            // Absolute paths and paths traversing above root not permitted.
+            if (Path.IsPathRooted(filter) || PathUtils.PathNavigatesAboveRoot(filter))
+            {
+                return NullChangeToken.Singleton;
+            }
+
             var changeToken = GetOrAddChangeToken(filter);
             TryEnableFileSystemWatcher();
 
@@ -124,7 +131,7 @@ namespace Microsoft.Extensions.FileProviders.Physical
                     new[]
                     {
                         changeToken,
-                        new PollingFileChangeToken(new FileInfo(filePath))
+                        new PollingFileChangeToken(new FileInfo(Path.Combine(_root, filePath)))
                     });
             }
 
