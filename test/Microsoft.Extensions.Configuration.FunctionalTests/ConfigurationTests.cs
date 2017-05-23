@@ -700,7 +700,7 @@ IniKey1=IniValue2");
             _fileSystem.DeleteFile(_iniFile);
             _fileSystem.DeleteFile(_xmlFile);
 
-            await Task.Delay(1100);
+            await Task.Delay(3300);
 
             Assert.Null(config["JsonKey1"]);
             Assert.Null(config["IniKey1"]);
