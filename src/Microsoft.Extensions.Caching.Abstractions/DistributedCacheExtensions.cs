@@ -3,6 +3,7 @@
 
 using System;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Caching.Distributed
@@ -39,9 +40,10 @@ namespace Microsoft.Extensions.Caching.Distributed
         /// <param name="cache">The cache in which to store the data.</param>
         /// <param name="key">The key to store the data in.</param>
         /// <param name="value">The data to store in the cache.</param>
+        /// <param name="token">Optional. A <see cref="CancellationToken" /> to cancel the operation.</param>
         /// <returns>A task that represents the asynchronous set operation.</returns>
         /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="key"/> or <paramref name="value"/> is null.</exception>
-        public static Task SetAsync(this IDistributedCache cache, string key, byte[] value)
+        public static Task SetAsync(this IDistributedCache cache, string key, byte[] value, CancellationToken token = default(CancellationToken))
         {
             if (key == null)
             {
@@ -52,7 +54,7 @@ namespace Microsoft.Extensions.Caching.Distributed
                 throw new ArgumentNullException(nameof(value));
             }
 
-            return cache.SetAsync(key, value, new DistributedCacheEntryOptions());
+            return cache.SetAsync(key, value, new DistributedCacheEntryOptions(), token);
         }
 
         /// <summary>
@@ -94,11 +96,12 @@ namespace Microsoft.Extensions.Caching.Distributed
         /// <param name="cache">The cache in which to store the data.</param>
         /// <param name="key">The key to store the data in.</param>
         /// <param name="value">The data to store in the cache.</param>
+        /// <param name="token">Optional. A <see cref="CancellationToken" /> to cancel the operation.</param>
         /// <returns>A task that represents the asynchronous set operation.</returns>
         /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="key"/> or <paramref name="value"/> is null.</exception>
-        public static Task SetStringAsync(this IDistributedCache cache, string key, string value)
+        public static Task SetStringAsync(this IDistributedCache cache, string key, string value, CancellationToken token = default(CancellationToken))
         {
-            return cache.SetStringAsync(key, value, new DistributedCacheEntryOptions());
+            return cache.SetStringAsync(key, value, new DistributedCacheEntryOptions(), token);
         }
 
         /// <summary>
@@ -108,9 +111,10 @@ namespace Microsoft.Extensions.Caching.Distributed
         /// <param name="key">The key to store the data in.</param>
         /// <param name="value">The data to store in the cache.</param>
         /// <param name="options">The cache options for the entry.</param>
+        /// <param name="token">Optional. A <see cref="CancellationToken" /> to cancel the operation.</param>
         /// <returns>A task that represents the asynchronous set operation.</returns>
         /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="key"/> or <paramref name="value"/> is null.</exception>
-        public static Task SetStringAsync(this IDistributedCache cache, string key, string value, DistributedCacheEntryOptions options)
+        public static Task SetStringAsync(this IDistributedCache cache, string key, string value, DistributedCacheEntryOptions options, CancellationToken token = default(CancellationToken))
         {
             if (key == null)
             {
@@ -120,7 +124,7 @@ namespace Microsoft.Extensions.Caching.Distributed
             {
                 throw new ArgumentNullException(nameof(value));
             }
-            return cache.SetAsync(key, Encoding.UTF8.GetBytes(value), options);
+            return cache.SetAsync(key, Encoding.UTF8.GetBytes(value), options, token);
         }
 
         /// <summary>
@@ -144,10 +148,11 @@ namespace Microsoft.Extensions.Caching.Distributed
         /// </summary>
         /// <param name="cache">The cache in which to store the data.</param>
         /// <param name="key">The key to get the stored data for.</param>
+        /// <param name="token">Optional. A <see cref="CancellationToken" /> to cancel the operation.</param>
         /// <returns>A task that gets the string value from the stored cache key.</returns>
-        public static async Task<string> GetStringAsync(this IDistributedCache cache, string key)
+        public static async Task<string> GetStringAsync(this IDistributedCache cache, string key, CancellationToken token = default(CancellationToken))
         {
-            var data = await cache.GetAsync(key);
+            var data = await cache.GetAsync(key, token);
             if (data == null)
             {
                 return null;

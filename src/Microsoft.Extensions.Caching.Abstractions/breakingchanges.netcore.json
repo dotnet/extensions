@@ -38,5 +38,25 @@
     "TypeId": "public interface Microsoft.Extensions.Caching.Distributed.IDistributedCache",
     "MemberId": "System.Threading.Tasks.Task<System.Byte[]> GetAsync(System.String key, System.Threading.CancellationToken token = default(System.Threading.CancellationToken))",
     "Kind": "Addition"
+  },
+  {
+    "TypeId": "public static class Microsoft.Extensions.Caching.Distributed.DistributedCacheExtensions",
+    "MemberId": "public static System.Threading.Tasks.Task SetAsync(this Microsoft.Extensions.Caching.Distributed.IDistributedCache cache, System.String key, System.Byte[] value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public static class Microsoft.Extensions.Caching.Distributed.DistributedCacheExtensions",
+    "MemberId": "public static System.Threading.Tasks.Task SetStringAsync(this Microsoft.Extensions.Caching.Distributed.IDistributedCache cache, System.String key, System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public static class Microsoft.Extensions.Caching.Distributed.DistributedCacheExtensions",
+    "MemberId": "public static System.Threading.Tasks.Task SetStringAsync(this Microsoft.Extensions.Caching.Distributed.IDistributedCache cache, System.String key, System.String value, Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions options)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public static class Microsoft.Extensions.Caching.Distributed.DistributedCacheExtensions",
+    "MemberId": "public static System.Threading.Tasks.Task<System.String> GetStringAsync(this Microsoft.Extensions.Caching.Distributed.IDistributedCache cache, System.String key)",
+    "Kind": "Removal"
   }
 ]
