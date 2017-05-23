@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.CommandLineUtils
             var muxerPath = DotNetMuxer.MuxerPath;
             Assert.NotNull(muxerPath);
             Assert.True(File.Exists(muxerPath), "The file did not exist");
+            Assert.True(Path.IsPathRooted(muxerPath), "The path should be rooted");
         }
     }
 }

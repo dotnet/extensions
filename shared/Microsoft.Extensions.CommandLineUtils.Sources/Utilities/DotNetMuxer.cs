@@ -5,6 +5,7 @@
 #if !NET451 && !NET452 && !NET46 && !NET461
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -37,6 +38,15 @@ namespace Microsoft.Extensions.CommandLineUtils
 
         private static string TryFindMuxerPath()
         {
+            var mainModule = Process.GetCurrentProcess().MainModule;
+            if (!string.IsNullOrEmpty(mainModule?.FileName) && File.Exists(mainModule.FileName))
+            {
+                return mainModule.FileName;
+            }
+
+            // if Process.MainModule is not available, fallback to trying to navigate to the muxer
+            // by using the location of the shared framework
+
             var fileName = MuxerName;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
