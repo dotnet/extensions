@@ -52,7 +52,9 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
 <Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <UserSecretsId>xyz123</UserSecretsId>
+        <UserSecretsId>
+            xyz123
+        </UserSecretsId>
         <TargetFramework>netcoreapp1.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
