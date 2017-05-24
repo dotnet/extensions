@@ -38,20 +38,21 @@ namespace Microsoft.Extensions.CommandLineUtils
 
         private static string TryFindMuxerPath()
         {
-            var mainModule = Process.GetCurrentProcess().MainModule;
-            if (!string.IsNullOrEmpty(mainModule?.FileName) && File.Exists(mainModule.FileName))
-            {
-                return mainModule.FileName;
-            }
-
-            // if Process.MainModule is not available, fallback to trying to navigate to the muxer
-            // by using the location of the shared framework
-
             var fileName = MuxerName;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 fileName += ".exe";
             }
+
+            var mainModule = Process.GetCurrentProcess().MainModule;
+            if (!string.IsNullOrEmpty(mainModule?.FileName)
+                && Path.GetFileName(mainModule.FileName).Equals(fileName, StringComparison.OrdinalIgnoreCase))
+            {
+                return mainModule.FileName;
+            }
+
+            // if Process.MainModule is not available or it does not equal "dotnet(.exe)?", fallback to navigating to the muxer
+            // by using the location of the shared framework
 
             var fxDepsFile = AppContext.GetData("FX_DEPS_FILE") as string;
 

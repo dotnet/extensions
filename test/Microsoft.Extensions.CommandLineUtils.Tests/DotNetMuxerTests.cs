@@ -3,6 +3,7 @@
 
 #if NETCOREAPP2_0
 using System.IO;
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace Microsoft.Extensions.CommandLineUtils
@@ -16,6 +17,7 @@ namespace Microsoft.Extensions.CommandLineUtils
             Assert.NotNull(muxerPath);
             Assert.True(File.Exists(muxerPath), "The file did not exist");
             Assert.True(Path.IsPathRooted(muxerPath), "The path should be rooted");
+            Assert.Equal("dotnet", Path.GetFileNameWithoutExtension(muxerPath), ignoreCase: true);
         }
     }
 }
