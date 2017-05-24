@@ -5,6 +5,7 @@
 #if !NET451 && !NET452 && !NET46 && !NET461
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -42,6 +43,16 @@ namespace Microsoft.Extensions.CommandLineUtils
             {
                 fileName += ".exe";
             }
+
+            var mainModule = Process.GetCurrentProcess().MainModule;
+            if (!string.IsNullOrEmpty(mainModule?.FileName)
+                && Path.GetFileName(mainModule.FileName).Equals(fileName, StringComparison.OrdinalIgnoreCase))
+            {
+                return mainModule.FileName;
+            }
+
+            // if Process.MainModule is not available or it does not equal "dotnet(.exe)?", fallback to navigating to the muxer
+            // by using the location of the shared framework
 
             var fxDepsFile = AppContext.GetData("FX_DEPS_FILE") as string;
 
