@@ -608,7 +608,7 @@ IniKey1=IniValue2");
 
             _fileSystem.WriteFile(jsonRootRelativeFile, @"{""JsonKey1"": ""JsonValue1""}");
 
-            await Task.Delay(2000);
+            await Task.Delay(2500);
 
             Assert.Equal("JsonValue1", config["JsonKey1"]);
             Assert.True(createToken.HasChanged);
@@ -635,38 +635,38 @@ IniKey1=IniValue2");
             // Delete files and ensure order is preserved
             var token = config.GetReloadToken();
             _fileSystem.DeleteFile(_iniFile);
-            await Task.Delay(1100);
+            await Task.Delay(2000);
             Assert.Equal("JsonValue1", config["Key"]);
             Assert.True(token.HasChanged);
 
             token = config.GetReloadToken();
             _fileSystem.DeleteFile(_jsonFile);
-            await Task.Delay(1100);
+            await Task.Delay(2000);
             Assert.Equal("XmlValue1", config["Key"]);
             Assert.True(token.HasChanged);
 
             token = config.GetReloadToken();
             _fileSystem.DeleteFile(_xmlFile);
-            await Task.Delay(1100);
+            await Task.Delay(2000);
             Assert.Null(config["Key"]);
             Assert.True(token.HasChanged);
 
             token = config.GetReloadToken();
             _fileSystem.WriteFile(_jsonFile, @"{""Key"": ""JsonValue1""}");
-            await Task.Delay(1100);
+            await Task.Delay(2000);
             Assert.Equal("JsonValue1", config["Key"]);
             Assert.True(token.HasChanged);
 
             // Adding a file earlier in the chain has no effect
             token = config.GetReloadToken();
             _fileSystem.WriteFile(_xmlFile, @"<settings Key=""XmlValue1""/>");
-            await Task.Delay(1100);
+            await Task.Delay(2000);
             Assert.Equal("JsonValue1", config["Key"]);
             Assert.True(token.HasChanged);
 
             token = config.GetReloadToken();
             _fileSystem.WriteFile(_iniFile, @"Key = IniValue1");
-            await Task.Delay(1100);
+            await Task.Delay(2000);
             Assert.Equal("IniValue1", config["Key"]);
             Assert.True(token.HasChanged);
         }
@@ -728,7 +728,7 @@ IniKey1=IniValue2");
             _fileSystem.WriteFile(_iniFile, @"IniKey1 = IniValue1");
             _fileSystem.WriteFile(_xmlFile, @"<settings XmlKey1=""XmlValue1""/>");
 
-            await Task.Delay(1100);
+            await Task.Delay(2000);
 
             Assert.Equal("JsonValue1", config["JsonKey1"]);
             Assert.Equal("IniValue1", config["IniKey1"]);
@@ -741,7 +741,7 @@ IniKey1=IniValue2");
             _fileSystem.WriteFile(_iniFile, @"IniKey1 = IniValue2");
             _fileSystem.WriteFile(_xmlFile, @"<settings XmlKey1=""XmlValue2""/>");
 
-            await Task.Delay(1100);
+            await Task.Delay(2000);
 
             Assert.Equal("JsonValue2", config["JsonKey1"]);
             Assert.Equal("IniValue2", config["IniKey1"]);
@@ -756,7 +756,7 @@ IniKey1=IniValue2");
             _fileSystem.DeleteFile(_iniFile);
             _fileSystem.DeleteFile(_xmlFile);
 
-            await Task.Delay(1100);
+            await Task.Delay(2000);
 
             Assert.Null(config["JsonKey1"]);
             Assert.Null(config["IniKey1"]);
@@ -769,7 +769,7 @@ IniKey1=IniValue2");
             _fileSystem.WriteFile(_iniFile, @"IniKey1 = IniValue1");
             _fileSystem.WriteFile(_xmlFile, @"<settings XmlKey1=""XmlValue1""/>");
 
-            await Task.Delay(1100);
+            await Task.Delay(2000);
 
             Assert.Equal("JsonValue1", config["JsonKey1"]);
             Assert.Equal("IniValue1", config["IniKey1"]);
