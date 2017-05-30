@@ -21,17 +21,10 @@ namespace Microsoft.Extensions.Primitives
 
         private StringComparison Comparison { get; }
         private StringComparer Comparer { get; }
-		
+
         public int Compare(StringSegment x, StringSegment y)
         {
-            int minLength = Math.Min(x.Length, y.Length);
-            int diff = string.Compare(x.Buffer, x.Offset, y.Buffer, y.Offset, minLength, Comparison);
-            if (diff == 0)
-            {
-                diff = x.Length - y.Length;
-            }
-
-            return diff;
+            return StringSegment.Compare(x, y, Comparison);
         }
 		
         public bool Equals(StringSegment x, StringSegment y)
