@@ -696,6 +696,49 @@ namespace Microsoft.Extensions.Primitives
             // Act & Assert
             Assert.Throws<ArgumentOutOfRangeException>(() => segment.Subsegment(2, 3));
         }
+		
+        public static TheoryData<StringSegment, StringSegmentComparer, int> CompareStringSegmentData
+        {
+            get
+            {
+                // candidate / comparer / expected result
+                return new TheoryData<StringSegment, StringSegmentComparer, int>()
+                {
+                    { new StringSegment("abcdef", 1, 4), StringSegmentComparer.Ordinal, 0 },
+                    { new StringSegment("ABCDEF", 1, 4), StringSegmentComparer.Ordinal, 1 },
+                    { new StringSegment("ABCDEF", 1, 4), StringSegmentComparer.OrdinalIgnoreCase, 0 },
+                    { new StringSegment("ABCDEF", 0, 6), StringSegmentComparer.OrdinalIgnoreCase, 1 },
+                    { new StringSegment("bcde", 0, 4), StringSegmentComparer.Ordinal, 0 },
+                    { new StringSegment("abcdef", 0, 3), StringSegmentComparer.Ordinal, 1 },
+                    { new StringSegment("BcDeF", 0, 4), StringSegmentComparer.OrdinalIgnoreCase, 0 },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(CompareStringSegmentData))]
+        public void StringSegment_Compare_Valid(StringSegment candidate, StringSegmentComparer comparer, int expectedResult)
+        {
+            // Arrange
+            var segment = new StringSegment("abcdef", 1, 4);
+
+            // Act
+            int result = comparer.Compare(segment, candidate);
+
+            // Assert
+            if (expectedResult < 0)
+            {
+                Assert.True(result < 0, $"{segment} should be less than {candidate}");
+            }
+            else if (expectedResult == 0)
+            {
+                Assert.True(expectedResult == result, $"{segment} should equal {candidate}");
+            }
+            else
+            {
+                Assert.True(result > 0, $"{segment} should be greater than {candidate}");
+            }
+        }
 
         [Fact]
         public void IndexOf_ComputesIndex_RelativeToTheCurrentSegment()
