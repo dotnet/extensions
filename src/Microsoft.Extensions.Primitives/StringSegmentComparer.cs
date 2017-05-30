@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Primitives
 {
-    public class StringSegmentComparer : IEqualityComparer<StringSegment>
+    public class StringSegmentComparer : IComparer<StringSegment>, IEqualityComparer<StringSegment>
     {
         public static StringSegmentComparer Ordinal { get; }
             = new StringSegmentComparer(StringComparison.Ordinal, StringComparer.Ordinal);
@@ -21,7 +21,19 @@ namespace Microsoft.Extensions.Primitives
 
         private StringComparison Comparison { get; }
         private StringComparer Comparer { get; }
+		
+        public int Compare(StringSegment x, StringSegment y)
+        {
+            int minLength = Math.Min(x.Length, y.Length);
+            int diff = string.Compare(x.Buffer, x.Offset, y.Buffer, y.Offset, minLength, Comparison);
+            if (diff == 0)
+            {
+                diff = x.Length - y.Length;
+            }
 
+            return diff;
+        }
+		
         public bool Equals(StringSegment x, StringSegment y)
         {
             return StringSegment.Equals(x, y, Comparison);
