@@ -162,8 +162,8 @@ namespace Microsoft.Extensions.Primitives
         /// </returns>
         public static int Compare(StringSegment a, StringSegment b, StringComparison comparisonType)
         {
-            int minLength = Math.Min(a.Length, b.Length);
-            int diff = string.Compare(a.Buffer, a.Offset, b.Buffer, b.Offset, minLength, comparisonType);
+            var minLength = Math.Min(a.Length, b.Length);
+            var diff = string.Compare(a.Buffer, a.Offset, b.Buffer, b.Offset, minLength, comparisonType);
             if (diff == 0)
             {
                 diff = a.Length - b.Length;
