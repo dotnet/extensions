@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
-    <PackageReference Include="System.Threading.Thread" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
