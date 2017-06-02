@@ -6,17 +6,17 @@ using System;
 namespace Microsoft.Extensions.Options
 {
     /// <summary>
-    /// Implementation of <see cref="IInitializeOptions{TOptions}"/>.
+    /// Implementation of <see cref="IPostConfigureOptions{TOptions}"/>.
     /// </summary>
     /// <typeparam name="TOptions"></typeparam>
-    public class InitializeOptions<TOptions> : IInitializeOptions<TOptions> where TOptions : class
+    public class PostConfigureOptions<TOptions> : IPostConfigureOptions<TOptions> where TOptions : class
     {
         /// <summary>
-        /// Creates a new instance of <see cref="InitializeOptions{TOptions}"/>.
+        /// Creates a new instance of <see cref="PostConfigureOptions{TOptions}"/>.
         /// </summary>
         /// <param name="name">The name of the options.</param>
         /// <param name="action">The action to register.</param>
-        public InitializeOptions(string name, Action<TOptions> action)
+        public PostConfigureOptions(string name, Action<TOptions> action)
         {
             Name = name;
             Action = action;
@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.Options
         /// </summary>
         /// <param name="name"></param>
         /// <param name="options"></param>
-        public virtual void Initialize(string name, TOptions options)
+        public virtual void PostConfigure(string name, TOptions options)
         {
             if (options == null)
             {

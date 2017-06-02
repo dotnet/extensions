@@ -209,28 +209,28 @@ namespace Microsoft.Extensions.Options.Tests
         }
 
         [Fact]
-        public void CanConfigureAndInitializeAllDefaultAndNamedOptions()
+        public void CanConfigureAndPostConfigureAllDefaultAndNamedOptions()
         {
             var services = new ServiceCollection().AddOptions();
             services.ConfigureAll<FakeOptions>(o => o.Message += "Default");
             services.Configure<FakeOptions>(o => o.Message += "0");
             services.Configure<FakeOptions>("1", o => o.Message += "1");
-            services.InitializeAll<FakeOptions>(o => o.Message += "Initialize");
-            services.Initialize<FakeOptions>(o => o.Message += "2");
-            services.Initialize<FakeOptions>("1", o => o.Message += "3");
+            services.PostConfigureAll<FakeOptions>(o => o.Message += "PostConfigure");
+            services.PostConfigure<FakeOptions>(o => o.Message += "2");
+            services.PostConfigure<FakeOptions>("1", o => o.Message += "3");
 
             var sp = services.BuildServiceProvider();
             var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
-            Assert.Equal("DefaultInitialize", option.Get("Default").Message);
-            Assert.Equal("Default0Initialize2", option.Value.Message);
-            Assert.Equal("Default1Initialize3", option.Get("1").Message);
+            Assert.Equal("DefaultPostConfigure", option.Get("Default").Message);
+            Assert.Equal("Default0PostConfigure2", option.Value.Message);
+            Assert.Equal("Default1PostConfigure3", option.Get("1").Message);
         }
 
         [Fact]
-        public void CanInitializeAllOptions()
+        public void CanPostConfigureAllOptions()
         {
             var services = new ServiceCollection().AddOptions();
-            services.InitializeAll<FakeOptions>(o => o.Message = "Default");
+            services.PostConfigureAll<FakeOptions>(o => o.Message = "Default");
 
             var sp = services.BuildServiceProvider();
             var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
@@ -239,13 +239,13 @@ namespace Microsoft.Extensions.Options.Tests
         }
 
         [Fact]
-        public void CanConfigureAndInitializeAllOptions()
+        public void CanConfigureAndPostConfigureAllOptions()
         {
             var services = new ServiceCollection().AddOptions();
             services.ConfigureAll<FakeOptions>(o => o.Message = "D");
-            services.InitializeAll<FakeOptions>(o => o.Message += "f");
+            services.PostConfigureAll<FakeOptions>(o => o.Message += "f");
             services.ConfigureAll<FakeOptions>(o => o.Message += "e");
-            services.InitializeAll<FakeOptions>(o => o.Message += "ault");
+            services.PostConfigureAll<FakeOptions>(o => o.Message += "ault");
 
             var sp = services.BuildServiceProvider();
             var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
@@ -254,16 +254,16 @@ namespace Microsoft.Extensions.Options.Tests
         }
 
         [Fact]
-        public void NamedSnapshotsInitializesInRegistrationOrder()
+        public void NamedSnapshotsPostConfiguresInRegistrationOrder()
         {
             var services = new ServiceCollection().AddOptions();
-            services.Initialize<FakeOptions>("-", o => o.Message += "-");
-            services.InitializeAll<FakeOptions>(o => o.Message += "A");
-            services.Initialize<FakeOptions>("+", o => o.Message += "+");
-            services.InitializeAll<FakeOptions>(o => o.Message += "B");
-            services.InitializeAll<FakeOptions>(o => o.Message += "C");
-            services.Initialize<FakeOptions>("+", o => o.Message += "+");
-            services.Initialize<FakeOptions>("-", o => o.Message += "-");
+            services.PostConfigure<FakeOptions>("-", o => o.Message += "-");
+            services.PostConfigureAll<FakeOptions>(o => o.Message += "A");
+            services.PostConfigure<FakeOptions>("+", o => o.Message += "+");
+            services.PostConfigureAll<FakeOptions>(o => o.Message += "B");
+            services.PostConfigureAll<FakeOptions>(o => o.Message += "C");
+            services.PostConfigure<FakeOptions>("+", o => o.Message += "+");
+            services.PostConfigure<FakeOptions>("-", o => o.Message += "-");
 
             var sp = services.BuildServiceProvider();
             var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
@@ -273,12 +273,12 @@ namespace Microsoft.Extensions.Options.Tests
         }
 
         [Fact]
-        public void CanInitializeAllDefaultAndNamedOptions()
+        public void CanPostConfigureAllDefaultAndNamedOptions()
         {
             var services = new ServiceCollection().AddOptions();
-            services.InitializeAll<FakeOptions>(o => o.Message += "Default");
-            services.Initialize<FakeOptions>(o => o.Message += "0");
-            services.Initialize<FakeOptions>("1", o => o.Message += "1");
+            services.PostConfigureAll<FakeOptions>(o => o.Message += "Default");
+            services.PostConfigure<FakeOptions>(o => o.Message += "0");
+            services.PostConfigure<FakeOptions>("1", o => o.Message += "1");
 
             var sp = services.BuildServiceProvider();
             var option = sp.GetRequiredService<IOptionsSnapshot<FakeOptions>>();
