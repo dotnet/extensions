@@ -40,23 +40,6 @@ namespace Microsoft.Extensions.Logging.Test
             _paddingString = new string(' ', loglevelStringWithPadding.Length);
         }
 
-        private Tuple<ILoggerFactory, ConsoleSink> SetUpFactory(Func<string, LogLevel, bool> filter)
-        {
-            var t = SetUp(null);
-            var logger = t.Item1;
-            var sink = t.Item2;
-
-            var provider = new Mock<ILoggerProvider>();
-            provider.Setup(f => f.CreateLogger(
-                It.IsAny<string>()))
-                .Returns(logger);
-
-            var factory = new LoggerFactory();
-            factory.AddProvider("Console", provider.Object);
-
-            return new Tuple<ILoggerFactory, ConsoleSink>(factory, sink);
-        }
-
         [Fact]
         public void LogsWhenMessageIsNotProvided()
         {
@@ -665,9 +648,7 @@ namespace Microsoft.Extensions.Logging.Test
             };
 
             var loggerFactory = new LoggerFactory();
-#pragma warning disable CS0618 // Type or member is obsolete
             loggerFactory.AddConsole(settings);
-#pragma warning restore CS0618 // Type or member is obsolete
 
             var logger = loggerFactory.CreateLogger("Test");
             Assert.False(logger.IsEnabled(LogLevel.Trace));
@@ -697,10 +678,8 @@ namespace Microsoft.Extensions.Logging.Test
                 }
             };
 
-            var loggerFactory = new LoggerFactory();
-#pragma warning disable CS0618 // Type or member is obsolete
-            loggerFactory.AddConsole(settings);
-#pragma warning restore CS0618 // Type or member is obsolete
+            var loggerFactory = new LoggerFactory()
+                .AddConsole(settings);
 
             var logger = loggerFactory.CreateLogger("Test");
             Assert.False(logger.IsEnabled(LogLevel.Trace));
@@ -732,11 +711,8 @@ namespace Microsoft.Extensions.Logging.Test
                 }
             };
 
-            var loggerFactory = new LoggerFactory();
-#pragma warning disable CS0618 // Type or member is obsolete
-            loggerFactory.AddConsole(settings);
-#pragma warning restore CS0618 // Type or member is obsolete
-            loggerFactory.AddDebug();
+            var loggerFactory = new LoggerFactory()
+                .AddConsole(settings);
 
             var logger = loggerFactory.CreateLogger("Test");
 

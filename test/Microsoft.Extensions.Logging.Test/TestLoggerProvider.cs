@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.Extensions.Logging.Test
 {
+    [ProviderAlias("TestLogger")]
     public class TestLoggerProvider : ILoggerProvider
     {
         private readonly Func<LogLevel, bool> _filter;
@@ -33,6 +34,13 @@ namespace Microsoft.Extensions.Logging.Test
         public void Dispose()
         {
             DisposeCalled = true;
+        }
+    }
+
+    public class TestLoggerProvider2 : TestLoggerProvider
+    {
+        public TestLoggerProvider2(TestSink testSink) : base(testSink, true)
+        {
         }
     }
 }

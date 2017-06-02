@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.AzureAppServices;
 using Microsoft.Extensions.Logging.AzureAppServices.Internal;
 
@@ -15,49 +16,41 @@ namespace Microsoft.Extensions.Logging
         /// <summary>
         /// Adds an Azure Web Apps diagnostics logger.
         /// </summary>
-        /// <param name="factory">The extension method argument</param>
-        public static LoggerFactory AddAzureWebAppDiagnostics(this LoggerFactory factory)
+        /// <param name="builder">The extension method argument</param>
+        public static ILoggingBuilder AddAzureWebAppDiagnostics(this ILoggingBuilder builder)
         {
-            return AddAzureWebAppDiagnostics(factory, new AzureAppServicesDiagnosticsSettings());
+            return AddAzureWebAppDiagnostics(builder, null);
         }
 
         /// <summary>
         /// Adds an Azure Web Apps diagnostics logger.
         /// </summary>
-        /// <param name="factory">The extension method argument</param>
+        /// <param name="builder">The extension method argument</param>
         /// <param name="settings">The setting object to configure loggers.</param>
-        public static LoggerFactory AddAzureWebAppDiagnostics(this LoggerFactory factory, AzureAppServicesDiagnosticsSettings settings)
+        public static ILoggingBuilder AddAzureWebAppDiagnostics(this ILoggingBuilder builder, AzureAppServicesDiagnosticsSettings settings)
         {
             if (WebAppContext.Default.IsRunningInAzureWebApp)
             {
                 // Only add the provider if we're in Azure WebApp. That cannot change once the apps started
-                factory.AddProvider("AzureAppServices", new AzureAppServicesDiagnosticsLoggerProvider(WebAppContext.Default, settings));
+                builder.Services.AddSingleton<ILoggerProvider>(new AzureAppServicesDiagnosticsLoggerProvider(WebAppContext.Default, settings ?? new AzureAppServicesDiagnosticsSettings()));
             }
-            return factory;
+            return builder;
         }
 
         /// <summary>
-        /// <para>
-        /// This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddAzureWebAppDiagnostics() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.
-        /// </para>
         /// Adds an Azure Web Apps diagnostics logger.
         /// </summary>
         /// <param name="factory">The extension method argument</param>
-        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddAzureWebAppDiagnostics() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.")]
         public static ILoggerFactory AddAzureWebAppDiagnostics(this ILoggerFactory factory)
         {
             return AddAzureWebAppDiagnostics(factory, new AzureAppServicesDiagnosticsSettings());
         }
 
         /// <summary>
-        /// <para>
-        /// This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddAzureWebAppDiagnostics() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.
-        /// </para>
         /// Adds an Azure Web Apps diagnostics logger.
         /// </summary>
         /// <param name="factory">The extension method argument</param>
         /// <param name="settings">The setting object to configure loggers.</param>
-        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddAzureWebAppDiagnostics() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.")]
         public static ILoggerFactory AddAzureWebAppDiagnostics(this ILoggerFactory factory, AzureAppServicesDiagnosticsSettings settings)
         {
             if (WebAppContext.Default.IsRunningInAzureWebApp)

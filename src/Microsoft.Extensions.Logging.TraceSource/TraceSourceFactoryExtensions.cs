@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.TraceSource;
 
 namespace Microsoft.Extensions.Logging
@@ -12,15 +13,15 @@ namespace Microsoft.Extensions.Logging
         /// <summary>
         /// Adds a TraceSource logger named 'TraceSource' to the factory.
         /// </summary>
-        /// <param name="factory">The <see cref="LoggerFactory"/> to use.</param>
+        /// <param name="builder">The <see cref="ILoggingBuilder"/> to use.</param>
         /// <param name="switchName">The name of the <see cref="SourceSwitch"/> to use.</param>
-        public static LoggerFactory AddTraceSource(
-            this LoggerFactory factory,
+        public static ILoggingBuilder AddTraceSource(
+            this ILoggingBuilder builder,
             string switchName)
         {
-            if (factory == null)
+            if (builder == null)
             {
-                throw new ArgumentNullException(nameof(factory));
+                throw new ArgumentNullException(nameof(builder));
             }
 
             if (switchName == null)
@@ -28,23 +29,23 @@ namespace Microsoft.Extensions.Logging
                 throw new ArgumentNullException(nameof(switchName));
             }
 
-            return factory.AddTraceSource(new SourceSwitch(switchName));
+            return builder.AddTraceSource(new SourceSwitch(switchName));
         }
 
         /// <summary>
         /// Adds a TraceSource logger named 'TraceSource' to the factory.
         /// </summary>
-        /// <param name="factory">The <see cref="LoggerFactory"/> to use.</param>
+        /// <param name="builder">The <see cref="ILoggingBuilder"/> to use.</param>
         /// <param name="switchName">The name of the <see cref="SourceSwitch"/> to use.</param>
         /// <param name="listener">The <see cref="TraceListener"/> to use.</param>
-        public static LoggerFactory AddTraceSource(
-            this LoggerFactory factory,
+        public static ILoggingBuilder AddTraceSource(
+            this ILoggingBuilder builder,
             string switchName,
             TraceListener listener)
         {
-            if (factory == null)
+            if (builder == null)
             {
-                throw new ArgumentNullException(nameof(factory));
+                throw new ArgumentNullException(nameof(builder));
             }
 
             if (switchName == null)
@@ -57,21 +58,21 @@ namespace Microsoft.Extensions.Logging
                 throw new ArgumentNullException(nameof(listener));
             }
 
-            return factory.AddTraceSource(new SourceSwitch(switchName), listener);
+            return builder.AddTraceSource(new SourceSwitch(switchName), listener);
         }
 
         /// <summary>
         /// Adds a TraceSource logger named 'TraceSource' to the factory.
         /// </summary>
-        /// <param name="factory">The <see cref="LoggerFactory"/> to use.</param>
+        /// <param name="builder">The <see cref="ILoggingBuilder"/> to use.</param>
         /// <param name="sourceSwitch">The <see cref="SourceSwitch"/> to use.</param>
-        public static LoggerFactory AddTraceSource(
-            this LoggerFactory factory,
+        public static ILoggingBuilder AddTraceSource(
+            this ILoggingBuilder builder,
             SourceSwitch sourceSwitch)
         {
-            if (factory == null)
+            if (builder == null)
             {
-                throw new ArgumentNullException(nameof(factory));
+                throw new ArgumentNullException(nameof(builder));
             }
 
             if (sourceSwitch == null)
@@ -79,25 +80,25 @@ namespace Microsoft.Extensions.Logging
                 throw new ArgumentNullException(nameof(sourceSwitch));
             }
 
-            factory.AddProvider("TraceSource", new TraceSourceLoggerProvider(sourceSwitch));
+            builder.Services.AddSingleton<ILoggerProvider>(new TraceSourceLoggerProvider(sourceSwitch));
 
-            return factory;
+            return builder;
         }
 
         /// <summary>
         /// Adds a TraceSource logger named 'TraceSource' to the factory.
         /// </summary>
-        /// <param name="factory">The <see cref="LoggerFactory"/> to use.</param>
+        /// <param name="builder">The <see cref="LoggerFactory"/> to use.</param>
         /// <param name="sourceSwitch">The <see cref="SourceSwitch"/> to use.</param>
         /// <param name="listener">The <see cref="TraceListener"/> to use.</param>
-        public static LoggerFactory AddTraceSource(
-            this LoggerFactory factory,
+        public static ILoggingBuilder AddTraceSource(
+            this ILoggingBuilder builder,
             SourceSwitch sourceSwitch,
             TraceListener listener)
         {
-            if (factory == null)
+            if (builder == null)
             {
-                throw new ArgumentNullException(nameof(factory));
+                throw new ArgumentNullException(nameof(builder));
             }
 
             if (sourceSwitch == null)
@@ -110,19 +111,15 @@ namespace Microsoft.Extensions.Logging
                 throw new ArgumentNullException(nameof(listener));
             }
 
-            factory.AddProvider("TraceSource", new TraceSourceLoggerProvider(sourceSwitch, listener));
+            builder.Services.AddSingleton<ILoggerProvider>(new TraceSourceLoggerProvider(sourceSwitch, listener));
 
-            return factory;
+            return builder;
         }
 
         /// <summary>
-        /// <para>
-        /// This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddTraceSource() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.
-        /// </para>
         /// </summary>
         /// <param name="factory">The <see cref="ILoggerFactory"/> to use.</param>
         /// <param name="switchName">The name of the <see cref="SourceSwitch"/> to use.</param>
-        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddTraceSource() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.")]
         public static ILoggerFactory AddTraceSource(
             this ILoggerFactory factory,
             string switchName)
@@ -140,15 +137,9 @@ namespace Microsoft.Extensions.Logging
             return factory.AddTraceSource(new SourceSwitch(switchName));
         }
 
-        /// <summary>
-        /// <para>
-        /// This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddTraceSource() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.
-        /// </para>
-        /// </summary>
         /// <param name="factory">The <see cref="ILoggerFactory"/> to use.</param>
         /// <param name="switchName">The name of the <see cref="SourceSwitch"/> to use.</param>
         /// <param name="listener">The <see cref="TraceListener"/> to use.</param>
-        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddTraceSource() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.")]
         public static ILoggerFactory AddTraceSource(
             this ILoggerFactory factory,
             string switchName,
@@ -172,14 +163,8 @@ namespace Microsoft.Extensions.Logging
             return factory.AddTraceSource(new SourceSwitch(switchName), listener);
         }
 
-        /// <summary>
-        /// <para>
-        /// This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddTraceSource() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.
-        /// </para>
-        /// </summary>
         /// <param name="factory">The <see cref="ILoggerFactory"/> to use.</param>
         /// <param name="sourceSwitch">The <see cref="SourceSwitch"/> to use.</param>
-        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddTraceSource() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.")]
         public static ILoggerFactory AddTraceSource(
             this ILoggerFactory factory,
             SourceSwitch sourceSwitch)
@@ -199,15 +184,9 @@ namespace Microsoft.Extensions.Logging
             return factory;
         }
 
-        /// <summary>
-        /// <para>
-        /// This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddTraceSource() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.
-        /// </para>
-        /// </summary>
         /// <param name="factory">The <see cref="ILoggerFactory"/> to use.</param>
         /// <param name="sourceSwitch">The <see cref="SourceSwitch"/> to use.</param>
         /// <param name="listener">The <see cref="TraceListener"/> to use.</param>
-        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddTraceSource() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.")]
         public static ILoggerFactory AddTraceSource(
             this ILoggerFactory factory,
             SourceSwitch sourceSwitch,

@@ -26,6 +26,8 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.EventLog\Microsoft.Extensions.Logging.EventLog.csproj" />
+
+    <PackageReference Include="System.ValueTuple" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>

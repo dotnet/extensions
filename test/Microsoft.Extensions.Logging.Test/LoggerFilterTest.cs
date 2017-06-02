@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -26,9 +27,11 @@ namespace Microsoft.Extensions.Logging.Test
   }
 }";
             var config = CreateConfiguration(() => json);
-            var factory = new LoggerFactory(config.GetSection("Logging"));
             var loggerProvider = new TestLoggerProvider(new TestSink(), isEnabled: true);
-            factory.AddProvider("Test", loggerProvider);
+
+            var factory = TestLoggerBuilder.Create(builder => builder
+                .AddConfiguration(config.GetSection("Logging"))
+                .AddProvider(loggerProvider));
 
             var logger = factory.CreateLogger("Microsoft");
 
@@ -70,10 +73,10 @@ namespace Microsoft.Extensions.Logging.Test
   }
 }";
             var config = CreateConfiguration(() => json);
-            var factory = new LoggerFactory();
-            factory.UseConfiguration(config.GetSection("Logging"));
             var loggerProvider = new TestLoggerProvider(new TestSink(), isEnabled: true);
-            factory.AddProvider(loggerProvider);
+            var factory = TestLoggerBuilder.Create(builder => builder
+                .AddConfiguration(config.GetSection("Logging"))
+                .AddProvider(loggerProvider));
 
             var logger = factory.CreateLogger("Microsoft");
 
@@ -93,52 +96,6 @@ namespace Microsoft.Extensions.Logging.Test
   }
 }";
             config.Reload();
-
-            // Act
-            logger.LogTrace("Message");
-
-            // Assert
-            writes = loggerProvider.Sink.Writes;
-            Assert.Equal(1, writes.Count);
-        }
-
-        [Fact]
-        public void UseConfigurationReplacesOldConfiguration()
-        {
-            // Arrange
-            var json =
-@"{
-  ""Logging"": {
-    ""LogLevel"": {
-      ""Microsoft"": ""Information""
-    }
-  }
-}";
-            var config = CreateConfiguration(() => json);
-            var factory = new LoggerFactory();
-            factory.UseConfiguration(config.GetSection("Logging"));
-            var loggerProvider = new TestLoggerProvider(new TestSink(), isEnabled: true);
-            factory.AddProvider(loggerProvider);
-
-            var logger = factory.CreateLogger("Microsoft");
-
-            // Act
-            logger.LogTrace("Message");
-
-            // Assert
-            var writes = loggerProvider.Sink.Writes;
-            Assert.Equal(0, writes.Count);
-
-            var jsonTrace =
-@"{
-  ""Logging"": {
-    ""LogLevel"": {
-      ""Microsoft"": ""Trace""
-    }
-  }
-}";
-            config = CreateConfiguration(() => jsonTrace);
-            factory.UseConfiguration(config);
 
             // Act
             logger.LogTrace("Message");
@@ -155,7 +112,7 @@ namespace Microsoft.Extensions.Logging.Test
             var json =
 @"{
   ""Logging"": {
-    ""CustomName"": {
+    ""Microsoft.Extensions.Logging.Test.TestLoggerProvider"": {
       ""LogLevel"": {
         ""Microsoft"": ""Information""
       }
@@ -163,9 +120,11 @@ namespace Microsoft.Extensions.Logging.Test
   }
 }";
             var config = CreateConfiguration(() => json);
-            var factory = new LoggerFactory(config.GetSection("Logging"));
+
             var loggerProvider = new TestLoggerProvider(new TestSink(), isEnabled: true);
-            factory.AddProvider("CustomName", loggerProvider);
+            var factory = TestLoggerBuilder.Create(builder => builder
+                .AddConfiguration(config.GetSection("Logging"))
+                .AddProvider(loggerProvider));
 
             var logger = factory.CreateLogger("Microsoft");
 
@@ -178,40 +137,6 @@ namespace Microsoft.Extensions.Logging.Test
         }
 
         [Fact]
-        public void PreferCustomProviderNameOverFullNameForFiltering()
-        {
-            // Arrange
-            var json =
-@"{
-  ""Logging"": {
-    ""CustomName"": {
-      ""LogLevel"": {
-        ""Microsoft"": ""Trace""
-      }
-    },
-    ""Microsoft.Extensions.Logging.Test.TestLoggerProvider"": {
-      ""LogLevel"": {
-        ""Microsoft"": ""Critical""
-      }
-    }
-  }
-}";
-            var config = CreateConfiguration(() => json);
-            var factory = new LoggerFactory(config.GetSection("Logging"));
-            var loggerProvider = new TestLoggerProvider(new TestSink(), isEnabled: true);
-            factory.AddProvider("CustomName", loggerProvider);
-
-            var logger = factory.CreateLogger("Microsoft");
-
-            // Act
-            logger.LogTrace("Message");
-
-            // Assert
-            var writes = loggerProvider.Sink.Writes;
-            Assert.Equal(1, writes.Count);
-        }
-
-        [Fact]
         public void PreferFullNameOverDefaultForFiltering()
         {
             // Arrange
@@ -221,7 +146,7 @@ namespace Microsoft.Extensions.Logging.Test
     ""LogLevel"": {
       ""Microsoft"": ""Critical""
     },
-    ""Microsoft.Extensions.Logging.Test.TestLoggerProvider"": {
+    ""TestLogger"": {
       ""LogLevel"": {
         ""Microsoft"": ""Trace""
       }
@@ -229,9 +154,11 @@ namespace Microsoft.Extensions.Logging.Test
   }
 }";
             var config = CreateConfiguration(() => json);
-            var factory = new LoggerFactory(config.GetSection("Logging"));
+
             var loggerProvider = new TestLoggerProvider(new TestSink(), isEnabled: true);
-            factory.AddProvider("Test", loggerProvider);
+            var factory = TestLoggerBuilder.Create(builder => builder
+                .AddConfiguration(config.GetSection("Logging"))
+                .AddProvider(loggerProvider));
 
             var logger = factory.CreateLogger("Microsoft");
 
@@ -241,65 +168,6 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             var writes = loggerProvider.Sink.Writes;
             Assert.Equal(1, writes.Count);
-        }
-
-        [Fact]
-        public void CanHaveMultipleProvidersOfSameTypeWithDifferentNames()
-        {
-            // Arrange
-            var json =
-@"{
-  ""Logging"": {
-    ""Custom1"": {
-      ""LogLevel"": {
-        ""Microsoft"": ""Critical""
-      }
-    },
-    ""Custom2"": {
-      ""LogLevel"": {
-        ""Microsoft"": ""Trace""
-      }
-    }
-  }
-}";
-            var config = CreateConfiguration(() => json);
-            var factory = new LoggerFactory(config.GetSection("Logging"));
-            var loggerProvider = new TestLoggerProvider(new TestSink(), isEnabled: true);
-            factory.AddProvider("Custom1", loggerProvider);
-            factory.AddProvider("Custom2", loggerProvider);
-
-            var logger = factory.CreateLogger("Microsoft");
-
-            // Act
-            logger.LogTrace("Message");
-
-            // Assert
-            var writes = loggerProvider.Sink.Writes;
-            Assert.Equal(1, writes.Count);
-
-            json =
-@"{
-  ""Logging"": {
-    ""Custom1"": {
-      ""LogLevel"": {
-        ""Microsoft"": ""Trace""
-      }
-    },
-    ""Custom2"": {
-      ""LogLevel"": {
-        ""Microsoft"": ""Trace""
-      }
-    }
-  }
-}";
-            config.Reload();
-
-            // Act
-            logger.LogTrace("Message");
-
-            // Assert
-            writes = loggerProvider.Sink.Writes;
-            Assert.Equal(3, writes.Count);
         }
 
         [Fact]
@@ -309,7 +177,7 @@ namespace Microsoft.Extensions.Logging.Test
             var json =
 @"{
   ""Logging"": {
-    ""Name"": {
+    ""Microsoft.Extensions.Logging.Test.TestLoggerProvider"": {
       ""LogLevel"": {
         ""Default"": ""Information"",
         ""Microsoft"": ""Warning""
@@ -318,9 +186,11 @@ namespace Microsoft.Extensions.Logging.Test
   }
 }";
             var config = CreateConfiguration(() => json);
-            var factory = new LoggerFactory(config.GetSection("Logging"));
+
             var loggerProvider = new TestLoggerProvider(new TestSink(), isEnabled: true);
-            factory.AddProvider("Name", loggerProvider);
+            var factory = TestLoggerBuilder.Create(builder => builder
+                .AddConfiguration(config.GetSection("Logging"))
+                .AddProvider(loggerProvider));
 
             var logger = factory.CreateLogger("Microsoft");
 
@@ -350,21 +220,21 @@ namespace Microsoft.Extensions.Logging.Test
         [Fact]
         public void AddFilterForMatchingProviderFilters()
         {
-            var factory = new LoggerFactory();
             var provider = new TestLoggerProvider(new TestSink(), isEnabled: true);
-            factory.AddProvider("Name", provider);
-            factory.AddFilter((name, cat, level) =>
-            {
-                if (string.Equals("Name", name))
+            var factory = TestLoggerBuilder.Create(builder => builder
+                .AddProvider(provider)
+                .AddFilter((name, cat, level) =>
                 {
-                    if (string.Equals("Test", cat))
+                    if (string.Equals("Microsoft.Extensions.Logging.Test.TestLoggerProvider", name))
                     {
-                        return level >= LogLevel.Information;
+                        if (string.Equals("Test", cat))
+                        {
+                            return level >= LogLevel.Information;
+                        }
                     }
-                }
 
-                return true;
-            });
+                    return true;
+                }));
 
             var logger = factory.CreateLogger("Test");
 
@@ -381,18 +251,18 @@ namespace Microsoft.Extensions.Logging.Test
         [Fact]
         public void AddFilterForNonMatchingProviderDoesNotFilter()
         {
-            var factory = new LoggerFactory();
             var provider = new TestLoggerProvider(new TestSink(), isEnabled: true);
-            factory.AddProvider("Test", provider);
-            factory.AddFilter((name, cat, level) =>
-            {
-                if (string.Equals("None", name))
+            var factory = TestLoggerBuilder.Create(builder => builder
+                .AddProvider(provider)
+                .AddFilter((name, cat, level) =>
                 {
-                    return level >= LogLevel.Error;
-                }
+                    if (string.Equals("None", name))
+                    {
+                        return level >= LogLevel.Error;
+                    }
 
-                return true;
-            });
+                    return true;
+                }));
 
             var logger = factory.CreateLogger("Test");
 
@@ -403,13 +273,13 @@ namespace Microsoft.Extensions.Logging.Test
         }
 
         [Fact]
-        public void AddFilterIsAdditive()
+        public void AddFilterLastWins()
         {
-            var factory = new LoggerFactory();
             var provider = new TestLoggerProvider(new TestSink(), isEnabled: true);
-            factory.AddProvider("Test", provider);
-            factory.AddFilter((name, cat, level) => level >= LogLevel.Warning);
-            factory.AddFilter((name, cat, level) => string.Equals(cat, "NotTest"));
+            var factory = TestLoggerBuilder.Create(builder => builder
+                .AddProvider(provider)
+                .AddFilter((name, cat, level) => level >= LogLevel.Warning)
+                .AddFilter((name, cat, level) => string.Equals(cat, "NotTest")));
 
             var logger = factory.CreateLogger("Test");
 
@@ -422,21 +292,21 @@ namespace Microsoft.Extensions.Logging.Test
 
             logger.LogInformation("Message");
 
-            Assert.Equal(0, writes.Count);
+            Assert.Equal(1, writes.Count);
 
             logger.LogError("Message");
 
-            Assert.Equal(1, writes.Count);
+            Assert.Equal(2, writes.Count);
         }
 
         [Fact]
-        public void AddFilterIsAdditiveWithConfigurationFilter()
+        public void ProviderLevelIsPreferredOverGlobalFilter()
         {
             // Arrange
             var json =
 @"{
   ""Logging"": {
-    ""Name"": {
+    ""TestLogger"": {
       ""LogLevel"": {
         ""Test"": ""Debug""
       }
@@ -444,10 +314,12 @@ namespace Microsoft.Extensions.Logging.Test
   }
 }";
             var config = CreateConfiguration(() => json);
-            var factory = new LoggerFactory(config.GetSection("Logging"));
             var loggerProvider = new TestLoggerProvider(new TestSink(), isEnabled: true);
-            factory.AddProvider("Name", loggerProvider);
-            factory.AddFilter((name, cat, level) => level < LogLevel.Warning);
+
+            var factory = TestLoggerBuilder.Create(builder => builder
+                .AddConfiguration(config.GetSection("Logging"))
+                .AddProvider(loggerProvider)
+                .AddFilter((name, cat, level) => level < LogLevel.Critical));
 
             var logger = factory.CreateLogger("Test");
 
@@ -463,16 +335,16 @@ namespace Microsoft.Extensions.Logging.Test
 
             logger.LogCritical("Message");
 
-            Assert.Equal(1, writes.Count);
+            Assert.Equal(2, writes.Count);
         }
 
         [Fact]
         public void AddFilterWithProviderNameCategoryNameAndFilterFuncFiltersCorrectly()
         {
-            var factory = new LoggerFactory();
             var provider = new TestLoggerProvider(new TestSink(), isEnabled: true);
-            factory.AddProvider("Name", provider);
-            factory.AddFilter("Name", "Sample", l => l >= LogLevel.Warning);
+            var factory = TestLoggerBuilder.Create(builder => builder
+                .AddProvider(provider)
+                .AddFilter<TestLoggerProvider>((name, cat, level) => level >= LogLevel.Warning));
 
             var logger = factory.CreateLogger("Sample.Test");
 
@@ -489,10 +361,10 @@ namespace Microsoft.Extensions.Logging.Test
         [Fact]
         public void AddFilterWithProviderNameCategoryNameAndMinLevelFiltersCorrectly()
         {
-            var factory = new LoggerFactory();
             var provider = new TestLoggerProvider(new TestSink(), isEnabled: true);
-            factory.AddProvider("Name", provider);
-            factory.AddFilter("Name", "Sample", LogLevel.Warning);
+            var factory = TestLoggerBuilder.Create(builder => builder
+                .AddProvider(provider)
+                .AddFilter<TestLoggerProvider>("Sample", LogLevel.Warning));
 
             var logger = factory.CreateLogger("Sample.Test");
 
@@ -509,10 +381,10 @@ namespace Microsoft.Extensions.Logging.Test
         [Fact]
         public void AddFilterWithProviderNameAndCategoryFilterFuncFiltersCorrectly()
         {
-            var factory = new LoggerFactory();
             var provider = new TestLoggerProvider(new TestSink(), isEnabled: true);
-            factory.AddProvider("Name", provider);
-            factory.AddFilter("Name", (c, l) => l >= LogLevel.Warning);
+            var factory = TestLoggerBuilder.Create(builder => builder
+                .AddProvider(provider)
+                .AddFilter<TestLoggerProvider>((c, l) => l >= LogLevel.Warning));
 
             var logger = factory.CreateLogger("Sample.Test");
 
@@ -526,48 +398,148 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(1, writes.Count);
         }
 
-        [Fact]
-        public void AddFilterWithProviderNameAndFilterFuncFiltersCorrectly()
+        [Theory]
+        [MemberData(nameof(FilterTestData))]
+        public void FilterTest(LoggerFilterOptions options, (string category, LogLevel level, bool expectInProvider1, bool expectInProvider2) message)
         {
-            var factory = new LoggerFactory();
-            var provider = new TestLoggerProvider(new TestSink(), isEnabled: true);
-            factory.AddProvider("Name", provider);
-            factory.AddFilter("Name", l => l >= LogLevel.Warning);
+            var testSink1 = new TestSink();
+            var testSink2 = new TestSink();
 
-            var logger = factory.CreateLogger("Sample.Test");
-
-            logger.LogInformation("Message");
-
-            var writes = provider.Sink.Writes;
-            Assert.Equal(0, writes.Count);
-
-            logger.LogWarning("Message");
-
-            Assert.Equal(1, writes.Count);
-        }
-
-        [Fact]
-        public void AddFilterWithDictionaryFiltersCorrectly()
-        {
-            var factory = new LoggerFactory();
-            var provider = new TestLoggerProvider(new TestSink(), isEnabled: true);
-            factory.AddProvider("Name", provider);
-            factory.AddFilter(new Dictionary<string, LogLevel>
+            var loggerFactory = new LoggerFactory(new[]
             {
-                { "Sample", LogLevel.Critical }
-            });
+                new TestLoggerProvider(testSink1, true),
+                new TestLoggerProvider2(testSink2)
+            }, options);
 
-            var logger = factory.CreateLogger("Sample.Test");
+            var logger = loggerFactory.CreateLogger(message.category);
+            Assert.Equal(message.expectInProvider1 || message.expectInProvider2, logger.IsEnabled(message.Item2));
+            logger.Log(message.level, 0, "hello", null, (s, exception) => s);
 
-            logger.LogInformation("Message");
-
-            var writes = provider.Sink.Writes;
-            Assert.Equal(0, writes.Count);
-
-            logger.LogCritical("Message");
-
-            Assert.Equal(1, writes.Count);
+            Assert.Equal(message.expectInProvider1 ? 1 : 0, testSink1.Writes.Count);
+            Assert.Equal(message.expectInProvider2 ? 1 : 0, testSink2.Writes.Count);
         }
+
+
+        public static TheoryData<LoggerFilterOptions, (string, LogLevel, bool, bool)> FilterTestData =
+            new TheoryData<LoggerFilterOptions, (string, LogLevel, bool, bool)>()
+            {
+                { // Provider specific rule if preferred
+                    new LoggerFilterOptions()
+                    {
+                        Rules =
+                        {
+                            new LoggerFilterRule(typeof(TestLoggerProvider).FullName, null, LogLevel.Information, null),
+                            new LoggerFilterRule(null, null, LogLevel.Critical, null)
+                        }
+                    },
+                    ("Category", LogLevel.Information, true, false)
+                },
+                { // Category specific rule if preferred
+                    new LoggerFilterOptions()
+                    {
+                        Rules =
+                        {
+                            new LoggerFilterRule(null, "Category", LogLevel.Information, null),
+                            new LoggerFilterRule(null, null, LogLevel.Critical, null)
+                        }
+                    },
+                    ("Category", LogLevel.Information, true, true)
+                },
+                { // Longest category specific rule if preferred
+                    new LoggerFilterOptions()
+                    {
+                        Rules =
+                        {
+                            new LoggerFilterRule(null, "Category.Sub", LogLevel.Trace, null),
+                            new LoggerFilterRule(null, "Category", LogLevel.Information, null),
+                            new LoggerFilterRule(null, null, LogLevel.Critical, null)
+                        }
+                    },
+                    ("Category.Sub", LogLevel.Trace, true, true)
+                },
+                { // Provider is selected first, then category
+                    new LoggerFilterOptions()
+                    {
+                        Rules =
+                        {
+                            new LoggerFilterRule(null, "Category.Sub", LogLevel.Trace, null),
+                            new LoggerFilterRule(typeof(TestLoggerProvider).FullName, "Category", LogLevel.Information, null),
+                            new LoggerFilterRule(null, null, LogLevel.Critical, null)
+                        }
+                    },
+                    ("Category.Sub", LogLevel.Trace, false, true)
+                },
+                { // Last most specific is selected
+                    new LoggerFilterOptions()
+                    {
+                        Rules =
+                        {
+                            new LoggerFilterRule(null, "Category.Sub", LogLevel.Trace, null),
+                            new LoggerFilterRule(typeof(TestLoggerProvider).FullName, "Category", LogLevel.Information, null),
+                            new LoggerFilterRule(typeof(TestLoggerProvider).FullName, "Category", LogLevel.Trace, null),
+                            new LoggerFilterRule(null, null, LogLevel.Critical, null)
+                        }
+                    },
+                    ("Category.Sub", LogLevel.Trace, true, true)
+                },
+                { // Filter is used if matches level
+                    new LoggerFilterOptions()
+                    {
+                        Rules =
+                        {
+                            new LoggerFilterRule(null, null, LogLevel.Critical, (logger, category, level) => true)
+                        }
+                    },
+                    ("Category.Sub", LogLevel.Error, false, false)
+                },
+                { // Last filter is used is used
+                    new LoggerFilterOptions()
+                    {
+                        Rules =
+                        {
+                            new LoggerFilterRule(null, null, LogLevel.Critical, (logger, category, level) => false),
+                            new LoggerFilterRule(null, null, LogLevel.Critical, (logger, category, level) => true)
+                        }
+                    },
+                    ("Category.Sub", LogLevel.Critical, true, true)
+                },
+                { // MinLevel is used when no match
+                    new LoggerFilterOptions()
+                    {
+                        Rules =
+                        {
+                            new LoggerFilterRule(typeof(TestLoggerProvider).FullName, null, LogLevel.Trace, null),
+                        },
+                        MinLevel = LogLevel.Debug
+                    },
+                    ("Category.Sub", LogLevel.Trace, true, false)
+                },
+                { // Provider aliases work
+                    new LoggerFilterOptions()
+                    {
+                        Rules =
+                        {
+                            new LoggerFilterRule(typeof(TestLoggerProvider).FullName, "Category", LogLevel.Information, null),
+                            new LoggerFilterRule("TestLogger", "Category", LogLevel.Trace, null),
+                            new LoggerFilterRule(null, null, LogLevel.Critical, null)
+                        }
+                    },
+                    ("Category.Sub", LogLevel.Trace, true, false)
+                },
+                { // Aliases equivalent to full names
+                    new LoggerFilterOptions()
+                    {
+                        Rules =
+                        {
+                            new LoggerFilterRule("TestLogger", "Category", LogLevel.Information, null),
+                            new LoggerFilterRule(typeof(TestLoggerProvider).FullName, "Category", LogLevel.Trace, null),
+                            new LoggerFilterRule(null, null, LogLevel.Critical, null)
+                        }
+                    },
+                    ("Category.Sub", LogLevel.Trace, true, false)
+                },
+            };
+
 
         internal ConfigurationRoot CreateConfiguration(Func<string> getJson)
         {

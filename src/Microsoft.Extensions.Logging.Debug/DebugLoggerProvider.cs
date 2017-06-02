@@ -8,6 +8,7 @@ namespace Microsoft.Extensions.Logging.Debug
     /// <summary>
     /// The provider for the <see cref="DebugLogger"/>.
     /// </summary>
+    [ProviderAlias("Debug")]
     public class DebugLoggerProvider : ILoggerProvider
     {
         private readonly Func<string, LogLevel, bool> _filter;
@@ -18,13 +19,9 @@ namespace Microsoft.Extensions.Logging.Debug
         }
 
         /// <summary>
-        /// <para>
-        /// This method is obsolete and will be removed in a future version. The recommended alternative is Microsoft.Extensions.Logging.Debug.DebugLoggerProvider().
-        /// </para>
         /// Initializes a new instance of the <see cref="DebugLoggerProvider"/> class.
         /// </summary>
         /// <param name="filter">The function used to filter events based on the log level.</param>
-        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is Microsoft.Extensions.Logging.Debug.DebugLoggerProvider().")]
         public DebugLoggerProvider(Func<string, LogLevel, bool> filter)
         {
             _filter = filter;
@@ -33,9 +30,7 @@ namespace Microsoft.Extensions.Logging.Debug
         /// <inheritdoc />
         public ILogger CreateLogger(string name)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
             return new DebugLogger(name, _filter);
-#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public void Dispose()

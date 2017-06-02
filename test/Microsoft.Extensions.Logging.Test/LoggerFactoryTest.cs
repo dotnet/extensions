@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
@@ -16,7 +14,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             var factory = new LoggerFactory();
             factory.Dispose();
-            Assert.Throws<ObjectDisposedException>(() => factory.AddProvider(CreateProvider()));
+
+            Assert.Throws<ObjectDisposedException>(() => ((ILoggerFactory) factory).AddProvider(CreateProvider()));
         }
 
         [Fact]
@@ -48,6 +47,7 @@ namespace Microsoft.Extensions.Logging.Test
             var factory = new LoggerFactory();
             var disposableProvider1 = CreateProvider();
             var disposableProvider2 = CreateProvider();
+
             factory.AddProvider(disposableProvider1);
             factory.AddProvider(disposableProvider2);
 
@@ -78,6 +78,7 @@ namespace Microsoft.Extensions.Logging.Test
             throwingProvider.As<IDisposable>()
                 .Setup(p => p.Dispose())
                 .Throws<Exception>();
+
             factory.AddProvider(throwingProvider.Object);
 
             // Act
@@ -86,22 +87,6 @@ namespace Microsoft.Extensions.Logging.Test
             // Assert
             throwingProvider.As<IDisposable>()
                 .Verify(p => p.Dispose(), Times.Once());
-        }
-
-        [Fact]
-        public void UseConfiguration_RegistersChangeCallback()
-        {
-            // Arrange
-            var factory = new LoggerFactory();
-            var changeToken = new Mock<IChangeToken>();
-            var configuration = new Mock<IConfiguration>();
-            configuration.Setup(c => c.GetReloadToken()).Returns(changeToken.Object);
-
-            // Act
-            factory.UseConfiguration(configuration.Object);
-
-            // Assert
-            changeToken.Verify(c => c.RegisterChangeCallback(It.IsAny<Action<object>>(), It.IsAny<Object>()), Times.Once);
         }
     }
 }

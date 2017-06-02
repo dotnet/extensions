@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.EventLog;
 
 namespace Microsoft.Extensions.Logging
@@ -14,31 +15,29 @@ namespace Microsoft.Extensions.Logging
         /// <summary>
         /// Adds an event logger named 'EventLog' to the factory.
         /// </summary>
-        /// <param name="factory">The extension method argument.</param>
-        public static LoggerFactory AddEventLog(this LoggerFactory factory)
+        /// <param name="builder">The extension method argument.</param>
+        public static ILoggingBuilder AddEventLog(this ILoggingBuilder builder)
         {
-            if (factory == null)
+            if (builder == null)
             {
-                throw new ArgumentNullException(nameof(factory));
+                throw new ArgumentNullException(nameof(builder));
             }
 
-            factory.AddProvider("EventLog", new EventLogLoggerProvider());
+            builder.Services.AddSingleton<ILoggerProvider, EventLogLoggerProvider>();
 
-            return factory;
+            return builder;
         }
 
         /// <summary>
         /// Adds an event logger. Use <paramref name="settings"/> to enable logging for specific <see cref="LogLevel"/>s.
         /// </summary>
-        /// <param name="factory">The extension method argument.</param>
+        /// <param name="builder">The extension method argument.</param>
         /// <param name="settings">The <see cref="EventLogSettings"/>.</param>
-        public static LoggerFactory AddEventLog(
-            this LoggerFactory factory,
-            EventLogSettings settings)
+        public static ILoggingBuilder AddEventLog(this ILoggingBuilder builder, EventLogSettings settings)
         {
-            if (factory == null)
+            if (builder == null)
             {
-                throw new ArgumentNullException(nameof(factory));
+                throw new ArgumentNullException(nameof(builder));
             }
 
             if (settings == null)
@@ -46,18 +45,15 @@ namespace Microsoft.Extensions.Logging
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            factory.AddProvider(new EventLogLoggerProvider(settings));
-            return factory;
+            builder.Services.AddSingleton<ILoggerProvider>(new EventLogLoggerProvider(settings));
+
+            return builder;
         }
 
         /// <summary>
-        /// <para>
-        /// This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddEventLog() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.
-        /// </para>
         /// Adds an event logger that is enabled for <see cref="LogLevel"/>.Information or higher.
         /// </summary>
         /// <param name="factory">The extension method argument.</param>
-        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddEventLog() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.")]
         public static ILoggerFactory AddEventLog(this ILoggerFactory factory)
         {
             if (factory == null)
@@ -69,14 +65,10 @@ namespace Microsoft.Extensions.Logging
         }
 
         /// <summary>
-        /// <para>
-        /// This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddEventLog() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.
-        /// </para>
         /// Adds an event logger that is enabled for <see cref="LogLevel"/>s of minLevel or higher.
         /// </summary>
         /// <param name="factory">The extension method argument.</param>
         /// <param name="minLevel">The minimum <see cref="LogLevel"/> to be logged</param>
-        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddEventLog() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.")]
         public static ILoggerFactory AddEventLog(this ILoggerFactory factory, LogLevel minLevel)
         {
             if (factory == null)
@@ -91,14 +83,10 @@ namespace Microsoft.Extensions.Logging
         }
 
         /// <summary>
-        /// <para>
-        /// This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddEventLog() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.
-        /// </para>
         /// Adds an event logger. Use <paramref name="settings"/> to enable logging for specific <see cref="LogLevel"/>s.
         /// </summary>
         /// <param name="factory">The extension method argument.</param>
         /// <param name="settings">The <see cref="EventLogSettings"/>.</param>
-        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is to call the Microsoft.Extensions.Logging.AddEventLog() extension method on the Microsoft.Extensions.Logging.LoggerFactory instance.")]
         public static ILoggerFactory AddEventLog(
             this ILoggerFactory factory,
             EventLogSettings settings)
