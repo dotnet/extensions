@@ -8,6 +8,7 @@ namespace Microsoft.Extensions.Logging.EventLog
     /// <summary>
     /// The provider for the <see cref="EventLogLogger"/>.
     /// </summary>
+    [ProviderAlias("EventLog")]
     public class EventLogLoggerProvider : ILoggerProvider
     {
         private readonly EventLogSettings _settings;

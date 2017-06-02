@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -23,27 +23,29 @@ namespace SampleApp
 
             // A Web App based program would configure logging via the WebHostBuilder.
             // Create a logger factory with filters that can be applied across all logger providers.
-            var factory = new LoggerFactory()
-                .UseConfiguration(loggingConfiguration.GetSection("Logging"))
-                .AddFilter(new Dictionary<string, LogLevel>
+            var serviceCollection = new ServiceCollection()
+                .AddLogging(builder =>
                 {
-                    { "Microsoft", LogLevel.Warning },
-                    { "System", LogLevel.Warning },
-                    { "SampleApp.Program", LogLevel.Debug }
-                });
-
-            // providers may be added to a LoggerFactory before any loggers are created
+                    builder
+                        .AddConfiguration(loggingConfiguration.GetSection("Logging"))
+                        .AddFilter("Microsoft", LogLevel.Warning)
+                        .AddFilter("System", LogLevel.Warning)
+                        .AddFilter("SampleApp.Program", LogLevel.Debug)
+                        .AddConsole();
 #if NET46
-            factory.AddEventLog();
+                    builder.AddEventLog();
 #elif NETCOREAPP2_0
 #else
 #error Target framework needs to be updated
 #endif
+                });
 
-            factory.AddConsole();
+            // providers may be added to a LoggerFactory before any loggers are created
 
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
             // getting the logger using the class's name is conventional
-            _logger = factory.CreateLogger<Program>();
+            _logger = serviceProvider.GetRequiredService<ILogger<Program>>();
         }
 
         public static void Main(string[] args)

@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Test;
 using Xunit;
 
 namespace Microsoft.Extensions.Logging.Testing.Tests
@@ -12,8 +14,10 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         public void LoggerProviderWritesToTestOutputHelper()
         {
             var testTestOutputHelper = new TestTestOutputHelper();
-            var loggerFactory = new LoggerFactory();
-            loggerFactory.AddXunit(testTestOutputHelper);
+
+            var loggerFactory = TestLoggerBuilder.Create(builder => builder
+                .SetMinimumLevel(LogLevel.Trace)
+                .AddXunit(testTestOutputHelper));
 
             var logger = loggerFactory.CreateLogger("TestCategory");
             logger.LogInformation("This is some great information");
@@ -30,8 +34,8 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         public void LoggerProviderDoesNotWriteLogMessagesBelowMinimumLevel()
         {
             var testTestOutputHelper = new TestTestOutputHelper();
-            var loggerFactory = new LoggerFactory();
-            loggerFactory.AddXunit(testTestOutputHelper, LogLevel.Error);
+            var loggerFactory = TestLoggerBuilder.Create(builder => builder
+                .AddXunit(testTestOutputHelper, LogLevel.Warning));
 
             var logger = loggerFactory.CreateLogger("TestCategory");
             logger.LogInformation("This is some great information");
@@ -44,8 +48,8 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         public void LoggerProviderPrependsPrefixToEachLine()
         {
             var testTestOutputHelper = new TestTestOutputHelper();
-            var loggerFactory = new LoggerFactory();
-            loggerFactory.AddXunit(testTestOutputHelper);
+            var loggerFactory = TestLoggerBuilder.Create(builder => builder
+                .AddXunit(testTestOutputHelper));
 
             var logger = loggerFactory.CreateLogger("TestCategory");
             logger.LogInformation("This is a" + Environment.NewLine + "multi-line" + Environment.NewLine + "message");
@@ -62,8 +66,9 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         public void LoggerProviderDoesNotThrowIfOutputHelperThrows()
         {
             var testTestOutputHelper = new TestTestOutputHelper();
-            var loggerFactory = new LoggerFactory();
-            loggerFactory.AddXunit(testTestOutputHelper);
+            var loggerFactory = TestLoggerBuilder.Create(builder => builder
+                .AddXunit(testTestOutputHelper));
+
             testTestOutputHelper.Throw = true;
 
             var logger = loggerFactory.CreateLogger("TestCategory");

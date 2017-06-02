@@ -10,6 +10,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
     /// <summary>
     /// Logger provider for Azure WebApp.
     /// </summary>
+    [ProviderAlias("AzureAppServices")]
     public class AzureAppServicesDiagnosticsLoggerProvider : ILoggerProvider
     {
         private readonly IWebAppLogConfigurationReader _configurationReader;
