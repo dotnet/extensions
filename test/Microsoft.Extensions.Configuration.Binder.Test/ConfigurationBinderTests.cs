@@ -112,6 +112,29 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
         }
 
         [Fact]
+        public void CanBindWithKeyOverload()
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {"Section:Integer", "-2"},
+                {"Section:Boolean", "TRUe"},
+                {"Section:Nested:Integer", "11"},
+                {"Section:Virtual", "Sup"}
+            };
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
+            var config = configurationBuilder.Build();
+
+            var options = new DerivedOptions();
+            config.Bind("Section", options);
+
+            Assert.True(options.Boolean);
+            Assert.Equal(-2, options.Integer);
+            Assert.Equal(11, options.Nested.Integer);
+            Assert.Equal("Derived:Sup", options.Virtual);
+        }
+
+        [Fact]
         public void CanBindIConfigurationSectionWithDerivedOptionsSection()
         {
             var dic = new Dictionary<string, string>
