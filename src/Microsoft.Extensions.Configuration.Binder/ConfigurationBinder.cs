@@ -57,6 +57,15 @@ namespace Microsoft.Extensions.Configuration
         }
 
         /// <summary>
+        /// Attempts to bind the given object instance to the configuration section specified by the key by matching property names against configuration keys recursively.
+        /// </summary>
+        /// <param name="configuration">The configuration instance to bind.</param>
+        /// <param name="sectionKey">The key of the configuration section to bind.</param>
+        /// <param name="instance">The object to bind.</param>
+        public static void Bind(this IConfiguration configuration, string sectionKey, object instance)
+            => configuration.GetSection(sectionKey).Bind(instance);
+
+        /// <summary>
         /// Attempts to bind the given object instance to configuration values by matching property names against configuration keys recursively.
         /// </summary>
         /// <param name="configuration">The configuration instance to bind.</param>
@@ -79,11 +88,11 @@ namespace Microsoft.Extensions.Configuration
         /// </summary>
         /// <typeparam name="T">The type to convert the value to.</typeparam>
         /// <param name="configuration">The configuration.</param>
-        /// <param name="key">The configuration key for the value to convert.</param>
+        /// <param name="sectionKey">The key of the configuration section's value to convert.</param>
         /// <returns>The converted value.</returns>
-        public static T GetValue<T>(this IConfiguration configuration, string key)
+        public static T GetValue<T>(this IConfiguration configuration, string sectionKey)
         {
-            return GetValue(configuration, key, default(T));
+            return GetValue(configuration, sectionKey, default(T));
         }
 
         /// <summary>
@@ -91,12 +100,12 @@ namespace Microsoft.Extensions.Configuration
         /// </summary>
         /// <typeparam name="T">The type to convert the value to.</typeparam>
         /// <param name="configuration">The configuration.</param>
-        /// <param name="key">The configuration key for the value to convert.</param>
+        /// <param name="sectionKey">The key of the configuration section's value to convert.</param>
         /// <param name="defaultValue">The default value to use if no value is found.</param>
         /// <returns>The converted value.</returns>
-        public static T GetValue<T>(this IConfiguration configuration, string key, T defaultValue)
+        public static T GetValue<T>(this IConfiguration configuration, string sectionKey, T defaultValue)
         {
-            return (T)GetValue(configuration, typeof(T), key, defaultValue);
+            return (T)GetValue(configuration, typeof(T), sectionKey, defaultValue);
         }
 
         /// <summary>
@@ -104,11 +113,11 @@ namespace Microsoft.Extensions.Configuration
         /// </summary>
         /// <param name="configuration">The configuration.</param>
         /// <param name="type">The type to convert the value to.</param>
-        /// <param name="key">The configuration key for the value to convert.</param>
+        /// <param name="sectionKey">The key of the configuration section's value to convert.</param>
         /// <returns>The converted value.</returns>
-        public static object GetValue(this IConfiguration configuration, Type type, string key)
+        public static object GetValue(this IConfiguration configuration, Type type, string sectionKey)
         {
-            return GetValue(configuration, type, key, defaultValue: null);
+            return GetValue(configuration, type, sectionKey, defaultValue: null);
         }
 
         /// <summary>
@@ -116,12 +125,12 @@ namespace Microsoft.Extensions.Configuration
         /// </summary>
         /// <param name="configuration">The configuration.</param>
         /// <param name="type">The type to convert the value to.</param>
-        /// <param name="key">The configuration key for the value to convert.</param>
+        /// <param name="sectionKey">The key of the configuration section's value to convert.</param>
         /// <param name="defaultValue">The default value to use if no value is found.</param>
         /// <returns>The converted value.</returns>
-        public static object GetValue(this IConfiguration configuration, Type type, string key, object defaultValue)
+        public static object GetValue(this IConfiguration configuration, Type type, string sectionKey, object defaultValue)
         {
-            var value = configuration.GetSection(key).Value;
+            var value = configuration.GetSection(sectionKey).Value;
             if (value != null)
             {
                 return ConvertValue(type, value);
