@@ -8,11 +8,14 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class CreateInstanceCallSite : IServiceCallSite
     {
-        internal ServiceDescriptor Descriptor { get; }
+        public Type ServiceType { get; }
 
-        public CreateInstanceCallSite(ServiceDescriptor descriptor)
+        public Type ImplementationType { get; }
+
+        public CreateInstanceCallSite(Type serviceType, Type implementationType)
         {
-            Descriptor = descriptor;
+            ServiceType = serviceType;
+            ImplementationType = implementationType;
         }
     }
 }
