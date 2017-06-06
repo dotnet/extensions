@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             // Act and Assert
             ExceptionAssert.ThrowsArgument(
-                () => new CallSiteFactory(serviceDescriptors),
+                () => new ServiceTable(serviceDescriptors),
                 "descriptors",
                 $"Open generic service type '{typeof(IList<>)}' requires registering an open generic implementation type.");
         }
@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             // Act and Assert
             var ex = ExceptionAssert.ThrowsArgument(
-                () => new CallSiteFactory(serviceDescriptors),
+                () => new ServiceTable(serviceDescriptors),
                 "descriptors",
                 $"Open generic service type '{typeof(IEnumerable<>)}' requires registering an open generic implementation type.");
         }
@@ -65,7 +65,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             // Act and Assert
             var ex = ExceptionAssert.ThrowsArgument(
-                () => new CallSiteFactory(serviceDescriptors),
+                () => new ServiceTable(serviceDescriptors),
                 "descriptors",
                 $"Open generic service type '{typeof(Tuple<>)}' requires registering an open generic implementation type.");
         }

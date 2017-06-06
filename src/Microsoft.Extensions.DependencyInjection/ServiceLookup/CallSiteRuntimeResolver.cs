@@ -43,16 +43,17 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override object VisitScoped(ScopedCallSite scopedCallSite, ServiceProvider provider)
         {
+            object resolved;
             lock (provider.ResolvedServices)
             {
-                if (!provider.ResolvedServices.TryGetValue(scopedCallSite, out var resolved))
+                if (!provider.ResolvedServices.TryGetValue(scopedCallSite.Key, out resolved))
                 {
                     resolved = VisitCallSite(scopedCallSite.ServiceCallSite, provider);
                     provider.CaptureDisposable(resolved);
-                    provider.ResolvedServices.Add(scopedCallSite, resolved);
+                    provider.ResolvedServices.Add(scopedCallSite.Key, resolved);
                 }
-                return resolved;
             }
+            return resolved;
         }
 
         protected override object VisitConstant(ConstantCallSite constantCallSite, ServiceProvider provider)
@@ -64,7 +65,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             try
             {
-                return Activator.CreateInstance(createInstanceCallSite.ImplementationType);
+                return Activator.CreateInstance(createInstanceCallSite.Descriptor.ImplementationType);
             }
             catch (Exception ex) when (ex.InnerException != null)
             {
@@ -74,33 +75,43 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        protected override object VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, ServiceProvider provider)
+        protected override object VisitInstanceService(InstanceService instanceCallSite, ServiceProvider provider)
+        {
+            return instanceCallSite.Descriptor.ImplementationInstance;
+        }
+
+        protected override object VisitServiceProviderService(ServiceProviderService serviceProviderService, ServiceProvider provider)
         {
             return provider;
         }
 
-        protected override object VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, ServiceProvider provider)
+        protected override object VisitEmptyIEnumerable(EmptyIEnumerableCallSite emptyIEnumerableCallSite, ServiceProvider provider)
+        {
+            return emptyIEnumerableCallSite.ServiceInstance;
+        }
+
+        protected override object VisitServiceScopeService(ServiceScopeService serviceScopeService, ServiceProvider provider)
         {
             return new ServiceScopeFactory(provider);
         }
 
-        protected override object VisitIEnumerable(IEnumerableCallSite enumerableCallSite, ServiceProvider provider)
+        protected override object VisitClosedIEnumerable(ClosedIEnumerableCallSite closedIEnumerableCallSite, ServiceProvider provider)
         {
             var array = Array.CreateInstance(
-                enumerableCallSite.ItemType,
-                enumerableCallSite.ServiceCallSites.Length);
+                closedIEnumerableCallSite.ItemType,
+                closedIEnumerableCallSite.ServiceCallSites.Length);
 
-            for (var index = 0; index < enumerableCallSite.ServiceCallSites.Length; index++)
+            for (var index = 0; index < closedIEnumerableCallSite.ServiceCallSites.Length; index++)
             {
-                var value = VisitCallSite(enumerableCallSite.ServiceCallSites[index], provider);
+                var value = VisitCallSite(closedIEnumerableCallSite.ServiceCallSites[index], provider);
                 array.SetValue(value, index);
             }
             return array;
         }
 
-        protected override object VisitFactory(FactoryCallSite factoryCallSite, ServiceProvider provider)
+        protected override object VisitFactoryService(FactoryService factoryService, ServiceProvider provider)
         {
-            return factoryCallSite.Factory(provider);
+            return factoryService.Descriptor.ImplementationFactory(provider);
         }
     }
 }

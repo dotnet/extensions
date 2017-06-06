@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    public class CallSiteFactoryTest
+    public class ServiceTest
     {
         [Fact]
         public void CreateCallSite_Throws_IfTypeHasNoPublicConstructors()
@@ -21,10 +21,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var expectedMessage = $"A suitable constructor for type '{type}' could not be located. " +
                 "Ensure the type is concrete and services are registered for all parameters of a public constructor.";
             var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
-            var callSiteFactory = GetCallSiteFactory(descriptor);
+            var service = new Service(descriptor);
+            var serviceProvider = new ServiceProvider(new[] { descriptor }, new ServiceProviderOptions { ValidateScopes = true });
 
             // Act and Assert
-            var ex = Assert.Throws<InvalidOperationException>(() => callSiteFactory(type));
+            var ex = Assert.Throws<InvalidOperationException>(() => service.CreateCallSite(serviceProvider, new HashSet<Type>()));
             Assert.Equal(expectedMessage, ex.Message);
         }
 
@@ -36,14 +37,14 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
-            var callSiteFactory = GetCallSiteFactory(descriptor);
+            var service = new Service(descriptor);
+            var serviceProvider = new ServiceProvider(new[] { descriptor }, new ServiceProviderOptions { ValidateScopes = true });
 
             // Act
-            var callSite = callSiteFactory(type);
+            var callSite = service.CreateCallSite(serviceProvider, new HashSet<Type>());
 
             // Assert
-            var transientCall = Assert.IsType<TransientCallSite>(callSite);
-            Assert.IsType<CreateInstanceCallSite>(transientCall.ServiceCallSite);
+            Assert.IsType<CreateInstanceCallSite>(callSite);
         }
 
         [Theory]
@@ -55,18 +56,17 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
-
-            var callSiteFactory = GetCallSiteFactory(
+            var service = new Service(descriptor);
+            var serviceProvider = GetServiceProvider(
                 descriptor,
                 new ServiceDescriptor(typeof(IFakeService), new FakeService())
             );
 
             // Act
-            var callSite = callSiteFactory(type);
+            var callSite = service.CreateCallSite(serviceProvider, new HashSet<Type>());
 
             // Assert
-            var transientCall = Assert.IsType<TransientCallSite>(callSite);
-            var constructorCallSite = Assert.IsType<ConstructorCallSite>(transientCall.ServiceCallSite);
+            var constructorCallSite = Assert.IsType<ConstructorCallSite>(callSite);
             Assert.Equal(new[] { typeof(IFakeService) }, GetParameters(constructorCallSite));
         }
 
@@ -76,18 +76,17 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Arrange
             var type = typeof(TypeWithEnumerableConstructors);
             var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
-
-            var callSiteFactory = GetCallSiteFactory(
+            var service = new Service(descriptor);
+            var serviceProvider = GetServiceProvider(
                 descriptor,
                 new ServiceDescriptor(typeof(IFakeService), new FakeService())
             );
 
             // Act
-            var callSite = callSiteFactory(type);
+            var callSite = service.CreateCallSite(serviceProvider, new HashSet<Type>());
 
             // Assert
-            var transientCall = Assert.IsType<TransientCallSite>(callSite);
-            var constructorCallSite = Assert.IsType<ConstructorCallSite>(transientCall.ServiceCallSite);
+            var constructorCallSite = Assert.IsType<ConstructorCallSite>(callSite);
             Assert.Equal(
                 new[] { typeof(IEnumerable<IFakeService>), typeof(IEnumerable<IFactoryService>) },
                 GetParameters(constructorCallSite));
@@ -99,80 +98,73 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Arrange
             var type = typeof(TypeWithParameterizedAndNullaryConstructor);
             var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
-            var callSiteFactory = GetCallSiteFactory(descriptor);
+            var service = new Service(descriptor);
+            var serviceProvider = new ServiceProvider(new[] { descriptor }, new ServiceProviderOptions { ValidateScopes = true });
 
             // Act
-            var callSite = callSiteFactory(type);
+            var callSite = service.CreateCallSite(serviceProvider, new HashSet<Type>());
 
             // Assert
-            var transientCall = Assert.IsType<TransientCallSite>(callSite);
-            Assert.IsType<CreateInstanceCallSite>(transientCall.ServiceCallSite);
+            Assert.IsType<CreateInstanceCallSite>(callSite);
         }
 
         public static TheoryData CreateCallSite_PicksConstructorWithTheMostNumberOfResolvedParametersData =>
-            new TheoryData<Type, Func<Type, object>, Type[]>
+            new TheoryData<Type, ServiceProvider, Type[]>
             {
                 {
                     typeof(TypeWithSupersetConstructors),
-                    GetCallSiteFactory(
-                        new ServiceDescriptor(typeof(TypeWithSupersetConstructors), typeof(TypeWithSupersetConstructors), ServiceLifetime.Transient),
+                    GetServiceProvider(
                         new ServiceDescriptor(typeof(IFakeService), typeof(FakeService))
                     ),
                     new[] { typeof(IFakeService) }
                 },
                 {
                     typeof(TypeWithSupersetConstructors),
-                    GetCallSiteFactory(
-                        new ServiceDescriptor(typeof(TypeWithSupersetConstructors), typeof(TypeWithSupersetConstructors), ServiceLifetime.Transient),
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(TransientFactoryService))
+                    GetServiceProvider(
+                        new ServiceDescriptor(typeof(IFactoryService), typeof(FactoryService))
                     ),
                     new[] { typeof(IFactoryService) }
                 },
                 {
                     typeof(TypeWithSupersetConstructors),
-                    GetCallSiteFactory(
-                        new ServiceDescriptor(typeof(TypeWithSupersetConstructors), typeof(TypeWithSupersetConstructors), ServiceLifetime.Transient),
+                    GetServiceProvider(
                         new ServiceDescriptor(typeof(IFakeService), typeof(FakeService)),
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(TransientFactoryService))
+                        new ServiceDescriptor(typeof(IFactoryService), typeof(FactoryService))
                     ),
                     new[] { typeof(IFakeService), typeof(IFactoryService) }
                 },
                 {
                     typeof(TypeWithSupersetConstructors),
-                    GetCallSiteFactory(
-                        new ServiceDescriptor(typeof(TypeWithSupersetConstructors), typeof(TypeWithSupersetConstructors), ServiceLifetime.Transient),
+                    GetServiceProvider(
                         new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService)),
                         new ServiceDescriptor(typeof(IFakeService), typeof(FakeService)),
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(TransientFactoryService))
+                        new ServiceDescriptor(typeof(IFactoryService), typeof(FactoryService))
                     ),
                     new[] { typeof(IFakeService), typeof(IFakeMultipleService), typeof(IFactoryService) }
                 },
                 {
                     typeof(TypeWithSupersetConstructors),
-                    GetCallSiteFactory(
-                        new ServiceDescriptor(typeof(TypeWithSupersetConstructors), typeof(TypeWithSupersetConstructors), ServiceLifetime.Transient),
+                    GetServiceProvider(
                         new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService)),
                         new ServiceDescriptor(typeof(IFakeService), typeof(FakeService)),
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(TransientFactoryService)),
+                        new ServiceDescriptor(typeof(IFactoryService), typeof(FactoryService)),
                         new ServiceDescriptor(typeof(IFakeScopedService), typeof(FakeService))
                     ),
                     new[] { typeof(IFakeMultipleService), typeof(IFactoryService), typeof(IFakeService), typeof(IFakeScopedService) }
                 },
                 {
                     typeof(TypeWithSupersetConstructors),
-                    GetCallSiteFactory(
-                        new ServiceDescriptor(typeof(TypeWithSupersetConstructors), typeof(TypeWithSupersetConstructors), ServiceLifetime.Transient),
+                    GetServiceProvider(
                         new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService)),
                         new ServiceDescriptor(typeof(IFakeService), typeof(FakeService)),
-                        new ServiceDescriptor(typeof(IFactoryService), typeof(TransientFactoryService)),
+                        new ServiceDescriptor(typeof(IFactoryService), typeof(FactoryService)),
                         new ServiceDescriptor(typeof(IFakeScopedService), typeof(FakeService))
                     ),
                     new[] { typeof(IFakeMultipleService), typeof(IFactoryService), typeof(IFakeService), typeof(IFakeScopedService) }
                 },
                 {
                     typeof(TypeWithGenericServices),
-                    GetCallSiteFactory(
-                        new ServiceDescriptor(typeof(TypeWithGenericServices), typeof(TypeWithGenericServices), ServiceLifetime.Transient),
+                    GetServiceProvider(
                         new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
                         new ServiceDescriptor(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>), ServiceLifetime.Transient)
                     ),
@@ -180,8 +172,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 },
                 {
                     typeof(TypeWithGenericServices),
-                    GetCallSiteFactory(
-                        new ServiceDescriptor(typeof(TypeWithGenericServices), typeof(TypeWithGenericServices), ServiceLifetime.Transient),
+                    GetServiceProvider(
                         new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
                         new ServiceDescriptor(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>), ServiceLifetime.Transient),
                         new ServiceDescriptor(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient)
@@ -194,38 +185,39 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         [MemberData(nameof(CreateCallSite_PicksConstructorWithTheMostNumberOfResolvedParametersData))]
         public void CreateCallSite_PicksConstructorWithTheMostNumberOfResolvedParameters(
             Type type,
-            Func<Type, object> callSiteFactory,
+            IServiceProvider serviceProvider,
             Type[] expectedConstructorParameters)
         {
+            // Arrange
+            var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
+            var service = new Service(descriptor);
+
+
             // Act
-            var callSite = callSiteFactory(type);
+            var callSite = service.CreateCallSite((ServiceProvider)serviceProvider, new HashSet<Type>());
 
             // Assert
-            var transientCall = Assert.IsType<TransientCallSite>(callSite);
-            var constructorCallSite = Assert.IsType<ConstructorCallSite>(transientCall.ServiceCallSite);
+            var constructorCallSite = Assert.IsType<ConstructorCallSite>(callSite);
             Assert.Equal(expectedConstructorParameters, GetParameters(constructorCallSite));
         }
 
         public static TheoryData CreateCallSite_ConsidersConstructorsWithDefaultValuesData =>
-            new TheoryData<Func<Type, object>, Type[]>
+            new TheoryData<ServiceProvider, Type[]>
             {
                 {
-                    GetCallSiteFactory(
-                        new ServiceDescriptor(typeof(TypeWithDefaultConstructorParameters), typeof(TypeWithDefaultConstructorParameters), ServiceLifetime.Transient),
+                    GetServiceProvider(
                         new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient)
                     ),
                     new[] { typeof(IFakeMultipleService), typeof(IFakeService) }
                 },
                 {
-                    GetCallSiteFactory(
-                        new ServiceDescriptor(typeof(TypeWithDefaultConstructorParameters), typeof(TypeWithDefaultConstructorParameters), ServiceLifetime.Transient),
+                    GetServiceProvider(
                         new ServiceDescriptor(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient)
                     ),
                     new[] { typeof(IFactoryService), typeof(IFakeScopedService) }
                 },
                 {
-                   GetCallSiteFactory(
-                       new ServiceDescriptor(typeof(TypeWithDefaultConstructorParameters), typeof(TypeWithDefaultConstructorParameters), ServiceLifetime.Transient),
+                   GetServiceProvider(
                         new ServiceDescriptor(typeof(IFakeScopedService), typeof(FakeService), ServiceLifetime.Transient),
                         new ServiceDescriptor(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient)
                     ),
@@ -236,18 +228,19 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         [Theory]
         [MemberData(nameof(CreateCallSite_ConsidersConstructorsWithDefaultValuesData))]
         public void CreateCallSite_ConsidersConstructorsWithDefaultValues(
-            Func<Type, object> callSiteFactory,
+            IServiceProvider serviceProvider,
             Type[] expectedConstructorParameters)
         {
             // Arrange
             var type = typeof(TypeWithDefaultConstructorParameters);
+            var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
+            var service = new Service(descriptor);
 
             // Act
-            var callSite = callSiteFactory(type);
+            var callSite = service.CreateCallSite((ServiceProvider)serviceProvider, new HashSet<Type>());
 
             // Assert
-            var transientCall = Assert.IsType<TransientCallSite>(callSite);
-            var constructorCallSite = Assert.IsType<ConstructorCallSite>(transientCall.ServiceCallSite);
+            var constructorCallSite = Assert.IsType<ConstructorCallSite>(callSite);
             Assert.Equal(expectedConstructorParameters, GetParameters(constructorCallSite));
         }
 
@@ -257,12 +250,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Arrange
             var type = typeof(TypeWithParameterizedConstructor);
             var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
-
-            var callSiteFactory = GetCallSiteFactory(descriptor);
+            var service = new Service(descriptor);
+            var serviceProvider = GetServiceProvider();
 
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(
-                () => callSiteFactory(type));
+                () => service.CreateCallSite(serviceProvider, new HashSet<Type>()));
             Assert.Equal($"Unable to resolve service for type '{typeof(IFakeService)}' while attempting to activate '{type}'.",
                 ex.Message);
         }
@@ -274,26 +267,25 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
-            var callSiteFactory = GetCallSiteFactory(
-                descriptor,
+            var service = new Service(descriptor);
+            var serviceProvider = GetServiceProvider(
                 new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient),
                 new ServiceDescriptor(typeof(IFakeScopedService), typeof(FakeService), ServiceLifetime.Transient)
             );
 
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(
-                () => callSiteFactory(type));
+                () => service.CreateCallSite(serviceProvider, new HashSet<Type>()));
             Assert.Equal($"No constructor for type '{type}' can be instantiated using services from the service container and default values.",
                 ex.Message);
         }
 
         public static TheoryData CreateCallSite_ThrowsIfMultipleNonOverlappingConstructorsCanBeResolvedData =>
-            new TheoryData<Type, Func<Type, object>, Type[][]>
+            new TheoryData<Type, ServiceProvider, Type[][]>
             {
                 {
                     typeof(TypeWithDefaultConstructorParameters),
-                    GetCallSiteFactory(
-                        new ServiceDescriptor(typeof(TypeWithDefaultConstructorParameters), typeof(TypeWithDefaultConstructorParameters), ServiceLifetime.Transient),
+                    GetServiceProvider(
                         new ServiceDescriptor(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient),
                         new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient)
                     ),
@@ -305,8 +297,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 },
                 {
                     typeof(TypeWithMultipleParameterizedConstructors),
-                    GetCallSiteFactory(
-                        new ServiceDescriptor(typeof(TypeWithMultipleParameterizedConstructors), typeof(TypeWithMultipleParameterizedConstructors), ServiceLifetime.Transient),
+                    GetServiceProvider(
                         new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
                         new ServiceDescriptor(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient)
                     ),
@@ -318,8 +309,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 },
                 {
                     typeof(TypeWithNonOverlappedConstructors),
-                    GetCallSiteFactory(
-                        new ServiceDescriptor(typeof(TypeWithNonOverlappedConstructors), typeof(TypeWithNonOverlappedConstructors), ServiceLifetime.Transient),
+                    GetServiceProvider(
                         new ServiceDescriptor(typeof(IFakeScopedService), typeof(FakeService), ServiceLifetime.Transient),
                         new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient),
                         new ServiceDescriptor(typeof(IFakeOuterService), typeof(FakeService), ServiceLifetime.Transient),
@@ -333,8 +323,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 },
                 {
                    typeof(TypeWithUnresolvableEnumerableConstructors),
-                   GetCallSiteFactory(
-                        new ServiceDescriptor(typeof(TypeWithUnresolvableEnumerableConstructors), typeof(TypeWithUnresolvableEnumerableConstructors), ServiceLifetime.Transient),
+                   GetServiceProvider(
                         new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient)
                     ),
                    new[]
@@ -345,8 +334,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 },
                 {
                    typeof(TypeWithUnresolvableEnumerableConstructors),
-                   GetCallSiteFactory(
-                        new ServiceDescriptor(typeof(TypeWithUnresolvableEnumerableConstructors), typeof(TypeWithUnresolvableEnumerableConstructors), ServiceLifetime.Transient),
+                   GetServiceProvider(
                         new ServiceDescriptor(typeof(IFactoryService), typeof(FakeService), ServiceLifetime.Transient)
                     ),
                    new[]
@@ -361,7 +349,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         [MemberData(nameof(CreateCallSite_ThrowsIfMultipleNonOverlappingConstructorsCanBeResolvedData))]
         public void CreateCallSite_ThrowsIfMultipleNonOverlappingConstructorsCanBeResolved(
             Type type,
-            Func<Type, object> callSiteFactory,
+            IServiceProvider serviceProvider,
             Type[][] expectedConstructorParameterTypes)
         {
             // Arrange
@@ -371,10 +359,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     $"Unable to activate type '{type}'. The following constructors are ambigious:",
                     GetConstructor(type, expectedConstructorParameterTypes[0]),
                     GetConstructor(type, expectedConstructorParameterTypes[1]));
+            var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
+            var service = new Service(descriptor);
 
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(
-                () => callSiteFactory(type));
+                () => service.CreateCallSite((ServiceProvider)serviceProvider, new HashSet<Type>()));
             Assert.Equal(expectedMessage, ex.Message);
         }
 
@@ -384,21 +374,21 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Arrange
             var type = typeof(TypeWithGenericServices);
             var expectedMessage = $"Unable to activate type '{type}'. The following constructors are ambigious:";
-
-            var callSiteFactory = GetCallSiteFactory(
-                new ServiceDescriptor(type, type, ServiceLifetime.Transient),
+            var descriptor = new ServiceDescriptor(type, type, ServiceLifetime.Transient);
+            var serviceProvider = GetServiceProvider(
                 new ServiceDescriptor(typeof(IFakeService), typeof(FakeService), ServiceLifetime.Transient),
                 new ServiceDescriptor(typeof(IFakeMultipleService), typeof(FakeService), ServiceLifetime.Transient),
                 new ServiceDescriptor(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>), ServiceLifetime.Transient)
             );
+            var service = new Service(descriptor);
 
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(
-                () => callSiteFactory(type));
+                () => service.CreateCallSite(serviceProvider, new HashSet<Type>()));
             Assert.StartsWith(expectedMessage, ex.Message);
         }
 
-        private static Func<Type, object> GetCallSiteFactory(params ServiceDescriptor[] descriptors)
+        private static ServiceProvider GetServiceProvider(params ServiceDescriptor[] descriptors)
         {
             var collection = new ServiceCollection();
             foreach (var descriptor in descriptors)
@@ -406,9 +396,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 collection.Add(descriptor);
             }
 
-            var callSiteFactory = new CallSiteFactory(collection.ToArray());
-
-            return type => callSiteFactory.CreateCallSite(type, new HashSet<Type>());
+            return collection.BuildServiceProvider();
         }
 
         private static IEnumerable<Type> GetParameters(ConstructorCallSite constructorCallSite) =>

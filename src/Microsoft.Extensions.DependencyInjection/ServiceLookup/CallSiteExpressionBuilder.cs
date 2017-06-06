@@ -98,15 +98,29 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override Expression VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, ParameterExpression provider)
         {
-            return Expression.New(createInstanceCallSite.ImplementationType);
+            return Expression.New(createInstanceCallSite.Descriptor.ImplementationType);
         }
 
-        protected override Expression VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, ParameterExpression provider)
+        protected override Expression VisitInstanceService(InstanceService instanceCallSite, ParameterExpression provider)
+        {
+            return Expression.Constant(
+                instanceCallSite.Descriptor.ImplementationInstance,
+                instanceCallSite.Descriptor.ServiceType);
+        }
+
+        protected override Expression VisitServiceProviderService(ServiceProviderService serviceProviderService, ParameterExpression provider)
         {
             return provider;
         }
 
-        protected override Expression VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, ParameterExpression provider)
+        protected override Expression VisitEmptyIEnumerable(EmptyIEnumerableCallSite emptyIEnumerableCallSite, ParameterExpression provider)
+        {
+            return Expression.Constant(
+                emptyIEnumerableCallSite.ServiceInstance,
+                emptyIEnumerableCallSite.ServiceType);
+        }
+
+        protected override Expression VisitServiceScopeService(ServiceScopeService serviceScopeService, ParameterExpression provider)
         {
             return Expression.New(typeof(ServiceScopeFactory).GetTypeInfo()
                     .DeclaredConstructors
@@ -114,12 +128,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 provider);
         }
 
-        protected override Expression VisitFactory(FactoryCallSite factoryCallSite, ParameterExpression provider)
+        protected override Expression VisitFactoryService(FactoryService factoryService, ParameterExpression provider)
         {
-            return Expression.Invoke(Expression.Constant(factoryCallSite.Factory), provider);
+            return Expression.Invoke(Expression.Constant(factoryService.Descriptor.ImplementationFactory), provider);
         }
 
-        protected override Expression VisitIEnumerable(IEnumerableCallSite callSite, ParameterExpression provider)
+        protected override Expression VisitClosedIEnumerable(ClosedIEnumerableCallSite callSite, ParameterExpression provider)
         {
             return Expression.NewArrayInit(
                 callSite.ItemType,
@@ -131,7 +145,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override Expression VisitTransient(TransientCallSite callSite, ParameterExpression provider)
         {
-            var implType = callSite.ServiceCallSite.ImplementationType;
+            var implType = callSite.Service.ImplementationType;
             // Elide calls to GetCaptureDisposable if the implemenation type isn't disposable
             return TryCaptureDisposible(
                 implType,
@@ -175,7 +189,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         protected override Expression VisitScoped(ScopedCallSite callSite, ParameterExpression provider)
         {
             var keyExpression = Expression.Constant(
-                callSite,
+                callSite.Key,
                 typeof(object));
 
             var resolvedVariable = Expression.Variable(typeof(object), "resolved");
@@ -189,10 +203,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 resolvedVariable);
 
             var service = VisitCallSite(callSite.ServiceCallSite, provider);
-            var captureDisposible = TryCaptureDisposible(callSite.ImplementationType, provider, service);
+            var captureDisposible = TryCaptureDisposible(callSite.Key.ImplementationType, provider, service);
 
             var assignExpression = Expression.Assign(
-                resolvedVariable,
+                resolvedVariable, 
                 captureDisposible);
 
             var addValueExpression = Expression.Call(
