@@ -3,6 +3,7 @@
 
 using System;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
@@ -11,15 +12,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         internal ConstructorInfo ConstructorInfo { get; }
         internal IServiceCallSite[] ParameterCallSites { get; }
 
-        public ConstructorCallSite(Type serviceType, ConstructorInfo constructorInfo, IServiceCallSite[] parameterCallSites)
+        public ConstructorCallSite(ConstructorInfo constructorInfo, IServiceCallSite[] parameterCallSites)
         {
-            ServiceType = serviceType;
             ConstructorInfo = constructorInfo;
             ParameterCallSites = parameterCallSites;
         }
-
-        public Type ServiceType { get; }
-
-        public Type ImplementationType => ServiceType.DeclaringType;
     }
 }

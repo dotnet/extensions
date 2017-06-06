@@ -6,31 +6,67 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     {
         protected virtual TResult VisitCallSite(IServiceCallSite callSite, TArgument argument)
         {
-            switch (callSite)
+            var factoryService = callSite as FactoryService;
+            if (factoryService != null)
             {
-                case FactoryCallSite factoryCallSite:
-                    return VisitFactory(factoryCallSite, argument);
-                case IEnumerableCallSite enumerableCallSite:
-                    return VisitIEnumerable(enumerableCallSite, argument);
-                case ConstructorCallSite constructorCallSite:
-                    return VisitConstructor(constructorCallSite, argument);
-                case TransientCallSite transientCallSite:
-                    return VisitTransient(transientCallSite, argument);
-                case SingletonCallSite singletonCallSite:
-                    return VisitSingleton(singletonCallSite, argument);
-                case ScopedCallSite scopedCallSite:
-                    return VisitScoped(scopedCallSite, argument);
-                case ConstantCallSite constantCallSite:
-                    return VisitConstant(constantCallSite, argument);
-                case CreateInstanceCallSite createInstanceCallSite:
-                    return VisitCreateInstance(createInstanceCallSite, argument);
-                case ServiceProviderCallSite serviceProviderCallSite:
-                    return VisitServiceProvider(serviceProviderCallSite, argument);
-                case ServiceScopeFactoryCallSite scopeFactoryCallSite:
-                    return VisitServiceScopeFactory(scopeFactoryCallSite, argument);
-                default:
-                    throw new NotSupportedException($"Call site type {callSite.GetType()} is not supported");
+                return VisitFactoryService(factoryService, argument);
             }
+            var closedIEnumerableCallSite = callSite as ClosedIEnumerableCallSite;
+            if (closedIEnumerableCallSite != null)
+            {
+                return VisitClosedIEnumerable(closedIEnumerableCallSite, argument);
+            }
+            var constructorCallSite = callSite as ConstructorCallSite;
+            if (constructorCallSite != null)
+            {
+                return VisitConstructor(constructorCallSite, argument);
+            }
+            var transientCallSite = callSite as TransientCallSite;
+            if (transientCallSite != null)
+            {
+                return VisitTransient(transientCallSite, argument);
+            }
+            var singletonCallSite = callSite as SingletonCallSite;
+            if (singletonCallSite != null)
+            {
+                return VisitSingleton(singletonCallSite, argument);
+            }
+            var scopedCallSite = callSite as ScopedCallSite;
+            if (scopedCallSite != null)
+            {
+                return VisitScoped(scopedCallSite, argument);
+            }
+            var constantCallSite = callSite as ConstantCallSite;
+            if (constantCallSite != null)
+            {
+                return VisitConstant(constantCallSite, argument);
+            }
+            var createInstanceCallSite = callSite as CreateInstanceCallSite;
+            if (createInstanceCallSite != null)
+            {
+                return VisitCreateInstance(createInstanceCallSite, argument);
+            }
+            var instanceCallSite = callSite as InstanceService;
+            if (instanceCallSite != null)
+            {
+                return VisitInstanceService(instanceCallSite, argument);
+            }
+            var serviceProviderService = callSite as ServiceProviderService;
+            if (serviceProviderService != null)
+            {
+                return VisitServiceProviderService(serviceProviderService, argument);
+            }
+            var emptyIEnumerableCallSite = callSite as EmptyIEnumerableCallSite;
+            if (emptyIEnumerableCallSite != null)
+            {
+                return VisitEmptyIEnumerable(emptyIEnumerableCallSite, argument);
+            }
+            var serviceScopeService = callSite as ServiceScopeService;
+            if (serviceScopeService != null)
+            {
+                return VisitServiceScopeService(serviceScopeService, argument);
+            }
+            throw new NotSupportedException($"Call site type {callSite.GetType()} is not supported");
         }
 
         protected abstract TResult VisitTransient(TransientCallSite transientCallSite, TArgument argument);
@@ -45,12 +81,16 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected abstract TResult VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, TArgument argument);
 
-        protected abstract TResult VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, TArgument argument);
+        protected abstract TResult VisitInstanceService(InstanceService instanceCallSite, TArgument argument);
 
-        protected abstract TResult VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, TArgument argument);
+        protected abstract TResult VisitServiceProviderService(ServiceProviderService serviceProviderService, TArgument argument);
 
-        protected abstract TResult VisitIEnumerable(IEnumerableCallSite enumerableCallSite, TArgument argument);
+        protected abstract TResult VisitEmptyIEnumerable(EmptyIEnumerableCallSite emptyIEnumerableCallSite, TArgument argument);
 
-        protected abstract TResult VisitFactory(FactoryCallSite factoryCallSite, TArgument argument);
+        protected abstract TResult VisitServiceScopeService(ServiceScopeService serviceScopeService, TArgument argument);
+
+        protected abstract TResult VisitClosedIEnumerable(ClosedIEnumerableCallSite closedIEnumerableCallSite, TArgument argument);
+
+        protected abstract TResult VisitFactoryService(FactoryService factoryService, TArgument argument);
     }
 }

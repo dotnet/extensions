@@ -5,9 +5,10 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ServiceProviderCallSite : IServiceCallSite
+    internal interface IGenericService
     {
-        public Type ServiceType { get; } = typeof(IServiceProvider);
-        public Type ImplementationType { get; } = typeof(ServiceProvider);
+        ServiceLifetime Lifetime { get; }
+
+        IService GetService(Type closedServiceType);
     }
 }
