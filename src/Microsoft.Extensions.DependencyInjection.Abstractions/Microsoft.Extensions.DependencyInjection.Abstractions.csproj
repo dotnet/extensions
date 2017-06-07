@@ -6,7 +6,7 @@
     <Description>Abstractions for dependency injection.
 Commonly used types:
 Microsoft.Extensions.DependencyInjection.IServiceCollection</Description>
-    <TargetFramework>netstandard1.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>dependencyinjection;di</PackageTags>
@@ -14,7 +14,6 @@ Microsoft.Extensions.DependencyInjection.IServiceCollection</Description>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-    <PackageReference Include="System.ComponentModel" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>

@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Suite of xUnit.net tests to check for container compatibility with Microsoft.Extensions.DependencyInjection.</Description>
-    <TargetFramework>netstandard1.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>dependencyinjection;di</PackageTags>
