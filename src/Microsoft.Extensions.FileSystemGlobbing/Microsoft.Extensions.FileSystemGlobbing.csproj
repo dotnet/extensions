@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>File system globbing to find files matching a specified pattern.</Description>
-    <TargetFrameworks>net45;netstandard1.3</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>files;filesystem;glob;globbing</PackageTags>

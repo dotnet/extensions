@@ -19,12 +19,10 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Util
                     return StringComparer.Ordinal;
                 case StringComparison.OrdinalIgnoreCase:
                     return StringComparer.OrdinalIgnoreCase;
-#if !NETSTANDARD1_3
                 case StringComparison.InvariantCulture:
                     return StringComparer.InvariantCulture;
                 case StringComparison.InvariantCultureIgnoreCase:
                     return StringComparer.InvariantCultureIgnoreCase;
-#endif
                 default:
                     throw new InvalidOperationException($"Unexpected StringComparison type: {comparisonType}");
             }
