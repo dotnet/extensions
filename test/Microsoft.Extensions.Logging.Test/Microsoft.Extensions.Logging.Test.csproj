@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging\Microsoft.Extensions.Logging.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.Configuration\Microsoft.Extensions.Logging.Configuration.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.Console\Microsoft.Extensions.Logging.Console.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.Debug\Microsoft.Extensions.Logging.Debug.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.Testing\Microsoft.Extensions.Logging.Testing.csproj" />

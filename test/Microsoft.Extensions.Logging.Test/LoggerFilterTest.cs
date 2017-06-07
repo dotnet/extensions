@@ -423,7 +423,18 @@ namespace Microsoft.Extensions.Logging.Test
         public static TheoryData<LoggerFilterOptions, (string, LogLevel, bool, bool)> FilterTestData =
             new TheoryData<LoggerFilterOptions, (string, LogLevel, bool, bool)>()
             {
-                { // Provider specific rule if preferred
+                {
+                    new LoggerFilterOptions()
+                    {
+                        Rules =
+                        {
+                            new LoggerFilterRule(typeof(TestLoggerProvider).FullName, "System", LogLevel.Information, null),
+                            new LoggerFilterRule(null, "Microsoft", LogLevel.Trace, null)
+                        }
+                    },
+                    ("Microsoft", LogLevel.Debug, true, true)
+                },
+                {  // Provider specific rule if preferred
                     new LoggerFilterOptions()
                     {
                         Rules =
