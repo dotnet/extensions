@@ -15,16 +15,14 @@ namespace Microsoft.Extensions.Configuration
         /// </summary>
         internal static string Error_NoSources
         {
-            get { return GetString("Error_NoSources"); }
+            get => GetString("Error_NoSources");
         }
 
         /// <summary>
         /// A configuration source is not registered. Please register one before setting a value.
         /// </summary>
         internal static string FormatError_NoSources()
-        {
-            return GetString("Error_NoSources");
-        }
+            => GetString("Error_NoSources");
 
         private static string GetString(string name, params string[] formatterNames)
         {

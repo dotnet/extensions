@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Command line configuration provider implementation for Microsoft.Extensions.Configuration.</Description>
-    <TargetFramework>netstandard1.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>configuration;commandline</PackageTags>
   </PropertyGroup>

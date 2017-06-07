@@ -124,7 +124,7 @@ namespace Microsoft.Extensions.Configuration
             var result = await authContext.AcquireTokenAsync(resource, new ClientAssertionCertificate(clientId, certificate));
             return result.AccessToken;
         }
-#elif NETSTANDARD1_5
+#elif NETSTANDARD2_0
 #else
 #error Target frameworks need to be updated.
 #endif

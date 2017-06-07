@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Security.Cryptography.Xml;
 using System.Xml;
 
 namespace Microsoft.Extensions.Configuration.Xml
@@ -15,20 +16,23 @@ namespace Microsoft.Extensions.Configuration.Xml
         /// <summary>
         /// Accesses the singleton decryptor instance.
         /// </summary>
-#if NET461
-        public static readonly XmlDocumentDecryptor Instance = new EncryptedXmlDocumentDecryptor();
-#elif NETSTANDARD1_3
         public static readonly XmlDocumentDecryptor Instance = new XmlDocumentDecryptor();
-#else
-#error Target frameworks need to be updated.
-#endif
+
+        private readonly Func<XmlDocument, EncryptedXml> _encryptedXmlFactory;
 
         /// <summary>
         /// Initializes a XmlDocumentDecryptor.
         /// </summary>
         // don't create an instance of this directly
         protected XmlDocumentDecryptor()
+            : this(DefaultEncryptedXmlFactory)
         {
+        }
+
+        // for testing only
+        internal XmlDocumentDecryptor(Func<XmlDocument, EncryptedXml> encryptedXmlFactory)
+        {
+            _encryptedXmlFactory = encryptedXmlFactory;
         }
 
         private static bool ContainsEncryptedData(XmlDocument document)
@@ -37,16 +41,9 @@ namespace Microsoft.Extensions.Configuration.Xml
             // us that it did so, so we need to perform a check to see if EncryptedXml
             // will actually do anything. The below check for an encrypted data blob
             // is the same one that EncryptedXml would have performed.
-#if NET461
             var namespaceManager = new XmlNamespaceManager(document.NameTable);
             namespaceManager.AddNamespace("enc", "http://www.w3.org/2001/04/xmlenc#");
             return (document.SelectSingleNode("//enc:EncryptedData", namespaceManager) != null);
-#elif NETSTANDARD1_3
-            var matchingNodes = document.GetElementsByTagName("EncryptedData", "http://www.w3.org/2001/04/xmlenc#");
-            return (matchingNodes != null && matchingNodes.Count > 0);
-#else
-#error Target frameworks need to be updated.
-#endif
         }
 
         /// <summary>
@@ -81,14 +78,23 @@ namespace Microsoft.Extensions.Configuration.Xml
         }
 
         /// <summary>
-        /// Override to process encrypted XML.
+        /// Creates a reader that can decrypt an encrypted XML document.
         /// </summary>
         /// <param name="document">The document.</param>
         /// <returns>An XmlReader which can read the document.</returns>
         protected virtual XmlReader DecryptDocumentAndCreateXmlReader(XmlDocument document)
         {
-            // by default we don't know how to process encrypted XML
-            throw new PlatformNotSupportedException(Resources.Error_EncryptedXmlNotSupported);
+            // Perform the actual decryption step, updating the XmlDocument in-place.
+            var encryptedXml = _encryptedXmlFactory(document);
+            encryptedXml.DecryptDocument();
+
+            // Finally, return the new XmlReader from the updated XmlDocument.
+            // Error messages based on this XmlReader won't show line numbers,
+            // but that's fine since we transformed the document anyway.
+            return document.CreateNavigator().ReadSubtree();
         }
+
+        private static EncryptedXml DefaultEncryptedXmlFactory(XmlDocument document)
+            => new EncryptedXml(document);
     }
 }

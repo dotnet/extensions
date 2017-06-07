@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         [Fact]
         public void GeneratesAssemblyAttributeFile()
         {
-            var target = Path.Combine(_solutionRoot.FullName, "src", "Microsoft.Extensions.Configuration.UserSecrets", "build", "GenerateUserSecretsAttribute.targets");
+            var target = Path.Combine(_solutionRoot.FullName, "src", "Microsoft.Extensions.Configuration.UserSecrets", "build", "netstandard2.0", "Microsoft.Extensions.Configuration.UserSecrets.targets");
             Directory.CreateDirectory(Path.Combine(_tempDir, "obj"));
             var libName = "Microsoft.Extensions.Configuration.UserSecrets.dll";
             File.Copy(Path.Combine(AppContext.BaseDirectory, libName), Path.Combine(_tempDir, libName));
@@ -55,7 +55,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         <UserSecretsId>
             xyz123
         </UserSecretsId>
-        <TargetFramework>netcoreapp1.0</TargetFramework>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
         <Reference Include=""$(MSBuildThisFileDirectory){libName}"" />
@@ -64,7 +64,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
 ");
             _output.WriteLine($"Tempdir = {_tempDir}");
             File.WriteAllText(Path.Combine(_tempDir, "Program.cs"), "public class Program { public static void Main(){}}");
-            var assemblyInfoFile = Path.Combine(_tempDir, "obj/Debug/netcoreapp1.0/UserSecretsAssemblyInfo.cs");
+            var assemblyInfoFile = Path.Combine(_tempDir, "obj/Debug/netcoreapp2.0/UserSecretsAssemblyInfo.cs");
 
             AssertDotNet("restore");
 
@@ -86,7 +86,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         {
             void LogData(object obj, DataReceivedEventArgs e)
             {
-                _output.WriteLine(e.Data);
+                _output.WriteLine(e.Data ?? string.Empty);
             }
 
             var processInfo = new ProcessStartInfo
@@ -104,6 +104,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
             };
             process.OutputDataReceived += LogData;
             process.Start();
+            process.BeginOutputReadLine();
             process.WaitForExit();
             process.OutputDataReceived -= LogData;
             Assert.Equal(0, process.ExitCode);

@@ -10,7 +10,7 @@ Microsoft.Extensions.Configuration.IConfigurationBuilder
 Microsoft.Extensions.Configuration.IConfigurationProvider
 Microsoft.Extensions.Configuration.IConfigurationRoot
 Microsoft.Extensions.Configuration.IConfigurationSection</Description>
-    <TargetFramework>netstandard1.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>configuration</PackageTags>
   </PropertyGroup>

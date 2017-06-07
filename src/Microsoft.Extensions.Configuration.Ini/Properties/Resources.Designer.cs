@@ -15,48 +15,42 @@ namespace Microsoft.Extensions.Configuration.Ini
         /// </summary>
         internal static string Error_InvalidFilePath
         {
-            get { return GetString("Error_InvalidFilePath"); }
+            get => GetString("Error_InvalidFilePath");
         }
 
         /// <summary>
         /// File path must be a non-empty string.
         /// </summary>
         internal static string FormatError_InvalidFilePath()
-        {
-            return GetString("Error_InvalidFilePath");
-        }
+            => GetString("Error_InvalidFilePath");
 
         /// <summary>
         /// A duplicate key '{0}' was found.
         /// </summary>
         internal static string Error_KeyIsDuplicated
         {
-            get { return GetString("Error_KeyIsDuplicated"); }
+            get => GetString("Error_KeyIsDuplicated");
         }
 
         /// <summary>
         /// A duplicate key '{0}' was found.
         /// </summary>
         internal static string FormatError_KeyIsDuplicated(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_KeyIsDuplicated"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("Error_KeyIsDuplicated"), p0);
 
         /// <summary>
         /// Unrecognized line format: '{0}'.
         /// </summary>
         internal static string Error_UnrecognizedLineFormat
         {
-            get { return GetString("Error_UnrecognizedLineFormat"); }
+            get => GetString("Error_UnrecognizedLineFormat");
         }
 
         /// <summary>
         /// Unrecognized line format: '{0}'.
         /// </summary>
         internal static string FormatError_UnrecognizedLineFormat(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Error_UnrecognizedLineFormat"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("Error_UnrecognizedLineFormat"), p0);
 
         private static string GetString(string name, params string[] formatterNames)
         {
