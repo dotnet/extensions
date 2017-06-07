@@ -7,7 +7,7 @@
 Commonly used types:
 Microsoft.Extensions.Caching.Distributed.IDistributedCache
 Microsoft.Extensions.Caching.Memory.IMemoryCache</Description>
-    <TargetFramework>netstandard1.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>cache;memorycache;distributedcache</PackageTags>

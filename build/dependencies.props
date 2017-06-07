@@ -1,18 +1,10 @@
 <Project>
   <PropertyGroup>
     <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
-
-    <!--
-      * Use 4.4.0-* instead of $(CoreFxVersion) to address "SqlClient fails with netcoreapp2.0 on Win7/Server2008"
-        * https://github.com/dotnet/corefx/issues/18406
-      * Revert if and when $(CoreFxVersion) is upgraded to 4.4.0-*
-    -->
-    <SqlClientVersion>4.4.0-*</SqlClientVersion>
-
-    <CoreFxVersion>4.3.0</CoreFxVersion>
+    <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <MoqVersion>4.7.1</MoqVersion>
-    <NETStandardImplicitPackageVersion>$(BundledNETStandardPackageVersion)</NETStandardImplicitPackageVersion>
+    <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
     <RedisVersion>1.2.3</RedisVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
