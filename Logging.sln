@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26413.2
+VisualStudioVersion = 15.0.26510.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Logging", "src\Microsoft.Extensions.Logging\Microsoft.Extensions.Logging.csproj", "{19D1B6C5-8A62-4387-8816-C54874D1DF5F}"
 EndProject
@@ -42,6 +42,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{C3F6BF54
 		build\dependencies.props = build\dependencies.props
 		build\Key.snk = build\Key.snk
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Configuration", "src\Microsoft.Extensions.Logging.Configuration\Microsoft.Extensions.Logging.Configuration.csproj", "{6D921637-507E-4CDC-8C5F-C3D6B62D118C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -211,6 +213,18 @@ Global
 		{B4A43221-DE95-47BB-A2D4-2DC761FC9419}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{B4A43221-DE95-47BB-A2D4-2DC761FC9419}.Release|x86.ActiveCfg = Release|Any CPU
 		{B4A43221-DE95-47BB-A2D4-2DC761FC9419}.Release|x86.Build.0 = Release|Any CPU
+		{6D921637-507E-4CDC-8C5F-C3D6B62D118C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D921637-507E-4CDC-8C5F-C3D6B62D118C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D921637-507E-4CDC-8C5F-C3D6B62D118C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{6D921637-507E-4CDC-8C5F-C3D6B62D118C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{6D921637-507E-4CDC-8C5F-C3D6B62D118C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6D921637-507E-4CDC-8C5F-C3D6B62D118C}.Debug|x86.Build.0 = Debug|Any CPU
+		{6D921637-507E-4CDC-8C5F-C3D6B62D118C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D921637-507E-4CDC-8C5F-C3D6B62D118C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D921637-507E-4CDC-8C5F-C3D6B62D118C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6D921637-507E-4CDC-8C5F-C3D6B62D118C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{6D921637-507E-4CDC-8C5F-C3D6B62D118C}.Release|x86.ActiveCfg = Release|Any CPU
+		{6D921637-507E-4CDC-8C5F-C3D6B62D118C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -230,5 +244,6 @@ Global
 		{F3B898C3-D441-4207-A92B-420D6E73CA5D} = {09920C51-6220-4D8D-94DC-E70C13446187}
 		{854133D5-6252-4A0A-B682-BDBB83B62AE6} = {699DB330-0095-4266-B7B0-3EAB3710CA49}
 		{B4A43221-DE95-47BB-A2D4-2DC761FC9419} = {09920C51-6220-4D8D-94DC-E70C13446187}
+		{6D921637-507E-4CDC-8C5F-C3D6B62D118C} = {699DB330-0095-4266-B7B0-3EAB3710CA49}
 	EndGlobalSection
 EndGlobal

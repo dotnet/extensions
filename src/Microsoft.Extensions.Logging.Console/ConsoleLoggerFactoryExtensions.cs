@@ -40,24 +40,6 @@ namespace Microsoft.Extensions.Logging
         }
 
         /// <summary>
-        /// Adds a console logger named 'Console' to the factory.
-        /// </summary>
-        /// <param name="builder">The <see cref="ILoggingBuilder"/> to use.</param>
-        /// <param name="configuration"></param>
-        public static ILoggingBuilder AddConsole(this ILoggingBuilder builder, IConfiguration configuration)
-        {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
-
-            builder.AddConsole();
-            builder.Services.Configure<ConsoleLoggerOptions>(configuration);
-
-            return builder;
-        }
-
-        /// <summary>
         /// Adds a console logger that is enabled for <see cref="LogLevel"/>.Information or higher.
         /// </summary>
         /// <param name="factory">The <see cref="ILoggerFactory"/> to use.</param>
