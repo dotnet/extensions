@@ -14,42 +14,25 @@ namespace Microsoft.Extensions.Logging.TraceSource
         // To detect redundant calls
         private bool _isDisposed;
 
-#if NET46
         /// <summary>
-        /// Pushes state onto the LogicalOperationStack by calling 
+        /// Pushes state onto the LogicalOperationStack by calling
         /// <see cref="CorrelationManager.StartLogicalOperation(object)"/>
         /// </summary>
         /// <param name="state">The state.</param>
-#else
-        /// <summary>
-        /// Creates a new instance of <see cref="TraceSourceScope"/> class.
-        /// </summary>
-        /// <param name="state">The state.</param>
-#endif
         public TraceSourceScope(object state)
         {
-#if NET46
             Trace.CorrelationManager.StartLogicalOperation(state);
-#endif
         }
 
-#if NET46
         /// <summary>
         /// Pops a state off the LogicalOperationStack by calling
         /// <see cref="CorrelationManager.StopLogicalOperation()"/>
         /// </summary>
-#else
-        /// <summary>
-        /// Disposes the current instance.
-        /// </summary>
-#endif
         public void Dispose()
         {
             if (!_isDisposed)
             {
-#if NET46
                 Trace.CorrelationManager.StopLogicalOperation();
-#endif
                 _isDisposed = true;
             }
         }

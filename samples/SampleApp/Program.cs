@@ -32,7 +32,7 @@ namespace SampleApp
                         .AddFilter("System", LogLevel.Warning)
                         .AddFilter("SampleApp.Program", LogLevel.Debug)
                         .AddConsole();
-#if NET46
+#if NET461
                     builder.AddEventLog();
 #elif NETCOREAPP2_0
 #else

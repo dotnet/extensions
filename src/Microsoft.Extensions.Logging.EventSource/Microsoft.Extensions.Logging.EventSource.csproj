@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>EventSource/EventListener logger provider implementation for Microsoft.Extensions.Logging.</Description>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>EventSource;logging;ETW</PackageTags>
   </PropertyGroup>

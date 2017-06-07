@@ -12,6 +12,12 @@ namespace Microsoft.Extensions.Logging
     /// </summary>
     public static class LoggingBuilderExtensions
     {
+        /// <summary>
+        /// Configures <see cref="LoggerFilterOptions" /> from an instance of <see cref="IConfiguration" />.
+        /// </summary>
+        /// <param name="builder">The <see cref="ILoggingBuilder"/> to use.</param>
+        /// <param name="configuration">The <see cref="IConfiguration" /> to add.</param>
+        /// <returns>The builder.</returns>
         public static ILoggingBuilder AddConfiguration(this ILoggingBuilder builder, IConfiguration configuration)
         {
             builder.Services.AddSingleton<IConfigureOptions<LoggerFilterOptions>>(new LoggerFilterConfigureOptions(configuration));

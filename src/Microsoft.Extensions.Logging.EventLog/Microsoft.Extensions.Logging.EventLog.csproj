@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Windows Event Log logger provider implementation for Microsoft.Extensions.Logging.</Description>
-    <TargetFramework>net451</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>eventlog;logging;windowseventlog</PackageTags>

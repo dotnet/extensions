@@ -4,8 +4,7 @@
 
   <PropertyGroup>
     <Description>Configuration support for Microsoft.Extensions.Logging.</Description>
-    <TargetFramework>netstandard1.1</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>logging</PackageTags>
   </PropertyGroup>
