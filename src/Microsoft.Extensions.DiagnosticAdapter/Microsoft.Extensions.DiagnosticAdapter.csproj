@@ -4,17 +4,14 @@
 
   <PropertyGroup>
     <Description>Microsoft extension adapter feature to extend DiagnosticListener. Contains extension methods that extend System.Diagnostics.DiagnosticListener, and enables duck-typing based event handling by using dynamically generated proxy types.</Description>
-    <TargetFramework>netstandard1.1</TargetFramework>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnosticadapter;diagnosticlistener;diagnostics</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.ComponentModel" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.Reflection.Emit" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>

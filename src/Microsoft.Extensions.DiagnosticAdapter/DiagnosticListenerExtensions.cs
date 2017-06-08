@@ -10,7 +10,7 @@ namespace System.Diagnostics
         public static IDisposable SubscribeWithAdapter(this DiagnosticListener diagnostic, object target)
         {
             var adapter = new DiagnosticSourceAdapter(target);
-            return diagnostic.Subscribe(adapter, adapter.IsEnabled);
+            return diagnostic.Subscribe(adapter, (Predicate<string>)adapter.IsEnabled);
         }
 
         public static IDisposable SubscribeWithAdapter(
@@ -19,7 +19,7 @@ namespace System.Diagnostics
             Func<string, bool> isEnabled)
         {
             var adapter = new DiagnosticSourceAdapter(target, isEnabled);
-            return diagnostic.Subscribe(adapter, adapter.IsEnabled);
+            return diagnostic.Subscribe(adapter, (Predicate<string>)adapter.IsEnabled);
         }
 
         public static IDisposable SubscribeWithAdapter(
@@ -28,7 +28,7 @@ namespace System.Diagnostics
             Func<string, object, object, bool> isEnabled)
         {
             var adapter = new DiagnosticSourceAdapter(target, isEnabled);
-            return diagnostic.Subscribe(adapter, adapter.IsEnabled);
+            return diagnostic.Subscribe(adapter, (Predicate<string>)adapter.IsEnabled);
         }
     }
 }
