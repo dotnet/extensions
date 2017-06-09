@@ -17,6 +17,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="$(IdentityModelActiveDirectoryVersion)" />
     <PackageReference Include="Microsoft.Azure.KeyVault" Version="$(AzureKeyVaultVersion)" />
+    <PackageReference Include="System.Net.Http" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
 </Project>
