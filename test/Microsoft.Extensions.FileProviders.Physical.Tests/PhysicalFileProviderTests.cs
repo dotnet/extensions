@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -24,7 +25,7 @@ namespace Microsoft.Extensions.FileProviders
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
                 var info = provider.GetFileInfo(null);
-                Assert.IsType(typeof(NotFoundFileInfo), info);
+                Assert.IsType<NotFoundFileInfo>(info);
             }
         }
 
@@ -34,7 +35,7 @@ namespace Microsoft.Extensions.FileProviders
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
                 var info = provider.GetFileInfo(string.Empty);
-                Assert.IsType(typeof(NotFoundFileInfo), info);
+                Assert.IsType<NotFoundFileInfo>(info);
             }
         }
 
@@ -91,7 +92,7 @@ namespace Microsoft.Extensions.FileProviders
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
                 var info = provider.GetFileInfo(path);
-                Assert.IsType(typeof(NotFoundFileInfo), info);
+                Assert.IsType<NotFoundFileInfo>(info);
             }
         }
 
@@ -129,7 +130,7 @@ namespace Microsoft.Extensions.FileProviders
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
                 var info = provider.GetFileInfo(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
-                Assert.IsType(typeof(NotFoundFileInfo), info);
+                Assert.IsType<NotFoundFileInfo>(info);
             }
         }
 
@@ -139,7 +140,7 @@ namespace Microsoft.Extensions.FileProviders
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
                 var info = provider.GetFileInfo(Path.Combine("..", Guid.NewGuid().ToString()));
-                Assert.IsType(typeof(NotFoundFileInfo), info);
+                Assert.IsType<NotFoundFileInfo>(info);
             }
         }
 
@@ -153,7 +154,7 @@ namespace Microsoft.Extensions.FileProviders
                 using (var provider = new PhysicalFileProvider(root.RootPath))
                 {
                     var info = provider.GetFileInfo(Path.Combine("a", "..", "..", root.DirectoryInfo.Name, "b"));
-                    Assert.IsType(typeof(NotFoundFileInfo), info);
+                    Assert.IsType<NotFoundFileInfo>(info);
                 }
             }
         }
@@ -168,7 +169,7 @@ namespace Microsoft.Extensions.FileProviders
                 using (var provider = new PhysicalFileProvider(root.RootPath))
                 {
                     var info = provider.GetFileInfo("a///../../" + root.DirectoryInfo.Name + "/b");
-                    Assert.IsType(typeof(NotFoundFileInfo), info);
+                    Assert.IsType<NotFoundFileInfo>(info);
                 }
             }
         }
@@ -209,7 +210,7 @@ namespace Microsoft.Extensions.FileProviders
 
                     var info = provider.GetFileInfo(fileName);
 
-                    Assert.IsType(typeof(NotFoundFileInfo), info);
+                    Assert.IsType<NotFoundFileInfo>(info);
                 }
             }
         }
@@ -231,7 +232,7 @@ namespace Microsoft.Extensions.FileProviders
 
                     var info = provider.GetFileInfo(fileName);
 
-                    Assert.IsType(typeof(NotFoundFileInfo), info);
+                    Assert.IsType<NotFoundFileInfo>(info);
                 }
             }
         }
@@ -248,7 +249,24 @@ namespace Microsoft.Extensions.FileProviders
 
                     var info = provider.GetFileInfo(fileName);
 
-                    Assert.IsType(typeof(NotFoundFileInfo), info);
+                    Assert.IsType<NotFoundFileInfo>(info);
+                }
+            }
+        }
+
+        [Fact]
+        public void GetFileInfoReturnsFileInfoWhenExclusionDisabled()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                using (var provider = new PhysicalFileProvider(root.RootPath, ExclusionFilters.None))
+                {
+                    var fileName = "." + Guid.NewGuid().ToString();
+                    var filePath = Path.Combine(root.RootPath, fileName);
+
+                    var info = provider.GetFileInfo(fileName);
+
+                    Assert.IsType<PhysicalFileInfo>(info);
                 }
             }
         }
@@ -666,7 +684,7 @@ namespace Microsoft.Extensions.FileProviders
         }
 
         [Fact]
-        public void GetDirectoryContentsDoesNotReturnFileInfoForFileNameStartingWithPeriod()
+        public void GetDirectoryContentsDoesNotReturnFileInfoForFileNameStartingWithPeriodByDefault()
         {
             using (var root = new DisposableFileSystem())
             {
@@ -682,6 +700,29 @@ namespace Microsoft.Extensions.FileProviders
                 {
                     var contents = provider.GetDirectoryContents(directoryName);
                     Assert.Empty(contents);
+
+                    Assert.IsType<NotFoundFileInfo>(provider.GetFileInfo(fileName));
+                }
+            }
+        }
+
+        [Fact]
+        public void GetDirectoryContentsReturnsFilesWhenExclusionDisabled()
+        {
+            using (var root = new DisposableFileSystem())
+            {
+                var directoryName = Guid.NewGuid().ToString();
+                var directoryPath = Path.Combine(root.RootPath, directoryName);
+                Directory.CreateDirectory(directoryPath);
+
+                var fileName = "." + Guid.NewGuid().ToString();
+                var filePath = Path.Combine(directoryPath, fileName);
+                File.Create(filePath);
+
+                using (var provider = new PhysicalFileProvider(root.RootPath, ExclusionFilters.None))
+                {
+                    var contents = provider.GetDirectoryContents(directoryName);
+                    Assert.NotEmpty(contents);
                 }
             }
         }

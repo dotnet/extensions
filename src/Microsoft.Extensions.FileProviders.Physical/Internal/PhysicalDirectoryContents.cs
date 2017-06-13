@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.FileProviders.Physical;
+using Microsoft.Extensions.FileProviders.Physical.Internal;
 
 namespace Microsoft.Extensions.FileProviders.Internal
 {
@@ -17,19 +18,25 @@ namespace Microsoft.Extensions.FileProviders.Internal
     {
         private IEnumerable<IFileInfo> _entries;
         private readonly string _directory;
+        private readonly ExclusionFilters _filters;
 
         /// <summary>
         /// Initializes an instance of <see cref="PhysicalDirectoryContents"/>
         /// </summary>
         /// <param name="directory">The directory</param>
         public PhysicalDirectoryContents(string directory)
-        {
-            if (directory == null)
-            {
-                throw new ArgumentNullException(nameof(directory));
-            }
+            : this(directory, ExclusionFilters.Sensitive)
+        { }
 
-            _directory = directory;
+        /// <summary>
+        /// Initializes an instance of <see cref="PhysicalDirectoryContents"/>
+        /// </summary>
+        /// <param name="directory">The directory</param>
+        /// <param name="filters">Specifies which files or directories are excluded from enumeration.</param>
+        public PhysicalDirectoryContents(string directory, ExclusionFilters filters)
+        {
+            _directory = directory ?? throw new ArgumentNullException(nameof(directory));
+            _filters = filters;
         }
 
         /// <inheritdoc />
@@ -54,7 +61,7 @@ namespace Microsoft.Extensions.FileProviders.Internal
             {
                 _entries = new DirectoryInfo(_directory)
                     .EnumerateFileSystemInfos()
-                    .Where(info => !FileSystemInfoHelper.IsHiddenFile(info))
+                    .Where(info => !FileSystemInfoHelper.IsExcluded(info, _filters))
                     .Select<FileSystemInfo, IFileInfo>(info =>
                     {
                         if (info is FileInfo file)

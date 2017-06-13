@@ -19,6 +19,12 @@ namespace Microsoft.Extensions.FileProviders
 
         public DirectoryInfo DirectoryInfo { get; }
 
+        public DirectoryInfo GetDirectory(string path)
+            => new DirectoryInfo(Path.Combine(RootPath, path));
+
+        public FileInfo GetFile(string path)
+            => new FileInfo(Path.Combine(RootPath, path));
+
         public DisposableFileSystem CreateFolder(string path)
         {
             Directory.CreateDirectory(Path.Combine(RootPath, path));
@@ -28,6 +34,17 @@ namespace Microsoft.Extensions.FileProviders
         public DisposableFileSystem CreateFile(string path)
         {
             File.WriteAllText(Path.Combine(RootPath, path), "temp");
+            return this;
+        }
+
+        public DisposableFileSystem CreateFile(FileInfo fileInfo)
+        {
+            using (var stream = fileInfo.Create())
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.Write("temp");
+            }
+
             return this;
         }
 

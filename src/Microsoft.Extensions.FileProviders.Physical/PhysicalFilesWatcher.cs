@@ -7,6 +7,7 @@ using System.IO;
 using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.FileProviders.Internal;
 using Microsoft.Extensions.FileProviders.Physical.Internal;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Primitives;
@@ -32,6 +33,7 @@ namespace Microsoft.Extensions.FileProviders.Physical
         private readonly object _fileWatcherLock = new object();
         private readonly string _root;
         private readonly bool _pollForChanges;
+        private readonly ExclusionFilters _filters;
 
         /// <summary>
         /// Initializes an instance of <see cref="PhysicalFilesWatcher" /> that watches files in <paramref name="root" />.
@@ -47,6 +49,26 @@ namespace Microsoft.Extensions.FileProviders.Physical
             string root,
             FileSystemWatcher fileSystemWatcher,
             bool pollForChanges)
+            : this(root, fileSystemWatcher, pollForChanges, ExclusionFilters.Sensitive)
+        {
+        }
+
+        /// <summary>
+        /// Initializes an instance of <see cref="PhysicalFilesWatcher" /> that watches files in <paramref name="root" />.
+        /// Wraps an instance of <see cref="System.IO.FileSystemWatcher" />
+        /// </summary>
+        /// <param name="root">Root directory for the watcher</param>
+        /// <param name="fileSystemWatcher">The wrapped watcher that is watching <paramref name="root" /></param>
+        /// <param name="pollForChanges">
+        /// True when the watcher should use polling to trigger instances of
+        /// <see cref="IChangeToken" /> created by <see cref="CreateFileChangeToken(string)" />
+        /// </param>
+        /// <param name="filters">Specifies which files or directories are excluded. Notifications of changes to are not raised to these.</param>
+        public PhysicalFilesWatcher(
+            string root,
+            FileSystemWatcher fileSystemWatcher,
+            bool pollForChanges,
+            ExclusionFilters filters)
         {
             _root = root;
             _fileWatcher = fileSystemWatcher;
@@ -58,6 +80,7 @@ namespace Microsoft.Extensions.FileProviders.Physical
             _fileWatcher.Error += OnError;
 
             _pollForChanges = pollForChanges;
+            _filters = filters;
         }
 
         /// <summary>
@@ -68,7 +91,7 @@ namespace Microsoft.Extensions.FileProviders.Physical
         ///     <para>
         ///     Globbing patterns are relative to the root directory given in the constructor
         ///     <seealso cref="PhysicalFilesWatcher(string, FileSystemWatcher, bool)" />. Globbing patterns
-        ///     are interpreted by <seealso cref="Microsoft.Extensions.FileSystemGlobbing.Matcher" />.
+        ///     are interpreted by <seealso cref="Matcher" />.
         ///     </para>
         /// </summary>
         /// <param name="filter">A globbing pattern for files and directories to watch</param>
@@ -226,7 +249,7 @@ namespace Microsoft.Extensions.FileProviders.Physical
             try
             {
                 var fileSystemInfo = new FileInfo(fullPath);
-                if (FileSystemInfoHelper.IsHiddenFile(fileSystemInfo))
+                if (FileSystemInfoHelper.IsExcluded(fileSystemInfo, _filters))
                 {
                     return;
                 }

@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using Microsoft.Extensions.FileProviders.Internal;
 using Microsoft.Extensions.FileProviders.Physical;
 using Microsoft.Extensions.FileProviders.Physical.Internal;
@@ -26,17 +25,32 @@ namespace Microsoft.Extensions.FileProviders
             {Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar};
 
         private readonly PhysicalFilesWatcher _filesWatcher;
+        private readonly ExclusionFilters _filters;
 
         /// <summary>
         /// Initializes a new instance of a PhysicalFileProvider at the given root directory.
         /// </summary>
         /// <param name="root">The root directory. This should be an absolute path.</param>
         public PhysicalFileProvider(string root)
-            : this(root, CreateFileWatcher(root))
+            : this(root, CreateFileWatcher(root, ExclusionFilters.Sensitive), ExclusionFilters.Sensitive)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of a PhysicalFileProvider at the given root directory.
+        /// </summary>
+        /// <param name="root">The root directory. This should be an absolute path.</param>
+        /// <param name="filters">Specifies which files or directories are excluded.</param>
+        public PhysicalFileProvider(string root, ExclusionFilters filters)
+            : this(root, CreateFileWatcher(root, filters), filters)
+        { }
+
+        // for testing
         internal PhysicalFileProvider(string root, PhysicalFilesWatcher physicalFilesWatcher)
+            : this(root, physicalFilesWatcher, ExclusionFilters.Sensitive)
+        { }
+
+        private PhysicalFileProvider(string root, PhysicalFilesWatcher physicalFilesWatcher, ExclusionFilters filters)
         {
             if (!Path.IsPathRooted(root))
             {
@@ -51,16 +65,17 @@ namespace Microsoft.Extensions.FileProviders
             }
 
             _filesWatcher = physicalFilesWatcher;
+            _filters = filters;
         }
 
-        private static PhysicalFilesWatcher CreateFileWatcher(string root)
+        private static PhysicalFilesWatcher CreateFileWatcher(string root, ExclusionFilters filters)
         {
             var environmentValue = Environment.GetEnvironmentVariable(PollingEnvironmentKey);
             var pollForChanges = string.Equals(environmentValue, "1", StringComparison.Ordinal) ||
                                  string.Equals(environmentValue, "true", StringComparison.OrdinalIgnoreCase);
 
             root = PathUtils.EnsureTrailingSlash(Path.GetFullPath(root));
-            return new PhysicalFilesWatcher(root, new FileSystemWatcher(root), pollForChanges);
+            return new PhysicalFilesWatcher(root, new FileSystemWatcher(root), pollForChanges, filters);
         }
 
         /// <summary>
@@ -110,7 +125,7 @@ namespace Microsoft.Extensions.FileProviders
         /// Locate a file at the given path by directly mapping path segments to physical directories.
         /// </summary>
         /// <param name="subpath">A path under the root directory</param>
-        /// <returns>The file information. Caller must check Exists property. </returns>
+        /// <returns>The file information. Caller must check <see cref="IFileInfo.Exists"/> property. </returns>
         public IFileInfo GetFileInfo(string subpath)
         {
             if (string.IsNullOrEmpty(subpath) || PathUtils.HasInvalidPathChars(subpath))
@@ -134,7 +149,7 @@ namespace Microsoft.Extensions.FileProviders
             }
 
             var fileInfo = new FileInfo(fullPath);
-            if (FileSystemInfoHelper.IsHiddenFile(fileInfo))
+            if (FileSystemInfoHelper.IsExcluded(fileInfo, _filters))
             {
                 return new NotFoundFileInfo(subpath);
             }
@@ -147,7 +162,7 @@ namespace Microsoft.Extensions.FileProviders
         /// </summary>
         /// <param name="subpath">A path under the root directory. Leading slashes are ignored.</param>
         /// <returns>
-        /// Contents of the directory. Caller must check Exists property. <see cref="NotFoundDirectoryContents" /> if
+        /// Contents of the directory. Caller must check <see cref="IDirectoryContents.Exists"/> property. <see cref="NotFoundDirectoryContents" /> if
         /// <paramref name="subpath" /> is absolute, if the directory does not exist, or <paramref name="subpath" /> has invalid
         /// characters.
         /// </returns>
@@ -175,7 +190,7 @@ namespace Microsoft.Extensions.FileProviders
                     return NotFoundDirectoryContents.Singleton;
                 }
 
-                return new PhysicalDirectoryContents(fullPath);
+                return new PhysicalDirectoryContents(fullPath, _filters);
             }
             catch (DirectoryNotFoundException)
             {
