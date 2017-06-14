@@ -38,11 +38,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             _manager = manager;
         }
 
-        /// <inheritdoc />
-        public override void Load()
-        {
-            LoadAsync().GetAwaiter().GetResult();
-        }
+        public override void Load() => LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
         private async Task LoadAsync()
         {
