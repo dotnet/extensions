@@ -95,18 +95,22 @@ namespace Microsoft.Extensions.Options.Tests
             }
         }
 
-        private class TestConfigure : IConfigureOptions<FakeOptions>
+        private class TestConfigure : IConfigureNamedOptions<FakeOptions>
         {
             public static int ConfigureCount;
+            public static int CtorCount;
 
             public TestConfigure()
+            {
+                CtorCount++;
+            }
+
+            public void Configure(string name, FakeOptions options)
             {
                 ConfigureCount++;
             }
 
-            public void Configure(FakeOptions options)
-            {
-            }
+            public void Configure(FakeOptions options) => Configure(Options.DefaultName, options);
         }
 
 
@@ -126,20 +130,22 @@ namespace Microsoft.Extensions.Options.Tests
             {
                 options = scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<FakeOptions>>().Value;
                 Assert.Equal(options, scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<FakeOptions>>().Value);
+                Assert.Equal(1, TestConfigure.ConfigureCount);
                 namedOne = scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<FakeOptions>>().Get("1");
                 Assert.Equal(namedOne, scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<FakeOptions>>().Get("1"));
+                Assert.Equal(2, TestConfigure.ConfigureCount);
             }
-            Assert.Equal(1, TestConfigure.ConfigureCount);
-            Assert.True(cache.TryRemove(Options.DefaultName));
-            Assert.True(cache.TryRemove("1"));
+            Assert.Equal(1, TestConfigure.CtorCount);
             using (var scope = factory.CreateScope())
             {
                 var options2 = scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<FakeOptions>>().Value;
                 Assert.NotEqual(options, options2);
+                Assert.Equal(3, TestConfigure.ConfigureCount);
                 var namedOne2 = scope.ServiceProvider.GetRequiredService<IOptionsSnapshot<FakeOptions>>().Get("1");
                 Assert.NotEqual(namedOne2, namedOne);
+                Assert.Equal(4, TestConfigure.ConfigureCount);
             }
-            Assert.Equal(2, TestConfigure.ConfigureCount);
+            Assert.Equal(2, TestConfigure.CtorCount);
         }
 
         [Fact]
