@@ -1,27 +1,40 @@
-﻿using Microsoft.Extensions.Logging.AzureAppServices.Internal;
-using Moq;
-using Serilog.Events;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.AzureAppServices.Internal;
 using Xunit;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices.Test
 {
     public class WebConfigurationLevelSwitchTests
     {
-        [Fact]
-        public void InitializesWithCurrentLevelWhenCreated()
+        [Theory]
+        [InlineData("Error", LogLevel.Error)]
+        [InlineData("Warning", LogLevel.Warning)]
+        [InlineData("Information", LogLevel.Information)]
+        [InlineData("Verbose", LogLevel.Trace)]
+        [InlineData("ABCD", LogLevel.None)]
+        public void AddsRuleWithCorrectLevel(string levelValue, LogLevel expectedLevel)
         {
-            var configurationReader = new Mock<IWebAppLogConfigurationReader>();
-            configurationReader.SetupGet(c => c.Current).Returns(new WebAppLogConfiguration(
-                isRunningInWebApp: true,
-                fileLoggingEnabled: true,
-                fileLoggingLevel: LogLevel.Warning,
-                fileLoggingFolder: "",
-                blobLoggingEnabled: true,
-                blobLoggingLevel: LogLevel.Warning,
-                blobContainerUrl: ""));
-            var levelSwitch = new WebConfigurationReaderLevelSwitch(configurationReader.Object, configuration => configuration.BlobLoggingLevel);
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(
+                new[]
+                {
+                    new KeyValuePair<string, string>("levelKey", levelValue),
+                })
+                .Build();
 
-            Assert.Equal(LogEventLevel.Warning, levelSwitch.MinimumLevel);
+            var levelSwitcher = new ConfigurationBasedLevelSwitcher(configuration, typeof(TestFileLoggerProvider), "levelKey");
+
+            var filterConfiguration = new LoggerFilterOptions();
+            levelSwitcher.Configure(filterConfiguration);
+
+            Assert.Equal(1, filterConfiguration.Rules.Count);
+
+            var rule = filterConfiguration.Rules[0];
+            Assert.Equal(typeof(TestFileLoggerProvider).FullName, rule.ProviderName);
+            Assert.Equal(expectedLevel, rule.LogLevel);
         }
     }
 }

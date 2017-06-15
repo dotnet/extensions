@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
@@ -22,15 +23,24 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
             _cloudAppendBlob = cloudAppendBlob;
         }
         /// <inheritdoc />
-        public async Task<Stream> OpenWriteAsync()
+        public async Task<Stream> OpenWriteAsync(CancellationToken cancellationToken)
         {
-            return await _cloudAppendBlob.OpenWriteAsync(createNew: false);
+            return await _cloudAppendBlob.OpenWriteAsync(
+                createNew: false,
+                accessCondition: null,
+                options: null,
+                operationContext: null,
+                cancellationToken: cancellationToken);
         }
 
         /// <inheritdoc />
-        public async Task CreateAsync()
+        public async Task CreateAsync(CancellationToken cancellationToken)
         {
-            await _cloudAppendBlob.CreateOrReplaceAsync(AccessCondition.GenerateIfNotExistsCondition(), options: null, operationContext: null);
+            await _cloudAppendBlob.CreateOrReplaceAsync(
+                AccessCondition.GenerateIfNotExistsCondition(),
+                options: null,
+                operationContext: null,
+                cancellationToken: cancellationToken);
         }
     }
 }

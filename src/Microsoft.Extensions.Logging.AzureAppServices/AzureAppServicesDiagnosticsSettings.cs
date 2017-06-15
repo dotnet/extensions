@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Logging.AzureAppServices.Internal;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices
 {
     /// <summary>
-    /// Settings for <see cref="AzureAppServicesDiagnosticsLoggerProvider"/>.
+    /// Settings for Azure diagnostics logging.
     /// </summary>
     public class AzureAppServicesDiagnosticsSettings
     {

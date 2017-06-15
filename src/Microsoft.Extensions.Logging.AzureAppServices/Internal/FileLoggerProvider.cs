@@ -1,98 +1,80 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Collections.Generic;
 using System.IO;
-using Serilog;
-using Serilog.Core;
-using Serilog.Formatting.Display;
-using Serilog.Sinks.File;
-using Serilog.Sinks.RollingFile;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
 {
-    /// <summary>
-    /// The logger provider that creates instances of <see cref="Serilog.Core.Logger"/>.
-    /// </summary>
-    public class FileLoggerProvider
+    public class FileLoggerProvider : BatchingLoggerProvider
     {
-        private readonly int _fileSizeLimit;
-        private readonly int _retainedFileCountLimit;
-        private readonly int _backgroundQueueSize;
-        private readonly string _outputTemplate;
-        private readonly TimeSpan? _flushPeriod;
+        private readonly string _path;
+        private readonly string _fileName;
+        private readonly int? _maxFileSize;
+        private readonly int? _maxRetainedFiles;
 
-        private const string FileNamePattern = "diagnostics-{Date}.txt";
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="FileLoggerProvider"/> class.
-        /// </summary>
-        /// <param name="fileSizeLimit">A strictly positive value representing the maximum log size in megabytes. Once the log is full, no more message will be appended</param>
-        /// <param name="retainedFileCountLimit">A strictly positive value representing the maximum retained file count</param>
-        /// <param name="backgroundQueueSize">The maximum size of the background queue</param>
-        /// <param name="outputTemplate">A message template describing the output messages</param>
-        /// <param name="flushPeriod">A period after which logs will be flushed to disk</param>
-        public FileLoggerProvider(int fileSizeLimit, int retainedFileCountLimit, int backgroundQueueSize, string outputTemplate, TimeSpan? flushPeriod)
+        public FileLoggerProvider(IOptionsMonitor<AzureFileLoggerOptions> options) : base(options)
         {
-            if (outputTemplate == null)
-            {
-                throw new ArgumentNullException(nameof(outputTemplate));
-            }
-            if (fileSizeLimit <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(fileSizeLimit), $"{nameof(fileSizeLimit)} must be positive.");
-            }
-            if (retainedFileCountLimit <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(retainedFileCountLimit), $"{nameof(retainedFileCountLimit)} must be positive.");
-            }
-
-            _fileSizeLimit = fileSizeLimit;
-            _retainedFileCountLimit = retainedFileCountLimit;
-            _backgroundQueueSize = backgroundQueueSize;
-            _outputTemplate = outputTemplate;
-            _flushPeriod = flushPeriod;
+            var loggerOptions = options.CurrentValue;
+            _path = loggerOptions.LogDirectory;
+            _fileName = loggerOptions.FileName;
+            _maxFileSize = loggerOptions.FileSizeLimit;
+            _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
         }
 
-        /// <inheritdoc />
-        public Logger ConfigureLogger(IWebAppLogConfigurationReader reader)
+        protected override async Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken cancellationToken)
         {
-            var webAppConfiguration = reader.Current;
-            if (string.IsNullOrEmpty(webAppConfiguration.FileLoggingFolder))
-            {
-                throw new ArgumentNullException(nameof(webAppConfiguration.FileLoggingFolder),
-                    "The file logger path cannot be null or empty.");
-            }
+            Directory.CreateDirectory(_path);
 
-            var logsFolder = webAppConfiguration.FileLoggingFolder;
-            if (!Directory.Exists(logsFolder))
+            foreach (var group in messages.GroupBy(GetGrouping))
             {
-                Directory.CreateDirectory(logsFolder);
-            }
-            var logsFilePattern = Path.Combine(logsFolder, FileNamePattern);
-
-            var messageFormatter = new MessageTemplateTextFormatter(_outputTemplate, null);
-            var rollingFileSink = new RollingFileSink(logsFilePattern, messageFormatter, _fileSizeLimit, _retainedFileCountLimit);
-
-            ILogEventSink flushingSink;
-            if (_flushPeriod != null)
-            {
-                flushingSink = new PeriodicFlushToDiskSink(rollingFileSink, _flushPeriod.Value);
-            }
-            else
-            {
-                flushingSink = rollingFileSink;
-            }
-            var backgroundSink = new BackgroundSink(flushingSink, _backgroundQueueSize);
-
-            var loggerConfiguration = new LoggerConfiguration();
-            loggerConfiguration.WriteTo.Sink(backgroundSink);
-            loggerConfiguration.MinimumLevel.ControlledBy(new WebConfigurationReaderLevelSwitch(reader,
-                configuration =>
+                var fullName = GetFullName(group.Key);
+                var fileInfo = new FileInfo(fullName);
+                if (_maxFileSize > 0 && fileInfo.Exists && fileInfo.Length > _maxFileSize)
                 {
-                    return configuration.FileLoggingEnabled ? configuration.FileLoggingLevel : LogLevel.None;
-                }));
-            return loggerConfiguration.CreateLogger();
+                    return;
+                }
+
+                using (var streamWriter = File.AppendText(fullName))
+                {
+                    foreach (var item in group)
+                    {
+                        await streamWriter.WriteAsync(item.Message);
+                    }
+                }
+            }
+
+            RollFiles();
+        }
+
+        private string GetFullName((int Year, int Month, int Day) group)
+        {
+            return Path.Combine(_path, $"{_fileName}{group.Year:0000}{group.Month:00}{group.Day:00}.txt");
+        }
+
+        public (int Year, int Month, int Day) GetGrouping(LogMessage message)
+        {
+            return (message.Timestamp.Year, message.Timestamp.Month, message.Timestamp.Day);
+        }
+
+        protected void RollFiles()
+        {
+            if (_maxRetainedFiles > 0)
+            {
+                var files = new DirectoryInfo(_path)
+                    .GetFiles(_fileName + "*")
+                    .OrderByDescending(f => f.Name)
+                    .Skip(_maxRetainedFiles.Value);
+
+                foreach (var item in files)
+                {
+                    item.Delete();
+                }
+            }
         }
     }
 }
