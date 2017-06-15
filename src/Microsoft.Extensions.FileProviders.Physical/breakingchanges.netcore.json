@@ -1,0 +1,6 @@
+[
+  {
+    "TypeId": "public class Microsoft.Extensions.FileProviders.FileSystemInfoHelper",
+    "Kind": "Removal"
+  }
+]

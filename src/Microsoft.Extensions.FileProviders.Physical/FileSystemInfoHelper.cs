@@ -5,13 +5,9 @@ using System.IO;
 
 namespace Microsoft.Extensions.FileProviders
 {
-    /// <summary>
-    /// Helper functions for working with the filesystem
-    /// </summary>
-    // TODO 2.0 make this internal
-    public class FileSystemInfoHelper
+    internal static class FileSystemInfoHelper
     {
-        internal static bool IsHiddenFile(FileSystemInfo fileSystemInfo)
+        public static bool IsHiddenFile(FileSystemInfo fileSystemInfo)
         {
             if (fileSystemInfo.Name.StartsWith("."))
             {
