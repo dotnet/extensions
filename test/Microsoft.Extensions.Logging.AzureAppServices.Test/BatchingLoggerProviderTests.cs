@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
             provider.IntervalControl.Resume();
             await provider.IntervalControl.Pause;
 
-            Assert.True(task.IsCompleted);
+            Assert.True(task.Wait(1000));
         }
 
         private class TestBatchingLoggingProvider: BatchingLoggerProvider

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
@@ -24,14 +23,14 @@ namespace Microsoft.Extensions.Logging.Test
         private const string _state = "This is a test, and {curly braces} are just fine!";
         private Func<object, Exception, string> _defaultFormatter = (state, exception) => state.ToString();
 
-        private static Tuple<ConsoleLogger, ConsoleSink> SetUp(Func<string, LogLevel, bool> filter, bool includeScopes = false)
+        private static (ConsoleLogger Logger, ConsoleSink Sink) SetUp(Func<string, LogLevel, bool> filter, bool includeScopes = false)
         {
             // Arrange
             var sink = new ConsoleSink();
             var console = new TestConsole(sink);
             var logger = new ConsoleLogger(_loggerName, filter, includeScopes, new TestLoggerProcessor());
             logger.Console = console;
-            return new Tuple<ConsoleLogger, ConsoleSink>(logger, sink);
+            return (logger, sink);
         }
 
         public ConsoleLoggerTest()
@@ -45,8 +44,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(null);
-            var logger = (ILogger)t.Item1;
-            var sink = t.Item2;
+            var logger = (ILogger)t.Logger;
+            var sink = t.Sink;
             var exception = new InvalidOperationException("Invalid value");
 
             // Act
@@ -56,9 +55,20 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Assert
             Assert.Equal(6, sink.Writes.Count);
-            Assert.Equal(GetMessage("crit", 0, "[null]", null), GetMessage(sink.Writes.GetRange(0 * WritesPerMsg, WritesPerMsg)));
-            Assert.Equal(GetMessage("crit", 0, "[null]", null), GetMessage(sink.Writes.GetRange(1 * WritesPerMsg, WritesPerMsg)));
-            Assert.Equal(GetMessage("crit", 0, "[null]", exception), GetMessage(sink.Writes.GetRange(2 * WritesPerMsg, WritesPerMsg)));
+            Assert.Equal(
+                "crit: test[0]" + Environment.NewLine +
+                "      [null]" + Environment.NewLine,
+                GetMessage(sink.Writes.GetRange(0 * WritesPerMsg, WritesPerMsg)));
+            Assert.Equal(
+                "crit: test[0]" + Environment.NewLine +
+                "      [null]" + Environment.NewLine,
+                GetMessage(sink.Writes.GetRange(1 * WritesPerMsg, WritesPerMsg)));
+
+            Assert.Equal(
+                "crit: test[0]" + Environment.NewLine +
+                "      [null]" + Environment.NewLine +
+                "System.InvalidOperationException: Invalid value" + Environment.NewLine,
+                GetMessage(sink.Writes.GetRange(2 * WritesPerMsg, WritesPerMsg)));
         }
 
         [Fact]
@@ -66,9 +76,14 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(null);
-            var logger = (ILogger)t.Item1;
-            var sink = t.Item2;
+            var logger = (ILogger)t.Logger;
+            var sink = t.Sink;
             var logMessage = "Route with name 'Default' was not found.";
+            var expected1 = @"crit: test[0]" + Environment.NewLine +
+                            "      Route with name 'Default' was not found." + Environment.NewLine;
+
+            var expected2 = @"crit: test[10]" + Environment.NewLine +
+                            "      Route with name 'Default' was not found." + Environment.NewLine;
 
             // Act
             logger.LogCritical(logMessage);
@@ -78,10 +93,10 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Assert
             Assert.Equal(8, sink.Writes.Count);
-            Assert.Equal(GetMessage("crit", 0, logMessage, null), GetMessage(sink.Writes.GetRange(0 * WritesPerMsg, WritesPerMsg)));
-            Assert.Equal(GetMessage("crit", 10, logMessage, null), GetMessage(sink.Writes.GetRange(1 * WritesPerMsg, WritesPerMsg)));
-            Assert.Equal(GetMessage("crit", 10, logMessage, null), GetMessage(sink.Writes.GetRange(2 * WritesPerMsg, WritesPerMsg)));
-            Assert.Equal(GetMessage("crit", 10, logMessage, null), GetMessage(sink.Writes.GetRange(3 * WritesPerMsg, WritesPerMsg)));
+            Assert.Equal(expected1, GetMessage(sink.Writes.GetRange(0 * WritesPerMsg, WritesPerMsg)));
+            Assert.Equal(expected2, GetMessage(sink.Writes.GetRange(1 * WritesPerMsg, WritesPerMsg)));
+            Assert.Equal(expected2, GetMessage(sink.Writes.GetRange(2 * WritesPerMsg, WritesPerMsg)));
+            Assert.Equal(expected2, GetMessage(sink.Writes.GetRange(3 * WritesPerMsg, WritesPerMsg)));
         }
 
         [Theory]
@@ -90,8 +105,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(null);
-            var logger = (ILogger)t.Item1;
-            var sink = t.Item2;
+            var logger = (ILogger)t.Logger;
+            var sink = t.Sink;
             var eventId = 10;
             var exception = new InvalidOperationException("Invalid value");
             var expectedHeader = CreateHeader(eventId);
@@ -113,7 +128,7 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(null);
-            var logger = (ILogger)t.Item1;
+            var logger = (ILogger)t.Logger;
 
             // Act & Assert
             Assert.Throws<ArgumentNullException>(() => logger.Log<object>(LogLevel.Trace, 1, "empty", new Exception(), null));
@@ -124,8 +139,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(null);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
             var expectedHeader = CreateHeader(0);
             var expectedMessage =
                     _paddingString
@@ -145,8 +160,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp((category, logLevel) => logLevel >= LogLevel.Critical);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
 
             // Act
             logger.Log(LogLevel.Warning, 0, _state, null, _defaultFormatter);
@@ -166,8 +181,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp((category, logLevel) => logLevel >= LogLevel.Error);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
 
             // Act
             logger.Log(LogLevel.Warning, 0, _state, null, null);
@@ -187,8 +202,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp((category, logLevel) => logLevel >= LogLevel.Warning);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
 
             // Act
             logger.Log(LogLevel.Information, 0, _state, null, null);
@@ -208,8 +223,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp((category, logLevel) => logLevel >= LogLevel.Information);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
 
             // Act
             logger.Log(LogLevel.Debug, 0, _state, null, null);
@@ -229,8 +244,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp((category, logLevel) => logLevel >= LogLevel.Debug);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
 
             // Act
             logger.Log(LogLevel.Trace, 0, _state, null, null);
@@ -250,8 +265,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp((category, logLevel) => logLevel >= LogLevel.Trace);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
 
             // Act
             logger.Log(LogLevel.Critical, 0, _state, null, _defaultFormatter);
@@ -270,8 +285,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(null);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
 
             // Act
             logger.Log(LogLevel.Critical, 0, _state, null, _defaultFormatter);
@@ -291,8 +306,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(null);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
 
             // Act
             logger.Log(LogLevel.Error, 0, _state, null, _defaultFormatter);
@@ -312,8 +327,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(null);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
 
             // Act
             logger.Log(LogLevel.Warning, 0, _state, null, _defaultFormatter);
@@ -333,8 +348,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(null);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
 
             // Act
             logger.Log(LogLevel.Information, 0, _state, null, _defaultFormatter);
@@ -354,8 +369,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(null);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
 
             // Act
             logger.Log(LogLevel.Debug, 0, _state, null, _defaultFormatter);
@@ -375,8 +390,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(null);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
 
             // Act
             logger.Log(LogLevel.Trace, 0, _state, null, _defaultFormatter);
@@ -391,31 +406,27 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
         }
 
-        [Fact]
-        public void WriteCore_LogsCorrectMessages()
+        [Theory]
+        [MemberData(nameof(LevelsWithPrefixes))]
+        public void WriteCore_LogsCorrectMessages(LogLevel level, string prefix)
         {
             // Arrange
             var t = SetUp(null);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
             var ex = new Exception("Exception message" + Environment.NewLine + "with a second line");
 
             // Act
-            logger.Log(LogLevel.Critical, 0, _state, ex, _defaultFormatter);
-            logger.Log(LogLevel.Error, 0, _state, ex, _defaultFormatter);
-            logger.Log(LogLevel.Warning, 0, _state, ex, _defaultFormatter);
-            logger.Log(LogLevel.Information, 0, _state, ex, _defaultFormatter);
-            logger.Log(LogLevel.Debug, 0, _state, ex, _defaultFormatter);
-            logger.Log(LogLevel.Trace, 0, _state, ex, _defaultFormatter);
+            logger.Log(level, 0, _state, ex, _defaultFormatter);
 
             // Assert
-            Assert.Equal(12, sink.Writes.Count);
-            Assert.Equal(GetMessage("crit", 0, ex), GetMessage(sink.Writes.GetRange(0 * WritesPerMsg, WritesPerMsg)));
-            Assert.Equal(GetMessage("fail", 0, ex), GetMessage(sink.Writes.GetRange(1 * WritesPerMsg, WritesPerMsg)));
-            Assert.Equal(GetMessage("warn", 0, ex), GetMessage(sink.Writes.GetRange(2 * WritesPerMsg, WritesPerMsg)));
-            Assert.Equal(GetMessage("info", 0, ex), GetMessage(sink.Writes.GetRange(3 * WritesPerMsg, WritesPerMsg)));
-            Assert.Equal(GetMessage("dbug", 0, ex), GetMessage(sink.Writes.GetRange(4 * WritesPerMsg, WritesPerMsg)));
-            Assert.Equal(GetMessage("trce", 0, ex), GetMessage(sink.Writes.GetRange(5 * WritesPerMsg, WritesPerMsg)));
+            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(
+                prefix + ": test[0]" + Environment.NewLine +
+                "      This is a test, and {curly braces} are just fine!" + Environment.NewLine +
+                "System.Exception: Exception message" + Environment.NewLine +
+                "with a second line" + Environment.NewLine,
+                GetMessage(sink.Writes));
         }
 
         [Fact]
@@ -423,8 +434,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(filter: null, includeScopes: true);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
 
             // Act
             logger.Log(LogLevel.Warning, 0, _state, null, _defaultFormatter);
@@ -444,8 +455,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(filter: null, includeScopes: true);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
             var id = Guid.NewGuid();
             var scopeMessage = "RequestId: {RequestId}";
 
@@ -470,8 +481,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(filter: null, includeScopes: true);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
             var expectedHeader = CreateHeader(0);
             var expectedScope =
                 _paddingString
@@ -499,8 +510,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(filter: null, includeScopes: true);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
             var expectedHeader = CreateHeader(0);
             var expectedScope =
                 _paddingString
@@ -529,8 +540,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(filter: null, includeScopes: true);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
             var expectedHeader = CreateHeader(0);
             var expectedScope =
                 _paddingString
@@ -561,8 +572,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(filter: null, includeScopes: true);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
             var expectedHeader = CreateHeader(0);
             var expectedMessage = _paddingString + _state + Environment.NewLine;
             var expectedScope1 =
@@ -606,8 +617,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(null);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
 
             // Act
             var disposable1 = logger.BeginScope("Scope1");
@@ -624,8 +635,8 @@ namespace Microsoft.Extensions.Logging.Test
         {
             // Arrange
             var t = SetUp(null);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
 
             // Act
             var disposable = logger.BeginScope("Scope1");
@@ -759,79 +770,88 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(LogLevel.Information, logLevel);
         }
 
-        [Fact]
-        public void WriteCore_NullMessageWithException()
+        [Theory]
+        [MemberData(nameof(LevelsWithPrefixes))]
+        public void WriteCore_NullMessageWithException(LogLevel level, string prefix)
         {
             // Arrange
             var t = SetUp(null);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
+
             var ex = new Exception("Exception message" + Environment.NewLine + "with a second line");
             string message = null;
-            var expected = ex.ToString() + Environment.NewLine;
 
             // Act
-            logger.Log(LogLevel.Critical, 0, message, ex, (s, e) => s);
-            logger.Log(LogLevel.Error, 0, message, ex, (s, e) => s);
-            logger.Log(LogLevel.Warning, 0, message, ex, (s, e) => s);
-            logger.Log(LogLevel.Information, 0, message, ex, (s, e) => s);
-            logger.Log(LogLevel.Debug, 0, message, ex, (s, e) => s);
-            logger.Log(LogLevel.Trace, 0, message, ex, (s, e) => s);
+            logger.Log(level, 0, message, ex, (s, e) => s);
 
             // Assert
-            Assert.Equal(6, sink.Writes.Count);
-            Assert.Equal(expected, sink.Writes[0].Message);
-            Assert.Equal(expected, sink.Writes[1].Message);
-            Assert.Equal(expected, sink.Writes[2].Message);
-            Assert.Equal(expected, sink.Writes[3].Message);
-            Assert.Equal(expected, sink.Writes[4].Message);
-            Assert.Equal(expected, sink.Writes[5].Message);
+            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(
+                prefix + ": test[0]" + Environment.NewLine +
+                "System.Exception: Exception message" + Environment.NewLine +
+                "with a second line" + Environment.NewLine,
+                GetMessage(sink.Writes));
         }
 
-        [Fact]
-        public void WriteCore_MessageWithNullException()
+        [Theory]
+        [MemberData(nameof(LevelsWithPrefixes))]
+        public void WriteCore_EmptyMessageWithException(LogLevel level, string prefix)
         {
             // Arrange
             var t = SetUp(null);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
+            var ex = new Exception("Exception message" + Environment.NewLine + "with a second line");
+            string message = string.Empty;
+
+            // Act
+            logger.Log(level, 0, message, ex, (s, e) => s);
+
+            // Assert
+            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(
+                prefix + ": test[0]" + Environment.NewLine +
+                "System.Exception: Exception message" + Environment.NewLine +
+                "with a second line" + Environment.NewLine,
+                GetMessage(sink.Writes));
+        }
+
+        [Theory]
+        [MemberData(nameof(LevelsWithPrefixes))]
+        public void WriteCore_MessageWithNullException(LogLevel level, string prefix)
+        {
+            // Arrange
+            var t = SetUp(null);
+            var logger = t.Logger;
+            var sink = t.Sink;
             Exception ex = null;
 
             // Act
-            logger.Log(LogLevel.Critical, 0, _state, ex, (s, e) => s);
-            logger.Log(LogLevel.Error, 0, _state, ex, (s, e) => s);
-            logger.Log(LogLevel.Warning, 0, _state, ex, (s, e) => s);
-            logger.Log(LogLevel.Information, 0, _state, ex, (s, e) => s);
-            logger.Log(LogLevel.Debug, 0, _state, ex, (s, e) => s);
-            logger.Log(LogLevel.Trace, 0, _state, ex, (s, e) => s);
+            logger.Log(level, 0, _state, ex, (s, e) => s);
 
             // Assert
-            Assert.Equal(12, sink.Writes.Count);
-            Assert.Equal(GetMessage("crit", 0, ex), GetMessage(sink.Writes.GetRange(0 * WritesPerMsg, WritesPerMsg)));
-            Assert.Equal(GetMessage("fail", 0, ex), GetMessage(sink.Writes.GetRange(1 * WritesPerMsg, WritesPerMsg)));
-            Assert.Equal(GetMessage("warn", 0, ex), GetMessage(sink.Writes.GetRange(2 * WritesPerMsg, WritesPerMsg)));
-            Assert.Equal(GetMessage("info", 0, ex), GetMessage(sink.Writes.GetRange(3 * WritesPerMsg, WritesPerMsg)));
-            Assert.Equal(GetMessage("dbug", 0, ex), GetMessage(sink.Writes.GetRange(4 * WritesPerMsg, WritesPerMsg)));
-            Assert.Equal(GetMessage("trce", 0, ex), GetMessage(sink.Writes.GetRange(5 * WritesPerMsg, WritesPerMsg)));
+
+            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(
+                prefix + ": test[0]" + Environment.NewLine +
+                "      This is a test, and {curly braces} are just fine!" + Environment.NewLine,
+                GetMessage(sink.Writes));
         }
 
-        [Fact]
-        public void WriteCore_NullMessageWithNullException()
+        [Theory]
+        [MemberData(nameof(LevelsWithPrefixes))]
+        public void WriteCore_NullMessageWithNullException(LogLevel level, string prefix)
         {
             // Arrange
             var t = SetUp(null);
-            var logger = t.Item1;
-            var sink = t.Item2;
+            var logger = t.Logger;
+            var sink = t.Sink;
             Exception ex = null;
             string message = null;
 
             // Act
-            logger.Log(LogLevel.Critical, 0, message, ex, (s, e) => s);
-            logger.Log(LogLevel.Error, 0, message, ex, (s, e) => s);
-            logger.Log(LogLevel.Warning, 0, message, ex, (s, e) => s);
-            logger.Log(LogLevel.Information, 0, message, ex, (s, e) => s);
-            logger.Log(LogLevel.Debug, 0, message, ex, (s, e) => s);
-            logger.Log(LogLevel.Trace, 0, message, ex, (s, e) => s);
+            logger.Log(level, 0, message, ex, (s, e) => s);
 
             // Assert
             Assert.Equal(0, sink.Writes.Count);
@@ -855,29 +875,15 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.True(sink.Writes.Count == 2);
         }
 
-        private string GetMessage(string logLevelString, int eventId, Exception exception)
-            => GetMessage(logLevelString, eventId, _state, exception);
-
-        private string GetMessage<TState>(string logLevelString, int eventId, TState state, Exception exception)
+        public static TheoryData<LogLevel, string> LevelsWithPrefixes => new TheoryData<LogLevel, string>()
         {
-            var loglevelStringWithPadding = $"{logLevelString}: ";
-
-            return
-                loglevelStringWithPadding
-                + $"{_loggerName}[{eventId}]"
-                + Environment.NewLine
-                + _paddingString
-                + ReplaceMessageNewLinesWithPadding(state?.ToString())
-                + Environment.NewLine
-                + (exception != null
-                    ? exception.ToString() + Environment.NewLine
-                    : string.Empty);
-        }
-
-        private string ReplaceMessageNewLinesWithPadding(string message)
-        {
-            return message.Replace(Environment.NewLine, Environment.NewLine + _paddingString);
-        }
+            {LogLevel.Critical, "crit"},
+            {LogLevel.Error, "fail"},
+            {LogLevel.Warning, "warn"},
+            {LogLevel.Information, "info"},
+            {LogLevel.Debug, "dbug"},
+            {LogLevel.Trace, "trce"},
+        };
 
         private string GetMessage(List<ConsoleContext> contexts)
         {

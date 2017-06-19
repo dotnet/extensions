@@ -126,23 +126,26 @@ namespace Microsoft.Extensions.Logging.Console
             // Example:
             // INFO: ConsoleApp.Program[10]
             //       Request received
+
+            logLevelColors = GetLogLevelConsoleColors(logLevel);
+            logLevelString = GetLogLevelString(logLevel);
+            // category and event id
+            logBuilder.Append(_loglevelPadding);
+            logBuilder.Append(logName);
+            logBuilder.Append("[");
+            logBuilder.Append(eventId);
+            logBuilder.AppendLine("]");
+            // scope information
+            if (IncludeScopes)
+            {
+                GetScopeInformation(logBuilder);
+            }
+
             if (!string.IsNullOrEmpty(message))
             {
-                logLevelColors = GetLogLevelConsoleColors(logLevel);
-                logLevelString = GetLogLevelString(logLevel);
-                // category and event id
-                logBuilder.Append(_loglevelPadding);
-                logBuilder.Append(logName);
-                logBuilder.Append("[");
-                logBuilder.Append(eventId);
-                logBuilder.AppendLine("]");
-                // scope information
-                if (IncludeScopes)
-                {
-                    GetScopeInformation(logBuilder);
-                }
                 // message
                 logBuilder.Append(_messagePadding);
+
                 var len = logBuilder.Length;
                 logBuilder.AppendLine(message);
                 logBuilder.Replace(Environment.NewLine, _newLineWithMessagePadding, len, message.Length);
