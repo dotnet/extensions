@@ -19,13 +19,12 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Abstractions
         /// <summary>
         /// Initializes an instance of <see cref="DirectoryInfoWrapper" />.
         /// </summary>
-        /// <param name="directoryInfo">The <see cref="System.IO.DirectoryInfo" /></param>
-        /// <param name="isParentPath">
-        /// <c>true</c> when the <paramref name="directoryInfo" /> should be represented as the parent
-        /// directory with '..'
-        /// </param>
-        // TODO issue #229. Should isParentPath be exposed publically? It is an internal implementation detail
-        public DirectoryInfoWrapper(DirectoryInfo directoryInfo, bool isParentPath = false)
+        /// <param name="directoryInfo">The <see cref="DirectoryInfo" />.</param>
+        public DirectoryInfoWrapper(DirectoryInfo directoryInfo)
+            : this(directoryInfo, isParentPath: false)
+        { }
+
+        private DirectoryInfoWrapper(DirectoryInfo directoryInfo, bool isParentPath)
         {
             _directoryInfo = directoryInfo;
             _isParentPath = isParentPath;

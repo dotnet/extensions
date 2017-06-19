@@ -1,0 +1,7 @@
+[
+    {
+        "TypeId": "public class Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoWrapper : Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase",
+        "MemberId": "public .ctor(System.IO.DirectoryInfo directoryInfo, System.Boolean isParentPath = False)",
+        "Kind": "Removal"
+    }
+]
