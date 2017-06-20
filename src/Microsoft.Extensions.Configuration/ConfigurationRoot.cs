@@ -37,6 +37,11 @@ namespace Microsoft.Extensions.Configuration
         }
 
         /// <summary>
+        /// The <see cref="IConfigurationProvider"/>s for this configuration.
+        /// </summary>
+        public IEnumerable<IConfigurationProvider> Providers => _providers;
+
+        /// <summary>
         /// Gets or sets the value corresponding to a configuration key.
         /// </summary>
         /// <param name="key">The configuration key.</param>

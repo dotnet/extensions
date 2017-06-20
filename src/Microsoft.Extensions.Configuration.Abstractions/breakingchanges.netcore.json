@@ -1,0 +1,7 @@
+[
+    {
+      "TypeId": "public interface Microsoft.Extensions.Configuration.IConfigurationRoot : Microsoft.Extensions.Configuration.IConfiguration",
+      "MemberId": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Configuration.IConfigurationProvider> get_Providers()",
+      "Kind": "Addition"
+    }
+]

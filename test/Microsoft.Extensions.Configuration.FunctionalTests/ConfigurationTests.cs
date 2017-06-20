@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -857,6 +858,23 @@ IniKey1=IniValue2");
 
             File.Delete(jsonConfigFilePath);
             File.Delete(xmlConfigFilePath);
+        }
+
+        [Fact]
+        public void CanEnumerateProviders()
+        {
+            // Arrange
+            var config = CreateBuilder()
+                .AddIniFile(_iniFile, optional: true, reloadOnChange: true)
+                .AddJsonFile(_jsonFile, optional: true, reloadOnChange: true)
+                .AddXmlFile(_xmlFile, optional: true, reloadOnChange: true)
+                .Build();
+
+            var providers = config.Providers;
+            Assert.Equal(3, providers.Count());
+            Assert.NotNull(providers.Single(p => p is JsonConfigurationProvider));
+            Assert.NotNull(providers.Single(p => p is XmlConfigurationProvider));
+            Assert.NotNull(providers.Single(p => p is IniConfigurationProvider));
         }
 
         public void Dispose()
