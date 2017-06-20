@@ -17,6 +17,9 @@ namespace Microsoft.Extensions.Internal
             Exception exception = null;
             try
             {
+                // Throwing an exception in the current assembly always seems to populate the full stack
+                // trace regardless of symbol type. Crossing assembly boundaries ensures PortablePdbReader gets used
+                // on desktop.
                 Thrower.Throw();
             }
             catch (Exception ex)
