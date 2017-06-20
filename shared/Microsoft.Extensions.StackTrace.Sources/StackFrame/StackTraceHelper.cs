@@ -20,32 +20,41 @@ namespace Microsoft.Extensions.StackTrace.Sources
                 return frames;
             }
 
-            var needFileInfo = true;
-            var stackTrace = new System.Diagnostics.StackTrace(exception, needFileInfo);
-            var stackFrames = stackTrace.GetFrames();
-
-            if (stackFrames == null)
+            using (var portablePdbReader = new PortablePdbReader())
             {
+                var needFileInfo = true;
+                var stackTrace = new System.Diagnostics.StackTrace(exception, needFileInfo);
+                var stackFrames = stackTrace.GetFrames();
+
+                if (stackFrames == null)
+                {
+                    return frames;
+                }
+
+                foreach (var frame in stackFrames)
+                {
+                    var method = frame.GetMethod();
+
+                    var stackFrame = new StackFrameInfo
+                    {
+                        StackFrame = frame,
+                        FilePath = frame.GetFileName(),
+                        LineNumber = frame.GetFileLineNumber(),
+                        MethodDisplayInfo = GetMethodDisplayString(frame.GetMethod()),
+                    };
+
+                    if (string.IsNullOrEmpty(stackFrame.FilePath))
+                    {
+                        // .NET Framework and older versions of mono don't support portable PDBs
+                        // so we read it manually to get file name and line information
+                        portablePdbReader.PopulateStackFrame(stackFrame, method, frame.GetILOffset());
+                    }
+
+                    frames.Add(stackFrame);
+                }
+
                 return frames;
             }
-
-            foreach (var frame in stackFrames)
-            {
-                var method = frame.GetMethod();
-
-                var stackFrame = new StackFrameInfo
-                {
-                    StackFrame = frame,
-                    FilePath = frame.GetFileName(),
-                    LineNumber = frame.GetFileLineNumber(),
-                    MethodDisplayInfo = GetMethodDisplayString(frame.GetMethod()),
-                };
-
-                frames.Add(stackFrame);
-
-            }
-
-            return frames;
         }
 
         internal static MethodDisplayInfo GetMethodDisplayString(MethodBase method)
@@ -110,6 +119,5 @@ namespace Microsoft.Extensions.StackTrace.Sources
 
             return methodDisplayInfo;
         }
-
     }
 }
