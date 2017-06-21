@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.Internal
                 frame =>
                 {
                     Assert.Contains("Thrower.cs", frame.FilePath);
-                    Assert.Equal(12, frame.LineNumber);
+                    Assert.Equal(15, frame.LineNumber);
                 },
                 frame =>
                 {
