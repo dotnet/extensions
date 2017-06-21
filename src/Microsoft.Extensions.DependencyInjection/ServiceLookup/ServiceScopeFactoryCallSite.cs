@@ -5,12 +5,9 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    /// <summary>
-    /// Summary description for IServiceCallSite
-    /// </summary>
-    internal interface IServiceCallSite
+    internal class ServiceScopeFactoryCallSite : IServiceCallSite
     {
-        Type ServiceType { get; }
-        Type ImplementationType { get; }
+        public Type ServiceType { get; } = typeof(IServiceScopeFactory);
+        public Type ImplementationType { get; } = typeof(ServiceScopeFactory);
     }
 }

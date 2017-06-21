@@ -5,7 +5,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class SingletonCallSite : ScopedCallSite
     {
-        public SingletonCallSite(IService key, IServiceCallSite serviceCallSite) : base(key, serviceCallSite)
+        public SingletonCallSite(IServiceCallSite serviceCallSite, object cacheKey) : base(serviceCallSite, cacheKey)
         {
         }
     }

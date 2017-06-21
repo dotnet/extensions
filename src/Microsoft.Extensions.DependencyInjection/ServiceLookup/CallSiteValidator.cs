@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
@@ -61,11 +60,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return result;
         }
 
-        protected override Type VisitClosedIEnumerable(ClosedIEnumerableCallSite closedIEnumerableCallSite,
+        protected override Type VisitIEnumerable(IEnumerableCallSite enumerableCallSite,
             CallSiteValidatorState state)
         {
             Type result = null;
-            foreach (var serviceCallSite in closedIEnumerableCallSite.ServiceCallSites)
+            foreach (var serviceCallSite in enumerableCallSite.ServiceCallSites)
             {
                 var scoped = VisitCallSite(serviceCallSite, state);
                 if (result == null)
@@ -85,35 +84,31 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         protected override Type VisitScoped(ScopedCallSite scopedCallSite, CallSiteValidatorState state)
         {
             // We are fine with having ServiceScopeService requested by singletons
-            if (scopedCallSite.ServiceCallSite is ServiceScopeService)
+            if (scopedCallSite.ServiceCallSite is ServiceScopeFactoryCallSite)
             {
                 return null;
             }
             if (state.Singleton != null)
             {
                 throw new InvalidOperationException(Resources.FormatScopedInSingletonException(
-                    scopedCallSite.Key.ServiceType,
-                    state.Singleton.Key.ServiceType,
+                    scopedCallSite.ServiceType,
+                    state.Singleton.ServiceType,
                     nameof(ServiceLifetime.Scoped).ToLowerInvariant(),
                     nameof(ServiceLifetime.Singleton).ToLowerInvariant()
                     ));
             }
-            return scopedCallSite.Key.ServiceType;
+            return scopedCallSite.ServiceType;
         }
 
         protected override Type VisitConstant(ConstantCallSite constantCallSite, CallSiteValidatorState state) => null;
 
         protected override Type VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, CallSiteValidatorState state) => null;
 
-        protected override Type VisitInstanceService(InstanceService instanceCallSite, CallSiteValidatorState state) => null;
+        protected override Type VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, CallSiteValidatorState state) => null;
 
-        protected override Type VisitServiceProviderService(ServiceProviderService serviceProviderService, CallSiteValidatorState state) => null;
+        protected override Type VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, CallSiteValidatorState state) => null;
 
-        protected override Type VisitEmptyIEnumerable(EmptyIEnumerableCallSite emptyIEnumerableCallSite, CallSiteValidatorState state) => null;
-
-        protected override Type VisitServiceScopeService(ServiceScopeService serviceScopeService, CallSiteValidatorState state) => null;
-
-        protected override Type VisitFactoryService(FactoryService factoryService, CallSiteValidatorState state) => null;
+        protected override Type VisitFactory(FactoryCallSite factoryCallSite, CallSiteValidatorState state) => null;
 
         internal struct CallSiteValidatorState
         {
