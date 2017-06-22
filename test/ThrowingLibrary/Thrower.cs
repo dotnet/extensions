@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 
 namespace ThrowingLibrary
 {
@@ -10,6 +11,7 @@ namespace ThrowingLibrary
     // across assemblies which is the typical use case for StackTraceHelper.
     public static class Thrower
     {
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void Throw()
         {
             throw new DivideByZeroException();
