@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <ExcludeFromTest Include="$(RepositoryRoot)test\ThrowingLibrary\ThrowingLibrary.csproj" />
+  </ItemGroup>
+</Project>
