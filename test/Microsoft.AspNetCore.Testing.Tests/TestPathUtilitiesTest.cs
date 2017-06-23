@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Testing
         {
             // Directory.GetCurrentDirectory() gives:
             // Testing\test\Microsoft.AspNetCore.Testing.Tests\bin\Debug\netcoreapp2.0
+            // Testing\test\Microsoft.AspNetCore.Testing.Tests\bin\Debug\net461
             // Testing\test\Microsoft.AspNetCore.Testing.Tests\bin\Debug\net46
             var expectedPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", ".."));
 

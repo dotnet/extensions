@@ -5,6 +5,10 @@ env:
   global:
     - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     - DOTNET_CLI_TELEMETRY_OPTOUT: 1
+addons:
+  apt:
+    packages:
+    - libunwind8
 mono: none
 os:
   - linux
