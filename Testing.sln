@@ -20,8 +20,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{7C1BE4D4
 		build\dependencies.props = build\dependencies.props
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Testing.FunctionalTests", "test\Microsoft.AspNetCore.Testing.FunctionalTests\Microsoft.AspNetCore.Testing.FunctionalTests.csproj", "{247A76E7-C5FA-4791-8554-00C41619437D}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,10 +38,6 @@ Global
 		{C9F758D6-17A3-4BF1-BCCD-972B1DA959FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9F758D6-17A3-4BF1-BCCD-972B1DA959FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9F758D6-17A3-4BF1-BCCD-972B1DA959FC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{247A76E7-C5FA-4791-8554-00C41619437D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{247A76E7-C5FA-4791-8554-00C41619437D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{247A76E7-C5FA-4791-8554-00C41619437D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{247A76E7-C5FA-4791-8554-00C41619437D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,7 +47,6 @@ Global
 		{25D18D0B-119C-4AB4-BCA6-AC06179335FA} = {09F799F3-E521-466F-B155-B89E2746C8C9}
 		{C9F758D6-17A3-4BF1-BCCD-972B1DA959FC} = {09F799F3-E521-466F-B155-B89E2746C8C9}
 		{7C1BE4D4-DBC3-4C9B-A024-E61463865F4B} = {51D93BE9-A094-4ADD-911D-FA2A2E72D6D0}
-		{247A76E7-C5FA-4791-8554-00C41619437D} = {09F799F3-E521-466F-B155-B89E2746C8C9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {54BCEE86-DB31-476C-AC15-B717855B1897}
