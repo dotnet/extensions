@@ -145,7 +145,7 @@ namespace Microsoft.Extensions.Internal
         public static bool TryGetDefaultValue(ParameterInfo constructorParameter, out object defaultValue)
         {
             bool hasDefaultValue;
-            bool tryToGetDefaultValue = true;
+            var tryToGetDefaultValue = true;
             defaultValue = null;
 
             try
