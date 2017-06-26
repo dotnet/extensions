@@ -1,0 +1,12 @@
+[
+    {
+      "TypeId": "public class Microsoft.Extensions.Options.OptionsManager<T0> : Microsoft.Extensions.Options.IOptions<T0> where T0 : class, new()",
+      "MemberId": "public .ctor(System.Collections.Generic.IEnumerable<Microsoft.Extensions.Options.IConfigureOptions<T0>> setups)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public interface Microsoft.Extensions.Options.IOptionsMonitor<T0>",
+      "MemberId": "T0 Get(System.String name)",
+      "Kind": "Addition"
+    }
+]

@@ -13,21 +13,22 @@ namespace Microsoft.Extensions.Options
     /// <typeparam name="TOptions"></typeparam>
     public class OptionsMonitor<TOptions> : IOptionsMonitor<TOptions> where TOptions : class, new()
     {
-        private LegacyOptionsCache<TOptions> _optionsCache;
-        private readonly IEnumerable<IConfigureOptions<TOptions>> _setups;
+        private readonly IOptionsCache<TOptions> _cache;
+        private readonly IOptionsFactory<TOptions> _factory;
         private readonly IEnumerable<IOptionsChangeTokenSource<TOptions>> _sources;
         private List<Action<TOptions>> _listeners = new List<Action<TOptions>>();
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="setups">The configuration actions to run on an options instance.</param>
+        /// <param name="factory">The factory to use to create options.</param>
         /// <param name="sources">The sources used to listen for changes to the options instance.</param>
-        public OptionsMonitor(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IOptionsChangeTokenSource<TOptions>> sources)
+        /// <param name="cache">The cache used to store options.</param>
+        public OptionsMonitor(IOptionsFactory<TOptions> factory, IEnumerable<IOptionsChangeTokenSource<TOptions>> sources, IOptionsCache<TOptions> cache)
         {
+            _factory = factory;
             _sources = sources;
-            _setups = setups;
-            _optionsCache = new LegacyOptionsCache<TOptions>(setups);
+            _cache = cache;
 
             foreach (var source in _sources)
             {
@@ -39,10 +40,11 @@ namespace Microsoft.Extensions.Options
 
         private void InvokeChanged()
         {
-            _optionsCache = new LegacyOptionsCache<TOptions>(_setups);
+            _cache.TryRemove(Options.DefaultName);
+            var options = CurrentValue;
             foreach (var listener in _listeners)
             {
-                listener?.Invoke(_optionsCache.Value);
+                listener?.Invoke(CurrentValue);
             }
         }
 
@@ -51,10 +53,16 @@ namespace Microsoft.Extensions.Options
         /// </summary>
         public TOptions CurrentValue
         {
-            get
+            get => Get(Options.DefaultName);
+        }
+
+        public virtual TOptions Get(string name)
+        {
+            if (name == null)
             {
-                return _optionsCache.Value;
+                throw new ArgumentNullException(nameof(name));
             }
+            return _cache.GetOrAdd(name, () => _factory.Create(name));
         }
 
         /// <summary>

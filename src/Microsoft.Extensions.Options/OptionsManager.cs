@@ -1,36 +1,44 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
+using System;
 
 namespace Microsoft.Extensions.Options
 {
     /// <summary>
-    /// Implementation of IOptions.
+    /// Implementation of IOptions and IOptionsSnapshot.
     /// </summary>
     /// <typeparam name="TOptions"></typeparam>
-    public class OptionsManager<TOptions> : IOptions<TOptions> where TOptions : class, new()
+    public class OptionsManager<TOptions> : IOptions<TOptions>, IOptionsSnapshot<TOptions> where TOptions : class, new()
     {
-        private LegacyOptionsCache<TOptions> _optionsCache;
+        private readonly IOptionsFactory<TOptions> _factory;
+        private readonly OptionsCache<TOptions> _cache = new OptionsCache<TOptions>(); // Note: this is a private cache
 
         /// <summary>
         /// Initializes a new instance with the specified options configurations.
         /// </summary>
-        /// <param name="setups">The configuration actions to run.</param>
-        public OptionsManager(IEnumerable<IConfigureOptions<TOptions>> setups)
+        /// <param name="factory">The factory to use to create options.</param>
+        public OptionsManager(IOptionsFactory<TOptions> factory)
         {
-            _optionsCache = new LegacyOptionsCache<TOptions>(setups);
+            _factory = factory;
         }
 
-        /// <summary>
-        /// The configured options instance.
-        /// </summary>
-        public virtual TOptions Value
+        public TOptions Value
         {
             get
             {
-                return _optionsCache.Value;
+                return Get(Options.DefaultName);
             }
+        }
+
+        public virtual TOptions Get(string name)
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+            // Store the options in our instance cache
+            return _cache.GetOrAdd(name, () => _factory.Create(name));
         }
     }
 }

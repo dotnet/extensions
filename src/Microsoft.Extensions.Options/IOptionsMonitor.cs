@@ -12,9 +12,14 @@ namespace Microsoft.Extensions.Options
     public interface IOptionsMonitor<out TOptions>
     {
         /// <summary>
-        /// Returns the current TOptions instance.
+        /// Returns the current TOptions instance with the <see cref="Options.DefaultName"/>.
         /// </summary>
         TOptions CurrentValue { get; }
+
+        /// <summary>
+        /// Returns a configured TOptions instance with the given name.
+        /// </summary>
+        TOptions Get(string name);
 
         /// <summary>
         /// Registers a listener to be called whenever TOptions changes.

@@ -11,6 +11,20 @@ namespace Microsoft.Extensions.Options.Tests
 {
     public class OptionsMonitorTest
     {
+        [Fact]
+        public void MonitorUsesFactory()
+        {
+            var services = new ServiceCollection().AddOptions()
+                .AddSingleton<IOptionsFactory<FakeOptions>, FakeOptionsFactory>()
+                .Configure<FakeOptions>(o => o.Message = "Ignored")
+                .BuildServiceProvider();
+
+            var monitor = services.GetRequiredService<IOptionsMonitor<FakeOptions>>();
+            Assert.Equal(FakeOptionsFactory.Options, monitor.CurrentValue);
+            Assert.Equal(FakeOptionsFactory.Options, monitor.Get("1"));
+            Assert.Equal(FakeOptionsFactory.Options, monitor.Get("bsdfsdf"));
+        }
+
         public int SetupInvokeCount { get; set; }
 
         private class CountIncrement : IConfigureOptions<FakeOptions>

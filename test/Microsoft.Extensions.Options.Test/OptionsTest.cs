@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -14,6 +13,18 @@ namespace Microsoft.Extensions.Options.Tests
 {
     public class OptionsTest
     {
+        [Fact]
+        public void UsesFactory()
+        {
+            var services = new ServiceCollection().AddOptions()
+                .AddSingleton<IOptionsFactory<FakeOptions>, FakeOptionsFactory>()
+                .Configure<FakeOptions>(o => o.Message = "Ignored")
+                .BuildServiceProvider();
+
+            var snap = services.GetRequiredService<IOptions<FakeOptions>>();
+            Assert.Equal(FakeOptionsFactory.Options, snap.Value);
+        }
+
         public class ComplexOptions
         {
             public ComplexOptions()
@@ -159,6 +170,22 @@ namespace Microsoft.Extensions.Options.Tests
             var options = service.Value;
             Assert.NotNull(options);
             Assert.Equal("!az", options.Message);
+        }
+
+        [Fact]
+        public void PostConfiguresInRegistrationOrderAfterConfigures()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.Configure<FakeOptions>(o => o.Message += "_");
+            services.PostConfigure<FakeOptions>(o => o.Message += "A");
+            services.PostConfigure<FakeOptions>(o => o.Message += "B");
+            services.PostConfigure<FakeOptions>(o => o.Message += "C");
+            services.Configure<FakeOptions>(o => o.Message += "-");
+
+
+            var sp = services.BuildServiceProvider();
+            var option = sp.GetRequiredService<IOptions<FakeOptions>>().Value;
+            Assert.Equal("_-ABC", option.Message);
         }
 
         public static TheoryData Configure_GetsNullableOptionsFromConfiguration_Data
