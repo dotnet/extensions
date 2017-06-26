@@ -18,6 +18,8 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
             return null;
         }
 
+        public T Get(string name) => CurrentValue;
+
         public T CurrentValue { get; }
     }
 }

@@ -94,51 +94,62 @@ namespace Microsoft.Extensions.Logging
 
             // Only add the provider if we're in Azure WebApp. That cannot change once the apps started
             var fileOptions = new OptionsMonitor<AzureFileLoggerOptions>(
-                new IConfigureOptions<AzureFileLoggerOptions>[]
-                {
-                    new FileLoggerConfigureOptions(config, context),
-                    new ConfigureOptions<AzureFileLoggerOptions>(options =>
+                new OptionsFactory<AzureFileLoggerOptions>(
+                    new IConfigureOptions<AzureFileLoggerOptions>[]
                     {
-                        options.FileSizeLimit = settings.FileSizeLimit;
-                        options.RetainedFileCountLimit = settings.RetainedFileCountLimit;
-                        options.BackgroundQueueSize = settings.BackgroundQueueSize == 0 ? (int?) null : settings.BackgroundQueueSize;
-
-                        if (settings.FileFlushPeriod != null)
+                        new FileLoggerConfigureOptions(config, context),
+                        new ConfigureOptions<AzureFileLoggerOptions>(options =>
                         {
-                            options.FlushPeriod = settings.FileFlushPeriod.Value;
-                        }
-                    })
-                },
-                new []
+                            options.FileSizeLimit = settings.FileSizeLimit;
+                            options.RetainedFileCountLimit = settings.RetainedFileCountLimit;
+                            options.BackgroundQueueSize = settings.BackgroundQueueSize == 0 ? (int?) null : settings.BackgroundQueueSize;
+
+                            if (settings.FileFlushPeriod != null)
+                            {
+                                options.FlushPeriod = settings.FileFlushPeriod.Value;
+                            }
+                        })
+                    },
+                    new IPostConfigureOptions<AzureFileLoggerOptions>[0]
+                ),
+                new[]
                 {
                     new ConfigurationChangeTokenSource<AzureFileLoggerOptions>(config)
-                }
+                },
+                new OptionsCache<AzureFileLoggerOptions>()
             );
 
             var blobOptions = new OptionsMonitor<AzureBlobLoggerOptions>(
-                new IConfigureOptions<AzureBlobLoggerOptions>[] {
-                    new BlobLoggerConfigureOptions(config, context),
-                    new ConfigureOptions<AzureBlobLoggerOptions>(options =>
-                    {
-                        options.BlobName = settings.BlobName;
-                        options.FlushPeriod = settings.BlobCommitPeriod;
-                        options.BatchSize = settings.BlobBatchSize;
-                        options.BackgroundQueueSize = settings.BackgroundQueueSize == 0 ? (int?) null : settings.BackgroundQueueSize;
-                    })
-                },
+                new OptionsFactory<AzureBlobLoggerOptions>(
+                    new IConfigureOptions<AzureBlobLoggerOptions>[] {
+                        new BlobLoggerConfigureOptions(config, context),
+                        new ConfigureOptions<AzureBlobLoggerOptions>(options =>
+                        {
+                            options.BlobName = settings.BlobName;
+                            options.FlushPeriod = settings.BlobCommitPeriod;
+                            options.BatchSize = settings.BlobBatchSize;
+                            options.BackgroundQueueSize = settings.BackgroundQueueSize == 0 ? (int?) null : settings.BackgroundQueueSize;
+                        })
+                    },
+                    new IPostConfigureOptions<AzureBlobLoggerOptions>[0]
+                ),
                 new[]
                 {
                     new ConfigurationChangeTokenSource<AzureBlobLoggerOptions>(config)
-                }
+                },
+                new OptionsCache<AzureBlobLoggerOptions>()
             );
 
             var filterOptions = new OptionsMonitor<LoggerFilterOptions>(
-                new []
-                {
-                    CreateFileFilterConfigureOptions(config),
-                    CreateBlobFilterConfigureOptions(config)
-                },
-                new [] { new ConfigurationChangeTokenSource<LoggerFilterOptions>(config) });
+                new OptionsFactory<LoggerFilterOptions>(
+                    new[]
+                    {
+                        CreateFileFilterConfigureOptions(config),
+                        CreateBlobFilterConfigureOptions(config)
+                    },
+                    new IPostConfigureOptions<LoggerFilterOptions>[0]),
+                new [] { new ConfigurationChangeTokenSource<LoggerFilterOptions>(config) },
+                new OptionsCache<LoggerFilterOptions>());
 
             factory.AddProvider(new ForwardingLoggerProvider(
                 new LoggerFactory(

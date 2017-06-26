@@ -18,6 +18,8 @@ namespace Microsoft.Extensions.Logging
             return null;
         }
 
+        public LoggerFilterOptions Get(string name) => CurrentValue;
+
         public LoggerFilterOptions CurrentValue { get; }
     }
 }
