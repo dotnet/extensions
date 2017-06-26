@@ -111,7 +111,8 @@ namespace Microsoft.Extensions.Internal
 
             for (var i = 0; i < constructorParameters.Length; i++)
             {
-                var parameterType = constructorParameters[i].ParameterType;
+                var constructorParameter = constructorParameters[i];
+                var parameterType = constructorParameter.ParameterType;
 
                 if (parameterMap[i] != null)
                 {
@@ -119,7 +120,7 @@ namespace Microsoft.Extensions.Internal
                 }
                 else
                 {
-                    var constructorParameterHasDefault = constructorParameters[i].HasDefaultValue;
+                    var constructorParameterHasDefault = constructorParameter.HasDefaultValue;
                     var parameterTypeExpression = new Expression[] { serviceProvider,
                         Expression.Constant(parameterType, typeof(Type)),
                         Expression.Constant(constructor.DeclaringType, typeof(Type)),
@@ -129,9 +130,16 @@ namespace Microsoft.Extensions.Internal
 
                 // Support optional constructor arguments by passing in the default value
                 // when the argument would otherwise be null.
-                if (constructorParameters[i].HasDefaultValue)
+                if (constructorParameter.HasDefaultValue)
                 {
-                    var defaultValueExpression = Expression.Constant(constructorParameters[i].DefaultValue);
+                    var defaultValue = constructorParameter.DefaultValue;
+                    // TODO: workaround for https://github.com/dotnet/corefx/issues/11797
+                    if (defaultValue == null && constructorParameter.ParameterType.IsValueType)
+                    {
+                        defaultValue = Activator.CreateInstance(constructorParameter.ParameterType);
+                    }
+
+                    var defaultValueExpression = Expression.Constant(defaultValue);
                     constructorArguments[i] = Expression.Coalesce(constructorArguments[i], defaultValueExpression);
                 }
 
