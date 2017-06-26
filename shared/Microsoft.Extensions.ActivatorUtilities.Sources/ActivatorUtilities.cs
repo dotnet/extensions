@@ -113,6 +113,7 @@ namespace Microsoft.Extensions.Internal
             {
                 var constructorParameter = constructorParameters[i];
                 var parameterType = constructorParameter.ParameterType;
+                var hasDefaultValue = TryGetDefaultValue(constructorParameter, out var defaultValue);
 
                 if (parameterMap[i] != null)
                 {
@@ -120,25 +121,17 @@ namespace Microsoft.Extensions.Internal
                 }
                 else
                 {
-                    var constructorParameterHasDefault = constructorParameter.HasDefaultValue;
                     var parameterTypeExpression = new Expression[] { serviceProvider,
                         Expression.Constant(parameterType, typeof(Type)),
                         Expression.Constant(constructor.DeclaringType, typeof(Type)),
-                        Expression.Constant(constructorParameterHasDefault) };
+                        Expression.Constant(hasDefaultValue) };
                     constructorArguments[i] = Expression.Call(GetServiceInfo, parameterTypeExpression);
                 }
 
                 // Support optional constructor arguments by passing in the default value
                 // when the argument would otherwise be null.
-                if (constructorParameter.HasDefaultValue)
+                if (hasDefaultValue)
                 {
-                    var defaultValue = constructorParameter.DefaultValue;
-                    // TODO: workaround for https://github.com/dotnet/corefx/issues/11797
-                    if (defaultValue == null && constructorParameter.ParameterType.IsValueType)
-                    {
-                        defaultValue = Activator.CreateInstance(constructorParameter.ParameterType);
-                    }
-
                     var defaultValueExpression = Expression.Constant(defaultValue);
                     constructorArguments[i] = Expression.Coalesce(constructorArguments[i], defaultValueExpression);
                 }
@@ -147,6 +140,42 @@ namespace Microsoft.Extensions.Internal
             }
 
             return Expression.New(constructor, constructorArguments);
+        }
+
+        public static bool TryGetDefaultValue(ParameterInfo constructorParameter, out object defaultValue)
+        {
+            bool hasDefaultValue;
+            bool tryToGetDefaultValue = true;
+            defaultValue = null;
+
+            try
+            {
+                hasDefaultValue = constructorParameter.HasDefaultValue;
+            }
+            catch (FormatException) when (constructorParameter.ParameterType == typeof(DateTime))
+            {
+                // TODO: workaround https://github.com/dotnet/corefx/issues/12338
+                // If HasDefaultValue throws FormatException for DateTime
+                // we expect it to have default value
+                hasDefaultValue = true;
+                tryToGetDefaultValue = false;
+            }
+
+            if (hasDefaultValue)
+            {
+                if (tryToGetDefaultValue)
+                {
+                    defaultValue = constructorParameter.DefaultValue;
+                }
+
+                // TODO: workaround for https://github.com/dotnet/corefx/issues/11797
+                if (defaultValue == null && constructorParameter.ParameterType.IsValueType)
+                {
+                    defaultValue = Activator.CreateInstance(constructorParameter.ParameterType);
+                }
+            }
+
+            return hasDefaultValue;
         }
 
         private static void FindApplicableConstructor(
@@ -280,13 +309,13 @@ namespace Microsoft.Extensions.Internal
                         var value = provider.GetService(_parameters[index].ParameterType);
                         if (value == null)
                         {
-                            if (!_parameters[index].HasDefaultValue)
+                            if (!TryGetDefaultValue(_parameters[index], out var defaultValue))
                             {
                                 throw new InvalidOperationException($"Unable to resolve service for type '{_parameters[index].ParameterType}' while attempting to activate '{_constructor.DeclaringType}'.");
                             }
                             else
                             {
-                                _parameterValues[index] = _parameters[index].DefaultValue;
+                                _parameterValues[index] = defaultValue;
                             }
                         }
                         else
