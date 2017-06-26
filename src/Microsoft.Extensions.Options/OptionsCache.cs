@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Options
     /// Used to cache TOptions instances.
     /// </summary>
     /// <typeparam name="TOptions">The type of options being requested.</typeparam>
-    public class OptionsCache<TOptions> : IOptionsCache<TOptions> where TOptions : class
+    public class OptionsCache<TOptions> : IOptionsMonitorCache<TOptions> where TOptions : class
     {
         private readonly ConcurrentDictionary<string, Lazy<TOptions>> _cache = new ConcurrentDictionary<string, Lazy<TOptions>>(StringComparer.Ordinal);
 

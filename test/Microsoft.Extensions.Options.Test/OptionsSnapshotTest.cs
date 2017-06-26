@@ -136,7 +136,7 @@ namespace Microsoft.Extensions.Options.Tests
                 .AddScoped<IConfigureOptions<FakeOptions>, TestConfigure>()
                 .BuildServiceProvider();
 
-            var cache = services.GetRequiredService<IOptionsCache<FakeOptions>>();
+            var cache = services.GetRequiredService<IOptionsMonitorCache<FakeOptions>>();
             var factory = services.GetRequiredService<IServiceScopeFactory>();
             FakeOptions options = null;
             FakeOptions namedOne = null;
@@ -191,7 +191,7 @@ namespace Microsoft.Extensions.Options.Tests
             CheckLifetime(services, typeof(IOptions<>), ServiceLifetime.Singleton);
             CheckLifetime(services, typeof(IOptionsMonitor<>), ServiceLifetime.Singleton);
             CheckLifetime(services, typeof(IOptionsSnapshot<>), ServiceLifetime.Scoped);
-            CheckLifetime(services, typeof(IOptionsCache<>), ServiceLifetime.Singleton);
+            CheckLifetime(services, typeof(IOptionsMonitorCache<>), ServiceLifetime.Singleton);
             CheckLifetime(services, typeof(IOptionsFactory<>), ServiceLifetime.Transient);
         }
 

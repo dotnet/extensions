@@ -6,10 +6,10 @@ using System;
 namespace Microsoft.Extensions.Options
 {
     /// <summary>
-    /// Used to cache TOptions instances.
+    /// Used by <see cref="IOptionsMonitor{TOptions}"/> to cache TOptions instances.
     /// </summary>
     /// <typeparam name="TOptions">The type of options being requested.</typeparam>
-    public interface IOptionsCache<TOptions> where TOptions : class
+    public interface IOptionsMonitorCache<TOptions> where TOptions : class
     {
         TOptions GetOrAdd(string name, Func<TOptions> createOptions);
 

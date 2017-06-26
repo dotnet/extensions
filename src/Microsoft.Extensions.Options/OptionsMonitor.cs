@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Options
     /// <typeparam name="TOptions"></typeparam>
     public class OptionsMonitor<TOptions> : IOptionsMonitor<TOptions> where TOptions : class, new()
     {
-        private readonly IOptionsCache<TOptions> _cache;
+        private readonly IOptionsMonitorCache<TOptions> _cache;
         private readonly IOptionsFactory<TOptions> _factory;
         private readonly IEnumerable<IOptionsChangeTokenSource<TOptions>> _sources;
         private List<Action<TOptions>> _listeners = new List<Action<TOptions>>();
@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.Options
         /// <param name="factory">The factory to use to create options.</param>
         /// <param name="sources">The sources used to listen for changes to the options instance.</param>
         /// <param name="cache">The cache used to store options.</param>
-        public OptionsMonitor(IOptionsFactory<TOptions> factory, IEnumerable<IOptionsChangeTokenSource<TOptions>> sources, IOptionsCache<TOptions> cache)
+        public OptionsMonitor(IOptionsFactory<TOptions> factory, IEnumerable<IOptionsChangeTokenSource<TOptions>> sources, IOptionsMonitorCache<TOptions> cache)
         {
             _factory = factory;
             _sources = sources;
