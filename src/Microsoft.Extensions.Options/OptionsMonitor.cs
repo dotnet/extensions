@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Options
         private readonly IOptionsMonitorCache<TOptions> _cache;
         private readonly IOptionsFactory<TOptions> _factory;
         private readonly IEnumerable<IOptionsChangeTokenSource<TOptions>> _sources;
-        private List<Action<TOptions>> _listeners = new List<Action<TOptions>>();
+        internal event Action<TOptions> _onChange;
 
         /// <summary>
         /// Constructor.
@@ -42,9 +42,9 @@ namespace Microsoft.Extensions.Options
         {
             _cache.TryRemove(Options.DefaultName);
             var options = CurrentValue;
-            foreach (var listener in _listeners)
+            if (_onChange != null)
             {
-                listener?.Invoke(CurrentValue);
+                _onChange.Invoke(options);
             }
         }
 
@@ -72,26 +72,25 @@ namespace Microsoft.Extensions.Options
         /// <returns>An IDisposable which should be disposed to stop listening for changes.</returns>
         public IDisposable OnChange(Action<TOptions> listener)
         {
-            var disposable = new ChangeTrackerDisposable(_listeners, listener);
-            _listeners.Add(listener);
+            var disposable = new ChangeTrackerDisposable(this, listener);
+            _onChange += disposable.OnChange;
             return disposable;
         }
 
         internal class ChangeTrackerDisposable : IDisposable
         {
-            private readonly Action<TOptions> _originalListener;
-            private readonly IList<Action<TOptions>> _listeners;
+            private readonly Action<TOptions> _listener;
+            private readonly OptionsMonitor<TOptions> _monitor;
 
-            public ChangeTrackerDisposable(IList<Action<TOptions>> listeners, Action<TOptions> listener)
+            public ChangeTrackerDisposable(OptionsMonitor<TOptions> monitor, Action<TOptions> listener)
             {
-                _originalListener = listener;
-                _listeners = listeners;
+                _listener = listener;
+                _monitor = monitor;
             }
 
-            public void Dispose()
-            {
-                _listeners.Remove(_originalListener);
-            }
+            public void OnChange(TOptions options) => _listener.Invoke(options);
+
+            public void Dispose() => _monitor._onChange -= OnChange;
         }
     }
 }
