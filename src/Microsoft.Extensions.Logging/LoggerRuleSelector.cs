@@ -8,6 +8,9 @@ namespace Microsoft.Extensions.Logging
 {
     internal class LoggerRuleSelector
     {
+        private const string AliasAttibuteTypeFullName = "Microsoft.Extensions.Logging.ProviderAliasAttribute";
+        private const string AliasAttibuteAliasProperty = "Alias";
+
         public void Select(LoggerFilterOptions options, Type providerType, string category, out LogLevel? minLevel, out Func<string, string, LogLevel, bool> filter)
         {
             filter = null;
@@ -41,9 +44,22 @@ namespace Microsoft.Extensions.Logging
 
         private string GetAlias(Type providerType)
         {
-            return providerType.GetTypeInfo()
-                .GetCustomAttribute<ProviderAliasAttribute>()
-                ?.Alias;
+            foreach (var attribute in providerType.GetTypeInfo().GetCustomAttributes(inherit: false))
+            {
+                if (attribute.GetType().FullName == AliasAttibuteTypeFullName)
+                {
+                    var valueProperty = attribute
+                        .GetType()
+                        .GetProperty(AliasAttibuteAliasProperty, BindingFlags.Public | BindingFlags.Instance);
+
+                    if (valueProperty != null)
+                    {
+                        return valueProperty.GetValue(attribute) as string;
+                    }
+                }
+            }
+
+            return null;
         }
 
         private static bool IsBetter(LoggerFilterRule rule, LoggerFilterRule current, string logger, string category)
