@@ -10,7 +10,6 @@
     <SerilogExtensionsLoggingVersion>1.4.0</SerilogExtensionsLoggingVersion>
     <SerilogFileSinkVersion>3.2.0</SerilogFileSinkVersion>
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
-    <WindowsAzureStorageVersion>8.1.1</WindowsAzureStorageVersion>
     <XunitVersion>2.3.0-beta2-*</XunitVersion>
     <XunitAbstractionsVersion>2.0.1</XunitAbstractionsVersion>
   </PropertyGroup>

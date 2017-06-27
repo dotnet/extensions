@@ -21,7 +21,6 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(AspNetCoreVersion)" />
 
     <PackageReference Include="System.ValueTuple" Version="$(CoreFxVersion)" />
-    <PackageReference Include="WindowsAzure.Storage" Version="$(WindowsAzureStorageVersion)" />
   </ItemGroup>
 
 </Project>

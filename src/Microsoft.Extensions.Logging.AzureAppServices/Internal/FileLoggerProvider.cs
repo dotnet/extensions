@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
 {
+    [ProviderAlias("AzureAppServicesFile")]
     public class FileLoggerProvider : BatchingLoggerProvider
     {
         private readonly string _path;
