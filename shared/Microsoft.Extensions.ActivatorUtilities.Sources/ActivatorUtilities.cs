@@ -113,7 +113,7 @@ namespace Microsoft.Extensions.Internal
             {
                 var constructorParameter = constructorParameters[i];
                 var parameterType = constructorParameter.ParameterType;
-                var hasDefaultValue = ParameterHelper.TryGetDefaultValue(constructorParameter, out var defaultValue);
+                var hasDefaultValue = ParameterDefaultValue.TryGetDefaultValue(constructorParameter, out var defaultValue);
 
                 if (parameterMap[i] != null)
                 {
@@ -273,7 +273,7 @@ namespace Microsoft.Extensions.Internal
                         var value = provider.GetService(_parameters[index].ParameterType);
                         if (value == null)
                         {
-                            if (!ParameterHelper.TryGetDefaultValue(_parameters[index], out var defaultValue))
+                            if (!ParameterDefaultValue.TryGetDefaultValue(_parameters[index], out var defaultValue))
                             {
                                 throw new InvalidOperationException($"Unable to resolve service for type '{_parameters[index].ParameterType}' while attempting to activate '{_constructor.DeclaringType}'.");
                             }
