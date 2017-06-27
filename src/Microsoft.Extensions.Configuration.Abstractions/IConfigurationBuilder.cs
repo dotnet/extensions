@@ -14,12 +14,12 @@ namespace Microsoft.Extensions.Configuration
         /// Gets a key/value collection that can be used to share data between the <see cref="IConfigurationBuilder"/>
         /// and the registered <see cref="IConfigurationSource"/>s.
         /// </summary>
-        Dictionary<string, object> Properties { get; }
+        IDictionary<string, object> Properties { get; }
 
         /// <summary>
         /// Gets the sources used to obtain configuration values
         /// </summary>
-        IEnumerable<IConfigurationSource> Sources { get; }
+        IList<IConfigurationSource> Sources { get; }
 
         /// <summary>
         /// Adds a new configuration source.
