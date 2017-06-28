@@ -15,6 +15,7 @@
     <Compile Include="..\..\shared\Microsoft.Extensions.DotnetToolDispatcher.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.HashCodeCombiner.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.ObjectMethodExecutor.Sources\**\*.cs" />
+    <Compile Include="..\..\shared\Microsoft.Extensions.ParameterDefaultValue.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.PropertyActivator.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.PropertyHelper.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.SecurityHelper.Sources\**\*.cs" />

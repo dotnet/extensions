@@ -111,7 +111,9 @@ namespace Microsoft.Extensions.Internal
 
             for (var i = 0; i < constructorParameters.Length; i++)
             {
-                var parameterType = constructorParameters[i].ParameterType;
+                var constructorParameter = constructorParameters[i];
+                var parameterType = constructorParameter.ParameterType;
+                var hasDefaultValue = ParameterDefaultValue.TryGetDefaultValue(constructorParameter, out var defaultValue);
 
                 if (parameterMap[i] != null)
                 {
@@ -119,19 +121,18 @@ namespace Microsoft.Extensions.Internal
                 }
                 else
                 {
-                    var constructorParameterHasDefault = constructorParameters[i].HasDefaultValue;
                     var parameterTypeExpression = new Expression[] { serviceProvider,
                         Expression.Constant(parameterType, typeof(Type)),
                         Expression.Constant(constructor.DeclaringType, typeof(Type)),
-                        Expression.Constant(constructorParameterHasDefault) };
+                        Expression.Constant(hasDefaultValue) };
                     constructorArguments[i] = Expression.Call(GetServiceInfo, parameterTypeExpression);
                 }
 
                 // Support optional constructor arguments by passing in the default value
                 // when the argument would otherwise be null.
-                if (constructorParameters[i].HasDefaultValue)
+                if (hasDefaultValue)
                 {
-                    var defaultValueExpression = Expression.Constant(constructorParameters[i].DefaultValue);
+                    var defaultValueExpression = Expression.Constant(defaultValue);
                     constructorArguments[i] = Expression.Coalesce(constructorArguments[i], defaultValueExpression);
                 }
 
@@ -272,13 +273,13 @@ namespace Microsoft.Extensions.Internal
                         var value = provider.GetService(_parameters[index].ParameterType);
                         if (value == null)
                         {
-                            if (!_parameters[index].HasDefaultValue)
+                            if (!ParameterDefaultValue.TryGetDefaultValue(_parameters[index], out var defaultValue))
                             {
                                 throw new InvalidOperationException($"Unable to resolve service for type '{_parameters[index].ParameterType}' while attempting to activate '{_constructor.DeclaringType}'.");
                             }
                             else
                             {
-                                _parameterValues[index] = _parameters[index].DefaultValue;
+                                _parameterValues[index] = defaultValue;
                             }
                         }
                         else
