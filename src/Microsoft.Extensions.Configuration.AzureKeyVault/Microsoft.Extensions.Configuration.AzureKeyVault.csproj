@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>Azure KeyVault configuration provider implementation for Microsoft.Extensions.Configuration.</Description>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>configuration;azure;keyvault</PackageTags>
   </PropertyGroup>

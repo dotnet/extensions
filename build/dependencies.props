@@ -3,7 +3,7 @@
     <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
     <AzureKeyVaultVersion>2.2.1-preview</AzureKeyVaultVersion>
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
-    <IdentityModelActiveDirectoryVersion>3.13.9</IdentityModelActiveDirectoryVersion>
+    <IdentityModelActiveDirectoryVersion>3.14.0</IdentityModelActiveDirectoryVersion>
     <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <JsonNetVersion>10.0.1</JsonNetVersion>
     <MoqVersion>4.7.1</MoqVersion>
