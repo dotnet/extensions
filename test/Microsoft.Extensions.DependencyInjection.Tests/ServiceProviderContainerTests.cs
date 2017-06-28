@@ -116,6 +116,18 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             Assert.False(disposable.Disposed);
         }
 
+        [Fact]
+        public void ResolvesServiceMixedServiceAndOptionalStructConstructorArguments()
+        {
+            var disposable = new Disposable();
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IFakeService, FakeService>();
+            serviceCollection.AddSingleton<ClassWithServiceAndOptionalArgsCtorWithStructs>();
+
+            var provider = serviceCollection.BuildServiceProvider();
+            var service = provider.GetService<ClassWithServiceAndOptionalArgsCtorWithStructs>();
+        }
+
         private abstract class AbstractFakeOpenGenericService<T> : IFakeOpenGenericService<T>
         {
             public abstract T Value { get; }

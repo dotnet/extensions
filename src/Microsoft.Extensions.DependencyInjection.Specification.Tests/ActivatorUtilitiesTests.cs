@@ -99,6 +99,21 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
 
         [Theory]
         [MemberData(nameof(CreateInstanceFuncs))]
+        public void TypeActivatorWorksWithCtorWithOptionalArgs_WithStructDefaults(CreateInstanceFunc createFunc)
+        {
+            // Arrange
+            var provider = new TestServiceCollection();
+            var serviceProvider = CreateServiceProvider(provider);
+
+            // Act
+            var anotherClass = CreateInstance<ClassWithOptionalArgsCtorWithStructs>(createFunc, serviceProvider);
+
+            // Assert
+            Assert.NotNull(anotherClass);
+        }
+
+        [Theory]
+        [MemberData(nameof(CreateInstanceFuncs))]
         public void TypeActivatorCanDisambiguateConstructorsWithUniqueArguments(CreateInstanceFunc createFunc)
         {
             // Arrange
