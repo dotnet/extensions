@@ -540,5 +540,40 @@ namespace Microsoft.Extensions.DependencyInjection.Extensions
             collection.Add(descriptor);
             return collection;
         }
+
+        /// <summary>
+        /// Removes all services of type <typeparamef name="T"/> in <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="collection">The <see cref="IServiceCollection"/>.</param>
+        /// <returns></returns>
+        public static IServiceCollection RemoveAll<T>(this IServiceCollection collection)
+        {
+            return RemoveAll(collection, typeof(T));
+        }
+
+        /// <summary>
+        /// Removes all services of type <paramef name="serviceType"/> in <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="collection">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="serviceType">The service type to remove.</param>
+        /// <returns></returns>
+        public static IServiceCollection RemoveAll(this IServiceCollection collection, Type serviceType)
+        {
+            if (serviceType == null)
+            {
+                throw new ArgumentNullException(nameof(serviceType));
+            }
+
+            for (var i = collection.Count - 1; i >= 0; i--)
+            {
+                var descriptor = collection[i];
+                if (descriptor.ServiceType == serviceType)
+                {
+                    collection.RemoveAt(i);
+                }
+            }
+
+            return collection;
+        }
     }
 }
