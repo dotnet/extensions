@@ -11,10 +11,6 @@
     <EmbeddedResource Include="File.txt;sub\**\*;Resources\**\*" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)'=='net461'">
-    <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Extensions.FileProviders.Embedded\Microsoft.Extensions.FileProviders.Embedded.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(AspNetCoreVersion)" />
