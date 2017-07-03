@@ -12,6 +12,7 @@ namespace Microsoft.Extensions.Caching.Memory
         private DateTimeOffset? _absoluteExpiration;
         private TimeSpan? _absoluteExpirationRelativeToNow;
         private TimeSpan? _slidingExpiration;
+        private long? _size;
 
         /// <summary>
         /// Gets or sets an absolute expiration date for the cache entry.
@@ -90,5 +91,22 @@ namespace Microsoft.Extensions.Caching.Memory
         /// memory pressure triggered cleanup. The default is <see cref="CacheItemPriority.Normal"/>.
         /// </summary>
         public CacheItemPriority Priority { get; set; } = CacheItemPriority.Normal;
+
+        /// <summary>
+        /// Gets or sets the size of the cache entry value.
+        /// </summary>
+        public long? Size
+        {
+            get => _size;
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), value, $"{nameof(value)} must be non-negative.");
+                }
+
+                _size = value;
+            }
+        }
     }
 }

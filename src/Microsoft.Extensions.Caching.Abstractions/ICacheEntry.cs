@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// Gets or sets an absolute expiration date for the cache entry.
         /// </summary>
         DateTimeOffset? AbsoluteExpiration { get; set; }
-        
+
         /// <summary>
         /// Gets or sets an absolute expiration time, relative to now.
         /// </summary>
@@ -50,9 +50,13 @@ namespace Microsoft.Extensions.Caching.Memory
 
         /// <summary>
         /// Gets or sets the priority for keeping the cache entry in the cache during a
-        /// memory pressure triggered cleanup. The default is <see cref="CacheItemPriority.Normal"/>.
+        ///  cleanup. The default is <see cref="CacheItemPriority.Normal"/>.
         /// </summary>
         CacheItemPriority Priority { get; set; }
 
+        /// <summary>
+        /// Gets or set the size of the cache entry value.
+        /// </summary>
+        long? Size { get; set; }
     }
 }

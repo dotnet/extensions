@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.Caching.Memory
         TokenExpired,
 
         /// <summary>
-        /// GC, overflow
+        /// Overflow
         /// </summary>
         Capacity,
     }

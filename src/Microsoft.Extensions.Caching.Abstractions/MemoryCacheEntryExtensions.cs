@@ -22,6 +22,24 @@ namespace Microsoft.Extensions.Caching.Memory
         }
 
         /// <summary>
+        /// Sets the size of the cache entry value.
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="size"></param>
+        public static MemoryCacheEntryOptions SetSize(
+            this MemoryCacheEntryOptions options,
+            long size)
+        {
+            if (size < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size), size, $"{nameof(size)} must be non-negative.");
+            }
+
+            options.Size = size;
+            return options;
+        }
+
+        /// <summary>
         /// Expire the cache entry if the given <see cref="IChangeToken"/> expires.
         /// </summary>
         /// <param name="options">The <see cref="MemoryCacheEntryOptions"/>.</param>

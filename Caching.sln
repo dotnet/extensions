@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.9
+VisualStudioVersion = 15.0.26621.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Caching.Memory", "src\Microsoft.Extensions.Caching.Memory\Microsoft.Extensions.Caching.Memory.csproj", "{966D16D8-5D4E-4433-9DA7-F53EE44B7EE7}"
 EndProject
@@ -242,5 +242,8 @@ Global
 		{CD2A826A-A474-4491-94C8-43C557C68067} = {459E1593-2C11-42CB-AD17-F7597E69E5D2}
 		{17E332EB-D18D-4BF5-BCA5-989E36C78B79} = {459E1593-2C11-42CB-AD17-F7597E69E5D2}
 		{ADF83AC7-3776-4E62-A222-C6979C32DD2D} = {9E78AA8E-7870-46DE-A49F-856F5A0A9166}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {30FC4CB3-9789-4A49-939D-03398DBE03E0}
 	EndGlobalSection
 EndGlobal

@@ -65,6 +65,7 @@ namespace Microsoft.Extensions.Caching.Distributed
             memoryCacheEntryOptions.AbsoluteExpiration = options.AbsoluteExpiration;
             memoryCacheEntryOptions.AbsoluteExpirationRelativeToNow = options.AbsoluteExpirationRelativeToNow;
             memoryCacheEntryOptions.SlidingExpiration = options.SlidingExpiration;
+            memoryCacheEntryOptions.Size = value.Length;
 
             _memCache.Set(key, value, memoryCacheEntryOptions);
         }

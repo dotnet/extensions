@@ -23,6 +23,7 @@ namespace Microsoft.Extensions.Caching.Memory
         internal DateTimeOffset? _absoluteExpiration;
         internal TimeSpan? _absoluteExpirationRelativeToNow;
         private TimeSpan? _slidingExpiration;
+        private long? _size;
         private IDisposable _scope;
 
         internal readonly object _lock = new object();
@@ -152,6 +153,23 @@ namespace Microsoft.Extensions.Caching.Memory
         /// memory pressure triggered cleanup. The default is <see cref="CacheItemPriority.Normal"/>.
         /// </summary>
         public CacheItemPriority Priority { get; set; } = CacheItemPriority.Normal;
+
+        /// <summary>
+        /// Gets or sets the size of the cache entry value.
+        /// </summary>
+        public long? Size
+        {
+            get => _size;
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), value, $"{nameof(value)} must be non-negative.");
+                }
+
+                _size = value;
+            }
+        }
 
         public object Key { get; private set; }
 

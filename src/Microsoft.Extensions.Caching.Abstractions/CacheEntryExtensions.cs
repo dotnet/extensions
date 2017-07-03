@@ -134,6 +134,24 @@ namespace Microsoft.Extensions.Caching.Memory
         }
 
         /// <summary>
+        /// Sets the size of the cache entry value.
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <param name="size"></param>
+        public static ICacheEntry SetSize(
+            this ICacheEntry entry,
+            long size)
+        {
+            if (size < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size), size, $"{nameof(size)} must be non-negative.");
+            }
+
+            entry.Size = size;
+            return entry;
+        }
+
+        /// <summary>
         /// Applies the values of an existing <see cref="MemoryCacheEntryOptions"/> to the entry.
         /// </summary>
         /// <param name="entry"></param>
@@ -149,6 +167,7 @@ namespace Microsoft.Extensions.Caching.Memory
             entry.AbsoluteExpirationRelativeToNow = options.AbsoluteExpirationRelativeToNow;
             entry.SlidingExpiration = options.SlidingExpiration;
             entry.Priority = options.Priority;
+            entry.Size = options.Size;
 
             foreach (var expirationToken in options.ExpirationTokens)
             {

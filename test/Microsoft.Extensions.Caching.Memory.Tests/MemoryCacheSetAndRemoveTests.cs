@@ -444,7 +444,7 @@ namespace Microsoft.Extensions.Caching.Memory
                 }
             });
 
-            var task3 = Task.Delay(TimeSpan.FromSeconds(10));
+            var task3 = Task.Delay(TimeSpan.FromSeconds(7));
 
             Task.WaitAny(task0, task1, task2, task3);
 
@@ -456,6 +456,131 @@ namespace Microsoft.Extensions.Caching.Memory
 
             cts.Cancel();
             Task.WaitAll(task0, task1, task2, task3);
+        }
+
+        [Fact]
+        public void OvercapacityPurge_AreThreadSafe()
+        {
+            var cache = new MemoryCache(new MemoryCacheOptions
+            {
+                ExpirationScanFrequency = TimeSpan.Zero,
+                SizeLimit = 10,
+                CompactionPercentage = 0.5
+            });
+            var cts = new CancellationTokenSource();
+            var limitExceeded = false;
+
+            var task0 = Task.Run(() =>
+            {
+                while (!cts.IsCancellationRequested)
+                {
+                    if (cache.Size > 10)
+                    {
+                        limitExceeded = true;
+                        break;
+                    }
+                    cache.Set(Guid.NewGuid(), Guid.NewGuid(), new MemoryCacheEntryOptions { Size = 1 });
+                }
+            }, cts.Token);
+
+            var task1 = Task.Run(() =>
+            {
+                while (!cts.IsCancellationRequested)
+                {
+                    if (cache.Size > 10)
+                    {
+                        limitExceeded = true;
+                        break;
+                    }
+                    cache.Set(Guid.NewGuid(), Guid.NewGuid(), new MemoryCacheEntryOptions { Size = 1 });
+                }
+            }, cts.Token);
+
+            var task2 = Task.Run(() =>
+            {
+                while (!cts.IsCancellationRequested)
+                {
+                    if (cache.Size > 10)
+                    {
+                        limitExceeded = true;
+                        break;
+                    }
+                    cache.Set(Guid.NewGuid(), Guid.NewGuid(), new MemoryCacheEntryOptions { Size = 1 });
+                }
+            }, cts.Token);
+
+            cts.CancelAfter(TimeSpan.FromSeconds(5));
+            var task3 = Task.Delay(TimeSpan.FromSeconds(7));
+
+            Task.WaitAll(task0, task1, task2, task3);
+
+            Assert.Equal(TaskStatus.RanToCompletion, task0.Status);
+            Assert.Equal(TaskStatus.RanToCompletion, task1.Status);
+            Assert.Equal(TaskStatus.RanToCompletion, task2.Status);
+            Assert.Equal(TaskStatus.RanToCompletion, task3.Status);
+            Assert.Equal(cache.Count, cache.Size);
+            Assert.InRange(cache.Count, 0, 10);
+            Assert.False(limitExceeded);
+        }
+
+        [Fact]
+        public void AddAndReplaceEntries_AreThreadSafe()
+        {
+            var cache = new MemoryCache(new MemoryCacheOptions
+            {
+                ExpirationScanFrequency = TimeSpan.Zero,
+                SizeLimit = 20,
+                CompactionPercentage = 0.5
+            });
+            var cts = new CancellationTokenSource();
+
+            var random = new Random();
+
+            var task0 = Task.Run(() =>
+            {
+                while (!cts.IsCancellationRequested)
+                {
+                    var entrySize = random.Next(0, 5);
+                    cache.Set(random.Next(0, 10), entrySize, new MemoryCacheEntryOptions { Size = entrySize });
+                }
+            }, cts.Token);
+
+            var task1 = Task.Run(() =>
+            {
+                while (!cts.IsCancellationRequested)
+                {
+                    var entrySize = random.Next(0, 5);
+                    cache.Set(random.Next(0, 10), entrySize, new MemoryCacheEntryOptions { Size = entrySize });
+                }
+            }, cts.Token);
+
+            var task2 = Task.Run(() =>
+            {
+                while (!cts.IsCancellationRequested)
+                {
+                    var entrySize = random.Next(0, 5);
+                    cache.Set(random.Next(0, 10), entrySize, new MemoryCacheEntryOptions { Size = entrySize });
+                }
+            }, cts.Token);
+
+            cts.CancelAfter(TimeSpan.FromSeconds(5));
+            var task3 = Task.Delay(TimeSpan.FromSeconds(7));
+
+            Task.WaitAll(task0, task1, task2, task3);
+
+            Assert.Equal(TaskStatus.RanToCompletion, task0.Status);
+            Assert.Equal(TaskStatus.RanToCompletion, task1.Status);
+            Assert.Equal(TaskStatus.RanToCompletion, task2.Status);
+            Assert.Equal(TaskStatus.RanToCompletion, task3.Status);
+
+            var cacheSize = 0;
+            for (var i = 0; i < 10; i++)
+            {
+                cacheSize += cache.Get<int>(i);
+            }
+
+            Assert.Equal(cacheSize, cache.Size);
+            Assert.InRange(cache.Count, 0, 20);
         }
 
         private class TestKey
