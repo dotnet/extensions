@@ -16,6 +16,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         public Type ServiceType { get; }
-        public Type ImplementationType { get; } = typeof(object);
+        public Type ImplementationType => ServiceType;
     }
 }

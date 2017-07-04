@@ -125,6 +125,59 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [InlineData(ServiceLifetime.Transient)]
         // We are not testing singleton here because singleton resolutions always got through
         // runtime resolver and there is no sense to eliminating call from there
+        public void BuildExpressionAddsDisposableCaptureForDisposableServices(ServiceLifetime lifetime)
+        {
+            IServiceCollection descriptors = new ServiceCollection();
+            descriptors.Add(ServiceDescriptor.Describe(typeof(DisposableServiceA), typeof(DisposableServiceA), lifetime));
+            descriptors.Add(ServiceDescriptor.Describe(typeof(DisposableServiceB), typeof(DisposableServiceB), lifetime));
+            descriptors.Add(ServiceDescriptor.Describe(typeof(DisposableServiceC), typeof(DisposableServiceC), lifetime));
+
+            var disposables = new List<object>();
+            var provider = new ServiceProvider(descriptors, ServiceProviderOptions.Default);
+            provider._captureDisposableCallback = obj =>
+            {
+                disposables.Add(obj);
+            };
+            var callSite = provider.CallSiteFactory.CreateCallSite(typeof(DisposableServiceC), new HashSet<Type>());
+            var compiledCallSite = CompileCallSite(callSite);
+
+            var serviceC = (DisposableServiceC)compiledCallSite(provider);
+
+            Assert.Equal(3, disposables.Count);
+        }
+
+        [Theory]
+        [InlineData(ServiceLifetime.Scoped)]
+        [InlineData(ServiceLifetime.Transient)]
+        // We are not testing singleton here because singleton resolutions always got through
+        // runtime resolver and there is no sense to eliminating call from there
+        public void BuildExpressionAddsDisposableCaptureForDisposableFactoryServices(ServiceLifetime lifetime)
+        {
+            IServiceCollection descriptors = new ServiceCollection();
+            descriptors.Add(ServiceDescriptor.Describe(typeof(DisposableServiceA), typeof(DisposableServiceA), lifetime));
+            descriptors.Add(ServiceDescriptor.Describe(typeof(DisposableServiceB), typeof(DisposableServiceB), lifetime));
+            descriptors.Add(ServiceDescriptor.Describe(
+                typeof(DisposableServiceC), p => new DisposableServiceC(p.GetService<DisposableServiceB>()), lifetime));
+
+            var disposables = new List<object>();
+            var provider = new ServiceProvider(descriptors, ServiceProviderOptions.Default);
+            provider._captureDisposableCallback = obj =>
+            {
+                disposables.Add(obj);
+            };
+            var callSite = provider.CallSiteFactory.CreateCallSite(typeof(DisposableServiceC), new HashSet<Type>());
+            var compiledCallSite = CompileCallSite(callSite);
+
+            var serviceC = (DisposableServiceC)compiledCallSite(provider);
+
+            Assert.Equal(3, disposables.Count);
+        }
+
+        [Theory]
+        [InlineData(ServiceLifetime.Scoped)]
+        [InlineData(ServiceLifetime.Transient)]
+        // We are not testing singleton here because singleton resolutions always got through
+        // runtime resolver and there is no sense to eliminating call from there
         public void BuildExpressionElidesDisposableCaptureForNonDisposableServices(ServiceLifetime lifetime)
         {
             IServiceCollection descriptors = new ServiceCollection();
@@ -227,6 +280,37 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             }
 
             public ServiceB ServiceB { get; set; }
+        }
+
+        private class DisposableServiceA : ServiceA, IDisposable
+        {
+            public void Dispose()
+            {
+            }
+        }
+
+        private class DisposableServiceB : ServiceB, IDisposable
+        {
+            public DisposableServiceB(DisposableServiceA serviceA)
+                : base(serviceA)
+            {
+            }
+
+            public void Dispose()
+            {
+            }
+        }
+
+        private class DisposableServiceC : ServiceC, IDisposable
+        {
+            public DisposableServiceC(DisposableServiceB serviceB)
+                : base(serviceB)
+            {
+            }
+
+            public void Dispose()
+            {
+            }
         }
 
         private static object Invoke(IServiceCallSite callSite, ServiceProvider provider)

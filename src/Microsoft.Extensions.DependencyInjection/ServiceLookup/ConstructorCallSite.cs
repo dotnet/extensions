@@ -20,6 +20,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public Type ServiceType { get; }
 
-        public Type ImplementationType => ServiceType.DeclaringType;
+        public Type ImplementationType => ServiceType;
     }
 }
