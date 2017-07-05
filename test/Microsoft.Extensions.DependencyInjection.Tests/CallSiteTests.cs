@@ -123,14 +123,13 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Theory]
         [InlineData(ServiceLifetime.Scoped)]
         [InlineData(ServiceLifetime.Transient)]
-        // We are not testing singleton here because singleton resolutions always got through
-        // runtime resolver and there is no sense to eliminating call from there
+        [InlineData(ServiceLifetime.Singleton)]
         public void BuildExpressionAddsDisposableCaptureForDisposableServices(ServiceLifetime lifetime)
         {
             IServiceCollection descriptors = new ServiceCollection();
-            descriptors.Add(ServiceDescriptor.Describe(typeof(DisposableServiceA), typeof(DisposableServiceA), lifetime));
-            descriptors.Add(ServiceDescriptor.Describe(typeof(DisposableServiceB), typeof(DisposableServiceB), lifetime));
-            descriptors.Add(ServiceDescriptor.Describe(typeof(DisposableServiceC), typeof(DisposableServiceC), lifetime));
+            descriptors.Add(ServiceDescriptor.Describe(typeof(ServiceA), typeof(DisposableServiceA), lifetime));
+            descriptors.Add(ServiceDescriptor.Describe(typeof(ServiceB), typeof(DisposableServiceB), lifetime));
+            descriptors.Add(ServiceDescriptor.Describe(typeof(ServiceC), typeof(DisposableServiceC), lifetime));
 
             var disposables = new List<object>();
             var provider = new ServiceProvider(descriptors, ServiceProviderOptions.Default);
@@ -138,7 +137,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             {
                 disposables.Add(obj);
             };
-            var callSite = provider.CallSiteFactory.CreateCallSite(typeof(DisposableServiceC), new HashSet<Type>());
+            var callSite = provider.CallSiteFactory.CreateCallSite(typeof(ServiceC), new HashSet<Type>());
             var compiledCallSite = CompileCallSite(callSite);
 
             var serviceC = (DisposableServiceC)compiledCallSite(provider);
@@ -149,15 +148,14 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Theory]
         [InlineData(ServiceLifetime.Scoped)]
         [InlineData(ServiceLifetime.Transient)]
-        // We are not testing singleton here because singleton resolutions always got through
-        // runtime resolver and there is no sense to eliminating call from there
+        [InlineData(ServiceLifetime.Singleton)]
         public void BuildExpressionAddsDisposableCaptureForDisposableFactoryServices(ServiceLifetime lifetime)
         {
             IServiceCollection descriptors = new ServiceCollection();
-            descriptors.Add(ServiceDescriptor.Describe(typeof(DisposableServiceA), typeof(DisposableServiceA), lifetime));
-            descriptors.Add(ServiceDescriptor.Describe(typeof(DisposableServiceB), typeof(DisposableServiceB), lifetime));
+            descriptors.Add(ServiceDescriptor.Describe(typeof(ServiceA), typeof(DisposableServiceA), lifetime));
+            descriptors.Add(ServiceDescriptor.Describe(typeof(ServiceB), typeof(DisposableServiceB), lifetime));
             descriptors.Add(ServiceDescriptor.Describe(
-                typeof(DisposableServiceC), p => new DisposableServiceC(p.GetService<DisposableServiceB>()), lifetime));
+                typeof(ServiceC), p => new DisposableServiceC(p.GetService<ServiceB>()), lifetime));
 
             var disposables = new List<object>();
             var provider = new ServiceProvider(descriptors, ServiceProviderOptions.Default);
@@ -165,7 +163,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             {
                 disposables.Add(obj);
             };
-            var callSite = provider.CallSiteFactory.CreateCallSite(typeof(DisposableServiceC), new HashSet<Type>());
+            var callSite = provider.CallSiteFactory.CreateCallSite(typeof(ServiceC), new HashSet<Type>());
             var compiledCallSite = CompileCallSite(callSite);
 
             var serviceC = (DisposableServiceC)compiledCallSite(provider);
@@ -291,7 +289,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
         private class DisposableServiceB : ServiceB, IDisposable
         {
-            public DisposableServiceB(DisposableServiceA serviceA)
+            public DisposableServiceB(ServiceA serviceA)
                 : base(serviceA)
             {
             }
@@ -303,7 +301,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
         private class DisposableServiceC : ServiceC, IDisposable
         {
-            public DisposableServiceC(DisposableServiceB serviceB)
+            public DisposableServiceC(ServiceB serviceB)
                 : base(serviceB)
             {
             }
