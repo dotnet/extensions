@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Logging
@@ -21,6 +22,12 @@ namespace Microsoft.Extensions.Logging
         public static ILoggingBuilder AddProvider(this ILoggingBuilder builder, ILoggerProvider provider)
         {
             builder.Services.AddSingleton(provider);
+            return builder;
+        }
+
+        public static ILoggingBuilder ClearProviders(this ILoggingBuilder builder)
+        {
+            builder.Services.RemoveAll<ILoggerProvider>();
             return builder;
         }
     }

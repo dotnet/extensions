@@ -344,7 +344,7 @@ namespace Microsoft.Extensions.Logging.Test
             var provider = new TestLoggerProvider(new TestSink(), isEnabled: true);
             var factory = TestLoggerBuilder.Create(builder => builder
                 .AddProvider(provider)
-                .AddFilter<TestLoggerProvider>((name, cat, level) => level >= LogLevel.Warning));
+                .AddFilter<TestLoggerProvider>((cat, level) => level >= LogLevel.Warning));
 
             var logger = factory.CreateLogger("Sample.Test");
 
