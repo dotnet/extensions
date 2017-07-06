@@ -17,8 +17,4 @@
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Configuration.Json\Microsoft.Extensions.Configuration.Json.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" PrivateAssets="All" />
-  </ItemGroup>
-
 </Project>

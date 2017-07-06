@@ -11,10 +11,6 @@
     <ProjectReference Include="..\Microsoft.Extensions.Configuration.Test.Common\Microsoft.Extensions.Configuration.Test.Common.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Configuration.Xml\Microsoft.Extensions.Configuration.Xml.csproj" />
   </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)'=='net461'">
-    <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" />
-  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(AspNetCoreVersion)" />
