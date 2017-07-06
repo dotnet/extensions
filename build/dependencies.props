@@ -2,7 +2,7 @@
   <PropertyGroup>
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <FSharpCoreVersion>4.1.17</FSharpCoreVersion>
-    <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
+    <InternalAspNetCoreSdkVersion>2.0.1-*</InternalAspNetCoreSdkVersion>
     <MoqVersion>4.7.49</MoqVersion>
     <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
