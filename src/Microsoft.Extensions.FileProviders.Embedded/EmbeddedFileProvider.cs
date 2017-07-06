@@ -137,14 +137,8 @@ namespace Microsoft.Extensions.FileProviders
                 return NotFoundDirectoryContents.Singleton;
             }
 
-            // Relative paths starting with a leading slash okay
-            if (subpath.StartsWith("/", StringComparison.Ordinal))
-            {
-                subpath = subpath.Substring(1);
-            }
-
-            // Non-hierarchal.
-            if (!subpath.Equals(string.Empty))
+            // EmbeddedFileProvider only supports a flat file structure at the base namespace.
+            if (subpath.Length != 0 && !string.Equals(subpath, "/", StringComparison.Ordinal))
             {
                 return NotFoundDirectoryContents.Singleton;
             }
