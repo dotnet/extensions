@@ -156,7 +156,7 @@ namespace Microsoft.Extensions.FileProviders
             for (var i = 0; i < resources.Length; i++)
             {
                 var resourceName = resources[i];
-                if (resourceName.StartsWith(_baseNamespace))
+                if (resourceName.StartsWith(_baseNamespace, StringComparison.Ordinal))
                 {
                     entries.Add(new EmbeddedResourceFileInfo(
                         _assembly,
