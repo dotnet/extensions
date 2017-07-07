@@ -13,10 +13,7 @@ namespace Microsoft.Extensions.Logging
             CurrentValue = currentValue;
         }
 
-        public IDisposable OnChange(Action<LoggerFilterOptions> listener)
-        {
-            return null;
-        }
+        public IDisposable OnChange(Action<LoggerFilterOptions, string> listener) => null;
 
         public LoggerFilterOptions Get(string name) => CurrentValue;
 
