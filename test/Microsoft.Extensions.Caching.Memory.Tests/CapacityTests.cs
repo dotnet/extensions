@@ -13,6 +13,12 @@ namespace Microsoft.Extensions.Caching.Memory
     public class CapacityTests
     {
         [Fact]
+        public void MemoryDistributedCacheOptionsDefaultsTo200MBSizeLimit()
+        {
+            Assert.Equal(200 * 1024 * 1024, new MemoryDistributedCacheOptions().SizeLimit);
+        }
+
+        [Fact]
         public void NegativeSizeOnMemoryCacheEntryOptionsThrows()
         {
             var cacheEntryOptions = new MemoryCacheEntryOptions();

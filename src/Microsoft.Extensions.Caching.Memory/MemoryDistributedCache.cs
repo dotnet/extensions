@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Caching.Distributed
 {
@@ -14,14 +15,14 @@ namespace Microsoft.Extensions.Caching.Distributed
 
         private readonly IMemoryCache _memCache;
 
-        public MemoryDistributedCache(IMemoryCache memoryCache)
+        public MemoryDistributedCache(IOptions<MemoryDistributedCacheOptions> optionsAccessor)
         {
-            if (memoryCache == null)
+            if (optionsAccessor == null)
             {
-                throw new ArgumentNullException(nameof(memoryCache));
+                throw new ArgumentNullException(nameof(optionsAccessor));
             }
 
-            _memCache = memoryCache;
+            _memCache = new MemoryCache(optionsAccessor.Value);
         }
 
         public byte[] Get(string key)

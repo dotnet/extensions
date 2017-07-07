@@ -18,5 +18,10 @@
     "TypeId": "public class Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache : Microsoft.Extensions.Caching.Distributed.IDistributedCache",
     "MemberId": "public System.Threading.Tasks.Task<System.Byte[]> GetAsync(System.String key)",
     "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Extensions.Caching.Distributed.MemoryDistributedCache : Microsoft.Extensions.Caching.Distributed.IDistributedCache",
+    "MemberId": "public .ctor(Microsoft.Extensions.Caching.Memory.IMemoryCache memoryCache)",
+    "Kind": "Removal"
   }
 ]
