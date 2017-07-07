@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Logging.Console.Internal;
 using Microsoft.Extensions.Logging.Test.Console;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
@@ -875,6 +876,20 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.True(sink.Writes.Count == 2);
         }
 
+        [Fact]
+        public void ConsoleLoggerOptions_IncludeScopes_IsAppliedToLoggers()
+        {
+            // Arrange
+            var monitor = new TestOptionsMonitor(new ConsoleLoggerOptions() { IncludeScopes = true });
+            var loggerProvider = new ConsoleLoggerProvider(monitor);
+            var logger = (ConsoleLogger)loggerProvider.CreateLogger("Name");
+
+            // Act & Assert
+            Assert.True(logger.IncludeScopes);
+            monitor.Set(new ConsoleLoggerOptions() { IncludeScopes = false });
+            Assert.False(logger.IncludeScopes);
+        }
+
         public static TheoryData<LogLevel, string> LevelsWithPrefixes => new TheoryData<LogLevel, string>()
         {
             {LogLevel.Critical, "crit"},
@@ -931,6 +946,33 @@ namespace Microsoft.Extensions.Logging.Test
             {
                 WriteMessage(message);
             }
+        }
+    }
+
+    public class TestOptionsMonitor : IOptionsMonitor<ConsoleLoggerOptions>
+    {
+        private ConsoleLoggerOptions _options;
+        private event Action<ConsoleLoggerOptions> _onChange;
+
+        public TestOptionsMonitor(ConsoleLoggerOptions options)
+        {
+            _options = options;
+        }
+
+        public ConsoleLoggerOptions Get(string name) => _options;
+
+        public IDisposable OnChange(Action<ConsoleLoggerOptions> listener)
+        {
+            _onChange += listener;
+            return null;
+        }
+
+        public ConsoleLoggerOptions CurrentValue => _options;
+
+        public void Set(ConsoleLoggerOptions options)
+        {
+            _options = options;
+            _onChange?.Invoke(options);
         }
     }
 }

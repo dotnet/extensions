@@ -21,6 +21,7 @@ namespace Microsoft.Extensions.Logging.Console
         private static readonly Func<string, LogLevel, bool> trueFilter = (cat, level) => true;
         private static readonly Func<string, LogLevel, bool> falseFilter = (cat, level) => false;
         private IDisposable _optionsReloadToken;
+        private bool _includeScopes;
 
         public ConsoleLoggerProvider(Func<string, LogLevel, bool> filter, bool includeScopes)
         {
@@ -30,10 +31,7 @@ namespace Microsoft.Extensions.Logging.Console
             }
 
             _filter = filter;
-            _settings = new ConsoleLoggerSettings()
-            {
-                IncludeScopes = includeScopes,
-            };
+            _includeScopes = includeScopes;
         }
 
         public ConsoleLoggerProvider(IOptionsMonitor<ConsoleLoggerOptions> options)
@@ -46,10 +44,10 @@ namespace Microsoft.Extensions.Logging.Console
 
         private void ReloadLoggerOptions(ConsoleLoggerOptions options)
         {
-            var includeScopes = options.IncludeScopes;
+            _includeScopes = options.IncludeScopes;
             foreach (var logger in _loggers.Values)
             {
-                logger.IncludeScopes = includeScopes;
+                logger.IncludeScopes = _includeScopes;
             }
         }
 
@@ -104,7 +102,8 @@ namespace Microsoft.Extensions.Logging.Console
 
         private ConsoleLogger CreateLoggerImplementation(string name)
         {
-            return new ConsoleLogger(name, GetFilter(name, _settings), _settings?.IncludeScopes ?? false, _messageQueue);
+            var includeScopes = _settings?.IncludeScopes ?? _includeScopes;
+            return new ConsoleLogger(name, GetFilter(name, _settings), includeScopes, _messageQueue);
         }
 
         private Func<string, LogLevel, bool> GetFilter(string name, IConsoleLoggerSettings settings)
