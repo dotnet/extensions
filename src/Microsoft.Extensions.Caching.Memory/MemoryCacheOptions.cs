@@ -11,6 +11,9 @@ namespace Microsoft.Extensions.Caching.Memory
     {
         public ISystemClock Clock { get; set; }
 
+        [Obsolete("This is obsolete and will be removed in a future version.")]
+        public bool CompactOnMemoryPressure { get; set; }
+
         public TimeSpan ExpirationScanFrequency { get; set; } = TimeSpan.FromMinutes(1);
 
         MemoryCacheOptions IOptions<MemoryCacheOptions>.Value
