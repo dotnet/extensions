@@ -8,5 +8,15 @@
       "TypeId": "public interface Microsoft.Extensions.Options.IOptionsMonitor<T0>",
       "MemberId": "T0 Get(System.String name)",
       "Kind": "Addition"
+    },
+    {
+      "TypeId": "public interface Microsoft.Extensions.Options.IOptionsMonitor<T0>",
+      "MemberId": "System.IDisposable OnChange(System.Action<T0> listener)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public interface Microsoft.Extensions.Options.IOptionsMonitor<T0>",
+      "MemberId": "System.IDisposable OnChange(System.Action<T0, System.String> listener)",
+      "Kind": "Addition"
     }
 ]

@@ -14,6 +14,17 @@ namespace Microsoft.Extensions.Options
     {
         private readonly ConcurrentDictionary<string, Lazy<TOptions>> _cache = new ConcurrentDictionary<string, Lazy<TOptions>>(StringComparer.Ordinal);
 
+        /// <summary>
+        /// Clears all options instances from the cache.
+        /// </summary>
+        public void Clear() => _cache.Clear();
+
+        /// <summary>
+        /// Gets a named options instance, or adds a new instance created with createOptions.
+        /// </summary>
+        /// <param name="name">The name of the options instance.</param>
+        /// <param name="createOptions">The func used to create the new instance.</param>
+        /// <returns>The options instance.</returns>
         public virtual TOptions GetOrAdd(string name, Func<TOptions> createOptions)
         {
             if (name == null)
@@ -59,7 +70,5 @@ namespace Microsoft.Extensions.Options
             }
             return _cache.TryRemove(name, out var ignored);
         }
-
-        // Do we need a Clear all?
     }
 }

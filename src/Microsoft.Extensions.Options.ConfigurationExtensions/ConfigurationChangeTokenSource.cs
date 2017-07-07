@@ -34,6 +34,7 @@ namespace Microsoft.Extensions.Options
                 throw new ArgumentNullException(nameof(config));
             }
             _config = config;
+            Name = name ?? Options.DefaultName;
         }
 
         public string Name { get; }

@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Options
         private readonly IOptionsMonitorCache<TOptions> _cache;
         private readonly IOptionsFactory<TOptions> _factory;
         private readonly IEnumerable<IOptionsChangeTokenSource<TOptions>> _sources;
-        internal event Action<TOptions> _onChange;
+        internal event Action<TOptions, string> _onChange;
 
         /// <summary>
         /// Constructor.
@@ -32,19 +32,21 @@ namespace Microsoft.Extensions.Options
 
             foreach (var source in _sources)
             {
-                ChangeToken.OnChange(
+                ChangeToken.OnChange<string>(
                     () => source.GetChangeToken(),
-                    () => InvokeChanged());
+                    (name) => InvokeChanged(name),
+                    source.Name);
             }
         }
 
-        private void InvokeChanged()
+        private void InvokeChanged(string name)
         {
-            _cache.TryRemove(Options.DefaultName);
-            var options = CurrentValue;
+            name = name ?? Options.DefaultName;
+            _cache.TryRemove(name);
+            var options = Get(name);
             if (_onChange != null)
             {
-                _onChange.Invoke(options);
+                _onChange.Invoke(options, name);
             }
         }
 
@@ -70,7 +72,7 @@ namespace Microsoft.Extensions.Options
         /// </summary>
         /// <param name="listener">The action to be invoked when TOptions has changed.</param>
         /// <returns>An IDisposable which should be disposed to stop listening for changes.</returns>
-        public IDisposable OnChange(Action<TOptions> listener)
+        public IDisposable OnChange(Action<TOptions, string> listener)
         {
             var disposable = new ChangeTrackerDisposable(this, listener);
             _onChange += disposable.OnChange;
@@ -79,16 +81,16 @@ namespace Microsoft.Extensions.Options
 
         internal class ChangeTrackerDisposable : IDisposable
         {
-            private readonly Action<TOptions> _listener;
+            private readonly Action<TOptions, string> _listener;
             private readonly OptionsMonitor<TOptions> _monitor;
 
-            public ChangeTrackerDisposable(OptionsMonitor<TOptions> monitor, Action<TOptions> listener)
+            public ChangeTrackerDisposable(OptionsMonitor<TOptions> monitor, Action<TOptions, string> listener)
             {
                 _listener = listener;
                 _monitor = monitor;
             }
 
-            public void OnChange(TOptions options) => _listener.Invoke(options);
+            public void OnChange(TOptions options, string name) => _listener.Invoke(options, name);
 
             public void Dispose() => _monitor._onChange -= OnChange;
         }
