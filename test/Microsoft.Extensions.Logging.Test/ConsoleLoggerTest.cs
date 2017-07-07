@@ -972,7 +972,7 @@ namespace Microsoft.Extensions.Logging.Test
         public void Set(ConsoleLoggerOptions options)
         {
             _options = options;
-            _onChange?.Invoke(options);
+            _onChange?.Invoke(options, "");
         }
     }
 }
