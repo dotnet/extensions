@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
             CurrentValue = currentValue;
         }
 
-        public IDisposable OnChange(Action<T> listener)
+        public IDisposable OnChange(Action<T, string> listener)
         {
             return null;
         }
