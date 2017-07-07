@@ -952,7 +952,7 @@ namespace Microsoft.Extensions.Logging.Test
     public class TestOptionsMonitor : IOptionsMonitor<ConsoleLoggerOptions>
     {
         private ConsoleLoggerOptions _options;
-        private event Action<ConsoleLoggerOptions> _onChange;
+        private event Action<ConsoleLoggerOptions, string> _onChange;
 
         public TestOptionsMonitor(ConsoleLoggerOptions options)
         {
@@ -961,7 +961,7 @@ namespace Microsoft.Extensions.Logging.Test
 
         public ConsoleLoggerOptions Get(string name) => _options;
 
-        public IDisposable OnChange(Action<ConsoleLoggerOptions> listener)
+        public IDisposable OnChange(Action<ConsoleLoggerOptions, string> listener)
         {
             _onChange += listener;
             return null;
