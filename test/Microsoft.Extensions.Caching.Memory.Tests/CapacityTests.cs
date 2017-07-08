@@ -137,7 +137,7 @@ namespace Microsoft.Extensions.Caching.Memory
             Assert.Null(cache.Get("key1"));
 
             // Wait for compaction to complete
-            Assert.True(await sem.WaitAsync(TimeSpan.FromSeconds(5)));
+            Assert.True(await sem.WaitAsync(TimeSpan.FromSeconds(10)));
 
             // Compaction removes old item
             Assert.Null(cache.Get("key"));
@@ -172,7 +172,7 @@ namespace Microsoft.Extensions.Caching.Memory
             cache.Set("key2", "value2", new MemoryCacheEntryOptions { Size = 5 });
 
             // Wait for compaction to complete
-            Assert.True(await sem.WaitAsync(TimeSpan.FromSeconds(5)));
+            Assert.True(await sem.WaitAsync(TimeSpan.FromSeconds(10)));
 
             Assert.Null(cache.Get("key"));
             Assert.Null(cache.Get("key2"));
@@ -264,7 +264,7 @@ namespace Microsoft.Extensions.Caching.Memory
             cache.Set("key", "value1", new MemoryCacheEntryOptions { Size = 5 });
 
             // Wait for compaction to complete
-            Assert.True(await sem.WaitAsync(TimeSpan.FromSeconds(5)));
+            Assert.True(await sem.WaitAsync(TimeSpan.FromSeconds(10)));
 
             Assert.Null(cache.Get("key"));
             Assert.Equal(0, cache.Size);
@@ -336,7 +336,7 @@ namespace Microsoft.Extensions.Caching.Memory
             Assert.Null(cache.Get("key"));
 
             // Wait for compaction to complete
-            Assert.True(await sem.WaitAsync(TimeSpan.FromSeconds(5)));
+            Assert.True(await sem.WaitAsync(TimeSpan.FromSeconds(10)));
 
             Assert.Equal(0, cache.Size);
         }
