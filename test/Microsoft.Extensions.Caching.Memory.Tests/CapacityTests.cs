@@ -376,7 +376,7 @@ namespace Microsoft.Extensions.Caching.Memory
             // Wait for compaction to complete
             for (var i = 0; i < 3; i++)
             {
-                Assert.True(await sem.WaitAsync(TimeSpan.FromSeconds(5)));
+                Assert.True(await sem.WaitAsync(TimeSpan.FromSeconds(10)));
             }
 
             // There should be 2 items in the cache
