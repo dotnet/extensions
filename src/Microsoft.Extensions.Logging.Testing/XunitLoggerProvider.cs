@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.Logging.Testing
 
     public class XunitLogger : ILogger
     {
-        private static readonly char[] NewLineChars = new[] { '\r', '\n' };
+        private static readonly string[] NewLineChars = new[] { Environment.NewLine };
         private readonly string _category;
         private readonly LogLevel _minLogLevel;
         private readonly ITestOutputHelper _output;
@@ -55,13 +55,23 @@ namespace Microsoft.Extensions.Logging.Testing
                 return;
             }
             var firstLinePrefix = $"| {_category} {logLevel}: ";
-            var lines = formatter(state, exception).Split('\n');
-            WriteLine(firstLinePrefix + lines.First().TrimEnd(NewLineChars));
+            var lines = formatter(state, exception).Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
+            WriteLine(firstLinePrefix + lines.First());
 
             var additionalLinePrefix = "|" + new string(' ', firstLinePrefix.Length - 1);
             foreach (var line in lines.Skip(1))
             {
-                WriteLine(additionalLinePrefix + line.TrimEnd(NewLineChars));
+                WriteLine(additionalLinePrefix + line);
+            }
+
+            if (exception != null)
+            {
+                lines = exception.ToString().Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
+                additionalLinePrefix = "| ";
+                foreach (var line in lines.Skip(1))
+                {
+                    WriteLine(additionalLinePrefix + line);
+                }
             }
         }
 
