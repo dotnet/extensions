@@ -4,19 +4,10 @@
 using System;
 using System.IO;
 
-namespace Microsoft.Extensions.FileProviders.Physical.Internal
+namespace Microsoft.Extensions.FileProviders.Physical
 {
-    /// <summary>
-    /// Helpful methods for FileSystem APIs.
-    /// </summary>
-    public static class FileSystemInfoHelper
+    internal static class FileSystemInfoHelper
     {
-        /// <summary>
-        /// Determines if a file or directory should be excluded based on given <see cref="ExclusionFilters"/>.
-        /// </summary>
-        /// <param name="fileSystemInfo">The file or directory info.</param>
-        /// <param name="filters">The exclusion filter.</param>
-        /// <returns>True when the file or directory should be filtered.</returns>
         public static bool IsExcluded(FileSystemInfo fileSystemInfo, ExclusionFilters filters)
         {
             if (filters == ExclusionFilters.None)

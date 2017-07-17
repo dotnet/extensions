@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.FileProviders.Physical;
-using Microsoft.Extensions.FileProviders.Physical.Internal;
 
 namespace Microsoft.Extensions.FileProviders.Internal
 {
