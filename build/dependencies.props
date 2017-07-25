@@ -1,8 +1,8 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <FSharpCoreVersion>4.2.1</FSharpCoreVersion>
-    <InternalAspNetCoreSdkVersion>2.0.1-*</InternalAspNetCoreSdkVersion>
+    <InternalAspNetCoreSdkVersion>2.1.1-*</InternalAspNetCoreSdkVersion>
     <MoqVersion>4.7.49</MoqVersion>
     <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
