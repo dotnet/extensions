@@ -31,3 +31,5 @@ project.lock.json
 .testPublish/
 *.nuget.props
 *.nuget.targets
+global.json
+korebuild-lock.txt
