@@ -3,7 +3,7 @@
     <AspNetCoreVersion>2.1.0-*</AspNetCoreVersion>
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <DiagnosticSourceVersion>4.4.1-*</DiagnosticSourceVersion>
-    <InternalAspNetCoreSdkVersion>2.0.1-*</InternalAspNetCoreSdkVersion>
+    <InternalAspNetCoreSdkVersion>2.1.1-*</InternalAspNetCoreSdkVersion>
     <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
