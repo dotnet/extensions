@@ -37,3 +37,4 @@ node_modules
 .build/
 .testPublish/
 global.json
+korebuild-lock.txt
