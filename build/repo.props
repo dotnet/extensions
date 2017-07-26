@@ -1,5 +1,5 @@
 <Project>
   <ItemGroup>
-    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.Extensions.DependencyInjection.Performance\Microsoft.Extensions.DependencyInjection.Performance.csproj" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\DI.Performance\DI.Performance.csproj" />
   </ItemGroup>
 </Project>
