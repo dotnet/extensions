@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
+    <Compile Include="..\..\shared\Microsoft.Extensions.ParameterDefaultValue.Sources\*.cs" />
   </ItemGroup>
 
 </Project>

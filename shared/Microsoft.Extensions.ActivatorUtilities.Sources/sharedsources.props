@@ -1,0 +1,8 @@
+<Project>
+  <ItemGroup>
+    <Compile Include="$(NuspecBasePath)\..\Microsoft.Extensions.ParameterDefaultValue.Sources\ParameterDefaultValue.cs">
+      <Pack>true</Pack>
+      <PackagePath>$(ContentTargetFolders)\cs\netstandard1.0\</PackagePath>
+    </Compile>
+  </ItemGroup>
+</Project>

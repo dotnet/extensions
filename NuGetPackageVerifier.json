@@ -1,4 +1,11 @@
 {
+    "adx-nonshipping": {
+        "rules": [],
+        "packages": {
+            "Microsoft.Extensions.ActivatorUtilities.Sources": {},
+            "Microsoft.Extensions.ParameterDefaultValue.Sources": {}
+        }
+    },
     "Default": {
         "rules": [
             "DefaultCompositeRule"
