@@ -3,16 +3,17 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.FileSystemGlobbing</RootNamespace>
+    <AssemblyName>Microsoft.Extensions.FileSystemGlobbing.Tests</AssemblyName>
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="File.txt;sub\**\*;Resources\**\*" />
+    <ProjectReference Include="..\..\src\FS.Globbing\FS.Globbing.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Extensions.FileProviders.Embedded\Microsoft.Extensions.FileProviders.Embedded.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />

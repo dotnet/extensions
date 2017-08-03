@@ -3,6 +3,8 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.FileProviders.Composite</RootNamespace>
+    <AssemblyName>Microsoft.Extensions.FileProviders.Composite.Tests</AssemblyName>
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
   </PropertyGroup>
@@ -12,9 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Extensions.FileProviders.Composite\Microsoft.Extensions.FileProviders.Composite.csproj" />
+    <ProjectReference Include="..\..\src\FS.Composite\FS.Composite.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />

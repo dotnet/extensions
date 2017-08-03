@@ -3,6 +3,8 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.FileProviders</RootNamespace>
+    <AssemblyName>Microsoft.Extensions.FileProviders.Abstractions</AssemblyName>
     <Description>Abstractions of files and directories.
 Commonly used types:
 Microsoft.Extensions.FileProviders.IDirectoryContents
