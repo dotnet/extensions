@@ -10,136 +10,161 @@ using System.Threading;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class CallSiteExpressionBuilder : CallSiteVisitor<ParameterExpression, Expression>
+    internal class CallSiteExpressionBuilder : CallSiteVisitor<CallSiteExpressionBuilderContext, Expression>
     {
-        private static readonly MethodInfo CaptureDisposableMethodInfo = GetMethodInfo<Func<ServiceProvider, object, object>>((a, b) => a.CaptureDisposable(b));
+        private static readonly MethodInfo CaptureDisposableMethodInfo = GetMethodInfo<Func<ServiceProviderEngineScope, object, object>>((a, b) => a.CaptureDisposable(b));
         private static readonly MethodInfo TryGetValueMethodInfo = GetMethodInfo<Func<IDictionary<object, object>, object, object, bool>>((a, b, c) => a.TryGetValue(b, out c));
         private static readonly MethodInfo AddMethodInfo = GetMethodInfo<Action<IDictionary<object, object>, object, object>>((a, b, c) => a.Add(b, c));
         private static readonly MethodInfo MonitorEnterMethodInfo = GetMethodInfo<Action<object, bool>>((lockObj, lockTaken) => Monitor.Enter(lockObj, ref lockTaken));
         private static readonly MethodInfo MonitorExitMethodInfo = GetMethodInfo<Action<object>>(lockObj => Monitor.Exit(lockObj));
         private static readonly MethodInfo CallSiteRuntimeResolverResolve =
-            GetMethodInfo<Func<CallSiteRuntimeResolver, IServiceCallSite, ServiceProvider, object>>((r, c, p) => r.Resolve(c, p));
+            GetMethodInfo<Func<CallSiteRuntimeResolver, IServiceCallSite, ServiceProviderEngineScope, object>>((r, c, p) => r.Resolve(c, p));
 
-        private static readonly ParameterExpression ProviderParameter = Expression.Parameter(typeof(ServiceProvider));
+        private static readonly MethodInfo ArrayEmptyMethodInfo = typeof(Array).GetMethod(nameof(Array.Empty));
 
-        private static readonly ParameterExpression ResolvedServices = Expression.Variable(typeof(IDictionary<object, object>),
-            ProviderParameter.Name + "resolvedServices");
+        private static readonly ParameterExpression ScopeParameter = Expression.Parameter(typeof(ServiceProviderEngineScope));
+
+        private static readonly ParameterExpression ResolvedServices = Expression.Variable(typeof(IDictionary<object, object>), ScopeParameter.Name + "resolvedServices");
         private static readonly BinaryExpression ResolvedServicesVariableAssignment =
             Expression.Assign(ResolvedServices,
-                Expression.Property(ProviderParameter, nameof(ServiceProvider.ResolvedServices)));
+                Expression.Property(ScopeParameter, nameof(ServiceProviderEngineScope.ResolvedServices)));
 
         private static readonly ParameterExpression CaptureDisposableParameter = Expression.Parameter(typeof(object));
         private static readonly LambdaExpression CaptureDisposable = Expression.Lambda(
-                    Expression.Call(ProviderParameter, CaptureDisposableMethodInfo, CaptureDisposableParameter),
+                    Expression.Call(ScopeParameter, CaptureDisposableMethodInfo, CaptureDisposableParameter),
                     CaptureDisposableParameter);
 
         private readonly CallSiteRuntimeResolver _runtimeResolver;
-        private bool _requiresResolvedServices;
 
-        public CallSiteExpressionBuilder(CallSiteRuntimeResolver runtimeResolver)
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+
+        private readonly ServiceProviderEngineScope _rootScope;
+
+        public CallSiteExpressionBuilder(CallSiteRuntimeResolver runtimeResolver, IServiceScopeFactory serviceScopeFactory, ServiceProviderEngineScope rootScope)
         {
             if (runtimeResolver == null)
             {
                 throw new ArgumentNullException(nameof(runtimeResolver));
             }
             _runtimeResolver = runtimeResolver;
+            _serviceScopeFactory = serviceScopeFactory;
+            _rootScope = rootScope;
         }
 
-        public Func<ServiceProvider, object> Build(IServiceCallSite callSite)
+        public Func<ServiceProviderEngineScope, object> Build(IServiceCallSite callSite)
         {
-            if (callSite is SingletonCallSite)
+            if (callSite is SingletonCallSite singletonCallSite)
             {
                 // If root call site is singleton we can return Func calling
                 // _runtimeResolver.Resolve directly and avoid Expression generation
-                return (provider) => _runtimeResolver.Resolve(callSite, provider);
+                if (TryResolveSingletonValue(singletonCallSite, out var value))
+                {
+                    return scope => value;
+                }
+
+                return scope => _runtimeResolver.Resolve(callSite, scope);
             }
+
             return BuildExpression(callSite).Compile();
         }
 
-        private Expression<Func<ServiceProvider, object>> BuildExpression(IServiceCallSite callSite)
+        private bool TryResolveSingletonValue(SingletonCallSite singletonCallSite, out object value)
         {
-            var serviceExpression = VisitCallSite(callSite, ProviderParameter);
-
-            var body = new List<Expression>();
-            if (_requiresResolvedServices)
+            lock (_rootScope.ResolvedServices)
             {
-                body.Add(ResolvedServicesVariableAssignment);
-                serviceExpression = Lock(serviceExpression, ResolvedServices);
+                return _rootScope.ResolvedServices.TryGetValue(singletonCallSite.CacheKey, out value);
             }
-
-            body.Add(serviceExpression);
-
-            var variables = _requiresResolvedServices
-                ? new[] { ResolvedServices }
-                : Enumerable.Empty<ParameterExpression>();
-
-            return Expression.Lambda<Func<ServiceProvider, object>>(
-                Expression.Block(variables, body),
-                ProviderParameter);
         }
 
-        protected override Expression VisitSingleton(SingletonCallSite singletonCallSite, ParameterExpression provider)
+        private Expression<Func<ServiceProviderEngineScope, object>> BuildExpression(IServiceCallSite callSite)
         {
-            // Call to CallSiteRuntimeResolver.Resolve is being returned here
-            // because in the current use case singleton service was already resolved and cached
-            // to dictionary so there is no need to generate full tree at this point.
+            var context = new CallSiteExpressionBuilderContext
+            {
+                ScopeParameter = ScopeParameter
+            };
+
+            var serviceExpression = VisitCallSite(callSite, context);
+
+            if (context.RequiresResolvedServices)
+            {
+                return Expression.Lambda<Func<ServiceProviderEngineScope, object>>(
+                    Expression.Block(
+                        new [] { ResolvedServices },
+                        ResolvedServicesVariableAssignment,
+                        Lock(serviceExpression, ResolvedServices)),
+                    ScopeParameter);
+            }
+
+            return Expression.Lambda<Func<ServiceProviderEngineScope, object>>(serviceExpression, ScopeParameter);
+        }
+
+        protected override Expression VisitSingleton(SingletonCallSite singletonCallSite, CallSiteExpressionBuilderContext context)
+        {
+            if (TryResolveSingletonValue(singletonCallSite, out var value))
+            {
+                return Expression.Constant(value);
+            }
 
             return Expression.Call(
                 Expression.Constant(_runtimeResolver),
                 CallSiteRuntimeResolverResolve,
                 Expression.Constant(singletonCallSite, typeof(IServiceCallSite)),
-                provider);
+                context.ScopeParameter);
         }
 
-        protected override Expression VisitConstant(ConstantCallSite constantCallSite, ParameterExpression provider)
+        protected override Expression VisitConstant(ConstantCallSite constantCallSite, CallSiteExpressionBuilderContext context)
         {
             return Expression.Constant(constantCallSite.DefaultValue);
         }
 
-        protected override Expression VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, ParameterExpression provider)
+        protected override Expression VisitCreateInstance(CreateInstanceCallSite createInstanceCallSite, CallSiteExpressionBuilderContext context)
         {
             return Expression.New(createInstanceCallSite.ImplementationType);
         }
 
-        protected override Expression VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, ParameterExpression provider)
+        protected override Expression VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, CallSiteExpressionBuilderContext context)
         {
-            return provider;
+            return context.ScopeParameter;
         }
 
-        protected override Expression VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, ParameterExpression provider)
+        protected override Expression VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, CallSiteExpressionBuilderContext context)
         {
-            return Expression.New(typeof(ServiceScopeFactory).GetTypeInfo()
-                    .DeclaredConstructors
-                    .Single(),
-                provider);
+            return Expression.Constant(_serviceScopeFactory);
         }
 
-        protected override Expression VisitFactory(FactoryCallSite factoryCallSite, ParameterExpression provider)
+        protected override Expression VisitFactory(FactoryCallSite factoryCallSite, CallSiteExpressionBuilderContext context)
         {
-            return Expression.Invoke(Expression.Constant(factoryCallSite.Factory), provider);
+            return Expression.Invoke(Expression.Constant(factoryCallSite.Factory), context.ScopeParameter);
         }
 
-        protected override Expression VisitIEnumerable(IEnumerableCallSite callSite, ParameterExpression provider)
+        protected override Expression VisitIEnumerable(IEnumerableCallSite callSite, CallSiteExpressionBuilderContext context)
         {
+            if (callSite.ServiceCallSites.Length == 0)
+            {
+                return Expression.Constant(ArrayEmptyMethodInfo
+                    .MakeGenericMethod(callSite.ItemType)
+                    .Invoke(obj: null, parameters: Array.Empty<object>()));
+            }
+
             return Expression.NewArrayInit(
                 callSite.ItemType,
                 callSite.ServiceCallSites.Select(cs =>
                     Convert(
-                        VisitCallSite(cs, provider),
+                        VisitCallSite(cs, context),
                         callSite.ItemType)));
         }
 
-        protected override Expression VisitTransient(TransientCallSite callSite, ParameterExpression provider)
+        protected override Expression VisitTransient(TransientCallSite callSite, CallSiteExpressionBuilderContext context)
         {
             var implType = callSite.ServiceCallSite.ImplementationType;
             // Elide calls to GetCaptureDisposable if the implemenation type isn't disposable
             return TryCaptureDisposible(
                 implType,
-                provider,
-                VisitCallSite(callSite.ServiceCallSite, provider));
+                context.ScopeParameter,
+                VisitCallSite(callSite.ServiceCallSite, context));
         }
 
-        private Expression TryCaptureDisposible(Type implType, ParameterExpression provider, Expression service)
+        private Expression TryCaptureDisposible(Type implType, ParameterExpression scope, Expression service)
         {
 
             if (implType != null &&
@@ -148,17 +173,17 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 return service;
             }
 
-            return Expression.Invoke(GetCaptureDisposable(provider),
+            return Expression.Invoke(GetCaptureDisposable(scope),
                 service);
         }
 
-        protected override Expression VisitConstructor(ConstructorCallSite callSite, ParameterExpression provider)
+        protected override Expression VisitConstructor(ConstructorCallSite callSite, CallSiteExpressionBuilderContext context)
         {
             var parameters = callSite.ConstructorInfo.GetParameters();
             return Expression.New(
                 callSite.ConstructorInfo,
                 callSite.ParameterCallSites.Select((c, index) =>
-                        Convert(VisitCallSite(c, provider), parameters[index].ParameterType)));
+                        Convert(VisitCallSite(c, context), parameters[index].ParameterType)));
         }
 
         private static Expression Convert(Expression expression, Type type)
@@ -172,7 +197,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return Expression.Convert(expression, type);
         }
 
-        protected override Expression VisitScoped(ScopedCallSite callSite, ParameterExpression provider)
+        protected override Expression VisitScoped(ScopedCallSite callSite, CallSiteExpressionBuilderContext context)
         {
             var keyExpression = Expression.Constant(
                 callSite.CacheKey,
@@ -180,7 +205,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             var resolvedVariable = Expression.Variable(typeof(object), "resolved");
 
-            var resolvedServices = GetResolvedServices(provider);
+            var resolvedServices = GetResolvedServices(context);
 
             var tryGetValueExpression = Expression.Call(
                 resolvedServices,
@@ -188,8 +213,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 keyExpression,
                 resolvedVariable);
 
-            var service = VisitCallSite(callSite.ServiceCallSite, provider);
-            var captureDisposible = TryCaptureDisposible(callSite.ImplementationType, provider, service);
+            var service = VisitCallSite(callSite.ServiceCallSite, context);
+            var captureDisposible = TryCaptureDisposible(callSite.ImplementationType, context.ScopeParameter, service);
 
             var assignExpression = Expression.Assign(
                 resolvedVariable,
@@ -222,22 +247,22 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return mc.Method;
         }
 
-        public Expression GetCaptureDisposable(ParameterExpression provider)
+        public Expression GetCaptureDisposable(ParameterExpression scope)
         {
-            if (provider != ProviderParameter)
+            if (scope != ScopeParameter)
             {
-                throw new NotSupportedException("GetCaptureDisposable call is supported only for main provider");
+                throw new NotSupportedException("GetCaptureDisposable call is supported only for main scope");
             }
             return CaptureDisposable;
         }
 
-        public Expression GetResolvedServices(ParameterExpression provider)
+        public Expression GetResolvedServices(CallSiteExpressionBuilderContext context)
         {
-            if (provider != ProviderParameter)
+            if (context.ScopeParameter != ScopeParameter)
             {
-                throw new NotSupportedException("GetResolvedServices call is supported only for main provider");
+                throw new NotSupportedException("GetResolvedServices call is supported only for main scope");
             }
-            _requiresResolvedServices = true;
+            context.RequiresResolvedServices = true;
             return ResolvedServices;
         }
 

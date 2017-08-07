@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 using BenchmarkDotNet.Attributes;
 
 namespace Microsoft.Extensions.DependencyInjection.Performance
@@ -17,30 +16,12 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         private IServiceProvider _transientSp;
         private IServiceScope _scopedSp;
         private IServiceProvider _singletonSp;
+        private IServiceProvider _serviceScopeFactoryProvider;
+        private IServiceProvider _serviceScope;
+        private IServiceProvider _emptyEnumerable;
 
-        [Setup]
-        public void Setup()
-        {
-            var services = new ServiceCollection();
-            services.AddTransient<A>();
-            services.AddTransient<B>();
-            services.AddTransient<C>();
-            _transientSp = services.BuildServiceProvider();
-
-
-            services = new ServiceCollection();
-            services.AddScoped<A>();
-            services.AddScoped<B>();
-            services.AddScoped<C>();
-            _scopedSp = services.BuildServiceProvider().CreateScope();
-
-
-            services = new ServiceCollection();
-            services.AddSingleton<A>();
-            services.AddSingleton<B>();
-            services.AddSingleton<C>();
-            _singletonSp = services.BuildServiceProvider();
-        }
+        [Params(ServiceProviderMode.Compiled, ServiceProviderMode.Dynamic, ServiceProviderMode.Runtime)]
+        internal ServiceProviderMode Mode { get; set; }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = OperationsPerInvoke)]
         public void NoDI()
@@ -50,6 +31,19 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
                 var temp = new A(new B(new C()));
                 temp.Foo();
             }
+        }
+
+        [GlobalSetup(Target = nameof(Transient))]
+        public void SetupTransient()
+        {
+            var services = new ServiceCollection();
+            services.AddTransient<A>();
+            services.AddTransient<B>();
+            services.AddTransient<C>();
+            _transientSp = services.BuildServiceProvider(new ServiceProviderOptions()
+            {
+                Mode = Mode
+            });
         }
 
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
@@ -62,6 +56,19 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             }
         }
 
+        [GlobalSetup(Target = nameof(Scoped))]
+        public void SetupScoped()
+        {
+            var services = new ServiceCollection();
+            services.AddScoped<A>();
+            services.AddScoped<B>();
+            services.AddScoped<C>();
+            _scopedSp = services.BuildServiceProvider(new ServiceProviderOptions()
+            {
+                Mode = Mode
+            }).CreateScope();
+        }
+
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
         public void Scoped()
         {
@@ -72,6 +79,19 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             }
         }
 
+        [GlobalSetup(Target = nameof(Singleton))]
+        public void SetupScopedSingleton()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<A>();
+            services.AddSingleton<B>();
+            services.AddSingleton<C>();
+            _singletonSp = services.BuildServiceProvider(new ServiceProviderOptions()
+            {
+                Mode = Mode
+            });
+        }
+
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
         public void Singleton()
         {
@@ -79,6 +99,60 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             {
                 var temp = _singletonSp.GetService<A>();
                 temp.Foo();
+            }
+        }
+
+        [GlobalSetup(Target = nameof(ServiceScope))]
+        public void ServiceScopeSetup()
+        {
+            _serviceScope = new ServiceCollection().BuildServiceProvider(new ServiceProviderOptions()
+            {
+                Mode = Mode
+            });
+        }
+
+        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
+        public void ServiceScope()
+        {
+            for (int i = 0; i < OperationsPerInvoke; i++)
+            {
+                var temp = _serviceScope.CreateScope();
+            }
+        }
+
+        [GlobalSetup(Target = nameof(ServiceScopeProvider))]
+        public void ServiceScopeProviderSetup()
+        {
+            _serviceScopeFactoryProvider = new ServiceCollection().BuildServiceProvider(new ServiceProviderOptions()
+            {
+                Mode = Mode
+            });
+        }
+
+        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
+        public void ServiceScopeProvider()
+        {
+            for (int i = 0; i < OperationsPerInvoke; i++)
+            {
+                var temp = _serviceScopeFactoryProvider.GetService<IServiceScopeFactory>();
+            }
+        }
+
+        [GlobalSetup(Target = nameof(EmptyEnumerable))]
+        public void EmptyEnumerableSetup()
+        {
+            _emptyEnumerable = new ServiceCollection().BuildServiceProvider(new ServiceProviderOptions()
+            {
+                Mode = Mode
+            });
+        }
+
+        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
+        public void EmptyEnumerable()
+        {
+            for (int i = 0; i < OperationsPerInvoke; i++)
+            {
+                _emptyEnumerable.GetService<IEnumerable<A>>();
             }
         }
 

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -19,5 +17,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <c>true</c> to perform check verifying that scoped services never gets resolved from root provider; otherwise <c>false</c>.
         /// </summary>
         public bool ValidateScopes { get; set; }
+
+        internal ServiceProviderMode Mode { get; set; } = ServiceProviderMode.Dynamic;
     }
 }

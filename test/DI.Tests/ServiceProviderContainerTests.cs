@@ -10,11 +10,8 @@ using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
 {
-    public class ServiceProviderContainerTests : DependencyInjectionSpecificationTests
+    public abstract class ServiceProviderContainerTests : DependencyInjectionSpecificationTests
     {
-        protected override IServiceProvider CreateServiceProvider(IServiceCollection collection) =>
-            collection.BuildServiceProvider();
-
         [Fact]
         public void RethrowOriginalExceptionFromConstructor()
         {
@@ -23,7 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             serviceCollection.AddTransient<ClassWithThrowingCtor>();
             serviceCollection.AddTransient<IFakeService, FakeService>();
 
-            var provider = serviceCollection.BuildServiceProvider();
+            var provider = CreateServiceProvider(serviceCollection);
 
             var ex1 = Assert.Throws<Exception>(() => provider.GetService<ClassWithThrowingEmptyCtor>());
             Assert.Equal(nameof(ClassWithThrowingEmptyCtor), ex1.Message);
@@ -41,7 +38,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddTransient<ClassWithPrivateCtor>();
             serviceCollection.AddTransient<ClassDependsOnPrivateConstructorClass>();
-            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var serviceProvider = CreateServiceProvider(serviceCollection);
 
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetServices<ClassDependsOnPrivateConstructorClass>());
@@ -108,10 +105,10 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(disposable);
 
-            var provider = serviceCollection.BuildServiceProvider();
+            var provider = CreateServiceProvider(serviceCollection);
             provider.GetService<Disposable>();
 
-            provider.Dispose();
+            ((IDisposable)provider).Dispose();
 
             Assert.False(disposable.Disposed);
         }
@@ -124,7 +121,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             serviceCollection.AddSingleton<IFakeService, FakeService>();
             serviceCollection.AddSingleton<ClassWithServiceAndOptionalArgsCtorWithStructs>();
 
-            var provider = serviceCollection.BuildServiceProvider();
+            var provider = CreateServiceProvider(serviceCollection);
             var service = provider.GetService<ClassWithServiceAndOptionalArgsCtorWithStructs>();
         }
 
