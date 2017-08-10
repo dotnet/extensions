@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Extensions.Configuration.AzureKeyVault\Microsoft.Extensions.Configuration.AzureKeyVault.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.Extensions.Configuration.Json\Microsoft.Extensions.Configuration.Json.csproj" />
+    <ProjectReference Include="..\..\src\Config.AzureKeyVault\Config.AzureKeyVault.csproj" />
+    <ProjectReference Include="..\..\src\Config.Json\Config.Json.csproj" />
   </ItemGroup>
 
 </Project>

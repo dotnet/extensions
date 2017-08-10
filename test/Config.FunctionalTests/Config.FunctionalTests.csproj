@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <AssemblyName>Microsoft.Extensions.Configuration.FunctionalTests</AssemblyName>
+    <RootNamespace>Microsoft.Extensions.Configuration.FunctionalTests</RootNamespace>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Config.Ini\Config.Ini.csproj" />
+    <ProjectReference Include="..\..\src\Config.Json\Config.Json.csproj" />
+    <ProjectReference Include="..\Config.Test.Common\Config.Test.Common.csproj" />
+    <ProjectReference Include="..\..\src\Config.Xml\Config.Xml.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitVersion)" />
+  </ItemGroup>
+
+</Project>
