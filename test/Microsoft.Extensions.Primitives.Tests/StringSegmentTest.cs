@@ -521,7 +521,7 @@ namespace Microsoft.Extensions.Primitives
 
         [Theory]
         [MemberData(nameof(EqualsStringSegmentData))]
-        public void StringSegment_Equals_String_Valid(StringSegment candidate, StringComparison comparison, bool expectedResult)
+        public void StringSegment_Equals_StringSegment_Valid(StringSegment candidate, StringComparison comparison, bool expectedResult)
         {
             // Arrange
             var segment = new StringSegment("Hello, World!", 1, 4);

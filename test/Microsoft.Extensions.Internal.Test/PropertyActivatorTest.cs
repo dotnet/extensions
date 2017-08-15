@@ -111,7 +111,7 @@ namespace Microsoft.Extensions.Internal
                 (propertyInfo) => new PropertyActivator<int>(propertyInfo, valueAccessor: (val) => val));
 
             // Assert
-            Assert.Equal(1, propertiesToActivate.Length);
+            Assert.Single(propertiesToActivate);
             Assert.Single(propertiesToActivate, p => p.PropertyInfo == expectedPropertyInfo);
         }
 

@@ -198,7 +198,7 @@ namespace Microsoft.Extensions.Internal
             Assert.True(executor.IsMethodAsync);
             Assert.Same(typeof(TestObject), executor.AsyncResultType);
             Assert.NotNull(result);
-            Assert.IsType(typeof(TestObject), result);
+            Assert.IsType<TestObject>(result);
             Assert.Equal("Hello 123", ((TestObject)result).value);
         }
 
@@ -215,7 +215,7 @@ namespace Microsoft.Extensions.Internal
             Assert.True(executor.IsMethodAsync);
             Assert.Same(typeof(int), executor.AsyncResultType);
             Assert.NotNull(result);
-            Assert.IsType(typeof(int), result);
+            Assert.IsType<int>(result);
             Assert.Equal(579, (int)result);
         }
 
@@ -360,7 +360,7 @@ namespace Microsoft.Extensions.Internal
             Assert.Same(typeof(string), executor.AsyncResultType);
 
             var exception = await Assert.ThrowsAsync<AggregateException>(async () => await resultTask);
-            Assert.IsType(typeof(InvalidOperationException), exception.InnerException);
+            Assert.IsType<InvalidOperationException>(exception.InnerException);
             Assert.Equal("Test exception", exception.InnerException.Message);
         }
 
@@ -393,7 +393,7 @@ namespace Microsoft.Extensions.Internal
             Assert.Same(typeof(string), executor.AsyncResultType);
 
             var exception = await Assert.ThrowsAsync<AggregateException>(async () => await resultTask);
-            Assert.IsType(typeof(InvalidOperationException), exception.InnerException);
+            Assert.IsType<InvalidOperationException>(exception.InnerException);
             Assert.Equal("Test exception", exception.InnerException.Message);
         }
 

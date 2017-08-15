@@ -17,6 +17,8 @@ namespace Microsoft.Extensions.CommandLineUtils
         [InlineData(new[] { @"C:\Program Files\dotnet\" }, @"""C:\Program Files\dotnet\\""")]
         [InlineData(new[] { @"backslash\""preceedingquote" }, @"backslash\\\""preceedingquote")]
         public void EscapesArguments(string[] args, string expected)
-            => Assert.Equal(expected, ArgumentEscaper.EscapeAndConcatenate(args));
+        {
+            Assert.Equal(expected, ArgumentEscaper.EscapeAndConcatenate(args));
+        }
     }
 }

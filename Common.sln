@@ -1,10 +1,13 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26118.1
+VisualStudioVersion = 15.0.26814.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FEAA3936-5906-4383-B750-F07FE1B156C5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Internal.Test", "test\Microsoft.Extensions.Internal.Test\Microsoft.Extensions.Internal.Test.csproj", "{D81EAC23-B515-49FB-B04B-285A9C1C6583}"
 EndProject
@@ -17,6 +20,34 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.ObjectPool.Test", "test\Microsoft.Extensions.ObjectPool.Test\Microsoft.Extensions.ObjectPool.Test.csproj", "{DA1D70F4-717A-4440-B388-B5BEE670C14D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.CommandLineUtils.Tests", "test\Microsoft.Extensions.CommandLineUtils.Tests\Microsoft.Extensions.CommandLineUtils.Tests.csproj", "{7E6564C3-04E3-418C-B96A-463FE2906F09}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{8668B1D5-9C54-49CA-8446-18040B4C7D15}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThrowingLibrary", "testassets\ThrowingLibrary\ThrowingLibrary.csproj", "{E1586801-D345-43C7-BC4B-9D4A83101B6C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3639F4F0-86E4-4EA1-9A1C-F9FE0337016B}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		.travis.yml = .travis.yml
+		appveyor.yml = appveyor.yml
+		build.cmd = build.cmd
+		build.ps1 = build.ps1
+		build.sh = build.sh
+		CONTRIBUTING.md = CONTRIBUTING.md
+		LICENSE.txt = LICENSE.txt
+		NuGet.config = NuGet.config
+		NuGetPackageVerifier.json = NuGetPackageVerifier.json
+		README.md = README.md
+		version.xml = version.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{D2D23857-741F-4E7B-A8E1-492CC8F38FB0}"
+	ProjectSection(SolutionItems) = preProject
+		build\common.props = build\common.props
+		build\dependencies.props = build\dependencies.props
+		build\repo.props = build\repo.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,6 +79,10 @@ Global
 		{7E6564C3-04E3-418C-B96A-463FE2906F09}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E6564C3-04E3-418C-B96A-463FE2906F09}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E6564C3-04E3-418C-B96A-463FE2906F09}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1586801-D345-43C7-BC4B-9D4A83101B6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1586801-D345-43C7-BC4B-9D4A83101B6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1586801-D345-43C7-BC4B-9D4A83101B6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1586801-D345-43C7-BC4B-9D4A83101B6C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -59,5 +94,9 @@ Global
 		{C87DA599-4C1F-4B91-9C77-A10E79CD8701} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
 		{DA1D70F4-717A-4440-B388-B5BEE670C14D} = {6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}
 		{7E6564C3-04E3-418C-B96A-463FE2906F09} = {6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}
+		{E1586801-D345-43C7-BC4B-9D4A83101B6C} = {8668B1D5-9C54-49CA-8446-18040B4C7D15}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {371030CF-B541-4BA9-9F54-3C7563415CF1}
 	EndGlobalSection
 EndGlobal

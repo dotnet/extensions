@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal("Test1", user.Identity.Name);
             Assert.IsAssignableFrom<ClaimsPrincipal>(user);
             Assert.IsAssignableFrom<ClaimsIdentity>(user.Identity);
-            Assert.Equal(1, user.Identities.Count());
+            Assert.Single(user.Identities);
         }
 
         [Fact]

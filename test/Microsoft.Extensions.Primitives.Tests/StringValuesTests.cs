@@ -72,7 +72,7 @@ namespace Microsoft.Extensions.Primitives
                 };
             }
         }
-        
+
         public static TheoryData<StringValues, object> FilledStringValuesWithExpectedObjects
         {
             get
@@ -155,7 +155,7 @@ namespace Microsoft.Extensions.Primitives
             Assert.False(((ICollection<string>)stringValues).Contains(null));
             Assert.False(((ICollection<string>)stringValues).Contains(string.Empty));
             Assert.False(((ICollection<string>)stringValues).Contains("not there"));
-            Assert.Equal(0, stringValues.Count());
+            Assert.Empty(stringValues);
         }
 
         [Fact]
@@ -293,8 +293,10 @@ namespace Microsoft.Extensions.Primitives
         }
 
         [Theory]
-        [MemberData(nameof(FilledStringValuesWithExpected))]
-        public void CopyTo_TooSmall(StringValues stringValues, string[] expected)
+        [MemberData(nameof(DefaultOrNullStringValues))]
+        [MemberData(nameof(EmptyStringValues))]
+        [MemberData(nameof(FilledStringValues))]
+        public void CopyTo_TooSmall(StringValues stringValues)
         {
             ICollection<string> collection = stringValues;
             string[] tooSmall = new string[0];

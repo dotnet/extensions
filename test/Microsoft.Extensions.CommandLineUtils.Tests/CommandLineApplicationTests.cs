@@ -253,8 +253,8 @@ namespace Microsoft.Extensions.Internal
 
             // (does not throw)
             app.Execute("test", unexpectedArg);
-            Assert.Equal(1, testCmd.RemainingArguments.Count);
-            Assert.Equal(unexpectedArg, testCmd.RemainingArguments[0]);
+            var arg = Assert.Single(testCmd.RemainingArguments);
+            Assert.Equal(unexpectedArg, arg);
         }
 
         [Fact]
@@ -286,8 +286,8 @@ namespace Microsoft.Extensions.Internal
 
             // (does not throw)
             app.Execute("test", unexpectedOption);
-            Assert.Equal(1, testCmd.RemainingArguments.Count);
-            Assert.Equal(unexpectedOption, testCmd.RemainingArguments[0]);
+            var arg = Assert.Single(testCmd.RemainingArguments);
+            Assert.Equal(unexpectedOption, arg);
         }
 
         [Fact]
@@ -319,8 +319,8 @@ namespace Microsoft.Extensions.Internal
 
             // (does not throw)
             app.Execute("test", unexpectedOption);
-            Assert.Equal(1, testCmd.RemainingArguments.Count);
-            Assert.Equal(unexpectedOption, testCmd.RemainingArguments[0]);
+            var arg = Assert.Single(testCmd.RemainingArguments);
+            Assert.Equal(unexpectedOption, arg);
         }
 
         [Fact]
@@ -352,8 +352,8 @@ namespace Microsoft.Extensions.Internal
 
             // (does not throw)
             app.Execute("test", unexpectedOption);
-            Assert.Equal(1, testCmd.RemainingArguments.Count);
-            Assert.Equal(unexpectedOption, testCmd.RemainingArguments[0]);
+            var arg = Assert.Single(testCmd.RemainingArguments);
+            Assert.Equal(unexpectedOption, arg);
         }
 
         [Fact]
@@ -388,9 +388,9 @@ namespace Microsoft.Extensions.Internal
 
             // (does not throw)
             app.Execute("k", "run", unexpectedOption);
-            Assert.Equal(0, testCmd.RemainingArguments.Count);
-            Assert.Equal(1, subCmd.RemainingArguments.Count);
-            Assert.Equal(unexpectedOption, subCmd.RemainingArguments[0]);
+            Assert.Empty(testCmd.RemainingArguments);
+            var arg = Assert.Single(subCmd.RemainingArguments);
+            Assert.Equal(unexpectedOption, arg);
         }
 
         [Fact]
@@ -412,7 +412,7 @@ namespace Microsoft.Extensions.Internal
             });
 
             Assert.Equal(2, app.GetOptions().Count());
-            Assert.Equal(1, subcmd.GetOptions().Count());
+            Assert.Single(subcmd.GetOptions());
 
             app.Execute("-a", "A1", "subcmd");
             Assert.Equal("A1", optionAValue);
@@ -482,11 +482,11 @@ namespace Microsoft.Extensions.Internal
                 });
             });
 
-            Assert.False(app.GetOptions().Any(o => o.LongName == "nest2"));
-            Assert.False(app.GetOptions().Any(o => o.LongName == "nest1"));
+            Assert.DoesNotContain(app.GetOptions(), o => o.LongName == "nest2");
+            Assert.DoesNotContain(app.GetOptions(), o => o.LongName == "nest1");
             Assert.Contains(app.GetOptions(), o => o.LongName == "global");
 
-            Assert.False(subcmd1.GetOptions().Any(o => o.LongName == "nest2"));
+            Assert.DoesNotContain(subcmd1.GetOptions(), o => o.LongName == "nest2");
             Assert.Contains(subcmd1.GetOptions(), o => o.LongName == "nest1");
             Assert.Contains(subcmd1.GetOptions(), o => o.LongName == "global");
 

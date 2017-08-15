@@ -115,7 +115,7 @@ namespace Microsoft.Extensions.Internal
             var helpers2 = PropertyHelper.GetProperties(anonymous.GetType().GetTypeInfo());
 
             // Assert
-            Assert.Equal(1, helpers1.Length);
+            Assert.Single(helpers1);
             Assert.Same(helpers1, helpers2);
             Assert.Same(helpers1[0], helpers2[0]);
         }
@@ -326,9 +326,9 @@ namespace Microsoft.Extensions.Internal
             var result = PropertyHelper.GetVisibleProperties(type).ToArray();
 
             // Assert
-            Assert.Equal(1, result.Length);
-            Assert.Equal("Length", result[0].Name);
-            Assert.Equal(typeof(int), result[0].Property.PropertyType);
+            var property = Assert.Single(result);
+            Assert.Equal("Length", property.Name);
+            Assert.Equal(typeof(int), property.Property.PropertyType);
         }
 
         [Fact]
@@ -375,9 +375,9 @@ namespace Microsoft.Extensions.Internal
             var result = PropertyHelper.GetVisibleProperties(type.GetTypeInfo()).ToArray();
 
             // Assert
-            Assert.Equal(1, result.Length);
-            Assert.Equal("Length", result[0].Name);
-            Assert.Equal(typeof(int), result[0].Property.PropertyType);
+            var property = Assert.Single(result);
+            Assert.Equal("Length", property.Name);
+            Assert.Equal(typeof(int), property.Property.PropertyType);
         }
 
         [Fact]
