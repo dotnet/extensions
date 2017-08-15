@@ -28,9 +28,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="$(FSharpCoreVersion)" />
-    <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(CoreFxVersion)" />
+    <PackageReference Include="FSharp.Core" />
+    <PackageReference Include="System.Reflection.Metadata" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
 
 </Project>

@@ -3,6 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.26814.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FEAA3936-5906-4383-B750-F07FE1B156C5}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}"
 	ProjectSection(SolutionItems) = preProject
@@ -27,14 +30,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThrowingLibrary", "testasse
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3639F4F0-86E4-4EA1-9A1C-F9FE0337016B}"
 	ProjectSection(SolutionItems) = preProject
+		.appveyor.yml = .appveyor.yml
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		.travis.yml = .travis.yml
-		appveyor.yml = appveyor.yml
 		build.cmd = build.cmd
 		build.ps1 = build.ps1
 		build.sh = build.sh
 		CONTRIBUTING.md = CONTRIBUTING.md
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 		LICENSE.txt = LICENSE.txt
 		NuGet.config = NuGet.config
 		NuGetPackageVerifier.json = NuGetPackageVerifier.json
@@ -44,8 +49,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{D2D23857-741F-4E7B-A8E1-492CC8F38FB0}"
 	ProjectSection(SolutionItems) = preProject
-		build\common.props = build\common.props
-		build\dependencies.props = build\dependencies.props
 		build\repo.props = build\repo.props
 	EndProjectSection
 EndProject
