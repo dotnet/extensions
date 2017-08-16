@@ -211,11 +211,14 @@ namespace Microsoft.Extensions.DependencyInjection
             ServiceLifetime expectedLifetime)
         {
             // Arrange
-            var collection = new ServiceCollection();
-            collection.Add(ServiceDescriptor.Transient(expectedServiceType, expectedServiceType));
+            var collection = new ServiceCollection
+            {
+                ServiceDescriptor.Transient(expectedServiceType, expectedServiceType)
+            };
 
             // Act
             addAction(collection);
+            collection.TryAdd(ServiceDescriptor.Describe(expectedServiceType, expectedImplementationType, expectedLifetime));
 
             // Assert
             var descriptor = Assert.Single(collection);

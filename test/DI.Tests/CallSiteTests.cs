@@ -197,7 +197,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
             var serviceC = (ServiceC)compiledCallSite(provider.Root);
 
-            Assert.Equal(0, disposables.Count);
+            Assert.Empty(disposables);
         }
 
         [Theory]
@@ -222,7 +222,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
             var serviceD = (ServiceD)compiledCallSite(provider.Root);
 
-            Assert.Equal(0, disposables.Count);
+            Assert.Empty(disposables);
         }
 
         [Fact]
