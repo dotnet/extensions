@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.FileProviders.Embedded.Tests</RootNamespace>
     <AssemblyName>Microsoft.Extensions.FileProviders.Embedded.Tests</AssemblyName>
@@ -15,13 +13,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\FS.Embedded\FS.Embedded.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
-    <PackageReference Include="xunit" Version="$(XunitVersion)" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
   </ItemGroup>
 
 </Project>

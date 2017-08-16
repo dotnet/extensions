@@ -1,15 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.FileSystemGlobbing</RootNamespace>
     <AssemblyName>Microsoft.Extensions.FileSystemGlobbing</AssemblyName>
     <Description>File system globbing to find files matching a specified pattern.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>files;filesystem;glob;globbing</PackageTags>
+    <PackageTags>$(PackageTags);glob;globbing</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

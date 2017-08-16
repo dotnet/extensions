@@ -1,14 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.FileProviders</RootNamespace>
     <AssemblyName>Microsoft.Extensions.FileProviders.Embedded</AssemblyName>
     <Description>File provider for files in embedded resources for Microsoft.Extensions.FileProviders.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>files;filesystem</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
