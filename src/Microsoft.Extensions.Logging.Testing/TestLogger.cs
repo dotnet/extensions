@@ -60,7 +60,7 @@ namespace Microsoft.Extensions.Logging.Testing
 
         public bool IsEnabled(LogLevel logLevel)
         {
-            return _filter(logLevel);
+            return logLevel != LogLevel.None && _filter(logLevel);
         }
 
         private class TestDisposable : IDisposable

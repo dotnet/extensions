@@ -22,6 +22,7 @@ namespace Microsoft.Extensions.Logging.Test
             var logger = factory.CreateLogger("Test");
 
             // Assert
+            Assert.False(logger.IsEnabled(LogLevel.None));
             Assert.True(logger.IsEnabled(LogLevel.Critical));
             Assert.True(logger.IsEnabled(LogLevel.Error));
             Assert.True(logger.IsEnabled(LogLevel.Warning));

@@ -46,6 +46,7 @@ namespace Microsoft.Extensions.Logging.Debug
             // If the filter is null, everything is enabled
             // unless the debugger is not attached
             return Debugger.IsAttached &&
+                logLevel != LogLevel.None &&
                 (_filter == null || _filter(_name, logLevel));
         }
 

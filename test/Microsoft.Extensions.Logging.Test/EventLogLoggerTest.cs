@@ -14,6 +14,25 @@ namespace Microsoft.Extensions.Logging
     public class EventLogLoggerTest
     {
         [Fact]
+        public static void IsEnabledReturnsCorrectValue()
+        {
+            // Arrange
+            var logger = new EventLogLogger("Test", new EventLogSettings()
+            {
+                Filter = (s, level) => level >= LogLevel.Warning
+            });
+
+            // Assert
+            Assert.False(logger.IsEnabled(LogLevel.None));
+            Assert.True(logger.IsEnabled(LogLevel.Critical));
+            Assert.True(logger.IsEnabled(LogLevel.Error));
+            Assert.True(logger.IsEnabled(LogLevel.Warning));
+            Assert.False(logger.IsEnabled(LogLevel.Information));
+            Assert.False(logger.IsEnabled(LogLevel.Debug));
+            Assert.False(logger.IsEnabled(LogLevel.Trace));
+        }
+
+        [Fact]
         public void CallingBeginScopeOnLogger_ReturnsNonNullableInstance()
         {
             // Arrange

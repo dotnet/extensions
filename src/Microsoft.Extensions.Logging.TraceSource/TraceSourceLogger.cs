@@ -46,6 +46,11 @@ namespace Microsoft.Extensions.Logging.TraceSource
 
         public bool IsEnabled(LogLevel logLevel)
         {
+            if (logLevel == LogLevel.None)
+            {
+                return false;
+            }
+
             var traceEventType = GetEventType(logLevel);
             return _traceSource.Switch.ShouldTrace(traceEventType);
         }

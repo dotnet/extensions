@@ -877,6 +877,29 @@ namespace Microsoft.Extensions.Logging.Test
         }
 
         [Fact]
+        public static void IsEnabledReturnsCorrectValue()
+        {
+            // Arrange
+            using (var processor = new ConsoleLoggerProcessor())
+            {
+                var logger = new ConsoleLogger(
+                    _loggerName,
+                    filter: (s, level) => level >= LogLevel.Warning,
+                    includeScopes: false,
+                    loggerProcessor: processor);
+
+                // Assert
+                Assert.False(logger.IsEnabled(LogLevel.None));
+                Assert.True(logger.IsEnabled(LogLevel.Critical));
+                Assert.True(logger.IsEnabled(LogLevel.Error));
+                Assert.True(logger.IsEnabled(LogLevel.Warning));
+                Assert.False(logger.IsEnabled(LogLevel.Information));
+                Assert.False(logger.IsEnabled(LogLevel.Debug));
+                Assert.False(logger.IsEnabled(LogLevel.Trace));
+            }
+        }
+
+        [Fact]
         public void ConsoleLoggerOptions_IncludeScopes_IsAppliedToLoggers()
         {
             // Arrange

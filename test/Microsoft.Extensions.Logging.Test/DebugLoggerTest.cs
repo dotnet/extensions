@@ -32,5 +32,15 @@ namespace Microsoft.Extensions.Logging
             // Act
             logger.Log(LogLevel.Debug, 0, message, null, (s, e) => s);
         }
+
+        [Fact]
+        public static void IsEnabledReturnsCorrectValue()
+        {
+            // Arrange
+            var logger = new DebugLogger("Test");
+
+            // Assert
+            Assert.False(logger.IsEnabled(LogLevel.None));
+        }
     }
 }

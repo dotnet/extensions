@@ -16,6 +16,32 @@ namespace Microsoft.Extensions.Logging.Test
     public class EventSourceLoggerTest
     {
         [Fact]
+        public static void IsEnabledReturnsCorrectValue()
+        {
+            using (var testListener = new TestEventListener())
+            {
+                var factory = new LoggerFactory();
+                factory.AddEventSourceLogger();
+
+                var listenerSettings = new TestEventListener.ListenerSettings();
+                listenerSettings.Keywords = LoggingEventSource.Keywords.JsonMessage;
+                listenerSettings.FilterSpec = null;
+                listenerSettings.Level = EventLevel.Warning;
+                testListener.EnableEvents(listenerSettings);
+
+                var logger = factory.CreateLogger("Logger1");
+
+                Assert.False(logger.IsEnabled(LogLevel.None));
+                Assert.True(logger.IsEnabled(LogLevel.Critical));
+                Assert.True(logger.IsEnabled(LogLevel.Error));
+                Assert.True(logger.IsEnabled(LogLevel.Warning));
+                Assert.False(logger.IsEnabled(LogLevel.Information));
+                Assert.False(logger.IsEnabled(LogLevel.Debug));
+                Assert.False(logger.IsEnabled(LogLevel.Trace));
+            }
+        }
+
+        [Fact]
         public void Logs_AsExpected_WithDefaults()
         {
             using (var testListener = new TestEventListener())
