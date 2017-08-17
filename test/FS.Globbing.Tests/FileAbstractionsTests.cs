@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests
 
                 Assert.Equal(Path.GetFileName(scenario.RootPath), scenario.DirectoryInfo.Name);
                 Assert.Equal(scenario.RootPath, scenario.DirectoryInfo.FullName);
-                Assert.Equal(0, contents.Count());
+                Assert.Empty(contents);
             }
         }
 
@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests
                 var contents = new DirectoryInfoWrapper(scenario.DirectoryInfo).EnumerateFileSystemInfos();
                 var alphaTxt = contents.OfType<FileInfoBase>().Single();
 
-                Assert.Equal(1, contents.Count());
+                Assert.Single(contents);
                 Assert.Equal("alpha.txt", alphaTxt.Name);
             }
         }
@@ -48,9 +48,9 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests
                 var beta = contents1.OfType<DirectoryInfoBase>().Single();
                 var contents2 = beta.EnumerateFileSystemInfos();
 
-                Assert.Equal(1, contents1.Count());
+                Assert.Single(contents1);
                 Assert.Equal("beta", beta.Name);
-                Assert.Equal(0, contents2.Count());
+                Assert.Empty(contents2);
             }
         }
 
@@ -66,9 +66,9 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests
                 var contents2 = beta.EnumerateFileSystemInfos();
                 var alphaTxt = contents2.OfType<FileInfoBase>().Single();
 
-                Assert.Equal(1, contents1.Count());
+                Assert.Single(contents1);
                 Assert.Equal("beta", beta.Name);
-                Assert.Equal(1, contents2.Count());
+                Assert.Single(contents2);
                 Assert.Equal("alpha.txt", alphaTxt.Name);
             }
         }
@@ -92,7 +92,7 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests
                 Assert.Equal("..", dotdot.Name);
                 Assert.Equal(2, contents1.Count());
                 Assert.Equal("beta", beta.Name);
-                Assert.Equal(1, contents2.Count());
+                Assert.Single(contents2);
                 Assert.Equal("alpha.txt", alphaTxt.Name);
             }
         }

@@ -237,9 +237,9 @@ namespace Microsoft.Extensions.FileProviders.Composite
             Assert.False(changeToken.HasChanged);
 
             // Register callback
-            Assert.Equal(0, firstChangeToken.Callbacks.Count);
-            Assert.Equal(0, secondChangeToken.Callbacks.Count);
-            Assert.Equal(0, thirdChangeToken.Callbacks.Count);
+            Assert.Empty(firstChangeToken.Callbacks);
+            Assert.Empty(secondChangeToken.Callbacks);
+            Assert.Empty(thirdChangeToken.Callbacks);
             var hasBeenCalled = false;
             object result = null;
             object state = new object();
@@ -248,9 +248,9 @@ namespace Microsoft.Extensions.FileProviders.Composite
                 hasBeenCalled = true;
                 result = item;
             }, state);
-            Assert.Equal(1, firstChangeToken.Callbacks.Count);
-            Assert.Equal(0, secondChangeToken.Callbacks.Count);
-            Assert.Equal(1, thirdChangeToken.Callbacks.Count);
+            Assert.Single(firstChangeToken.Callbacks);
+            Assert.Empty(secondChangeToken.Callbacks);
+            Assert.Single(thirdChangeToken.Callbacks);
             firstChangeToken.RaiseCallback(changeToken);
             Assert.True(hasBeenCalled);
             Assert.NotNull(result);

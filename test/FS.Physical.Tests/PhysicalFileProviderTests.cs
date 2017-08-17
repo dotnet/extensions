@@ -65,7 +65,7 @@ namespace Microsoft.Extensions.FileProviders
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
                 var info = provider.GetFileInfo(path);
-                Assert.IsType(typeof(PhysicalFileInfo), info);
+                Assert.IsType<PhysicalFileInfo>(info);
             }
         }
 
@@ -515,7 +515,7 @@ namespace Microsoft.Extensions.FileProviders
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
                 var contents = provider.GetDirectoryContents(null);
-                Assert.IsType(typeof(NotFoundDirectoryContents), contents);
+                Assert.IsType<NotFoundDirectoryContents>(contents);
             }
         }
 
@@ -576,7 +576,7 @@ namespace Microsoft.Extensions.FileProviders
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
                 var contents = provider.GetDirectoryContents(path);
-                Assert.IsType(typeof(NotFoundDirectoryContents), contents);
+                Assert.IsType<NotFoundDirectoryContents>(contents);
             }
         }
 
@@ -586,7 +586,7 @@ namespace Microsoft.Extensions.FileProviders
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
                 var contents = provider.GetDirectoryContents(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
-                Assert.IsType(typeof(NotFoundDirectoryContents), contents);
+                Assert.IsType<NotFoundDirectoryContents>(contents);
             }
         }
 
@@ -596,7 +596,7 @@ namespace Microsoft.Extensions.FileProviders
             using (var provider = new PhysicalFileProvider(Path.GetTempPath()))
             {
                 var contents = provider.GetDirectoryContents(Guid.NewGuid().ToString());
-                Assert.IsType(typeof(NotFoundDirectoryContents), contents);
+                Assert.IsType<NotFoundDirectoryContents>(contents);
             }
         }
 
@@ -628,7 +628,7 @@ namespace Microsoft.Extensions.FileProviders
                 using (var provider = new PhysicalFileProvider(root.RootPath))
                 {
                     var contents = provider.GetDirectoryContents(Path.Combine("a", "..", "..", root.DirectoryInfo.Name, "b"));
-                    Assert.IsType(typeof(NotFoundDirectoryContents), contents);
+                    Assert.IsType<NotFoundDirectoryContents>(contents);
                 }
             }
         }

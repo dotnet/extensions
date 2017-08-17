@@ -30,12 +30,12 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests.PatternContexts
         }
 
         [Theory]
-        [InlineData("/a/b/**/c/d", new string[] { "root" }, "a", false)]
-        [InlineData("/a/b/**/c/d", new string[] { "root", "a" }, "b", false)]
-        [InlineData("/a/b/**/c/d", new string[] { "root", "a", "b" }, null, false)]
-        [InlineData("/a/b/**/c/d", new string[] { "root", "a", "b", "whatever" }, null, false)]
-        [InlineData("/a/b/**/c/d", new string[] { "root", "a", "b", "whatever", "anything" }, null, false)]
-        public void PredictReturnsCorrectResult(string patternString, string[] pushDirectory, string expectSegment, bool expectWildcard)
+        [InlineData("/a/b/**/c/d", new string[] { "root" }, "a")]
+        [InlineData("/a/b/**/c/d", new string[] { "root", "a" }, "b")]
+        [InlineData("/a/b/**/c/d", new string[] { "root", "a", "b" }, null)]
+        [InlineData("/a/b/**/c/d", new string[] { "root", "a", "b", "whatever" }, null)]
+        [InlineData("/a/b/**/c/d", new string[] { "root", "a", "b", "whatever", "anything" }, null)]
+        public void PredictReturnsCorrectResult(string patternString, string[] pushDirectory, string expectSegment)
         {
             var builder = new PatternBuilder();
             var pattern = builder.Build(patternString) as IRaggedPattern;
@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.FileSystemGlobbing.Tests.PatternContexts
                 }
                 else
                 {
-                    Assert.Equal(Microsoft.Extensions.FileSystemGlobbing.Internal.PathSegments.WildcardPathSegment.MatchAll, segment);
+                    Assert.Equal(WildcardPathSegment.MatchAll, segment);
                 }
             });
         }
