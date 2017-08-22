@@ -222,10 +222,10 @@ namespace Microsoft.Extensions.Caching.SqlServer
             await cache.SetAsync(
                 key,
                 Encoding.UTF8.GetBytes("Hello, World!"),
-                new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(10)));
+                new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(slidingExpirationWindow)));
 
             // set the clock's UtcNow far in future
-            testClock.Add(TimeSpan.FromHours(10));
+            testClock.Add(TimeSpan.FromHours(accessItemAt));
 
             // Act
             var value = await cache.GetAsync(key);
@@ -716,10 +716,12 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 // we cannot use GetFieldValueAsync etc.
                 if (await reader.ReadAsync())
                 {
-                    var cacheItemInfo = new CacheItemInfo();
-                    cacheItemInfo.Id = key;
-                    cacheItemInfo.Value = (byte[])reader[1];
-                    cacheItemInfo.ExpiresAtTime = DateTimeOffset.Parse(reader[2].ToString());
+                    var cacheItemInfo = new CacheItemInfo
+                    {
+                        Id = key,
+                        Value = (byte[])reader[1],
+                        ExpiresAtTime = DateTimeOffset.Parse(reader[2].ToString())
+                    };
 
                     if (!await reader.IsDBNullAsync(3))
                     {

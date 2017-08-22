@@ -127,8 +127,7 @@ namespace Microsoft.Extensions.Caching.Memory
             // Initialize the last access timestamp at the time the entry is added
             entry.LastAccessed = utcNow;
 
-            CacheEntry priorEntry;
-            if (_entries.TryGetValue(entry.Key, out priorEntry))
+            if (_entries.TryGetValue(entry.Key, out CacheEntry priorEntry))
             {
                 priorEntry.SetExpired(EvictionReason.Replaced);
             }
@@ -220,8 +219,7 @@ namespace Microsoft.Extensions.Caching.Memory
             var utcNow = _options.Clock.UtcNow;
             var found = false;
 
-            CacheEntry entry;
-            if (_entries.TryGetValue(key, out entry))
+            if (_entries.TryGetValue(key, out CacheEntry entry))
             {
                 // Check if expired due to expiration tokens, timers, etc. and if so, remove it.
                 // Allow a stale Replaced value to be returned due to concurrent calls to SetExpired during SetEntry.
@@ -256,8 +254,7 @@ namespace Microsoft.Extensions.Caching.Memory
             }
 
             CheckDisposed();
-            CacheEntry entry;
-            if (_entries.TryRemove(key, out entry))
+            if (_entries.TryRemove(key, out CacheEntry entry))
             {
                 if (_options.SizeLimit.HasValue)
                 {

@@ -99,8 +99,7 @@ namespace Microsoft.Extensions.Caching.Distributed
                 throw new ArgumentNullException(nameof(key));
             }
 
-            object value;
-            _memCache.TryGetValue(key, out value);
+            _memCache.TryGetValue(key, out object value);
         }
 
         public Task RefreshAsync(string key, CancellationToken token = default(CancellationToken))

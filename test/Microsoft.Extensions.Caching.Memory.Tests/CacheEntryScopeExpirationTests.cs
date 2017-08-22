@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.Caching.Memory
                 cache.Set(key, obj, new MemoryCacheEntryOptions().AddExpirationToken(expirationToken));
             }
 
-            Assert.Equal(1, ((CacheEntry)entry)._expirationTokens.Count());
+            Assert.Single(((CacheEntry)entry)._expirationTokens);
             Assert.Null(((CacheEntry)entry)._absoluteExpiration);
         }
 
@@ -88,8 +88,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
             expirationToken.Fire();
 
-            object value;
-            Assert.False(cache.TryGetValue(key1, out value));
+            Assert.False(cache.TryGetValue(key1, out object value));
             Assert.False(cache.TryGetValue(key, out value));
         }
 
@@ -118,8 +117,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
             expirationToken.Fire();
 
-            object value;
-            Assert.False(cache.TryGetValue(key1, out value));
+            Assert.False(cache.TryGetValue(key1, out object value));
             Assert.False(cache.TryGetValue(key, out value));
         }
 
@@ -148,8 +146,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
             expirationToken.Fire();
 
-            object value;
-            Assert.False(cache.TryGetValue(key1, out value));
+            Assert.False(cache.TryGetValue(key1, out object value));
             Assert.False(cache.TryGetValue(key, out value));
         }
 
@@ -178,8 +175,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
             expirationToken.Fire();
 
-            object value;
-            Assert.False(cache.TryGetValue(key1, out value));
+            Assert.False(cache.TryGetValue(key1, out object value));
             Assert.False(cache.TryGetValue(key, out value));
         }
 
@@ -215,8 +211,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
             expirationToken.Fire();
 
-            object value;
-            Assert.False(cache.TryGetValue(key1, out value));
+            Assert.False(cache.TryGetValue(key1, out object value));
             Assert.False(cache.TryGetValue(key, out value));
             Assert.True(cache.TryGetValue(key2, out value));
         }
@@ -242,8 +237,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
             clock.Add(TimeSpan.FromSeconds(10));
 
-            object value;
-            Assert.False(cache.TryGetValue(key1, out value));
+            Assert.False(cache.TryGetValue(key1, out object value));
             Assert.False(cache.TryGetValue(key, out value));
         }
 
@@ -273,8 +267,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
             clock.Add(TimeSpan.FromSeconds(10));
 
-            object value;
-            Assert.False(cache.TryGetValue(key1, out value));
+            Assert.False(cache.TryGetValue(key1, out object value));
             Assert.False(cache.TryGetValue(key2, out value));
         }
 
@@ -313,8 +306,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
             clock.Add(TimeSpan.FromSeconds(10));
 
-            object value;
-            Assert.False(cache.TryGetValue(key1, out value));
+            Assert.False(cache.TryGetValue(key1, out object value));
             Assert.False(cache.TryGetValue(key2, out value));
             Assert.True(cache.TryGetValue(key3, out value));
         }
@@ -339,7 +331,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
             Assert.Null(CacheEntryHelper.Current);
 
-            Assert.Equal(1, ((CacheEntry)entry)._expirationTokens.Count());
+            Assert.Single(((CacheEntry)entry)._expirationTokens);
             Assert.Null(((CacheEntry)entry)._absoluteExpiration);
         }
 
@@ -373,9 +365,9 @@ namespace Microsoft.Extensions.Caching.Memory
 
             Assert.Null(CacheEntryHelper.Current);
 
-            Assert.Equal(1, ((CacheEntry)entry1)._expirationTokens.Count());
+            Assert.Single(((CacheEntry)entry1)._expirationTokens);
             Assert.Null(((CacheEntry)entry1)._absoluteExpiration);
-            Assert.Equal(1, ((CacheEntry)entry)._expirationTokens.Count());
+            Assert.Single(((CacheEntry)entry)._expirationTokens);
             Assert.Null(((CacheEntry)entry)._absoluteExpiration);
         }
 
@@ -414,7 +406,7 @@ namespace Microsoft.Extensions.Caching.Memory
             Assert.NotNull(((CacheEntry)entry1)._absoluteExpiration);
             Assert.Equal(clock.UtcNow + TimeSpan.FromSeconds(10), ((CacheEntry)entry1)._absoluteExpiration);
 
-            Assert.Equal(1, ((CacheEntry)entry2)._expirationTokens.Count());
+            Assert.Single(((CacheEntry)entry2)._expirationTokens);
             Assert.NotNull(((CacheEntry)entry2)._absoluteExpiration);
             Assert.Equal(clock.UtcNow + TimeSpan.FromSeconds(15), ((CacheEntry)entry2)._absoluteExpiration);
         }

@@ -9,11 +9,9 @@ namespace Microsoft.Extensions.Caching.Memory
     {
         public static TItem GetWeak<TItem>(this IMemoryCache cache, object key) where TItem : class
         {
-            WeakReference<TItem> reference;
-            if (cache.TryGetValue<WeakReference<TItem>>(key, out reference))
+            if (cache.TryGetValue<WeakReference<TItem>>(key, out WeakReference<TItem> reference))
             {
-                TItem value;
-                reference.TryGetTarget(out value);
+                reference.TryGetTarget(out TItem value);
                 return value;
             }
             return null;

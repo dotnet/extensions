@@ -232,11 +232,7 @@ namespace Microsoft.Extensions.Caching.Redis
             // TODO: Error handling
             if (results.Length >= 2)
             {
-                // Note we always get back two results, even if they are all null.
-                // These operations will no-op in the null scenario.
-                DateTimeOffset? absExpr;
-                TimeSpan? sldExpr;
-                MapMetadata(results, out absExpr, out sldExpr);
+                MapMetadata(results, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
                 Refresh(key, absExpr, sldExpr);
             }
 
@@ -274,11 +270,7 @@ namespace Microsoft.Extensions.Caching.Redis
             // TODO: Error handling
             if (results.Length >= 2)
             {
-                // Note we always get back two results, even if they are all null.
-                // These operations will no-op in the null scenario.
-                DateTimeOffset? absExpr;
-                TimeSpan? sldExpr;
-                MapMetadata(results, out absExpr, out sldExpr);
+                MapMetadata(results, out DateTimeOffset? absExpr, out TimeSpan? sldExpr);
                 await RefreshAsync(key, absExpr, sldExpr, token);
             }
 

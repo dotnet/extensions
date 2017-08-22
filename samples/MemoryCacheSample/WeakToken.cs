@@ -24,8 +24,7 @@ namespace Microsoft.Extensions.Caching.Memory
         {
             get
             {
-                T ignored;
-                return !_reference.TryGetTarget(out ignored);
+                return !_reference.TryGetTarget(out T ignored);
             }
         }
 
