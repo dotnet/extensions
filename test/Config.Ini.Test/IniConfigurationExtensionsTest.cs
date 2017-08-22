@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.Configuration.Ini.Test
  
             // Act and Assert
             var ex = Assert.Throws<FileNotFoundException>(() => new ConfigurationBuilder().AddIniFile(path).Build());
-            Assert.True(ex.Message.StartsWith($"The configuration file '{path}' was not found and is not optional. The physical path is '"));
+            Assert.StartsWith($"The configuration file '{path}' was not found and is not optional. The physical path is '", ex.Message);
         }
 
         [Fact]

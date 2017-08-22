@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var list = new List<string>();
             config.GetSection("StringList").Bind(list);
 
-            Assert.Equal(0, list.Count);
+            Assert.Empty(list);
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var list = new List<bool>();
             config.GetSection("InvalidList").Bind(list);
 
-            Assert.Equal(1, list.Count);
+            Assert.Single(list);
             Assert.True(list[0]);
         }
 
@@ -597,7 +597,7 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var options = new OptionsWithDictionary();
             config.Bind(options);
 
-            Assert.Equal(0, options.NonStringKeyDictionary.Count);
+            Assert.Empty(options.NonStringKeyDictionary);
         }
 
         [Fact]
@@ -1021,10 +1021,14 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
         {
             public OptionsWithLists()
             {
-                AlreadyInitializedList = new List<string>();
-                AlreadyInitializedList.Add("This was here before");
-                AlreadyInitializedListInterface = new List<string>();
-                AlreadyInitializedListInterface.Add("This was here too");
+                AlreadyInitializedList = new List<string>
+                {
+                    "This was here before"
+                };
+                AlreadyInitializedListInterface = new List<string>
+                {
+                    "This was here too"
+                };
             }
 
             public CustomList CustomList { get; set; }
@@ -1050,8 +1054,10 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
         {
             public OptionsWithDictionary()
             {
-                AlreadyInitializedStringDictionaryInterface = new Dictionary<string, string>();
-                AlreadyInitializedStringDictionaryInterface["123"] = "This was already here";
+                AlreadyInitializedStringDictionaryInterface = new Dictionary<string, string>
+                {
+                    ["123"] = "This was already here"
+                };
             }
 
             public Dictionary<string, int> IntDictionary { get; set; }

@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Configuration.Xml.Test
             // Arrange
             // Act and Assert
             var ex = Assert.Throws<FileNotFoundException>(() => config.Build());
-            Assert.True(ex.Message.StartsWith($"The configuration file 'NotExistingConfig.xml' was not found and is not optional. The physical path is '"));
+            Assert.StartsWith($"The configuration file 'NotExistingConfig.xml' was not found and is not optional. The physical path is '", ex.Message);
         }
     }
 }

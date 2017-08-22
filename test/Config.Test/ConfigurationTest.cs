@@ -549,9 +549,9 @@ namespace Microsoft.Extensions.Configuration.Test
             var children = config.GetChildren().ToArray();
 
             // Assert
-            Assert.Equal(1, children.Length);
+            Assert.Single(children);
             Assert.Equal(string.Empty, children.First().Key);
-            Assert.Equal(1, children.First().GetChildren().Count());
+            Assert.Single(children.First().GetChildren());
             Assert.Equal("Key2", children.First().GetChildren().First().Key);
         }
 
@@ -571,11 +571,11 @@ namespace Microsoft.Extensions.Configuration.Test
             var children = config.GetChildren().ToArray();
 
             // Assert
-            Assert.Equal(1, children.Length);
+            Assert.Single(children);
             Assert.Equal("Key1", children.First().Key);
-            Assert.Equal(1, children.First().GetChildren().Count());
+            Assert.Single(children.First().GetChildren());
             Assert.Equal(string.Empty, children.First().GetChildren().First().Key);
-            Assert.Equal(1, children.First().GetChildren().First().GetChildren().Count());
+            Assert.Single(children.First().GetChildren().First().GetChildren());
             Assert.Equal("Key3", children.First().GetChildren().First().GetChildren().First().Key);
         }
 
@@ -595,9 +595,9 @@ namespace Microsoft.Extensions.Configuration.Test
             var children = config.GetChildren().ToArray();
 
             // Assert
-            Assert.Equal(1, children.Length);
+            Assert.Single(children);
             Assert.Equal("Key1", children.First().Key);
-            Assert.Equal(1, children.First().GetChildren().Count());
+            Assert.Single(children.First().GetChildren());
             Assert.Equal(string.Empty, children.First().GetChildren().First().Key);
         }
 

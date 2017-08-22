@@ -389,7 +389,7 @@ namespace Microsoft.Extensions.Configuration.Xml.Test
         public void XmlConfiguration_Throws_On_Missing_Configuration_File()
         {
             var ex = Assert.Throws<FileNotFoundException>(() => new ConfigurationBuilder().AddXmlFile("NotExistingConfig.xml", optional: false).Build());
-            Assert.True(ex.Message.StartsWith($"The configuration file 'NotExistingConfig.xml' was not found and is not optional. The physical path is '"));
+            Assert.StartsWith($"The configuration file 'NotExistingConfig.xml' was not found and is not optional. The physical path is '", ex.Message);
         }
 
         [Fact]

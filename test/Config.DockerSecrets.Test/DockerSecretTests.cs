@@ -126,7 +126,7 @@ namespace Microsoft.Extensions.Configuration.DockerSecrets.Test
                 })
                 .Build();
 
-            Assert.Equal(0, config.AsEnumerable().Count());
+            Assert.Empty(config.AsEnumerable());
         }
 
         [Fact]
