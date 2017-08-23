@@ -48,15 +48,15 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
             provider.IntervalControl.Resume();
             await provider.IntervalControl.Pause;
 
-            Assert.Equal(1, provider.Batches.Count);
-            Assert.Equal(1, provider.Batches[0].Length);
+            Assert.Single(provider.Batches);
+            Assert.Single(provider.Batches[0]);
             Assert.Equal("2016-05-04 03:02:01.000 +00:00 [Information] Cat: Info message" + _nl, provider.Batches[0][0].Message);
 
             provider.IntervalControl.Resume();
             await provider.IntervalControl.Pause;
 
             Assert.Equal(2, provider.Batches.Count);
-            Assert.Equal(1, provider.Batches[1].Length);
+            Assert.Single(provider.Batches[1]);
 
             Assert.Equal("2016-05-04 04:02:01.000 +00:00 [Error] Cat: Error message" + _nl, provider.Batches[1][0].Message);
         }

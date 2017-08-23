@@ -116,7 +116,7 @@ namespace Microsoft.Extensions.Logging
             logger.LogInformation(message);
 
             // Assert
-            Assert.Equal(1, testEventLog.Messages.Count);
+            Assert.Single(testEventLog.Messages);
             Assert.Equal(expectedMessage, testEventLog.Messages[0]);
         }
 

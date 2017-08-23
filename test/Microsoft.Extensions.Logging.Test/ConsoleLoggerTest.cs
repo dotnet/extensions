@@ -168,7 +168,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Warning, 0, _state, null, _defaultFormatter);
 
             // Assert
-            Assert.Equal(0, sink.Writes.Count);
+            Assert.Empty(sink.Writes);
 
             // Act
             logger.Log(LogLevel.Critical, 0, _state, null, _defaultFormatter);
@@ -189,7 +189,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Warning, 0, _state, null, null);
 
             // Assert
-            Assert.Equal(0, sink.Writes.Count);
+            Assert.Empty(sink.Writes);
 
             // Act
             logger.Log(LogLevel.Error, 0, _state, null, _defaultFormatter);
@@ -210,7 +210,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Information, 0, _state, null, null);
 
             // Assert
-            Assert.Equal(0, sink.Writes.Count);
+            Assert.Empty(sink.Writes);
 
             // Act
             logger.Log(LogLevel.Warning, 0, _state, null, _defaultFormatter);
@@ -231,7 +231,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Debug, 0, _state, null, null);
 
             // Assert
-            Assert.Equal(0, sink.Writes.Count);
+            Assert.Empty(sink.Writes);
 
             // Act
             logger.Log(LogLevel.Information, 0, _state, null, _defaultFormatter);
@@ -252,7 +252,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(LogLevel.Trace, 0, _state, null, null);
 
             // Assert
-            Assert.Equal(0, sink.Writes.Count);
+            Assert.Empty(sink.Writes);
 
             // Act
             logger.Log(LogLevel.Debug, 0, _state, null, _defaultFormatter);
@@ -841,8 +841,8 @@ namespace Microsoft.Extensions.Logging.Test
         }
 
         [Theory]
-        [MemberData(nameof(LevelsWithPrefixes))]
-        public void WriteCore_NullMessageWithNullException(LogLevel level, string prefix)
+        [MemberData(nameof(Levels))]
+        public void WriteCore_NullMessageWithNullException(LogLevel level)
         {
             // Arrange
             var t = SetUp(null);
@@ -855,7 +855,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.Log(level, 0, message, ex, (s, e) => s);
 
             // Assert
-            Assert.Equal(0, sink.Writes.Count);
+            Assert.Empty(sink.Writes);
         }
 
         [Fact]
@@ -922,6 +922,19 @@ namespace Microsoft.Extensions.Logging.Test
             {LogLevel.Debug, "dbug"},
             {LogLevel.Trace, "trce"},
         };
+
+        public static TheoryData<LogLevel> Levels
+        {
+            get
+            {
+                var data = new TheoryData<LogLevel>();
+                foreach (LogLevel value in Enum.GetValues(typeof(LogLevel)))
+                {
+                    data.Add(value);
+                }
+                return data;
+            }
+        }
 
         private string GetMessage(List<ConsoleContext> contexts)
         {

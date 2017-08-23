@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
             sink.IntervalControl.Resume();
             await sink.IntervalControl.Pause;
 
-            Assert.Equal(1, buffers.Count);
+            Assert.Single(buffers);
             Assert.Equal(
                 "2016-05-04 03:02:01.000 +00:00 [Information] Cat: Text 0" + Environment.NewLine +
                 "2016-05-04 03:02:01.000 +00:00 [Information] Cat: Text 1" + Environment.NewLine +

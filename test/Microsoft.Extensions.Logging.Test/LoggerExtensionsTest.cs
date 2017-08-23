@@ -635,7 +635,7 @@ namespace Microsoft.Extensions.Logging.Test
             var scope = logger.BeginScope("Executing action {ActionName}", actionName);
 
             // Assert
-            Assert.Equal(1, testSink.Scopes.Count);
+            Assert.Single(testSink.Scopes);
             Assert.IsType<FormattedLogValues>(testSink.Scopes[0].Scope);
             var scopeState = (FormattedLogValues)testSink.Scopes[0].Scope;
             Assert.Equal(expectedStringMessage, scopeState.ToString());

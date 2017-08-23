@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(new[] { "provider1.Test-Hello!", "provider3.Test-Hello!" }, store);
             Assert.NotNull(aggregateException);
             Assert.StartsWith("An error occurred while writing to logger(s).", aggregateException.Message);
-            Assert.Equal(1, aggregateException.InnerExceptions.Count);
+            Assert.Single(aggregateException.InnerExceptions);
             var exception = aggregateException.InnerExceptions[0];
             Assert.Equal("provider2.Test-Error occurred while logging data.", exception.Message);
         }
@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(new[] { "provider1.Test-Scope1", "provider3.Test-Scope1" }, store);
             Assert.NotNull(aggregateException);
             Assert.StartsWith("An error occurred while writing to logger(s).", aggregateException.Message);
-            Assert.Equal(1, aggregateException.InnerExceptions.Count);
+            Assert.Single(aggregateException.InnerExceptions);
             var exception = aggregateException.InnerExceptions[0];
             Assert.Equal("provider2.Test-Error occurred while creating scope.", exception.Message);
         }
@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(new[] { "provider1.Test-Hello!", "provider3.Test-Hello!" }, store);
             Assert.NotNull(aggregateException);
             Assert.StartsWith("An error occurred while writing to logger(s).", aggregateException.Message);
-            Assert.Equal(1, aggregateException.InnerExceptions.Count);
+            Assert.Single(aggregateException.InnerExceptions);
             var exception = aggregateException.InnerExceptions[0];
             Assert.Equal("provider2.Test-Error occurred while checking if logger is enabled.", exception.Message);
         }

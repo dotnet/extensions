@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Assert
             var writes = loggerProvider.Sink.Writes;
-            Assert.Equal(0, writes.Count);
+            Assert.Empty(writes);
 
             json =
 @"{
@@ -57,7 +57,7 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Assert
             writes = loggerProvider.Sink.Writes;
-            Assert.Equal(1, writes.Count);
+            Assert.Single(writes);
         }
 
         [Fact]
@@ -85,7 +85,7 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Assert
             var writes = loggerProvider.Sink.Writes;
-            Assert.Equal(0, writes.Count);
+            Assert.Empty(writes);
 
             json =
 @"{
@@ -102,7 +102,7 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Assert
             writes = loggerProvider.Sink.Writes;
-            Assert.Equal(1, writes.Count);
+            Assert.Single(writes);
         }
 
         [Fact]
@@ -133,7 +133,7 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Assert
             var writes = loggerProvider.Sink.Writes;
-            Assert.Equal(0, writes.Count);
+            Assert.Empty(writes);
         }
 
         [Fact]
@@ -167,7 +167,7 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Assert
             var writes = loggerProvider.Sink.Writes;
-            Assert.Equal(1, writes.Count);
+            Assert.Single(writes);
         }
 
         [Fact]
@@ -199,7 +199,7 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Assert
             var writes = loggerProvider.Sink.Writes;
-            Assert.Equal(0, writes.Count);
+            Assert.Empty(writes);
 
             // No config value for 'None' so should use 'Default'
             logger = factory.CreateLogger("None");
@@ -208,13 +208,13 @@ namespace Microsoft.Extensions.Logging.Test
             logger.LogTrace("Message");
 
             // Assert
-            Assert.Equal(0, writes.Count);
+            Assert.Empty(writes);
 
             // Act
             logger.LogInformation("Message");
 
             // Assert
-            Assert.Equal(1, writes.Count);
+            Assert.Single(writes);
         }
 
         [Fact]
@@ -241,11 +241,11 @@ namespace Microsoft.Extensions.Logging.Test
             logger.LogInformation("Message");
 
             var writes = provider.Sink.Writes;
-            Assert.Equal(1, writes.Count);
+            Assert.Single(writes);
 
             logger.LogTrace("Message");
 
-            Assert.Equal(1, writes.Count);
+            Assert.Single(writes);
         }
 
         [Fact]
@@ -269,7 +269,7 @@ namespace Microsoft.Extensions.Logging.Test
             logger.LogInformation("Message");
 
             var writes = provider.Sink.Writes;
-            Assert.Equal(1, writes.Count);
+            Assert.Single(writes);
         }
 
         [Fact]
@@ -286,13 +286,13 @@ namespace Microsoft.Extensions.Logging.Test
             logger.LogWarning("Message");
 
             var writes = provider.Sink.Writes;
-            Assert.Equal(0, writes.Count);
+            Assert.Empty(writes);
 
             logger = factory.CreateLogger("NotTest");
 
             logger.LogInformation("Message");
 
-            Assert.Equal(1, writes.Count);
+            Assert.Single(writes);
 
             logger.LogError("Message");
 
@@ -327,11 +327,11 @@ namespace Microsoft.Extensions.Logging.Test
 
             logger.LogTrace("Message");
 
-            Assert.Equal(0, writes.Count);
+            Assert.Empty(writes);
 
             logger.LogInformation("Message");
 
-            Assert.Equal(1, writes.Count);
+            Assert.Single(writes);
 
             logger.LogCritical("Message");
 
@@ -351,11 +351,11 @@ namespace Microsoft.Extensions.Logging.Test
             logger.LogInformation("Message");
 
             var writes = provider.Sink.Writes;
-            Assert.Equal(0, writes.Count);
+            Assert.Empty(writes);
 
             logger.LogWarning("Message");
 
-            Assert.Equal(1, writes.Count);
+            Assert.Single(writes);
         }
 
         [Fact]
@@ -371,11 +371,11 @@ namespace Microsoft.Extensions.Logging.Test
             logger.LogInformation("Message");
 
             var writes = provider.Sink.Writes;
-            Assert.Equal(0, writes.Count);
+            Assert.Empty(writes);
 
             logger.LogWarning("Message");
 
-            Assert.Equal(1, writes.Count);
+            Assert.Single(writes);
         }
 
         [Fact]
@@ -391,11 +391,11 @@ namespace Microsoft.Extensions.Logging.Test
             logger.LogInformation("Message");
 
             var writes = provider.Sink.Writes;
-            Assert.Equal(0, writes.Count);
+            Assert.Empty(writes);
 
             logger.LogWarning("Message");
 
-            Assert.Equal(1, writes.Count);
+            Assert.Single(writes);
         }
 
         [Theory]

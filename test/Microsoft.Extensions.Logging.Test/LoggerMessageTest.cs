@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.Logging.Test
             testLogger.ActionMatched(controller, action);
 
             // Assert
-            Assert.Equal(1, testSink.Writes.Count);
+            Assert.Single(testSink.Writes);
             var writeContext = testSink.Writes.First();
             var actualLogValues = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(writeContext.State);
             AssertLogValues(
@@ -58,8 +58,8 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Assert
             Assert.NotNull(disposable);
-            Assert.Equal(0, testSink.Writes.Count);
-            Assert.Equal(1, testSink.Scopes.Count);
+            Assert.Empty(testSink.Writes);
+            Assert.Single(testSink.Scopes);
             var scopeContext = testSink.Scopes.First();
             var actualLogValues = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(scopeContext.Scope);
             AssertLogValues(new[]
@@ -85,8 +85,8 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Assert
             Assert.NotNull(disposable);
-            Assert.Equal(0, testSink.Writes.Count);
-            Assert.Equal(1, testSink.Scopes.Count);
+            Assert.Empty(testSink.Writes);
+            Assert.Single(testSink.Scopes);
             var scopeContext = testSink.Scopes.First();
             var actualLogValues = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(scopeContext.Scope);
             AssertLogValues(new[]
@@ -114,8 +114,8 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Assert
             Assert.NotNull(disposable);
-            Assert.Equal(0, testSink.Writes.Count);
-            Assert.Equal(1, testSink.Scopes.Count);
+            Assert.Empty(testSink.Writes);
+            Assert.Single(testSink.Scopes);
             var scopeContext = testSink.Scopes.First();
             var actualLogValues = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(scopeContext.Scope);
             AssertLogValues(new[]
@@ -145,8 +145,8 @@ namespace Microsoft.Extensions.Logging.Test
 
             // Assert
             Assert.NotNull(disposable);
-            Assert.Equal(0, testSink.Writes.Count);
-            Assert.Equal(1, testSink.Scopes.Count);
+            Assert.Empty(testSink.Writes);
+            Assert.Single(testSink.Scopes);
             var scopeContext = testSink.Scopes.First();
             var actualLogValues = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(scopeContext.Scope);
             AssertLogValues(new[]
@@ -185,7 +185,7 @@ namespace Microsoft.Extensions.Logging.Test
             messageDelegate.DynamicInvoke(parameters.ToArray());
 
             // Assert
-            Assert.Equal(1, testSink.Writes.Count);
+            Assert.Single(testSink.Writes);
             var write = testSink.Writes.First();
             var actualLogValues = Assert.IsAssignableFrom<IReadOnlyList<KeyValuePair<string, object>>>(write.State);
             AssertLogValues(expectedValues, actualLogValues.ToList());
