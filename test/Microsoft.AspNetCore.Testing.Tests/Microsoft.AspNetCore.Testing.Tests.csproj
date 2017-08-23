@@ -7,6 +7,8 @@
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
     <!-- allow skipped tests -->
     <NoWarn>$(NoWarn);xUnit1004</NoWarn>
+    <!-- allow unused theory parameters -->
+    <NoWarn>$(NoWarn);xUnit1026</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

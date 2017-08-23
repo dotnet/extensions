@@ -20,6 +20,7 @@ namespace Sample.Tests
         [InlineData(3)]
         public void TheoryTest1(int x)
         {
+            Assert.InRange(x, 1, 3);
         }
 
         [Theory]
@@ -28,6 +29,8 @@ namespace Sample.Tests
         [InlineData(3, "Hi")]
         public void TheoryTest2(int x, string s)
         {
+            Assert.InRange(x, 1, 3);
+            Assert.Equal("Hi", s);
         }
 
         [Fact]
