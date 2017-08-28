@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Security.Cryptography.Xml" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Security.Cryptography.Xml" />
   </ItemGroup>
 
 </Project>
