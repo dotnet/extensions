@@ -1,14 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <Import Project="..\..\build\common.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <AssemblyName>Microsoft.Extensions.Configuration.Json</AssemblyName>
     <RootNamespace>Microsoft.Extensions.Configuration.Json</RootNamespace>
     <Description>JSON configuration provider implementation for Microsoft.Extensions.Configuration.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>configuration;json</PackageTags>
+    <PackageTags>$(PackageTags);json</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

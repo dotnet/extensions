@@ -1,14 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <Import Project="..\..\build\common.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <AssemblyName>Microsoft.Extensions.Configuration</AssemblyName>
     <RootNamespace>Microsoft.Extensions.Configuration</RootNamespace>
     <Description>Implementation of key-value pair based configuration for Microsoft.Extensions.Configuration. Includes the memory configuration provider.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>configuration</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

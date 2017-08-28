@@ -1,14 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <Import Project="..\..\build\common.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <AssemblyName>Microsoft.Extensions.Configuration.Binder</AssemblyName>
     <RootNamespace>Microsoft.Extensions.Configuration.Binder</RootNamespace>
     <Description>Functionality to bind an object to data in configuration providers for Microsoft.Extensions.Configuration.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>configuration</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

@@ -3,8 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.26424.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F141E2D0-F9B8-4ADB-A19A-7B6FF4CA19A1}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B54371FF-B920-46C8-8D55-6B19DBB43EBF}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.Json", "src\Config.Json\Config.Json.csproj", "{4C4CD1BC-4411-4AFD-9D04-147053F0E259}"
 EndProject
@@ -62,12 +68,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Config
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B926267F-98A3-41F0-90F5-0B1ADF78CA65}"
 	ProjectSection(SolutionItems) = preProject
+		.appveyor.yml = .appveyor.yml
 		.travis.yml = .travis.yml
-		appveyor.yml = appveyor.yml
 		build.cmd = build.cmd
 		build.ps1 = build.ps1
 		build.sh = build.sh
 		CONTRIBUTING.md = CONTRIBUTING.md
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 		LICENSE.txt = LICENSE.txt
 		NuGet.config = NuGet.config
 		NuGetPackageVerifier.json = NuGetPackageVerifier.json
@@ -77,7 +85,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{F786716B-DE4D-4C4D-8D5B-38182329E5B5}"
 	ProjectSection(SolutionItems) = preProject
-		build\common.props = build\common.props
 		build\dependencies.props = build\dependencies.props
 		build\repo.props = build\repo.props
 	EndProjectSection
