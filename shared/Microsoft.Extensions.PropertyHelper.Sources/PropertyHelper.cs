@@ -327,7 +327,7 @@ namespace Microsoft.Extensions.Internal
         /// </summary>
         /// <remarks>
         /// The implementation of PropertyHelper will cache the property accessors per-type. This is
-        /// faster when the the same type is used multiple times with ObjectToDictionary.
+        /// faster when the same type is used multiple times with ObjectToDictionary.
         /// </remarks>
         public static IDictionary<string, object> ObjectToDictionary(object value)
         {
@@ -453,7 +453,7 @@ namespace Microsoft.Extensions.Internal
                 // the type to see if we should include it.
                 var ignoreProperty = false;
 
-                // Walk up the hierarchy until we find the type that actally declares this
+                // Walk up the hierarchy until we find the type that actually declares this
                 // PropertyInfo.
                 var currentTypeInfo = type.GetTypeInfo();
                 var declaringTypeInfo = declaringType.GetTypeInfo();
@@ -514,7 +514,7 @@ namespace Microsoft.Extensions.Internal
         // Indexed properties are not useful (or valid) for grabbing properties off an object.
         private static bool IsInterestingProperty(PropertyInfo property)
         {
-            // For imporving application startup time, do not use GetIndexParameters() api early in this check as it
+            // For improving application startup time, do not use GetIndexParameters() api early in this check as it
             // creates a copy of parameter array and also we would like to check for the presence of a get method
             // and short circuit asap.
             return property.GetMethod != null &&

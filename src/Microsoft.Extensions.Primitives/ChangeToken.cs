@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.Extensions.Primitives
 {
     /// <summary>
-    /// Propagates notifications that a change has occured.
+    /// Propagates notifications that a change has occurred.
     /// </summary>
     public static class ChangeToken
     {

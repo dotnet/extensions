@@ -6,12 +6,12 @@ using System;
 namespace Microsoft.Extensions.Primitives
 {
     /// <summary>
-    /// Propagates notifications that a change has occured.
+    /// Propagates notifications that a change has occurred.
     /// </summary>
     public interface IChangeToken
     {
         /// <summary>
-        /// Gets a value that indicates if a change has occured.
+        /// Gets a value that indicates if a change has occurred.
         /// </summary>
         bool HasChanged { get; }
 

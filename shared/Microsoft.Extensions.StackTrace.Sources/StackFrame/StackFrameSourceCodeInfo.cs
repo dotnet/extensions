@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
         public int Line { get; set; }
 
         /// <summary>
-        /// The line preceeding the frame line
+        /// The line preceding the frame line
         /// </summary>
         public int PreContextLine { get; set; }
 
