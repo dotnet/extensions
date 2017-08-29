@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Description>Various helpers for writing tests that use ASP.NET Core.</Description>
     <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
