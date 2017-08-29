@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit" Version="$(XunitVersion)" />
+    <PackageReference Include="xunit" />
   </ItemGroup>
 
 </Project>
