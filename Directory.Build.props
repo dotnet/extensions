@@ -1,5 +1,4 @@
 ﻿<Project>
-  <Import Project="build\dependencies.props" />
   <Import Project="version.xml" />
 
   <PropertyGroup>
@@ -12,9 +11,5 @@
     <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkVersion)" PrivateAssets="All" />
-  </ItemGroup>
 
 </Project>
