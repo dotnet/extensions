@@ -51,7 +51,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FS.Composite.Tests", "test\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{315EAB76-E28A-4A6C-84EE-041E68D90846}"
 	ProjectSection(SolutionItems) = preProject
-		build\dependencies.props = build\dependencies.props
+		build\repo.props = build\repo.props
 	EndProjectSection
 EndProject
 Global
