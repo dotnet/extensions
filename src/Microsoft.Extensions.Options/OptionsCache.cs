@@ -27,14 +27,11 @@ namespace Microsoft.Extensions.Options
         /// <returns>The options instance.</returns>
         public virtual TOptions GetOrAdd(string name, Func<TOptions> createOptions)
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
             if (createOptions == null)
             {
                 throw new ArgumentNullException(nameof(createOptions));
             }
+            name = name ?? Options.DefaultName;
             return _cache.GetOrAdd(name, new Lazy<TOptions>(createOptions)).Value;
         }
 
@@ -46,14 +43,11 @@ namespace Microsoft.Extensions.Options
         /// <returns>Whether anything was added.</returns>
         public virtual bool TryAdd(string name, TOptions options)
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
+            name = name ?? Options.DefaultName;
             return _cache.TryAdd(name, new Lazy<TOptions>(() => options));
         }
 
@@ -64,10 +58,7 @@ namespace Microsoft.Extensions.Options
         /// <returns>Whether anything was removed.</returns>
         public virtual bool TryRemove(string name)
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+            name = name ?? Options.DefaultName;
             return _cache.TryRemove(name, out var ignored);
         }
     }

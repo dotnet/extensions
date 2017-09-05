@@ -33,10 +33,8 @@ namespace Microsoft.Extensions.Options
 
         public virtual TOptions Get(string name)
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+            name = name ?? Options.DefaultName;
+
             // Store the options in our instance cache
             return _cache.GetOrAdd(name, () => _factory.Create(name));
         }
