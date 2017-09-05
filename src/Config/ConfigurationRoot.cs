@@ -96,10 +96,7 @@ namespace Microsoft.Extensions.Configuration
         /// Returns a <see cref="IChangeToken"/> that can be used to observe when this configuration is reloaded.
         /// </summary>
         /// <returns></returns>
-        public IChangeToken GetReloadToken()
-        {
-            return _changeToken;
-        }
+        public IChangeToken GetReloadToken() => _changeToken;
 
         /// <summary>
         /// Gets a configuration sub-section with the specified key.
@@ -110,10 +107,8 @@ namespace Microsoft.Extensions.Configuration
         ///     This method will never return <c>null</c>. If no matching sub-section is found with the specified key,
         ///     an empty <see cref="IConfigurationSection"/> will be returned.
         /// </remarks>
-        public IConfigurationSection GetSection(string key)
-        {
-            return new ConfigurationSection(this, key);
-        }
+        public IConfigurationSection GetSection(string key) 
+            => new ConfigurationSection(this, key);
 
         /// <summary>
         /// Force the configuration values to be reloaded from the underlying sources.

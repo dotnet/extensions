@@ -36,9 +36,7 @@ namespace Microsoft.Extensions.Configuration
         /// <param name="value">The value found at key if one is found.</param>
         /// <returns>True if key has a value, false otherwise.</returns>
         public virtual bool TryGet(string key, out string value)
-        {
-            return Data.TryGetValue(key, out value);
-        }
+            => Data.TryGetValue(key, out value);
 
         /// <summary>
         /// Sets a value for a given key.
@@ -46,16 +44,13 @@ namespace Microsoft.Extensions.Configuration
         /// <param name="key">The configuration key to set.</param>
         /// <param name="value">The value to set.</param>
         public virtual void Set(string key, string value)
-        {
-            Data[key] = value;
-        }
+            => Data[key] = value;
 
         /// <summary>
         /// Loads (or reloads) the data for this provider.
         /// </summary>
         public virtual void Load()
-        {
-        }
+        { }
        
         /// <summary>
         /// Returns the list of keys that this provider has.
