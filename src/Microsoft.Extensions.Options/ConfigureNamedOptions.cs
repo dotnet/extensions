@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Options
     /// Implementation of IConfigureNamedOptions.
     /// </summary>
     /// <typeparam name="TOptions"></typeparam>
-    public class ConfigureNamedOptions<TOptions> : IConfigureNamedOptions<TOptions>, IConfigureOptions<TOptions> where TOptions : class
+    public class ConfigureNamedOptions<TOptions> : IConfigureNamedOptions<TOptions> where TOptions : class
     {
         /// <summary>
         /// Constructor.

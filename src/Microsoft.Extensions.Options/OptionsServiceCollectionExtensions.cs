@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
@@ -126,5 +129,65 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
         public static IServiceCollection PostConfigureAll<TOptions>(this IServiceCollection services, Action<TOptions> configureOptions) where TOptions : class
             => services.PostConfigure(name: null, configureOptions: configureOptions);
+
+        /// <summary>
+        /// Registers a type that will have all of its I[Post]ConfigureOptions registered.
+        /// </summary>
+        /// <typeparam name="TConfigureOptions">The type that will configure options.</typeparam>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection ConfigureOptions<TConfigureOptions>(this IServiceCollection services) where TConfigureOptions : class
+            => services.ConfigureOptions(typeof(TConfigureOptions));
+
+        private static bool IsAction(Type type)
+            => (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Action<>));
+
+        private static IEnumerable<Type> FindIConfigureOptions(Type type)
+        {
+            var serviceTypes = type.GetTypeInfo().ImplementedInterfaces
+                .Where(t => t.GetTypeInfo().IsGenericType && 
+                (t.GetGenericTypeDefinition() == typeof(IConfigureOptions<>)
+                || t.GetGenericTypeDefinition() == typeof(IPostConfigureOptions<>)));
+            if (!serviceTypes.Any())
+            {
+                throw new InvalidOperationException(
+                    IsAction(type)
+                    ? Resources.Error_NoIConfigureOptionsAndAction
+                    : Resources.Error_NoIConfigureOptions);
+            }
+            return serviceTypes;
+        }
+
+        /// <summary>
+        /// Registers a type that will have all of its I[Post]ConfigureOptions registered.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+        /// <param name="configureType">The type that will configure options.</param>
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection ConfigureOptions(this IServiceCollection services, Type configureType)
+        {
+            var serviceTypes = FindIConfigureOptions(configureType);
+            foreach (var serviceType in serviceTypes)
+            {
+                services.AddTransient(serviceType, configureType);
+            }
+            return services;
+        }
+
+        /// <summary>
+        /// Registers an object that will have all of its I[Post]ConfigureOptions registered.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+        /// <param name="configureInstance">The instance that will configure options.</param>
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection ConfigureOptions(this IServiceCollection services, object configureInstance)
+        {
+            var serviceTypes = FindIConfigureOptions(configureInstance.GetType());
+            foreach (var serviceType in serviceTypes)
+            {
+                services.AddSingleton(serviceType, configureInstance);
+            }
+            return services;
+        }
     }
 }

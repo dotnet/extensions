@@ -366,5 +366,6 @@ namespace Microsoft.Extensions.Options.Tests
             var sp = services.BuildServiceProvider();
             Assert.Equal("Override", sp.GetRequiredService<IOptions<FakeOptions>>().Value.Message);
         }
+
     }
 }
