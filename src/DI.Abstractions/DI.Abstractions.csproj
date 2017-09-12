@@ -7,7 +7,6 @@ Microsoft.Extensions.DependencyInjection.IServiceCollection</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Microsoft.Extensions.DependencyInjection.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.Extensions.DependencyInjection.Abstractions</RootNamespace>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <DefineConstants>$(DefineConstants);ActivatorUtilities_In_DependencyInjection</DefineConstants>
   </PropertyGroup>
 

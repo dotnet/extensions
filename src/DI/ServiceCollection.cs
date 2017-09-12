@@ -19,6 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <inheritdoc />
         public bool IsReadOnly => false;
 
+        /// <inheritdoc />
         public ServiceDescriptor this[int index]
         {
             get
@@ -71,16 +72,19 @@ namespace Microsoft.Extensions.DependencyInjection
             return GetEnumerator();
         }
 
+        /// <inheritdoc />
         public int IndexOf(ServiceDescriptor item)
         {
             return _descriptors.IndexOf(item);
         }
 
+        /// <inheritdoc />
         public void Insert(int index, ServiceDescriptor item)
         {
             _descriptors.Insert(index, item);
         }
 
+        /// <inheritdoc />
         public void RemoveAt(int index)
         {
             _descriptors.RemoveAt(index);

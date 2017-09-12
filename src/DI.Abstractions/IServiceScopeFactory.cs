@@ -3,6 +3,10 @@
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    /// <summary>
+    /// A factory for creating instances of <see cref="IServiceScope"/>, which is used to create
+    /// services within a scope.
+    /// </summary>
     public interface IServiceScopeFactory
     {
         /// <summary>
