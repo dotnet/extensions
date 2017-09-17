@@ -435,6 +435,24 @@ namespace Microsoft.Extensions.Logging
             logger.Log(LogLevel.Critical, 0, new FormattedLogValues(message, args), null, _messageFormatter);
         }
 
+
+        /// <summary>
+        /// Formats and writes a log message on specified log level.
+        /// </summary>
+        /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
+        /// <param name="logLevel">Entry will be written on this level.</param>
+        /// <param name="message">Format string of the log message.</param>
+        /// <param name="args">An object array that contains zero or more objects to format.</param>
+        public static void Log(this ILogger logger, LogLevel logLevel, string message, params object[] args)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            logger.Log(logLevel, 0, new FormattedLogValues(message, args), null, _messageFormatter);
+        }
+
         //------------------------------------------Scope------------------------------------------//
 
         /// <summary>

@@ -38,9 +38,10 @@ namespace Microsoft.Extensions.Logging.Test
             logger.LogError(_state);
             logger.LogCritical(_state);
             logger.LogDebug(_state);
+            logger.Log(LogLevel.Information, _state);
 
             // Assert
-            Assert.Equal(6, sink.Writes.Count);
+            Assert.Equal(7, sink.Writes.Count);
 
             var trace = sink.Writes[0];
             Assert.Equal(LogLevel.Trace, trace.LogLevel);
@@ -77,6 +78,12 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(_state, debug.State.ToString());
             Assert.Equal(0, debug.EventId);
             Assert.Null(debug.Exception);
+
+            var logInf = sink.Writes[6];
+            Assert.Equal(LogLevel.Information, logInf.LogLevel);
+            Assert.Equal(_state, logInf.State.ToString());
+            Assert.Equal(0, logInf.EventId);
+            Assert.Null(logInf.Exception);
         }
 
         [Fact]
