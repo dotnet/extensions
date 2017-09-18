@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Analyzer package for Microsoft.Extensions.Logging.</Description>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.Extensions.Logging.Abstractions\Internal\LogValuesFormatter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>
