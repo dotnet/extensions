@@ -21,7 +21,6 @@ namespace Microsoft.Extensions.Logging.Console.Internal
             // Start Console message queue processor
             _outputTask = Task.Factory.StartNew(
                 ProcessLogQueue,
-                this,
                 TaskCreationOptions.LongRunning);
         }
 
@@ -59,13 +58,6 @@ namespace Microsoft.Extensions.Logging.Console.Internal
             {
                 WriteMessage(message);
             }
-        }
-
-        private static void ProcessLogQueue(object state)
-        {
-            var consoleLogger = (ConsoleLoggerProcessor)state;
-
-            consoleLogger.ProcessLogQueue();
         }
 
         public void Dispose()
