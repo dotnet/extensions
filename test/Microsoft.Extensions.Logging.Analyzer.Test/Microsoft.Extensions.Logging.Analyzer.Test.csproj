@@ -17,4 +17,8 @@
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
