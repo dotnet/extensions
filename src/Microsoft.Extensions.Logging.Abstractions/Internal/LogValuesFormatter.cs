@@ -17,6 +17,7 @@ namespace Microsoft.Extensions.Logging.Internal
     {
         private const string NullValue = "(null)";
         private static readonly object[] EmptyArray = new object[0];
+        private static readonly char[] FormatDelimiters = {',', ':'};
         private readonly string _format;
         private readonly List<string> _valueNames = new List<string>();
 
@@ -34,11 +35,7 @@ namespace Microsoft.Extensions.Logging.Internal
                 var closeBraceIndex = FindBraceIndex(format, '}', openBraceIndex, endIndex);
 
                 // Format item syntax : { index[,alignment][ :formatString] }.
-                var formatDelimiterIndex = FindIndexOf(format, ',', openBraceIndex, closeBraceIndex);
-                if (formatDelimiterIndex == closeBraceIndex)
-                {
-                    formatDelimiterIndex = FindIndexOf(format, ':', openBraceIndex, closeBraceIndex);
-                }
+                var formatDelimiterIndex = FindIndexOfAny(format, FormatDelimiters, openBraceIndex, closeBraceIndex);
 
                 if (closeBraceIndex == endIndex)
                 {
@@ -110,9 +107,9 @@ namespace Microsoft.Extensions.Logging.Internal
             return braceIndex;
         }
 
-        private static int FindIndexOf(string format, char ch, int startIndex, int endIndex)
+        private static int FindIndexOfAny(string format, char[] chars, int startIndex, int endIndex)
         {
-            var findIndex = format.IndexOf(ch, startIndex, endIndex - startIndex);
+            var findIndex = format.IndexOfAny(chars, startIndex, endIndex - startIndex);
             return findIndex == -1 ? endIndex : findIndex;
         }
 

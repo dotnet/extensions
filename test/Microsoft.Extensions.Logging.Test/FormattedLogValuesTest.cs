@@ -17,6 +17,8 @@ namespace Microsoft.Extensions.Logging.Test
         [InlineData("arg1 arg2", "{Start} {End}", new object[] { "arg1", "arg2" })]
         [InlineData("arg1     arg2", "{Start,-6} {End,6}", new object[] { "arg1", "arg2" })]
         [InlineData("0064", "{Hex:X4}", new object[] { 100 })]
+        [InlineData("8,765", "{Number:#,#}", new object[] { 8765.4321 })]
+        [InlineData(" 8,765", "{Number,6:#,#}", new object[] { 8765.4321 })]
         public void LogValues_With_Basic_Types(string expected, string format, object[] args)
         {
             var logValues = new FormattedLogValues(format, args);
