@@ -2,6 +2,7 @@
   "adx-nonshipping": {
     "rules": [],
     "packages": {
+      "Microsoft.AspNetCore.Certificates.Generation.Sources": {},
       "Microsoft.Extensions.ClosedGenericMatcher.Sources": {},
       "Microsoft.Extensions.CommandLineUtils.Sources": {},
       "Microsoft.Extensions.CopyOnWriteDictionary.Sources": {},

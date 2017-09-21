@@ -20,6 +20,7 @@
     <Compile Include="..\..\shared\Microsoft.Extensions.StackTrace.Sources\StackFrame\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.TypeNameHelper.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.WebEncoders.Sources\**\*.cs" />
+    <Compile Include="..\..\shared\Microsoft.AspNetCore.Certificates.Generation.Sources\**\*.cs" />
     <EmbeddedResource Include="..\..\shared\*.Sources\**\*.resx" />
   </ItemGroup>
 
@@ -31,6 +32,7 @@
     <PackageReference Include="FSharp.Core" />
     <PackageReference Include="System.Reflection.Metadata" />
     <PackageReference Include="System.Threading.Tasks.Extensions" />
+    <PackageReference Include="System.Security.Cryptography.Cng" />
   </ItemGroup>
 
 </Project>
