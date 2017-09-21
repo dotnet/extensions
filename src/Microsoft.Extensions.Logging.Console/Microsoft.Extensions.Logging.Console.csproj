@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.Logging\Microsoft.Extensions.Logging.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Logging.Configuration\Microsoft.Extensions.Logging.Configuration.csproj" />
   </ItemGroup>
 
   <ItemGroup>

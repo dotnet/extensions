@@ -4,7 +4,9 @@
 using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Logging
 {
@@ -16,8 +18,11 @@ namespace Microsoft.Extensions.Logging
         /// <param name="builder">The <see cref="ILoggingBuilder"/> to use.</param>
         public static ILoggingBuilder AddConsole(this ILoggingBuilder builder)
         {
-            builder.Services.AddSingleton<ILoggerProvider, ConsoleLoggerProvider>();
+            builder.AddConfiguration();
 
+            builder.Services.AddSingleton<ILoggerProvider, ConsoleLoggerProvider>();
+            builder.Services.AddSingleton<IConfigureOptions<ConsoleLoggerOptions>, ConsoleLoggerOptionsSetup>();
+            builder.Services.AddSingleton<IOptionsChangeTokenSource<ConsoleLoggerOptions>, LoggerProviderOptionsChangeTokenSource<ConsoleLoggerOptions, ConsoleLoggerProvider>>();
             return builder;
         }
 

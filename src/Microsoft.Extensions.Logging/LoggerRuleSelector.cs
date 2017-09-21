@@ -2,15 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Reflection;
 
 namespace Microsoft.Extensions.Logging
 {
     internal class LoggerRuleSelector
     {
-        private const string AliasAttibuteTypeFullName = "Microsoft.Extensions.Logging.ProviderAliasAttribute";
-        private const string AliasAttibuteAliasProperty = "Alias";
-
         public void Select(LoggerFilterOptions options, Type providerType, string category, out LogLevel? minLevel, out Func<string, string, LogLevel, bool> filter)
         {
             filter = null;
@@ -24,7 +20,7 @@ namespace Microsoft.Extensions.Logging
             // 4. If there are multiple rules use last
             // 5. If there are no applicable rules use global minimal level
 
-            var providerAlias = GetAlias(providerType);
+            var providerAlias = ProviderAliasUtilities.GetAlias(providerType);
             LoggerFilterRule current = null;
             foreach (var rule in options.Rules)
             {
@@ -42,25 +38,6 @@ namespace Microsoft.Extensions.Logging
             }
         }
 
-        private string GetAlias(Type providerType)
-        {
-            foreach (var attribute in providerType.GetTypeInfo().GetCustomAttributes(inherit: false))
-            {
-                if (attribute.GetType().FullName == AliasAttibuteTypeFullName)
-                {
-                    var valueProperty = attribute
-                        .GetType()
-                        .GetProperty(AliasAttibuteAliasProperty, BindingFlags.Public | BindingFlags.Instance);
-
-                    if (valueProperty != null)
-                    {
-                        return valueProperty.GetValue(attribute) as string;
-                    }
-                }
-            }
-
-            return null;
-        }
 
         private static bool IsBetter(LoggerFilterRule rule, LoggerFilterRule current, string logger, string category)
         {

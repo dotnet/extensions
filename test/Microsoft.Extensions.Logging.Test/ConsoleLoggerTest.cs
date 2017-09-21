@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Logging.Console.Internal;
 using Microsoft.Extensions.Logging.Test.Console;
@@ -911,6 +912,23 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.True(logger.IncludeScopes);
             monitor.Set(new ConsoleLoggerOptions() { IncludeScopes = false });
             Assert.False(logger.IncludeScopes);
+        }
+
+        [Fact]
+        public void ConsoleLoggerOptions_IncludeScopes_IsReadFromLoggingConfiguration()
+        {
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new[] { new KeyValuePair<string, string>("Console:IncludeScopes", "true") }).Build();
+
+            var loggerProvider = new ServiceCollection()
+                .AddLogging(builder => builder
+                    .AddConfiguration(configuration)
+                    .AddConsole())
+                .BuildServiceProvider()
+                .GetRequiredService<ILoggerProvider>();
+
+            var consoleLoggerProvider = Assert.IsType<ConsoleLoggerProvider>(loggerProvider);
+            var logger = (ConsoleLogger)consoleLoggerProvider.CreateLogger("Category");
+            Assert.True(logger.IncludeScopes);
         }
 
         public static TheoryData<LogLevel, string> LevelsWithPrefixes => new TheoryData<LogLevel, string>()
