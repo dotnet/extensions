@@ -40,3 +40,4 @@ node_modules
 *.nuget.props
 *.nuget.targets
 global.json
+korebuild-lock.txt
