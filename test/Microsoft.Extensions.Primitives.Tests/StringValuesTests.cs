@@ -139,7 +139,7 @@ namespace Microsoft.Extensions.Primitives
         [MemberData(nameof(EmptyStringValues))]
         public void DefaultNullOrEmpty_ExpectedValues(StringValues stringValues)
         {
-            Assert.Equal(0, stringValues.Count);
+            Assert.Empty(stringValues);
             Assert.Null((string)stringValues);
             Assert.Equal((string)null, stringValues);
             Assert.Equal(string.Empty, stringValues.ToString());
@@ -163,13 +163,13 @@ namespace Microsoft.Extensions.Primitives
         {
             string nullString = null;
             StringValues stringValues = nullString;
-            Assert.Equal(0, stringValues.Count);
+            Assert.Empty(stringValues);
             Assert.Null((string)stringValues);
             Assert.Null((string[])stringValues);
 
             string aString = "abc";
             stringValues = aString;
-            Assert.Equal(1, stringValues.Count);
+            Assert.Single(stringValues);
             Assert.Equal(aString, stringValues);
             Assert.Equal(aString, stringValues[0]);
             Assert.Equal(aString, ((IList<string>)stringValues)[0]);
@@ -181,14 +181,14 @@ namespace Microsoft.Extensions.Primitives
         {
             string[] nullStringArray = null;
             StringValues stringValues = nullStringArray;
-            Assert.Equal(0, stringValues.Count);
+            Assert.Empty(stringValues);
             Assert.Null((string)stringValues);
             Assert.Null((string[])stringValues);
 
             string aString = "abc";
             string[] aStringArray = new[] { aString };
             stringValues = aStringArray;
-            Assert.Equal(1, stringValues.Count);
+            Assert.Single(stringValues);
             Assert.Equal(aString, stringValues);
             Assert.Equal(aString, stringValues[0]);
             Assert.Equal(aString, ((IList<string>)stringValues)[0]);
