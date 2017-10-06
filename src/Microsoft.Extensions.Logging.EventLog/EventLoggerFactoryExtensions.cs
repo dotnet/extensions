@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.EventLog;
 
 namespace Microsoft.Extensions.Logging
@@ -23,7 +24,7 @@ namespace Microsoft.Extensions.Logging
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.Services.AddSingleton<ILoggerProvider, EventLogLoggerProvider>();
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, EventLogLoggerProvider>());
 
             return builder;
         }
@@ -45,7 +46,7 @@ namespace Microsoft.Extensions.Logging
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            builder.Services.AddSingleton<ILoggerProvider>(new EventLogLoggerProvider(settings));
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider>(new EventLogLoggerProvider(settings)));
 
             return builder;
         }

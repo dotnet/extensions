@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.EventSource;
 
 namespace Microsoft.Extensions.Logging
@@ -24,7 +25,7 @@ namespace Microsoft.Extensions.Logging
             }
 
             var loggerProvider = LoggingEventSource.Instance.CreateLoggerProvider();
-            builder.Services.AddSingleton<ILoggerProvider>(loggerProvider);
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider>(loggerProvider));
 
             return builder;
         }

@@ -1,12 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.AzureAppServices;
 using Microsoft.Extensions.Logging.AzureAppServices.Internal;
 using Microsoft.Extensions.Options;
+using static Microsoft.Extensions.DependencyInjection.ServiceDescriptor;
 
 namespace Microsoft.Extensions.Logging
 {
@@ -28,26 +28,28 @@ namespace Microsoft.Extensions.Logging
             }
 
             var config = SiteConfigurationProvider.GetAzureLoggingConfiguration(context);
+            var services = builder.Services;
 
-            builder.Services.AddSingleton<IConfigureOptions<LoggerFilterOptions>>(CreateFileFilterConfigureOptions(config));
-            builder.Services.AddSingleton<IConfigureOptions<LoggerFilterOptions>>(CreateBlobFilterConfigureOptions(config));
+            services.TryAddEnumerable(Singleton<IConfigureOptions<LoggerFilterOptions>>(CreateFileFilterConfigureOptions(config)));
+            services.TryAddEnumerable(Singleton<IConfigureOptions<LoggerFilterOptions>>(CreateBlobFilterConfigureOptions(config)));
 
-            builder.Services.AddSingleton<IOptionsChangeTokenSource<LoggerFilterOptions>>(
-                new ConfigurationChangeTokenSource<LoggerFilterOptions>(config));
+            services.TryAddEnumerable(Singleton<IOptionsChangeTokenSource<LoggerFilterOptions>>(
+                    new ConfigurationChangeTokenSource<LoggerFilterOptions>(config)));
 
-            builder.Services.AddSingleton<IConfigureOptions<AzureBlobLoggerOptions>>(new BlobLoggerConfigureOptions(config, context));
-            builder.Services.AddSingleton<IOptionsChangeTokenSource<AzureBlobLoggerOptions>>(
-                new ConfigurationChangeTokenSource<AzureBlobLoggerOptions>(config));
+            services.TryAddEnumerable(Singleton<IConfigureOptions<AzureBlobLoggerOptions>>(
+                new BlobLoggerConfigureOptions(config, context)));
+            services.TryAddEnumerable(Singleton<IOptionsChangeTokenSource<AzureBlobLoggerOptions>>(
+                new ConfigurationChangeTokenSource<AzureBlobLoggerOptions>(config)));
 
-            builder.Services.AddSingleton<IConfigureOptions<AzureFileLoggerOptions>>(new FileLoggerConfigureOptions(config, context));
-            builder.Services.AddSingleton<IOptionsChangeTokenSource<AzureFileLoggerOptions>>(
-                new ConfigurationChangeTokenSource<AzureFileLoggerOptions>(config));
+            services.TryAddEnumerable(Singleton<IConfigureOptions<AzureFileLoggerOptions>>(new FileLoggerConfigureOptions(config, context)));
+            services.TryAddEnumerable(Singleton<IOptionsChangeTokenSource<AzureFileLoggerOptions>>(
+                new ConfigurationChangeTokenSource<AzureFileLoggerOptions>(config)));
 
-            builder.Services.AddSingleton<IWebAppContext>(context);
+            services.TryAddEnumerable(Singleton<IWebAppContext>(context));
 
             // Only add the provider if we're in Azure WebApp. That cannot change once the apps started
-            builder.Services.AddSingleton<ILoggerProvider, FileLoggerProvider>();
-            builder.Services.AddSingleton<ILoggerProvider, BlobLoggerProvider>();
+            services.TryAddEnumerable(Singleton<ILoggerProvider, FileLoggerProvider>());
+            services.TryAddEnumerable(Singleton<ILoggerProvider, BlobLoggerProvider>());
 
             return builder;
         }

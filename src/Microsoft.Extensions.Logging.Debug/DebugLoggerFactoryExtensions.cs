@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.Debug;
 
 namespace Microsoft.Extensions.Logging
@@ -18,7 +19,7 @@ namespace Microsoft.Extensions.Logging
         /// <param name="builder">The extension method argument.</param>
         public static ILoggingBuilder AddDebug(this ILoggingBuilder builder)
         {
-            builder.Services.AddSingleton<ILoggerProvider, DebugLoggerProvider>();
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, DebugLoggerProvider>());
 
             return builder;
         }
