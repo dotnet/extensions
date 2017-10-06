@@ -672,13 +672,14 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
 
             var callback = serviceProvider.GetService<FakeDisposeCallback>();
             var outer = serviceProvider.GetService<IFakeOuterService>();
+            var multipleServices = outer.MultipleServices.ToArray();
 
             // Act
             ((IDisposable)serviceProvider).Dispose();
 
             // Assert
             Assert.Equal(outer, callback.Disposed[0]);
-            Assert.Equal(outer.MultipleServices.Reverse(), callback.Disposed.Skip(1).Take(3).OfType<IFakeMultipleService>());
+            Assert.Equal(multipleServices.Reverse(), callback.Disposed.Skip(1).Take(3).OfType<IFakeMultipleService>());
             Assert.Equal(outer.SingleService, callback.Disposed[4]);
         }
 
