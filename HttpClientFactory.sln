@@ -7,9 +7,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0ACA47C2-6B6
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{A7C2238C-5C0F-4D33-BE66-4015985CE962}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Http", "src\Microsoft.Extensions.Http\Microsoft.Extensions.Http.csproj", "{99E3492F-87BB-4506-8D2B-D1C7101655DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Http", "src\Microsoft.Extensions.Http\Microsoft.Extensions.Http.csproj", "{99E3492F-87BB-4506-8D2B-D1C7101655DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Http.Test", "test\Microsoft.Extensions.Http.Test\Microsoft.Extensions.Http.Test.csproj", "{752F6163-AE48-46D3-8A6D-695BBF3629CB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Http.Test", "test\Microsoft.Extensions.Http.Test\Microsoft.Extensions.Http.Test.csproj", "{752F6163-AE48-46D3-8A6D-695BBF3629CB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{FF6B150F-C423-41BB-9563-55A0DFEAE21C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpClientFactorySample", "samples\HttpClientFactorySample\HttpClientFactorySample.csproj", "{42C81623-6316-4C15-9E41-84AF48608C47}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,6 +29,10 @@ Global
 		{752F6163-AE48-46D3-8A6D-695BBF3629CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{752F6163-AE48-46D3-8A6D-695BBF3629CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{752F6163-AE48-46D3-8A6D-695BBF3629CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42C81623-6316-4C15-9E41-84AF48608C47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42C81623-6316-4C15-9E41-84AF48608C47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42C81623-6316-4C15-9E41-84AF48608C47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42C81623-6316-4C15-9E41-84AF48608C47}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -32,6 +40,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{99E3492F-87BB-4506-8D2B-D1C7101655DC} = {0ACA47C2-6B67-46B8-A661-C564E4450DE4}
 		{752F6163-AE48-46D3-8A6D-695BBF3629CB} = {A7C2238C-5C0F-4D33-BE66-4015985CE962}
+		{42C81623-6316-4C15-9E41-84AF48608C47} = {FF6B150F-C423-41BB-9563-55A0DFEAE21C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {002C7A25-D737-4B87-AFBB-B6E0FB2DB0D3}
