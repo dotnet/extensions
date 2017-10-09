@@ -1,7 +1,7 @@
 HttpClient Factory
 ===
 
-AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/fe4o5h1s9ve86nyv/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/HttpClientFactory/branch/dev)
+AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/aspnet/HttpClientFactory?branch=dev&svg=true)](https://ci.appveyor.com/project/aspnetci/HttpClientFactory/branch/dev)
 
 Travis:   [![Travis](https://travis-ci.org/aspnet/HttpClientFactory.svg?branch=dev)](https://travis-ci.org/aspnet/HttpClientFactory)
 
