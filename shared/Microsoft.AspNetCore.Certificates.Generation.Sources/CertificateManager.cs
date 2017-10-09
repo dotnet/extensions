@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NETCOREAPP2_0
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -117,6 +115,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 }
             }
         }
+
+#if NETCOREAPP2_0
 
         public X509Certificate2 CreateAspNetCoreHttpsDevelopmentCertificate(DateTimeOffset notBefore, DateTimeOffset notAfter, string subjectOverride)
         {
@@ -433,7 +433,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
             return result;
         }
+#endif
     }
 }
-
-#endif
