@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Configs;
@@ -14,7 +16,10 @@ namespace Microsoft.AspNetCore.BenchmarkDotNet.Runner
 {
     class Program
     {
-        static int Main(string[] args)
+        private static TextWriter _standardOutput;
+        private static StringBuilder _standardOutputText;
+
+        private static int Main(string[] args)
         {
             CheckValidate(ref args);
             var summaries = BenchmarkSwitcher.FromAssembly(typeof(Program).GetTypeInfo().Assembly)
@@ -49,26 +54,37 @@ namespace Microsoft.AspNetCore.BenchmarkDotNet.Runner
             return 0;
         }
 
-        static int Fail(object o, string message)
+        private static int Fail(object o, string message)
         {
-            Console.WriteLine("'{0}' failed, reason: '{1}'", o, message);
+            _standardOutput?.WriteLine(_standardOutputText.ToString());
+
+            Console.Error.WriteLine("'{0}' failed, reason: '{1}'", o, message);
             return 1;
         }
 
-        static void CheckValidate(ref string[] args)
+        private static void CheckValidate(ref string[] args)
         {
             var argsList = args.ToList();
             if (argsList.Remove("--validate"))
             {
+                SupressConsole();
                 ParameterizedJobConfigAttribute.Job = Job.Dry;
             }
 
             if (argsList.Remove("--validate-fast"))
             {
+                SupressConsole();
                 ParameterizedJobConfigAttribute.Job = Job.Dry.With(InProcessToolchain.Instance);
             }
 
             args = argsList.ToArray();
+        }
+
+        private static void SupressConsole()
+        {
+            _standardOutput = Console.Out;
+            _standardOutputText = new StringBuilder();
+            Console.SetOut(new StringWriter(_standardOutputText));
         }
     }
 }
