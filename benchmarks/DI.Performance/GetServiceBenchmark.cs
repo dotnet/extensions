@@ -19,9 +19,14 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         private IServiceProvider _serviceScopeFactoryProvider;
         private IServiceProvider _serviceScope;
         private IServiceProvider _emptyEnumerable;
+        private ServiceProviderMode _mode;
 
-        [Params(ServiceProviderMode.Compiled, ServiceProviderMode.Dynamic, ServiceProviderMode.Runtime)]
-        internal ServiceProviderMode Mode { get; set; }
+        [Params("Compiled", "Dynamic", "Runtime")]
+        public string Mode {
+            set {
+                _mode = Enum.Parse<ServiceProviderMode>(value);
+            }
+        }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = OperationsPerInvoke)]
         public void NoDI()
@@ -42,7 +47,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             services.AddTransient<C>();
             _transientSp = services.BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = Mode
+                Mode = _mode
             });
         }
 
@@ -65,7 +70,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             services.AddScoped<C>();
             _scopedSp = services.BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = Mode
+                Mode = _mode
             }).CreateScope();
         }
 
@@ -88,7 +93,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             services.AddSingleton<C>();
             _singletonSp = services.BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = Mode
+                Mode = _mode
             });
         }
 
@@ -107,7 +112,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         {
             _serviceScope = new ServiceCollection().BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = Mode
+                Mode = _mode
             });
         }
 
@@ -125,7 +130,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         {
             _serviceScopeFactoryProvider = new ServiceCollection().BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = Mode
+                Mode = _mode
             });
         }
 
@@ -143,7 +148,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         {
             _emptyEnumerable = new ServiceCollection().BuildServiceProvider(new ServiceProviderOptions()
             {
-                Mode = Mode
+                Mode = _mode
             });
         }
 

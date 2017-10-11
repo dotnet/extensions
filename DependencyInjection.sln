@@ -39,7 +39,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DI.Specification.Tests", "src\DI.Specification.Tests\DI.Specification.Tests.csproj", "{B9395B0F-E8E3-4913-BABF-E71A76F21231}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DI.Performance", "test\DI.Performance\DI.Performance.csproj", "{2AB56E17-8ADC-4763-B298-79BFECC351A8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DI.Performance", "benchmarks\DI.Performance\DI.Performance.csproj", "{2AB56E17-8ADC-4763-B298-79BFECC351A8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{483CFA4B-18DB-404D-BCA0-E39E6734733F}"
 	ProjectSection(SolutionItems) = preProject
