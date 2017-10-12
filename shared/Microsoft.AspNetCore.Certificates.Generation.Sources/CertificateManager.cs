@@ -3,12 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Certificates.Generation
 {
@@ -29,6 +31,11 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         private const string IdentityDistinguishedName = "CN=Microsoft.AspNetCore.Identity.Signing";
 
         public const int RSAMinimumKeySizeInBits = 2048;
+
+        private static readonly TimeSpan MaxRegexTimeout = TimeSpan.FromMinutes(1);
+        private const string MacOSFindCertificateCommandLine = "security find-certificate -c localhost -a -Z -p /Library/Keychains/System.keychain";
+        private const string MacOSFindCertificateOutputRegex = "SHA-1 hash: ([0-9A-Z]+)";
+        private const string MacOSTrustCertificateCommandLine = "security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ";
 
         public IList<X509Certificate2> ListCertificates(
             CertificatePurpose purpose,
@@ -290,14 +297,51 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 publicCertificate.FriendlyName = certificate.FriendlyName;
-            }
 
-            using (var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser))
+                using (var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser))
+                {
+                    store.Open(OpenFlags.ReadWrite);
+                    store.Add(publicCertificate);
+                    store.Close();
+                };
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                store.Open(OpenFlags.ReadWrite);
-                store.Add(publicCertificate);
-                store.Close();
-            };
+                var tmpFile = Path.GetTempFileName();
+                try
+                {
+                    var checkTrustProcess = Process.Start(MacOSFindCertificateCommandLine);
+                    checkTrustProcess.WaitForExit();
+                    var output = checkTrustProcess.StandardOutput.ReadToEnd();
+                    var matches = Regex.Matches(output, MacOSFindCertificateOutputRegex, RegexOptions.Multiline, MaxRegexTimeout);
+                    var hashes = matches.OfType<Match>().Select(m => m.Groups[1].Value).ToList();
+
+                    if (!hashes.Any(h => string.Equals(h, publicCertificate.Thumbprint, StringComparison.Ordinal)))
+                    {
+                        ExportCertificate(publicCertificate, tmpFile, includePrivateKey: false, password: null);
+                        var process = Process.Start("sudo", MacOSTrustCertificateCommandLine + tmpFile);
+                        process.WaitForExit();
+                        if (process.ExitCode != 0)
+                        {
+                            throw new InvalidOperationException("There was an error trusting the certificate.");
+                        }
+                    }
+                }
+                finally
+                {
+                    try
+                    {
+                        if (File.Exists(tmpFile))
+                        {
+                            File.Delete(tmpFile);
+                        }
+                    }
+                    catch
+                    {
+                        // We don't care if we can't delete the temp file.
+                    }
+                }
+            }
         }
 
         public void RemoveAllCertificates(CertificatePurpose purpose, StoreName storeName, StoreLocation storeLocation, string subject = null)
@@ -419,7 +463,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 }
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && trust)
+            if ((RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) && trust)
             {
                 try
                 {
