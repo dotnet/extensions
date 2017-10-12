@@ -67,20 +67,19 @@ namespace Microsoft.AspNetCore.BenchmarkDotNet.Runner
             var argsList = args.ToList();
             if (argsList.Remove("--validate"))
             {
-                SupressConsole();
+                SuppressConsole();
                 ParameterizedJobConfigAttribute.Job = Job.Dry;
             }
-
-            if (argsList.Remove("--validate-fast"))
+            else if (argsList.Remove("--validate-fast"))
             {
-                SupressConsole();
+                SuppressConsole();
                 ParameterizedJobConfigAttribute.Job = Job.Dry.With(InProcessToolchain.Instance);
             }
 
             args = argsList.ToArray();
         }
 
-        private static void SupressConsole()
+        private static void SuppressConsole()
         {
             _standardOutput = Console.Out;
             _standardOutputText = new StringBuilder();
