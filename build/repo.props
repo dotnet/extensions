@@ -1,4 +1,7 @@
 ﻿<Project>
+  <PropertyGroup>
+    <EnableBenchmarkValidation>true</EnableBenchmarkValidation>
+  </PropertyGroup>
   <ItemGroup>
     <ExcludeFromTest Include="$(RepositoryRoot)test\DI.Performance\DI.Performance.csproj" />
     <PackageLineup Include="Internal.AspNetCore.Universe.Lineup" Version="2.1.0-*" />

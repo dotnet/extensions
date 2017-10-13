@@ -2,14 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 using BenchmarkDotNet.Attributes;
 
 namespace Microsoft.Extensions.DependencyInjection.Performance
 {
-    [Config(typeof(CoreConfig))]
+    [ParameterizedJobConfigAttribute(typeof(CoreConfig))]
     public class ScopeValidationBenchmark
     {
         private const int OperationsPerInvoke = 50000;

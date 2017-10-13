@@ -6,21 +6,29 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Engines;
 using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Validators;
 
 namespace Microsoft.Extensions.DependencyInjection.Performance
 {
     public class CoreConfig : ManualConfig
     {
-        public CoreConfig()
+        public CoreConfig():
+            this(Job.Core
+                    .WithRemoveOutliers(false)
+                    .With(RunStrategy.Throughput))
         {
             Add(JitOptimizationsValidator.FailOnError);
+        }
+
+        public CoreConfig(Job job)
+        {
+            Add(DefaultConfig.Instance);
+
             Add(MemoryDiagnoser.Default);
             Add(StatisticColumn.OperationsPerSecond);
-            Add(Job.Default
-                .With(BenchmarkDotNet.Environments.Runtime.Core)
-                .WithRemoveOutliers(false)
-                .With(RunStrategy.Throughput));
+
+            Add(job);
         }
     }
 }
