@@ -33,9 +33,11 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         public const int RSAMinimumKeySizeInBits = 2048;
 
         private static readonly TimeSpan MaxRegexTimeout = TimeSpan.FromMinutes(1);
-        private const string MacOSFindCertificateCommandLine = "security find-certificate -c localhost -a -Z -p /Library/Keychains/System.keychain";
+        private const string MacOSFindCertificateCommandLine = "security";
+        private const string MacOSFindCertificateCommandLineArguments = "find-certificate -c localhost -a -Z -p /Library/Keychains/System.keychain";
         private const string MacOSFindCertificateOutputRegex = "SHA-1 hash: ([0-9A-Z]+)";
-        private const string MacOSTrustCertificateCommandLine = "security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ";
+        private const string MacOSTrustCertificateCommandLine = "sudo";
+        private const string MacOSTrustCertificateCommandLineArguments = "security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ";
 
         public IList<X509Certificate2> ListCertificates(
             CertificatePurpose purpose,
@@ -310,7 +312,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 var tmpFile = Path.GetTempFileName();
                 try
                 {
-                    var checkTrustProcess = Process.Start(MacOSFindCertificateCommandLine);
+                    var checkTrustProcess = Process.Start(new ProcessStartInfo(MacOSFindCertificateCommandLine, MacOSFindCertificateCommandLineArguments){
+                        RedirectStandardOutput = true
+                    });
+
                     checkTrustProcess.WaitForExit();
                     var output = checkTrustProcess.StandardOutput.ReadToEnd();
                     var matches = Regex.Matches(output, MacOSFindCertificateOutputRegex, RegexOptions.Multiline, MaxRegexTimeout);
@@ -319,7 +324,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                     if (!hashes.Any(h => string.Equals(h, publicCertificate.Thumbprint, StringComparison.Ordinal)))
                     {
                         ExportCertificate(publicCertificate, tmpFile, includePrivateKey: false, password: null);
-                        var process = Process.Start("sudo", MacOSTrustCertificateCommandLine + tmpFile);
+                        var process = Process.Start(MacOSTrustCertificateCommandLine, MacOSTrustCertificateCommandLineArguments + tmpFile);
                         process.WaitForExit();
                         if (process.ExitCode != 0)
                         {
