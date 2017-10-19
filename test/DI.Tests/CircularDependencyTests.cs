@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
 using Xunit;
 
@@ -12,6 +13,12 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Fact]
         public void SelfCircularDependency()
         {
+            var expectedMessage = "A circular dependency was detected for the service of type " +
+                                  "'Microsoft.Extensions.DependencyInjection.Tests.Fakes.SelfCircularDependency'." +
+                                  Environment.NewLine +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.SelfCircularDependency -> " +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.SelfCircularDependency";
+
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SelfCircularDependency>()
                 .BuildServiceProvider();
@@ -19,14 +26,38 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var exception = Assert.Throws<InvalidOperationException>(() =>
                 serviceProvider.GetRequiredService<SelfCircularDependency>());
 
-            Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(SelfCircularDependency)),
-                exception.Message);
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        [Fact]
+        public void SelfCircularDependencyInEnumerable()
+        {
+            var expectedMessage = "A circular dependency was detected for the service of type " +
+                                  "'Microsoft.Extensions.DependencyInjection.Tests.Fakes.SelfCircularDependency'." +
+                                  Environment.NewLine +
+                                  "System.Collections.Generic.IEnumerable<Microsoft.Extensions.DependencyInjection.Tests.Fakes.SelfCircularDependency> -> " +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.SelfCircularDependency -> " +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.SelfCircularDependency";
+
+            var serviceProvider = new ServiceCollection()
+                .AddTransient<SelfCircularDependency>()
+                .BuildServiceProvider();
+
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+                serviceProvider.GetRequiredService<IEnumerable<SelfCircularDependency>>());
+
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
         public void SelfCircularDependencyGenericDirect()
         {
+            var expectedMessage = "A circular dependency was detected for the service of type " +
+                                  "'Microsoft.Extensions.DependencyInjection.Tests.Fakes.SelfCircularDependencyGeneric<string>'." +
+                                  Environment.NewLine +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.SelfCircularDependencyGeneric<string> -> " +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.SelfCircularDependencyGeneric<string>";
+
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SelfCircularDependencyGeneric<string>>()
                 .BuildServiceProvider();
@@ -34,14 +65,19 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var exception = Assert.Throws<InvalidOperationException>(() =>
                 serviceProvider.GetRequiredService<SelfCircularDependencyGeneric<string>>());
 
-            Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(SelfCircularDependencyGeneric<string>)),
-                exception.Message);
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
         public void SelfCircularDependencyGenericIndirect()
         {
+            var expectedMessage = "A circular dependency was detected for the service of type " +
+                                  "'Microsoft.Extensions.DependencyInjection.Tests.Fakes.SelfCircularDependencyGeneric<string>'." +
+                                  Environment.NewLine +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.SelfCircularDependencyGeneric<int> -> " +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.SelfCircularDependencyGeneric<string> -> " +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.SelfCircularDependencyGeneric<string>";
+
             var serviceProvider = new ServiceCollection()
                 .AddTransient<SelfCircularDependencyGeneric<int>>()
                 .AddTransient<SelfCircularDependencyGeneric<string>>()
@@ -50,9 +86,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var exception = Assert.Throws<InvalidOperationException>(() =>
                 serviceProvider.GetRequiredService<SelfCircularDependencyGeneric<int>>());
 
-            Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(SelfCircularDependencyGeneric<string>)),
-                exception.Message);
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
@@ -63,7 +97,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
                 .AddTransient<SelfCircularDependencyGeneric<int>>()
                 .BuildServiceProvider();
 
-            // This will not throw because we are creating an instace of the first time
+            // This will not throw because we are creating an instance of the first time
             // using the parameterless constructor which has no circular dependency
             var resolvedService = serviceProvider.GetRequiredService<SelfCircularDependencyGeneric<int>>();
             Assert.NotNull(resolvedService);
@@ -72,6 +106,14 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Fact]
         public void SelfCircularDependencyWithInterface()
         {
+            var expectedMessage = "A circular dependency was detected for the service of type " +
+                                  "'Microsoft.Extensions.DependencyInjection.Tests.Fakes.ISelfCircularDependencyWithInterface'." +
+                                  Environment.NewLine +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.SelfCircularDependencyWithInterface -> " +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.ISelfCircularDependencyWithInterface" +
+                                  "(Microsoft.Extensions.DependencyInjection.Tests.Fakes.SelfCircularDependencyWithInterface) -> " +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.ISelfCircularDependencyWithInterface";
+
             var serviceProvider = new ServiceCollection()
                 .AddTransient<ISelfCircularDependencyWithInterface, SelfCircularDependencyWithInterface>()
                 .AddTransient<SelfCircularDependencyWithInterface>()
@@ -80,14 +122,19 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var exception = Assert.Throws<InvalidOperationException>(() =>
                 serviceProvider.GetRequiredService<SelfCircularDependencyWithInterface>());
 
-            Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(ISelfCircularDependencyWithInterface)),
-                exception.Message);
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
         public void DirectCircularDependency()
         {
+            var expectedMessage = "A circular dependency was detected for the service of type " +
+                                  "'Microsoft.Extensions.DependencyInjection.Tests.Fakes.DirectCircularDependencyA'." +
+                                  Environment.NewLine +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.DirectCircularDependencyA -> " +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.DirectCircularDependencyB -> " +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.DirectCircularDependencyA";
+
             var serviceProvider = new ServiceCollection()
                 .AddSingleton<DirectCircularDependencyA>()
                 .AddSingleton<DirectCircularDependencyB>()
@@ -96,14 +143,20 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var exception = Assert.Throws<InvalidOperationException>(() =>
                 serviceProvider.GetRequiredService<DirectCircularDependencyA>());
 
-            Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(DirectCircularDependencyA)),
-                exception.Message);
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
         public void IndirectCircularDependency()
         {
+            var expectedMessage = "A circular dependency was detected for the service of type " +
+                                  "'Microsoft.Extensions.DependencyInjection.Tests.Fakes.IndirectCircularDependencyA'." +
+                                  Environment.NewLine +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.IndirectCircularDependencyA -> " +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.IndirectCircularDependencyB -> " +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.IndirectCircularDependencyC -> " +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.IndirectCircularDependencyA";
+
             var serviceProvider = new ServiceCollection()
                 .AddSingleton<IndirectCircularDependencyA>()
                 .AddTransient<IndirectCircularDependencyB>()
@@ -113,9 +166,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var exception = Assert.Throws<InvalidOperationException>(() =>
                 serviceProvider.GetRequiredService<IndirectCircularDependencyA>());
 
-            Assert.Equal(
-                Resources.FormatCircularDependencyException(typeof(IndirectCircularDependencyA)),
-                exception.Message);
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
@@ -129,6 +180,29 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
             var resolvedService = serviceProvider.GetRequiredService<NoCircularDependencySameTypeMultipleTimesA>();
             Assert.NotNull(resolvedService);
+        }
+
+        [Fact]
+        public void DependencyOnCircularDependency()
+        {
+            var expectedMessage = "A circular dependency was detected for the service of type " +
+                                  "'Microsoft.Extensions.DependencyInjection.Tests.Fakes.DirectCircularDependencyA'." +
+                                  Environment.NewLine +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.DependencyOnCircularDependency -> " +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.DirectCircularDependencyA -> " +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.DirectCircularDependencyB -> " +
+                                  "Microsoft.Extensions.DependencyInjection.Tests.Fakes.DirectCircularDependencyA";
+
+            var serviceProvider = new ServiceCollection()
+                .AddTransient<DependencyOnCircularDependency>()
+                .AddTransient<DirectCircularDependencyA>()
+                .AddTransient<DirectCircularDependencyB>()
+                .BuildServiceProvider();
+
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+                serviceProvider.GetRequiredService<DependencyOnCircularDependency>());
+
+            Assert.Equal(expectedMessage, exception.Message);
         }
     }
 }

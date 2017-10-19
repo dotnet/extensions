@@ -64,7 +64,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        internal IServiceCallSite CreateCallSite(Type serviceType, ISet<Type> callSiteChain)
+        internal IServiceCallSite CreateCallSite(Type serviceType, CallSiteChain callSiteChain)
         {
             lock (_callSiteCache)
             {
@@ -76,11 +76,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 IServiceCallSite callSite;
                 try
                 {
-                    // ISet.Add returns false if serviceType already present in call Site Chain
-                    if (!callSiteChain.Add(serviceType))
-                    {
-                        throw new InvalidOperationException(Resources.FormatCircularDependencyException(serviceType));
-                    }
+                    callSiteChain.CheckCircularDependency(serviceType);
 
                     callSite = TryCreateExact(serviceType, callSiteChain) ??
                                TryCreateOpenGeneric(serviceType, callSiteChain) ??
@@ -97,7 +93,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        private IServiceCallSite TryCreateExact(Type serviceType, ISet<Type> callSiteChain)
+        private IServiceCallSite TryCreateExact(Type serviceType, CallSiteChain callSiteChain)
         {
             if (_descriptorLookup.TryGetValue(serviceType, out var descriptor))
             {
@@ -107,7 +103,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return null;
         }
 
-        private IServiceCallSite TryCreateOpenGeneric(Type serviceType, ISet<Type> callSiteChain)
+        private IServiceCallSite TryCreateOpenGeneric(Type serviceType, CallSiteChain callSiteChain)
         {
             if (serviceType.IsConstructedGenericType
                 && _descriptorLookup.TryGetValue(serviceType.GetGenericTypeDefinition(), out var descriptor))
@@ -118,12 +114,13 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return null;
         }
 
-        private IServiceCallSite TryCreateEnumerable(Type serviceType, ISet<Type> callSiteChain)
+        private IServiceCallSite TryCreateEnumerable(Type serviceType, CallSiteChain callSiteChain)
         {
             if (serviceType.IsConstructedGenericType &&
                 serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
             {
                 var itemType = serviceType.GenericTypeArguments.Single();
+                callSiteChain.Add(serviceType);
 
                 var callSites = new List<IServiceCallSite>();
 
@@ -163,7 +160,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return null;
         }
 
-        private IServiceCallSite TryCreateExact(ServiceDescriptor descriptor, Type serviceType, ISet<Type> callSiteChain)
+        private IServiceCallSite TryCreateExact(ServiceDescriptor descriptor, Type serviceType, CallSiteChain callSiteChain)
         {
             if (serviceType == descriptor.ServiceType)
             {
@@ -191,7 +188,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return null;
         }
 
-        private IServiceCallSite TryCreateOpenGeneric(ServiceDescriptor descriptor, Type serviceType, ISet<Type> callSiteChain)
+        private IServiceCallSite TryCreateOpenGeneric(ServiceDescriptor descriptor, Type serviceType, CallSiteChain callSiteChain)
         {
             if (serviceType.IsConstructedGenericType &&
                 serviceType.GetGenericTypeDefinition() == descriptor.ServiceType)
@@ -227,8 +224,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
         }
 
-        private IServiceCallSite CreateConstructorCallSite(Type serviceType, Type implementationType, ISet<Type> callSiteChain)
+        private IServiceCallSite CreateConstructorCallSite(Type serviceType, Type implementationType, CallSiteChain callSiteChain)
         {
+            callSiteChain.Add(serviceType, implementationType);
+
             var constructors = implementationType.GetTypeInfo()
                 .DeclaredConstructors
                 .Where(constructor => constructor.IsPublic)
@@ -324,7 +323,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         private IServiceCallSite[] CreateArgumentCallSites(
             Type serviceType,
             Type implementationType,
-            ISet<Type> callSiteChain,
+            CallSiteChain callSiteChain,
             ParameterInfo[] parameters,
             bool throwIfCallSiteNotFound)
         {

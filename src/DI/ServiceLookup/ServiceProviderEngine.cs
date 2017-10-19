@@ -47,7 +47,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private Func<ServiceProviderEngineScope, object> CreateServiceAccessor(Type serviceType)
         {
-            var callSite = CallSiteFactory.CreateCallSite(serviceType, new HashSet<Type>());
+            var callSite = CallSiteFactory.CreateCallSite(serviceType, new CallSiteChain());
             if (callSite != null)
             {
                 _callback?.OnCreate(callSite);
