@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -107,6 +108,20 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal("ulong", TypeNameHelper.GetTypeDisplayName(typeof(ulong)));
             Assert.Equal("ushort", TypeNameHelper.GetTypeDisplayName(typeof(ushort)));
         }
+
+        [Theory]
+        [InlineData("int[]", typeof(int[]))]
+        [InlineData("string[][]", typeof(string[][]))]
+        [InlineData("int[,]", typeof(int[,]))]
+        [InlineData("bool[,,,]", typeof(bool[,,,]))]
+        [InlineData("Microsoft.Extensions.Internal.TypeNameHelperTest+A[,][,,]", typeof(A[,][,,]))]
+        [InlineData("System.Collections.Generic.List<int[,][,,]>", typeof(List<int[,][,,]>))]
+        [InlineData("List<int[,,][,]>[,][,,]", typeof(List<int[,,][,]>[,][,,]), false)]
+        public void Can_pretty_print_array_name(string expected, Type type, bool fullName = true)
+        {
+            Assert.Equal(expected, TypeNameHelper.GetTypeDisplayName(type, fullName));
+        }
+
         private class A { }
 
         private class B<T> { }
