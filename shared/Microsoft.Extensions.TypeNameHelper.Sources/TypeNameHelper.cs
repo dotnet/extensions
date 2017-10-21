@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -61,18 +62,42 @@ namespace Microsoft.Extensions.Internal
 
         private static void ProcessTypeName(Type t, StringBuilder sb, bool fullName)
         {
-            if (t.GetTypeInfo().IsGenericType)
+            var typeInfo = t.GetTypeInfo();
+
+            if (typeInfo.IsGenericType)
             {
                 ProcessNestedGenericTypes(t, sb, fullName);
-                return;
             }
-            if (_builtInTypeNames.ContainsKey(t))
+            else if (typeInfo.IsArray)
+            {
+                ProcessArrayTypes(t, sb, fullName);
+            }
+            else if (_builtInTypeNames.ContainsKey(t))
             {
                 sb.Append(_builtInTypeNames[t]);
             }
             else
             {
                 sb.Append(fullName ? t.FullName : t.Name);
+            }
+        }
+
+        private static void ProcessArrayTypes(Type t, StringBuilder sb, bool fullName)
+        {
+            var innerType = t;
+            while (innerType.IsArray)
+            {
+                innerType = innerType.GetElementType();
+            }
+
+            ProcessTypeName(innerType, sb, fullName);
+
+            while (t.IsArray)
+            {
+                sb.Append("[");
+                sb.Append(',', t.GetArrayRank() - 1);
+                sb.Append("]");
+                t = t.GetElementType();
             }
         }
 
