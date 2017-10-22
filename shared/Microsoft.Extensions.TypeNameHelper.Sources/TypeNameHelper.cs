@@ -41,6 +41,39 @@ namespace Microsoft.Extensions.Internal
             return sb.ToString();
         }
 
+        public static string GetMethodDisplayName(MethodInfo method, bool fullTypeName = true)
+        {
+            var sb = new StringBuilder();
+            ProcessMehtodName(method, sb, fullTypeName);
+            return sb.ToString();
+        }
+
+        private static void ProcessMehtodName(MethodInfo method, StringBuilder sb, bool fullTypeName)
+        {
+            ProcessTypeName(method.ReturnType, sb, fullTypeName);
+            sb.Append(' ');
+            sb.Append(method.Name);
+            sb.Append("<");
+            foreach (var genericArgument in method.GetGenericArguments())
+            {
+
+            }
+            sb.Append(">");
+
+            sb.Append("(");
+            foreach (var parameter in method.GetParameters())
+            {
+                if (parameter.IsIn) sb.Append("in ");
+                if (parameter.IsOut) sb.Append("out ");
+
+                ProcessTypeName(parameter.ParameterType, sb, fullTypeName);
+                sb.Append(" ");
+                sb.Append(parameter.Name);
+                sb.Append(", ");
+            }
+            sb.Append(")");
+        }
+
         private static void AppendGenericArguments(Type[] args, int startIndex, int numberOfArgsToAppend, StringBuilder sb, bool fullName)
         {
             var totalArgs = args.Length;
