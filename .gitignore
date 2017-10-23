@@ -34,4 +34,3 @@ node_modules/
 **/[Cc]ompiler/[Rr]esources/**/*.js
 .vscode/
 global.json
-korebuild-lock.txt
