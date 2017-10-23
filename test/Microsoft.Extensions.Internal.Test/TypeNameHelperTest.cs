@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Xunit;
 using Xunit.Abstractions;
@@ -114,7 +115,32 @@ namespace Microsoft.Extensions.Internal
         public static IEnumerable<object[]> GetMethodInfos()
         {
             var type = typeof(TypeWithMethodsForTest);
-            yield return new object[] { "", type.GetMethod(nameof(TypeWithMethodsForTest.Test1)) };
+            yield return new object[]
+            {
+                "System.Void .ctor(ref double val)",
+                type.GetConstructors().Single()
+            };
+            yield return new object[]
+            {
+                "object Test1<T1, T2>(out int a, ref string b, object c)",
+                type.GetMethod(nameof(TypeWithMethodsForTest.Test1))
+            };
+            yield return new object[]
+            {
+                "TName Test2<TName>(TName t, Dictionary<TName, int> l)",
+                type.GetMethod(nameof(TypeWithMethodsForTest.Test2)),
+                false
+            };
+            yield return new object[]
+            {
+                "string Test2<string>(string t, System.Collections.Generic.Dictionary<string, int> l)",
+                type.GetMethod(nameof(TypeWithMethodsForTest.Test2)).MakeGenericMethod(typeof(string))
+            };
+            yield return new object[]
+            {
+                "bool Test3(bool f, float z, Microsoft.Extensions.Internal.TypeNameHelperTest+A[] p)",
+                type.GetMethod(nameof(TypeWithMethodsForTest.Test3))
+            };
         }
 
         [Theory]
@@ -126,7 +152,10 @@ namespace Microsoft.Extensions.Internal
 
         private abstract class TypeWithMethodsForTest
         {
-            public abstract void Test1<T1, T2>(out int o, ref string a);
+            public TypeWithMethodsForTest(ref double val) { }
+            public abstract object Test1<T1, T2>(out int a, ref string b, object c = null);
+            public abstract TName Test2<TName>(TName t, Dictionary<TName, int> l);
+            public abstract bool Test3(bool f, float z = 1, params A[] p);
         }
 
         private class A { }

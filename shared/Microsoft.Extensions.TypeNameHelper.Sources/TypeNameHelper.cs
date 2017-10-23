@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.Internal
         public static string GetTypeDisplayName(Type type, bool fullName = true)
         {
             var sb = new StringBuilder();
-            ProcessTypeName(type, sb, fullName);
+            ProcessTypeName(type, sb, fullName, false);
             return sb.ToString();
         }
 
@@ -50,7 +50,7 @@ namespace Microsoft.Extensions.Internal
 
         private static void ProcessMehtodName(MethodInfo method, StringBuilder sb, bool fullTypeName)
         {
-            ProcessTypeName(method.ReturnType, sb, fullTypeName);
+            ProcessTypeName(method.ReturnType, sb, fullTypeName, true);
             sb.Append(' ');
             sb.Append(method.Name);
 
@@ -62,7 +62,7 @@ namespace Microsoft.Extensions.Internal
                 for (int i = 0; i < genericArguments.Length; i++)
                 {
                     var genericArgument = genericArguments[i];
-                    sb.Append(genericArgument.Name);
+                    ProcessTypeName(genericArgument, sb, fullTypeName, true);
                     if (i + 1 < genericArguments.Length)
                     {
                         sb.Append(", ");
@@ -94,7 +94,9 @@ namespace Microsoft.Extensions.Internal
                     type = type.GetElementType();
                 }
 
-                ProcessTypeName(type, sb, fullTypeName);
+                ProcessTypeName(type, sb, fullTypeName, true);
+                sb.Append(" ");
+                sb.Append(parameter.Name);
 
                 if (i + 1 < parameters.Length)
                 {
@@ -117,7 +119,7 @@ namespace Microsoft.Extensions.Internal
             }
         }
 
-        private static void AppendGenericArguments(Type[] args, int startIndex, int numberOfArgsToAppend, StringBuilder sb, bool fullName)
+        private static void AppendGenericArguments(Type[] args, int startIndex, int numberOfArgsToAppend, StringBuilder sb, bool fullName, bool dispayNameForOpenGenric)
         {
             var totalArgs = args.Length;
             if (totalArgs >= startIndex + numberOfArgsToAppend)
@@ -125,7 +127,7 @@ namespace Microsoft.Extensions.Internal
                 sb.Append("<");
                 for (int i = startIndex; i < startIndex + numberOfArgsToAppend; i++)
                 {
-                    ProcessTypeName(args[i], sb, fullName);
+                    ProcessTypeName(args[i], sb, fullName, dispayNameForOpenGenric);
                     if (i + 1 < startIndex + numberOfArgsToAppend)
                     {
                         sb.Append(", ");
@@ -135,11 +137,11 @@ namespace Microsoft.Extensions.Internal
             }
         }
 
-        private static void ProcessTypeName(Type t, StringBuilder sb, bool fullName)
+        private static void ProcessTypeName(Type t, StringBuilder sb, bool fullName, bool dispayNameForOpenGenric)
         {
             if (t.GetTypeInfo().IsGenericType)
             {
-                ProcessNestedGenericTypes(t, sb, fullName);
+                ProcessNestedGenericTypes(t, sb, fullName, dispayNameForOpenGenric);
                 return;
             }
             if (_builtInTypeNames.ContainsKey(t))
@@ -148,11 +150,12 @@ namespace Microsoft.Extensions.Internal
             }
             else
             {
-                sb.Append(fullName ? t.FullName : t.Name);
+                var useFullName = fullName && !(dispayNameForOpenGenric && t.FullName == null);
+                sb.Append(useFullName ? t.FullName : t.Name);
             }
         }
 
-        private static void ProcessNestedGenericTypes(Type t, StringBuilder sb, bool fullName)
+        private static void ProcessNestedGenericTypes(Type t, StringBuilder sb, bool fullName, bool dispayNameForOpenGenric)
         {
             var genericFullName = t.GetGenericTypeDefinition().FullName;
             var genericSimpleName = t.GetGenericTypeDefinition().Name;
@@ -169,7 +172,7 @@ namespace Microsoft.Extensions.Internal
                 var name = part.Substring(0, num);
                 var numberOfGenericTypeArgs = int.Parse(part.Substring(num + 1));
                 sb.Append(fullName ? name : genericSimpleName.Substring(0, genericSimpleName.IndexOf('`')));
-                AppendGenericArguments(genericArguments, index, numberOfGenericTypeArgs, sb, fullName);
+                AppendGenericArguments(genericArguments, index, numberOfGenericTypeArgs, sb, fullName, dispayNameForOpenGenric);
                 return;
             }
             for (var i = 0; i < totalParts; i++)
@@ -183,7 +186,7 @@ namespace Microsoft.Extensions.Internal
                     if (fullName || i == totalParts - 1)
                     {
                         sb.Append(name);
-                        AppendGenericArguments(genericArguments, index, numberOfGenericTypeArgs, sb, fullName);
+                        AppendGenericArguments(genericArguments, index, numberOfGenericTypeArgs, sb, fullName, dispayNameForOpenGenric);
                     }
                     if (fullName && i != totalParts - 1)
                     {
