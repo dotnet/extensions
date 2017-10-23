@@ -12,6 +12,7 @@ namespace Microsoft.Extensions.Internal
     {
         private static readonly Dictionary<Type, string> _builtInTypeNames = new Dictionary<Type, string>
             {
+            { typeof(void), "void" },
             { typeof(bool), "bool" },
             { typeof(byte), "byte" },
             { typeof(char), "char" },
