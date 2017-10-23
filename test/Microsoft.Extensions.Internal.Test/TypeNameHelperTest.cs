@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Internal
 {
@@ -107,6 +110,25 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal("ulong", TypeNameHelper.GetTypeDisplayName(typeof(ulong)));
             Assert.Equal("ushort", TypeNameHelper.GetTypeDisplayName(typeof(ushort)));
         }
+
+        public static IEnumerable<object[]> GetMethodInfos()
+        {
+            var type = typeof(TypeWithMethodsForTest);
+            yield return new object[] { "", type.GetMethod(nameof(TypeWithMethodsForTest.Test1)) };
+        }
+
+        [Theory]
+        [MemberData(nameof(GetMethodInfos))]
+        public void Can_pretty_print_method_name(string name, MethodInfo methodInfo, bool fullTypeName = true)
+        {
+            Assert.Equal(name, TypeNameHelper.GetMethodDisplayName(methodInfo, fullTypeName));
+        }
+
+        private abstract class TypeWithMethodsForTest
+        {
+            public abstract void Test1<T1, T2>(out int o, ref string a);
+        }
+
         private class A { }
 
         private class B<T> { }

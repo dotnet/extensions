@@ -53,25 +53,68 @@ namespace Microsoft.Extensions.Internal
             ProcessTypeName(method.ReturnType, sb, fullTypeName);
             sb.Append(' ');
             sb.Append(method.Name);
-            sb.Append("<");
-            foreach (var genericArgument in method.GetGenericArguments())
-            {
 
+            var genericArguments = method.GetGenericArguments();
+            if (genericArguments.Length > 0)
+            {
+                sb.Append("<");
+
+                for (int i = 0; i < genericArguments.Length; i++)
+                {
+                    var genericArgument = genericArguments[i];
+                    sb.Append(genericArgument.Name);
+                    if (i + 1 < genericArguments.Length)
+                    {
+                        sb.Append(", ");
+                    }
+                }
+
+                sb.Append(">");
             }
-            sb.Append(">");
+
+            var parameters = method.GetParameters();
 
             sb.Append("(");
-            foreach (var parameter in method.GetParameters())
+            for (int i = 0; i < parameters.Length; i++)
             {
-                if (parameter.IsIn) sb.Append("in ");
-                if (parameter.IsOut) sb.Append("out ");
+                var parameter = parameters[i];
+                var type = parameter.ParameterType;
 
-                ProcessTypeName(parameter.ParameterType, sb, fullTypeName);
-                sb.Append(" ");
-                sb.Append(parameter.Name);
-                sb.Append(", ");
+                if (parameter.IsOut)
+                {
+                    sb.Append("out ");
+                }
+                else if (type.IsByRef)
+                {
+                    sb.Append("ref ");
+                }
+
+                if (type.IsByRef)
+                {
+                    type = type.GetElementType();
+                }
+
+                ProcessTypeName(type, sb, fullTypeName);
+
+                if (i + 1 < parameters.Length)
+                {
+                    sb.Append(", ");
+                }
             }
+
             sb.Append(")");
+        }
+
+        private static void Join<T>(StringBuilder sb, string separator, T[] items, Action<StringBuilder,T> action)
+        {
+            for (int i = 0; i < items.Length; i++)
+            {
+                action(sb, items[i]);
+                if (i + 1 < items.Length)
+                {
+                    sb.Append(separator);
+                }
+            }
         }
 
         private static void AppendGenericArguments(Type[] args, int startIndex, int numberOfArgsToAppend, StringBuilder sb, bool fullName)
