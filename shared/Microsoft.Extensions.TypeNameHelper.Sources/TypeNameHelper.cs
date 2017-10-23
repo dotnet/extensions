@@ -61,8 +61,7 @@ namespace Microsoft.Extensions.Internal
 
                 for (int i = 0; i < genericArguments.Length; i++)
                 {
-                    var genericArgument = genericArguments[i];
-                    ProcessTypeName(genericArgument, sb, fullTypeName, true);
+                    ProcessTypeName(genericArguments[i], sb, fullTypeName, true);
                     if (i + 1 < genericArguments.Length)
                     {
                         sb.Append(", ");
@@ -105,18 +104,6 @@ namespace Microsoft.Extensions.Internal
             }
 
             sb.Append(")");
-        }
-
-        private static void Join<T>(StringBuilder sb, string separator, T[] items, Action<StringBuilder,T> action)
-        {
-            for (int i = 0; i < items.Length; i++)
-            {
-                action(sb, items[i]);
-                if (i + 1 < items.Length)
-                {
-                    sb.Append(separator);
-                }
-            }
         }
 
         private static void AppendGenericArguments(Type[] args, int startIndex, int numberOfArgsToAppend, StringBuilder sb, bool fullName, bool dispayNameForOpenGenric)
