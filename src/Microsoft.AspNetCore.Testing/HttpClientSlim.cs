@@ -78,6 +78,12 @@ namespace Microsoft.AspNetCore.Testing
             var statusStart = response.IndexOf(' ') + 1;
             var statusEnd = response.IndexOf(' ', statusStart) - 1;
             var statusLength = statusEnd - statusStart + 1;
+
+            if (statusLength < 1)
+            {
+                throw new InvalidDataException($"No StatusCode found in '{response}'");
+            }
+
             return (HttpStatusCode)int.Parse(response.Substring(statusStart, statusLength));
         }
 
