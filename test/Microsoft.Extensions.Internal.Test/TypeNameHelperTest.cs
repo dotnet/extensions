@@ -95,6 +95,7 @@ namespace Microsoft.Extensions.Internal
         [Fact]
         public void Returns_common_name_for_built_in_types()
         {
+            Assert.Equal("void", TypeNameHelper.GetTypeDisplayName(typeof(void)));
             Assert.Equal("bool", TypeNameHelper.GetTypeDisplayName(typeof(bool)));
             Assert.Equal("byte", TypeNameHelper.GetTypeDisplayName(typeof(byte)));
             Assert.Equal("char", TypeNameHelper.GetTypeDisplayName(typeof(char)));
