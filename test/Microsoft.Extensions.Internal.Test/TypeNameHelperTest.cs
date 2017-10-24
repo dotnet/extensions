@@ -117,7 +117,7 @@ namespace Microsoft.Extensions.Internal
             var type = typeof(TypeWithMethodsForTest);
             yield return new object[]
             {
-                "System.Void .ctor(ref double val)",
+                ".ctor(ref double val)",
                 type.GetConstructors().Single()
             };
             yield return new object[]
@@ -141,21 +141,25 @@ namespace Microsoft.Extensions.Internal
                 "bool Test3(bool f, float z, Microsoft.Extensions.Internal.TypeNameHelperTest+A[] p)",
                 type.GetMethod(nameof(TypeWithMethodsForTest.Test3))
             };
+
+            yield return new object[] { ".ctor()", typeof(B<>).GetConstructors().Single() };
+            yield return new object[] { ".ctor()", typeof(B<int>).GetConstructors().Single() };
+            yield return new object[] { ".ctor()", typeof(A).GetConstructors().Single() };
         }
 
         [Theory]
         [MemberData(nameof(GetMethodInfos))]
-        public void Can_pretty_print_method_name(string name, MethodInfo methodInfo, bool fullTypeName = true)
+        public void Can_pretty_print_method_name(string name, MethodBase methodInfo, bool fullTypeName = true)
         {
             Assert.Equal(name, TypeNameHelper.GetMethodDisplayName(methodInfo, fullTypeName));
         }
 
-        private abstract class TypeWithMethodsForTest
+        private class TypeWithMethodsForTest
         {
             public TypeWithMethodsForTest(ref double val) { }
-            public abstract object Test1<T1, T2>(out int a, ref string b, object c = null);
-            public abstract TName Test2<TName>(TName t, Dictionary<TName, int> l);
-            public abstract bool Test3(bool f, float z = 1, params A[] p);
+            public object Test1<T1, T2>(out int a, ref string b, object c = null) => a = 0;
+            public TName Test2<TName>(TName t, Dictionary<TName, int> l) => default;
+            public bool Test3(bool f, float z = 1, params A[] p) => false;
         }
 
         private class A { }

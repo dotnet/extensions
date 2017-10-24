@@ -41,22 +41,28 @@ namespace Microsoft.Extensions.Internal
             return sb.ToString();
         }
 
-        public static string GetMethodDisplayName(MethodInfo method, bool fullTypeName = true)
+        public static string GetMethodDisplayName(MethodBase method, bool fullTypeName = true)
         {
             var sb = new StringBuilder();
             ProcessMehtodName(method, sb, fullTypeName);
             return sb.ToString();
         }
 
-        private static void ProcessMehtodName(MethodInfo method, StringBuilder sb, bool fullTypeName)
+        private static void ProcessMehtodName(MethodBase method, StringBuilder sb, bool fullTypeName)
         {
-            ProcessTypeName(method.ReturnType, sb, fullTypeName, true);
-            sb.Append(' ');
+            var methodInfo = method as MethodInfo;
+
+            if (methodInfo != null)
+            {
+                ProcessTypeName(methodInfo.ReturnType, sb, fullTypeName, true);
+                sb.Append(' ');
+            }
+
             sb.Append(method.Name);
 
-            var genericArguments = method.GetGenericArguments();
-            if (genericArguments.Length > 0)
+            if (method.IsGenericMethod)
             {
+                var genericArguments = method.GetGenericArguments();
                 sb.Append("<");
 
                 for (int i = 0; i < genericArguments.Length; i++)
