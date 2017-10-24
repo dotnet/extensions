@@ -473,6 +473,31 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
         }
 
         [Fact]
+        public void CanOverrideExistingDictionaryKey()
+        {
+            var input = new Dictionary<string, string>
+            {
+                {"abc", "override"}
+            };
+
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(input);
+            var config = configurationBuilder.Build();
+
+            var options = new Dictionary<string, string>
+            {
+                {"abc", "default"}
+            };
+
+            config.Bind(options);
+
+            var optionsCount = options.Count;
+
+            Assert.Equal(1, optionsCount);
+            Assert.Equal("override", options["abc"]);
+        }
+
+        [Fact]
         public void IntDictionaryBinding()
         {
             var input = new Dictionary<string, string>
