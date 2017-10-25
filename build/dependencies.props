@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+  <PropertyGroup Label="Package Versions">
+    <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
+    <SystemCollectionsPackageVersion>4.0.11</SystemCollectionsPackageVersion>
+    <SystemConsolePackageVersion>4.0.0</SystemConsolePackageVersion>
+    <SystemIOPackageVersion>4.1.0</SystemIOPackageVersion>
+    <SystemLinqPackageVersion>4.1.0</SystemLinqPackageVersion>
+    <SystemResourcesResourceManagerPackageVersion>4.0.1</SystemResourcesResourceManagerPackageVersion>
+    <XunitAssertPackageVersion>2.3.0</XunitAssertPackageVersion>
+    <XunitCorePackageVersion>2.3.0</XunitCorePackageVersion>
+    <XunitRunnerVisualStudioPackageVersion>2.3.0</XunitRunnerVisualStudioPackageVersion>
+  </PropertyGroup>
+  <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
+</Project>

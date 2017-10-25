@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
+    <!-- For configurations that do not compiling for .NET Framework -->
+    <TargetFrameworks Condition=" '$(SkipNETFramework)' == 'true' ">netstandard1.3</TargetFrameworks>
+
+    <Description>Command-line parsing API. Commonly used types:
+Microsoft.Extensions.CommandLineUtils.CommandLineApplication
+Microsoft.Extensions.CommandLineUtils.CommandOption</Description>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>commandline;parsing</PackageTags>
+    <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <PackageReference Include="System.Collections" Version="$(SystemCollectionsPackageVersion)" />
+    <PackageReference Include="System.Console" Version="$(SystemConsolePackageVersion)" />
+    <PackageReference Include="System.IO" Version="$(SystemIOPackageVersion)" />
+    <PackageReference Include="System.Linq" Version="$(SystemLinqPackageVersion)" />
+    <PackageReference Include="System.Resources.ResourceManager" Version="$(SystemResourcesResourceManagerPackageVersion)" />
+  </ItemGroup>
+
+</Project>
