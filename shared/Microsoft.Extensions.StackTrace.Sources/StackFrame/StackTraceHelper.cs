@@ -2,9 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.StackTrace.Sources
@@ -31,9 +35,16 @@ namespace Microsoft.Extensions.StackTrace.Sources
                     return frames;
                 }
 
-                foreach (var frame in stackFrames)
+                for (var i = 0; i < stackFrames.Length; i++)
                 {
+                    var frame = stackFrames[i];
                     var method = frame.GetMethod();
+
+                    // Always show last stackFrame
+                    if (!ShowInStackTrace(method) && i < stackFrames.Length - 1)
+                    {
+                        continue;
+                    }
 
                     var stackFrame = new StackFrameInfo
                     {
@@ -67,8 +78,22 @@ namespace Microsoft.Extensions.StackTrace.Sources
 
             var methodDisplayInfo = new MethodDisplayInfo();
 
+
             // Type name
             var type = method.DeclaringType;
+
+            var methodName = method.Name;
+
+            if (type != null && type.IsDefined(typeof(CompilerGeneratedAttribute)) &&
+                (typeof(IAsyncStateMachine).IsAssignableFrom(type) || typeof(IEnumerator).IsAssignableFrom(type)))
+            {
+                // Convert StateMachine methods to correct overload +MoveNext()
+                if (TryResolveStateMachineMethod(ref method, out type))
+                {
+                    methodDisplayInfo.SubMethod = methodName;
+                }
+            }
+            // ResolveStateMachineMethod may have set declaringType to null
             if (type != null)
             {
                 methodDisplayInfo.DeclaringTypeName = TypeNameHelper.GetTypeDisplayName(type, includeGenericParameterNames: true);
@@ -118,6 +143,102 @@ namespace Microsoft.Extensions.StackTrace.Sources
             });
 
             return methodDisplayInfo;
+        }
+
+        private static bool ShowInStackTrace(MethodBase method)
+        {
+            Debug.Assert(method != null);
+
+            // Don't show any methods marked with the StackTraceHiddenAttribute
+            // https://github.com/dotnet/coreclr/pull/14652
+            foreach (var attibute in method.CustomAttributes)
+            {
+                // internal Attribute, match on name
+                if (attibute.AttributeType.Name == "StackTraceHiddenAttribute")
+                {
+                    return false;
+                }
+            }
+
+            var type = method.DeclaringType;
+            if (type == null)
+            {
+                return true;
+            }
+
+            foreach (var attibute in type.CustomAttributes)
+            {
+                // internal Attribute, match on name
+                if (attibute.AttributeType.Name == "StackTraceHiddenAttribute")
+                {
+                    return false;
+                }
+            }
+
+            // Fallbacks for runtime pre-StackTraceHiddenAttribute
+            if (type == typeof(ExceptionDispatchInfo) && method.Name == "Throw")
+            {
+                return false;
+            }
+            else if (type == typeof(TaskAwaiter) ||
+                type == typeof(TaskAwaiter<>) ||
+                type == typeof(ConfiguredTaskAwaitable.ConfiguredTaskAwaiter) ||
+                type == typeof(ConfiguredTaskAwaitable<>.ConfiguredTaskAwaiter))
+            {
+                switch (method.Name)
+                {
+                    case "HandleNonSuccessAndDebuggerNotification":
+                    case "ThrowForNonSuccess":
+                    case "ValidateEnd":
+                    case "GetResult":
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool TryResolveStateMachineMethod(ref MethodBase method, out Type declaringType)
+        {
+            Debug.Assert(method != null);
+            Debug.Assert(method.DeclaringType != null);
+
+            declaringType = method.DeclaringType;
+
+            var parentType = declaringType.DeclaringType;
+            if (parentType == null)
+            {
+                return false;
+            }
+
+            var methods = parentType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            if (methods == null)
+            {
+                return false;
+            }
+
+            foreach (var candidateMethod in methods)
+            {
+                var attributes = candidateMethod.GetCustomAttributes<StateMachineAttribute>();
+                if (attributes == null)
+                {
+                    continue;
+                }
+
+                foreach (var asma in attributes)
+                {
+                    if (asma.StateMachineType == declaringType)
+                    {
+                        method = candidateMethod;
+                        declaringType = candidateMethod.DeclaringType;
+                        // Mark the iterator as changed; so it gets the + annotation of the original method
+                        // async statemachines resolve directly to their builder methods so aren't marked as changed
+                        return asma is IteratorStateMachineAttribute;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }
