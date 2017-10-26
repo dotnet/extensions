@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.StackTrace.Sources
@@ -171,6 +172,26 @@ namespace Microsoft.Extensions.StackTrace.Sources
                 if (attibute.AttributeType.Name == "StackTraceHiddenAttribute")
                 {
                     return false;
+                }
+            }
+
+            // Fallbacks for runtime pre-StackTraceHiddenAttribute
+            if (type == typeof(ExceptionDispatchInfo) && method.Name == "Throw")
+            {
+                return false;
+            }
+            else if (type == typeof(TaskAwaiter) ||
+                     type == typeof(TaskAwaiter<>) ||
+                     type == typeof(ConfiguredTaskAwaitable.ConfiguredTaskAwaiter) ||
+                     type == typeof(ConfiguredTaskAwaitable<>.ConfiguredTaskAwaiter))
+            {
+                switch (method.Name)
+                {
+                    case "HandleNonSuccessAndDebuggerNotification":
+                    case "ThrowForNonSuccess":
+                    case "ValidateEnd":
+                    case "GetResult":
+                        return false;
                 }
             }
 
