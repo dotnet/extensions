@@ -30,18 +30,12 @@ namespace Microsoft.Extensions.Logging.Configuration
             foreach (var configuration in _configurations)
             {
                 var sectionFromFullName = configuration.Configuration.GetSection(fullName);
-                if (sectionFromFullName.Exists())
-                {
-                    configurationBuilder.AddConfiguration(sectionFromFullName);
-                }
+                configurationBuilder.AddConfiguration(sectionFromFullName);
 
                 if (!string.IsNullOrWhiteSpace(alias))
                 {
                     var sectionFromAlias = configuration.Configuration.GetSection(alias);
-                    if (sectionFromAlias.Exists())
-                    {
-                        configurationBuilder.AddConfiguration(sectionFromAlias);
-                    }
+                    configurationBuilder.AddConfiguration(sectionFromAlias);
                 }
             }
             return configurationBuilder.Build();
