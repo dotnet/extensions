@@ -61,7 +61,7 @@ namespace Microsoft.Extensions.Internal
 
         private static void ProcessTypeName(Type t, StringBuilder sb, bool fullName)
         {
-            if (t.GetTypeInfo().IsGenericType)
+            if (t.IsGenericType)
             {
                 ProcessNestedGenericTypes(t, sb, fullName);
                 return;
@@ -72,7 +72,7 @@ namespace Microsoft.Extensions.Internal
             }
             else
             {
-                sb.Append(fullName ? t.FullName : t.Name);
+                sb.Append(fullName ? t.FullName ?? t.Name : t.Name);
             }
         }
 
@@ -81,7 +81,8 @@ namespace Microsoft.Extensions.Internal
             var genericFullName = t.GetGenericTypeDefinition().FullName;
             var genericSimpleName = t.GetGenericTypeDefinition().Name;
             var parts = genericFullName.Split('+');
-            var genericArguments = t.GetTypeInfo().GenericTypeArguments;
+            var genericArguments = t.GetGenericArguments();
+
             var index = 0;
             var totalParts = parts.Length;
             if (totalParts == 1)

@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
                     return frames;
                 }
 
-                for(var i = 0; i < stackFrames.Length; i++)
+                for (var i = 0; i < stackFrames.Length; i++)
                 {
                     var frame = stackFrames[i];
                     var method = frame.GetMethod();
@@ -180,10 +180,10 @@ namespace Microsoft.Extensions.StackTrace.Sources
             {
                 return false;
             }
-            else if (type == typeof(TaskAwaiter) ||
-                     type == typeof(TaskAwaiter<>) ||
-                     type == typeof(ConfiguredTaskAwaitable.ConfiguredTaskAwaiter) ||
-                     type == typeof(ConfiguredTaskAwaitable<>.ConfiguredTaskAwaiter))
+            else if (type == typeof(TaskAwaiter) || 
+                type == typeof(TaskAwaiter<>) ||
+                type == typeof(ConfiguredTaskAwaitable.ConfiguredTaskAwaiter) ||
+                type == typeof(ConfiguredTaskAwaitable<>.ConfiguredTaskAwaiter))
             {
                 switch (method.Name)
                 {
@@ -193,6 +193,10 @@ namespace Microsoft.Extensions.StackTrace.Sources
                     case "GetResult":
                         return false;
                 }
+            }
+            else if (type.FullName == "System.ThrowHelper")
+            {
+                return false;
             }
 
             return true;
