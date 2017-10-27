@@ -356,9 +356,9 @@ namespace Microsoft.Extensions.Internal
                 default:
                     throw new FormatException(
                         string.Format(
-                        CultureInfo.CurrentCulture,
-                        EncoderResources.WebEncoders_MalformedInput,
-                        inputLength));
+                            CultureInfo.CurrentCulture,
+                            EncoderResources.WebEncoders_MalformedInput,
+                            inputLength));
             }
         }
 
