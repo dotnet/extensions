@@ -11,6 +11,7 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\build\</PackageOutputPath>
-    <RestorePackagesPath Condition="'$(DotNetRestorePackagesPath)' != ''">$(DotNetRestorePackagesPath)</RestorePackagesPath>
+    <RestorePackagesPath Condition=" '$(DotNetRestorePackagesPath)' != '' ">$(DotNetRestorePackagesPath)</RestorePackagesPath>
+    <SkipNETFramework Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(OS)' != 'Windows_NT' ">true</SkipNETFramework>
   </PropertyGroup>
 </Project>
