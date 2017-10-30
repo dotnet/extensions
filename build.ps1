@@ -1,67 +1,45 @@
-$ErrorActionPreference = "Stop"
+[CmdletBinding()]
+param(
+    [switch]$NoTest,
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [string[]]$MSBuildArgs
+)
 
-function DownloadWithRetry([string] $url, [string] $downloadLocation, [int] $retries) 
-{
-    while($true)
-    {
-        try
-        {
-            Invoke-WebRequest $url -OutFile $downloadLocation
-            break
-        }
-        catch
-        {
-            $exceptionMessage = $_.Exception.Message
-            Write-Host "Failed to download '$url': $exceptionMessage"
-            if ($retries -gt 0) {
-                $retries--
-                Write-Host "Waiting 10 seconds before retrying. Retries left: $retries"
-                Start-Sleep -Seconds 10
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version 2
 
-            }
-            else 
-            {
-                $exception = $_.Exception
-                throw $exception
-            }
+Import-Module -Scope Local -Force "$PSScriptRoot/scripts/common.psm1"
+
+$script:dotnet = Get-DotNet
+
+Write-Host -ForegroundColor DarkGray "MSBuildArgs = $MSBuildArgs"
+& $script:dotnet --info
+
+Push-Location $PSScriptRoot
+try {
+    Write-Host -ForegroundColor DarkGray "Executing: dotnet restore"
+    Invoke-Block { & $script:dotnet restore --force -nologo @MSBuildArgs }
+
+    Write-Host -ForegroundColor DarkGray "Executing: dotnet build"
+    Invoke-Block { & $script:dotnet build --no-restore -nologo @MSBuildArgs }
+
+    Write-Host -ForegroundColor DarkGray "Executing: dotnet pack"
+    Invoke-Block { & $script:dotnet pack --no-build --no-restore -nologo @MSBuildArgs }
+
+    if (-not $NoTest) {
+        Write-Host -ForegroundColor DarkGray "Executing: dotnet test"
+        Invoke-Block {
+            & $script:dotnet test `
+            --no-build `
+            --no-restore `
+            test/Microsoft.Extensions.CommandLineUtils.Tests/Microsoft.Extensions.CommandLineUtils.Tests.csproj `
+            @MSBuildArgs
         }
     }
-}
-
-cd $PSScriptRoot
-
-$repoFolder = $PSScriptRoot
-$env:REPO_FOLDER = $repoFolder
-
-$koreBuildZip="https://github.com/aspnet/KoreBuild/archive/rel/1.0.4.zip"
-if ($env:KOREBUILD_ZIP)
-{
-    $koreBuildZip=$env:KOREBUILD_ZIP
-}
-
-$buildFolder = ".build"
-$buildFile="$buildFolder\KoreBuild.ps1"
-
-if (!(Test-Path $buildFolder)) {
-    Write-Host "Downloading KoreBuild from $koreBuildZip"    
-    
-    $tempFolder=$env:TEMP + "\KoreBuild-" + [guid]::NewGuid()
-    New-Item -Path "$tempFolder" -Type directory | Out-Null
-
-    $localZipFile="$tempFolder\korebuild.zip"
-    
-    DownloadWithRetry -url $koreBuildZip -downloadLocation $localZipFile -retries 6
-
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($localZipFile, $tempFolder)
-    
-    New-Item -Path "$buildFolder" -Type directory | Out-Null
-    copy-item "$tempFolder\**\build\*" $buildFolder -Recurse
-
-    # Cleanup
-    if (Test-Path $tempFolder) {
-        Remove-Item -Recurse -Force $tempFolder
+    else {
+        Write-Host "Skipping tests because -NoTest was specified"
     }
+    Write-Host -ForegroundColor Green "`nDone`n"
+} finally {
+    Pop-Location
 }
-
-&"$buildFile" $args

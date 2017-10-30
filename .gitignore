@@ -32,7 +32,9 @@ nuget.exe
 *.ncrunchsolution
 *.*sdf
 *.ipch
+*.binlog
 .settings
 *.sln.ide
 node_modules
 **/[Cc]ompiler/[Rr]esources/**/*.js
+global.json

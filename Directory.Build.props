@@ -1,0 +1,17 @@
+<Project>
+  <Import Project="version.props" />
+  <Import Project="build\dependencies.props" />
+  <Import Project="build\sources.props" />
+
+  <PropertyGroup>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/aspnet/common</RepositoryUrl>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\build\</PackageOutputPath>
+    <RestorePackagesPath Condition=" '$(DotNetRestorePackagesPath)' != '' ">$(DotNetRestorePackagesPath)</RestorePackagesPath>
+    <SkipNETFramework Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(OS)' != 'Windows_NT' ">true</SkipNETFramework>
+  </PropertyGroup>
+</Project>

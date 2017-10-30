@@ -1,46 +1,85 @@
 #!/usr/bin/env bash
-repoFolder="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $repoFolder
 
-koreBuildZip="https://github.com/aspnet/KoreBuild/archive/rel/1.0.4.zip"
-if [ ! -z $KOREBUILD_ZIP ]; then
-    koreBuildZip=$KOREBUILD_ZIP
-fi
+set -euo pipefail
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-buildFolder=".build"
-buildFile="$buildFolder/KoreBuild.sh"
+RESET="\033[0m"
+GREEN="\033[0;32m"
+GRAY="\033[0;90m"
 
-if test ! -d $buildFolder; then
-    echo "Downloading KoreBuild from $koreBuildZip"
-    
-    tempFolder="/tmp/KoreBuild-$(uuidgen)"    
-    mkdir $tempFolder
-    
-    localZipFile="$tempFolder/korebuild.zip"
-    
-    retries=6
-    until (wget -O $localZipFile $koreBuildZip 2>/dev/null || curl -o $localZipFile --location $koreBuildZip 2>/dev/null)
-    do
-        echo "Failed to download '$koreBuildZip'"
-        if [ "$retries" -le 0 ]; then
-            exit 1
-        fi
-        retries=$((retries - 1))
-        echo "Waiting 10 seconds before retrying. Retries left: $retries"
-        sleep 10s
-    done
-    
-    unzip -q -d $tempFolder $localZipFile
-  
-    mkdir $buildFolder
-    cp -r $tempFolder/**/build/** $buildFolder
-    
-    chmod +x $buildFile
-    
-    # Cleanup
-    if test ! -d $tempFolder; then
-        rm -rf $tempFolder  
+#
+# Functions
+#
+
+__usage() {
+    echo "Usage: $(basename "${BASH_SOURCE[0]}") [options] [[--] <Arguments>...]"
+    echo ""
+    echo "Arguments:"
+    echo "    <Arguments>...         Arguments passed to MSBuild. Variable number of arguments allowed."
+    echo ""
+    echo "Options:"
+    echo "    --no-test|-NoTest      Skip tests"
+    echo ""
+
+    if [[ "${1:-}" != '--no-exit' ]]; then
+        exit 2
     fi
+}
+
+#
+# Main
+#
+notest=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -\?|-h|--help)
+            __usage --no-exit
+            exit 0
+            ;;
+        --no-test|-[Nn]o[Tt]est)
+            notest=true
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+    esac
+    shift
+done
+
+if [ ! -z "${DOTNET_TOOL_DIR:-}" ]; then
+    export PATH="${DOTNET_TOOL_DIR}:${PATH}"
 fi
 
-$buildFile -r $repoFolder "$@"
+pushd "$DIR" >/dev/null
+
+echo -e "${GRAY}MSBuild arguments = $@${RESET}"
+
+dotnet --info
+
+echo -e "${GRAY}Executing: dotnet restore${RESET}"
+dotnet restore --force -nologo "$@"
+
+echo -e "${GRAY}Executing: dotnet build${RESET}"
+dotnet build --no-restore -nologo "$@"
+
+echo -e "${GRAY}Executing: dotnet pack${RESET}"
+dotnet pack --no-build --no-restore -nologo "$@"
+
+if [ $notest != true ]; then
+    echo -e "${GRAY}Executing: dotnet test${RESET}"
+    dotnet test \
+        --no-build --no-restore \
+        test/Microsoft.Extensions.CommandLineUtils.Tests/Microsoft.Extensions.CommandLineUtils.Tests.csproj \
+        "$@"
+else
+    echo "Skipping tests because -NoTest was specified"
+fi
+
+echo ""
+echo -e "${GREEN}Done${RESET}"
+echo ""
