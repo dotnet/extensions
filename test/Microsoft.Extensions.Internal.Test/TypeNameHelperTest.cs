@@ -2,7 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Internal
 {
@@ -91,6 +95,7 @@ namespace Microsoft.Extensions.Internal
         [Fact]
         public void Returns_common_name_for_built_in_types()
         {
+            Assert.Equal("void", TypeNameHelper.GetTypeDisplayName(typeof(void)));
             Assert.Equal("bool", TypeNameHelper.GetTypeDisplayName(typeof(bool)));
             Assert.Equal("byte", TypeNameHelper.GetTypeDisplayName(typeof(byte)));
             Assert.Equal("char", TypeNameHelper.GetTypeDisplayName(typeof(char)));
@@ -107,6 +112,57 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal("ulong", TypeNameHelper.GetTypeDisplayName(typeof(ulong)));
             Assert.Equal("ushort", TypeNameHelper.GetTypeDisplayName(typeof(ushort)));
         }
+
+        public static IEnumerable<object[]> GetMethodInfos()
+        {
+            var type = typeof(TypeWithMethodsForTest);
+            yield return new object[]
+            {
+                ".ctor(ref double val)",
+                type.GetConstructors().Single()
+            };
+            yield return new object[]
+            {
+                "object Test1<T1, T2>(out int a, ref string b, object c)",
+                type.GetMethod(nameof(TypeWithMethodsForTest.Test1))
+            };
+            yield return new object[]
+            {
+                "TName Test2<TName>(TName t, Dictionary<TName, int> l)",
+                type.GetMethod(nameof(TypeWithMethodsForTest.Test2)),
+                false
+            };
+            yield return new object[]
+            {
+                "string Test2<string>(string t, System.Collections.Generic.Dictionary<string, int> l)",
+                type.GetMethod(nameof(TypeWithMethodsForTest.Test2)).MakeGenericMethod(typeof(string))
+            };
+            yield return new object[]
+            {
+                "bool Test3(bool f, float z, Microsoft.Extensions.Internal.TypeNameHelperTest+A[] p)",
+                type.GetMethod(nameof(TypeWithMethodsForTest.Test3))
+            };
+
+            yield return new object[] { ".ctor()", typeof(B<>).GetConstructors().Single() };
+            yield return new object[] { ".ctor()", typeof(B<int>).GetConstructors().Single() };
+            yield return new object[] { ".ctor()", typeof(A).GetConstructors().Single() };
+        }
+
+        [Theory]
+        [MemberData(nameof(GetMethodInfos))]
+        public void Can_pretty_print_method_name(string name, MethodBase methodInfo, bool fullTypeName = true)
+        {
+            Assert.Equal(name, TypeNameHelper.GetMethodDisplayName(methodInfo, fullTypeName));
+        }
+
+        private class TypeWithMethodsForTest
+        {
+            public TypeWithMethodsForTest(ref double val) { }
+            public object Test1<T1, T2>(out int a, ref string b, object c = null) => a = 0;
+            public TName Test2<TName>(TName t, Dictionary<TName, int> l) => default;
+            public bool Test3(bool f, float z = 1, params A[] p) => false;
+        }
+
         private class A { }
 
         private class B<T> { }
