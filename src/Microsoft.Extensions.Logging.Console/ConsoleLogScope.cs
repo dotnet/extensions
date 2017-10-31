@@ -6,6 +6,7 @@ using System.Threading;
 
 namespace Microsoft.Extensions.Logging.Console
 {
+    [Obsolete("Use " + nameof(LoggerExternalScopeProvider) + "instead" )]
     public class ConsoleLogScope
     {
         private readonly string _name;

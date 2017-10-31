@@ -17,6 +17,8 @@ namespace Microsoft.Extensions.Logging
 
         public Func<string, string, LogLevel, bool> Filter { get; set; }
 
+        public bool ExternalScope { get; set; }
+
         public bool IsEnabled(LogLevel level)
         {
             if (MinLevel != null && level < MinLevel)

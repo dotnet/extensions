@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.Logging.Console
 {
     [ProviderAlias("Console")]
-    public class ConsoleLoggerProvider : ILoggerProvider
+    public class ConsoleLoggerProvider : ILoggerProvider, ISupportExternalScope
     {
         private readonly ConcurrentDictionary<string, ConsoleLogger> _loggers = new ConcurrentDictionary<string, ConsoleLogger>();
 
@@ -22,6 +22,7 @@ namespace Microsoft.Extensions.Logging.Console
         private static readonly Func<string, LogLevel, bool> falseFilter = (cat, level) => false;
         private IDisposable _optionsReloadToken;
         private bool _includeScopes;
+        private IExternalScopeProvider _scopeProvider;
 
         public ConsoleLoggerProvider(Func<string, LogLevel, bool> filter, bool includeScopes)
         {
@@ -45,9 +46,10 @@ namespace Microsoft.Extensions.Logging.Console
         private void ReloadLoggerOptions(ConsoleLoggerOptions options)
         {
             _includeScopes = options.IncludeScopes;
+            var scopeProvider = GetScopeProvider();
             foreach (var logger in _loggers.Values)
             {
-                logger.IncludeScopes = _includeScopes;
+                logger.ScopeProvider = scopeProvider;
             }
         }
 
@@ -74,11 +76,12 @@ namespace Microsoft.Extensions.Logging.Console
                 // to an old change token.
                 _settings = _settings.Reload();
 
-                var includeScopes = _settings?.IncludeScopes ?? false;
+                _includeScopes = _settings?.IncludeScopes ?? false;
+                var scopeProvider = GetScopeProvider();
                 foreach (var logger in _loggers.Values)
                 {
                     logger.Filter = GetFilter(logger.Name, _settings);
-                    logger.IncludeScopes = includeScopes;
+                    logger.ScopeProvider = scopeProvider;
                 }
             }
             catch (Exception ex)
@@ -103,7 +106,8 @@ namespace Microsoft.Extensions.Logging.Console
         private ConsoleLogger CreateLoggerImplementation(string name)
         {
             var includeScopes = _settings?.IncludeScopes ?? _includeScopes;
-            return new ConsoleLogger(name, GetFilter(name, _settings), includeScopes, _messageQueue);
+
+            return new ConsoleLogger(name, GetFilter(name, _settings), includeScopes? _scopeProvider: null, _messageQueue);
         }
 
         private Func<string, LogLevel, bool> GetFilter(string name, IConsoleLoggerSettings settings)
@@ -143,10 +147,24 @@ namespace Microsoft.Extensions.Logging.Console
             }
         }
 
+        private IExternalScopeProvider GetScopeProvider()
+        {
+            if (_includeScopes && _scopeProvider == null)
+            {
+                _scopeProvider = new LoggerExternalScopeProvider();
+            }
+            return _includeScopes ? _scopeProvider : null;
+        }
+
         public void Dispose()
         {
             _optionsReloadToken?.Dispose();
             _messageQueue.Dispose();
+        }
+
+        public void SetScopeProvider(IExternalScopeProvider scopeProvider)
+        {
+            _scopeProvider = scopeProvider;
         }
     }
 }

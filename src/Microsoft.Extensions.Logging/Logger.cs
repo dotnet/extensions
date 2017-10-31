@@ -9,7 +9,34 @@ namespace Microsoft.Extensions.Logging
 {
     internal class Logger : ILogger
     {
-        public LoggerInformation[] Loggers { get; set; }
+        private readonly LoggerFactory _loggerFactory;
+
+        private LoggerInformation[] _loggers;
+
+        private int _scopeCount;
+
+        public Logger(LoggerFactory loggerFactory)
+        {
+            _loggerFactory = loggerFactory;
+        }
+
+        public LoggerInformation[] Loggers
+        {
+            get { return _loggers; }
+            set
+            {
+                var scopeSize = 0;
+                foreach (var loggerInformation in value)
+                {
+                    if (!loggerInformation.ExternalScope)
+                    {
+                        scopeSize++;
+                    }
+                }
+                _scopeCount = scopeSize;
+                _loggers = value;
+            }
+        }
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
@@ -102,19 +129,49 @@ namespace Microsoft.Extensions.Logging
                 return NullScope.Instance;
             }
 
-            if (loggers.Length == 1)
+            var scopeProvider = _loggerFactory.ScopeProvider;
+            var scopeCount = _scopeCount;
+
+            if (scopeProvider != null)
             {
-                return loggers[0].Logger.BeginScope(state);
+                // if external scope is used for all providers
+                // we can return it's IDisposable directly
+                // without wrapping and saving on allocation
+                if (scopeCount == 0)
+                {
+                    return scopeProvider.Push(state);
+                }
+                else
+                {
+                    scopeCount++;
+                }
+
             }
 
-            var scope = new Scope(loggers.Length);
+            var scope = new Scope(scopeCount);
             List<Exception> exceptions = null;
             for (var index = 0; index < loggers.Length; index++)
             {
+                var loggerInformation = loggers[index];
+                if (loggerInformation.ExternalScope)
+                {
+                    continue;
+                }
+
                 try
                 {
-                    var disposable = loggers[index].Logger.BeginScope(state);
-                    scope.SetDisposable(index, disposable);
+                    scopeCount--;
+                    // _loggers and _scopeCount are not updated atomically
+                    // there might be a situation when count was updated with
+                    // lower value then we have loggers
+                    // This is small race that happens only on configuraiton reload
+                    // and we are protecting from it by checkig that there is enough space
+                    // in Scope
+                    if (scopeCount >= 0)
+                    {
+                        var disposable = loggerInformation.Logger.BeginScope(state);
+                        scope.SetDisposable(scopeCount, disposable);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -127,6 +184,11 @@ namespace Microsoft.Extensions.Logging
                 }
             }
 
+            if (scopeProvider != null)
+            {
+                scope.SetDisposable(0, scopeProvider.Push(state));
+            }
+
             if (exceptions != null && exceptions.Count > 0)
             {
                 throw new AggregateException(
@@ -135,7 +197,6 @@ namespace Microsoft.Extensions.Logging
 
             return scope;
         }
-
 
         private class Scope : IDisposable
         {
@@ -155,17 +216,17 @@ namespace Microsoft.Extensions.Logging
 
             public void SetDisposable(int index, IDisposable disposable)
             {
-                if (index == 0)
+                switch (index)
                 {
-                    _disposable0 = disposable;
-                }
-                else if (index == 1)
-                {
-                    _disposable1 = disposable;
-                }
-                else
-                {
-                    _disposable[index - 2] = disposable;
+                    case 0:
+                        _disposable0 = disposable;
+                        break;
+                    case 1:
+                        _disposable1 = disposable;
+                        break;
+                    default:
+                        _disposable[index - 2] = disposable;
+                        break;
                 }
             }
 
@@ -173,14 +234,9 @@ namespace Microsoft.Extensions.Logging
             {
                 if (!_isDisposed)
                 {
-                    if (_disposable0 != null)
-                    {
-                        _disposable0.Dispose();
-                    }
-                    if (_disposable1 != null)
-                    {
-                        _disposable1.Dispose();
-                    }
+                    _disposable0?.Dispose();
+                    _disposable1?.Dispose();
+
                     if (_disposable != null)
                     {
                         var count = _disposable.Length;

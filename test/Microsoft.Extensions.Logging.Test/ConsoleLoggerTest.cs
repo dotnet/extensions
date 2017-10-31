@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.Logging.Test
             // Arrange
             var sink = new ConsoleSink();
             var console = new TestConsole(sink);
-            var logger = new ConsoleLogger(_loggerName, filter, includeScopes, new TestLoggerProcessor());
+            var logger = new ConsoleLogger(_loggerName, filter, includeScopes ? new LoggerExternalScopeProvider() : null, new TestLoggerProcessor());
             logger.Console = console;
             return (logger, sink);
         }
@@ -618,7 +618,7 @@ namespace Microsoft.Extensions.Logging.Test
         public void CallingBeginScopeOnLogger_AlwaysReturnsNewDisposableInstance()
         {
             // Arrange
-            var t = SetUp(null);
+            var t = SetUp(null, includeScopes: true);
             var logger = t.Logger;
             var sink = t.Sink;
 
@@ -866,7 +866,7 @@ namespace Microsoft.Extensions.Logging.Test
             var sink = new ConsoleSink();
             var console = new TestConsole(sink);
             var processor = new ConsoleLoggerProcessor();
-            var logger = new ConsoleLogger(_loggerName, filter: null, includeScopes: false, loggerProcessor: processor);
+            var logger = new ConsoleLogger(_loggerName, filter: null, scopeProvider: null, loggerProcessor: processor);
             logger.Console = console;
 
             // Act
@@ -886,7 +886,7 @@ namespace Microsoft.Extensions.Logging.Test
                 var logger = new ConsoleLogger(
                     _loggerName,
                     filter: (s, level) => level >= LogLevel.Warning,
-                    includeScopes: false,
+                    scopeProvider: null,
                     loggerProcessor: processor);
 
                 // Assert
@@ -909,9 +909,9 @@ namespace Microsoft.Extensions.Logging.Test
             var logger = (ConsoleLogger)loggerProvider.CreateLogger("Name");
 
             // Act & Assert
-            Assert.True(logger.IncludeScopes);
+            Assert.NotNull(logger.ScopeProvider);
             monitor.Set(new ConsoleLoggerOptions() { IncludeScopes = false });
-            Assert.False(logger.IncludeScopes);
+            Assert.Null(logger.ScopeProvider);
         }
 
         [Fact]
@@ -928,7 +928,7 @@ namespace Microsoft.Extensions.Logging.Test
 
             var consoleLoggerProvider = Assert.IsType<ConsoleLoggerProvider>(loggerProvider);
             var logger = (ConsoleLogger)consoleLoggerProvider.CreateLogger("Category");
-            Assert.True(logger.IncludeScopes);
+            Assert.NotNull(logger.ScopeProvider);
         }
 
         public static TheoryData<LogLevel, string> LevelsWithPrefixes => new TheoryData<LogLevel, string>()
