@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
         public MsBuildTargetTest(ITestOutputHelper output)
         {
             _output = output;
-            _tempDir = Path.Combine(Path.GetTempPath(), "usersecretstest", Guid.NewGuid().ToString());
+            _tempDir = Path.Combine(AppContext.BaseDirectory, Path.GetRandomFileName());
             Directory.CreateDirectory(_tempDir);
 
             _solutionRoot = new DirectoryInfo(AppContext.BaseDirectory);
