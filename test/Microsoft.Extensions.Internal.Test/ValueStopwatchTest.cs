@@ -10,6 +10,18 @@ namespace Microsoft.Extensions.Internal.Test
     public class ValueStopwatchTest
     {
         [Fact]
+        public void IsActiveIsFalseForDefaultValueStopwatch()
+        {
+            Assert.False(default(ValueStopwatch).IsActive);
+        }
+
+        [Fact]
+        public void IsActiveIsTrueWhenValueStopwatchStartedWithStartNew()
+        {
+            Assert.True(ValueStopwatch.StartNew().IsActive);
+        }
+
+        [Fact]
         public void GetElapsedTimeThrowsIfValueStopwatchIsDefaultValue()
         {
             var stopwatch = default(ValueStopwatch);
