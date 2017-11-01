@@ -36,11 +36,11 @@ namespace Microsoft.Extensions.Internal
         public static string GetTypeDisplayName(Type type, bool fullName = true)
         {
             var builder = new StringBuilder();
-            ProcessTypeName(builder, type, fullName);
+            ProcessType(builder, type, fullName);
             return builder.ToString();
         }
 
-        private static void ProcessTypeName(StringBuilder builder, Type type, bool fullName)
+        private static void ProcessType(StringBuilder builder, Type type, bool fullName)
         {
             if (type.IsGenericType)
             {
@@ -55,6 +55,10 @@ namespace Microsoft.Extensions.Internal
             {
                 builder.Append(buildInName);
             }
+            else
+            {
+                builder.Append(fullName ? type.FullName : type.Name);
+            }
         }
 
         private static void ProcessArrayType(StringBuilder builder, Type type, bool fullName)
@@ -65,13 +69,13 @@ namespace Microsoft.Extensions.Internal
                 innerType = innerType.GetElementType();
             }
 
-            ProcessTypeName(builder, innerType, fullName);
+            ProcessType(builder, innerType, fullName);
 
             while (type.IsArray)
             {
-                builder.Append("[");
+                builder.Append('[');
                 builder.Append(',', type.GetArrayRank() - 1);
-                builder.Append("]");
+                builder.Append(']');
                 type = type.GetElementType();
             }
         }
@@ -110,7 +114,7 @@ namespace Microsoft.Extensions.Internal
             builder.Append('<');
             for (var i = offset; i < length; i++)
             {
-                ProcessTypeName(builder, genericArguments[i], fullName);
+                ProcessType(builder, genericArguments[i], fullName);
                 if (i + 1 != length)
                 {
                     builder.Append(", ");
