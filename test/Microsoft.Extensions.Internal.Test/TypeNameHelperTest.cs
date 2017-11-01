@@ -47,6 +47,10 @@ namespace Microsoft.Extensions.Internal
                 TypeNameHelper.GetTypeDisplayName(typeof(Outer<int>.F<int, Outer<int>.E<string>>)));
             Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+Outer<int>+E<Microsoft.Extensions.Internal.TypeNameHelperTest+Outer<int>+E<string>>",
                 TypeNameHelper.GetTypeDisplayName(typeof(Outer<int>.E<Outer<int>.E<string>>)));
+            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+OuterGeneric<int>+InnerNonGeneric+InnerGeneric<int, string>+InnerGenericLeafNode<bool>",
+                TypeNameHelper.GetTypeDisplayName(typeof(OuterGeneric<int>.InnerNonGeneric.InnerGeneric<int, string>.InnerGenericLeafNode<bool>)));
+            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+Level1<int>+Level2<bool>+Level3<int>",
+                TypeNameHelper.GetTypeDisplayName(typeof(Level1<int>.Level2<bool>.Level3<int>)));
         }
 
         [Fact]
@@ -87,6 +91,8 @@ namespace Microsoft.Extensions.Internal
                 TypeNameHelper.GetTypeDisplayName(typeof(Outer<int>.F<int, Outer<int>.E<string>>), false));
             Assert.Equal("E<E<string>>",
                 TypeNameHelper.GetTypeDisplayName(typeof(Outer<int>.E<Outer<int>.E<string>>), false));
+            Assert.Equal("InnerGenericLeafNode<bool>",
+                TypeNameHelper.GetTypeDisplayName(typeof(OuterGeneric<int>.InnerNonGeneric.InnerGeneric<int, string>.InnerGenericLeafNode<bool>), false));
         }
 
         [Fact]
@@ -135,6 +141,29 @@ namespace Microsoft.Extensions.Internal
             public class E<T1> { }
 
             public class F<T1, T2> { }
+        }
+
+        private class OuterGeneric<T1>
+        {
+            public class InnerNonGeneric
+            {
+                public class InnerGeneric<T2, T3>
+                {
+                    public class InnerGenericLeafNode<T4> { }
+
+                    public class InnerLeafNode { }
+                }
+            }
+        }
+
+        private class Level1<T1>
+        {
+            public class Level2<T2>
+            {
+                public class Level3<T3>
+                {
+                }
+            }
         }
     }
 }
