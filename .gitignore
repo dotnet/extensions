@@ -32,4 +32,3 @@ BenchmarkDotNet.Artifacts/
 BDN.Generated/
 binaries/
 global.json
-korebuild-lock.txt
