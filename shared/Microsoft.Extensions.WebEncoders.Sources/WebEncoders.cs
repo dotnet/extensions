@@ -354,7 +354,11 @@ namespace Microsoft.Extensions.Internal
                 case 3:
                     return 1;
                 default:
-                    throw new FormatException("TODO: Malformed input.");
+                    throw new FormatException(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            EncoderResources.WebEncoders_MalformedInput,
+                            inputLength));
             }
         }
 

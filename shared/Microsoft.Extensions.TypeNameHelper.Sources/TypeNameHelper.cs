@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Text;
+using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Internal
 {
@@ -47,13 +47,32 @@ namespace Microsoft.Extensions.Internal
                 var genericArguments = type.GetGenericArguments();
                 ProcessGenericType(builder, type, genericArguments, genericArguments.Length, fullName);
             }
+            else if (type.IsArray)
+            {
+                ProcessArrayType(builder, type, fullName);
+            }
             else if (_builtInTypeNames.TryGetValue(type, out var buildInName))
             {
                 builder.Append(buildInName);
             }
-            else
+        }
+
+        private static void ProcessArrayType(StringBuilder builder, Type type, bool fullName)
+        {
+            var innerType = type;
+            while (innerType.IsArray)
             {
-                builder.Append(fullName ? type.FullName : type.Name);
+                innerType = innerType.GetElementType();
+            }
+
+            ProcessTypeName(builder, innerType, fullName);
+
+            while (type.IsArray)
+            {
+                builder.Append("[");
+                builder.Append(',', type.GetArrayRank() - 1);
+                builder.Append("]");
+                type = type.GetElementType();
             }
         }
 
