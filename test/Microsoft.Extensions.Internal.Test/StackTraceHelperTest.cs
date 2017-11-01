@@ -78,7 +78,9 @@ namespace Microsoft.Extensions.Internal
 
             var methodNames = stackFrames.Select(stackFrame => stackFrame.MethodDisplayInfo.ToString())
                 // Remove Framework method that can be optimized out (inlined)
-                .Where(methodName => methodName != "System.Collections.Generic.List<T>+Enumerator.MoveNext()");
+                .Where(methodName => methodName != "System.Collections.Generic.List<T>+Enumerator.MoveNext()")
+                // Remove stack frame that may be excluded by the runtime
+                .Where(methodName => methodName != "System.ThrowHelper.ThrowInvalidOperationException_InvalidOperation_EnumFailedVersion()");
 
             // Assert
             Assert.Equal(expectedCallStack, methodNames);

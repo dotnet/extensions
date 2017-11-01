@@ -194,10 +194,6 @@ namespace Microsoft.Extensions.StackTrace.Sources
                         return false;
                 }
             }
-            else if (type.FullName == "System.ThrowHelper")
-            {
-                return false;
-            }
 
             return true;
         }
