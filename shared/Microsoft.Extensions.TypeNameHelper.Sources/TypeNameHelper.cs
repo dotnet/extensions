@@ -56,10 +56,9 @@ namespace Microsoft.Extensions.Internal
             {
                 builder.Append(builtInName);
             }
-            else
+            else if (!type.IsGenericParameter)
             {
-                var name = fullName || type.IsGenericParameter ? type.FullName : type.Name;
-                builder.Append(name);
+                builder.Append(fullName ? type.FullName : type.Name);
             }
         }
 
