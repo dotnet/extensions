@@ -9,48 +9,77 @@ namespace Microsoft.Extensions.Internal
 {
     public class TypeNameHelperTest
     {
-        [Fact]
-        public void Can_pretty_print_CLR_full_name()
+        public static IEnumerable<object[]> GetFullTypeNamesTestData()
         {
             // Predefined Types
-            Assert.Equal("int",
-                TypeNameHelper.GetTypeDisplayName(typeof(int)));
-            Assert.Equal("System.Collections.Generic.List<int>",
-                TypeNameHelper.GetTypeDisplayName(typeof(List<int>)));
-            Assert.Equal("System.Collections.Generic.Dictionary<int, string>",
-                TypeNameHelper.GetTypeDisplayName(typeof(Dictionary<int, string>)));
-            Assert.Equal("System.Collections.Generic.Dictionary<int, System.Collections.Generic.List<string>>",
-                TypeNameHelper.GetTypeDisplayName(typeof(Dictionary<int, List<string>>)));
-            Assert.Equal("System.Collections.Generic.List<System.Collections.Generic.List<string>>",
-                TypeNameHelper.GetTypeDisplayName(typeof(List<List<string>>)));
+            yield return new object[] { "int", typeof(int) };
+            yield return new object[] { "System.Collections.Generic.List<int>", typeof(List<int>) };
+            yield return new object[] { "System.Collections.Generic.Dictionary<int, string>", typeof(Dictionary<int, string>) };
+
+            yield return new object[]
+            {
+                "System.Collections.Generic.List<System.Collections.Generic.List<string>>",
+                typeof(List<List<string>>)
+            };
+
+            yield return new object[]
+            {
+                "System.Collections.Generic.Dictionary<int, System.Collections.Generic.List<string>>",
+                typeof(Dictionary<int, List<string>>)
+            };
 
             // Classes inside NonGeneric class
-            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+A",
-                TypeNameHelper.GetTypeDisplayName(typeof(A)));
-            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+B<int>",
-                TypeNameHelper.GetTypeDisplayName(typeof(B<int>)));
-            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+C<int, string>",
-                TypeNameHelper.GetTypeDisplayName(typeof(C<int, string>)));
-            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+C<int, Microsoft.Extensions.Internal.TypeNameHelperTest+B<string>>",
-                TypeNameHelper.GetTypeDisplayName(typeof(C<int, B<string>>)));
-            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+B<Microsoft.Extensions.Internal.TypeNameHelperTest+B<string>>",
-                TypeNameHelper.GetTypeDisplayName(typeof(B<B<string>>)));
+            yield return new object[] { "Microsoft.Extensions.Internal.TypeNameHelperTest+A", typeof(A) };
+            yield return new object[] { "Microsoft.Extensions.Internal.TypeNameHelperTest+B<int>", typeof(B<int>) };
+            yield return new object[] { "Microsoft.Extensions.Internal.TypeNameHelperTest+C<int, string>", typeof(C<int, string>) };
+
+            yield return new object[]
+            {
+                "Microsoft.Extensions.Internal.TypeNameHelperTest+C<int, Microsoft.Extensions.Internal.TypeNameHelperTest+B<string>>",
+                typeof(C<int, B<string>>)
+            };
+
+            yield return new object[]
+            {
+                "Microsoft.Extensions.Internal.TypeNameHelperTest+B<Microsoft.Extensions.Internal.TypeNameHelperTest+B<string>>",
+                typeof(B<B<string>>)
+            };
 
             // Classes inside Generic class
-            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+Outer<int>+D",
-                TypeNameHelper.GetTypeDisplayName(typeof(Outer<int>.D)));
-            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+Outer<int>+E<int>",
-                TypeNameHelper.GetTypeDisplayName(typeof(Outer<int>.E<int>)));
-            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+Outer<int>+F<int, string>",
-                TypeNameHelper.GetTypeDisplayName(typeof(Outer<int>.F<int, string>)));
-            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+Outer<int>+F<int, Microsoft.Extensions.Internal.TypeNameHelperTest+Outer<int>+E<string>>",
-                TypeNameHelper.GetTypeDisplayName(typeof(Outer<int>.F<int, Outer<int>.E<string>>)));
-            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+Outer<int>+E<Microsoft.Extensions.Internal.TypeNameHelperTest+Outer<int>+E<string>>",
-                TypeNameHelper.GetTypeDisplayName(typeof(Outer<int>.E<Outer<int>.E<string>>)));
-            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+OuterGeneric<int>+InnerNonGeneric+InnerGeneric<int, string>+InnerGenericLeafNode<bool>",
-                TypeNameHelper.GetTypeDisplayName(typeof(OuterGeneric<int>.InnerNonGeneric.InnerGeneric<int, string>.InnerGenericLeafNode<bool>)));
-            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+Level1<int>+Level2<bool>+Level3<int>",
-                TypeNameHelper.GetTypeDisplayName(typeof(Level1<int>.Level2<bool>.Level3<int>)));
+            yield return new object[] { "Microsoft.Extensions.Internal.TypeNameHelperTest+Outer<int>+D", typeof(Outer<int>.D) };
+            yield return new object[] { "Microsoft.Extensions.Internal.TypeNameHelperTest+Outer<int>+E<int>", typeof(Outer<int>.E<int>) };
+            yield return new object[] { "Microsoft.Extensions.Internal.TypeNameHelperTest+Outer<int>+F<int, string>", typeof(Outer<int>.F<int, string>) };
+
+            yield return new object[]
+            {
+                "Microsoft.Extensions.Internal.TypeNameHelperTest+Outer<int>+F<int, Microsoft.Extensions.Internal.TypeNameHelperTest+Outer<int>+E<string>>",
+                typeof(Outer<int>.F<int, Outer<int>.E<string>>)
+            };
+
+            yield return new object[]
+            {
+                "Microsoft.Extensions.Internal.TypeNameHelperTest+Outer<int>+E<Microsoft.Extensions.Internal.TypeNameHelperTest+Outer<int>+E<string>>",
+                typeof(Outer<int>.E<Outer<int>.E<string>>)
+            };
+
+            yield return new object[]
+            {
+                "Microsoft.Extensions.Internal.TypeNameHelperTest+OuterGeneric<int>+InnerNonGeneric+InnerGeneric<int, string>+InnerGenericLeafNode<bool>",
+                typeof(OuterGeneric<int>.InnerNonGeneric.InnerGeneric<int, string>.InnerGenericLeafNode<bool>)
+            };
+
+            yield return new object[]
+            {
+                "Microsoft.Extensions.Internal.TypeNameHelperTest+Level1<int>+Level2<bool>+Level3<int>",
+                typeof(Level1<int>.Level2<bool>.Level3<int>)
+            };
+        }
+
+        [Theory]
+        [MemberData(nameof(GetFullTypeNamesTestData))]
+        public void Can_pretty_print_CLR_full_name(string expected, Type type)
+        {
+            Assert.Equal(expected, TypeNameHelper.GetTypeDisplayName(type));
         }
 
         [Theory]
