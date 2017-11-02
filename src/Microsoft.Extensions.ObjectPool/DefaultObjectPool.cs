@@ -50,9 +50,8 @@ namespace Microsoft.Extensions.ObjectPool
 
             for (var i = 0; i < _items.Length; i++)
             {
-                if (_items[i] == null)
+                if (Interlocked.CompareExchange(ref _items[i], obj, null) == null)
                 {
-                    _items[i] = obj;
                     return;
                 }
             }
