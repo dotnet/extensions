@@ -132,20 +132,20 @@ namespace Microsoft.Extensions.Internal
 
         public static IEnumerable<object[]> GetOpenGenericsTestData()
         {
-            yield return new object[] { "List<T>", typeof(List<>), false };
-            yield return new object[] { "Dictionary<TKey, TValue>", typeof(Dictionary<,>), false };
-            yield return new object[] { "System.Collections.Generic.List<T>", typeof(List<>) };
-            yield return new object[] { "System.Collections.Generic.Dictionary<TKey, TValue>",typeof(Dictionary<,>) };
+            yield return new object[] { "List<>", typeof(List<>), false };
+            yield return new object[] { "Dictionary<,>", typeof(Dictionary<,>), false };
+            yield return new object[] { "System.Collections.Generic.List<>", typeof(List<>) };
+            yield return new object[] { "System.Collections.Generic.Dictionary<,>",typeof(Dictionary<,>) };
 
             yield return new object[]
             {
-                "Microsoft.Extensions.Internal.TypeNameHelperTest+Level1<T1>+Level2<T2>+Level3<T3>",
+                "Microsoft.Extensions.Internal.TypeNameHelperTest+Level1<>+Level2<>+Level3<>",
                 typeof(Level1<>.Level2<>.Level3<>)
             };
 
             yield return new object[]
             {
-                "Microsoft.Extensions.Internal.TypeNameHelperTest+OuterGeneric<T1>+InnerNonGeneric+InnerGeneric<T2, T3>+InnerGenericLeafNode<T4>",
+                "Microsoft.Extensions.Internal.TypeNameHelperTest+OuterGeneric<>+InnerNonGeneric+InnerGeneric<,>+InnerGenericLeafNode<>",
                 typeof(OuterGeneric<>.InnerNonGeneric.InnerGeneric<,>.InnerGenericLeafNode<>)
             };
 
@@ -156,7 +156,7 @@ namespace Microsoft.Extensions.Internal
 
             yield return new object[]
             {
-                "System.Collections.Generic.Dictionary<Microsoft.Extensions.Internal.TypeNameHelperTest+B<T>, TValue>",
+                "System.Collections.Generic.Dictionary<Microsoft.Extensions.Internal.TypeNameHelperTest+B<>,>",
                 closedDictionaryType
             };
 
@@ -167,7 +167,7 @@ namespace Microsoft.Extensions.Internal
 
             yield return new object[]
             {
-                "Microsoft.Extensions.Internal.TypeNameHelperTest+Level1<T1>+Level2<string>+Level3<T3>",
+                "Microsoft.Extensions.Internal.TypeNameHelperTest+Level1<>+Level2<string>+Level3<>",
                 closedLevelType
             };
 
@@ -178,7 +178,7 @@ namespace Microsoft.Extensions.Internal
 
             yield return new object[]
             {
-                "Microsoft.Extensions.Internal.TypeNameHelperTest+OuterGeneric<T1>+InnerNonGeneric+InnerGeneric<T2, T3>+InnerGenericLeafNode<bool>",
+                "Microsoft.Extensions.Internal.TypeNameHelperTest+OuterGeneric<>+InnerNonGeneric+InnerGeneric<,>+InnerGenericLeafNode<bool>",
                 closedInnerType
             };
         }

@@ -58,7 +58,7 @@ namespace Microsoft.Extensions.Internal
             }
             else
             {
-                var name = fullName && type.FullName != null ? type.FullName : type.Name;
+                var name = fullName || type.IsGenericParameter ? type.FullName : type.Name;
                 builder.Append(name);
             }
         }
@@ -117,9 +117,15 @@ namespace Microsoft.Extensions.Internal
             for (var i = offset; i < length; i++)
             {
                 ProcessType(builder, genericArguments[i], fullName);
-                if (i + 1 != length)
+                if (i + 1 == length)
                 {
-                    builder.Append(", ");
+                    continue;
+                }
+
+                builder.Append(',');
+                if (!genericArguments[i + 1].IsGenericParameter)
+                {
+                    builder.Append(' ');
                 }
             }
             builder.Append('>');
