@@ -130,40 +130,64 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal(expected, TypeNameHelper.GetTypeDisplayName(type, fullName));
         }
 
-        [Fact]
-        public void Can_pretty_print_open_generics()
+        public static IEnumerable<object[]> GetOpenGenericsTestData()
         {
-            Assert.Equal("List<T>", TypeNameHelper.GetTypeDisplayName(typeof(List<>), false));
-            Assert.Equal("Dictionary<TKey, TValue>", TypeNameHelper.GetTypeDisplayName(typeof(Dictionary<,>), false));
-            Assert.Equal("System.Collections.Generic.List<T>", TypeNameHelper.GetTypeDisplayName(typeof(List<>)));
-            Assert.Equal("System.Collections.Generic.Dictionary<TKey, TValue>", TypeNameHelper.GetTypeDisplayName(typeof(Dictionary<,>)));
+            yield return new object[] { "List<T>", typeof(List<>), false };
+            yield return new object[] { "Dictionary<TKey, TValue>", typeof(Dictionary<,>), false };
+            yield return new object[] { "System.Collections.Generic.List<T>", typeof(List<>) };
+            yield return new object[] { "System.Collections.Generic.Dictionary<TKey, TValue>",typeof(Dictionary<,>) };
 
-            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+Level1<T1>+Level2<T2>+Level3<T3>",
-                TypeNameHelper.GetTypeDisplayName(typeof(Level1<>.Level2<>.Level3<>)));
+            yield return new object[]
+            {
+                "Microsoft.Extensions.Internal.TypeNameHelperTest+Level1<T1>+Level2<T2>+Level3<T3>",
+                typeof(Level1<>.Level2<>.Level3<>)
+            };
 
-            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+OuterGeneric<T1>+InnerNonGeneric+InnerGeneric<T2, T3>+InnerGenericLeafNode<T4>",
-                TypeNameHelper.GetTypeDisplayName(typeof(OuterGeneric<>.InnerNonGeneric.InnerGeneric<,>.InnerGenericLeafNode<>)));
+            yield return new object[]
+            {
+                "Microsoft.Extensions.Internal.TypeNameHelperTest+OuterGeneric<T1>+InnerNonGeneric+InnerGeneric<T2, T3>+InnerGenericLeafNode<T4>",
+                typeof(OuterGeneric<>.InnerNonGeneric.InnerGeneric<,>.InnerGenericLeafNode<>)
+            };
 
             var openDictionaryType = typeof(Dictionary<,>);
             var genArgsDictionary = openDictionaryType.GetGenericArguments();
             genArgsDictionary[0] = typeof(B<>);
             var closedDictionaryType = openDictionaryType.MakeGenericType(genArgsDictionary);
-            Assert.Equal("System.Collections.Generic.Dictionary<Microsoft.Extensions.Internal.TypeNameHelperTest+B<T>, TValue>",
-                TypeNameHelper.GetTypeDisplayName(closedDictionaryType));
+
+            yield return new object[]
+            {
+                "System.Collections.Generic.Dictionary<Microsoft.Extensions.Internal.TypeNameHelperTest+B<T>, TValue>",
+                closedDictionaryType
+            };
 
             var openLevelType = typeof(Level1<>.Level2<>.Level3<>);
             var genArgsLevel = openLevelType.GetGenericArguments();
             genArgsLevel[1] = typeof(string);
             var closedLevelType = openLevelType.MakeGenericType(genArgsLevel);
-            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+Level1<T1>+Level2<string>+Level3<T3>",
-                TypeNameHelper.GetTypeDisplayName(closedLevelType));
+
+            yield return new object[]
+            {
+                "Microsoft.Extensions.Internal.TypeNameHelperTest+Level1<T1>+Level2<string>+Level3<T3>",
+                closedLevelType
+            };
 
             var openInnerType = typeof(OuterGeneric<>.InnerNonGeneric.InnerGeneric<,>.InnerGenericLeafNode<>);
             var genArgsInnerType = openInnerType.GetGenericArguments();
             genArgsInnerType[3] = typeof(bool);
             var closedInnerType = openInnerType.MakeGenericType(genArgsInnerType);
-            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+OuterGeneric<T1>+InnerNonGeneric+InnerGeneric<T2, T3>+InnerGenericLeafNode<bool>",
-                TypeNameHelper.GetTypeDisplayName(closedInnerType));
+
+            yield return new object[]
+            {
+                "Microsoft.Extensions.Internal.TypeNameHelperTest+OuterGeneric<T1>+InnerNonGeneric+InnerGeneric<T2, T3>+InnerGenericLeafNode<bool>",
+                closedInnerType
+            };
+        }
+
+        [Theory]
+        [MemberData(nameof(GetOpenGenericsTestData))]
+        public void Can_pretty_print_open_generics(string expected, Type type, bool fullName = true)
+        {
+            Assert.Equal(expected, TypeNameHelper.GetTypeDisplayName(type, fullName));
         }
 
         private class A { }
