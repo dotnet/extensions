@@ -95,24 +95,26 @@ namespace Microsoft.Extensions.Internal
                 TypeNameHelper.GetTypeDisplayName(typeof(OuterGeneric<int>.InnerNonGeneric.InnerGeneric<int, string>.InnerGenericLeafNode<bool>), false));
         }
 
-        [Fact]
-        public void Returns_common_name_for_built_in_types()
+        [Theory]
+        [InlineData("void", typeof(void))]
+        [InlineData("bool", typeof(bool))]
+        [InlineData("byte", typeof(byte))]
+        [InlineData("char", typeof(char))]
+        [InlineData("decimal", typeof(decimal))]
+        [InlineData("double", typeof(double))]
+        [InlineData("float", typeof(float))]
+        [InlineData("int", typeof(int))]
+        [InlineData("long", typeof(long))]
+        [InlineData("object", typeof(object))]
+        [InlineData("sbyte", typeof(sbyte))]
+        [InlineData("short", typeof(short))]
+        [InlineData("string", typeof(string))]
+        [InlineData("uint", typeof(uint))]
+        [InlineData("ulong", typeof(ulong))]
+        [InlineData("ushort", typeof(ushort))]
+        public void Returns_common_name_for_built_in_types(string expected, Type type)
         {
-            Assert.Equal("bool", TypeNameHelper.GetTypeDisplayName(typeof(bool)));
-            Assert.Equal("byte", TypeNameHelper.GetTypeDisplayName(typeof(byte)));
-            Assert.Equal("char", TypeNameHelper.GetTypeDisplayName(typeof(char)));
-            Assert.Equal("decimal", TypeNameHelper.GetTypeDisplayName(typeof(decimal)));
-            Assert.Equal("double", TypeNameHelper.GetTypeDisplayName(typeof(double)));
-            Assert.Equal("float", TypeNameHelper.GetTypeDisplayName(typeof(float)));
-            Assert.Equal("int", TypeNameHelper.GetTypeDisplayName(typeof(int)));
-            Assert.Equal("long", TypeNameHelper.GetTypeDisplayName(typeof(long)));
-            Assert.Equal("object", TypeNameHelper.GetTypeDisplayName(typeof(object)));
-            Assert.Equal("sbyte", TypeNameHelper.GetTypeDisplayName(typeof(sbyte)));
-            Assert.Equal("short", TypeNameHelper.GetTypeDisplayName(typeof(short)));
-            Assert.Equal("string", TypeNameHelper.GetTypeDisplayName(typeof(string)));
-            Assert.Equal("uint", TypeNameHelper.GetTypeDisplayName(typeof(uint)));
-            Assert.Equal("ulong", TypeNameHelper.GetTypeDisplayName(typeof(ulong)));
-            Assert.Equal("ushort", TypeNameHelper.GetTypeDisplayName(typeof(ushort)));
+            Assert.Equal(expected, TypeNameHelper.GetTypeDisplayName(type));
         }
 
         [Theory]
@@ -126,6 +128,42 @@ namespace Microsoft.Extensions.Internal
         public void Can_pretty_print_array_name(string expected, Type type, bool fullName = true)
         {
             Assert.Equal(expected, TypeNameHelper.GetTypeDisplayName(type, fullName));
+        }
+
+        [Fact]
+        public void Can_pretty_print_open_generics()
+        {
+            Assert.Equal("List<T>", TypeNameHelper.GetTypeDisplayName(typeof(List<>), false));
+            Assert.Equal("Dictionary<TKey, TValue>", TypeNameHelper.GetTypeDisplayName(typeof(Dictionary<,>), false));
+            Assert.Equal("System.Collections.Generic.List<T>", TypeNameHelper.GetTypeDisplayName(typeof(List<>)));
+            Assert.Equal("System.Collections.Generic.Dictionary<TKey, TValue>", TypeNameHelper.GetTypeDisplayName(typeof(Dictionary<,>)));
+
+            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+Level1<T1>+Level2<T2>+Level3<T3>",
+                TypeNameHelper.GetTypeDisplayName(typeof(Level1<>.Level2<>.Level3<>)));
+
+            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+OuterGeneric<T1>+InnerNonGeneric+InnerGeneric<T2, T3>+InnerGenericLeafNode<T4>",
+                TypeNameHelper.GetTypeDisplayName(typeof(OuterGeneric<>.InnerNonGeneric.InnerGeneric<,>.InnerGenericLeafNode<>)));
+
+            var openDictionaryType = typeof(Dictionary<,>);
+            var genArgsDictionary = openDictionaryType.GetGenericArguments();
+            genArgsDictionary[0] = typeof(B<>);
+            var closedDictionaryType = openDictionaryType.MakeGenericType(genArgsDictionary);
+            Assert.Equal("System.Collections.Generic.Dictionary<Microsoft.Extensions.Internal.TypeNameHelperTest+B<T>, TValue>",
+                TypeNameHelper.GetTypeDisplayName(closedDictionaryType));
+
+            var openLevelType = typeof(Level1<>.Level2<>.Level3<>);
+            var genArgsLevel = openLevelType.GetGenericArguments();
+            genArgsLevel[1] = typeof(string);
+            var closedLevelType = openLevelType.MakeGenericType(genArgsLevel);
+            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+Level1<T1>+Level2<string>+Level3<T3>",
+                TypeNameHelper.GetTypeDisplayName(closedLevelType));
+
+            var openInnerType = typeof(OuterGeneric<>.InnerNonGeneric.InnerGeneric<,>.InnerGenericLeafNode<>);
+            var genArgsInnerType = openInnerType.GetGenericArguments();
+            genArgsInnerType[3] = typeof(bool);
+            var closedInnerType = openInnerType.MakeGenericType(genArgsInnerType);
+            Assert.Equal("Microsoft.Extensions.Internal.TypeNameHelperTest+OuterGeneric<T1>+InnerNonGeneric+InnerGeneric<T2, T3>+InnerGenericLeafNode<bool>",
+                TypeNameHelper.GetTypeDisplayName(closedInnerType));
         }
 
         private class A { }
