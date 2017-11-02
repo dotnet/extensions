@@ -53,46 +53,29 @@ namespace Microsoft.Extensions.Internal
                 TypeNameHelper.GetTypeDisplayName(typeof(Level1<int>.Level2<bool>.Level3<int>)));
         }
 
-        [Fact]
-        public void Can_pretty_print_CLR_name()
+        [Theory]
+        // Predefined Types
+        [InlineData("int", typeof(int))]
+        [InlineData("List<int>", typeof(List<int>))]
+        [InlineData("Dictionary<int, string>", typeof(Dictionary<int, string>))]
+        [InlineData("Dictionary<int, List<string>>", typeof(Dictionary<int, List<string>>))]
+        [InlineData("List<List<string>>", typeof(List<List<string>>))]
+        // Classes inside NonGeneric class
+        [InlineData("A", typeof(A))]
+        [InlineData("B<int>", typeof(B<int>))]
+        [InlineData("C<int, string>", typeof(C<int, string>))]
+        [InlineData("C<int, B<string>>", typeof(C<int, B<string>>))]
+        [InlineData("B<B<string>>", typeof(B<B<string>>))]
+        // Classes inside Generic class
+        [InlineData("D", typeof(Outer<int>.D))]
+        [InlineData("E<int>", typeof(Outer<int>.E<int>))]
+        [InlineData("F<int, string>", typeof(Outer<int>.F<int, string>))]
+        [InlineData("F<int, E<string>>", typeof(Outer<int>.F<int, Outer<int>.E<string>>))]
+        [InlineData("E<E<string>>", typeof(Outer<int>.E<Outer<int>.E<string>>))]
+        [InlineData("InnerGenericLeafNode<bool>", typeof(OuterGeneric<int>.InnerNonGeneric.InnerGeneric<int, string>.InnerGenericLeafNode<bool>))]
+        public void Can_pretty_print_CLR_name(string expected, Type type)
         {
-            // Predefined Types
-            Assert.Equal("int",
-                TypeNameHelper.GetTypeDisplayName(typeof(int), false));
-            Assert.Equal("List<int>",
-                TypeNameHelper.GetTypeDisplayName(typeof(List<int>), false));
-            Assert.Equal("Dictionary<int, string>",
-                TypeNameHelper.GetTypeDisplayName(typeof(Dictionary<int, string>), false));
-            Assert.Equal("Dictionary<int, List<string>>",
-                TypeNameHelper.GetTypeDisplayName(typeof(Dictionary<int, List<string>>), false));
-            Assert.Equal("List<List<string>>",
-                TypeNameHelper.GetTypeDisplayName(typeof(List<List<string>>), false));
-
-            // Classes inside NonGeneric class
-            Assert.Equal("A",
-                TypeNameHelper.GetTypeDisplayName(typeof(A), false));
-            Assert.Equal("B<int>",
-                TypeNameHelper.GetTypeDisplayName(typeof(B<int>), false));
-            Assert.Equal("C<int, string>",
-                TypeNameHelper.GetTypeDisplayName(typeof(C<int, string>), false));
-            Assert.Equal("C<int, B<string>>",
-                TypeNameHelper.GetTypeDisplayName(typeof(C<int, B<string>>), false));
-            Assert.Equal("B<B<string>>",
-                TypeNameHelper.GetTypeDisplayName(typeof(B<B<string>>), false));
-
-            // Classes inside Generic class
-            Assert.Equal("D",
-                TypeNameHelper.GetTypeDisplayName(typeof(Outer<int>.D), false));
-            Assert.Equal("E<int>",
-                TypeNameHelper.GetTypeDisplayName(typeof(Outer<int>.E<int>), false));
-            Assert.Equal("F<int, string>",
-                TypeNameHelper.GetTypeDisplayName(typeof(Outer<int>.F<int, string>), false));
-            Assert.Equal("F<int, E<string>>",
-                TypeNameHelper.GetTypeDisplayName(typeof(Outer<int>.F<int, Outer<int>.E<string>>), false));
-            Assert.Equal("E<E<string>>",
-                TypeNameHelper.GetTypeDisplayName(typeof(Outer<int>.E<Outer<int>.E<string>>), false));
-            Assert.Equal("InnerGenericLeafNode<bool>",
-                TypeNameHelper.GetTypeDisplayName(typeof(OuterGeneric<int>.InnerNonGeneric.InnerGeneric<int, string>.InnerGenericLeafNode<bool>), false));
+            Assert.Equal(expected, TypeNameHelper.GetTypeDisplayName(type, false));
         }
 
         [Theory]
