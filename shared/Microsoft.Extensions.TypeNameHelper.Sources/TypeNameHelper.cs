@@ -47,9 +47,9 @@ namespace Microsoft.Extensions.Internal
 
         public static string GetMethodDisplayName(MethodBase method, bool fullTypeName = true)
         {
-            var sb = new StringBuilder();
-            ProcessMethodName(method, sb, fullTypeName);
-            return sb.ToString();
+            var builder = new StringBuilder();
+            ProcessMethod(builder, method, fullTypeName);
+            return builder.ToString();
         }
 
         private static void ProcessType(StringBuilder builder, Type type, NameFormatting nameFormatting)
@@ -145,38 +145,38 @@ namespace Microsoft.Extensions.Internal
             builder.Append('>');
         }
 
-        private static void ProcessMethodName(MethodBase method, StringBuilder sb, bool fullTypeName)
+        private static void ProcessMethod(StringBuilder builder, MethodBase method, bool fullTypeName)
         {            
             var nameFormatting = NameFormatFromBool(fullTypeName) | NameFormatting.GenericParameterName;
             var methodInfo = method as MethodInfo;
             if (methodInfo != null)
             {
-                ProcessType(sb, methodInfo.ReturnType, nameFormatting);
-                sb.Append(' ');
+                ProcessType(builder, methodInfo.ReturnType, nameFormatting);
+                builder.Append(' ');
             }
 
-            sb.Append(method.Name);
+            builder.Append(method.Name);
 
             if (method.IsGenericMethod)
             {
                 var genericArguments = method.GetGenericArguments();
-                sb.Append("<");
+                builder.Append('<');
 
                 for (int i = 0; i < genericArguments.Length; i++)
                 {
-                    ProcessType(sb, genericArguments[i], nameFormatting);
+                    ProcessType(builder, genericArguments[i], nameFormatting);
                     if (i + 1 < genericArguments.Length)
                     {
-                        sb.Append(", ");
+                        builder.Append(", ");
                     }
                 }
 
-                sb.Append(">");
+                builder.Append('>');
             }
 
             var parameters = method.GetParameters();
 
-            sb.Append("(");
+            builder.Append('(');
             for (int i = 0; i < parameters.Length; i++)
             {
                 var parameter = parameters[i];
@@ -184,11 +184,11 @@ namespace Microsoft.Extensions.Internal
 
                 if (parameter.IsOut)
                 {
-                    sb.Append("out ");
+                    builder.Append("out ");
                 }
                 else if (type.IsByRef)
                 {
-                    sb.Append("ref ");
+                    builder.Append("ref ");
                 }
 
                 if (type.IsByRef)
@@ -196,18 +196,18 @@ namespace Microsoft.Extensions.Internal
                     type = type.GetElementType();
                 }
 
-                ProcessType(sb, type, nameFormatting);
-                sb.Append(" ");
-                sb.Append(parameter.Name);
+                ProcessType(builder, type, nameFormatting);
+                builder.Append(' ');
+                builder.Append(parameter.Name);
 
 
                 if (i + 1 < parameters.Length)
                 {
-                    sb.Append(", ");
+                    builder.Append(", ");
                 }
             }
 
-            sb.Append(")");
+            builder.Append(')');
         }
 
         [Flags]

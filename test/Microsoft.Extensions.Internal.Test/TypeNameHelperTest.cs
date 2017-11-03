@@ -170,44 +170,46 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal(expected, TypeNameHelper.GetTypeDisplayName(type, fullName));
         }
 
-        public static IEnumerable<object[]> GetMethodInfos()
+        public static TheoryData GetMethodInfo()
         {
             var type = typeof(TypeWithMethodsForTest);
-            yield return new object[]
+            return new TheoryData<MethodBase, bool, string>
             {
-                ".ctor(ref double val)",
-                type.GetConstructors().Single()
-            };
-            yield return new object[]
-            {
-                "object Test1<T1, T2>(out int a, ref string b, object c)",
-                type.GetMethod(nameof(TypeWithMethodsForTest.Test1))
-            };
-            yield return new object[]
-            {
-                "TName Test2<TName>(TName t, Dictionary<TName, int> l)",
-                type.GetMethod(nameof(TypeWithMethodsForTest.Test2)),
-                false
-            };
-            yield return new object[]
-            {
-                "string Test2<string>(string t, System.Collections.Generic.Dictionary<string, int> l)",
-                type.GetMethod(nameof(TypeWithMethodsForTest.Test2)).MakeGenericMethod(typeof(string))
-            };
-            yield return new object[]
-            {
-                "bool Test3(bool f, float z, Microsoft.Extensions.Internal.TypeNameHelperTest+A[] p)",
-                type.GetMethod(nameof(TypeWithMethodsForTest.Test3))
-            };
+                { typeof(B<>).GetConstructors().Single(), true, ".ctor()" },
+                { typeof(B<int>).GetConstructors().Single(), true, ".ctor()" },
+                { typeof(A).GetConstructors().Single(), true, ".ctor()" },
+                {
+                    type.GetConstructors().Single(),
+                    true,
+                    ".ctor(ref double val)"
+                },
+                {
+                    type.GetMethod(nameof(TypeWithMethodsForTest.Test1)),
+                    true,
+                    "object Test1<T1, T2>(out int a, ref string b, object c)"
+                },
+                {
 
-            yield return new object[] { ".ctor()", typeof(B<>).GetConstructors().Single() };
-            yield return new object[] { ".ctor()", typeof(B<int>).GetConstructors().Single() };
-            yield return new object[] { ".ctor()", typeof(A).GetConstructors().Single() };
+                    type.GetMethod(nameof(TypeWithMethodsForTest.Test2)),
+                    false,
+                    "TName Test2<TName>(TName t, Dictionary<TName, int> l)"
+                },
+                {
+                    type.GetMethod(nameof(TypeWithMethodsForTest.Test2)).MakeGenericMethod(typeof(string)),
+                    true,
+                    "string Test2<string>(string t, System.Collections.Generic.Dictionary<string, int> l)"
+                },
+                {
+                    type.GetMethod(nameof(TypeWithMethodsForTest.Test3)),
+                    true,
+                    "bool Test3(bool f, float z, Microsoft.Extensions.Internal.TypeNameHelperTest+A[] p)"
+                }
+            };
         }
 
         [Theory]
-        [MemberData(nameof(GetMethodInfos))]
-        public void Can_pretty_print_method_name(string name, MethodBase methodInfo, bool fullTypeName = true)
+        [MemberData(nameof(GetMethodInfo))]
+        public void Can_pretty_print_method_name(MethodBase methodInfo, bool fullTypeName, string name)
         {
             Assert.Equal(name, TypeNameHelper.GetMethodDisplayName(methodInfo, fullTypeName));
         }
