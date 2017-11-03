@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Creates an <see cref="IServiceProvider"/> containing services from the provided <see cref="IServiceCollection"/>.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> containing service descriptors.</param>
-        /// <returns>The<see cref="IServiceProvider"/>.</returns>
+        /// <returns>The <see cref="IServiceProvider"/>.</returns>
 
         public static ServiceProvider BuildServiceProvider(this IServiceCollection services)
         {
@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="validateScopes">
         /// <c>true</c> to perform check verifying that scoped services never gets resolved from root provider; otherwise <c>false</c>.
         /// </param>
-        /// <returns>The<see cref="IServiceProvider"/>.</returns>
+        /// <returns>The <see cref="IServiceProvider"/>.</returns>
         public static ServiceProvider BuildServiceProvider(this IServiceCollection services, bool validateScopes)
         {
             return services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = validateScopes });
@@ -43,7 +43,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="options">
         /// Configures various service provider behaviors.
         /// </param>
-        /// <returns>The<see cref="IServiceProvider"/>.</returns>
+        /// <returns>The <see cref="IServiceProvider"/>.</returns>
         public static ServiceProvider BuildServiceProvider(this IServiceCollection services, ServiceProviderOptions options)
         {
             if (services == null)
