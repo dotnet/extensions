@@ -368,7 +368,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var expectedMessage =
                 string.Join(
                     Environment.NewLine,
-                    $"Unable to activate type '{type}'. The following constructors are ambigious:",
+                    $"Unable to activate type '{type}'. The following constructors are ambiguous:",
                     GetConstructor(type, expectedConstructorParameterTypes[0]),
                     GetConstructor(type, expectedConstructorParameterTypes[1]));
 
@@ -383,7 +383,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var type = typeof(TypeWithGenericServices);
-            var expectedMessage = $"Unable to activate type '{type}'. The following constructors are ambigious:";
+            var expectedMessage = $"Unable to activate type '{type}'. The following constructors are ambiguous:";
 
             var callSiteFactory = GetCallSiteFactory(
                 new ServiceDescriptor(type, type, ServiceLifetime.Transient),

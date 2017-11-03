@@ -117,8 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AmbigiousConstructorException" xml:space="preserve">
-    <value>Unable to activate type '{0}'. The following constructors are ambigious:</value>
+  <data name="AmbiguousConstructorException" xml:space="preserve">
+    <value>Unable to activate type '{0}'. The following constructors are ambiguous:</value>
   </data>
   <data name="CannotResolveService" xml:space="preserve">
     <value>Unable to resolve service for type '{0}' while attempting to activate '{1}'.</value>

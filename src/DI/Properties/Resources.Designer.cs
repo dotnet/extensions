@@ -11,18 +11,18 @@ namespace Microsoft.Extensions.DependencyInjection
             = new ResourceManager("Microsoft.Extensions.DependencyInjection.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// Unable to activate type '{0}'. The following constructors are ambigious:
+        /// Unable to activate type '{0}'. The following constructors are ambiguous:
         /// </summary>
-        internal static string AmbigiousConstructorException
+        internal static string AmbiguousConstructorException
         {
-            get => GetString("AmbigiousConstructorException");
+            get => GetString("AmbiguousConstructorException");
         }
 
         /// <summary>
-        /// Unable to activate type '{0}'. The following constructors are ambigious:
+        /// Unable to activate type '{0}'. The following constructors are ambiguous:
         /// </summary>
-        internal static string FormatAmbigiousConstructorException(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("AmbigiousConstructorException"), p0);
+        internal static string FormatAmbiguousConstructorException(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("AmbiguousConstructorException"), p0);
 
         /// <summary>
         /// Unable to resolve service for type '{0}' while attempting to activate '{1}'.
