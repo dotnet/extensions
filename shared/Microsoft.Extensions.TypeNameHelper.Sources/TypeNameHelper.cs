@@ -10,7 +10,8 @@ namespace Microsoft.Extensions.Internal
     internal class TypeNameHelper
     {
         private static readonly Dictionary<Type, string> _builtInTypeNames = new Dictionary<Type, string>
-            {
+        {
+            { typeof(void), "void" },
             { typeof(bool), "bool" },
             { typeof(byte), "byte" },
             { typeof(char), "char" },
@@ -26,7 +27,7 @@ namespace Microsoft.Extensions.Internal
             { typeof(uint), "uint" },
             { typeof(ulong), "ulong" },
             { typeof(ushort), "ushort" }
-            };
+        };
 
         public static string GetTypeDisplayName(object item, bool fullName = true)
         {
@@ -51,11 +52,11 @@ namespace Microsoft.Extensions.Internal
             {
                 ProcessArrayType(builder, type, fullName);
             }
-            else if (_builtInTypeNames.TryGetValue(type, out var buildInName))
+            else if (_builtInTypeNames.TryGetValue(type, out var builtInName))
             {
-                builder.Append(buildInName);
+                builder.Append(builtInName);
             }
-            else
+            else if (!type.IsGenericParameter)
             {
                 builder.Append(fullName ? type.FullName : type.Name);
             }
@@ -115,9 +116,15 @@ namespace Microsoft.Extensions.Internal
             for (var i = offset; i < length; i++)
             {
                 ProcessType(builder, genericArguments[i], fullName);
-                if (i + 1 != length)
+                if (i + 1 == length)
                 {
-                    builder.Append(", ");
+                    continue;
+                }
+
+                builder.Append(',');
+                if (!genericArguments[i + 1].IsGenericParameter)
+                {
+                    builder.Append(' ');
                 }
             }
             builder.Append('>');
