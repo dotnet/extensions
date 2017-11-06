@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\src\Microsoft.AspNetCore.Testing\contentFiles\cs\netstandard2.0\EventSourceTestCollection.cs" Link="EventSourceTestCollection.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Testing\Microsoft.AspNetCore.Testing.csproj" />
   </ItemGroup>
 

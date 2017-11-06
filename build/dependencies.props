@@ -9,6 +9,7 @@
     <NETStandardLibraryPackageVersion>2.0.0</NETStandardLibraryPackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
+    <SystemValueTuplePackageVersion>4.4.0</SystemValueTuplePackageVersion>
     <XunitPackageVersion>2.3.0</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.3.0</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
