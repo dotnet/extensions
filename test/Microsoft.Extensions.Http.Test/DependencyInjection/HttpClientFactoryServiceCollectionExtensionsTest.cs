@@ -4,7 +4,9 @@
 using System;
 using System.Net.Http;
 using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Options;
+using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -24,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var services = serviceCollection.BuildServiceProvider();
             var options = services.GetRequiredService<IOptionsMonitor<HttpClientFactoryOptions>>();
 
-            var factory = new DefaultHttpClientFactory(services, options);
+            var factory = services.GetRequiredService<IHttpClientFactory>();
 
             // Act2
             var client = factory.CreateClient();
@@ -44,7 +46,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var services = serviceCollection.BuildServiceProvider();
             var options = services.GetRequiredService<IOptionsMonitor<HttpClientFactoryOptions>>();
 
-            var factory = new DefaultHttpClientFactory(services, options);
+            var factory = services.GetRequiredService<IHttpClientFactory>();
 
             // Act2
             var client = factory.CreateClient();
@@ -65,7 +67,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var services = serviceCollection.BuildServiceProvider();
             var options = services.GetRequiredService<IOptionsMonitor<HttpClientFactoryOptions>>();
 
-            var factory = new DefaultHttpClientFactory(services, options);
+            var factory = services.GetRequiredService<IHttpClientFactory>();
 
             // Act2
             var client = factory.CreateClient("example.com");
@@ -73,6 +75,39 @@ namespace Microsoft.Extensions.DependencyInjection
             // Assert
             Assert.NotNull(client);
             Assert.Equal("http://example.com/", client.BaseAddress.AbsoluteUri);
+        }
+
+        [Fact]
+        public void AddHttpMessageHandler_WithName_NewHandlerIsSurroundedByLogging()
+        {
+            var serviceCollection = new ServiceCollection();
+
+            HttpMessageHandlerBuilder builder = null;
+
+            // Act1
+            serviceCollection.AddHttpClient("example.com").AddHttpMessageHandlerBuilderOptions(b =>
+            {
+                builder = b;
+
+                b.AdditionalHandlers.Add(Mock.Of<DelegatingHandler>());
+            });
+
+            var services = serviceCollection.BuildServiceProvider();
+            var options = services.GetRequiredService<IOptionsMonitor<HttpClientFactoryOptions>>();
+
+            var factory = services.GetRequiredService<IHttpClientFactory>();
+
+            // Act2
+            var client = factory.CreateClient("example.com");
+
+            // Assert
+            Assert.NotNull(client);
+
+            Assert.Collection(
+                builder.AdditionalHandlers,
+                h => Assert.IsType<LoggingScopeHttpMessageHandler>(h),
+                h => Assert.NotNull(h),
+                h => Assert.IsType<LoggingHttpMessageHandler>(h));
         }
     }
 }

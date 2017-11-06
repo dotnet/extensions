@@ -13,44 +13,44 @@ namespace Microsoft.Extensions.Http
         /// <summary>
         /// The '{0}' must not contain a null entry.
         /// </summary>
-        internal static string DefaultHttpMessageHandlerBuilder_AdditionalHandlerIsNull
+        internal static string HttpMessageHandlerBuilder_AdditionalHandlerIsNull
         {
-            get => GetString("DefaultHttpMessageHandlerBuilder_AdditionalHandlerIsNull");
+            get => GetString("HttpMessageHandlerBuilder_AdditionalHandlerIsNull");
         }
 
         /// <summary>
         /// The '{0}' must not contain a null entry.
         /// </summary>
-        internal static string FormatDefaultHttpMessageHandlerBuilder_AdditionalHandlerIsNull(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("DefaultHttpMessageHandlerBuilder_AdditionalHandlerIsNull"), p0);
+        internal static string FormatHttpMessageHandlerBuilder_AdditionalHandlerIsNull(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("HttpMessageHandlerBuilder_AdditionalHandlerIsNull"), p0);
 
         /// <summary>
         /// The '{0}' property must be null. '{1}' instances provided to '{2}' must not be reused or cached.{3}Handler: '{4}'
         /// </summary>
-        internal static string DefaultHttpMessageHandlerBuilder_AdditionHandlerIsInvalid
+        internal static string HttpMessageHandlerBuilder_AdditionHandlerIsInvalid
         {
-            get => GetString("DefaultHttpMessageHandlerBuilder_AdditionHandlerIsInvalid");
+            get => GetString("HttpMessageHandlerBuilder_AdditionHandlerIsInvalid");
         }
 
         /// <summary>
         /// The '{0}' property must be null. '{1}' instances provided to '{2}' must not be reused or cached.{3}Handler: '{4}'
         /// </summary>
-        internal static string FormatDefaultHttpMessageHandlerBuilder_AdditionHandlerIsInvalid(object p0, object p1, object p2, object p3, object p4)
-            => string.Format(CultureInfo.CurrentCulture, GetString("DefaultHttpMessageHandlerBuilder_AdditionHandlerIsInvalid"), p0, p1, p2, p3, p4);
+        internal static string FormatHttpMessageHandlerBuilder_AdditionHandlerIsInvalid(object p0, object p1, object p2, object p3, object p4)
+            => string.Format(CultureInfo.CurrentCulture, GetString("HttpMessageHandlerBuilder_AdditionHandlerIsInvalid"), p0, p1, p2, p3, p4);
 
         /// <summary>
         /// The '{0}' must not be null.
         /// </summary>
-        internal static string DefaultHttpMessageHandlerBuilder_PrimaryHandlerIsNull
+        internal static string HttpMessageHandlerBuilder_PrimaryHandlerIsNull
         {
-            get => GetString("DefaultHttpMessageHandlerBuilder_PrimaryHandlerIsNull");
+            get => GetString("HttpMessageHandlerBuilder_PrimaryHandlerIsNull");
         }
 
         /// <summary>
         /// The '{0}' must not be null.
         /// </summary>
-        internal static string FormatDefaultHttpMessageHandlerBuilder_PrimaryHandlerIsNull(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("DefaultHttpMessageHandlerBuilder_PrimaryHandlerIsNull"), p0);
+        internal static string FormatHttpMessageHandlerBuilder_PrimaryHandlerIsNull(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("HttpMessageHandlerBuilder_PrimaryHandlerIsNull"), p0);
 
         private static string GetString(string name, params string[] formatterNames)
         {

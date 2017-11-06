@@ -95,7 +95,7 @@ namespace Microsoft.Extensions.Http
 
             // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
-            Assert.Equal("The 'AdditionalHandlers' must not contain a null entry.", exception.Message);
+            Assert.Equal("The 'additionalHandlers' must not contain a null entry.", exception.Message);
         }
 
         [Fact]
@@ -114,7 +114,7 @@ namespace Microsoft.Extensions.Http
             var exception = Assert.Throws<InvalidOperationException>(() => builder.Build());
             Assert.Equal(
                 "The 'InnerHandler' property must be null. " +
-                "'DelegatingHandler' instances provided to 'AdditionalHandlers' must not be reused or cached." + Environment.NewLine +
+                "'DelegatingHandler' instances provided to 'HttpMessageHandlerBuilder' must not be reused or cached." + Environment.NewLine +
                 $"Handler: '{builder.AdditionalHandlers[0].ToString()}'",
                 exception.Message);
         }

@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Http
         /// <summary>
         /// Gets a list of operations used to configure an <see cref="HttpMessageHandlerBuilder"/>.
         /// </summary>
-        public IList<Action<HttpMessageHandlerBuilder>> HandlerBuilderActions { get; } = new List<Action<HttpMessageHandlerBuilder>>();
+        public IList<Action<HttpMessageHandlerBuilder>> HttpMessageHandlerBuilderActions { get; } = new List<Action<HttpMessageHandlerBuilder>>();
 
         /// <summary>
         /// Gets a list of operations used to configure an <see cref="HttpClient"/>.

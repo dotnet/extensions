@@ -8,7 +8,7 @@
     <MicrosoftAspNetWebApiClientPackageVersion>5.2.2</MicrosoftAspNetWebApiClientPackageVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.1.0-preview1-27496</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview1-27496</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.1.0-preview1-27496</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview1-27496</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>2.1.0-preview1-27496</MicrosoftExtensionsLoggingPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview1-27496</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>

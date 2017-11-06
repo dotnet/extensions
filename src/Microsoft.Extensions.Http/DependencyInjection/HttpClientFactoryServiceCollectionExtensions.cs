@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -24,20 +25,30 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
+            services.AddLogging();
             services.AddOptions();
 
-            services.AddTransient<HttpMessageHandlerBuilder, DefaultHttpMessageHandlerBuilder>();
-            services.AddSingleton<IHttpClientFactory, DefaultHttpClientFactory>();
+            //
+            // Core abstractions
+            //
+            services.TryAddTransient<HttpMessageHandlerBuilder, DefaultHttpMessageHandlerBuilder>();
+            services.TryAddSingleton<IHttpClientFactory, DefaultHttpClientFactory>();
+
+            //
+            // Misc infrastrure
+            //
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpMessageHandlerBuilderFilter, LoggingHttpMessageHandlerBuilderFilter>());
+
             return services;
         }
 
         /// <summary>
-        /// Adds the <see cref="IHttpClientFactory"/> and related services to the <see cref="IServiceCollection"/>.
+        /// Adds the <see cref="IHttpClientFactory"/> and related services to the <see cref="IServiceCollection"/> and configures
+        /// a named <see cref="HttpClient"/>.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="name">The logical name of the <see cref="HttpClient"/> to configure.</param>
-        /// <param name="configureClient">A delegate that is used to configure an <see cref="HttpClient"/>.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
+        /// <returns>An <see cref="IHttpClientBuilder"/> that can be used to configure the client.</returns>
         /// <remarks>
         /// <para>
         /// <see cref="HttpClient"/> instances that apply the provided configuration can be retrieved using 
@@ -47,7 +58,36 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Use <see cref="Options.Options.DefaultName"/> as the name to configure the default client.
         /// </para>
         /// </remarks>
-        public static IServiceCollection AddHttpClient(this IServiceCollection services, string name, Action<HttpClient> configureClient)
+        public static IHttpClientBuilder AddHttpClient(this IServiceCollection services, string name)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            AddHttpClient(services);
+
+            return new DefaultHttpClientBuilder(services, name);
+        }
+
+        /// <summary>
+        /// Adds the <see cref="IHttpClientFactory"/> and related services to the <see cref="IServiceCollection"/> and configures
+        /// a named <see cref="HttpClient"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="name">The logical name of the <see cref="HttpClient"/> to configure.</param>
+        /// <param name="configureClient">A delegate that is used to configure an <see cref="HttpClient"/>.</param>
+        /// <returns>An <see cref="IHttpClientBuilder"/> that can be used to configure the client.</returns>
+        /// <remarks>
+        /// <para>
+        /// <see cref="HttpClient"/> instances that apply the provided configuration can be retrieved using 
+        /// <see cref="IHttpClientFactory.CreateClient(string)"/> and providing the matching name.
+        /// </para>
+        /// <para>
+        /// Use <see cref="Options.Options.DefaultName"/> as the name to configure the default client.
+        /// </para>
+        /// </remarks>
+        public static IHttpClientBuilder AddHttpClient(this IServiceCollection services, string name, Action<HttpClient> configureClient)
         {
             if (services == null)
             {
@@ -67,7 +107,7 @@ namespace Microsoft.Extensions.DependencyInjection
             AddHttpClient(services);
             services.Configure<HttpClientFactoryOptions>(name, options => options.HttpClientActions.Add(configureClient));
 
-            return services;
+            return new DefaultHttpClientBuilder(services, name);
         }
     }
 }

@@ -1,7 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 
 namespace Microsoft.Extensions.Http
@@ -35,5 +37,52 @@ namespace Microsoft.Extensions.Http
         /// <see cref="AdditionalHandlers"/>.
         /// </returns>
         public abstract HttpMessageHandler Build();
+
+        protected internal static HttpMessageHandler CreateHandlerPipeline(HttpMessageHandler primaryHandler, IEnumerable<DelegatingHandler> additionalHandlers)
+        {
+            // This is similar to https://github.com/aspnet/AspNetWebStack/blob/master/src/System.Net.Http.Formatting/HttpClientFactory.cs#L58
+            // but we don't want to take that package as a dependency.
+
+            if (primaryHandler == null)
+            {
+                throw new ArgumentNullException(nameof(primaryHandler));
+            }
+
+            if (additionalHandlers == null)
+            {
+                throw new ArgumentNullException(nameof(additionalHandlers));
+            }
+
+            var additionalHandlersList = additionalHandlers as IReadOnlyList<DelegatingHandler> ?? additionalHandlers.ToArray();
+
+            var next = primaryHandler;
+            for (var i = additionalHandlersList.Count - 1; i >= 0; i--)
+            {
+                var handler = additionalHandlersList[i];
+                if (handler == null)
+                {
+                    var message = Resources.FormatHttpMessageHandlerBuilder_AdditionalHandlerIsNull(nameof(additionalHandlers));
+                    throw new InvalidOperationException(message);
+                }
+
+                // Checking for this allows us to catch cases where someone has tried to re-use a handler. That really won't
+                // work the way you want and it can be tricky for callers to figure out.
+                if (handler.InnerHandler != null)
+                {
+                    var message = Resources.FormatHttpMessageHandlerBuilder_AdditionHandlerIsInvalid(
+                        nameof(DelegatingHandler.InnerHandler),
+                        nameof(DelegatingHandler),
+                        nameof(HttpMessageHandlerBuilder),
+                        Environment.NewLine,
+                        handler);
+                    throw new InvalidOperationException(message);
+                }
+
+                handler.InnerHandler = next;
+                next = handler;
+            }
+
+            return next;
+        }
     }
 }

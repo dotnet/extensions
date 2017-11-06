@@ -117,18 +117,18 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="DefaultHttpMessageHandlerBuilder_AdditionalHandlerIsNull" xml:space="preserve">
+  <data name="HttpMessageHandlerBuilder_AdditionalHandlerIsNull" xml:space="preserve">
     <value>The '{0}' must not contain a null entry.</value>
   </data>
-  <data name="DefaultHttpMessageHandlerBuilder_AdditionHandlerIsInvalid" xml:space="preserve">
+  <data name="HttpMessageHandlerBuilder_AdditionHandlerIsInvalid" xml:space="preserve">
     <value>The '{0}' property must be null. '{1}' instances provided to '{2}' must not be reused or cached.{3}Handler: '{4}'</value>
     <comment>0 = nameof(DelegatingHandler.InnerHandler)
 1 = nameof(DelegatingHandler)
-2 = nameof(AdditionalHandlers)
+2 = nameof(HttpMessageHandlerBuilder)
 3 = Environment.NewLine
 4 = handler.ToString()</comment>
   </data>
-  <data name="DefaultHttpMessageHandlerBuilder_PrimaryHandlerIsNull" xml:space="preserve">
+  <data name="HttpMessageHandlerBuilder_PrimaryHandlerIsNull" xml:space="preserve">
     <value>The '{0}' must not be null.</value>
   </data>
 </root>
