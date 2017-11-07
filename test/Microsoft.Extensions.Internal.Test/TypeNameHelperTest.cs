@@ -166,6 +166,44 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal(expected, TypeNameHelper.GetTypeDisplayName(type, fullName));
         }
 
+        public static TheoryData GetTypeDisplayName_IncludesGenericParameterNamesWhenOptionIsSetData =>
+            new TheoryData<Type, string>
+            {
+                {  typeof(B<>),"Microsoft.Extensions.Internal.TypeNameHelperTest+B<T>" },
+                // {  typeof(PartiallyClosedGeneric<>).BaseType,"Microsoft.Extensions.Internal.TypeNameHelperTest+C<T, int>" },
+                {  typeof(Level1<>.Level2<>),"Microsoft.Extensions.Internal.TypeNameHelperTest+Level1<T1>+Level2<T2>" },
+            };
+
+        [Theory]
+        [MemberData(nameof(GetTypeDisplayName_IncludesGenericParameterNamesWhenOptionIsSetData))]
+        public void GetTypeDisplayName_IncludesGenericParameterNamesWhenOptionIsSet(Type type, string expected)
+        {
+            // Arrange & Act
+            var actual = TypeNameHelper.GetTypeDisplayName(type, fullName: true, includeGenericParameterNames: true);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        public static TheoryData GetTypeDisplayName_WithoutFullName_IncludesGenericParameterNamesWhenOptionIsSetData =>
+            new TheoryData<Type, string>
+            {
+                {  typeof(B<>),"B<T>" },
+                {  typeof(PartiallyClosedGeneric<>).BaseType,"C<T, int>" },
+                {  typeof(Level1<>.Level2<>),"Level2<T2>" },
+            };
+
+        [Theory]
+        [MemberData(nameof(GetTypeDisplayName_WithoutFullName_IncludesGenericParameterNamesWhenOptionIsSetData))]
+        public void GetTypeDisplayName_WithoutFullName_IncludesGenericParameterNamesWhenOptionIsSet(Type type, string expected)
+        {
+            // Arrange & Act
+            var actual = TypeNameHelper.GetTypeDisplayName(type, fullName: false, includeGenericParameterNames: true);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
         private class A { }
 
         private class B<T> { }

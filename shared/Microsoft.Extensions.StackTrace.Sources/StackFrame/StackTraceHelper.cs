@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
             var type = method.DeclaringType;
             if (type != null)
             {
-                methodDisplayInfo.DeclaringTypeName = TypeNameHelper.GetTypeDisplayName(type);
+                methodDisplayInfo.DeclaringTypeName = TypeNameHelper.GetTypeDisplayName(type, includeGenericParameterNames: true);
             }
 
             // Method name
@@ -79,7 +79,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
             if (method.IsGenericMethod)
             {
                 var genericArguments = string.Join(", ", method.GetGenericArguments()
-                    .Select(arg => TypeNameHelper.GetTypeDisplayName(arg, fullName: false)));
+                    .Select(arg => TypeNameHelper.GetTypeDisplayName(arg, fullName: false, includeGenericParameterNames: true)));
                 methodDisplayInfo.GenericArguments += "<" + genericArguments + ">";
             }
 
@@ -106,7 +106,7 @@ namespace Microsoft.Extensions.StackTrace.Sources
                         parameterType = parameterType.GetElementType();
                     }
 
-                    parameterTypeString = TypeNameHelper.GetTypeDisplayName(parameterType, fullName: false);
+                    parameterTypeString = TypeNameHelper.GetTypeDisplayName(parameterType, fullName: false, includeGenericParameterNames: true);
                 }
 
                 return new ParameterDisplayInfo
