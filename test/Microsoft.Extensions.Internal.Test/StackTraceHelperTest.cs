@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.StackTrace.Sources;
 using ThrowingLibrary;
 using Xunit;
@@ -41,6 +44,43 @@ namespace Microsoft.Extensions.Internal
                 {
                     Assert.Contains("StackTraceHelperTest.cs", frame.FilePath);
                 });
+        }
+
+        [Fact]
+        public void StackTraceHelper_PrettyPrintsStackTraceForGenericMethods()
+        {
+            // Arrange
+            var exception = Record.Exception(() => GenericMethod<string>(null));
+
+            // Act
+            var stackFrames = StackTraceHelper.GetFrames(exception);
+
+            // Assert
+            var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
+            Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest.GenericMethod<T>(T val)", methods[0]);
+        }
+
+        [Fact]
+        public void StackTraceHelper_PrettyPrintsStackTraceForMethodsOnGenericTypes()
+        {
+            // Arrange
+            var exception = Record.Exception(() => new GenericType<int>().Throw(0));
+
+            // Act
+            var stackFrames = StackTraceHelper.GetFrames(exception);
+
+            // Assert
+            var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
+            Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest+GenericType<T>.Throw(T parameter)", methods[0]);
+        }
+
+        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
+        private void GenericMethod<T>(T val) where T: class => throw new Exception();
+
+        private class GenericType<T>
+        {
+            [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
+            public void Throw(T parameter) => throw new Exception();
         }
     }
 }
