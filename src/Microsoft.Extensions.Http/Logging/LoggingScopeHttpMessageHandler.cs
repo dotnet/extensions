@@ -43,13 +43,9 @@ namespace Microsoft.Extensions.Http.Logging
         
         private static class Log
         {
-            private static readonly Func<ILogger, HttpMethod, Uri, IDisposable> _beginRequestPipelineScope = LoggerMessage.DefineScope<HttpMethod, Uri>(FormatRequestPipelineScope);
-            private static readonly Action<ILogger, HttpMethod, Uri, Exception> _requestPipelineStart = LoggerMessage.Define<HttpMethod, Uri>(LogLevel.Information, EventIds.RequestPipelineStart, MessageRequestPipelineStart);
-            private static readonly Action<ILogger, HttpMethod, Uri, HttpStatusCode, Exception> _requestPipelineEnd = LoggerMessage.Define<HttpMethod, Uri, HttpStatusCode>(LogLevel.Information, EventIds.RequestPipelineEnd, MessageRequestPipelineEnd);
-
-            private static readonly string FormatRequestPipelineScope ="HTTP {HttpMethod} {Uri}";
-            private static readonly string MessageRequestPipelineStart = "Start processing HTTP request {HttpMethod} {Uri}";
-            private static readonly string MessageRequestPipelineEnd = "End processing HTTP request {HttpMethod} {Uri} - {StatusCode}";
+            private static readonly Func<ILogger, HttpMethod, Uri, IDisposable> _beginRequestPipelineScope = LoggerMessage.DefineScope<HttpMethod, Uri>("HTTP {HttpMethod} {Uri}");
+            private static readonly Action<ILogger, HttpMethod, Uri, Exception> _requestPipelineStart = LoggerMessage.Define<HttpMethod, Uri>(LogLevel.Information, EventIds.RequestPipelineStart, "Start processing HTTP request {HttpMethod} {Uri}");
+            private static readonly Action<ILogger, HttpMethod, Uri, HttpStatusCode, Exception> _requestPipelineEnd = LoggerMessage.Define<HttpMethod, Uri, HttpStatusCode>(LogLevel.Information, EventIds.RequestPipelineEnd, "End processing HTTP request {HttpMethod} {Uri} - {StatusCode}");
 
             public static IDisposable BeginRequestPipelineScope(ILogger logger, HttpRequestMessage request)
             {

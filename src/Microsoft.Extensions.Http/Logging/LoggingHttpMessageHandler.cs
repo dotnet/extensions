@@ -42,11 +42,8 @@ namespace Microsoft.Extensions.Http.Logging
 
         private static class Log
         {
-            private static readonly Action<ILogger, HttpMethod, Uri, Exception> _requestStart = LoggerMessage.Define<HttpMethod, Uri>(LogLevel.Information, EventIds.RequestStart, MessageRequestStart);
-            private static readonly Action<ILogger, HttpMethod, Uri, HttpStatusCode, Exception> _requestEnd = LoggerMessage.Define<HttpMethod, Uri, HttpStatusCode>(LogLevel.Information, EventIds.RequestEnd, MessageRequestEnd);
-
-            private static readonly string MessageRequestStart = "Sending HTTP request {HttpMethod} {Uri}";
-            private static readonly string MessageRequestEnd = "Recieved HTTP response {HttpMethod} {Uri} - {StatusCode}";
+            private static readonly Action<ILogger, HttpMethod, Uri, Exception> _requestStart = LoggerMessage.Define<HttpMethod, Uri>(LogLevel.Information, EventIds.RequestStart, "Sending HTTP request {HttpMethod} {Uri}");
+            private static readonly Action<ILogger, HttpMethod, Uri, HttpStatusCode, Exception> _requestEnd = LoggerMessage.Define<HttpMethod, Uri, HttpStatusCode>(LogLevel.Information, EventIds.RequestEnd, "Recieved HTTP response {HttpMethod} {Uri} - {StatusCode}");
 
             public static void RequestStart(ILogger logger, HttpRequestMessage request)
             {
