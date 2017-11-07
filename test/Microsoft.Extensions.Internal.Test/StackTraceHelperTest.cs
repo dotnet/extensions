@@ -179,11 +179,10 @@ namespace Microsoft.Extensions.Internal
             throw new Exception();
         }
 
-        void InvokeMethodOnTypeWithStackTraceHiddenAttribute()
-        {
-            new TypeWithStackTraceHiddenAttribute().Throw();
-        }
+        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
+        void InvokeMethodOnTypeWithStackTraceHiddenAttribute() => new TypeWithStackTraceHiddenAttribute().Throw();
 
+        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         void InvokeStaticMethodOnTypeWithStackTraceHiddenAttribute() => TypeWithStackTraceHiddenAttribute.ThrowStatic();
 
         class GenericClass<T>
@@ -213,22 +212,27 @@ namespace Microsoft.Extensions.Internal
         [StackTraceHidden]
         private class TypeWithStackTraceHiddenAttribute
         {
+            [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
             public void Throw() => ThrowCore();
 
+            [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
             public static void ThrowStatic() => ThrowCore();
         }
 
         private class TypeWithMethodWithStackTraceHiddenAttribute
         {
+            [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
             [StackTraceHidden]
             public void MethodWithStackTraceHiddenAttribute()
             {
                 ThrowCore();
             }
 
+            [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
             public void Throw() => MethodWithStackTraceHiddenAttribute();
         }
 
+        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         private static void ThrowCore() => throw new Exception();
     }
 }
