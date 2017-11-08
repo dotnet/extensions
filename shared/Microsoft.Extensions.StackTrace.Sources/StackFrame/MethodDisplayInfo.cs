@@ -15,6 +15,8 @@ namespace Microsoft.Extensions.StackTrace.Sources
 
         public string GenericArguments { get; set; }
 
+        public string SubMethod { get; set; }
+
         public IEnumerable<ParameterDisplayInfo> Parameters { get; set; }
 
         public override string ToString()
@@ -33,6 +35,13 @@ namespace Microsoft.Extensions.StackTrace.Sources
             builder.Append("(");
             builder.Append(string.Join(", ", Parameters.Select(p => p.ToString())));
             builder.Append(")");
+
+            if (!string.IsNullOrEmpty(SubMethod))
+            {
+                builder.Append("+");
+                builder.Append(SubMethod);
+                builder.Append("()");
+            }
 
             return builder.ToString();
         }
