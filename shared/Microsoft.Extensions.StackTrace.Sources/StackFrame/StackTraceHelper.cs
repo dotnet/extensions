@@ -151,14 +151,11 @@ namespace Microsoft.Extensions.StackTrace.Sources
 
             // Don't show any methods marked with the StackTraceHiddenAttribute
             // https://github.com/dotnet/coreclr/pull/14652
-            foreach (var attibute in method.CustomAttributes)
+            if (HasStackTraceHiddenAttribute(method))
             {
-                // internal Attribute, match on name
-                if (attibute.AttributeType.Name == "StackTraceHiddenAttribute")
-                {
-                    return false;
-                }
+                return false;
             }
+
 
             var type = method.DeclaringType;
             if (type == null)
@@ -166,13 +163,9 @@ namespace Microsoft.Extensions.StackTrace.Sources
                 return true;
             }
 
-            foreach (var attibute in type.CustomAttributes)
+            if (HasStackTraceHiddenAttribute(type))
             {
-                // internal Attribute, match on name
-                if (attibute.AttributeType.Name == "StackTraceHiddenAttribute")
-                {
-                    return false;
-                }
+                return false;
             }
 
             // Fallbacks for runtime pre-StackTraceHiddenAttribute
@@ -235,6 +228,31 @@ namespace Microsoft.Extensions.StackTrace.Sources
                         // async statemachines resolve directly to their builder methods so aren't marked as changed
                         return asma is IteratorStateMachineAttribute;
                     }
+                }
+            }
+
+            return false;
+        }
+
+        private static bool HasStackTraceHiddenAttribute(MemberInfo memberInfo)
+        {
+            IList<CustomAttributeData> attributes;
+            try
+            {
+                // Accessing MembmerInfo.GetCustomAttributesData throws for some types (such as types in dynamically generated assemblies).
+                // We'll skip looking up StackTraceHiddenAttributes on such types.
+                attributes = memberInfo.GetCustomAttributesData();
+            }
+            catch
+            {
+                return false;
+            }
+
+            for (var i = 0; i < attributes.Count; i++)
+            {
+                if (attributes[i].AttributeType.Name == "StackTraceHiddenAttribute")
+                {
+                    return true;
                 }
             }
 

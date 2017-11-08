@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.StackTrace.Sources;
@@ -59,6 +60,79 @@ namespace Microsoft.Extensions.Internal
             // Assert
             var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
             Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest.GenericMethod<T>(T val)", methods[0]);
+        }
+
+        [Fact]
+        public void StackTraceHelper_PrettyPrintsStackTraceForMethodsWithOutParameters()
+        {
+            // Arrange
+            var exception = Record.Exception(() => MethodWithOutParameter(out var value));
+
+            // Act
+            var stackFrames = StackTraceHelper.GetFrames(exception);
+
+            // Assert
+            var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
+            Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest.MethodWithOutParameter(out int value)", methods[0]);
+        }
+
+        [Fact]
+        public void StackTraceHelper_PrettyPrintsStackTraceForMethodsWithGenericOutParameters()
+        {
+            // Arrange
+            var exception = Record.Exception(() => MethodWithGenericOutParameter("Test", out int value));
+
+            // Act
+            var stackFrames = StackTraceHelper.GetFrames(exception);
+
+            // Assert
+            var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
+            Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest.MethodWithGenericOutParameter<TVal>(string a, out TVal value)", methods[0]);
+        }
+
+        [Fact]
+        public void StackTraceHelper_PrettyPrintsStackTraceForMethodsWithRefParameters()
+        {
+            // Arrange
+            var value = 0;
+            var exception = Record.Exception(() => MethodWithRefParameter(ref value));
+
+            // Act
+            var stackFrames = StackTraceHelper.GetFrames(exception);
+
+            // Assert
+            var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
+            Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest.MethodWithRefParameter(ref int value)", methods[0]);
+        }
+
+        [Fact]
+        public void StackTraceHelper_PrettyPrintsStackTraceForMethodsWithGenericRefParameters()
+        {
+            // Arrange
+            var value = 0;
+            var exception = Record.Exception(() => MethodWithGenericRefParameter(ref value));
+
+            // Act
+            var stackFrames = StackTraceHelper.GetFrames(exception);
+
+            // Assert
+            var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
+            Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest.MethodWithGenericRefParameter<TVal>(ref TVal value)", methods[0]);
+        }
+
+        [Fact]
+        public void StackTraceHelper_PrettyPrintsStackTraceForMethodsWithNullableParameters()
+        {
+            // Arrange
+            var value = 0;
+            var exception = Record.Exception(() => MethodWithNullableParameter(value));
+
+            // Act
+            var stackFrames = StackTraceHelper.GetFrames(exception);
+
+            // Assert
+            var methods = stackFrames.Select(frame => frame.MethodDisplayInfo.ToString()).ToArray();
+            Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest.MethodWithNullableParameter(Nullable<int> value)", methods[0]);
         }
 
         [Fact]
@@ -153,6 +227,24 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal("Microsoft.Extensions.Internal.StackTraceHelperTest+TypeWithMethodWithStackTraceHiddenAttribute.Throw()", methods[1]);
         }
 
+        [Fact]
+        public void GetFrames_DoesNotFailForDynamicallyGeneratedAssemblies()
+        {
+            // Arrange
+            var action = (Action)Expression.Lambda(
+                Expression.Throw(
+                    Expression.New(typeof(Exception)))).Compile();
+            var exception = Record.Exception(action);
+
+            // Act
+            var frames = StackTraceHelper.GetFrames(exception).ToArray();
+
+            // Assert
+            var frame = frames[0];
+            Assert.Null(frame.FilePath);
+            Assert.Equal($"lambda_method(Closure )", frame.MethodDisplayInfo.ToString());
+        }
+
         [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         async Task<string> MethodAsync(int value)
         {
@@ -178,6 +270,21 @@ namespace Microsoft.Extensions.Internal
             yield return "Success";
             throw new Exception();
         }
+
+        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
+        void MethodWithOutParameter(out int value) => throw new Exception();
+
+        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
+        void MethodWithGenericOutParameter<TVal>(string a, out TVal value) => throw new Exception();
+
+        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
+        void MethodWithRefParameter(ref int value) => throw new Exception();
+
+        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
+        void MethodWithGenericRefParameter<TVal>(ref TVal value) => throw new Exception();
+
+        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
+        void MethodWithNullableParameter(int? value) => throw new Exception();
 
         [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         void InvokeMethodOnTypeWithStackTraceHiddenAttribute() => new TypeWithStackTraceHiddenAttribute().Throw();
