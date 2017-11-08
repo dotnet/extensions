@@ -136,7 +136,7 @@ namespace Microsoft.Extensions.Internal
                 }
 
                 builder.Append(',');
-                if (!genericArguments[i + 1].IsGenericParameter)
+                if (options.IncludeGenericParameterNames || !genericArguments[i + 1].IsGenericParameter)
                 {
                     builder.Append(' ');
                 }
