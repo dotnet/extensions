@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.Primitives
         }
 
         /// <inheritdoc />
-        public bool ActiveChangeCallbacks => true;
+        public bool ActiveChangeCallbacks { get; private set; } = true;
 
         /// <inheritdoc />
         public bool HasChanged => Token.IsCancellationRequested;
@@ -29,6 +29,28 @@ namespace Microsoft.Extensions.Primitives
         private CancellationToken Token { get; }
 
         /// <inheritdoc />
-        public IDisposable RegisterChangeCallback(Action<object> callback, object state) => Token.Register(callback, state);
+        public IDisposable RegisterChangeCallback(Action<object> callback, object state)
+        {
+            try
+            {
+                return Token.Register(callback, state);
+            }
+            catch (ObjectDisposedException)
+            {
+                // Reset the flag so that we can indicate to future callers that this wouldn't work.
+                ActiveChangeCallbacks = false;
+            }
+
+            return NullDisposable.Instance;
+        }
+
+        private class NullDisposable : IDisposable
+        {
+            public static readonly NullDisposable Instance = new NullDisposable();
+
+            public void Dispose()
+            {
+            }
+        }
     }
 }
