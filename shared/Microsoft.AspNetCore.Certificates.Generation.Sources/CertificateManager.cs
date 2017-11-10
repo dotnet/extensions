@@ -39,6 +39,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         private const string MacOSTrustCertificateCommandLine = "sudo";
         private const string MacOSTrustCertificateCommandLineArguments = "security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ";
 
+        private const int UserCancelledErrorCode = 1223;
+
         public IList<X509Certificate2> ListCertificates(
             CertificatePurpose purpose,
             StoreName storeName,
@@ -296,56 +298,90 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             // Strip certificate of the private key if any.
             var publicCertificate = new X509Certificate2(certificate.Export(X509ContentType.Cert));
 
+            if (!IsTrusted(publicCertificate))
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    TrustCertificateOnWindows(certificate, publicCertificate);
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    TrustCertificateOnMac(publicCertificate);
+                }
+            }
+        }
+
+        private void TrustCertificateOnMac(X509Certificate2 publicCertificate)
+        {
+            var tmpFile = Path.GetTempFileName();
+            try
+            {
+                ExportCertificate(publicCertificate, tmpFile, includePrivateKey: false, password: null);
+                var process = Process.Start(MacOSTrustCertificateCommandLine, MacOSTrustCertificateCommandLineArguments + tmpFile);
+                process.WaitForExit();
+                if (process.ExitCode != 0)
+                {
+                    throw new InvalidOperationException("There was an error trusting the certificate.");
+                }
+            }
+            finally
+            {
+                try
+                {
+                    if (File.Exists(tmpFile))
+                    {
+                        File.Delete(tmpFile);
+                    }
+                }
+                catch
+                {
+                    // We don't care if we can't delete the temp file.
+                }
+            }
+        }
+
+        private static void TrustCertificateOnWindows(X509Certificate2 certificate, X509Certificate2 publicCertificate)
+        {
+            publicCertificate.FriendlyName = certificate.FriendlyName;
+
+            using (var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser))
+            {
+                store.Open(OpenFlags.ReadWrite);
+                try
+                {
+                    store.Add(publicCertificate);
+                }
+                catch (CryptographicException exception) when (exception.HResult == UserCancelledErrorCode)
+                {
+                    throw new UserCancelledTrustException();
+                }
+                store.Close();
+            };
+        }
+
+        public bool IsTrusted(X509Certificate2 certificate)
+        {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                publicCertificate.FriendlyName = certificate.FriendlyName;
-
-                using (var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser))
-                {
-                    store.Open(OpenFlags.ReadWrite);
-                    store.Add(publicCertificate);
-                    store.Close();
-                };
+                return ListCertificates(CertificatePurpose.HTTPS, StoreName.Root, StoreLocation.CurrentUser, isValid: true, requireExportable: false)
+                    .Any(c => c.Thumbprint == certificate.Thumbprint);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                var tmpFile = Path.GetTempFileName();
-                try
+                var checkTrustProcess = Process.Start(new ProcessStartInfo(MacOSFindCertificateCommandLine, MacOSFindCertificateCommandLineArguments)
                 {
-                    var checkTrustProcess = Process.Start(new ProcessStartInfo(MacOSFindCertificateCommandLine, MacOSFindCertificateCommandLineArguments){
-                        RedirectStandardOutput = true
-                    });
+                    RedirectStandardOutput = true
+                });
 
-                    checkTrustProcess.WaitForExit();
-                    var output = checkTrustProcess.StandardOutput.ReadToEnd();
-                    var matches = Regex.Matches(output, MacOSFindCertificateOutputRegex, RegexOptions.Multiline, MaxRegexTimeout);
-                    var hashes = matches.OfType<Match>().Select(m => m.Groups[1].Value).ToList();
-
-                    if (!hashes.Any(h => string.Equals(h, publicCertificate.Thumbprint, StringComparison.Ordinal)))
-                    {
-                        ExportCertificate(publicCertificate, tmpFile, includePrivateKey: false, password: null);
-                        var process = Process.Start(MacOSTrustCertificateCommandLine, MacOSTrustCertificateCommandLineArguments + tmpFile);
-                        process.WaitForExit();
-                        if (process.ExitCode != 0)
-                        {
-                            throw new InvalidOperationException("There was an error trusting the certificate.");
-                        }
-                    }
-                }
-                finally
-                {
-                    try
-                    {
-                        if (File.Exists(tmpFile))
-                        {
-                            File.Delete(tmpFile);
-                        }
-                    }
-                    catch
-                    {
-                        // We don't care if we can't delete the temp file.
-                    }
-                }
+                checkTrustProcess.WaitForExit();
+                var output = checkTrustProcess.StandardOutput.ReadToEnd();
+                var matches = Regex.Matches(output, MacOSFindCertificateOutputRegex, RegexOptions.Multiline, MaxRegexTimeout);
+                var hashes = matches.OfType<Match>().Select(m => m.Groups[1].Value).ToList();
+                return !hashes.Any(h => string.Equals(h, certificate.Thumbprint, StringComparison.Ordinal));
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -474,6 +510,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 {
                     TrustCertificate(certificate);
                 }
+                catch(UserCancelledTrustException)
+                {
+                    return EnsureCertificateResult.UserCancelledTrustStep;
+                }
                 catch
                 {
                     return EnsureCertificateResult.FailedToTrustTheCertificate;
@@ -481,6 +521,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
 
             return result;
+        }
+
+        private class UserCancelledTrustException : Exception
+        {
         }
 #endif
     }

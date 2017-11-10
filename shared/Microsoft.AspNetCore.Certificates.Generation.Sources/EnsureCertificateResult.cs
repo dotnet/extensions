@@ -12,7 +12,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         ErrorCreatingTheCertificate,
         ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore,
         ErrorExportingTheCertificate,
-        FailedToTrustTheCertificate
+        FailedToTrustTheCertificate,
+        UserCancelledTrustStep
     }
 }
 
