@@ -205,7 +205,7 @@ namespace Microsoft.Extensions.Logging
         }
     }
 }
-#elif NETCOREAPP2_0
+#elif NETCOREAPP2_0 || NETCOREAPP2_1
 #else
 #error Target framework needs to be updated
 #endif
