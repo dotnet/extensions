@@ -3,13 +3,28 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 
 namespace Microsoft.Extensions.Http
 {
     internal class DefaultHttpMessageHandlerBuilder : HttpMessageHandlerBuilder
     {
+        private string _name;
+
+        public override string Name
+        {
+            get => _name;
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _name = value;
+            }
+        }
+
         public override HttpMessageHandler PrimaryHandler { get; set; } = new HttpClientHandler();
 
         public override IList<DelegatingHandler> AdditionalHandlers { get; } = new List<DelegatingHandler>();

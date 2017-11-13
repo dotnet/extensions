@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net.Http;
 using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Logging;
 
@@ -35,15 +34,17 @@ namespace Microsoft.Extensions.Http
                 // Run other configuration first, we want to decorate.
                 next(builder);
 
-                // We want all of our logging message to show up as-if they are coming from HttpClient
-                var logger = _loggerFactory.CreateLogger<HttpClient>();
+                // We want all of our logging message to show up as-if they are coming from HttpClient,
+                // but also to include the name of the client for more fine-grained control.
+                var outerLogger = _loggerFactory.CreateLogger($"System.Net.Http.{builder.Name}");
+                var innerLogger = _loggerFactory.CreateLogger($"System.Net.Http.{builder.Name}.ClientHandler");
 
                 // The 'scope' handler goes first so it can surround everything.
-                builder.AdditionalHandlers.Insert(0, new LoggingScopeHttpMessageHandler(logger));
+                builder.AdditionalHandlers.Insert(0, new LoggingScopeHttpMessageHandler(outerLogger));
 
                 // We want this handler to be last so we can log details about the request after
                 // service discovery and security happen.
-                builder.AdditionalHandlers.Add(new LoggingHttpMessageHandler(logger));
+                builder.AdditionalHandlers.Add(new LoggingHttpMessageHandler(innerLogger));
 
             };
         }

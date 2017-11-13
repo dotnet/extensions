@@ -75,6 +75,7 @@ namespace Microsoft.Extensions.Http
         internal HttpMessageHandler CreateHandler(string name)
         {
             var builder = _services.GetRequiredService<HttpMessageHandlerBuilder>();
+            builder.Name = name;
 
             // This is similar to the initialization pattern in:
             // https://github.com/aspnet/Hosting/blob/e892ed8bbdcd25a0dafc1850033398dc57f65fe1/src/Microsoft.AspNetCore.Hosting/Internal/WebHost.cs#L188

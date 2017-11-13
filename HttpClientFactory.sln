@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{FF6B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpClientFactorySample", "samples\HttpClientFactorySample\HttpClientFactorySample.csproj", "{42C81623-6316-4C15-9E41-84AF48608C47}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{6A3B322A-47A4-48F9-B11B-471B1B591D0B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{EBF25046-7C9B-4F84-ACEA-E836012F4459}"
 	ProjectSection(SolutionItems) = preProject
 		build\dependencies.props = build\dependencies.props
 		build\repo.props = build\repo.props
