@@ -10,6 +10,7 @@ PublishProfiles/
 .vs/
 .vscode/
 .build/
+.idea/
 .testPublish/
 bower_components/
 node_modules/
