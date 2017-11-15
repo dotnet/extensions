@@ -105,12 +105,22 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             bool HasOid(X509Certificate2 certificate, string oid) =>
                 certificate.Extensions.OfType<X509Extension>()
                     .Any(e => string.Equals(oid, e.Oid.Value, StringComparison.Ordinal));
-
+#if !XPLAT
             bool IsExportable(X509Certificate2 c) =>
                 ((c.GetRSAPrivateKey() is RSACryptoServiceProvider rsaPrivateKey &&
                     rsaPrivateKey.CspKeyContainerInfo.Exportable) ||
                 (c.GetRSAPrivateKey() is RSACng cngPrivateKey &&
                     cngPrivateKey.Key.ExportPolicy == CngExportPolicies.AllowExport));
+#else
+            // Only check for RSA CryptoServiceProvider and do not fail in XPlat tooling as
+            // System.Security.Cryptography.Cng is not pat of the shared framework and we don't
+            // want to bring the dependency in on CLI scenarios. This functionality will be used
+            // on CLI scenarios as part of the first run experience, so checking the exportability
+            // of the certificate is not important.
+            bool IsExportable(X509Certificate2 c) =>
+                ((c.GetRSAPrivateKey() is RSACryptoServiceProvider rsaPrivateKey &&
+                    rsaPrivateKey.CspKeyContainerInfo.Exportable) || !(c.GetRSAPrivateKey() is RSACryptoServiceProvider));
+#endif
         }
 
         private void DisposeCertificates(IEnumerable<X509Certificate2> disposables)
@@ -510,7 +520,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 {
                     TrustCertificate(certificate);
                 }
-                catch(UserCancelledTrustException)
+                catch (UserCancelledTrustException)
                 {
                     return EnsureCertificateResult.UserCancelledTrustStep;
                 }
