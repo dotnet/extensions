@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.FileProviders
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EmbeddedFileProvider" /> class using the specified
-        /// assembly and empty base namespace.
+        /// assembly with the base namespace defaulting to the assembly name.
         /// </summary>
         /// <param name="assembly">The assembly that contains the embedded resources.</param>
         public EmbeddedFileProvider(Assembly assembly)
