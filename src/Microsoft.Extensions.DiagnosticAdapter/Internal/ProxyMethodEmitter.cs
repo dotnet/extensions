@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if NETCOREAPP2_0 || NET461
 using System;
 using System.Linq;
 using System.Reflection;
@@ -20,13 +21,13 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
 
         private static readonly AssemblyBuilder AssemblyBuilder;
         private static readonly ModuleBuilder ModuleBuilder;
-        
+
         static ProxyMethodEmitter()
         {
             var name = new AssemblyName("Microsoft.Extensions.DiagnosticAdapter.ProxyMethodAssembly");
             AssemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(name, AssemblyBuilderAccess.RunAndSave);
             ModuleBuilder = AssemblyBuilder.DefineDynamicModule(name.Name + ".dll");
-        } 
+        }
 #endif
 
         private static readonly MethodInfo ProxyFactoryGenericMethod =
@@ -210,9 +211,9 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             var typeBuilder = ModuleBuilder.DefineType(typeName, TypeAttributes.Abstract);
             var methodBuilder = typeBuilder.DefineMethod(
                 "Proxy",
-                MethodAttributes.Public, 
-                CallingConventions.Standard, 
-                returnType: typeof(bool), 
+                MethodAttributes.Public,
+                CallingConventions.Standard,
+                returnType: typeof(bool),
                 parameterTypes: new Type[] { typeof(object), typeof(object), typeof(IProxyFactory) });
 
             var il = methodBuilder.GetILGenerator();
@@ -231,3 +232,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
 #endif
     }
 }
+#elif NETSTANDARD2_0
+#else
+#error Target frameworks should be updated
+#endif

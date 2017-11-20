@@ -22,8 +22,14 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                 return (TProxy)obj;
             }
 
+#if NETCOREAPP2_0 || NET461
             var type = ProxyTypeEmitter.GetProxyType(_cache, typeof(TProxy), obj.GetType());
             return (TProxy)Activator.CreateInstance(type, obj);
+#elif NETSTANDARD2_0
+            throw new PlatformNotSupportedException("This platform does not support creating proxy types and methods.");
+#else
+#error Target frameworks should be updated
+#endif
         }
     }
 }
