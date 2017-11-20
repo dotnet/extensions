@@ -78,7 +78,6 @@ namespace Microsoft.Extensions.StackTrace.Sources
 
             var methodDisplayInfo = new MethodDisplayInfo();
 
-
             // Type name
             var type = method.DeclaringType;
 

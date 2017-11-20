@@ -47,6 +47,16 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal(expected, TypeNameHelper.GetTypeDisplayName(type));
         }
 
+        [Fact]
+        public void DoesNotPrintNamespace_ForGenericTypes_IfNullOrEmpty()
+        {
+            // Arrange
+            var type = typeof(ClassInGlobalNamespace<int>);
+
+            // Act & Assert
+            Assert.Equal("ClassInGlobalNamespace<int>", TypeNameHelper.GetTypeDisplayName(type));
+        }
+
         [Theory]
         // Predefined Types
         [InlineData(typeof(int), "int")]
@@ -246,4 +256,8 @@ namespace Microsoft.Extensions.Internal
             }
         }
     }
+}
+
+internal class ClassInGlobalNamespace<T>
+{
 }
