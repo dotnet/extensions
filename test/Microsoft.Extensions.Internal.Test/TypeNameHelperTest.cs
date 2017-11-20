@@ -54,7 +54,10 @@ namespace Microsoft.Extensions.Internal
         [Fact]
         public void DoesNotPrintNamespace_ForGenericTypes_IfNullOrEmpty()
         {
+            // Arrange
             var type = typeof(ClassWithoutNamespace<int>);
+
+            // Act & Assert
             Assert.Equal("ClassWithoutNamespace<int>", TypeNameHelper.GetTypeDisplayName(type));
         }
 
