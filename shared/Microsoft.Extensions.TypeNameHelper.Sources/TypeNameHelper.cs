@@ -110,7 +110,7 @@ namespace Microsoft.Extensions.Internal
                     ProcessGenericType(builder, type.DeclaringType, genericArguments, offset, options);
                     builder.Append('+');
                 }
-                else
+                else if (!string.IsNullOrEmpty(type.Namespace))
                 {
                     builder.Append(type.Namespace);
                     builder.Append('.');
