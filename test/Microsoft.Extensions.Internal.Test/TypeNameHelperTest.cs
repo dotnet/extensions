@@ -5,10 +5,6 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-internal class ClassWithoutNamespace<T>
-{
-}
-
 namespace Microsoft.Extensions.Internal
 {
     public class TypeNameHelperTest
@@ -55,10 +51,10 @@ namespace Microsoft.Extensions.Internal
         public void DoesNotPrintNamespace_ForGenericTypes_IfNullOrEmpty()
         {
             // Arrange
-            var type = typeof(ClassWithoutNamespace<int>);
+            var type = typeof(ClassInGlobalNamespace<int>);
 
             // Act & Assert
-            Assert.Equal("ClassWithoutNamespace<int>", TypeNameHelper.GetTypeDisplayName(type));
+            Assert.Equal("ClassInGlobalNamespace<int>", TypeNameHelper.GetTypeDisplayName(type));
         }
 
         [Theory]
@@ -260,4 +256,8 @@ namespace Microsoft.Extensions.Internal
             }
         }
     }
+}
+
+internal class ClassInGlobalNamespace<T>
+{
 }
