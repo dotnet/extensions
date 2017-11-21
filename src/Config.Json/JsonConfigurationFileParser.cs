@@ -13,13 +13,18 @@ namespace Microsoft.Extensions.Configuration.Json
 {
     internal class JsonConfigurationFileParser
     {
+        private JsonConfigurationFileParser() { }
+
         private readonly IDictionary<string, string> _data = new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly Stack<string> _context = new Stack<string>();
         private string _currentPath;
 
         private JsonTextReader _reader;
 
-        public IDictionary<string, string> Parse(Stream input)
+        public static IDictionary<string, string> Parse(Stream input)
+            => new JsonConfigurationFileParser().ParseStream(input);
+
+        private IDictionary<string, string> ParseStream(Stream input)
         {
             _data.Clear();
             _reader = new JsonTextReader(new StreamReader(input));
