@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Options
@@ -55,6 +54,99 @@ namespace Microsoft.Extensions.Options
             return this;
         }
 
+        public virtual OptionsBuilder<TOptions> Configure<TDep>(Action<TOptions, TDep> configureOptions)
+            where TDep : class
+        {
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            Services.AddTransient<IConfigureOptions<TOptions>>(sp =>
+                new ConfigureNamedOptions<TOptions, TDep>(Name, sp.GetRequiredService<TDep>(), configureOptions));
+            return this;
+        }
+
+        public virtual OptionsBuilder<TOptions> Configure<TDep1, TDep2>(Action<TOptions, TDep1, TDep2> configureOptions)
+            where TDep1 : class
+            where TDep2 : class
+        {
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            Services.AddTransient<IConfigureOptions<TOptions>>(sp =>
+                new ConfigureNamedOptions<TOptions, TDep1, TDep2>(Name, sp.GetRequiredService<TDep1>(), sp.GetRequiredService<TDep2>(), configureOptions));
+            return this;
+        }
+
+        public virtual OptionsBuilder<TOptions> Configure<TDep1, TDep2, TDep3>(Action<TOptions, TDep1, TDep2, TDep3> configureOptions)
+            where TDep1 : class
+            where TDep2 : class
+            where TDep3 : class
+        {
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            Services.AddTransient<IConfigureOptions<TOptions>>(
+                sp => new ConfigureNamedOptions<TOptions, TDep1, TDep2, TDep3>(
+                    Name,
+                    sp.GetRequiredService<TDep1>(),
+                    sp.GetRequiredService<TDep2>(),
+                    sp.GetRequiredService<TDep3>(),
+                    configureOptions));
+            return this;
+        }
+
+        public virtual OptionsBuilder<TOptions> Configure<TDep1, TDep2, TDep3, TDep4>(Action<TOptions, TDep1, TDep2, TDep3, TDep4> configureOptions)
+            where TDep1 : class
+            where TDep2 : class
+            where TDep3 : class
+            where TDep4 : class
+        {
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            Services.AddTransient<IConfigureOptions<TOptions>>(
+                sp => new ConfigureNamedOptions<TOptions, TDep1, TDep2, TDep3, TDep4>(
+                    Name,
+                    sp.GetRequiredService<TDep1>(),
+                    sp.GetRequiredService<TDep2>(),
+                    sp.GetRequiredService<TDep3>(),
+                    sp.GetRequiredService<TDep4>(),
+                    configureOptions));
+            return this;
+        }
+
+        public virtual OptionsBuilder<TOptions> Configure<TDep1, TDep2, TDep3, TDep4, TDep5>(Action<TOptions, TDep1, TDep2, TDep3, TDep4, TDep5> configureOptions)
+            where TDep1 : class
+            where TDep2 : class
+            where TDep3 : class
+            where TDep4 : class
+            where TDep5 : class
+        {
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            Services.AddTransient<IConfigureOptions<TOptions>>(
+                sp => new ConfigureNamedOptions<TOptions, TDep1, TDep2, TDep3, TDep4, TDep5>(
+                    Name,
+                    sp.GetRequiredService<TDep1>(),
+                    sp.GetRequiredService<TDep2>(),
+                    sp.GetRequiredService<TDep3>(),
+                    sp.GetRequiredService<TDep4>(),
+                    sp.GetRequiredService<TDep5>(),
+                    configureOptions));
+            return this;
+        }
+
         /// <summary>
         /// Registers an action used to configure a particular type of options.
         /// Note: These are run after all <seealso cref="Configure(Action{TOptions})"/>.
@@ -68,6 +160,99 @@ namespace Microsoft.Extensions.Options
             }
 
             Services.AddSingleton<IPostConfigureOptions<TOptions>>(new PostConfigureOptions<TOptions>(Name, configureOptions));
+            return this;
+        }
+
+        public virtual OptionsBuilder<TOptions> PostConfigure<TDep>(Action<TOptions, TDep> configureOptions)
+            where TDep : class
+        {
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            Services.AddTransient<IPostConfigureOptions<TOptions>>(sp =>
+                new PostConfigureOptions<TOptions, TDep>(Name, sp.GetRequiredService<TDep>(), configureOptions));
+            return this;
+        }
+
+        public virtual OptionsBuilder<TOptions> PostConfigure<TDep1, TDep2>(Action<TOptions, TDep1, TDep2> configureOptions)
+            where TDep1 : class
+            where TDep2 : class
+        {
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            Services.AddTransient<IPostConfigureOptions<TOptions>>(sp =>
+                new PostConfigureOptions<TOptions, TDep1, TDep2>(Name, sp.GetRequiredService<TDep1>(), sp.GetRequiredService<TDep2>(), configureOptions));
+            return this;
+        }
+
+        public virtual OptionsBuilder<TOptions> PostConfigure<TDep1, TDep2, TDep3>(Action<TOptions, TDep1, TDep2, TDep3> configureOptions)
+            where TDep1 : class
+            where TDep2 : class
+            where TDep3 : class
+        {
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            Services.AddTransient<IPostConfigureOptions<TOptions>>(
+                sp => new PostConfigureOptions<TOptions, TDep1, TDep2, TDep3>(
+                    Name,
+                    sp.GetRequiredService<TDep1>(),
+                    sp.GetRequiredService<TDep2>(),
+                    sp.GetRequiredService<TDep3>(),
+                    configureOptions));
+            return this;
+        }
+
+        public virtual OptionsBuilder<TOptions> PostConfigure<TDep1, TDep2, TDep3, TDep4>(Action<TOptions, TDep1, TDep2, TDep3, TDep4> configureOptions)
+            where TDep1 : class
+            where TDep2 : class
+            where TDep3 : class
+            where TDep4 : class
+        {
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            Services.AddTransient<IPostConfigureOptions<TOptions>>(
+                sp => new PostConfigureOptions<TOptions, TDep1, TDep2, TDep3, TDep4>(
+                    Name,
+                    sp.GetRequiredService<TDep1>(),
+                    sp.GetRequiredService<TDep2>(),
+                    sp.GetRequiredService<TDep3>(),
+                    sp.GetRequiredService<TDep4>(),
+                    configureOptions));
+            return this;
+        }
+
+        public virtual OptionsBuilder<TOptions> PostConfigure<TDep1, TDep2, TDep3, TDep4, TDep5>(Action<TOptions, TDep1, TDep2, TDep3, TDep4, TDep5> configureOptions)
+            where TDep1 : class
+            where TDep2 : class
+            where TDep3 : class
+            where TDep4 : class
+            where TDep5 : class
+        {
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            Services.AddTransient<IPostConfigureOptions<TOptions>>(
+                sp => new PostConfigureOptions<TOptions, TDep1, TDep2, TDep3, TDep4, TDep5>(
+                    Name,
+                    sp.GetRequiredService<TDep1>(),
+                    sp.GetRequiredService<TDep2>(),
+                    sp.GetRequiredService<TDep3>(),
+                    sp.GetRequiredService<TDep4>(),
+                    sp.GetRequiredService<TDep5>(),
+                    configureOptions));
             return this;
         }
     }
