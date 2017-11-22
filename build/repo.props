@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <ItemGroup>
     <ExcludeFromTest Include="$(RepositoryRoot)test\Config.AzureKeyVault.Test\Config.AzureKeyVault.Test.csproj" Condition="'$(OS)' != 'Windows_NT'" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\Config.Test.Common\Config.Test.Common.csproj" />
@@ -7,6 +7,6 @@
   <PropertyGroup>
     <!-- These properties are use by the automation that updates dependencies.props -->
     <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
-    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-ci-dev/api/v3/index.json</LineupPackageRestoreSource>
+    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
   </PropertyGroup>
 </Project>
