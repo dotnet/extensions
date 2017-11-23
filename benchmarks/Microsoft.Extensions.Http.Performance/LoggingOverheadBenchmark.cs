@@ -23,15 +23,12 @@ namespace Microsoft.Extensions.Http.Performance
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddLogging(b => b.AddProvider(LoggerProvider));
-            serviceCollection.Configure<HttpClientFactoryOptions>("example", options =>
-            {
-                options.HttpMessageHandlerBuilderActions.Add(b => b.PrimaryHandler = Handler);
-            });
             serviceCollection.AddHttpClient("example", c =>
             {
                 c.BaseAddress = new Uri("http://example.com/");
                 c.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            });
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => Handler);
 
             var services = serviceCollection.BuildServiceProvider();
             Factory = services.GetRequiredService<IHttpClientFactory>();

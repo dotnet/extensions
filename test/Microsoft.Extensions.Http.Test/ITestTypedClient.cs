@@ -6,13 +6,8 @@ using System.Net.Http;
 namespace Microsoft.Extensions.Http
 {
     // Simple typed client for use in tests
-    public class TestTypedClient : ITestTypedClient
+    public interface ITestTypedClient
     {
-        public TestTypedClient(HttpClient httpClient)
-        {
-            HttpClient = httpClient;
-        }
-
-        public HttpClient HttpClient { get; }
+        HttpClient HttpClient { get; }
     }
 }

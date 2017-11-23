@@ -100,6 +100,29 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
+        public void AddHttpClient_WithTypedClientAndImplementation_ConfiguresNamedClient()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.Configure<HttpClientFactoryOptions>(nameof(ITestTypedClient), options =>
+            {
+                options.HttpClientActions.Add((c) => c.BaseAddress = new Uri("http://example.com"));
+            });
+
+            // Act
+            serviceCollection.AddHttpClient<ITestTypedClient, TestTypedClient>();
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            // Act2
+            var client = services.GetRequiredService<ITestTypedClient>();
+
+            // Assert
+            Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
+        }
+
+        [Fact]
         public void AddHttpClient_WithTypedClient_AndName_ConfiguresNamedClient()
         {
             // Arrange
@@ -117,6 +140,29 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Act2
             var client = services.GetRequiredService<TestTypedClient>();
+
+            // Assert
+            Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
+        }
+
+        [Fact]
+        public void AddHttpClient_WithTypedClientAndImplementation_AndName_ConfiguresNamedClient()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.Configure<HttpClientFactoryOptions>("test", options =>
+            {
+                options.HttpClientActions.Add((c) => c.BaseAddress = new Uri("http://example.com"));
+            });
+
+            // Act
+            serviceCollection.AddHttpClient<ITestTypedClient, TestTypedClient>("test");
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            // Act2
+            var client = services.GetRequiredService<ITestTypedClient>();
 
             // Assert
             Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
@@ -150,6 +196,33 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
+        public void AddHttpClient_WithTypedClientAndImplementation_AndDelegate_ConfiguresNamedClient()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.Configure<HttpClientFactoryOptions>(nameof(ITestTypedClient), options =>
+            {
+                options.HttpClientActions.Add((c) => c.BaseAddress = new Uri("http://example.com"));
+            });
+
+            // Act
+            serviceCollection.AddHttpClient<ITestTypedClient, TestTypedClient>((c) =>
+            {
+                Assert.Equal("http://example.com/", c.BaseAddress.AbsoluteUri);
+                c.BaseAddress = new Uri("http://example2.com");
+            });
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            // Act2
+            var client = services.GetRequiredService<ITestTypedClient>();
+
+            // Assert
+            Assert.Equal("http://example2.com/", client.HttpClient.BaseAddress.AbsoluteUri);
+        }
+
+        [Fact]
         public void AddHttpClient_AddTypedClient_ConfiguresNamedClient()
         {
             // Arrange
@@ -167,6 +240,29 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Act2
             var client = services.GetRequiredService<TestTypedClient>();
+
+            // Assert
+            Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
+        }
+
+        [Fact]
+        public void AddHttpClient_AddTypedClientAndImplementation_ConfiguresNamedClient()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.Configure<HttpClientFactoryOptions>("test", options =>
+            {
+                options.HttpClientActions.Add((c) => c.BaseAddress = new Uri("http://example.com"));
+            });
+
+            // Act
+            serviceCollection.AddHttpClient("test").AddTypedClient<ITestTypedClient, TestTypedClient>();
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            // Act2
+            var client = services.GetRequiredService<ITestTypedClient>();
 
             // Assert
             Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
@@ -200,7 +296,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Assert.Equal("http://example2.com/", client.HttpClient.BaseAddress.AbsoluteUri);
         }
 
-                [Fact]
+        [Fact]
         public void AddHttpClient_AddTypedClient_WithServiceDelegate_ConfiguresNamedClient()
         {
             // Arrange
@@ -263,7 +359,7 @@ namespace Microsoft.Extensions.DependencyInjection
             HttpMessageHandlerBuilder builder = null;
 
             // Act1
-            serviceCollection.AddHttpClient("example.com").AddHttpMessageHandlerBuilderOptions(b =>
+            serviceCollection.AddHttpClient("example.com").ConfigureHttpMessageHandlerBuilder(b =>
             {
                 builder = b;
 
