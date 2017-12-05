@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             Assert.Equal(@"| TestLifetime Information: Starting test TestLogWritesToITestOutputHelper
 | TestLogger Information: Information!
 | TestLifetime Information: Finished test TestLogWritesToITestOutputHelper in DURATION
-", MakeConsistent(output.Output));
+", MakeConsistent(output.Output), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -82,11 +82,11 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 Assert.Equal(@"[GlobalTestLog] [Information] Global Test Logging initialized. Set the 'ASPNETCORE_TEST_LOG_DIR' Environment Variable in order to create log files on disk.
 [GlobalTestLog] [Information] Starting test ""FakeTestName""
 [GlobalTestLog] [Information] Finished test ""FakeTestName"" in DURATION
-", globalLogContent);
+", globalLogContent, ignoreLineEndingDifferences: true);
                 Assert.Equal(@"[TestLifetime] [Information] Starting test ""FakeTestName""
 [TestLogger] [Information] Information!
 [TestLifetime] [Information] Finished test ""FakeTestName"" in DURATION
-", testLogContent);
+", testLogContent, ignoreLineEndingDifferences: true);
             }
         }
 
