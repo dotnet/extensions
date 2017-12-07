@@ -30,16 +30,11 @@ namespace HttpClientFactorySample
 
             var services = serviceCollection.BuildServiceProvider();
 
-            var factory = services.GetRequiredService<IHttpClientFactory>();
+            Console.WriteLine("Creating a client...");
+            var github = services.GetRequiredService<GithubClient>();
 
-            Console.WriteLine("Creating an HttpClient");
-            var client = factory.CreateClient("github");
-
-            Console.WriteLine("Creating and sending a request");
-            var request = new HttpRequestMessage(HttpMethod.Get, "/");
-
-            var response = await client.SendAsync(request).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
+            Console.WriteLine("Sending a request...");
+            var response = await github.GetJson();
 
             var data = await response.Content.ReadAsAsync<JObject>();
             Console.WriteLine("Response data:");
@@ -58,7 +53,29 @@ namespace HttpClientFactorySample
                 c.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json"); // Github API versioning
                 c.DefaultRequestHeaders.Add("User-Agent", "HttpClientFactory-Sample"); // Github requires a user-agent
             })
-            .AddHttpMessageHandler(() => new RetryHandler()); // Retry requests to github using our retry handler
+            .AddHttpMessageHandler(() => new RetryHandler()) // Retry requests to github using our retry handler
+            .AddTypedClient<GithubClient>();
+        }
+
+        private class GithubClient
+        {
+            public GithubClient(HttpClient httpClient)
+            {
+                HttpClient = httpClient;
+            }
+
+            public HttpClient HttpClient { get; }
+
+            // Gets the list of services on github.
+            public async Task<HttpResponseMessage> GetJson()
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, "/");
+
+                var response = await HttpClient.SendAsync(request).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+
+                return response;
+            }
         }
 
         private class RetryHandler : DelegatingHandler

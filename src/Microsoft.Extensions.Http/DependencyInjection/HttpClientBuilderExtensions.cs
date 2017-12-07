@@ -80,8 +80,138 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(configureBuilder));
             }
-            
+
             builder.Services.Configure<HttpClientFactoryOptions>(builder.Name, options => options.HttpMessageHandlerBuilderActions.Add(configureBuilder));
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Configures a binding between the <typeparamref name="TClient" /> type and the named <see cref="HttpClient"/>
+        /// associated with the <see cref="IHttpClientBuilder"/>.
+        /// </summary>
+        /// <typeparam name="TClient">
+        /// The type of the typed client. They type specified by TClient will be registered in the service collection as
+        /// a transient service. See <see cref="ITypedHttpClientFactory" /> for more details about authoring typed clients.
+        /// </typeparam>
+        /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
+        /// <remarks>
+        /// <para>
+        /// <typeparamref name="TClient"/> instances constructed with the appropriate <see cref="HttpClient" />
+        /// can be retrieved from <see cref="IServiceProvider.GetService(Type)" /> (and related methods) by providing
+        /// <typeparamref name="TClient"/> as the service type. 
+        /// </para>
+        /// <para>
+        /// Calling <see cref="HttpClientBuilderExtensions.AddTypedClient{TClient}(IHttpClientBuilder)"/> will register a typed
+        /// client binding that creates <typeparamref name="TClient"/> using the <see cref="ITypedHttpClientFactory" />.
+        /// </para>
+        /// </remarks>
+        public static IHttpClientBuilder AddTypedClient<TClient>(this IHttpClientBuilder builder)
+            where TClient : class
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.Services.AddTransient<TClient>(s =>
+            {
+                var httpClientFactory = s.GetRequiredService<IHttpClientFactory>();
+                var httpClient = httpClientFactory.CreateClient(builder.Name);
+
+                var typedClientFactory = s.GetRequiredService<ITypedHttpClientFactory>();
+                return typedClientFactory.CreateClient<TClient>(httpClient);
+            });
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Configures a binding between the <typeparamref name="TClient" /> type and the named <see cref="HttpClient"/>
+        /// associated with the <see cref="IHttpClientBuilder"/>.
+        /// </summary>
+        /// <typeparam name="TClient">
+        /// The type of the typed client. They type specified by TClient will be registered in the service collection as
+        /// a transient service.
+        /// </typeparam>
+        /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
+        /// <param name="factory">A factory function that will be used to construct the typed client.</param>
+        /// <remarks>
+        /// <para>
+        /// <typeparamref name="TClient"/> instances constructed with the appropriate <see cref="HttpClient" />
+        /// can be retrieved from <see cref="IServiceProvider.GetService(Type)" /> (and related methods) by providing
+        /// <typeparamref name="TClient"/> as the service type. 
+        /// </para>
+        /// <para>
+        /// Calling <see cref="HttpClientBuilderExtensions.AddTypedClient{TClient}(IHttpClientBuilder,Func{HttpClient,TClient})"/>
+        /// will register a typed client binding that creates <typeparamref name="TClient"/> using the provided factory function.
+        /// </para>
+        /// </remarks>
+        public static IHttpClientBuilder AddTypedClient<TClient>(this IHttpClientBuilder builder, Func<HttpClient, TClient> factory)
+            where TClient : class
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            builder.Services.AddTransient<TClient>(s =>
+            {
+                var httpClientFactory = s.GetRequiredService<IHttpClientFactory>();
+                var httpClient = httpClientFactory.CreateClient(builder.Name);
+
+                return factory(httpClient);
+            });
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Configures a binding between the <typeparamref name="TClient" /> type and the named <see cref="HttpClient"/>
+        /// associated with the <see cref="IHttpClientBuilder"/>.
+        /// </summary>
+        /// <typeparam name="TClient">
+        /// The type of the typed client. They type specified by TClient will be registered in the service collection as
+        /// a transient service.
+        /// </typeparam>
+        /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
+        /// <param name="factory">A factory function that will be used to construct the typed client.</param>
+        /// <remarks>
+        /// <para>
+        /// <typeparamref name="TClient"/> instances constructed with the appropriate <see cref="HttpClient" />
+        /// can be retrieved from <see cref="IServiceProvider.GetService(Type)" /> (and related methods) by providing
+        /// <typeparamref name="TClient"/> as the service type. 
+        /// </para>
+        /// <para>
+        /// Calling <see cref="HttpClientBuilderExtensions.AddTypedClient{TClient}(IHttpClientBuilder,Func{HttpClient,IServiceProvider,TClient})"/>
+        /// will register a typed client binding that creates <typeparamref name="TClient"/> using the provided factory function.
+        /// </para>
+        /// </remarks>
+        public static IHttpClientBuilder AddTypedClient<TClient>(this IHttpClientBuilder builder, Func<HttpClient, IServiceProvider, TClient> factory)
+            where TClient : class
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+
+            builder.Services.AddTransient<TClient>(s =>
+            {
+                var httpClientFactory = s.GetRequiredService<IHttpClientFactory>();
+                var httpClient = httpClientFactory.CreateClient(builder.Name);
+
+                return factory(httpClient, s);
+            });
 
             return builder;
         }
