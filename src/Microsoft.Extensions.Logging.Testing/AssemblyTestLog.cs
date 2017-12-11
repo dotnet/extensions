@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,9 +7,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Serilog;
-using Xunit.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+using Serilog.Extensions.Logging;
+using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Logging.Testing
 {
@@ -24,13 +25,15 @@ namespace Microsoft.Extensions.Logging.Testing
         private readonly ILogger _globalLogger;
         private readonly string _baseDirectory;
         private readonly string _assemblyName;
+        private readonly IServiceProvider _serviceProvider;
 
-        private AssemblyTestLog(ILoggerFactory globalLoggerFactory, ILogger globalLogger, string baseDirectory, string assemblyName)
+        private AssemblyTestLog(ILoggerFactory globalLoggerFactory, ILogger globalLogger, string baseDirectory, string assemblyName, IServiceProvider serviceProvider)
         {
             _globalLoggerFactory = globalLoggerFactory;
             _globalLogger = globalLogger;
             _baseDirectory = baseDirectory;
             _assemblyName = assemblyName;
+            _serviceProvider = serviceProvider;
         }
 
         public IDisposable StartTestLog(ITestOutputHelper output, string className, out ILoggerFactory loggerFactory, [CallerMemberName] string testName = null) =>
@@ -38,11 +41,15 @@ namespace Microsoft.Extensions.Logging.Testing
 
         public IDisposable StartTestLog(ITestOutputHelper output, string className, out ILoggerFactory loggerFactory, LogLevel minLogLevel, [CallerMemberName] string testName = null)
         {
-            var factory = CreateLoggerFactory(output, className, minLogLevel, testName);
+            var serviceProvider = CreateLoggerServices(output, className, minLogLevel, testName);
+            var factory = serviceProvider.GetRequiredService<ILoggerFactory>();
             loggerFactory = factory;
-            var logger = factory.CreateLogger("TestLifetime");
+            var logger = loggerFactory.CreateLogger("TestLifetime");
 
             var stopwatch = Stopwatch.StartNew();
+
+            var scope = logger.BeginScope("Test: {testName}", testName);
+
             _globalLogger.LogInformation("Starting test {testName}", testName);
             logger.LogInformation("Starting test {testName}", testName);
 
@@ -51,60 +58,85 @@ namespace Microsoft.Extensions.Logging.Testing
                 stopwatch.Stop();
                 _globalLogger.LogInformation("Finished test {testName} in {duration}s", testName, stopwatch.Elapsed.TotalSeconds);
                 logger.LogInformation("Finished test {testName} in {duration}s", testName, stopwatch.Elapsed.TotalSeconds);
+                scope.Dispose();
                 factory.Dispose();
+                (serviceProvider as IDisposable)?.Dispose();
             });
         }
 
         public ILoggerFactory CreateLoggerFactory(ITestOutputHelper output, string className, [CallerMemberName] string testName = null) =>
-            CreateLoggerFactory(output, className, LogLevel.Debug, testName);
+            CreateLoggerFactory(output, className, LogLevel.Trace, testName);
 
         public ILoggerFactory CreateLoggerFactory(ITestOutputHelper output, string className, LogLevel minLogLevel, [CallerMemberName] string testName = null)
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddLogging(builder =>
-            {
-                builder.SetMinimumLevel(minLogLevel);
-                if (output != null)
-                {
-                    builder.AddXunit(output, minLogLevel);
-                }
-            });
+            return CreateLoggerServices(output, className, minLogLevel, testName).GetRequiredService<ILoggerFactory>();
+        }
 
-            var loggerFactory = serviceCollection.BuildServiceProvider().GetRequiredService<ILoggerFactory>();
+        public IServiceProvider CreateLoggerServices(ITestOutputHelper output, string className, LogLevel minLogLevel, [CallerMemberName] string testName = null)
+        {
             // Try to shorten the class name using the assembly name
             if (className.StartsWith(_assemblyName + "."))
             {
                 className = className.Substring(_assemblyName.Length + 1);
             }
 
+            SerilogLoggerProvider serilogLoggerProvider = null;
             if (!string.IsNullOrEmpty(_baseDirectory))
             {
                 var testOutputFile = Path.Combine(_baseDirectory, _assemblyName, className, $"{testName}.log");
 
-                AddFileLogging(loggerFactory, testOutputFile);
+                serilogLoggerProvider = ConfigureFileLogging(testOutputFile);
             }
 
-            return loggerFactory;
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddLogging(builder =>
+            {
+                builder.SetMinimumLevel(minLogLevel);
+
+                if (output != null)
+                {
+                    builder.AddXunit(output, minLogLevel);
+                }
+
+                if (serilogLoggerProvider != null)
+                {
+                    // Use a factory so that the container will dispose it
+                    builder.Services.AddSingleton<ILoggerProvider>(_ => serilogLoggerProvider);
+                }
+            });
+
+            return serviceCollection.BuildServiceProvider();
         }
 
         public static AssemblyTestLog Create(string assemblyName, string baseDirectory)
         {
-            var serviceCollection = new ServiceCollection();
-
-            // Let the global logger log to the console, it's just "Starting X..." "Finished X..."
-            serviceCollection.AddLogging(builder => builder.AddConsole());
-
-            var loggerFactory = serviceCollection.BuildServiceProvider().GetRequiredService<ILoggerFactory>();
-
+            SerilogLoggerProvider serilogLoggerProvider = null;
             if (!string.IsNullOrEmpty(baseDirectory))
             {
                 var globalLogFileName = Path.Combine(baseDirectory, assemblyName, "global.log");
-                AddFileLogging(loggerFactory, globalLogFileName);
+                serilogLoggerProvider = ConfigureFileLogging(globalLogFileName);
             }
+
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.AddLogging(builder =>
+            {
+                // Global logging, when it's written, is expected to be outputted. So set the log level to minimum.
+                builder.SetMinimumLevel(LogLevel.Trace);
+
+                if (serilogLoggerProvider != null)
+                {
+                    // Use a factory so that the container will dispose it
+                    builder.Services.AddSingleton<ILoggerProvider>(_ => serilogLoggerProvider);
+                }
+            });
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
             var logger = loggerFactory.CreateLogger("GlobalTestLog");
             logger.LogInformation($"Global Test Logging initialized. Set the '{OutputDirectoryEnvironmentVariableName}' Environment Variable in order to create log files on disk.");
-            return new AssemblyTestLog(loggerFactory, logger, baseDirectory, assemblyName);
+            return new AssemblyTestLog(loggerFactory, logger, baseDirectory, assemblyName, serviceProvider);
         }
 
         public static AssemblyTestLog ForAssembly(Assembly assembly)
@@ -120,7 +152,7 @@ namespace Microsoft.Extensions.Logging.Testing
             }
         }
 
-        private static void AddFileLogging(ILoggerFactory loggerFactory, string fileName)
+        private static SerilogLoggerProvider ConfigureFileLogging(string fileName)
         {
             var dir = Path.GetDirectoryName(fileName);
             if (!Directory.Exists(dir))
@@ -138,11 +170,12 @@ namespace Microsoft.Extensions.Logging.Testing
                 .MinimumLevel.Verbose()
                 .WriteTo.File(fileName, outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{SourceContext}] [{Level}] {Message}{NewLine}{Exception}", flushToDiskInterval: TimeSpan.FromSeconds(1), shared: true)
                 .CreateLogger();
-            loggerFactory.AddSerilog(serilogger, dispose: true);
+            return new SerilogLoggerProvider(serilogger, dispose: true);
         }
 
         public void Dispose()
         {
+            (_serviceProvider as IDisposable)?.Dispose();
             _globalLoggerFactory.Dispose();
         }
 

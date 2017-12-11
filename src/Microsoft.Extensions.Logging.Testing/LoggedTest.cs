@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,9 +17,11 @@ namespace Microsoft.Extensions.Logging.Testing
             _output = output;
         }
 
-        public IDisposable StartLog(out ILoggerFactory loggerFactory, [CallerMemberName] string testName = null)
+        public IDisposable StartLog(out ILoggerFactory loggerFactory, [CallerMemberName] string testName = null) => StartLog(out loggerFactory, LogLevel.Information, testName);
+
+        public IDisposable StartLog(out ILoggerFactory loggerFactory, LogLevel minLogLevel, [CallerMemberName] string testName = null)
         {
-            return AssemblyTestLog.ForAssembly(GetType().GetTypeInfo().Assembly).StartTestLog(_output, GetType().FullName, out loggerFactory, testName);
+            return AssemblyTestLog.ForAssembly(GetType().GetTypeInfo().Assembly).StartTestLog(_output, GetType().FullName, out loggerFactory, minLogLevel, testName);
         }
     }
 }

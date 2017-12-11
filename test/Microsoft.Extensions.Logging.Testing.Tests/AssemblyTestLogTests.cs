@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -37,6 +37,9 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             {
                 var logger = loggerFactory.CreateLogger("TestLogger");
                 logger.LogInformation("Information!");
+
+                // Trace is disabled by default
+                logger.LogTrace("Trace!");
             }
 
             Assert.Equal(@"| TestLifetime Information: Starting test TestLogWritesToITestOutputHelper
@@ -50,23 +53,27 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         {
             // Because this test writes to a file, it is a functional test and should be logged
             // but it's also testing the test logging facility. So this is pretty meta ;)
-            using (StartLog(out var loggerFactory))
+            var tempDir = Path.Combine(Path.GetTempPath(), $"TestLogging_{Guid.NewGuid().ToString("N")}");
+            try
             {
-                var logger = loggerFactory.CreateLogger("Test");
-
-                var tempDir = Path.Combine(Path.GetTempPath(), $"TestLogging_{Guid.NewGuid().ToString("N")}");
-                using (var testAssemblyLog = AssemblyTestLog.Create("FakeTestAssembly", tempDir))
+                using (StartLog(out var loggerFactory))
                 {
-                    logger.LogInformation("Created test log in {baseDirectory}", tempDir);
+                    var logger = loggerFactory.CreateLogger("Test");
 
-                    using (testAssemblyLog.StartTestLog(output: null, className: "FakeTestAssembly.FakeTestClass", loggerFactory: out var testLoggerFactory, testName: "FakeTestName"))
+                    using (var testAssemblyLog = AssemblyTestLog.Create("FakeTestAssembly", tempDir))
                     {
-                        var testLogger = testLoggerFactory.CreateLogger("TestLogger");
-                        testLogger.LogInformation("Information!");
-                    }
-                }
+                        logger.LogInformation("Created test log in {baseDirectory}", tempDir);
 
-                logger.LogInformation("Finished test log in {baseDirectory}", tempDir);
+                        using (testAssemblyLog.StartTestLog(output: null, className: "FakeTestAssembly.FakeTestClass", loggerFactory: out var testLoggerFactory, minLogLevel: LogLevel.Trace, testName: "FakeTestName"))
+                        {
+                            var testLogger = testLoggerFactory.CreateLogger("TestLogger");
+                            testLogger.LogInformation("Information!");
+                            testLogger.LogTrace("Trace!");
+                        }
+                    }
+
+                    logger.LogInformation("Finished test log in {baseDirectory}", tempDir);
+                }
 
                 var globalLogPath = Path.Combine(tempDir, "FakeTestAssembly", "global.log");
                 var testLog = Path.Combine(tempDir, "FakeTestAssembly", "FakeTestClass", $"FakeTestName.log");
@@ -75,9 +82,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 Assert.True(File.Exists(testLog), $"Expected test log file {testLog} to exist");
 
                 var globalLogContent = MakeConsistent(File.ReadAllText(globalLogPath));
-                logger.LogInformation($"Global Log Content:{Environment.NewLine}{{content}}", globalLogContent);
                 var testLogContent = MakeConsistent(File.ReadAllText(testLog));
-                logger.LogInformation($"Test Log Content:{Environment.NewLine}{{content}}", testLogContent);
 
                 Assert.Equal(@"[GlobalTestLog] [Information] Global Test Logging initialized. Set the 'ASPNETCORE_TEST_LOG_DIR' Environment Variable in order to create log files on disk.
 [GlobalTestLog] [Information] Starting test ""FakeTestName""
@@ -85,8 +90,16 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
 ", globalLogContent, ignoreLineEndingDifferences: true);
                 Assert.Equal(@"[TestLifetime] [Information] Starting test ""FakeTestName""
 [TestLogger] [Information] Information!
+[TestLogger] [Verbose] Trace!
 [TestLifetime] [Information] Finished test ""FakeTestName"" in DURATION
 ", testLogContent, ignoreLineEndingDifferences: true);
+            }
+            finally
+            {
+                if (Directory.Exists(tempDir))
+                {
+                    Directory.Delete(tempDir, recursive: true);
+                }
             }
         }
 
