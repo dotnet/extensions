@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Text;
 using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Logging.Testing
@@ -54,14 +55,18 @@ namespace Microsoft.Extensions.Logging.Testing
             {
                 return;
             }
+
+            // Buffer the message into a single string in order to avoid shearing the message when running across multiple threads.
+            var messageBuilder = new StringBuilder();
+
             var firstLinePrefix = $"| {_category} {logLevel}: ";
             var lines = formatter(state, exception).Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
-            WriteLine(firstLinePrefix + lines.First());
+            messageBuilder.AppendLine(firstLinePrefix + lines.First());
 
             var additionalLinePrefix = "|" + new string(' ', firstLinePrefix.Length - 1);
             foreach (var line in lines.Skip(1))
             {
-                WriteLine(additionalLinePrefix + line);
+                messageBuilder.AppendLine(additionalLinePrefix + line);
             }
 
             if (exception != null)
@@ -70,19 +75,17 @@ namespace Microsoft.Extensions.Logging.Testing
                 additionalLinePrefix = "| ";
                 foreach (var line in lines.Skip(1))
                 {
-                    WriteLine(additionalLinePrefix + line);
+                    messageBuilder.AppendLine(additionalLinePrefix + line);
                 }
             }
-        }
 
-        public bool IsEnabled(LogLevel logLevel)
-            => logLevel >= _minLogLevel;
+            // Remove the last line-break, because ITestOutputHelper only has WriteLine.
+            var message = messageBuilder.ToString();
+            if (message.EndsWith(Environment.NewLine))
+            {
+                message = message.Substring(0, message.Length - Environment.NewLine.Length);
+            }
 
-        public IDisposable BeginScope<TState>(TState state)
-            => new NullScope();
-
-        private void WriteLine(string message)
-        {
             try
             {
                 _output.WriteLine(message);
@@ -95,6 +98,12 @@ namespace Microsoft.Extensions.Logging.Testing
                 // caller has additional loggers registered
             }
         }
+
+        public bool IsEnabled(LogLevel logLevel)
+            => logLevel >= _minLogLevel;
+
+        public IDisposable BeginScope<TState>(TState state)
+            => new NullScope();
 
         private class NullScope : IDisposable
         {
