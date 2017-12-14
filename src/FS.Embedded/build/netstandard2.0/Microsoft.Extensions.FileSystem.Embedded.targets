@@ -1,0 +1,66 @@
+<Project>
+
+  <PropertyGroup>
+    <TaskFolder Condition=" '$(MSBuildRuntimeType)' == 'Core' ">netstandard1.5</TaskFolder>
+    <TaskFolder Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net461</TaskFolder>
+    <TaskAssembly>$(MSBuildThisFileDirectory)..\..\tasks\$(TaskFolder)\Microsoft.Extensions.FileSystem.Embedded.Manifest.Task.dll</TaskAssembly>
+  </PropertyGroup>
+
+  <UsingTask
+    AssemblyFile="$(TaskAssembly)"
+    TaskName="Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.GenerateEmbeddedResourcesManifest" />
+
+  <PropertyGroup>
+    <GenerateEmbeddedFilesManifest Condition="'$(GenerateEmbeddedFilesManifest)' == ''">false</GenerateEmbeddedFilesManifest>
+    <EmbeddedFilesManifestFileName Condition="'$(EmbeddedFilesManifestFileName)' == ''">Microsoft.Extensions.FileSystem.Embedded.Manifest.xml</EmbeddedFilesManifestFileName>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(GenerateEmbeddedFilesManifest)' == 'true'">
+    <EmbeddedResource
+      Include="$(IntermediateOutputPath)$(EmbeddedFilesManifestFileName)"
+      IsManifest="true"
+      LogicalName="$(EmbeddedFilesManifestFileName)" />
+  </ItemGroup>
+
+  <Target Name="CreateGeneratedManifestInfoInputsCacheFile">
+    <PropertyGroup>
+      <GeneratedManifestInfoInputsCacheFile>$(IntermediateOutputPath)$(MSBuildProjectName).EmbeddedFilesManifest.cache</GeneratedManifestInfoInputsCacheFile>
+    </PropertyGroup>
+
+    <Hash ItemsToHash="@(EmbeddedResource)">
+      <Output TaskParameter="HashResult" PropertyName="_EmbeddedGeneratedManifestHash" />
+    </Hash>
+
+    <WriteLinesToFile Lines="$(_EmbeddedGeneratedManifestHash)" File="$(GeneratedManifestInfoInputsCacheFile)" Overwrite="True" WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(GeneratedManifestInfoInputsCacheFile)" />
+    </ItemGroup>
+  </Target>
+
+  <Target
+    Name="_GenerateEmbeddedFilesManifest"
+    DependsOnTargets="CreateGeneratedManifestInfoInputsCacheFile"
+    AfterTargets="PrepareResourceNames"
+    Condition="'$(GenerateEmbeddedFilesManifest)' == 'true'"
+    Inputs="$(GeneratedManifestInfoInputsCacheFile)"
+    Outputs="@(EmbeddedResource->WithMetadataValue('IsManifest', 'true'))">
+    <ItemGroup>
+      <__FilesForManifest Include="@(EmbeddedResource)" />
+      <__FilesForManifest Remove="@(EmbeddedResource->WithMetadataValue('ExcludeFromManifest','true'))" />
+      <__FilesForManifest Remove="@(EmbeddedResource->WithMetadataValue('IsManifest','true'))" />
+      <__ManifestFiles Include="@(EmbeddedResource->WithMetadataValue('IsManifest', 'true'))" />
+    </ItemGroup>
+
+    <Error Condition="'@(__ManifestFiles->Count())' > 1" Text="Multiple manifest files found. Only one manifest file per assembly is allowed: @(__ManifestFiles)" />
+    <Error Condition="'@(__ManifestFiles->Count())' == 0" Text="No manifest files found. At leat one manifest file needs to be defined by creating an embedded resource with 'IsManifest=true'." />
+
+    <Message Importance="normal" Condition="'@(__FilesForManifest->Count())' == 0" Text="All embedded files are excluded or a manifest file. No embedded files found to include in the manifest"/>
+
+    <GenerateEmbeddedResourcesManifest
+      EmbeddedFiles="@(__FilesForManifest)"
+      ManifestFile="@(__ManifestFiles)"
+      Condition="@(__FilesForManifest->Count()) != 0" />
+
+  </Target>
+</Project>

@@ -12,7 +12,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="build\netstandard2.0\*" Pack="true" PackagePath="build\netstandard2.0\" />
+    <None Include="..\FS.Embedded.Manifest.Task\bin\$(Configuration)\netstandard1.5\$(AssemblyName).Manifest.Task.dll" Pack="true" PackagePath="tasks\netstandard1.5\$(AssemblyName).Manifest.Task.dll" />
+    <None Include="..\FS.Embedded.Manifest.Task\bin\$(Configuration)\net461\$(AssemblyName).Manifest.Task.dll" Pack="true" PackagePath="tasks\net461\$(AssemblyName).Manifest.Task.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\FS.Abstractions\FS.Abstractions.csproj" />
+    <ProjectReference Include="..\FS.Embedded.Manifest.Task\FS.Embedded.Manifest.Task.csproj" PrivateAssets="true" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>
