@@ -87,6 +87,7 @@ namespace Microsoft.Extensions.FileProviders.Embedded
             {
                 _length = stream.Length;
             }
+
             return stream;
         }
     }
