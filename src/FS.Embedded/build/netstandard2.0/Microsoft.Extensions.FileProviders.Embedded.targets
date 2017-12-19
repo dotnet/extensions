@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TaskFolder Condition=" '$(MSBuildRuntimeType)' == 'Core' ">netstandard1.5</TaskFolder>
     <TaskFolder Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net461</TaskFolder>
-    <TaskAssembly>$(MSBuildThisFileDirectory)..\..\tasks\$(TaskFolder)\Microsoft.Extensions.FileSystem.Embedded.Manifest.Task.dll</TaskAssembly>
+    <TaskAssembly>$(MSBuildThisFileDirectory)..\..\tasks\$(TaskFolder)\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll</TaskAssembly>
   </PropertyGroup>
 
   <UsingTask
@@ -12,7 +12,7 @@
 
   <PropertyGroup>
     <GenerateEmbeddedFilesManifest Condition="'$(GenerateEmbeddedFilesManifest)' == ''">false</GenerateEmbeddedFilesManifest>
-    <EmbeddedFilesManifestFileName Condition="'$(EmbeddedFilesManifestFileName)' == ''">Microsoft.Extensions.FileSystem.Embedded.Manifest.xml</EmbeddedFilesManifestFileName>
+    <EmbeddedFilesManifestFileName Condition="'$(EmbeddedFilesManifestFileName)' == ''">Microsoft.Extensions.FileProviders.Embedded.Manifest.xml</EmbeddedFilesManifestFileName>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(GenerateEmbeddedFilesManifest)' == 'true'">
