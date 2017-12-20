@@ -2,15 +2,6 @@
     "Default": { // Rules to run for packages not listed in any other set.
         "rules": [
             "DefaultCompositeRule"
-        ],
-        "packages": {
-            "Microsoft.Extensions.FileProviders.Embedded.Manifest.Task": {
-                "Exclusions": {
-                    "DOC_MISSING": {
-                        "lib/netstandard2.0/Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll": "It is an MSBuild task"
-                    }
-                }
-            }
-        }
+        ]
     }
 }

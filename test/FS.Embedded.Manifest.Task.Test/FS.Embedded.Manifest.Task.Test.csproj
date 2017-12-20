@@ -5,13 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
-    <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
-    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
-    <PackageReference Include="xunit.analyzers" Version="$(XunitAnalyzersPackageVersion)" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" />
     <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCorePackageVersion)" PrivateAssets="All" />
