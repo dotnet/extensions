@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.FileProviders
 {
     internal class TestAssembly : Assembly
     {
-        public TestAssembly(string manifest, string manifestName = "Microsoft.Extensions.FileSystem.Embedded.Manifest.xml")
+        public TestAssembly(string manifest, string manifestName = "Microsoft.Extensions.FileProviders.Embedded.Manifest.xml")
         {
             ManifestStream = new MemoryStream();
             using (var writer = new StreamWriter(ManifestStream, Encoding.UTF8, 1024, leaveOpen: true))
@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.FileProviders
             ManifestName = manifestName;
         }
 
-        public TestAssembly(TestEntry entry, string manifestName = "Microsoft.Extensions.FileSystem.Embedded.Manifest.xml")
+        public TestAssembly(TestEntry entry, string manifestName = "Microsoft.Extensions.FileProviders.Embedded.Manifest.xml")
         {
             ManifestName = manifestName;
 
