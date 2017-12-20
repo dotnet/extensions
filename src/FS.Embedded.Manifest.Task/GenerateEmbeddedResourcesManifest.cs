@@ -56,7 +56,8 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest.Task
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            return XmlWriter.Create(File.OpenWrite(ManifestFile), settings);
+            var fileStream = new FileStream(ManifestFile, FileMode.Create);
+            return XmlWriter.Create(fileStream, settings);
         }
 
         public EmbeddedItem[] CreateEmbeddedItems(params ITaskItem[] items)
