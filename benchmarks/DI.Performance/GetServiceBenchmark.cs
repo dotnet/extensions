@@ -8,7 +8,6 @@ using BenchmarkDotNet.Attributes;
 
 namespace Microsoft.Extensions.DependencyInjection.Performance
 {
-    [ParameterizedJobConfigAttribute(typeof(CoreConfig))]
     public class GetServiceBenchmark
     {
         private const int OperationsPerInvoke = 50000;

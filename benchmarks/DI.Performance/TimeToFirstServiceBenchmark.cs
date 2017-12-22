@@ -7,7 +7,6 @@ using BenchmarkDotNet.Attributes;
 
 namespace Microsoft.Extensions.DependencyInjection.Performance
 {
-    [ParameterizedJobConfigAttribute(typeof(CoreConfig))]
     public class TimeToFirstServiceBenchmark
     {
         private IServiceProvider _transientSp;
