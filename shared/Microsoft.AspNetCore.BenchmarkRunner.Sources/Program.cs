@@ -14,13 +14,17 @@ using BenchmarkDotNet.Toolchains.InProcess;
 
 namespace Microsoft.AspNetCore.BenchmarkDotNet.Runner
 {
-    class Program
+    partial class Program
     {
         private static TextWriter _standardOutput;
         private static StringBuilder _standardOutputText;
 
+        static partial void BeforeMain(string[] args);
+
         private static int Main(string[] args)
         {
+            BeforeMain(args);
+
             CheckValidate(ref args);
             var summaries = BenchmarkSwitcher.FromAssembly(typeof(Program).GetTypeInfo().Assembly)
                 .Run(args, ManualConfig.CreateEmpty());
@@ -65,15 +69,10 @@ namespace Microsoft.AspNetCore.BenchmarkDotNet.Runner
         private static void CheckValidate(ref string[] args)
         {
             var argsList = args.ToList();
-            if (argsList.Remove("--validate"))
+            if (argsList.Remove("--validate") || argsList.Remove("--validate-fast"))
             {
                 SuppressConsole();
-                ParameterizedJobConfigAttribute.Job = Job.Dry;
-            }
-            else if (argsList.Remove("--validate-fast"))
-            {
-                SuppressConsole();
-                ParameterizedJobConfigAttribute.Job = Job.Dry.With(InProcessToolchain.Instance);
+                AspNetCoreBenchmarkAttribute.UseValidationConfig = true;
             }
 
             args = argsList.ToArray();
