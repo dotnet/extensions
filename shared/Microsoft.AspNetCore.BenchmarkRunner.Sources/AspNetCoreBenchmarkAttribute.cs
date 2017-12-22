@@ -13,18 +13,18 @@ using BenchmarkDotNet.Toolchains.InProcess;
 namespace BenchmarkDotNet.Attributes
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Assembly)]
-    public class AspNetCoreBenchmarkAttribute : Attribute, IConfigSource
+    internal class AspNetCoreBenchmarkAttribute : Attribute, IConfigSource
     {
         public static bool UseValidationConfig { get; set; }
 
-        public Type ConfigType { get;set; }
-        public Type ValidationConfigType { get;set; }
+        public Type ConfigType { get; }
+        public Type ValidationConfigType { get; }
 
-        public AspNetCoreBenchmarkAttribute() : this(typeof(CoreConfig))
+        public AspNetCoreBenchmarkAttribute() : this(typeof(DefaultCoreConfig))
         {
         }
 
-        public AspNetCoreBenchmarkAttribute(Type configType) : this(configType, typeof(CoreValidationConfig))
+        public AspNetCoreBenchmarkAttribute(Type configType) : this(configType, typeof(DefaultCoreValidationConfig))
         {
         }
 

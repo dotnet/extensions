@@ -13,9 +13,9 @@ using BenchmarkDotNet.Toolchains.InProcess;
 
 namespace BenchmarkDotNet.Attributes
 {
-    public class CoreValidationConfig : ManualConfig
+    internal class DefaultCoreValidationConfig : ManualConfig
     {
-        public CoreValidationConfig()
+        public DefaultCoreValidationConfig()
         {
             Add(ConsoleLogger.Default);
 

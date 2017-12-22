@@ -14,9 +14,9 @@ using BenchmarkDotNet.Validators;
 
 namespace BenchmarkDotNet.Attributes
 {
-    public class CoreConfig : ManualConfig
+    internal class DefaultCoreConfig : ManualConfig
     {
-        public CoreConfig()
+        public DefaultCoreConfig()
         {
             Add(ConsoleLogger.Default);
             Add(MarkdownExporter.GitHub);
