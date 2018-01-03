@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
         {
             var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            var secrets = await _client.GetSecretsAsync(_vault);
+            var secrets = await _client.GetSecretsAsync(_vault).ConfigureAwait(false);
             do
             {
                 foreach (var secretItem in secrets)
@@ -54,13 +54,13 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
                         continue;
                     }
 
-                    var value = await _client.GetSecretAsync(secretItem.Id);
+                    var value = await _client.GetSecretAsync(secretItem.Id).ConfigureAwait(false);
                     var key = _manager.GetKey(value);
                     data.Add(key, value.Value);
                 }
 
                 secrets = secrets.NextPageLink != null ?
-                    await _client.GetSecretsNextAsync(secrets.NextPageLink) :
+                    await _client.GetSecretsNextAsync(secrets.NextPageLink).ConfigureAwait(false) :
                     null;
             } while (secrets != null);
 
