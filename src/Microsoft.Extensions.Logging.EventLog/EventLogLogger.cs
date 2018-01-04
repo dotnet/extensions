@@ -15,6 +15,8 @@ namespace Microsoft.Extensions.Logging.EventLog
     {
         private readonly string _name;
         private readonly EventLogSettings _settings;
+        private readonly IExternalScopeProvider _externalScopeProvider;
+
         private const string ContinuationString = "...";
         private readonly int _beginOrEndMessageSegmentSize;
         private readonly int _intermediateMessageSegmentSize;
@@ -34,9 +36,22 @@ namespace Microsoft.Extensions.Logging.EventLog
         /// <param name="name">The name of the logger.</param>
         /// <param name="settings">The <see cref="EventLogSettings"/>.</param>
         public EventLogLogger(string name, EventLogSettings settings)
+            : this(name, settings, new LoggerExternalScopeProvider())
+        {
+
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EventLogLogger"/> class.
+        /// </summary>
+        /// <param name="name">The name of the logger.</param>
+        /// <param name="settings">The <see cref="EventLogSettings"/>.</param>
+        /// <param name="externalScopeProvider">The <see cref="IExternalScopeProvider"/>.</param>
+        public EventLogLogger(string name, EventLogSettings settings, IExternalScopeProvider externalScopeProvider)
         {
             _name = string.IsNullOrEmpty(name) ? nameof(EventLogLogger) : name;
             _settings = settings;
+            _externalScopeProvider = externalScopeProvider;
 
             var logName = string.IsNullOrEmpty(settings.LogName) ? "Application" : settings.LogName;
             var sourceName = string.IsNullOrEmpty(settings.SourceName) ? "Application" : settings.SourceName;
@@ -63,7 +78,7 @@ namespace Microsoft.Extensions.Logging.EventLog
         /// <inheritdoc />
         public IDisposable BeginScope<TState>(TState state)
         {
-            return NoopDisposable.Instance;
+            return _externalScopeProvider?.Push(state);
         }
 
         /// <inheritdoc />
@@ -102,8 +117,10 @@ namespace Microsoft.Extensions.Logging.EventLog
 
             if (exception != null)
             {
-                message += Environment.NewLine + Environment.NewLine + exception.ToString();
+                message += Environment.NewLine + Environment.NewLine + exception;
             }
+
+            _externalScopeProvider?.ForEachScope<object>((scope, _) => message += Environment.NewLine + scope, null);
 
             WriteMessage(message, GetEventLogEntryType(logLevel), eventId.Id);
         }

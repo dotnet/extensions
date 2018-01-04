@@ -120,6 +120,32 @@ namespace Microsoft.Extensions.Logging
             Assert.Equal(expectedMessage, testEventLog.Messages[0]);
         }
 
+
+        [Fact]
+        public void Message_WritesFullMessageWithScopes()
+        {
+            // Arrange
+            var loggerName = "Test";
+            var maxMessageSize = 50 + loggerName.Length + Environment.NewLine.Length;
+            var expectedMessage = loggerName + Environment.NewLine +
+                                  "Message" + Environment.NewLine +
+                                  "Outer Scope" + Environment.NewLine +
+                                  "Inner Scope";
+            var testEventLog = new TestEventLog(maxMessageSize);
+            var logger = new EventLogLogger(loggerName, new EventLogSettings() { EventLog = testEventLog });
+
+            // Act
+            using (logger.BeginScope("Outer Scope"))
+            using (logger.BeginScope("Inner Scope"))
+            {
+                logger.LogInformation("Message");
+            }
+
+            // Assert
+            Assert.Single(testEventLog.Messages);
+            Assert.Equal(expectedMessage, testEventLog.Messages[0]);
+        }
+
         public static TheoryData<int, string[]> WritesSplitMessagesData
         {
             get

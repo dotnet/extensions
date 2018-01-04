@@ -9,9 +9,11 @@ namespace Microsoft.Extensions.Logging.EventLog
     /// The provider for the <see cref="EventLogLogger"/>.
     /// </summary>
     [ProviderAlias("EventLog")]
-    public class EventLogLoggerProvider : ILoggerProvider
+    public class EventLogLoggerProvider : ILoggerProvider, ISupportExternalScope
     {
         private readonly EventLogSettings _settings;
+
+        private IExternalScopeProvider _scopeProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EventLogLoggerProvider"/> class.
@@ -38,6 +40,11 @@ namespace Microsoft.Extensions.Logging.EventLog
 
         public void Dispose()
         {
+        }
+
+        public void SetScopeProvider(IExternalScopeProvider scopeProvider)
+        {
+            _scopeProvider = scopeProvider;
         }
     }
 }
