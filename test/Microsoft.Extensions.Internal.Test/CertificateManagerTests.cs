@@ -145,6 +145,24 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             Assert.Equal(EnsureCertificateResult.UserCancelledTrustStep, trustFailed);
         }
 
+        [Fact(Skip = "Requires user interaction")]
+        public void EnsureAspNetCoreHttpsDevelopmentCertificate_CanRemoveCertificates()
+        {
+            var manager = new CertificateManager();
+
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+            manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: true, subject: TestCertificateSubject);
+
+            manager.CleanupHttpsCertificates(TestCertificateSubject);
+
+            Assert.Empty(manager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: false).Where(c => c.Subject == TestCertificateSubject));
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Assert.Empty(manager.ListCertificates(CertificatePurpose.HTTPS, StoreName.Root, StoreLocation.CurrentUser, isValid: false).Where(c => c.Subject == TestCertificateSubject));
+            }
+        }
+
         [Fact]
         public void EnsureCreateIdentityTokenSigningCertificate_CreatesACertificate_WhenThereAreNoHttpsCertificates()
         {

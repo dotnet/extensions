@@ -33,12 +33,28 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         public const int RSAMinimumKeySizeInBits = 2048;
 
         private static readonly TimeSpan MaxRegexTimeout = TimeSpan.FromMinutes(1);
+        private const string CertificateSubjectRegex = "CN=(.*[^,]+).*";
+        private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
+        private static readonly string MacOSUserKeyChain = Environment.GetEnvironmentVariable("HOME") + "/Library/Keychains/login.keychain-db";
         private const string MacOSFindCertificateCommandLine = "security";
-        private const string MacOSFindCertificateCommandLineArguments = "find-certificate -c localhost -a -Z -p /Library/Keychains/System.keychain";
+#if NETCOREAPP2_0 || NETCOREAPP2_1
+        private static readonly string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p " + MacOSSystemKeyChain;
+#elif NET461
+#else
+#error Platform not supported
+#endif
         private const string MacOSFindCertificateOutputRegex = "SHA-1 hash: ([0-9A-Z]+)";
+        private const string MacOSRemoveCertificateTrustCommandLine = "sudo";
+        private const string MacOSRemoveCertificateTrustCommandLineArgumentsFormat = "security remove-trusted-cert -d {0}";
+        private const string MacOSDeleteCertificateCommandLine = "sudo";
+        private const string MacOSDeleteCertificateCommandLineArgumentsFormat = "security delete-certificate -Z {0} {1}";
         private const string MacOSTrustCertificateCommandLine = "sudo";
-        private const string MacOSTrustCertificateCommandLineArguments = "security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ";
-
+#if NETCOREAPP2_0 || NETCOREAPP2_1
+        private static readonly string MacOSTrustCertificateCommandLineArguments = "security add-trusted-cert -d -r trustRoot -k " + MacOSSystemKeyChain + " ";
+#elif NET461
+#else
+#error Platform not supported
+#endif
         private const int UserCancelledErrorCode = 1223;
 
         public IList<X509Certificate2> ListCertificates(
@@ -327,11 +343,13 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             try
             {
                 ExportCertificate(publicCertificate, tmpFile, includePrivateKey: false, password: null);
-                var process = Process.Start(MacOSTrustCertificateCommandLine, MacOSTrustCertificateCommandLineArguments + tmpFile);
-                process.WaitForExit();
-                if (process.ExitCode != 0)
+                using (var process = Process.Start(MacOSTrustCertificateCommandLine, MacOSTrustCertificateCommandLineArguments + tmpFile))
                 {
-                    throw new InvalidOperationException("There was an error trusting the certificate.");
+                    process.WaitForExit();
+                    if (process.ExitCode != 0)
+                    {
+                        throw new InvalidOperationException("There was an error trusting the certificate.");
+                    }
                 }
             }
             finally
@@ -378,16 +396,25 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                var checkTrustProcess = Process.Start(new ProcessStartInfo(MacOSFindCertificateCommandLine, MacOSFindCertificateCommandLineArguments)
+                var subjectMatch = Regex.Match(certificate.Subject, CertificateSubjectRegex, RegexOptions.Singleline, MaxRegexTimeout);
+                if (!subjectMatch.Success)
+                {
+                    throw new InvalidOperationException($"Can't determine the subject for the certificate with subject '{certificate.Subject}'.");
+                }
+                var subject = subjectMatch.Groups[1].Value;
+                using (var checkTrustProcess = Process.Start(new ProcessStartInfo(
+                    MacOSFindCertificateCommandLine,
+                    string.Format(MacOSFindCertificateCommandLineArgumentsFormat, subject))
                 {
                     RedirectStandardOutput = true
-                });
-
-                checkTrustProcess.WaitForExit();
-                var output = checkTrustProcess.StandardOutput.ReadToEnd();
-                var matches = Regex.Matches(output, MacOSFindCertificateOutputRegex, RegexOptions.Multiline, MaxRegexTimeout);
-                var hashes = matches.OfType<Match>().Select(m => m.Groups[1].Value).ToList();
-                return !hashes.Any(h => string.Equals(h, certificate.Thumbprint, StringComparison.Ordinal));
+                }))
+                {
+                    var output = checkTrustProcess.StandardOutput.ReadToEnd();
+                    checkTrustProcess.WaitForExit();
+                    var matches = Regex.Matches(output, MacOSFindCertificateOutputRegex, RegexOptions.Multiline, MaxRegexTimeout);
+                    var hashes = matches.OfType<Match>().Select(m => m.Groups[1].Value).ToList();
+                    return hashes.Any(h => string.Equals(h, certificate.Thumbprint, StringComparison.Ordinal));
+                }
             }
             else
             {
@@ -395,26 +422,176 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
         }
 
+        public void CleanupHttpsCertificates(string subject = LocalhostHttpsDistinguishedName)
+        {
+            CleanupCertificates(CertificatePurpose.HTTPS, subject);
+        }
+
+        public void CleanupCertificates(CertificatePurpose purpose, string subject)
+        {
+            // On OS X we don't have a good way to manage trusted certificates in the system keychain
+            // so we do everything by invoking the native toolchain.
+            // This has some limitations, like for example not being able to identify our custom OID extension. For that
+            // matter, when we are cleaning up certificates on the machine, we start by removing the trusted certificates.
+            // To do this, we list the certificates that we can identify on the current user personal store and we invoke
+            // the native toolchain to remove them from the sytem keychain. Once we have removed the trusted certificates,
+            // we remove the certificates from the local user store to finish up the cleanup.
+            var certificates = ListCertificates(purpose, StoreName.My, StoreLocation.CurrentUser, isValid: false);
+            foreach (var certificate in certificates)
+            {
+                RemoveCertificate(certificate, RemoveLocations.All);
+            }
+        }
+
         public void RemoveAllCertificates(CertificatePurpose purpose, StoreName storeName, StoreLocation storeLocation, string subject = null)
         {
-            var certificates = ListCertificates(purpose, storeName, storeLocation, isValid: false);
+            var certificates = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+                ListCertificates(purpose, StoreName.My, StoreLocation.CurrentUser, isValid: false) :
+                ListCertificates(purpose, storeName, storeLocation, isValid: false);
             var certificatesWithName = subject == null ? certificates : certificates.Where(c => c.Subject == subject);
 
-            RemoveAllCertificatesCore(certificatesWithName, storeName, storeLocation);
+            var removeLocation = storeName == StoreName.My ? RemoveLocations.Local : RemoveLocations.Trusted;
+
+            foreach (var certificate in certificates)
+            {
+                RemoveCertificate(certificate, removeLocation);
+            }
+
             DisposeCertificates(certificates);
         }
 
-        public void RemoveAllCertificatesCore(IEnumerable<X509Certificate2> certificates, StoreName storeName, StoreLocation storeLocation)
+        private void RemoveCertificate(X509Certificate2 certificate, RemoveLocations locations)
         {
-            using (var store = new X509Store(storeName, storeLocation))
+            switch (locations)
+            {
+                case RemoveLocations.Undefined:
+                    throw new InvalidOperationException($"'{nameof(RemoveLocations.Undefined)}' is not a valid location.");
+                case RemoveLocations.Local:
+                    RemoveCertificateFromUserStore(certificate);
+                    break;
+                case RemoveLocations.Trusted when !RuntimeInformation.IsOSPlatform(OSPlatform.Linux):
+                    RemoveCertificateFromTrustedRoots(certificate);
+                    break;
+                case RemoveLocations.All:
+                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    {
+                        RemoveCertificateFromTrustedRoots(certificate);
+                    }
+                    RemoveCertificateFromUserStore(certificate);
+                    break;
+                default:
+                    throw new InvalidOperationException("Invalid location.");
+            }
+        }
+
+        private static void RemoveCertificateFromUserStore(X509Certificate2 certificate)
+        {
+            using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
             {
                 store.Open(OpenFlags.ReadWrite);
-                foreach (var certificate in certificates)
-                {
-                    var matching = store.Certificates.OfType<X509Certificate2>().Single(c => c.SerialNumber == certificate.SerialNumber);
-                    store.Remove(matching);
-                }
+                var matching = store.Certificates
+                    .OfType<X509Certificate2>()
+                    .Single(c => c.SerialNumber == certificate.SerialNumber);
+
+                store.Remove(matching);
                 store.Close();
+            }
+        }
+
+        private void RemoveCertificateFromTrustedRoots(X509Certificate2 certificate)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                using (var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser))
+                {
+                    store.Open(OpenFlags.ReadWrite);
+                    var matching = store.Certificates
+                        .OfType<X509Certificate2>()
+                        .Single(c => c.SerialNumber == certificate.SerialNumber);
+
+                    store.Remove(matching);
+                    store.Close();
+                }
+            }
+            else
+            {
+                if (IsTrusted(certificate)) // On OSX this check just ensures its on the system keychain
+                {
+                    try
+                    {
+                        RemoveCertificateTrustRule(certificate);
+                    }
+                    catch
+                    {
+                        // We don't care if we fail to remove the trust rule if
+                        // for some reason the certificate became untrusted.
+                        // The delete command will fail if the certificate is
+                        // trusted.
+                    }
+                    RemoveCertificateFromKeyChain(MacOSSystemKeyChain, certificate);
+                }
+            }
+        }
+
+        private static void RemoveCertificateTrustRule(X509Certificate2 certificate)
+        {
+            var certificatePath = Path.GetTempFileName();
+            try
+            {
+                var certBytes = certificate.Export(X509ContentType.Cert);
+                File.WriteAllBytes(certificatePath, certBytes);
+                var processInfo = new ProcessStartInfo(
+                    MacOSRemoveCertificateTrustCommandLine,
+                    string.Format(
+                        MacOSRemoveCertificateTrustCommandLineArgumentsFormat,
+                        certificatePath
+                    ));
+                using (var process = Process.Start(processInfo))
+                {
+                    process.WaitForExit();
+                }
+            }
+            finally
+            {
+                try
+                {
+                    if (File.Exists(certificatePath))
+                    {
+                        File.Delete(certificatePath);
+                    }
+                }
+                catch
+                {
+                    // We don't care about failing to do clean-up on a temp file.
+                }
+            }
+        }
+
+        private static void RemoveCertificateFromKeyChain(string keyChain, X509Certificate2 certificate)
+        {
+            var processInfo = new ProcessStartInfo(
+                MacOSDeleteCertificateCommandLine,
+                string.Format(
+                    MacOSDeleteCertificateCommandLineArgumentsFormat,
+                    certificate.Thumbprint.ToUpperInvariant(),
+                    keyChain
+                ))
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+
+            using (var process = Process.Start(processInfo))
+            {
+                var output = process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
+                process.WaitForExit();
+
+                if (process.ExitCode != 0)
+                {
+                    throw new InvalidOperationException($@"There was an error removing the certificate with thumbprint '{certificate.Thumbprint}'.
+
+{output}");
+                }
             }
         }
 
@@ -535,6 +712,14 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         private class UserCancelledTrustException : Exception
         {
+        }
+
+        private enum RemoveLocations
+        {
+            Undefined,
+            Local,
+            Trusted,
+            All
         }
 #endif
     }
