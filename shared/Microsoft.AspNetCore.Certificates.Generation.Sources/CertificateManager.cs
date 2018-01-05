@@ -39,9 +39,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         private const string MacOSFindCertificateCommandLine = "security";
 #if NETCOREAPP2_0 || NETCOREAPP2_1
         private static readonly string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p " + MacOSSystemKeyChain;
-#elif NET461
-#else
-#error Platform not supported
 #endif
         private const string MacOSFindCertificateOutputRegex = "SHA-1 hash: ([0-9A-Z]+)";
         private const string MacOSRemoveCertificateTrustCommandLine = "sudo";
@@ -51,9 +48,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         private const string MacOSTrustCertificateCommandLine = "sudo";
 #if NETCOREAPP2_0 || NETCOREAPP2_1
         private static readonly string MacOSTrustCertificateCommandLineArguments = "security add-trusted-cert -d -r trustRoot -k " + MacOSSystemKeyChain + " ";
-#elif NET461
-#else
-#error Platform not supported
 #endif
         private const int UserCancelledErrorCode = 1223;
 
