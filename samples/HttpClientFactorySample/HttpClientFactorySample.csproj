@@ -4,10 +4,6 @@
     <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
     <DebugType>portable</DebugType>
     <OutputType>Exe</OutputType>
-
-    <!-- Removing this is blocked by https://github.com/aspnet/Mvc/issues/5822 -->
-    <PackageTargetFallback>$(PackageTargetFallback);portable-net451+win8</PackageTargetFallback>
-    <DisableImplicitAssetTargetFallback>true</DisableImplicitAssetTargetFallback>
   </PropertyGroup>
 
   <ItemGroup>
