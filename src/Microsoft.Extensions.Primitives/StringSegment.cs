@@ -129,7 +129,7 @@ namespace Microsoft.Extensions.Primitives
             {
                 if ((uint)index >= (uint)Length)
                 {
-                    throw new IndexOutOfRangeException();
+                    ThrowHelper.ThrowIndexOutOfRangeException();
                 }
 
                 return Buffer[Offset + index];

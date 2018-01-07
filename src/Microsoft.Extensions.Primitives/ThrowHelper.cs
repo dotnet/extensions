@@ -18,6 +18,11 @@ namespace Microsoft.Extensions.Primitives
             throw new ArgumentOutOfRangeException(GetArgumentName(argument));
         }
 
+        internal static void ThrowIndexOutOfRangeException()
+        {
+            throw new IndexOutOfRangeException();
+        }
+
         internal static void ThrowArgumentException(ExceptionResource resource)
         {
             throw new ArgumentException(GetResourceText(resource));
