@@ -127,7 +127,7 @@ namespace Microsoft.Extensions.Primitives
         {
             get
             {
-                if (index < 0 || (uint)index >= (uint)Length)
+                if ((uint)index >= (uint)Length)
                 {
                     throw new IndexOutOfRangeException();
                 }
