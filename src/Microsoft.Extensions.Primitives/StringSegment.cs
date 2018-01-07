@@ -144,7 +144,7 @@ namespace Microsoft.Extensions.Primitives
                 return false;
             }
 
-            return obj is StringSegment && Equals((StringSegment)obj);
+            return obj is StringSegment segment && Equals(segment);
         }
 
         /// <summary>
