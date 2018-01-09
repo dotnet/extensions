@@ -128,6 +128,12 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             Assert.Equal("Value1", provider.Get("Section:Secret1"));
         }
 
+        [Fact]
+        public void ConstructorThrowsForNullManager()
+        {
+            Assert.Throws<ArgumentNullException>(() => new AzureKeyVaultConfigurationProvider(Mock.Of<IKeyVaultClient>(), VaultUri, null));
+        }
+
         private string GetSecretId(string name) => new SecretIdentifier(VaultUri, name).Identifier;
 
         private class EndsWithOneKeyVaultSecretManager : DefaultKeyVaultSecretManager

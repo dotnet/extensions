@@ -33,6 +33,11 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             {
                 throw new ArgumentNullException(nameof(vault));
             }
+            if (manager == null)
+            {
+                throw new ArgumentNullException(nameof(manager));
+            }
+
             _client = client;
             _vault = vault;
             _manager = manager;
