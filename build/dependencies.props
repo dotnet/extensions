@@ -4,7 +4,7 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15651</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15670</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-26102-01</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
@@ -12,7 +12,7 @@
     <SystemReflectionMetadataPackageVersion>1.6.0-preview1-26102-01</SystemReflectionMetadataPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview1-26102-01</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview1-26102-01</SystemSecurityCryptographyCngPackageVersion>
-    <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview2-25707-02</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview1-26102-01</SystemThreadingTasksExtensionsPackageVersion>
     <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualstudioPackageVersion>2.3.1</XunitRunnerVisualstudioPackageVersion>
