@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Http;
+using System.Threading;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 
@@ -416,6 +417,46 @@ namespace Microsoft.Extensions.DependencyInjection
                 return factory(httpClient, s);
             });
 
+            return builder;
+        }
+
+        /// <summary>
+        /// Sets the length of time that a <see cref="HttpMessageHandler"/> instance can be reused. Each named 
+        /// client can have its own configured handler lifetime value. The default value is two minutes. Set the lifetime to
+        /// <see cref="Timeout.InfiniteTimeSpan"/> to disable handler expiry.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The default implementation of <see cref="IHttpClientFactory"/> will pool the <see cref="HttpMessageHandler"/>
+        /// instances created by the factory to reduce resource consumption. This setting configures the amount of time
+        /// a handler can be pooled before it is scheduled for removal from the pool and disposal.
+        /// </para>
+        /// <para>
+        /// Pooling of handlers is desirable as each handler typially manages its own underlying HTTP connections; creating
+        /// more handlers than necessary can result in connection delays. Some handlers also keep connections open indefinitly
+        /// which can prevent the handler from reacting to DNS changes. The value of <paramref name="handlerLifetime"/> should be
+        /// chosen with an understanding of the application's requirement to respond to changes in the network environment.
+        /// </para>
+        /// <para>
+        /// Expiry of a handler will not immediately dispose the handler. An expired handler is placed in a separate pool 
+        /// which is processed at intervals to dispose handlers only when they become unreachable. Using long-lived
+        /// <see cref="HttpClient"/> instances will prevent the underlying <see cref="HttpMessageHandler"/> from being
+        /// disposed until all references are garbage-collected.
+        /// </para>
+        /// </remarks>
+        public static IHttpClientBuilder SetHandlerLifetime(this IHttpClientBuilder builder, TimeSpan handlerLifetime)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (handlerLifetime < HttpClientFactoryOptions.MinimumHandlerLifetime)
+            {
+                throw new ArgumentException(Resources.HandlerLifetime_InvalidValue, nameof(handlerLifetime));
+            }
+
+            builder.Services.Configure<HttpClientFactoryOptions>(builder.Name, options => options.HandlerLifetime = handlerLifetime);
             return builder;
         }
     }

@@ -47,26 +47,35 @@ namespace Microsoft.Extensions.Http.Logging
         
         private static class Log
         {
+            public static class EventIds
+            {
+                public static readonly EventId PipelineStart = new EventId(100, "RequestPipelineStart");
+                public static readonly EventId PipelineEnd = new EventId(101, "RequestPipelineEnd");
+
+                public static readonly EventId RequestHeader = new EventId(102, "RequestPipelineRequestHeader");
+                public static readonly EventId ResponseHeader = new EventId(103, "RequestPipelineResponseHeader");
+            }
+
             private static readonly Func<ILogger, HttpMethod, Uri, IDisposable> _beginRequestPipelineScope = LoggerMessage.DefineScope<HttpMethod, Uri>("HTTP {HttpMethod} {Uri}");
 
             private static readonly Action<ILogger, HttpMethod, Uri, Exception> _requestPipelineStart = LoggerMessage.Define<HttpMethod, Uri>(
                 LogLevel.Information, 
-                EventIds.RequestPipelineStart, 
+                EventIds.PipelineStart, 
                 "Start processing HTTP request {HttpMethod} {Uri}");
 
             private static readonly Action<ILogger, double, HttpStatusCode, Exception> _requestPipelineEnd = LoggerMessage.Define<double, HttpStatusCode>(
-                LogLevel.Information, 
-                EventIds.RequestPipelineEnd,
+                LogLevel.Information,
+                EventIds.PipelineEnd,
                 "End processing HTTP request after {ElapsedMilliseconds}ms - {StatusCode}");
 
             private static readonly Action<ILogger, string, IEnumerable<string>, Exception> _requestHeader = LoggerMessage.Define<string, IEnumerable<string>>(
                 LogLevel.Debug,
-                EventIds.RequestPipelineRequestHeader,
+                EventIds.RequestHeader,
                 "Request header: '{HeaderName}' - '{HeaderValues}'");
 
             private static readonly Action<ILogger, string, IEnumerable<string>, Exception> _responseHeader = LoggerMessage.Define<string, IEnumerable<string>>(
                 LogLevel.Debug,
-                EventIds.RequestPipelineResponseHeader,
+                EventIds.ResponseHeader,
                 "Response header: '{HeaderName}' - '{HeaderValues}'");
 
             public static IDisposable BeginRequestPipelineScope(ILogger logger, HttpRequestMessage request)

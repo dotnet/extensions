@@ -52,6 +52,20 @@ namespace Microsoft.Extensions.Http
         internal static string FormatHttpMessageHandlerBuilder_PrimaryHandlerIsNull(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("HttpMessageHandlerBuilder_PrimaryHandlerIsNull"), p0);
 
+        /// <summary>
+        /// The handler lifetime must be at least 1 second.
+        /// </summary>
+        internal static string HandlerLifetime_InvalidValue
+        {
+            get => GetString("HandlerLifetime_InvalidValue");
+        }
+
+        /// <summary>
+        /// The handler lifetime must be at least 1 second.
+        /// </summary>
+        internal static string FormatHandlerLifetime_InvalidValue()
+            => GetString("HandlerLifetime_InvalidValue");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

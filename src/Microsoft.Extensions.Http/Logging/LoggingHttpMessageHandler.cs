@@ -46,24 +46,33 @@ namespace Microsoft.Extensions.Http.Logging
 
         private static class Log
         {
+            public static class EventIds
+            {
+                public static readonly EventId RequestStart = new EventId(100, "RequestStart");
+                public static readonly EventId RequestEnd = new EventId(101, "RequestEnd");
+
+                public static readonly EventId RequestHeader = new EventId(102, "RequestHeader");
+                public static readonly EventId ResponseHeader = new EventId(103, "ResponseHeader");
+            }
+
             private static readonly Action<ILogger, HttpMethod, Uri, Exception> _requestStart = LoggerMessage.Define<HttpMethod, Uri>(
                 LogLevel.Information, 
-                EventIds.ClientHandlerRequestStart,
+                EventIds.RequestStart,
                 "Sending HTTP request {HttpMethod} {Uri}");
 
             private static readonly Action<ILogger, double, HttpStatusCode, Exception> _requestEnd = LoggerMessage.Define<double, HttpStatusCode>(
                 LogLevel.Information,
-                EventIds.ClientHandlerRequestEnd,
+                EventIds.RequestEnd,
                 "Recieved HTTP response after {ElapsedMilliseconds}ms - {StatusCode}");
 
             private static readonly Action<ILogger, string, IEnumerable<string>, Exception> _requestHeader = LoggerMessage.Define<string, IEnumerable<string>>(
                 LogLevel.Debug,
-                EventIds.ClientHandlerRequestHeader,
+                EventIds.RequestHeader,
                 "Request header: '{HeaderName}' - '{HeaderNames}'");
 
             private static readonly Action<ILogger, string, IEnumerable<string>, Exception> _responseHeader = LoggerMessage.Define<string, IEnumerable<string>>(
                 LogLevel.Debug,
-                EventIds.ClientHandlerResponseHeader,
+                EventIds.ResponseHeader,
                 "Response header: '{HeaderName}' - '{HeaderValues}'");
 
             public static void RequestStart(ILogger logger, HttpRequestMessage request)

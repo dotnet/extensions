@@ -131,4 +131,7 @@
   <data name="HttpMessageHandlerBuilder_PrimaryHandlerIsNull" xml:space="preserve">
     <value>The '{0}' must not be null.</value>
   </data>
+  <data name="HandlerLifetime_InvalidValue" xml:space="preserve">
+    <value>The handler lifetime must be at least 1 second.</value>
+  </data>
 </root>
