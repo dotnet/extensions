@@ -16,8 +16,4 @@ Microsoft.Extensions.Primitives.StringSegment</Description>
     <Compile Include="..\..\shared\Microsoft.Extensions.HashCodeCombiner.Sources\**\*.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
-  </ItemGroup>
-
 </Project>
