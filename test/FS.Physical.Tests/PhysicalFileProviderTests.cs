@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.FileProviders
 {
     public class PhysicalFileProviderTests
     {
-        private const int WaitTimeForTokenToFire = 2 * 100;
+        private const int WaitTimeForTokenToFire = 500;
 
         [Fact]
         public void GetFileInfoReturnsNotFoundFileInfoForNullPath()
@@ -338,8 +338,8 @@ namespace Microsoft.Extensions.FileProviders
                         {
                             var token = provider.Watch(fileName);
                             Assert.NotNull(token);
-                            Assert.False(token.HasChanged);
-                            Assert.True(token.ActiveChangeCallbacks);
+                            Assert.False(token.HasChanged, "Token should not have changed yet");
+                            Assert.True(token.ActiveChangeCallbacks, "Token should have active callbacks");
 
                             bool callbackInvoked = false;
                             token.RegisterChangeCallback(state =>
@@ -350,7 +350,7 @@ namespace Microsoft.Extensions.FileProviders
                             fileSystemWatcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, root.RootPath, fileName));
                             await Task.Delay(WaitTimeForTokenToFire);
 
-                            Assert.True(callbackInvoked);
+                            Assert.True(callbackInvoked, "Callback should have been invoked");
                         }
                     }
                 }
@@ -437,7 +437,7 @@ namespace Microsoft.Extensions.FileProviders
                             Assert.True(token.ActiveChangeCallbacks);
 
                             fileSystemWatcher.CallOnDeleted(new FileSystemEventArgs(WatcherChangeTypes.Deleted, root.RootPath, fileName));
-                            await Task.Delay(WaitTimeForTokenToFire);
+                            await Task.Delay(WaitTimeForTokenToFire).ConfigureAwait(false);
 
                             Assert.True(token.HasChanged);
                         }

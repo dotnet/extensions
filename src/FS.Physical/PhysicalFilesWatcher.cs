@@ -268,6 +268,14 @@ namespace Microsoft.Extensions.FileProviders.Physical
 
         private void ReportChangeForMatchedEntries(string path)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                // System.IO.FileSystemWatcher may trigger events that are missing the file name,
+                // which makes it appear as if the root directory is renamed or deleted. Moving the root directory
+                // of the file watcher is not supported, so this type of event is ignored.
+                return;
+            }
+
             path = NormalizePath(path);
 
             var matched = false;
