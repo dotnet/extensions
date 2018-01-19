@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void UsesFactory()
         {
-            var services = new ServiceCollection().AddOptions()
+            var services = new ServiceCollection()
                 .AddSingleton<IOptionsFactory<FakeOptions>, FakeOptionsFactory>()
                 .Configure<FakeOptions>(o => o.Message = "Ignored")
                 .BuildServiceProvider();
@@ -175,7 +175,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void PostConfiguresInRegistrationOrderAfterConfigures()
         {
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             services.Configure<FakeOptions>(o => o.Message += "_");
             services.PostConfigure<FakeOptions>(o => o.Message += "A");
             services.PostConfigure<FakeOptions>(o => o.Message += "B");
@@ -247,7 +247,7 @@ namespace Microsoft.Extensions.Options.Tests
             IDictionary<string, object> expectedValues)
         {
             // Arrange
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             var builder = new ConfigurationBuilder().AddInMemoryCollection(configValues);
             var config = builder.Build();
             services.Configure<NullableOptions>(config);
@@ -310,7 +310,7 @@ namespace Microsoft.Extensions.Options.Tests
             IDictionary<string, object> expectedValues)
         {
             // Arrange
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             var builder = new ConfigurationBuilder().AddInMemoryCollection(configValues);
             var config = builder.Build();
             services.Configure<EnumOptions>(config);
@@ -351,8 +351,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void Options_CanOverrideForSpecificTOptions()
         {
-            var services = new ServiceCollection().AddOptions();
-
+            var services = new ServiceCollection();
             services.Configure<FakeOptions>(options =>
             {
                 options.Message = "Initial value";
@@ -366,6 +365,5 @@ namespace Microsoft.Extensions.Options.Tests
             var sp = services.BuildServiceProvider();
             Assert.Equal("Override", sp.GetRequiredService<IOptions<FakeOptions>>().Value.Message);
         }
-
     }
 }

@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void CreateSupportsNames()
         {
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             services.Configure<FakeOptions>("1", options => options.Message = "one");
             services.Configure<FakeOptions>("2", options => options.Message = "two");
 
@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void CanConfigureAllOptions()
         {
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             services.ConfigureAll<FakeOptions>(o => o.Message = "Default");
 
             var sp = services.BuildServiceProvider();
@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void PostConfiguresInOrderAfterConfigures()
         {
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             services.Configure<FakeOptions>("-", o => o.Message += "-");
             services.ConfigureAll<FakeOptions>(o => o.Message += "[");
             services.Configure<FakeOptions>("+", o => o.Message += "+");
@@ -63,7 +63,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void CanConfigureAndPostConfigureAllOptions()
         {
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             services.ConfigureAll<FakeOptions>(o => o.Message = "D");
             services.PostConfigureAll<FakeOptions>(o => o.Message += "f");
             services.ConfigureAll<FakeOptions>(o => o.Message += "e");
@@ -78,7 +78,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void NamedSnapshotsConfiguresInRegistrationOrder()
         {
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             services.Configure<FakeOptions>("-", o => o.Message += "-");
             services.ConfigureAll<FakeOptions>(o => o.Message += "A");
             services.Configure<FakeOptions>("+", o => o.Message += "+");
@@ -97,7 +97,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void CanConfigureAllDefaultAndNamedOptions()
         {
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             services.ConfigureAll<FakeOptions>(o => o.Message += "Default");
             services.Configure<FakeOptions>(o => o.Message += "0");
             services.Configure<FakeOptions>("1", o => o.Message += "1");
@@ -112,7 +112,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void CanConfigureAndPostConfigureAllDefaultAndNamedOptions()
         {
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             services.ConfigureAll<FakeOptions>(o => o.Message += "Default");
             services.Configure<FakeOptions>(o => o.Message += "0");
             services.Configure<FakeOptions>("1", o => o.Message += "1");
@@ -130,7 +130,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void CanPostConfigureAllOptions()
         {
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             services.PostConfigureAll<FakeOptions>(o => o.Message = "Default");
 
             var sp = services.BuildServiceProvider();
@@ -142,7 +142,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void CanPostConfigureAllDefaultAndNamedOptions()
         {
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             services.PostConfigureAll<FakeOptions>(o => o.Message += "Default");
             services.PostConfigure<FakeOptions>(o => o.Message += "0");
             services.PostConfigure<FakeOptions>("1", o => o.Message += "1");
@@ -167,7 +167,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void CanConfigureOptionsOnlyDefault()
         {
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             services.ConfigureOptions<FakeOptionsSetupA>();
             services.ConfigureOptions(typeof(FakeOptionsSetupB));
             services.ConfigureOptions(new ConfigureOptions<FakeOptions>(o => o.Message += "hi!"));
@@ -200,7 +200,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void CanConfigureTwoOptionsWithConfigureOptions()
         {
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             services.ConfigureOptions<UberBothSetup>();
 
             var sp = services.BuildServiceProvider();
@@ -216,7 +216,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void CanMixConfigureEverything()
         {
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             services.ConfigureAll<FakeOptions2>(o => o.Message = "!");
             services.ConfigureOptions<UberBothSetup>();
             services.Configure<FakeOptions>("#1", o => o.Message += "#");
@@ -243,7 +243,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void ConfigureOptionsThrowsWithAction()
         {
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             Action<FakeOptions> act = o => o.Message = "whatev";
             var error = Assert.Throws<InvalidOperationException>(() => services.ConfigureOptions(act));
             Assert.Equal("No IConfigureOptions<> or IPostConfigureOptions<> implementations were found, did you mean to call Configure<> or PostConfigure<>?", error.Message);
@@ -252,7 +252,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void ConfigureOptionsThrowsIfNothingFound()
         {
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             var error = Assert.Throws<InvalidOperationException>(() => services.ConfigureOptions(new object()));
             Assert.Equal("No IConfigureOptions<> or IPostConfigureOptions<> implementations were found.", error.Message);
         }

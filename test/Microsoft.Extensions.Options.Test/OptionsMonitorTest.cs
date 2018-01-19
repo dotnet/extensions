@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void MonitorUsesFactory()
         {
-            var services = new ServiceCollection().AddOptions()
+            var services = new ServiceCollection()
                 .AddSingleton<IOptionsFactory<FakeOptions>, FakeOptionsFactory>()
                 .Configure<FakeOptions>(o => o.Message = "Ignored")
                 .BuildServiceProvider();
@@ -125,7 +125,6 @@ namespace Microsoft.Extensions.Options.Tests
         public void CanWatchOptions()
         {
             var services = new ServiceCollection().AddOptions();
-
             services.AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
             var changeToken = new FakeChangeToken();
             services.AddSingleton<IOptionsChangeTokenSource<FakeOptions>>(new FakeSource(changeToken));

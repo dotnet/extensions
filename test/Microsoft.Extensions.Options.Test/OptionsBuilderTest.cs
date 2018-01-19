@@ -129,7 +129,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void ConfigureOptionsWithTransientDep()
         {
-            var services = new ServiceCollection().AddOptions()
+            var services = new ServiceCollection()
                 .AddSingleton<Counter>()
                 .AddTransient<SomeCounterConsumer>();
             services.AddOptions<FakeOptions>().Configure(o => o.Message = "none");
@@ -159,7 +159,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void PostConfigureOptionsWithTransientDep()
         {
-            var services = new ServiceCollection().AddOptions()
+            var services = new ServiceCollection()
                 .AddSingleton<Counter>()
                 .AddTransient<SomeCounterConsumer>();
             services.ConfigureAll<FakeOptions>(o => o.Message = "Override");
@@ -191,7 +191,7 @@ namespace Microsoft.Extensions.Options.Tests
         public void CanConfigureWithServiceProvider()
         {
             var someService = new SomeService("Something");
-            var services = new ServiceCollection().AddOptions().AddSingleton(someService);
+            var services = new ServiceCollection().AddSingleton(someService);
             services.AddOptions<FakeOptions>().Configure<IServiceProvider>((o, s) => o.Message = s.GetRequiredService<SomeService>().Stuff);
 
             var sp = services.BuildServiceProvider();

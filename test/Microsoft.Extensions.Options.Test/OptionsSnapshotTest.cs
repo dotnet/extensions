@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Options.Tests
         [Fact]
         public void SnapshotUsesFactory()
         {
-            var services = new ServiceCollection().AddOptions()
+            var services = new ServiceCollection()
                 .AddSingleton<IOptionsFactory<FakeOptions>, FakeOptionsFactory>()
                 .Configure<FakeOptions>(o => o.Message = "Ignored")
                 .BuildServiceProvider();
@@ -85,7 +85,7 @@ namespace Microsoft.Extensions.Options.Tests
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
 
-            var services = new ServiceCollection().AddOptions();
+            var services = new ServiceCollection();
             services.AddSingleton<IConfigureOptions<FakeOptions>>(new CountIncrement(this));
             services.Configure<FakeOptions>(config);
 
