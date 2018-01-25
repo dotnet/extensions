@@ -59,7 +59,7 @@ namespace Microsoft.Extensions.Http
             get => _handlerLifetime;
             set
             {
-                if (value < MinimumHandlerLifetime)
+                if (value != Timeout.InfiniteTimeSpan && value < MinimumHandlerLifetime)
                 {
                     throw new ArgumentException(Resources.HandlerLifetime_InvalidValue, nameof(value));
                 }
