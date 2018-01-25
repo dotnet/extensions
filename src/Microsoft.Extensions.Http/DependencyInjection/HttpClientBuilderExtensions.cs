@@ -451,7 +451,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (handlerLifetime < HttpClientFactoryOptions.MinimumHandlerLifetime)
+            if (handlerLifetime != Timeout.InfiniteTimeSpan && handlerLifetime < HttpClientFactoryOptions.MinimumHandlerLifetime)
             {
                 throw new ArgumentException(Resources.HandlerLifetime_InvalidValue, nameof(handlerLifetime));
             }
