@@ -63,7 +63,7 @@ namespace Microsoft.Extensions.Http.Logging
             private static readonly Action<ILogger, double, HttpStatusCode, Exception> _requestEnd = LoggerMessage.Define<double, HttpStatusCode>(
                 LogLevel.Information,
                 EventIds.RequestEnd,
-                "Recieved HTTP response after {ElapsedMilliseconds}ms - {StatusCode}");
+                "Received HTTP response after {ElapsedMilliseconds}ms - {StatusCode}");
 
             private static readonly Action<ILogger, string, IEnumerable<string>, Exception> _requestHeader = LoggerMessage.Define<string, IEnumerable<string>>(
                 LogLevel.Debug,
