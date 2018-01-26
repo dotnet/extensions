@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<ITypedHttpClientFactory, DefaultTypedHttpClientFactory>();
 
             //
-            // Misc infrastrure
+            // Misc infrastructure
             //
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpMessageHandlerBuilderFilter, LoggingHttpMessageHandlerBuilderFilter>());
 
