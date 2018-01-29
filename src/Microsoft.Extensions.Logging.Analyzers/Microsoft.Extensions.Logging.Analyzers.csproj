@@ -2,8 +2,13 @@
 
   <PropertyGroup>
     <Description>Analyzer package for Microsoft.Extensions.Logging.</Description>
+    <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
+    <VersionSuffix>$(ExperimentalVersionSuffix)</VersionSuffix>
+    <PackageVersion>$(ExperimentalPackageVersion)</PackageVersion>
+    <VerifyVersion>false</VerifyVersion>
     <TargetFramework>netstandard1.3</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <EnableApiCheck>false</EnableApiCheck>
     <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
   </PropertyGroup>
 
