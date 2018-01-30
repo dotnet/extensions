@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
                     Version = _osVersion,
                 };
 
-                var skip = (_excludedOperatingSystem == currentOSInfo.OperatingSystem);
+                var skip = (_excludedOperatingSystem & currentOSInfo.OperatingSystem) == currentOSInfo.OperatingSystem;
                 if (_excludedVersions.Any())
                 {
                     skip = skip

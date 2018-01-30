@@ -46,6 +46,18 @@ namespace Microsoft.AspNetCore.Testing.xunit
                 "Test should not be running on Windows.");
         }
 
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public void TestSkipLinuxAndMacOSX()
+        {
+            Assert.False(
+                RuntimeInformation.IsOSPlatform(OSPlatform.Linux),
+                "Test should not be running on Linux.");
+            Assert.False(
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX),
+                "Test should not be running on MacOSX.");
+        }
+
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [InlineData(1)]
@@ -74,6 +86,19 @@ namespace Microsoft.AspNetCore.Testing.xunit
             Assert.False(
                 RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
                 "Test should not be running on Windows.");
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [InlineData(1)]
+        public void TestTheorySkipLinuxAndMacOSX(int arg)
+        {
+            Assert.False(
+                RuntimeInformation.IsOSPlatform(OSPlatform.Linux),
+                "Test should not be running on Linux.");
+            Assert.False(
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX),
+                "Test should not be running on MacOSX.");
         }
     }
 

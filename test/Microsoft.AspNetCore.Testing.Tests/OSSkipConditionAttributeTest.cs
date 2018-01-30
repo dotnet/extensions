@@ -92,5 +92,41 @@ namespace Microsoft.AspNetCore.Testing.xunit
             // Assert
             Assert.False(osSkipAttribute.IsMet);
         }
+
+        [Fact]
+        public void Skips_BothMacOSXAndLinux()
+        {
+            // Act
+            var osSkipAttributeLinux = new OSSkipConditionAttribute(OperatingSystems.Linux | OperatingSystems.MacOSX, OperatingSystems.Linux, string.Empty);
+            var osSkipAttributeMacOSX = new OSSkipConditionAttribute(OperatingSystems.Linux | OperatingSystems.MacOSX, OperatingSystems.MacOSX, string.Empty);
+
+            // Assert
+            Assert.False(osSkipAttributeLinux.IsMet);
+            Assert.False(osSkipAttributeMacOSX.IsMet);
+        }
+
+        [Fact]
+        public void Skips_BothMacOSXAndWindows()
+        {
+            // Act
+            var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Windows | OperatingSystems.MacOSX, OperatingSystems.Windows, string.Empty);
+            var osSkipAttributeMacOSX = new OSSkipConditionAttribute(OperatingSystems.Windows | OperatingSystems.MacOSX, OperatingSystems.MacOSX, string.Empty);
+
+            // Assert
+            Assert.False(osSkipAttribute.IsMet);
+            Assert.False(osSkipAttributeMacOSX.IsMet);
+        }
+
+        [Fact]
+        public void Skips_BothWindowsAndLinux()
+        {
+            // Act
+            var osSkipAttribute = new OSSkipConditionAttribute(OperatingSystems.Linux | OperatingSystems.Windows, OperatingSystems.Windows, string.Empty);
+            var osSkipAttributeLinux = new OSSkipConditionAttribute(OperatingSystems.Linux | OperatingSystems.Windows, OperatingSystems.Linux, string.Empty);
+
+            // Assert
+            Assert.False(osSkipAttribute.IsMet);
+            Assert.False(osSkipAttributeLinux.IsMet);
+        }
     }
 }
