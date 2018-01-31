@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
-    <PackageReference Include="NETStandard.Library" Version="$(NETStandardLibraryPackageVersion)" />
+    <PackageReference Include="NETStandard.Library" Version="$(NETStandard201PackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
