@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Xunit;
 using Xunit.Abstractions;
@@ -75,8 +76,8 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                     logger.LogInformation("Finished test log in {baseDirectory}", tempDir);
                 }
 
-                var globalLogPath = Path.Combine(tempDir, "FakeTestAssembly", "global.log");
-                var testLog = Path.Combine(tempDir, "FakeTestAssembly", "FakeTestClass", $"FakeTestName.log");
+                var globalLogPath = Path.Combine(tempDir, "FakeTestAssembly", RuntimeInformation.FrameworkDescription.TrimStart('.'), "global.log");
+                var testLog = Path.Combine(tempDir, "FakeTestAssembly", RuntimeInformation.FrameworkDescription.TrimStart('.'), "FakeTestClass", $"FakeTestName.log");
 
                 Assert.True(File.Exists(globalLogPath), $"Expected global log file {globalLogPath} to exist");
                 Assert.True(File.Exists(testLog), $"Expected test log file {testLog} to exist");

@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Extensions.Logging;
@@ -83,7 +84,7 @@ namespace Microsoft.Extensions.Logging.Testing
             SerilogLoggerProvider serilogLoggerProvider = null;
             if (!string.IsNullOrEmpty(_baseDirectory))
             {
-                var testOutputFile = Path.Combine(_baseDirectory, _assemblyName, className, $"{testName}.log");
+                var testOutputFile = Path.Combine(_baseDirectory, _assemblyName, RuntimeInformation.FrameworkDescription.TrimStart('.'), className, $"{testName}.log");
 
                 serilogLoggerProvider = ConfigureFileLogging(testOutputFile);
             }
@@ -113,7 +114,7 @@ namespace Microsoft.Extensions.Logging.Testing
             SerilogLoggerProvider serilogLoggerProvider = null;
             if (!string.IsNullOrEmpty(baseDirectory))
             {
-                var globalLogFileName = Path.Combine(baseDirectory, assemblyName, "global.log");
+                var globalLogFileName = Path.Combine(baseDirectory, assemblyName, RuntimeInformation.FrameworkDescription.TrimStart('.'), "global.log");
                 serilogLoggerProvider = ConfigureFileLogging(globalLogFileName);
             }
 
