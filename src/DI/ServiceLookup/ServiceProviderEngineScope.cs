@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private List<IDisposable> _disposables = new List<IDisposable>();
 
-        private bool _disposeCalled;
+        private bool _disposed;
 
         public ServiceProviderEngineScope(ServiceProviderEngine engine)
         {
@@ -26,6 +26,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public object GetService(Type serviceType)
         {
+            if (_disposed)
+            {
+                ThrowHelper.ThrowObjectDisposedException();
+            }
+
             return Engine.GetService(serviceType, this);
         }
 
@@ -35,12 +40,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             lock (ResolvedServices)
             {
-                if (_disposeCalled)
+                if (_disposed)
                 {
                     return;
                 }
 
-                _disposeCalled = true;
+                _disposed = true;
                 if (_disposables != null)
                 {
                     for (var i = _disposables.Count - 1; i >= 0; i--)

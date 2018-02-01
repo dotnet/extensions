@@ -13,6 +13,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private readonly Func<Type, Func<ServiceProviderEngineScope, object>> _createServiceAccessor;
 
+        private bool _disposed;
+
         protected ServiceProviderEngine(IEnumerable<ServiceDescriptor> serviceDescriptors, IServiceProviderEngineCallback callback)
         {
             _createServiceAccessor = CreateServiceAccessor;
@@ -43,7 +45,33 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected abstract Func<ServiceProviderEngineScope, object> RealizeService(IServiceCallSite callSite);
 
-        public void Dispose() => Root.Dispose();
+        public void Dispose()
+        {
+            _disposed = true;
+            Root.Dispose();
+        }
+
+        internal object GetService(Type serviceType, ServiceProviderEngineScope serviceProviderEngineScope)
+        {
+            if (_disposed)
+            {
+                ThrowHelper.ThrowObjectDisposedException();
+            }
+
+            var realizedService = RealizedServices.GetOrAdd(serviceType, _createServiceAccessor);
+            _callback?.OnResolve(serviceType, serviceProviderEngineScope);
+            return realizedService.Invoke(serviceProviderEngineScope);
+        }
+
+        public IServiceScope CreateScope()
+        {
+            if (_disposed)
+            {
+                ThrowHelper.ThrowObjectDisposedException();
+            }
+
+            return new ServiceProviderEngineScope(this);
+        }
 
         private Func<ServiceProviderEngineScope, object> CreateServiceAccessor(Type serviceType)
         {
@@ -55,18 +83,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
 
             return _ => null;
-        }
-
-        internal object GetService(Type serviceType, ServiceProviderEngineScope serviceProviderEngineScope)
-        {
-            var realizedService = RealizedServices.GetOrAdd(serviceType, _createServiceAccessor);
-            _callback?.OnResolve(serviceType, serviceProviderEngineScope);
-            return realizedService.Invoke(serviceProviderEngineScope);
-        }
-
-        public IServiceScope CreateScope()
-        {
-            return new ServiceProviderEngineScope(this);
         }
     }
 }

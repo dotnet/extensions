@@ -116,13 +116,65 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         [Fact]
         public void ResolvesServiceMixedServiceAndOptionalStructConstructorArguments()
         {
-            var disposable = new Disposable();
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IFakeService, FakeService>();
             serviceCollection.AddSingleton<ClassWithServiceAndOptionalArgsCtorWithStructs>();
 
             var provider = CreateServiceProvider(serviceCollection);
             var service = provider.GetService<ClassWithServiceAndOptionalArgsCtorWithStructs>();
+            Assert.NotNull(service);
+        }
+
+        [Fact]
+        public void RootProviderDispose_PreventsServiceResolution()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IFakeService, FakeService>();
+
+            var provider = CreateServiceProvider(serviceCollection);
+            ((IDisposable)provider).Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => provider.GetService<IFakeService>());
+        }
+
+        [Fact]
+        public void RootProviderDispose_PreventsScopeCreation()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IFakeService, FakeService>();
+
+            var provider = CreateServiceProvider(serviceCollection);
+            ((IDisposable)provider).Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => provider.CreateScope());
+        }
+
+        [Fact]
+        public void RootProviderDispose_PreventsServiceResolution_InChildScope()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddScoped<IFakeService, FakeService>();
+
+            var provider = CreateServiceProvider(serviceCollection);
+            var scope = provider.CreateScope();
+            ((IDisposable)provider).Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => scope.ServiceProvider.GetService<IFakeService>());
+        }
+
+        [Fact]
+        public void ScopeDispose_PreventsServiceResolution()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddScoped<IFakeService, FakeService>();
+
+            var provider = CreateServiceProvider(serviceCollection);
+            var scope = provider.CreateScope();
+            scope.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => scope.ServiceProvider.GetService<IFakeService>());
+            //Check that resolution from root works
+            Assert.NotNull(provider.CreateScope());
         }
 
         private abstract class AbstractFakeOpenGenericService<T> : IFakeOpenGenericService<T>
