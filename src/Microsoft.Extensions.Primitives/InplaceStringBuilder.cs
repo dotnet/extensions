@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.Primitives
             Append(segment.Buffer, segment.Offset, segment.Length);
         }
 
-        public unsafe void Append(string s, int offset, int count)
+        public void Append(string s, int offset, int count)
         {
             if (s == null)
             {
@@ -65,11 +65,10 @@ namespace Microsoft.Extensions.Primitives
             }
 
             EnsureCapacity(count);
-            fixed (char* destination = _value)
-            fixed (char* source = s)
+            int to = offset + count;
+            for (int i = offset; i < to; i++)
             {
-                Unsafe.CopyBlockUnaligned(destination + _offset, source + offset, (uint)count * 2);
-                _offset += count;
+                this.Append(s[i]);
             }
         }
 
