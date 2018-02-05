@@ -67,7 +67,8 @@ namespace Microsoft.Extensions.Primitives
         length,
         text,
         start,
-        count
+        count,
+        index
     }
 
     internal enum ExceptionResource

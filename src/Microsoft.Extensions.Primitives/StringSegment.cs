@@ -127,9 +127,9 @@ namespace Microsoft.Extensions.Primitives
         {
             get
             {
-                if (index < 0 || (uint)index >= (uint)Length)
+                if ((uint)index >= (uint)Length)
                 {
-                    throw new IndexOutOfRangeException();
+                    ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.index);
                 }
 
                 return Buffer[Offset + index];
@@ -144,7 +144,7 @@ namespace Microsoft.Extensions.Primitives
                 return false;
             }
 
-            return obj is StringSegment && Equals((StringSegment)obj);
+            return obj is StringSegment segment && Equals(segment);
         }
 
         /// <summary>

@@ -184,7 +184,7 @@ namespace Microsoft.Extensions.Primitives
         {
             var segment = new StringSegment(value, offset, length);
 
-            Assert.Throws<IndexOutOfRangeException>(() => segment[index]);
+            Assert.Throws<ArgumentOutOfRangeException>(() => segment[index]);
         }
 
         public static TheoryData<string, StringComparison, bool> EndsWithData
