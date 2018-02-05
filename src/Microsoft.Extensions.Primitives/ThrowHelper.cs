@@ -82,7 +82,8 @@ namespace Microsoft.Extensions.Primitives
         count,
         index,
         value,
-        capacity
+        capacity,
+        separators
     }
 
     internal enum ExceptionResource

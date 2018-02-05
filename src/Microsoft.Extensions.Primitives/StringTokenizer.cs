@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Primitives
     /// <summary>
     /// Tokenizes a <c>string</c> into <see cref="StringSegment"/>s.
     /// </summary>
-    public struct StringTokenizer :  IEnumerable<StringSegment>
+    public readonly struct StringTokenizer :  IEnumerable<StringSegment>
     {
         private readonly StringSegment _value;
         private readonly char[] _separators;
@@ -20,8 +20,20 @@ namespace Microsoft.Extensions.Primitives
         /// </summary>
         /// <param name="value">The <c>string</c> to tokenize.</param>
         /// <param name="separators">The characters to tokenize by.</param>
-        public StringTokenizer(string value, char[] separators) : this((StringSegment)value, separators)
+        public StringTokenizer(string value, char[] separators)
         {
+            if (value == null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
+            }
+
+            if (separators == null)
+            {
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.separators);
+            }
+
+            _value = value;
+            _separators = separators;
         }
 
         /// <summary>
@@ -31,21 +43,21 @@ namespace Microsoft.Extensions.Primitives
         /// <param name="separators">The characters to tokenize by.</param>
         public StringTokenizer(StringSegment value, char[] separators)
         {
-            if (value == null)
+            if (!value.HasValue)
             {
-                throw new ArgumentNullException(nameof(value));
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
             
             if (separators == null)
             {
-                throw new ArgumentNullException(nameof(separators));
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.separators);
             }
 
             _value = value;
             _separators = separators;
         }
 
-        public Enumerator GetEnumerator() => new Enumerator(ref this);
+        public Enumerator GetEnumerator() => new Enumerator(in _value, _separators);
 
         IEnumerator<StringSegment> IEnumerable<StringSegment>.GetEnumerator() => GetEnumerator();
 
@@ -56,6 +68,14 @@ namespace Microsoft.Extensions.Primitives
             private readonly StringSegment _value;
             private readonly char[] _separators;
             private int _index;
+
+            internal Enumerator(in StringSegment value, char[] separators)
+            {
+                _value = value;
+                _separators = separators;
+                Current = default;
+                _index = 0;
+            }
 
             public Enumerator(ref StringTokenizer tokenizer)
             {
@@ -75,7 +95,7 @@ namespace Microsoft.Extensions.Primitives
 
             public bool MoveNext()
             {
-                if (_value == null || _index > _value.Length)
+                if (!_value.HasValue || _index > _value.Length)
                 {
                     Current = default(StringSegment);
                     return false;
