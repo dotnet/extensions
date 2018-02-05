@@ -23,6 +23,7 @@ namespace BenchmarkDotNet.Attributes
 
             Add(MemoryDiagnoser.Default);
             Add(StatisticColumn.OperationsPerSecond);
+            Add(DefaultColumnProviders.Instance);
 
             Add(JitOptimizationsValidator.FailOnError);
 
