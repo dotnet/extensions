@@ -15,7 +15,7 @@
     <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview2-26130-01</SystemThreadingTasksExtensionsPackageVersion>
     <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
-    <XunitRunnerVisualstudioPackageVersion>2.3.1</XunitRunnerVisualstudioPackageVersion>
+    <XunitRunnerVisualstudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualstudioPackageVersion>
   </PropertyGroup>
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 </Project>
