@@ -66,5 +66,16 @@ namespace Microsoft.Extensions.Primitives {
                 return ResourceManager.GetString("Argument_InvalidOffsetLength", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///    Looks up a localized string similar to Cannot change capacity after write started..
+        /// </summary>
+        internal static string Capacity_CannotChangeAfterWriteStarted
+        {
+            get
+            {
+                return ResourceManager.GetString("Capacity_CannotChangeAfterWriteStarted", resourceCulture);
+            }
+        }
     }
 }
