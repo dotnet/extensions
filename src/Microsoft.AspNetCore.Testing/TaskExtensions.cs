@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Testing
@@ -13,8 +14,10 @@ namespace Microsoft.AspNetCore.Testing
             [CallerFilePath] string filePath = null,
             [CallerLineNumber] int lineNumber = default(int))
         {
-            if (task == await Task.WhenAny(task, Task.Delay(timeout)))
+            var cts = new CancellationTokenSource();
+            if (task == await Task.WhenAny(task, Task.Delay(timeout, cts.Token)))
             {
+                cts.Cancel();
                 return await task;
             }
             else
@@ -28,8 +31,10 @@ namespace Microsoft.AspNetCore.Testing
             [CallerFilePath] string filePath = null,
             [CallerLineNumber] int lineNumber = default(int))
         {
-            if (task == await Task.WhenAny(task, Task.Delay(timeout)))
+            var cts = new CancellationTokenSource();
+            if (task == await Task.WhenAny(task, Task.Delay(timeout, cts.Token)))
             {
+                cts.Cancel();
                 await task;
             }
             else
