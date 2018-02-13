@@ -2,14 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace Microsoft.Extensions.ObjectPool
 {
     public class DefaultObjectPool<T> : ObjectPool<T> where T : class
     {
-        private readonly T[] _items;
+        private readonly ObjectWrapper[] _items;
         private readonly IPooledObjectPolicy<T> _policy;
+        private readonly bool _isDefaultPolicy;
+        private T _firstItem;
 
         public DefaultObjectPool(IPooledObjectPolicy<T> policy)
             : this(policy, Environment.ProcessorCount * 2)
@@ -18,43 +22,82 @@ namespace Microsoft.Extensions.ObjectPool
 
         public DefaultObjectPool(IPooledObjectPolicy<T> policy, int maximumRetained)
         {
-            if (policy == null)
-            {
-                throw new ArgumentNullException(nameof(policy));
-            }
+            _policy = policy ?? throw new ArgumentNullException(nameof(policy));
+            _isDefaultPolicy = IsDefaultPolicy();
 
-            _policy = policy;
-            _items = new T[maximumRetained];
+            // -1 due to _firstItem
+            _items = new ObjectWrapper[maximumRetained - 1];
+
+            bool IsDefaultPolicy()
+            {
+                var type = policy.GetType();
+
+                return type.IsGenericType
+                    ? type.GetGenericTypeDefinition() == typeof(DefaultPooledObjectPolicy<>)
+                    : false;
+            }
         }
 
         public override T Get()
         {
-            for (var i = 0; i < _items.Length; i++)
+            T item = _firstItem;
+
+            if (item == null || Interlocked.CompareExchange(ref _firstItem, null, item) != item)
             {
-                var item = _items[i];
-                if (item != null && Interlocked.CompareExchange(ref _items[i], null, item) == item)
+                item = this.GetViaScan();
+            }
+
+            return item;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private T GetViaScan()
+        {
+            ObjectWrapper[] items = _items;
+            T item = null;
+
+            for (int i = 0; i < items.Length; i++)
+            {
+                item = items[i];
+
+                if (item != null && Interlocked.CompareExchange(ref items[i].Element, null, item) == item)
                 {
-                    return item;
+                    break;
                 }
             }
 
-            return _policy.Create();
+            return item ?? _policy.Create();
         }
 
         public override void Return(T obj)
         {
-            if (!_policy.Return(obj))
+            if (_isDefaultPolicy || _policy.Return(obj))
             {
-                return;
-            }
-
-            for (var i = 0; i < _items.Length; i++)
-            {
-                if (Interlocked.CompareExchange(ref _items[i], obj, null) == null)
+                if (_firstItem != null || Interlocked.CompareExchange(ref _firstItem, obj, null) != null)
                 {
-                    return;
+                    this.ReturnViaScan(obj);
                 }
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ReturnViaScan(T obj)
+        {
+            ObjectWrapper[] items = _items;
+
+            for (int i = 0; i < items.Length && Interlocked.CompareExchange(ref items[i].Element, obj, null) != null; ++i)
+            {
+            }
+        }
+
+        [DebuggerDisplay("{Element}")]
+        private struct ObjectWrapper
+        {
+            public T Element;
+
+            public ObjectWrapper(T item) => Element = item;
+
+            public static implicit operator T(ObjectWrapper wrapper) => wrapper.Element;
         }
     }
 }
