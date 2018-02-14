@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
+using Polly;
 
 namespace HttpClientFactorySample
 {
@@ -53,6 +54,13 @@ namespace HttpClientFactorySample
                 c.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json"); // Github API versioning
                 c.DefaultRequestHeaders.Add("User-Agent", "HttpClientFactory-Sample"); // Github requires a user-agent
             })
+
+            // Build a totally custom policy using any criteria
+            .AddPolicyHandler(Policy.Handle<HttpRequestException>().RetryAsync())
+
+            // Build a policy that will handle exceptions and 500s from the remote server
+            .AddServerErrorPolicyHandler(p => p.RetryAsync())
+
             .AddHttpMessageHandler(() => new RetryHandler()) // Retry requests to github using our retry handler
             .AddTypedClient<GithubClient>();
         }

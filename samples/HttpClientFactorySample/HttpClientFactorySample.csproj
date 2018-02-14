@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Http\Microsoft.Extensions.Http.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Extensions.Http.Polly\Microsoft.Extensions.Http.Polly.csproj" />
   </ItemGroup>
 
   <ItemGroup>
