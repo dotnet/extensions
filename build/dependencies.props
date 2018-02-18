@@ -7,7 +7,7 @@
     <InternalAspNetCoreSdkPackageVersion>2.1.0-preview2-15707</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.1.0-preview2-30131</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview2-30131</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftAspNetWebApiClientPackageVersion>5.2.4-preview1</MicrosoftAspNetWebApiClientPackageVersion>
+    <MicrosoftAspNetWebApiClientPackageVersion>5.2.4</MicrosoftAspNetWebApiClientPackageVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.1.0-preview2-30131</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview2-30131</MicrosoftExtensionsDependencyInjectionPackageVersion>
     <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview2-30131</MicrosoftExtensionsLoggingConsolePackageVersion>
