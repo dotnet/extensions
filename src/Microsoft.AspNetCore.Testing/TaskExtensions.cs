@@ -14,6 +14,12 @@ namespace Microsoft.AspNetCore.Testing
             [CallerFilePath] string filePath = null,
             [CallerLineNumber] int lineNumber = default(int))
         {
+            // Don't create a timer if the task is already completed
+            if (task.IsCompleted)
+            {
+                return await task;
+            }
+
             var cts = new CancellationTokenSource();
             if (task == await Task.WhenAny(task, Task.Delay(timeout, cts.Token)))
             {
@@ -31,6 +37,13 @@ namespace Microsoft.AspNetCore.Testing
             [CallerFilePath] string filePath = null,
             [CallerLineNumber] int lineNumber = default(int))
         {
+            // Don't create a timer if the task is already completed
+            if (task.IsCompleted)
+            {
+                await task;
+                return;
+            }
+
             var cts = new CancellationTokenSource();
             if (task == await Task.WhenAny(task, Task.Delay(timeout, cts.Token)))
             {
