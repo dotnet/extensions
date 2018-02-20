@@ -10,6 +10,8 @@ namespace Microsoft.Extensions.ObjectPool
             return new T();
         }
 
+        // DefaultObjectPool<T> doesn't call 'Return' for the default policy.
+        // So take care adding any logic to this method, as it might require changes elsewhere.
         public bool Return(T obj)
         {
             return true;

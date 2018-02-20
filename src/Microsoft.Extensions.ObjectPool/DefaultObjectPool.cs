@@ -32,9 +32,7 @@ namespace Microsoft.Extensions.ObjectPool
             {
                 var type = policy.GetType();
 
-                return type.IsGenericType
-                    ? type.GetGenericTypeDefinition() == typeof(DefaultPooledObjectPolicy<>)
-                    : false;
+                return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(DefaultPooledObjectPolicy<>);
             }
         }
 
@@ -56,7 +54,7 @@ namespace Microsoft.Extensions.ObjectPool
             ObjectWrapper[] items = _items;
             T item = null;
 
-            for (int i = 0; i < items.Length; i++)
+            for (var i = 0; i < items.Length; i++)
             {
                 item = items[i];
 
@@ -85,7 +83,7 @@ namespace Microsoft.Extensions.ObjectPool
         {
             ObjectWrapper[] items = _items;
 
-            for (int i = 0; i < items.Length && Interlocked.CompareExchange(ref items[i].Element, obj, null) != null; ++i)
+            for (var i = 0; i < items.Length && Interlocked.CompareExchange(ref items[i].Element, obj, null) != null; ++i)
             {
             }
         }
