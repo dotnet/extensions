@@ -12,10 +12,6 @@ Microsoft.Extensions.Primitives.StringSegment</Description>
     <PackageTags>primitives</PackageTags>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <LangVersion>7.2</LangVersion>
-  </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="..\..\shared\Microsoft.Extensions.HashCodeCombiner.Sources\**\*.cs" />
   </ItemGroup>
