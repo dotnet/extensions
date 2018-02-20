@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace Microsoft.Extensions.Logging.Console.Internal
 {
@@ -12,16 +12,19 @@ namespace Microsoft.Extensions.Logging.Console.Internal
         private const int _maxQueuedMessages = 1024;
 
         private readonly BlockingCollection<LogMessageEntry> _messageQueue = new BlockingCollection<LogMessageEntry>(_maxQueuedMessages);
-        private readonly Task _outputTask;
+        private readonly Thread _outputThread;
 
         public IConsole Console;
 
         public ConsoleLoggerProcessor()
         {
             // Start Console message queue processor
-            _outputTask = Task.Factory.StartNew(
-                ProcessLogQueue,
-                TaskCreationOptions.LongRunning);
+            _outputThread = new Thread(ProcessLogQueue)
+            {
+                IsBackground = true,
+                Name = "Console logger queue processing thread"
+            };
+            _outputThread.Start();
         }
 
         public virtual void EnqueueMessage(LogMessageEntry message)
@@ -54,9 +57,20 @@ namespace Microsoft.Extensions.Logging.Console.Internal
 
         private void ProcessLogQueue()
         {
-            foreach (var message in _messageQueue.GetConsumingEnumerable())
+            try
             {
-                WriteMessage(message);
+                foreach (var message in _messageQueue.GetConsumingEnumerable())
+                {
+                    WriteMessage(message);
+                }
+            }
+            catch
+            {
+                try
+                {
+                    _messageQueue.CompleteAdding();
+                }
+                catch { }
             }
         }
 
@@ -66,10 +80,9 @@ namespace Microsoft.Extensions.Logging.Console.Internal
 
             try
             {
-                _outputTask.Wait(1500); // with timeout in-case Console is locked by user input
+                _outputThread.Join(1500); // with timeout in-case Console is locked by user input
             }
-            catch (TaskCanceledException) { }
-            catch (AggregateException ex) when (ex.InnerExceptions.Count == 1 && ex.InnerExceptions[0] is TaskCanceledException) { }
+            catch (ThreadStateException) { }
         }
     }
 }
