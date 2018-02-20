@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.Logging.EventLog
 
         public void WriteEntry(string message, EventLogEntryType type, int eventID, short category)
         {
-            DiagnosticsEventLog.WriteEntry(message, type, eventID, category);
+            DiagnosticsEventLog.WriteEvent(new EventInstance(eventID, category, type), message);
         }
     }
 }
