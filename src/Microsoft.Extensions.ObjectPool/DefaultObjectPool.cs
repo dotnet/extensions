@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.ObjectPool
 
             if (item == null || Interlocked.CompareExchange(ref _firstItem, null, item) != item)
             {
-                item = this.GetViaScan();
+                item = GetViaScan();
             }
 
             return item;
@@ -75,7 +75,7 @@ namespace Microsoft.Extensions.ObjectPool
             {
                 if (_firstItem != null || Interlocked.CompareExchange(ref _firstItem, obj, null) != null)
                 {
-                    this.ReturnViaScan(obj);
+                    ReturnViaScan(obj);
                 }
             }
         }
