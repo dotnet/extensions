@@ -2,6 +2,10 @@
   <Import Project="dependencies.props" />
 
   <PropertyGroup>
+    <EnableBenchmarkValidation>true</EnableBenchmarkValidation>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
     <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
   </PropertyGroup>
