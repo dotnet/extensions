@@ -12,9 +12,11 @@ namespace Microsoft.Extensions.ObjectPool
     {
         private readonly ObjectWrapper[] _items;
         private readonly IPooledObjectPolicy<T> _policy;
-        private readonly PooledObjectPolicy<T> _fastPolicy;
         private readonly bool _isDefaultPolicy;
         private T _firstItem;
+
+        // This class was introduced in 2.1 to avoid the interface call where possible
+        private readonly PooledObjectPolicy<T> _fastPolicy;
 
         public DefaultObjectPool(IPooledObjectPolicy<T> policy)
             : this(policy, Environment.ProcessorCount * 2)
