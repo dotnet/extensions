@@ -12,6 +12,7 @@ namespace Microsoft.Extensions.ObjectPool
     {
         private readonly ObjectWrapper[] _items;
         private readonly IPooledObjectPolicy<T> _policy;
+        private readonly PooledObjectPolicy<T> _fastPolicy;
         private readonly bool _isDefaultPolicy;
         private T _firstItem;
 
@@ -23,6 +24,7 @@ namespace Microsoft.Extensions.ObjectPool
         public DefaultObjectPool(IPooledObjectPolicy<T> policy, int maximumRetained)
         {
             _policy = policy ?? throw new ArgumentNullException(nameof(policy));
+            _fastPolicy = policy as PooledObjectPolicy<T>;
             _isDefaultPolicy = IsDefaultPolicy();
 
             // -1 due to _firstItem
@@ -64,12 +66,16 @@ namespace Microsoft.Extensions.ObjectPool
                 }
             }
 
-            return item ?? _policy.Create();
+            return item ?? Create();
         }
+
+        // Non-inline to improve its code quality as uncommon path
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private T Create() => _fastPolicy?.Create() ?? _policy.Create();
 
         public override void Return(T obj)
         {
-            if (_isDefaultPolicy || _policy.Return(obj))
+            if (_isDefaultPolicy || (_fastPolicy?.Return(obj) ?? _policy.Return(obj)))
             {
                 if (_firstItem != null || Interlocked.CompareExchange(ref _firstItem, obj, null) != null)
                 {

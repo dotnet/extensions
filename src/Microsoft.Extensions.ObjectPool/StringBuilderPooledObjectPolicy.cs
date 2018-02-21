@@ -5,18 +5,18 @@ using System.Text;
 
 namespace Microsoft.Extensions.ObjectPool
 {
-    public class StringBuilderPooledObjectPolicy : IPooledObjectPolicy<StringBuilder>
+    public class StringBuilderPooledObjectPolicy : PooledObjectPolicy<StringBuilder>
     {
         public int InitialCapacity { get; set; } = 100;
 
         public int MaximumRetainedCapacity { get; set; } = 4 * 1024;
 
-        public StringBuilder Create()
+        public override StringBuilder Create()
         {
             return new StringBuilder(InitialCapacity);
         }
 
-        public bool Return(StringBuilder obj)
+        public override bool Return(StringBuilder obj)
         {
             if (obj.Capacity > MaximumRetainedCapacity)
             {
