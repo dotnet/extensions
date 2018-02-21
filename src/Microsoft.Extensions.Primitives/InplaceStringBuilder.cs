@@ -11,6 +11,7 @@ namespace Microsoft.Extensions.Primitives
     public struct InplaceStringBuilder
     {
         private int _offset;
+        private int _capacity;
         private string _value;
 
         public InplaceStringBuilder(int capacity) : this()
@@ -20,12 +21,12 @@ namespace Microsoft.Extensions.Primitives
                 ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.capacity);
             }
 
-            _value = new string('\0', capacity);
+            _capacity = capacity;
         }
 
         public int Capacity
         {
-            get => _value?.Length ?? 0;
+            get => _capacity;
             set
             {
                 if (value < 0)
@@ -39,7 +40,7 @@ namespace Microsoft.Extensions.Primitives
                     ThrowHelper.ThrowInvalidOperationException(ExceptionResource.Capacity_CannotChangeAfterWriteStarted);
                 }
 
-                _value = new string('\0', value);
+                _capacity = value;
             }
         }
 
@@ -61,6 +62,8 @@ namespace Microsoft.Extensions.Primitives
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void Append(string value, int offset, int count)
         {
+            EnsureValueIsInitialized();
+
             if (value == null
                 || offset < 0
                 || value.Length - offset < count
@@ -80,6 +83,8 @@ namespace Microsoft.Extensions.Primitives
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void Append(char c)
         {
+            EnsureValueIsInitialized();
+
             if (_offset >= Capacity)
             {
                 ThrowNotEnoughCapacity(1);
@@ -99,6 +104,14 @@ namespace Microsoft.Extensions.Primitives
             }
 
             return _value;
+        }
+
+        private void EnsureValueIsInitialized()
+        {
+            if (_value == null)
+            {
+                _value = new string('\0', _capacity);
+            }
         }
 
         private void ThrowValidationError(string value, int offset, int count)
