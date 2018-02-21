@@ -2,17 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.IO.Pipelines;
+using System.Buffers;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.Extensions.Buffers
 {
-    internal ref struct BufferWriter
+    internal ref struct BufferWriter<T> where T: IBufferWriter<byte>
     {
-        private PipeWriter _writer;
+        private T _writer;
         private Span<byte> _span;
 
-        public BufferWriter(PipeWriter writer)
+        public BufferWriter(T writer)
         {
             _writer = writer;
             _span = writer.GetSpan();

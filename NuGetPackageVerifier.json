@@ -3,6 +3,7 @@
     "rules": [],
     "packages": {
       "Microsoft.AspNetCore.BenchmarkRunner.Sources": {},
+      "Microsoft.Extensions.Buffers.Sources": {},
       "Microsoft.AspNetCore.Certificates.Generation.Sources": {},
       "Microsoft.Extensions.ClosedGenericMatcher.Sources": {},
       "Microsoft.Extensions.CommandLineUtils.Sources": {},
