@@ -5,9 +5,9 @@
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 
-namespace System.IO.Pipelines.Extensions
+namespace Microsoft.Extensions.Buffers
 {
-    public ref struct BufferWriter
+    internal ref struct BufferWriter
     {
         private PipeWriter _writer;
         private Span<byte> _span;

@@ -5,9 +5,9 @@ using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
 
-namespace System.IO.Pipelines.Extensions
+namespace Microsoft.Extensions.Buffers
 {
-    public ref struct BufferReader
+    internal ref struct BufferReader
     {
         private ReadOnlySpan<byte> _currentSpan;
         private int _index;
