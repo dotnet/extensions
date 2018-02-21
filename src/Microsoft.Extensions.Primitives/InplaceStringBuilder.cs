@@ -100,7 +100,7 @@ namespace Microsoft.Extensions.Primitives
         {
             if (Capacity != _offset)
             {
-                ThrowCapacityNotUsed();
+                ThrowHelper.ThrowInvalidOperationException(ExceptionResource.Capacity_not_used_entirely, Capacity, _offset);
             }
 
             return _value;
@@ -134,12 +134,7 @@ namespace Microsoft.Extensions.Primitives
 
         private void ThrowNotEnoughCapacity(int length)
         {
-            throw new InvalidOperationException($"Not enough capacity to write '{length}' characters, only '{Capacity - _offset}' left.");
-        }
-
-        private void ThrowCapacityNotUsed()
-        {
-            throw new InvalidOperationException($"Entire reserved capacity was not used. Capacity: '{Capacity}', written '{_offset}'.");
+            ThrowHelper.ThrowInvalidOperationException(ExceptionResource.Not_enough_capacity, length, Capacity - _offset);
         }
     }
 }
