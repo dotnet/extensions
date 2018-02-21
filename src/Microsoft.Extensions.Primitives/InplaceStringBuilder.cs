@@ -77,6 +77,30 @@ namespace Microsoft.Extensions.Primitives
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void Append(char c)
+        {
+            if (_offset >= Capacity)
+            {
+                ThrowNotEnoughCapacity(1);
+            }
+
+            fixed (char* destination = _value)
+            {
+                destination[_offset++] = c;
+            }
+        }
+
+        public override string ToString()
+        {
+            if (Capacity != _offset)
+            {
+                ThrowCapacityNotUsed();
+            }
+
+            return _value;
+        }
+
         private void ThrowValidationError(string value, int offset, int count)
         {
             if (value == null)
@@ -95,33 +119,9 @@ namespace Microsoft.Extensions.Primitives
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe void Append(char c)
-        {
-            if (_offset >= Capacity)
-            {
-                ThrowNotEnoughCapacity(1);
-            }
-
-            fixed (char* destination = _value)
-            {
-                destination[_offset++] = c;
-            }
-        }
-
         private void ThrowNotEnoughCapacity(int length)
         {
             throw new InvalidOperationException($"Not enough capacity to write '{length}' characters, only '{Capacity - _offset}' left.");
-        }
-
-        public override string ToString()
-        {
-            if (Capacity != _offset)
-            {
-                ThrowCapacityNotUsed();
-            }
-
-            return _value;
         }
 
         private void ThrowCapacityNotUsed()
