@@ -13,6 +13,8 @@ namespace Microsoft.Extensions.ObjectPool
         private readonly ObjectWrapper[] _items;
         private readonly IPooledObjectPolicy<T> _policy;
         private readonly bool _isDefaultPolicy;
+        private readonly Func<T> _create;
+        private readonly Func<T, bool> _return;
         private T _firstItem;
 
         public DefaultObjectPool(IPooledObjectPolicy<T> policy)
@@ -24,6 +26,10 @@ namespace Microsoft.Extensions.ObjectPool
         {
             _policy = policy ?? throw new ArgumentNullException(nameof(policy));
             _isDefaultPolicy = IsDefaultPolicy();
+
+            var compiler = new PolicyCompiler<T>();
+            _create = compiler.CompileCreate(this, policy, nameof(_policy));
+            _return = compiler.CompileReturn(this, policy, nameof(_policy));
 
             // -1 due to _firstItem
             _items = new ObjectWrapper[maximumRetained - 1];
@@ -64,12 +70,12 @@ namespace Microsoft.Extensions.ObjectPool
                 }
             }
 
-            return item ?? _policy.Create();
+            return item ?? _create();
         }
 
         public override void Return(T obj)
         {
-            if (_isDefaultPolicy || _policy.Return(obj))
+            if (_isDefaultPolicy || _return(obj))
             {
                 if (_firstItem != null || Interlocked.CompareExchange(ref _firstItem, obj, null) != null)
                 {
