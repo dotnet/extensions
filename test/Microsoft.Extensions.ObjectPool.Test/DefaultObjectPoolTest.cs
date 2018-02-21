@@ -11,6 +11,22 @@ namespace Microsoft.Extensions.ObjectPool.Test
     public class DefaultObjectPoolTest
     {
         [Fact]
+        public void DefaultObjectPoolWithDefaultPolicy_GetAnd_ReturnObject_SameInstance()
+        {
+            // Arrange
+            var pool = new DefaultObjectPool<object>(new DefaultPooledObjectPolicy<object>());
+
+            var obj1 = pool.Get();
+            pool.Return(obj1);
+
+            // Act
+            var obj2 = pool.Get();
+
+            // Assert
+            Assert.Same(obj1, obj2);
+        }
+
+        [Fact]
         public void DefaultObjectPool_GetAndReturnObject_SameInstance()
         {
             // Arrange

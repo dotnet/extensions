@@ -15,6 +15,9 @@ namespace Microsoft.Extensions.ObjectPool
         private readonly bool _isDefaultPolicy;
         private T _firstItem;
 
+        // This class was introduced in 2.1 to avoid the interface call where possible
+        private readonly PooledObjectPolicy<T> _fastPolicy;
+
         public DefaultObjectPool(IPooledObjectPolicy<T> policy)
             : this(policy, Environment.ProcessorCount * 2)
         {
@@ -23,6 +26,7 @@ namespace Microsoft.Extensions.ObjectPool
         public DefaultObjectPool(IPooledObjectPolicy<T> policy, int maximumRetained)
         {
             _policy = policy ?? throw new ArgumentNullException(nameof(policy));
+            _fastPolicy = policy as PooledObjectPolicy<T>;
             _isDefaultPolicy = IsDefaultPolicy();
 
             // -1 due to _firstItem
@@ -64,12 +68,16 @@ namespace Microsoft.Extensions.ObjectPool
                 }
             }
 
-            return item ?? _policy.Create();
+            return item ?? Create();
         }
+
+        // Non-inline to improve its code quality as uncommon path
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private T Create() => _fastPolicy?.Create() ?? _policy.Create();
 
         public override void Return(T obj)
         {
-            if (_isDefaultPolicy || _policy.Return(obj))
+            if (_isDefaultPolicy || (_fastPolicy?.Return(obj) ?? _policy.Return(obj)))
             {
                 if (_firstItem != null || Interlocked.CompareExchange(ref _firstItem, obj, null) != null)
                 {
