@@ -51,7 +51,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Act1
             serviceCollection.AddHttpClient("example.com")
-                .AddPolicyHandler(Policy.TimeoutAsync(5))
+                .AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(5))
                 .ConfigureHttpMessageHandlerBuilder(b =>
                 {
                     builder = b;
