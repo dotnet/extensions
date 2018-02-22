@@ -10,41 +10,48 @@ namespace Microsoft.Extensions.Primitives
     [DebuggerDisplay("Value = {_value}")]
     public struct InplaceStringBuilder
     {
-        private int _capacity;
         private int _offset;
-        private bool _writing;
+        private int _capacity;
         private string _value;
 
         public InplaceStringBuilder(int capacity) : this()
         {
+            if (capacity < 0)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.capacity);
+            }
+
             _capacity = capacity;
         }
 
         public int Capacity
         {
-            get { return _capacity; }
+            get => _capacity;
             set
             {
                 if (value < 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value));
+                    ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.value);
                 }
-                if (_writing)
+
+                // _offset > 0 indicates writing state
+                if (_offset > 0)
                 {
-                    throw new InvalidOperationException("Cannot change capacity after write started.");
+                    ThrowHelper.ThrowInvalidOperationException(ExceptionResource.Capacity_CannotChangeAfterWriteStarted);
                 }
+
                 _capacity = value;
             }
         }
 
-        public unsafe void Append(string s)
+        public void Append(string value)
         {
-            if (s == null)
+            if (value == null)
             {
-                throw new ArgumentNullException(nameof(s));
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
 
-            Append(s, 0, s.Length);
+            Append(value, 0, value.Length);
         }
 
         public void Append(StringSegment segment)
@@ -52,56 +59,77 @@ namespace Microsoft.Extensions.Primitives
             Append(segment.Buffer, segment.Offset, segment.Length);
         }
 
-        public unsafe void Append(string s, int offset, int count)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void Append(string value, int offset, int count)
         {
-            if (s == null)
+            EnsureValueIsInitialized();
+
+            if (value == null
+                || offset < 0
+                || value.Length - offset < count
+                || Capacity - _offset < count)
             {
-                throw new ArgumentNullException(nameof(s));
+                ThrowValidationError(value, offset, count);
             }
 
-            if (offset < 0 || s.Length - offset < count)
-            {
-                throw new ArgumentOutOfRangeException();
-            }
-
-            EnsureCapacity(count);
             fixed (char* destination = _value)
-            fixed (char* source = s)
+            fixed (char* source = value)
             {
                 Unsafe.CopyBlockUnaligned(destination + _offset, source + offset, (uint)count * 2);
                 _offset += count;
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void Append(char c)
         {
-            EnsureCapacity(1);
+            EnsureValueIsInitialized();
+
+            if (_offset >= Capacity)
+            {
+                ThrowHelper.ThrowInvalidOperationException(ExceptionResource.Capacity_NotEnough, 1, Capacity - _offset);
+            }
+
             fixed (char* destination = _value)
             {
                 destination[_offset++] = c;
             }
         }
 
-        private void EnsureCapacity(int length)
+        public override string ToString()
+        {
+            if (Capacity != _offset)
+            {
+                ThrowHelper.ThrowInvalidOperationException(ExceptionResource.Capacity_NotUsedEntirely, Capacity, _offset);
+            }
+
+            return _value;
+        }
+
+        private void EnsureValueIsInitialized()
         {
             if (_value == null)
             {
-                _writing = true;
                 _value = new string('\0', _capacity);
-            }
-            if (_offset + length > _capacity)
-            {
-                throw new InvalidOperationException($"Not enough capacity to write '{length}' characters, only '{_capacity - _offset}' left.");
             }
         }
 
-        public override string ToString()
+        private void ThrowValidationError(string value, int offset, int count)
         {
-            if (_offset != _capacity)
+            if (value == null)
             {
-                throw new InvalidOperationException($"Entire reserved capacity was not used. Capacity: '{_capacity}', written '{_offset}'.");
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.value);
             }
-            return _value;
+
+            if (offset < 0 || value.Length - offset < count)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.offset);
+            }
+
+            if (Capacity - _offset < count)
+            {
+                ThrowHelper.ThrowInvalidOperationException(ExceptionResource.Capacity_NotEnough, value.Length, Capacity - _offset);
+            }
         }
     }
 }

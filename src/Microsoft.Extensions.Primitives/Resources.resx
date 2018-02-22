@@ -120,4 +120,13 @@
   <data name="Argument_InvalidOffsetLength" xml:space="preserve">
     <value>Offset and length are out of bounds for the string or length is greater than the number of characters from index to the end of the string.</value>
   </data>
+  <data name="Capacity_CannotChangeAfterWriteStarted" xml:space="preserve">
+    <value>Cannot change capacity after write started.</value>
+  </data>
+  <data name="Capacity_NotEnough" xml:space="preserve">
+    <value>Not enough capacity to write '{0}' characters, only '{1}' left.</value>
+  </data>
+  <data name="Capacity_NotUsedEntirely" xml:space="preserve">
+    <value>Entire reserved capacity was not used. Capacity: '{0}', written '{1}'.</value>
+  </data>
 </root>

@@ -23,6 +23,18 @@ namespace Microsoft.Extensions.Primitives
             throw new ArgumentException(GetResourceText(resource));
         }
 
+        internal static void ThrowInvalidOperationException(ExceptionResource resource)
+        {
+            throw new InvalidOperationException(GetResourceText(resource));
+        }
+
+        internal static void ThrowInvalidOperationException(ExceptionResource resource, params object[] args)
+        {
+            var message = string.Format(GetResourceText(resource), args);
+
+            throw new InvalidOperationException(message);
+        }
+
         internal static ArgumentNullException GetArgumentNullException(ExceptionArgument argument)
         {
             return new ArgumentNullException(GetArgumentName(argument));
@@ -68,11 +80,16 @@ namespace Microsoft.Extensions.Primitives
         text,
         start,
         count,
-        index
+        index,
+        value,
+        capacity
     }
 
     internal enum ExceptionResource
     {
-        Argument_InvalidOffsetLength
+        Argument_InvalidOffsetLength,
+        Capacity_CannotChangeAfterWriteStarted,
+        Capacity_NotEnough,
+        Capacity_NotUsedEntirely
     }
 }
