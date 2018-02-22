@@ -126,10 +126,4 @@
   <data name="Error_ShortSwitchNotDefined" xml:space="preserve">
     <value>The short switch '{0}' is not defined in the switch mappings.</value>
   </data>
-  <data name="Error_UnrecognizedArgumentFormat" xml:space="preserve">
-    <value>Unrecognized argument format: '{0}'.</value>
-  </data>
-  <data name="Error_ValueIsMissing" xml:space="preserve">
-    <value>Value for switch '{0}' is missing.</value>
-  </data>
 </root>

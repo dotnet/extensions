@@ -52,34 +52,6 @@ namespace Microsoft.Extensions.Configuration.CommandLine
         internal static string FormatError_ShortSwitchNotDefined(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("Error_ShortSwitchNotDefined"), p0);
 
-        /// <summary>
-        /// Unrecognized argument format: '{0}'.
-        /// </summary>
-        internal static string Error_UnrecognizedArgumentFormat
-        {
-            get => GetString("Error_UnrecognizedArgumentFormat");
-        }
-
-        /// <summary>
-        /// Unrecognized argument format: '{0}'.
-        /// </summary>
-        internal static string FormatError_UnrecognizedArgumentFormat(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("Error_UnrecognizedArgumentFormat"), p0);
-
-        /// <summary>
-        /// Value for switch '{0}' is missing.
-        /// </summary>
-        internal static string Error_ValueIsMissing
-        {
-            get => GetString("Error_ValueIsMissing");
-        }
-
-        /// <summary>
-        /// Value for switch '{0}' is missing.
-        /// </summary>
-        internal static string FormatError_ValueIsMissing(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("Error_ValueIsMissing"), p0);
-
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
