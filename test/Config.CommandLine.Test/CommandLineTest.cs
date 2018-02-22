@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Configuration.Test;
 using Xunit;
 
@@ -10,6 +11,47 @@ namespace Microsoft.Extensions.Configuration.CommandLine.Test
 {
     public class CommandLineTest
     {
+        [Fact]
+        public void IgnoresOnlyUnknownArgs()
+        {
+            var args = new string[]
+                {
+                    "foo",
+                    "/bar=baz"
+                };
+            var cmdLineConfig = new CommandLineConfigurationProvider(args);
+            cmdLineConfig.Load();
+            Assert.Single(cmdLineConfig.GetChildKeys(new string[0], null));
+            Assert.Equal("baz", cmdLineConfig.Get("bar"));
+        }
+
+        [Fact]
+        public void CanIgnoreValuesInMiddle()
+        {
+            var args = new string[]
+                {
+                    "Key1=Value1",
+                    "--Key2=Value2",
+                    "/Key3=Value3",
+                    "Bogus1",
+                    "--Key4", "Value4",
+                    "Bogus2",
+                    "/Key5", "Value5",
+                    "Bogus3"
+                };
+            var cmdLineConfig = new CommandLineConfigurationProvider(args);
+
+            cmdLineConfig.Load();
+
+            Assert.Equal("Value1", cmdLineConfig.Get("Key1"));
+            Assert.Equal("Value2", cmdLineConfig.Get("Key2"));
+            Assert.Equal("Value3", cmdLineConfig.Get("Key3"));
+            Assert.Equal("Value4", cmdLineConfig.Get("Key4"));
+            Assert.Equal("Value5", cmdLineConfig.Get("Key5"));
+            Assert.Equal(5, cmdLineConfig.GetChildKeys(new string[0], null).Count());
+        }
+
+
         [Fact]
         public void LoadKeyValuePairsFromCommandLineArgumentsWithoutSwitchMappings()
         {
@@ -160,54 +202,46 @@ namespace Microsoft.Extensions.Configuration.CommandLine.Test
         }
 
         [Fact]
-        public void ThrowExceptionWhenValueForAKeyIsMissing()
+        public void IgnoreWhenValueForAKeyIsMissing()
         {
             var args = new string[]
-                {
-                    "--Key1", "Value1",
-                    "/Key2" /* The value for Key2 is missing here */
-                };
-            var expectedMsg = new FormatException(Resources.FormatError_ValueIsMissing("/Key2")).Message;
+            {
+                "--Key1", "Value1",
+                "/Key2" /* The value for Key2 is missing here */
+            };
+
             var cmdLineConfig = new CommandLineConfigurationProvider(args);
-
-            var exception = Assert.Throws<FormatException>(() => cmdLineConfig.Load());
-
-            Assert.Equal(expectedMsg, exception.Message);
+            cmdLineConfig.Load();
+            Assert.Single(cmdLineConfig.GetChildKeys(new string[0], null));
+            Assert.Equal("Value1", cmdLineConfig.Get("Key1"));
         }
 
         [Fact]
-        public void ThrowExceptionWhenAnArgumentCannotBeRecognized()
+        public void IgnoreWhenAnArgumentCannotBeRecognized()
         {
             var args = new string[]
-                {
-                    "ArgWithoutPrefixAndEqualSign"
-                };
-            var expectedMsg = new FormatException(
-                Resources.FormatError_UnrecognizedArgumentFormat("ArgWithoutPrefixAndEqualSign")).Message;
+            {
+                "ArgWithoutPrefixAndEqualSign"
+            };
             var cmdLineConfig = new CommandLineConfigurationProvider(args);
-
-            var exception = Assert.Throws<FormatException>(() => cmdLineConfig.Load());
-
-            Assert.Equal(expectedMsg, exception.Message);
+            cmdLineConfig.Load();
+            Assert.Empty(cmdLineConfig.GetChildKeys(new string[0], null));
         }
 
         [Fact]
-        public void ThrowExceptionWhenShortSwitchNotDefined()
+        public void IgnoreWhenShortSwitchNotDefined()
         {
             var args = new string[]
-                {
-                    "-Key1", "Value1",
-                };
+            {
+                "-Key1", "Value1",
+            };
             var switchMappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    { "-Key2", "LongKey2" }
-                };
-            var expectedMsg = new FormatException(Resources.FormatError_ShortSwitchNotDefined("-Key1")).Message;
+            {
+                { "-Key2", "LongKey2" }
+            };
             var cmdLineConfig = new CommandLineConfigurationProvider(args, switchMappings);
-
-            var exception = Assert.Throws<FormatException>(() => cmdLineConfig.Load());
-
-            Assert.Equal(expectedMsg, exception.Message);
+            cmdLineConfig.Load();
+            Assert.Empty(cmdLineConfig.GetChildKeys(new string[0], ""));
         }
     }
 }

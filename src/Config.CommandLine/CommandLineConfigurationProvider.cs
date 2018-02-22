@@ -20,12 +20,7 @@ namespace Microsoft.Extensions.Configuration.CommandLine
         /// <param name="switchMappings">The switch mappings.</param>
         public CommandLineConfigurationProvider(IEnumerable<string> args, IDictionary<string, string> switchMappings = null)
         {
-            if (args == null)
-            {
-                throw new ArgumentNullException(nameof(args));
-            }
-
-            Args = args;
+            Args = args ?? throw new ArgumentNullException(nameof(args));
 
             if (switchMappings != null)
             {
@@ -76,7 +71,8 @@ namespace Microsoft.Extensions.Configuration.CommandLine
                         // If there is neither equal sign nor prefix in current arugment, it is an invalid format
                         if (keyStartIndex == 0)
                         {
-                            throw new FormatException(Resources.FormatError_UnrecognizedArgumentFormat(currentArg));
+                            // Ignore invalid formats
+                            continue;
                         }
 
                         // If the switch is a key in given switch mappings, interpret it
@@ -84,10 +80,10 @@ namespace Microsoft.Extensions.Configuration.CommandLine
                         {
                             key = _switchMappings[currentArg];
                         }
-                        // If the switch starts with a single "-" and it isn't in given mappings , it is an invalid usage
+                        // If the switch starts with a single "-" and it isn't in given mappings , it is an invalid usage so ignore it
                         else if (keyStartIndex == 1)
                         {
-                            throw new FormatException(Resources.FormatError_ShortSwitchNotDefined(currentArg));
+                            continue;
                         }
                         // Otherwise, use the switch name directly as a key
                         else
@@ -98,7 +94,8 @@ namespace Microsoft.Extensions.Configuration.CommandLine
                         var previousKey = enumerator.Current;
                         if (!enumerator.MoveNext())
                         {
-                            throw new FormatException(Resources.FormatError_ValueIsMissing(previousKey));
+                            // ignore missing values
+                            continue;
                         }
 
                         value = enumerator.Current;
