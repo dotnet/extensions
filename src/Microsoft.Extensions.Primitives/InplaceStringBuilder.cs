@@ -87,7 +87,7 @@ namespace Microsoft.Extensions.Primitives
 
             if (_offset >= Capacity)
             {
-                ThrowNotEnoughCapacity(1);
+                ThrowHelper.ThrowInvalidOperationException(ExceptionResource.Capacity_NotEnough, 1, Capacity - _offset);
             }
 
             fixed (char* destination = _value)
@@ -100,7 +100,7 @@ namespace Microsoft.Extensions.Primitives
         {
             if (Capacity != _offset)
             {
-                ThrowHelper.ThrowInvalidOperationException(ExceptionResource.Capacity_not_used_entirely, Capacity, _offset);
+                ThrowHelper.ThrowInvalidOperationException(ExceptionResource.Capacity_NotUsedEntirely, Capacity, _offset);
             }
 
             return _value;
@@ -128,13 +128,8 @@ namespace Microsoft.Extensions.Primitives
 
             if (Capacity - _offset < count)
             {
-                ThrowNotEnoughCapacity(value.Length);
+                ThrowHelper.ThrowInvalidOperationException(ExceptionResource.Capacity_NotEnough, value.Length, Capacity - _offset);
             }
-        }
-
-        private void ThrowNotEnoughCapacity(int length)
-        {
-            ThrowHelper.ThrowInvalidOperationException(ExceptionResource.Not_enough_capacity, length, Capacity - _offset);
         }
     }
 }

@@ -123,10 +123,10 @@
   <data name="Capacity_CannotChangeAfterWriteStarted" xml:space="preserve">
     <value>Cannot change capacity after write started.</value>
   </data>
-  <data name="Capacity_not_used_entirely" xml:space="preserve">
-    <value>Entire reserved capacity was not used. Capacity: '{0}', written '{1}'.</value>
-  </data>
-  <data name="Not_enough_capacity" xml:space="preserve">
+  <data name="Capacity_NotEnough" xml:space="preserve">
     <value>Not enough capacity to write '{0}' characters, only '{1}' left.</value>
+  </data>
+  <data name="Capacity_NotUsedEntirely" xml:space="preserve">
+    <value>Entire reserved capacity was not used. Capacity: '{0}', written '{1}'.</value>
   </data>
 </root>

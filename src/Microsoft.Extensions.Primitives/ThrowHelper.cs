@@ -89,7 +89,7 @@ namespace Microsoft.Extensions.Primitives
     {
         Argument_InvalidOffsetLength,
         Capacity_CannotChangeAfterWriteStarted,
-        Not_enough_capacity,
-        Capacity_not_used_entirely
+        Capacity_NotEnough,
+        Capacity_NotUsedEntirely
     }
 }
