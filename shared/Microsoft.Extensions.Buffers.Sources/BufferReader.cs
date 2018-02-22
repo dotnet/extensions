@@ -5,7 +5,7 @@ using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.Extensions.Buffers
+namespace System.Buffers
 {
     internal ref struct BufferReader
     {
@@ -94,7 +94,7 @@ namespace Microsoft.Extensions.Buffers
         {
             if (byteCount < 0)
             {
-                PipelinesThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.length);
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.length);
             }
 
             _consumedBytes += byteCount;
@@ -118,7 +118,7 @@ namespace Microsoft.Extensions.Buffers
 
             if (byteCount > 0)
             {
-                PipelinesThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.length);
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.length);
             }
         }
     }

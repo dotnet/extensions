@@ -140,13 +140,13 @@ namespace Microsoft.Extensions.Primitives
         /// Gets a <see cref="ReadOnlySpan{T}"/> from the current <see cref="StringSegment"/>.
         /// </summary>
         /// <returns>The <see cref="ReadOnlySpan{T}"/> from this <see cref="StringSegment"/>.</returns>
-        public ReadOnlySpan<char> AsSpan() => Buffer.AsReadOnlySpan(Offset, Length);
+        public ReadOnlySpan<char> AsSpan() => Buffer.AsSpan(Offset, Length);
 
         /// <summary>
         /// Gets a <see cref="ReadOnlyMemory{T}"/> from the current <see cref="StringSegment"/>.
         /// </summary>
         /// <returns>The <see cref="ReadOnlyMemory{T}"/> from this <see cref="StringSegment"/>.</returns>
-        public ReadOnlyMemory<char> AsMemory() => Buffer.AsReadOnlyMemory(Offset, Length);
+        public ReadOnlyMemory<char> AsMemory() => Buffer.AsMemory(Offset, Length);
 
         /// <inheritdoc />
         public override bool Equals(object obj)

@@ -4,8 +4,9 @@
 using System.Text;
 using System.Threading;
 using System.Diagnostics;
+using System.IO.Pipelines;
 
-namespace Microsoft.Extensions.Buffers
+namespace System.Buffers
 {
     /// <summary>
     /// Block tracking object used by the byte buffer memory pool. A slab is a large allocation which is divided into smaller blocks. The
@@ -21,7 +22,7 @@ namespace Microsoft.Extensions.Buffers
         /// <summary>
         /// This object cannot be instantiated outside of the static Create method
         /// </summary>
-        protected MemoryPoolBlock(MemoryPool pool, MemoryPoolSlab slab, int offset, int length)
+        protected MemoryPoolBlock(SlabMemoryPool pool, MemoryPoolSlab slab, int offset, int length)
         {
             _offset = offset;
             _length = length;
@@ -33,7 +34,7 @@ namespace Microsoft.Extensions.Buffers
         /// <summary>
         /// Back-reference to the memory pool which this block was allocated from. It may only be returned to this pool.
         /// </summary>
-        public MemoryPool Pool { get; }
+        public SlabMemoryPool Pool { get; }
 
         /// <summary>
         /// Back-reference to the slab from which this block was taken, or null if it is one-time-use memory.
@@ -46,7 +47,7 @@ namespace Microsoft.Extensions.Buffers
         {
             get
             {
-                if (IsDisposed) PipelinesThrowHelper.ThrowObjectDisposedException(nameof(MemoryPoolBlock));
+                if (IsDisposed) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
                 return new Span<byte>(Slab.Array, _offset, _length);
             }
         }
@@ -76,12 +77,11 @@ namespace Microsoft.Extensions.Buffers
         internal static MemoryPoolBlock Create(
             int offset,
             int length,
-            MemoryPool pool,
+            SlabMemoryPool pool,
             MemoryPoolSlab slab)
         {
             return new MemoryPoolBlock(pool, slab, offset, length);
         }
-
 
         protected void OnZeroReferences()
         {
@@ -95,14 +95,14 @@ namespace Microsoft.Extensions.Buffers
 
         public override void Retain()
         {
-            if (IsDisposed) PipelinesThrowHelper.ThrowObjectDisposedException(nameof(MemoryPoolBlock));
+            if (IsDisposed) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
             Interlocked.Increment(ref _referenceCount);
         }
 
         public override bool Release()
         {
             int newRefCount = Interlocked.Decrement(ref _referenceCount);
-            if (newRefCount < 0) PipelinesThrowHelper.ThrowInvalidOperationException(ExceptionResource.ReferenceCountZero);
+            if (newRefCount < 0) ThrowHelper.ThrowInvalidOperationException_ReferenceCountZero();
             if (newRefCount == 0)
             {
                 OnZeroReferences();
@@ -118,7 +118,7 @@ namespace Microsoft.Extensions.Buffers
         // this method access modifiers need to be `protected internal`
         protected override bool TryGetArray(out ArraySegment<byte> arraySegment)
         {
-            if (IsDisposed) PipelinesThrowHelper.ThrowObjectDisposedException(nameof(MemoryPoolBlock));
+            if (IsDisposed) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
             arraySegment = new ArraySegment<byte>(Slab.Array, _offset, _length);
             return true;
         }
@@ -126,7 +126,7 @@ namespace Microsoft.Extensions.Buffers
         public override MemoryHandle Pin(int byteOffset = 0)
         {
             Retain();   // checks IsDisposed
-            if (byteOffset < 0 || byteOffset > _length) PipelinesThrowHelper.ThrowArgumentOutOfRangeException(_length, byteOffset);
+            if (byteOffset < 0 || byteOffset > _length) ThrowHelper.ThrowArgumentOutOfRangeException(_length, byteOffset);
             unsafe
             {
                 return new MemoryHandle(this, (Slab.NativePointer + _offset + byteOffset).ToPointer());

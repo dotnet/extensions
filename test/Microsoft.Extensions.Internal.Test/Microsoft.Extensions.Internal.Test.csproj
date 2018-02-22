@@ -3,11 +3,14 @@
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <DebugType>portable</DebugType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\..\shared\Microsoft.AspNetCore.Certificates.Generation.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.ActivatorUtilities.Sources\**\*.cs" />
+    <Compile Include="..\..\shared\Microsoft.Extensions.Buffers.Sources\**\*.cs" />
+    <Compile Include="..\..\shared\Microsoft.Extensions.Buffers.Testing.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.ClosedGenericMatcher.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.CopyOnWriteDictionary.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.DotnetToolDispatcher.Sources\**\*.cs" />
@@ -33,6 +36,8 @@
     <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataPackageVersion)" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" />
     <PackageReference Include="System.Security.Cryptography.Cng" Version="$(SystemSecurityCryptographyCngPackageVersion)" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
+    <PackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
   </ItemGroup>
 
 </Project>

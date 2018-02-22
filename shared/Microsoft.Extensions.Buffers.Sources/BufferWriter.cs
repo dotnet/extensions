@@ -2,29 +2,41 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Buffers;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.Extensions.Buffers
+namespace System.Buffers
 {
     internal ref struct BufferWriter<T> where T: IBufferWriter<byte>
     {
-        private T _writer;
+        private T _output;
         private Span<byte> _span;
+        private int _buffered;
 
-        public BufferWriter(T writer)
+        public BufferWriter(T output)
         {
-            _writer = writer;
-            _span = writer.GetSpan();
+            _buffered = 0;
+            _output = output;
+            _span = output.GetSpan();
         }
 
         public Span<byte> Span => _span;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Commit()
+        {
+            var buffered = _buffered;
+            if (buffered > 0)
+            {
+                _buffered = 0;
+                _output.Advance(buffered);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Advance(int count)
         {
+            _buffered += count;
             _span = _span.Slice(count);
-            _writer.Advance(count);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -41,11 +53,25 @@ namespace Microsoft.Extensions.Buffers
             }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Ensure(int count = 1)
         {
-            _writer.GetMemory(count);
-            _span = _writer.GetSpan();
+            if (_span.Length < count)
+            {
+                EnsureMore(count);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void EnsureMore(int count = 0)
+        {
+            if (_buffered > 0)
+            {
+                Commit();
+            }
+
+            _output.GetMemory(count);
+            _span = _output.GetSpan();
         }
 
         private void WriteMultiBuffer(ReadOnlySpan<byte> source)
@@ -54,7 +80,7 @@ namespace Microsoft.Extensions.Buffers
             {
                 if (_span.Length == 0)
                 {
-                    Ensure();
+                    EnsureMore();
                 }
 
                 var writable = Math.Min(source.Length, _span.Length);

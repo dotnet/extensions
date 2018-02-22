@@ -5,24 +5,24 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipelines;
 
-namespace Microsoft.Extensions.Buffers
+namespace System.Buffers
 {
     /// <summary>
     /// Used to allocate and distribute re-usable blocks of memory.
     /// </summary>
     internal class SlabMemoryPool : MemoryPool<byte>
     {
+#if NETSTANDARD1_1
         /// <summary>
         /// The gap between blocks' starting address. 4096 is chosen because most operating systems are 4k pages in size and alignment.
         /// </summary>
-        private const int _blockStride = 4096;
-
+        private const int _pageSize = 4096;
+#else
         /// <summary>
-        /// The last 64 bytes of a block are unused to prevent CPU from pre-fetching the next 64 byte into it's memory cache.
-        /// See https://github.com/aspnet/KestrelHttpServer/issues/117 and https://www.youtube.com/watch?v=L7zSU9HI-6I
+        /// The gap between blocks' starting address.
         /// </summary>
-        private const int _blockUnused = 64;
-
+        private static readonly int _pageSize = Environment.SystemPageSize;
+#endif
         /// <summary>
         /// Allocating 32 contiguous blocks per slab makes the slab size 128k. This is larger than the 85k size which will place the memory
         /// in the large object heap. This means the GC will not try to relocate this array, so the fact it remains pinned does not negatively
@@ -31,20 +31,15 @@ namespace Microsoft.Extensions.Buffers
         private const int _blockCount = 32;
 
         /// <summary>
-        /// 4096 - 64 gives you a blockLength of 4032 usable bytes per block.
-        /// </summary>
-        private const int _blockLength = _blockStride - _blockUnused;
-
-        /// <summary>
         /// Max allocation block size for pooled blocks,
         /// larger values can be leased but they will be disposed after use rather than returned to the pool.
         /// </summary>
-        public override int MaxBufferSize { get; } = _blockLength;
+        public override int MaxBufferSize { get; } = _pageSize;
 
         /// <summary>
         /// 4096 * 32 gives you a slabLength of 128k contiguous bytes allocated per slab
         /// </summary>
-        private const int _slabLength = _blockStride * _blockCount;
+        private static readonly int _slabLength = _pageSize * _blockCount;
 
         /// <summary>
         /// Thread-safe collection of blocks which are currently in the pool. A slab will pre-allocate all of the block tracking objects
@@ -70,10 +65,10 @@ namespace Microsoft.Extensions.Buffers
 
         public override OwnedMemory<byte> Rent(int size = AnySize)
         {
-            if (size == AnySize) size = _blockLength;
-            else if (size > _blockLength)
+            if (size == AnySize) size = _pageSize;
+            else if (size > _pageSize)
             {
-                throw new ArgumentOutOfRangeException(nameof(size), _blockLength, "Block size to large");
+                ThrowHelper.ThrowArgumentOutOfRangeException_BufferRequestTooLarge(_pageSize);
             }
 
             var block = Lease();
@@ -118,18 +113,20 @@ namespace Microsoft.Extensions.Buffers
             _slabs.Push(slab);
 
             var basePtr = slab.NativePointer;
-            var firstOffset = (int)((_blockStride - 1) - ((ulong)(basePtr + _blockStride - 1) % _blockStride));
+            // Page align the blocks
+            var firstOffset = (int)((((ulong)basePtr + (uint)_pageSize - 1) & ~((uint)_pageSize - 1)) - (ulong)basePtr);
+            // Ensure page aligned
+            Debug.Assert((((ulong)basePtr + (uint)firstOffset) & (uint)(_pageSize - 1)) == 0);
 
-            var poolAllocationLength = _slabLength - _blockStride;
-
+            var blockAllocationLength = ((_slabLength - firstOffset) & ~(_pageSize - 1));
             var offset = firstOffset;
             for (;
-                offset + _blockLength < poolAllocationLength;
-                offset += _blockStride)
+                offset + _pageSize < blockAllocationLength;
+                offset += _pageSize)
             {
                 var block = MemoryPoolBlock.Create(
                     offset,
-                    _blockLength,
+                    _pageSize,
                     this,
                     slab);
 #if BLOCK_LEASE_TRACKING
@@ -138,10 +135,11 @@ namespace Microsoft.Extensions.Buffers
                 Return(block);
             }
 
+            Debug.Assert(offset + _pageSize - firstOffset == blockAllocationLength);
             // return last block rather than adding to pool
             var newBlock = MemoryPoolBlock.Create(
                     offset,
-                    _blockLength,
+                    _pageSize,
                     this,
                     slab);
 
