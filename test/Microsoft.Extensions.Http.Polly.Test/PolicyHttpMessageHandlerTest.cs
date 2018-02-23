@@ -25,24 +25,21 @@ namespace Microsoft.Extensions.Http
 
             var callCount = 0;
             var expected = new HttpResponseMessage();
-            handler.InnerHandler = new MockHandler()
+            handler.OnSendAsync = (req, c, ct) =>
             {
-                OnSendAsync = (req, ct) =>
+                if (callCount == 0)
                 {
-                    if (callCount == 0)
-                    {
-                        callCount++;
-                        throw new HttpRequestException();
-                    }
-                    else if (callCount == 1)
-                    {
-                        callCount++;
-                        return expected;
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException();
-                    }
+                    callCount++;
+                    throw new HttpRequestException();
+                }
+                else if (callCount == 1)
+                {
+                    callCount++;
+                    return expected;
+                }
+                else
+                {
+                    throw new InvalidOperationException();
                 }
             };
 
@@ -71,27 +68,24 @@ namespace Microsoft.Extensions.Http
 
             var callCount = 0;
             var expected = new HttpResponseMessage();
-            handler.InnerHandler = new MockHandler()
+            handler.OnSendAsync = (req, c, ct) =>
             {
                 // The inner cancellation token is created by polly, it will trigger the timeout.
-                OnSendAsync = (req, ct) =>
+                Assert.True(ct.CanBeCanceled);
+                if (callCount == 0)
                 {
-                    Assert.True(ct.CanBeCanceled);
-                    if (callCount == 0)
-                    {
-                        callCount++;
-                        @event.Wait(ct);
-                        throw null; // unreachable, previous line should throw
-                    }
-                    else if (callCount == 1)
-                    {
-                        callCount++;
-                        return expected;
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException();
-                    }
+                    callCount++;
+                    @event.Wait(ct);
+                    throw null; // unreachable, previous line should throw
+                }
+                else if (callCount == 1)
+                {
+                    callCount++;
+                    return expected;
+                }
+                else
+                {
+                    throw new InvalidOperationException();
                 }
             };
 
@@ -103,8 +97,65 @@ namespace Microsoft.Extensions.Http
             Assert.Same(expected, response);
         }
 
+        [Fact]
+        public async Task SendAsync_NoContextSet_CreatesNewContext()
+        {
+            // Arrange
+            var policy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(10));
+            var handler = new TestPolicyHttpMessageHandler(policy);
+
+            Context context = null;
+            var expected = new HttpResponseMessage();
+            handler.OnSendAsync = (req, c, ct) =>
+            {
+                context = c;
+
+                Assert.NotNull(context);
+                Assert.Same(context, req.GetPollyContext());
+                return expected;
+            };
+
+            var request = new HttpRequestMessage();
+
+            // Act
+            var response = await handler.SendAsync(request, CancellationToken.None);
+
+            // Assert
+            Assert.Same(context, request.GetPollyContext()); // We don't clean up the context
+            Assert.Same(expected, response);
+        }
+
+        [Fact]
+        public async Task SendAsync_ExistingContext_ReusesContext()
+        {
+            // Arrange
+            var policy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(10));
+            var handler = new TestPolicyHttpMessageHandler(policy);
+
+            var expected = new HttpResponseMessage();
+            handler.OnSendAsync = (req, c, ct) =>
+            {
+                Assert.NotNull(c);
+                Assert.Same(c, req.GetPollyContext());
+                return expected;
+            };
+
+            var request = new HttpRequestMessage();
+            var context = new Context(Guid.NewGuid().ToString());
+            request.SetPollyContext(context);
+
+            // Act
+            var response = await handler.SendAsync(request, CancellationToken.None);
+
+            // Assert
+            Assert.Same(context, request.GetPollyContext()); // We don't clean up the context
+            Assert.Same(expected, response);
+        }
+
         private class TestPolicyHttpMessageHandler : PolicyHttpMessageHandler
         {
+            public Func<HttpRequestMessage, Context, CancellationToken, HttpResponseMessage> OnSendAsync { get; set; }
+
             public TestPolicyHttpMessageHandler(IAsyncPolicy<HttpResponseMessage> policy)
                 : base(policy)
             {
@@ -114,15 +165,11 @@ namespace Microsoft.Extensions.Http
             {
                 return base.SendAsync(request, cancellationToken);
             }
-        }
 
-        private class MockHandler : DelegatingHandler
-        {
-            public Func<HttpRequestMessage, CancellationToken, HttpResponseMessage> OnSendAsync { get; set; }
-
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            protected override Task<HttpResponseMessage> SendCoreAsync(HttpRequestMessage request, Context context, CancellationToken cancellationToken)
             {
-                return Task.FromResult(OnSendAsync(request, cancellationToken));
+                Assert.NotNull(OnSendAsync);
+                return Task.FromResult(OnSendAsync(request, context, cancellationToken));
             }
         }
     }

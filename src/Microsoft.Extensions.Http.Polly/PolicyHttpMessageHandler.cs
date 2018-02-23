@@ -50,6 +50,11 @@ namespace Microsoft.Extensions.Http
     /// methods provided by <see cref="PollyHttpClientBuilderExtensions"/> are designed to assign a long lifetime to policies
     /// and ensure that they can be used when the handler rotation feature is active.
     /// </para>
+    /// <para>
+    /// The <see cref="PolicyHttpMessageHandler"/> will attach a context to the <see cref="HttpResponseMessage"/> prior
+    /// to executing a <see cref="Policy"/>, if one does not already exist. The <see cref="Context"/> will be provided
+    /// to the policy for use inside the <see cref="Policy"/> and in other message handlers.
+    /// </para>
     /// </remarks>
     public class PolicyHttpMessageHandler : DelegatingHandler
     {
@@ -77,7 +82,38 @@ namespace Microsoft.Extensions.Http
                 throw new ArgumentNullException(nameof(request));
             }
 
-            return _policy.ExecuteAsync((ct) => base.SendAsync(request, ct), cancellationToken);
+            // Guarantee the existance of a context for every policy execution, but only create a new one if needed. This
+            // allows later handlers to flow state if desired.
+            var context = request.GetPollyContext();
+            if (context == null)
+            {
+                context = new Context(Guid.NewGuid().ToString());
+                request.SetPollyContext(context);
+            }
+
+            return _policy.ExecuteAsync((c, ct) => SendCoreAsync(request, c, ct), context, cancellationToken);
+        }
+
+        /// <summary>
+        /// Called inside the execution of the <see cref="Policy"/> to perform request processing.
+        /// </summary>
+        /// <param name="request">The <see cref="HttpRequestMessage"/>.</param>
+        /// <param name="context">The <see cref="Context"/>.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+        /// <returns>Returns a <see cref="Task{HttpResponseMessage}"/> that will yield a response when completed.</returns>
+        protected virtual Task<HttpResponseMessage> SendCoreAsync(HttpRequestMessage request, Context context, CancellationToken cancellationToken)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            return base.SendAsync(request, cancellationToken);
         }
     }
 }
