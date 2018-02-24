@@ -33,10 +33,46 @@ namespace Microsoft.Extensions.Primitives
         }
 
         [Fact]
+        public void StringSegment_AsSpan()
+        {
+            var segment = new StringSegment("Hello");
+
+            var span = segment.AsSpan();
+
+            Assert.Equal(5, span.Length);
+        }
+
+        [Fact]
+        public void StringSegment_ImplicitConvertToSpan()
+        {
+            ReadOnlySpan<char> span = new StringSegment("Hello");
+
+            Assert.Equal(5, span.Length);
+        }
+
+        [Fact]
+        public void StringSegment_AsMemory()
+        {
+            var segment = new StringSegment("Hello");
+
+            var memory = segment.AsMemory();
+
+            Assert.Equal(5, memory.Length);
+        }
+
+        [Fact]
+        public void StringSegment_ImplicitConvertToMemory()
+        {
+            ReadOnlyMemory<char> memory = new StringSegment("Hello");
+
+            Assert.Equal(5, memory.Length);
+        }
+
+        [Fact]
         public void StringSegment_StringCtor_AllowsNullBuffers()
         {
             // Arrange & Act
-            var segment = new StringSegment(null);
+            var segment = new StringSegment(null as string);
 
             // Assert
             Assert.False(segment.HasValue);
@@ -333,7 +369,7 @@ namespace Microsoft.Extensions.Primitives
         {
             Assert.True(StringSegment.IsNullOrEmpty(null));
             Assert.True(StringSegment.IsNullOrEmpty(string.Empty));
-            Assert.True(StringSegment.IsNullOrEmpty(new StringSegment(null)));
+            Assert.True(StringSegment.IsNullOrEmpty(new StringSegment(null as string)));
             Assert.True(StringSegment.IsNullOrEmpty(new StringSegment(string.Empty)));
             Assert.True(StringSegment.IsNullOrEmpty(StringSegment.Empty));
             Assert.True(StringSegment.IsNullOrEmpty(new StringSegment(string.Empty, 0, 0)));
