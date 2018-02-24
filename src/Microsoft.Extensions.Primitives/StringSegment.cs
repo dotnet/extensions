@@ -84,7 +84,11 @@ namespace Microsoft.Extensions.Primitives
         /// <param name="span">The original <see cref="Span{T}"/> used as buffer.</param>
         public unsafe StringSegment(Span<char> span)
         {
-            Buffer = new string((char*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(span)));
+            fixed (char* src = &MemoryMarshal.GetReference(span))
+            {
+                Buffer = new string(src, 0, span.Length);
+            }
+
             Offset = 0;
             Length = span.Length;
         }
