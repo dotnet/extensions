@@ -33,32 +33,6 @@ namespace Microsoft.Extensions.Primitives
         }
 
         [Fact]
-        public void StringSegment_ImplicitConvertFromSpan()
-        {
-            Span<char> span = "Hello".ToCharArray();
-
-            StringSegment segment = span;
-
-            Assert.True(segment.HasValue);
-            Assert.Equal(0, segment.Offset);
-            Assert.Equal(5, segment.Length);
-            Assert.Equal("Hello", segment.Value);
-        }
-
-        [Fact]
-        public void StringSegment_ImplicitConvertFromMemory()
-        {
-            Memory<char> span = "Hello".ToCharArray();
-
-            StringSegment segment = span;
-
-            Assert.True(segment.HasValue);
-            Assert.Equal(0, segment.Offset);
-            Assert.Equal(5, segment.Length);
-            Assert.Equal("Hello", segment.Value);
-        }
-
-        [Fact]
         public void StringSegment_AsSpan()
         {
             var segment = new StringSegment("Hello");
@@ -98,7 +72,7 @@ namespace Microsoft.Extensions.Primitives
         public void StringSegment_StringCtor_AllowsNullBuffers()
         {
             // Arrange & Act
-            var segment = new StringSegment(null as string);
+            var segment = new StringSegment(null);
 
             // Assert
             Assert.False(segment.HasValue);
@@ -168,36 +142,6 @@ namespace Microsoft.Extensions.Primitives
             Assert.True(segment.HasValue);
             Assert.Equal(0, segment.Offset);
             Assert.Equal(buffer.Length, segment.Length);
-        }
-
-        [Fact]
-        public void StringSegment_SpanCtor_InitializesValuesCorrectly()
-        {
-            // Arrange
-            Span<char> span = "Hello world!".ToCharArray();
-
-            // Act
-            var segment = new StringSegment(span);
-
-            // Assert:
-            Assert.True(segment.HasValue);
-            Assert.Equal(0, segment.Offset);
-            Assert.Equal(span.Length, segment.Length);
-        }
-
-        [Fact]
-        public void StringSegment_MemoryCtor_InitializesValuesCorrectly()
-        {
-            // Arrange
-            Memory<char> memory = "Hello world!".ToCharArray();
-
-            // Act
-            var segment = new StringSegment(memory);
-
-            // Assert:
-            Assert.True(segment.HasValue);
-            Assert.Equal(0, segment.Offset);
-            Assert.Equal(memory.Length, segment.Length);
         }
 
         [Fact]
@@ -425,7 +369,7 @@ namespace Microsoft.Extensions.Primitives
         {
             Assert.True(StringSegment.IsNullOrEmpty(null));
             Assert.True(StringSegment.IsNullOrEmpty(string.Empty));
-            Assert.True(StringSegment.IsNullOrEmpty(new StringSegment(null as string)));
+            Assert.True(StringSegment.IsNullOrEmpty(new StringSegment(null)));
             Assert.True(StringSegment.IsNullOrEmpty(new StringSegment(string.Empty)));
             Assert.True(StringSegment.IsNullOrEmpty(StringSegment.Empty));
             Assert.True(StringSegment.IsNullOrEmpty(new StringSegment(string.Empty, 0, 0)));

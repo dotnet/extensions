@@ -3,7 +3,6 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Primitives
 {
@@ -76,29 +75,6 @@ namespace Microsoft.Extensions.Primitives
             }
 
             return ThrowHelper.GetArgumentException(ExceptionResource.Argument_InvalidOffsetLength);
-        }
-
-        /// <summary>
-        /// Initializes an instance of the <see cref="StringSegment"/> struct.
-        /// </summary>
-        /// <param name="span">The original <see cref="Span{T}"/> used as buffer.</param>
-        public unsafe StringSegment(Span<char> span)
-        {
-            fixed (char* src = &MemoryMarshal.GetReference(span))
-            {
-                Buffer = new string(src, 0, span.Length);
-            }
-
-            Offset = 0;
-            Length = span.Length;
-        }
-
-        /// <summary>
-        /// Initializes an instance of the <see cref="StringSegment"/> struct.
-        /// </summary>
-        /// <param name="memory">The original <see cref="Memory{T}"/> used as buffer.</param>
-        public StringSegment(Memory<char> memory) : this(memory.Span)
-        {
         }
 
         /// <summary>
@@ -304,19 +280,10 @@ namespace Microsoft.Extensions.Primitives
         /// Creates a new <see cref="StringSegment"/> from the given <see cref="string"/>.
         /// </summary>
         /// <param name="value">The <see cref="string"/> to convert to a <see cref="StringSegment"/></param>
-        public static implicit operator StringSegment(string value) => new StringSegment(value);
-
-        /// <summary>
-        /// Creates a new <see cref="StringSegment"/> from the given <see cref="Span{T}"/>.
-        /// </summary>
-        /// <param name="span">The <see cref="Span{T}"/> to convert to a <see cref="StringSegment"/></param>
-        public static implicit operator StringSegment(Span<char> span) => new StringSegment(span);
-
-        /// <summary>
-        /// Creates a new <see cref="StringSegment"/> from the given <see cref="Memory{T}"/>.
-        /// </summary>
-        /// <param name="memory">The <see cref="Memory{T}"/> to convert to a <see cref="StringSegment"/></param>
-        public static implicit operator StringSegment(Memory<char> memory) => new StringSegment(memory);
+        public static implicit operator StringSegment(string value)
+        {
+            return new StringSegment(value);
+        }
 
         /// <summary>
         /// Creates a see <see cref="ReadOnlySpan{T}"/> from the given <see cref="StringSegment"/>.
