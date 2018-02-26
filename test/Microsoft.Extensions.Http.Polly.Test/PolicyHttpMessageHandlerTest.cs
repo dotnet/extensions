@@ -109,9 +109,8 @@ namespace Microsoft.Extensions.Http
             handler.OnSendAsync = (req, c, ct) =>
             {
                 context = c;
-
                 Assert.NotNull(context);
-                Assert.Same(context, req.GetPollyContext());
+                Assert.Same(context, req.GetPolicyExecutionContext());
                 return expected;
             };
 
@@ -121,7 +120,7 @@ namespace Microsoft.Extensions.Http
             var response = await handler.SendAsync(request, CancellationToken.None);
 
             // Assert
-            Assert.Same(context, request.GetPollyContext()); // We don't clean up the context
+            Assert.Same(context, request.GetPolicyExecutionContext()); // We don't clean up the context
             Assert.Same(expected, response);
         }
 
@@ -133,22 +132,26 @@ namespace Microsoft.Extensions.Http
             var handler = new TestPolicyHttpMessageHandler(policy);
 
             var expected = new HttpResponseMessage();
+            var expectedContext = new Context(Guid.NewGuid().ToString());
+
+            Context context = null;
             handler.OnSendAsync = (req, c, ct) =>
             {
+                context = c;
                 Assert.NotNull(c);
-                Assert.Same(c, req.GetPollyContext());
+                Assert.Same(c, req.GetPolicyExecutionContext());
                 return expected;
             };
 
             var request = new HttpRequestMessage();
-            var context = new Context(Guid.NewGuid().ToString());
-            request.SetPollyContext(context);
+            request.SetPolicyExecutionContext(expectedContext);
 
             // Act
             var response = await handler.SendAsync(request, CancellationToken.None);
 
             // Assert
-            Assert.Same(context, request.GetPollyContext()); // We don't clean up the context
+            Assert.Same(expectedContext, context);
+            Assert.Same(expectedContext, request.GetPolicyExecutionContext()); // We don't clean up the context
             Assert.Same(expected, response);
         }
 

@@ -84,11 +84,11 @@ namespace Microsoft.Extensions.Http
 
             // Guarantee the existance of a context for every policy execution, but only create a new one if needed. This
             // allows later handlers to flow state if desired.
-            var context = request.GetPollyContext();
+            var context = request.GetPolicyExecutionContext();
             if (context == null)
             {
-                context = new Context(Guid.NewGuid().ToString());
-                request.SetPollyContext(context);
+                context = new Context(null);
+                request.SetPolicyExecutionContext(context);
             }
 
             return _policy.ExecuteAsync((c, ct) => SendCoreAsync(request, c, ct), context, cancellationToken);

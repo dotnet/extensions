@@ -10,74 +10,74 @@ namespace Polly
     public class HttpRequestMessageExtensionsTest
     {
         [Fact]
-        public void GetPollyContext_Found_SetsContext()
+        public void GetPolicyExecutionContext_Found_SetsContext()
         {
             // Arrange
             var request = new HttpRequestMessage();
             var expected = new Context(Guid.NewGuid().ToString());
-            request.Properties[HttpRequestMessageExtensions.PollyContextKey] = expected;
+            request.Properties[HttpRequestMessageExtensions.PolicyExecutionContextKey] = expected;
 
             // Act
-            var actual = request.GetPollyContext();
+            var actual = request.GetPolicyExecutionContext();
 
             // Assert
             Assert.Same(expected, actual);
         }
 
         [Fact]
-        public void GetPollyContext_NotFound_ReturnsNull()
+        public void GetPolicyExecutionContext_NotFound_ReturnsNull()
         {
             // Arrange
             var request = new HttpRequestMessage();
 
             // Act
-            var actual = request.GetPollyContext();
+            var actual = request.GetPolicyExecutionContext();
 
             // Assert
             Assert.Null(actual);
         }
 
         [Fact]
-        public void GetPollyContext_Null_ReturnsNull()
+        public void GetPolicyExecutionContext_Null_ReturnsNull()
         {
             // Arrange
             var request = new HttpRequestMessage();
-            request.Properties[HttpRequestMessageExtensions.PollyContextKey] = null;
+            request.Properties[HttpRequestMessageExtensions.PolicyExecutionContextKey] = null;
 
             // Act
-            var actual = request.GetPollyContext();
+            var actual = request.GetPolicyExecutionContext();
 
             // Assert
             Assert.Null(actual);
         }
 
         [Fact]
-        public void SetPollyContext_WithValue_SetsContext()
+        public void SetPolicyExecutionContext_WithValue_SetsContext()
         {
             // Arrange
             var request = new HttpRequestMessage();
             var expected = new Context(Guid.NewGuid().ToString());
 
             // Act
-            request.SetPollyContext(expected);
+            request.SetPolicyExecutionContext(expected);
 
             // Assert
-            var actual = request.Properties[HttpRequestMessageExtensions.PollyContextKey];
+            var actual = request.Properties[HttpRequestMessageExtensions.PolicyExecutionContextKey];
             Assert.Same(expected, actual);
         }
 
         [Fact]
-        public void SetPollyContext_WithNull_SetsNull()
+        public void SetPolicyExecutionContext_WithNull_SetsNull()
         {
             // Arrange
             var request = new HttpRequestMessage();
-            request.Properties[HttpRequestMessageExtensions.PollyContextKey] = new Context(Guid.NewGuid().ToString());
+            request.Properties[HttpRequestMessageExtensions.PolicyExecutionContextKey] = new Context(Guid.NewGuid().ToString());
 
             // Act
-            request.SetPollyContext(null);
+            request.SetPolicyExecutionContext(null);
 
             // Assert
-            var actual = request.Properties[HttpRequestMessageExtensions.PollyContextKey];
+            var actual = request.Properties[HttpRequestMessageExtensions.PolicyExecutionContextKey];
             Assert.Null(actual);
         }
     }

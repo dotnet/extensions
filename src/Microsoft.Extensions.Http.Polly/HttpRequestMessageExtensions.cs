@@ -12,7 +12,7 @@ namespace Polly
     /// </summary>
     public static class HttpRequestMessageExtensions
     {
-        internal static readonly string PollyContextKey = "PollyContext";
+        internal static readonly string PolicyExecutionContextKey = "PolicyExecutionContext";
         
         /// <summary>
         /// Gets the <see cref="Context"/> associated with the provided <see cref="HttpRequestMessage"/>.
@@ -24,14 +24,14 @@ namespace Polly
         /// to executing a <see cref="Policy"/>, if one does not already exist. The <see cref="Context"/> will be provided
         /// to the policy for use inside the <see cref="Policy"/> and in other message handlers.
         /// </remarks>
-        public static Context GetPollyContext(this HttpRequestMessage request)
+        public static Context GetPolicyExecutionContext(this HttpRequestMessage request)
         {
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            request.Properties.TryGetValue(PollyContextKey, out var context);
+            request.Properties.TryGetValue(PolicyExecutionContextKey, out var context);
             return context as Context;
         }
 
@@ -45,14 +45,14 @@ namespace Polly
         /// to executing a <see cref="Policy"/>, if one does not already exist. The <see cref="Context"/> will be provided
         /// to the policy for use inside the <see cref="Policy"/> and in other message handlers.
         /// </remarks>
-        public static void SetPollyContext(this HttpRequestMessage request, Context context)
+        public static void SetPolicyExecutionContext(this HttpRequestMessage request, Context context)
         {
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            request.Properties[PollyContextKey] = context;
+            request.Properties[PolicyExecutionContextKey] = context;
         }
     }
 }
