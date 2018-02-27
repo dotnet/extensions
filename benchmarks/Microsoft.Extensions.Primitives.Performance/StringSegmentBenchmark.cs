@@ -7,7 +7,8 @@ namespace Microsoft.Extensions.Primitives.Performance
     public class StringSegmentBenchmark
     {
         private readonly StringSegment _segment = new StringSegment("Hello world!");
-        private readonly StringSegment _trimSegment = new StringSegment("   Hello world!   ");
+        private readonly StringSegment _largeSegment = new StringSegment("Hello, World!, Hello people! My Car Is Cool. Your Carport is blue.");
+        private readonly StringSegment _trimSegment = new StringSegment("   Hello world!    ");
         private readonly object _boxedSegment;
         private readonly char[] _indexOfAnyChars = { 'w', 'l' };
 
@@ -44,10 +45,10 @@ namespace Microsoft.Extensions.Primitives.Performance
         public override int GetHashCode() => _segment.GetHashCode();
 
         [Benchmark]
-        public bool StartsWith() => _segment.StartsWith("Hel", StringComparison.Ordinal);
+        public bool StartsWith() => _largeSegment.StartsWith("Hel", StringComparison.Ordinal);
 
         [Benchmark]
-        public bool EndsWith() => _segment.EndsWith("ld!", StringComparison.Ordinal);
+        public bool EndsWith() => _largeSegment.EndsWith("ld!", StringComparison.Ordinal);
 
         [Benchmark]
         public string SubString() => _segment.Substring(3, 2);
@@ -56,13 +57,13 @@ namespace Microsoft.Extensions.Primitives.Performance
         public StringSegment SubSegment() => _segment.Subsegment(3, 2);
 
         [Benchmark]
-        public int IndexOf() => _segment.IndexOf(' ', 1, 7);
+        public int IndexOf() => _largeSegment.IndexOf(' ', 1, 7);
 
         [Benchmark]
-        public int IndexOfAny() => _segment.IndexOfAny(_indexOfAnyChars, 1, 7);
+        public int IndexOfAny() => _largeSegment.IndexOfAny(_indexOfAnyChars, 1, 7);
 
         [Benchmark]
-        public int LastIndexOf() => _segment.LastIndexOf('l');
+        public int LastIndexOf() => _largeSegment.LastIndexOf('l');
 
         [Benchmark]
         public StringSegment Trim() => _trimSegment.Trim();
