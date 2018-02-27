@@ -329,14 +329,20 @@ namespace Microsoft.Extensions.Primitives
         public void DefaultNullOrEmpty_Concat(StringValues stringValues)
         {
             string[] expected = new[] { "abc", "bcd", "foo" };
-            Assert.Equal(expected, StringValues.Concat(stringValues, new StringValues(expected)));
-            Assert.Equal(expected, StringValues.Concat(new StringValues(expected), stringValues));
+            StringValues expectedStringValues = new StringValues(expected);
+            Assert.Equal(expected, StringValues.Concat(stringValues, expectedStringValues));
+            Assert.Equal(expected, StringValues.Concat(expectedStringValues, stringValues));
+            Assert.Equal(expected, StringValues.Concat((string)null, in expectedStringValues));
+            Assert.Equal(expected, StringValues.Concat(in expectedStringValues, (string)null));
 
             string[] empty = new string[0];
+            StringValues emptyStringValues = new StringValues(empty);
             Assert.Equal(empty, StringValues.Concat(stringValues, StringValues.Empty));
             Assert.Equal(empty, StringValues.Concat(StringValues.Empty, stringValues));
             Assert.Equal(empty, StringValues.Concat(stringValues, new StringValues()));
             Assert.Equal(empty, StringValues.Concat(new StringValues(), stringValues));
+            Assert.Equal(empty, StringValues.Concat((string)null, in emptyStringValues));
+            Assert.Equal(empty, StringValues.Concat(in emptyStringValues, (string)null));
         }
 
         [Theory]
@@ -350,6 +356,20 @@ namespace Microsoft.Extensions.Primitives
 
             string[] expectedAppended = filled.Concat(array).ToArray();
             Assert.Equal(expectedAppended, StringValues.Concat(new StringValues(filled), stringValues));
+
+            StringValues values = stringValues;
+            foreach (string s in filled)
+            {
+                values = StringValues.Concat(in values, s);
+            }
+            Assert.Equal(expectedPrepended, values);
+
+            values = stringValues;
+            foreach (string s in filled.Reverse())
+            {
+                values = StringValues.Concat(s, in values);
+            }
+            Assert.Equal(expectedAppended, values);
         }
 
         [Fact]

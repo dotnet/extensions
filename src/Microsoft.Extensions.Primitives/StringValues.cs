@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Primitives
     /// <summary>
     /// Represents zero/null, one, or many strings in an efficient way.
     /// </summary>
-    public struct StringValues : IList<string>, IReadOnlyList<string>, IEquatable<StringValues>, IEquatable<string>, IEquatable<string[]>
+    public readonly struct StringValues : IList<string>, IReadOnlyList<string>, IEquatable<StringValues>, IEquatable<string>, IEquatable<string[]>
     {
         private static readonly string[] EmptyArray = new string[0];
         public static readonly StringValues Empty = new StringValues(EmptyArray);
@@ -206,7 +206,7 @@ namespace Microsoft.Extensions.Primitives
 
         public Enumerator GetEnumerator()
         {
-            return new Enumerator(ref this);
+            return new Enumerator(_values, _value);
         }
 
         IEnumerator<string> IEnumerable<string>.GetEnumerator()
@@ -251,6 +251,44 @@ namespace Microsoft.Extensions.Primitives
             var combined = new string[count1 + count2];
             values1.CopyTo(combined, 0);
             values2.CopyTo(combined, count1);
+            return new StringValues(combined);
+        }
+
+        public static StringValues Concat(in StringValues values, string value)
+        {
+            if (value == null)
+            {
+                return values;
+            }
+
+            var count = values.Count;
+            if (count == 0)
+            {
+                return new StringValues(value);
+            }
+
+            var combined = new string[count + 1];
+            values.CopyTo(combined, 0);
+            combined[count] = value;
+            return new StringValues(combined);
+        }
+
+        public static StringValues Concat(string value, in StringValues values)
+        {
+            if (value == null)
+            {
+                return values;
+            }
+
+            var count = values.Count;
+            if (count == 0)
+            {
+                return new StringValues(value);
+            }
+
+            var combined = new string[count + 1];
+            combined[0] = value;
+            values.CopyTo(combined, 1);
             return new StringValues(combined);
         }
 
@@ -423,6 +461,13 @@ namespace Microsoft.Extensions.Primitives
             private readonly string[] _values;
             private string _current;
             private int _index;
+
+            internal Enumerator(string[] values, string value)
+            {
+               _values = values;
+               _current = value;
+               _index = 0;
+            }
 
             public Enumerator(ref StringValues values)
             {

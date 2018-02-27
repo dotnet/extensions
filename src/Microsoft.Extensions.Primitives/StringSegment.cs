@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Primitives
     /// <summary>
     /// An optimized representation of a substring.
     /// </summary>
-    public struct StringSegment : IEquatable<StringSegment>, IEquatable<string>
+    public readonly struct StringSegment : IEquatable<StringSegment>, IEquatable<string>
     {
         /// <summary>
         /// A <see cref="StringSegment"/> for <see cref="string.Empty"/>.
