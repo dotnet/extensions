@@ -136,18 +136,6 @@ namespace Microsoft.Extensions.Primitives
             }
         }
 
-        /// <summary>
-        /// Gets a <see cref="ReadOnlySpan{T}"/> from the current <see cref="StringSegment"/>.
-        /// </summary>
-        /// <returns>The <see cref="ReadOnlySpan{T}"/> from this <see cref="StringSegment"/>.</returns>
-        public ReadOnlySpan<char> AsSpan() => Buffer.AsReadOnlySpan(Offset, Length);
-
-        /// <summary>
-        /// Gets a <see cref="ReadOnlyMemory{T}"/> from the current <see cref="StringSegment"/>.
-        /// </summary>
-        /// <returns>The <see cref="ReadOnlyMemory{T}"/> from this <see cref="StringSegment"/>.</returns>
-        public ReadOnlyMemory<char> AsMemory() => Buffer.AsReadOnlyMemory(Offset, Length);
-
         /// <inheritdoc />
         public override bool Equals(object obj)
         {
@@ -284,18 +272,6 @@ namespace Microsoft.Extensions.Primitives
         {
             return new StringSegment(value);
         }
-
-        /// <summary>
-        /// Creates a see <see cref="ReadOnlySpan{T}"/> from the given <see cref="StringSegment"/>.
-        /// </summary>
-        /// <param name="segment">The <see cref="StringSegment"/> to convert to a <see cref="ReadOnlySpan{T}"/>.</param>
-        public static implicit operator ReadOnlySpan<char>(StringSegment segment) => segment.AsSpan();
-
-        /// <summary>
-        /// Creates a see <see cref="ReadOnlyMemory{T}"/> from the given <see cref="StringSegment"/>.
-        /// </summary>
-        /// <param name="segment">The <see cref="StringSegment"/> to convert to a <see cref="ReadOnlyMemory{T}"/>.</param>
-        public static implicit operator ReadOnlyMemory<char>(StringSegment segment) => segment.AsMemory();
 
         /// <summary>
         /// Checks if the beginning of this <see cref="StringSegment"/> matches the specified <see cref="string"/> when compared using the specified <paramref name="comparisonType"/>.
