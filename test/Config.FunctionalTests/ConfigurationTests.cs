@@ -543,12 +543,26 @@ IniKey1=IniValue2");
 
             // Introduce an error and make sure the old key is removed
             _fileSystem.WriteFile("reload.json", @"{""JsonKey1"": ");
-            await Task.Delay(2000); // wait for notification
+            
+            var i = 0;
+            while (i < 10 && config["JsonKey1"] != null)
+            {
+                await Task.Delay(2000); // wait for notification
+                i++;
+            }
+            
             Assert.Null(config["JsonKey1"]);
 
             // Update the file again to make sure the config is updated
             _fileSystem.WriteFile("reload.json", @"{""JsonKey1"": ""JsonValue2""}");
-            await Task.Delay(1100); // wait for notification
+            
+            i = 0;
+            while (i < 10 && config["JsonKey1"] == null)
+            {
+                await Task.Delay(1100); // wait for notification
+                i++;
+            }
+            
             Assert.Equal("JsonValue2", config["JsonKey1"]);
         }
 
