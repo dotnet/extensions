@@ -90,13 +90,13 @@ namespace HttpClientFactorySample
         {
             public int RetryCount { get; set; } = 5;
 
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
                 for (var i = 0; i < RetryCount; i++)
                 {
                     try
                     {
-                        return base.SendAsync(request, cancellationToken);
+                        return await base.SendAsync(request, cancellationToken);
                     }
                     catch (HttpRequestException) when (i == RetryCount - 1)
                     {
@@ -105,7 +105,7 @@ namespace HttpClientFactorySample
                     catch (HttpRequestException)
                     {
                         // Retry
-                        Task.Delay(TimeSpan.FromMilliseconds(50));
+                        await Task.Delay(TimeSpan.FromMilliseconds(50));
                     }
                 }
 
