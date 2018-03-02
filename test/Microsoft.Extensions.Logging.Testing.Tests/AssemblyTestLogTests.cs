@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -50,7 +51,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         }
 
         [Fact]
-        public void TestLogWritesToGlobalLogFile()
+        public async Task TestLogWritesToGlobalLogFile()
         {
             // Because this test writes to a file, it is a functional test and should be logged
             // but it's also testing the test logging facility. So this is pretty meta ;)
@@ -99,7 +100,15 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             {
                 if (Directory.Exists(tempDir))
                 {
-                    Directory.Delete(tempDir, recursive: true);
+                    try
+                    {
+                        Directory.Delete(tempDir, recursive: true);
+                    }
+                    catch
+                    {
+                        await Task.Delay(100);
+                        Directory.Delete(tempDir, recursive: true);
+                    }
                 }
             }
         }
