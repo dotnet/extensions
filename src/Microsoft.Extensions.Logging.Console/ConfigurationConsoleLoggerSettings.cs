@@ -19,25 +19,38 @@ namespace Microsoft.Extensions.Logging.Console
 
         public IChangeToken ChangeToken { get; private set; }
 
+        private bool GetBooleanConfigurationValue(string keyName)
+        {
+            bool parsedValue;
+            string value = _configuration[keyName];
+            if (string.IsNullOrEmpty(value))
+            {
+                return false;
+            }
+            else if (bool.TryParse(value, out parsedValue))
+            {
+                return parsedValue;
+            }
+            else
+            {
+                var message = $"Configuration value '{value}' for setting '{keyName}' is not supported.";
+                throw new InvalidOperationException(message);
+            }
+        }
+
         public bool IncludeScopes
         {
             get
             {
-                bool includeScopes;
-                var value = _configuration["IncludeScopes"];
-                if (string.IsNullOrEmpty(value))
-                {
-                    return false;
-                }
-                else if (bool.TryParse(value, out includeScopes))
-                {
-                    return includeScopes;
-                }
-                else
-                {
-                    var message = $"Configuration value '{value}' for setting '{nameof(IncludeScopes)}' is not supported.";
-                    throw new InvalidOperationException(message);
-                }
+                return GetBooleanConfigurationValue(nameof(IncludeScopes));
+            }
+        }
+
+        public bool DisableColors
+        {
+            get
+            {
+                return GetBooleanConfigurationValue(nameof(DisableColors));
             }
         }
 

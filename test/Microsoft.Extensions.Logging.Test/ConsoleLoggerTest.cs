@@ -25,13 +25,14 @@ namespace Microsoft.Extensions.Logging.Test
         private const string _state = "This is a test, and {curly braces} are just fine!";
         private Func<object, Exception, string> _defaultFormatter = (state, exception) => state.ToString();
 
-        private static (ConsoleLogger Logger, ConsoleSink Sink) SetUp(Func<string, LogLevel, bool> filter, bool includeScopes = false)
+        private static (ConsoleLogger Logger, ConsoleSink Sink) SetUp(Func<string, LogLevel, bool> filter, bool includeScopes = false, bool disableColors = false)
         {
             // Arrange
             var sink = new ConsoleSink();
             var console = new TestConsole(sink);
             var logger = new ConsoleLogger(_loggerName, filter, includeScopes ? new LoggerExternalScopeProvider() : null, new TestLoggerProcessor());
             logger.Console = console;
+            logger.DisableColors = disableColors;
             return (logger, sink);
         }
 
@@ -406,6 +407,30 @@ namespace Microsoft.Extensions.Logging.Test
             write = sink.Writes[1];
             Assert.Equal(TestConsole.DefaultBackgroundColor, write.BackgroundColor);
             Assert.Equal(TestConsole.DefaultForegroundColor, write.ForegroundColor);
+        }
+
+        [Fact]
+        public void WriteAllLevelsDisabledColors_LogsNoColors()
+        {
+            // Arrange
+            var t = SetUp(null, disableColors: true);
+            var logger = t.Logger;
+            var sink = t.Sink;
+
+            int levelSequence;
+            // Act
+            for (levelSequence = (int) LogLevel.Trace; levelSequence < (int) LogLevel.None; levelSequence++)
+            {
+                logger.Log((LogLevel)levelSequence, 0, _state, null, _defaultFormatter);
+            }
+
+            // Assert
+            Assert.Equal(2 * levelSequence, sink.Writes.Count);
+            foreach (ConsoleContext write in sink.Writes)
+            {
+                Assert.Null(write.ForegroundColor);
+                Assert.Null(write.BackgroundColor);
+            }
         }
 
         [Theory]
@@ -973,6 +998,8 @@ namespace Microsoft.Extensions.Logging.Test
             public IDictionary<string, string> Switches { get; } = new Dictionary<string, string>();
 
             public bool IncludeScopes { get; set; }
+
+            public bool DisableColors { get; set; }
 
             public IConsoleLoggerSettings Reload()
             {

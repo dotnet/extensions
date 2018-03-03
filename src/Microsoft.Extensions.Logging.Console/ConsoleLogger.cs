@@ -99,6 +99,8 @@ namespace Microsoft.Extensions.Logging.Console
 
         internal IExternalScopeProvider ScopeProvider { get; set; }
 
+        public bool DisableColors { get; set; }
+
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             if (!IsEnabled(logLevel))
@@ -224,6 +226,11 @@ namespace Microsoft.Extensions.Logging.Console
 
         private ConsoleColors GetLogLevelConsoleColors(LogLevel logLevel)
         {
+            if (DisableColors)
+            {
+                logLevelColors = new ConsoleColors(null, null);
+            }
+
             // We must explicitly set the background color if we are setting the foreground color,
             // since just setting one can look bad on the users console.
             switch (logLevel)
