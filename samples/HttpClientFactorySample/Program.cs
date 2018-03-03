@@ -47,6 +47,14 @@ namespace HttpClientFactorySample
 
         public static void Configure(IServiceCollection services)
         {
+            var registry = services.AddPolicyRegistry();
+
+            var timeout = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(10));
+            var longTimeout = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(30));
+
+            registry.Add("regular", timeout);
+            registry.Add("long", longTimeout);
+
             services.AddHttpClient("github", c =>
             {
                 c.BaseAddress = new Uri("https://api.github.com/");
@@ -56,8 +64,26 @@ namespace HttpClientFactorySample
             })
 
             // Build a totally custom policy using any criteria
-            .AddPolicyHandler(Policy.Handle<HttpRequestException>().RetryAsync())
+            .AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(10)))
 
+            // Use a specific named policy from the registry. Simplest way, policy is cached for the
+            // lifetime of the handler.
+            .AddPolicyHandlerFromRegistry("regular")
+
+            // Run some code to select a policy based on the request
+            .AddPolicyHandler((request) =>
+            {
+                return request.Method == HttpMethod.Get ? timeout : longTimeout;
+            })
+
+            // Run some code to select a policy from the registry based on the request
+            .AddPolicyHandlerFromRegistry((reg, request) =>
+            {
+                return request.Method == HttpMethod.Get ?
+                    reg.Get<IAsyncPolicy<HttpResponseMessage>>("regular") :
+                    reg.Get<IAsyncPolicy<HttpResponseMessage>>("long");
+            })
+            
             // Build a policy that will handle exceptions and 500s from the remote server
             .AddServerErrorPolicyHandler(p => p.RetryAsync())
 

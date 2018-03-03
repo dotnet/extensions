@@ -9,8 +9,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;httpclient</PackageTags>
 
-    <!-- Don't use Microsoft.AspNetCore.Http.Polly as a namespace, that introduces ambiguities with 'Polly' -->
-    <RootNamespace>Microsoft.AspNetCore.Http</RootNamespace>
+    <!-- Don't use Microsoft.Extensions.Http.Polly as a namespace, that introduces ambiguities with 'Polly' -->
+    <RootNamespace>Microsoft.Extensions.Http</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

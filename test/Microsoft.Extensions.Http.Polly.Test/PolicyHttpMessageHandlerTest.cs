@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Http
     public class PolicyHttpMessageHandlerTest
     {
         [Fact]
-        public async Task SendAsync_PolicyTriggers_CanReexecuteSendAsync()
+        public async Task SendAsync_StaticPolicy_PolicyTriggers_CanReexecuteSendAsync()
         {
             // Arrange
             var policy = Policy<HttpResponseMessage>
@@ -49,6 +49,75 @@ namespace Microsoft.Extensions.Http
             // Assert
             Assert.Equal(2, callCount);
             Assert.Same(expected, response);
+        }
+
+        [Fact]
+        public async Task SendAsync_DynamicPolicy_PolicyTriggers_CanReexecuteSendAsync()
+        {
+            // Arrange
+            var policy = Policy<HttpResponseMessage>
+                .Handle<HttpRequestException>()
+                .RetryAsync(retryCount: 5);
+
+            var expectedRequest = new HttpRequestMessage();
+
+            HttpRequestMessage policySelectorRequest = null;
+            var handler = new TestPolicyHttpMessageHandler((req) =>
+            {
+                policySelectorRequest = req;
+                return policy;
+            });
+
+            var callCount = 0;
+            var expected = new HttpResponseMessage();
+            handler.OnSendAsync = (req, c, ct) =>
+            {
+                if (callCount == 0)
+                {
+                    callCount++;
+                    throw new HttpRequestException();
+                }
+                else if (callCount == 1)
+                {
+                    callCount++;
+                    return expected;
+                }
+                else
+                {
+                    throw new InvalidOperationException();
+                }
+            };
+
+            // Act
+            var response = await handler.SendAsync(expectedRequest, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(2, callCount);
+            Assert.Same(expected, response);
+            Assert.Same(expectedRequest, policySelectorRequest);
+        }
+
+        [Fact]
+        public async Task SendAsync_DynamicPolicy_PolicySelectorReturnsNull_ThrowsException()
+        {
+            // Arrange
+            var handler = new TestPolicyHttpMessageHandler((req) =>
+            {
+                return null;
+            });
+            
+            var expected = new HttpResponseMessage();
+
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await handler.SendAsync(new HttpRequestMessage(), CancellationToken.None);
+            });
+
+            // Assert
+            Assert.Equal(
+                "The 'policySelector' function must return a non-null policy instance. To create a policy that takes no action, use 'Policy.NoOpAsync<HttpResponseMessage>()'.", 
+                exception.Message);
         }
 
         [Fact]
@@ -161,6 +230,11 @@ namespace Microsoft.Extensions.Http
 
             public TestPolicyHttpMessageHandler(IAsyncPolicy<HttpResponseMessage> policy)
                 : base(policy)
+            {
+            }
+
+            public TestPolicyHttpMessageHandler(Func<HttpRequestMessage, IAsyncPolicy<HttpResponseMessage>> policySelector)
+                : base(policySelector)
             {
             }
 

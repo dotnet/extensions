@@ -27,10 +27,23 @@ namespace Microsoft.Extensions.Http
     /// to creating a <see cref="PolicyHttpMessageHandler"/>.
     /// </para>
     /// <para>
-    /// The <see cref="PollyHttpClientBuilderExtensions.AddPolicyHandler(IHttpClientBuilder, IAsyncPolicy)"/> and 
-    /// <see cref="PollyHttpClientBuilderExtensions.AddPolicyHandler(IHttpClientBuilder, IAsyncPolicy{HttpResponseMessage})"/>
-    /// methods support the creation of a <see cref="PolicyHttpMessageHandler"/> for any kind of policy. This includes
+    /// The <see cref="PollyHttpClientBuilderExtensions.AddPolicyHandler(IHttpClientBuilder, IAsyncPolicy{HttpResponseMessage})"/>
+    /// method supports the creation of a <see cref="PolicyHttpMessageHandler"/> for any kind of policy. This includes
     /// non-reactive policies such as Timeout, or Cache which don't require the underlying request to fail first.
+    /// </para>
+    /// <para>
+    /// <see cref="PolicyHttpMessageHandler"/> and the <see cref="PollyHttpClientBuilderExtensions"/> convenience methods
+    /// only accept the generic <see cref="IAsyncPolicy{HttpResponseMessage}"/>. Generic policy instances can be created
+    /// by using the generic methods on <see cref="Policy"/> such as <see cref="Policy.TimeoutAsync{TResult}(int)"/>.
+    /// </para>
+    /// <para>
+    /// To adapt an existing non-generic <see cref="IAsyncPolicy"/>, use code like the following:
+    /// <example>
+    /// Converting a non-generic <code>IAsyncPolicy policy</code> to <see cref="IAsyncPolicy{HttpResponseMessage}"/>.
+    /// <code>
+    /// policy.WrapAsync(Policy.NoOpAsync&lt;HttpResponseMessage&gt;())
+    /// </code>
+    /// </example>
     /// </para>
     /// <para>
     /// The <see cref="PollyHttpClientBuilderExtensions.AddServerErrorPolicyHandler(IHttpClientBuilder, Func{PolicyBuilder{HttpResponseMessage}, IAsyncPolicy{HttpResponseMessage}})"/>
@@ -59,6 +72,7 @@ namespace Microsoft.Extensions.Http
     public class PolicyHttpMessageHandler : DelegatingHandler
     {
         private readonly IAsyncPolicy<HttpResponseMessage> _policy;
+        private readonly Func<HttpRequestMessage, IAsyncPolicy<HttpResponseMessage>> _policySelector;
 
         /// <summary>
         /// Creates a new <see cref="PolicyHttpMessageHandler"/>.
@@ -73,7 +87,21 @@ namespace Microsoft.Extensions.Http
 
             _policy = policy;
         }
-        
+
+        /// <summary>
+        /// Creates a new <see cref="PolicyHttpMessageHandler"/>.
+        /// </summary>
+        /// <param name="policySelector">A function which can select the desired policy for a given <see cref="HttpRequestMessage"/>.</param>
+        public PolicyHttpMessageHandler(Func<HttpRequestMessage, IAsyncPolicy<HttpResponseMessage>> policySelector)
+        {
+            if (policySelector == null)
+            {
+                throw new ArgumentNullException(nameof(policySelector));
+            }
+
+            _policySelector = policySelector;
+        }
+
         /// <inheritdoc />
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -91,7 +119,8 @@ namespace Microsoft.Extensions.Http
                 request.SetPolicyExecutionContext(context);
             }
 
-            return _policy.ExecuteAsync((c, ct) => SendCoreAsync(request, c, ct), context, cancellationToken);
+            var policy = _policy ?? SelectPolicy(request);
+            return policy.ExecuteAsync((c, ct) => SendCoreAsync(request, c, ct), context, cancellationToken);
         }
 
         /// <summary>
@@ -114,6 +143,20 @@ namespace Microsoft.Extensions.Http
             }
 
             return base.SendAsync(request, cancellationToken);
+        }
+
+        private IAsyncPolicy<HttpResponseMessage> SelectPolicy(HttpRequestMessage request)
+        {
+            var policy = _policySelector(request);
+            if (policy == null)
+            {
+                var message = Resources.FormatPolicyHttpMessageHandler_PolicySelector_ReturnedNull(
+                    "policySelector",
+                    "Policy.NoOpAsync<HttpResponseMessage>()");
+                throw new InvalidOperationException(message);
+            }
+
+            return policy;
         }
     }
 }

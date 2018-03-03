@@ -246,7 +246,7 @@ namespace Microsoft.Extensions.Http
 
             // Assert - 2
             Assert.Empty(factory._activeHandlers);
-            Assert.True(factory.CleanupTimerStarted.IsSet);
+            Assert.True(factory.CleanupTimerStarted.IsSet, "Cleanup timer started");
 
             var expiredEntry1 = Assert.Single(factory._expiredHandlers);
             Assert.NotSame(expiredEntry1.InnerHandler, activeEntry1.Handler);
@@ -295,7 +295,7 @@ namespace Microsoft.Extensions.Http
 
             // Assert - 3
             Assert.Empty(factory._activeHandlers);
-            Assert.True(factory.CleanupTimerStarted.IsSet);
+            Assert.True(factory.CleanupTimerStarted.IsSet, "Cleanup timer started");
 
             var expiredEntry1 = Assert.Single(factory._expiredHandlers);
             Assert.NotSame(expiredEntry1.InnerHandler, activeEntry1.Handler);
@@ -337,7 +337,7 @@ namespace Microsoft.Extensions.Http
 
             // Our handler is now in the cleanup state.
             var cleanupEntry = Assert.Single(factory._expiredHandlers);
-            Assert.True(factory.CleanupTimerStarted.IsSet);
+            Assert.True(factory.CleanupTimerStarted.IsSet, "Cleanup timer started");
 
             // We need to make sure that the outer handler actually gets GCed, so drop our references to it.
             // This is important because the factory relies on this possibility for correctness. We need to ensure that 
@@ -347,7 +347,7 @@ namespace Microsoft.Extensions.Http
             GC.Collect();
             GC.Collect();
             GC.WaitForPendingFinalizers();
-            Assert.True(cleanupEntry.CanDispose);
+            Assert.True(cleanupEntry.CanDispose, "Cleanup entry disposable");
 
             // Act
             factory.CleanupTimer_Tick(null);
@@ -355,7 +355,7 @@ namespace Microsoft.Extensions.Http
             // Assert
             Assert.Empty(factory._expiredHandlers);
             Assert.Equal(1, disposeHandler.DisposeCount);
-            Assert.False(factory.CleanupTimerStarted.IsSet);
+            Assert.False(factory.CleanupTimerStarted.IsSet, "Cleanup timer not started");
         }
 
         [Fact]
@@ -383,7 +383,7 @@ namespace Microsoft.Extensions.Http
 
             // Our handler is now in the cleanup state.
             var cleanupEntry = Assert.Single(factory._expiredHandlers);
-            Assert.True(factory.CleanupTimerStarted.IsSet);
+            Assert.True(factory.CleanupTimerStarted.IsSet, "Cleanup timer started");
 
             // Nulling out the refernces to the internal state of the factory since they wouldn't exist in the non-test
             // scenario. We're holding on the client to prevent disposal - like a real use case.
@@ -395,7 +395,7 @@ namespace Microsoft.Extensions.Http
             // Assert
             Assert.Same(cleanupEntry, Assert.Single(factory._expiredHandlers));
             Assert.Equal(0, disposeHandler.DisposeCount);
-            Assert.True(factory.CleanupTimerStarted.IsSet);
+            Assert.True(factory.CleanupTimerStarted.IsSet, "Cleanup timer started");
 
             // We need to make sure that the outer handler actually gets GCed, so drop our references to it.
             // This is important because the factory relies on this possibility for correctness. We need to ensure that 
@@ -404,7 +404,7 @@ namespace Microsoft.Extensions.Http
             GC.Collect();
             GC.Collect();
             GC.WaitForPendingFinalizers();
-            Assert.True(cleanupEntry.CanDispose);
+            Assert.True(cleanupEntry.CanDispose, "Cleanup entry disposable");
 
             // Act - 2
             factory.CleanupTimer_Tick(null);
@@ -412,7 +412,7 @@ namespace Microsoft.Extensions.Http
             // Assert
             Assert.Empty(factory._expiredHandlers);
             Assert.Equal(1, disposeHandler.DisposeCount);
-            Assert.False(factory.CleanupTimerStarted.IsSet);
+            Assert.False(factory.CleanupTimerStarted.IsSet, "Cleanup timer not started");
         }
 
         private class TestHttpClientFactory : DefaultHttpClientFactory
@@ -478,7 +478,7 @@ namespace Microsoft.Extensions.Http
             {
                 if (EnableCleanupTimer)
                 {
-                    Assert.True(CleanupTimerStarted.IsSet);
+                    Assert.True(CleanupTimerStarted.IsSet, "Cleanup timer started");
                     CleanupTimerStarted.Reset();
                 }
             }
