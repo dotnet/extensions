@@ -228,7 +228,7 @@ namespace Microsoft.Extensions.Logging.Console
         {
             if (DisableColors)
             {
-                logLevelColors = new ConsoleColors(null, null);
+                return new ConsoleColors(null, null);
             }
 
             // We must explicitly set the background color if we are setting the foreground color,
