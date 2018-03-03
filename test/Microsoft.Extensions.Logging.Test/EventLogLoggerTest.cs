@@ -1,19 +1,21 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET461
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.EventLog;
 using Microsoft.Extensions.Logging.EventLog.Internal;
 using Xunit;
 
 namespace Microsoft.Extensions.Logging
 {
+    [OSSkipCondition(OperatingSystems.Linux)]
+    [OSSkipCondition(OperatingSystems.MacOSX)]
     public class EventLogLoggerTest
     {
-        [Fact]
+        [ConditionalFact]
         public static void IsEnabledReturnsCorrectValue()
         {
             // Arrange
@@ -32,7 +34,7 @@ namespace Microsoft.Extensions.Logging
             Assert.False(logger.IsEnabled(LogLevel.Trace));
         }
 
-        [Fact]
+        [ConditionalFact]
         public void CallingBeginScopeOnLogger_ReturnsNonNullableInstance()
         {
             // Arrange
@@ -45,7 +47,7 @@ namespace Microsoft.Extensions.Logging
             Assert.NotNull(disposable);
         }
 
-        [Fact]
+        [ConditionalFact]
         public void WindowsEventLog_Constructor_CreatesWithExpectedInformation()
         {
             // Arrange
@@ -63,7 +65,7 @@ namespace Microsoft.Extensions.Logging
             Assert.Equal(sourceName, windowsEventLog.DiagnosticsEventLog.Source);
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Constructor_CreatesWindowsEventLog_WithExpectedInformation()
         {
             // Arrange & Act
@@ -76,7 +78,7 @@ namespace Microsoft.Extensions.Logging
             Assert.Equal(".", windowsEventLog.DiagnosticsEventLog.MachineName);
         }
 
-        [Fact]
+        [ConditionalFact]
         public void Constructor_CreatesWindowsEventLog_WithSuppliedEventLogSettings()
         {
             // Arrange
@@ -98,7 +100,7 @@ namespace Microsoft.Extensions.Logging
             Assert.Equal(settings.MachineName, windowsEventLog.DiagnosticsEventLog.MachineName);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(50)]
         [InlineData(49)]
         [InlineData(36)]
@@ -121,7 +123,7 @@ namespace Microsoft.Extensions.Logging
         }
 
 
-        [Fact]
+        [ConditionalFact]
         public void Message_WritesFullMessageWithScopes()
         {
             // Arrange
@@ -193,7 +195,7 @@ namespace Microsoft.Extensions.Logging
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(WritesSplitMessagesData))]
         public void MessageExceedingMaxSize_WritesSplitMessages(int messageSize, string[] expectedMessages)
         {
@@ -231,7 +233,3 @@ namespace Microsoft.Extensions.Logging
         }
     }
 }
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
-#else
-#error Target framework needs to be updated
-#endif

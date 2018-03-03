@@ -8,6 +8,7 @@
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.Configuration\Microsoft.Extensions.Logging.Configuration.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.Console\Microsoft.Extensions.Logging.Console.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.Debug\Microsoft.Extensions.Logging.Debug.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.EventLog\Microsoft.Extensions.Logging.EventLog.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.Testing\Microsoft.Extensions.Logging.Testing.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.TraceSource\Microsoft.Extensions.Logging.TraceSource.csproj" />
   </ItemGroup>
@@ -15,10 +16,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfigurationJsonPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging.EventLog\Microsoft.Extensions.Logging.EventLog.csproj" />
   </ItemGroup>
 
 </Project>

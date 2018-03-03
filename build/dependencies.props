@@ -24,6 +24,7 @@
     <NewtonsoftJsonPackageVersion>10.0.1</NewtonsoftJsonPackageVersion>
     <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
     <SerilogSinksFilePackageVersion>3.2.0</SerilogSinksFilePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>4.5.0-preview2-26130-01</SystemDiagnosticsEventLogPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.6.0-preview2-26126-03</SystemReflectionMetadataPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0-preview2-26130-01</SystemValueTuplePackageVersion>
     <XunitAbstractionsPackageVersion>2.0.1</XunitAbstractionsPackageVersion>
