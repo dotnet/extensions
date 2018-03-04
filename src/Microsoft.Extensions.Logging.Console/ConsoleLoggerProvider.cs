@@ -25,7 +25,12 @@ namespace Microsoft.Extensions.Logging.Console
         private bool _disableColors;
         private IExternalScopeProvider _scopeProvider;
 
-        public ConsoleLoggerProvider(Func<string, LogLevel, bool> filter, bool includeScopes, bool disableColors = false)
+        public ConsoleLoggerProvider(Func<string, LogLevel, bool> filter, bool includeScopes)
+            : this(filter, includeScopes, false)
+        {
+        }
+
+        public ConsoleLoggerProvider(Func<string, LogLevel, bool> filter, bool includeScopes, bool disableColors)
         {
             if (filter == null)
             {

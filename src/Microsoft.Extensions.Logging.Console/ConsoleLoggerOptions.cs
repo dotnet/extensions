@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.Logging.Console
 {
     public class ConsoleLoggerOptions
     {
-        public bool IncludeScopes { get; set; } = false;
-        public bool DisableColors { get; set; } = false;
+        public bool IncludeScopes { get; set; }
+        public bool DisableColors { get; set; }
     }
 }
