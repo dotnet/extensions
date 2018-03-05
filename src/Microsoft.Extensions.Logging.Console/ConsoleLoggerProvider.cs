@@ -86,7 +86,7 @@ namespace Microsoft.Extensions.Logging.Console
                 _settings = _settings.Reload();
 
                 _includeScopes = _settings?.IncludeScopes ?? false;
-                bool disableColors = _settings?.DisableColors ?? false;
+                var disableColors = _settings?.DisableColors ?? false;
 
                 var scopeProvider = GetScopeProvider();
                 foreach (var logger in _loggers.Values)
