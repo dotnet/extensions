@@ -347,6 +347,23 @@ namespace Microsoft.Extensions.Primitives
         }
 
         [Fact]
+        public void StringSegment_EqualsObject_Valid()
+        {
+            var segment1 = new StringSegment("My Car Is Cool", 3, 3);
+            var segment2 = new StringSegment("Your Carport is blue", 5, 3);
+
+            Assert.True(segment1.Equals((object)segment2));
+        }
+
+        [Fact]
+        public void StringSegment_EqualsNull_Invalid()
+        {
+            var segment1 = new StringSegment("My Car Is Cool", 3, 3);
+
+            Assert.False(segment1.Equals(null as object));
+        }
+
+        [Fact]
         public void StringSegment_StaticEquals_Valid()
         {
             var segment1 = new StringSegment("My Car Is Cool", 3, 3);
@@ -637,6 +654,16 @@ namespace Microsoft.Extensions.Primitives
 
             // Act & Assert
             Assert.Throws<ArgumentOutOfRangeException>(() => segment.Substring(2, 3));
+        }
+
+        [Fact]
+        public void StringSegment_Substring_InvalidLength()
+        {
+            // Arrange
+            var segment = new StringSegment("Hello, World!", 1, 3);
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => segment.Substring(0, -1));
         }
 
         [Fact]
