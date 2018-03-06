@@ -97,8 +97,8 @@ namespace System.Buffers.Tests
             reader.Read();
             reader.Read();
             reader.Read();
-            Assert.Same(last, reader.Position.Segment);
-            Assert.Equal(0, reader.Position.Index);
+            Assert.Same(last, reader.Position.GetObject());
+            Assert.Equal(0, reader.Position.GetInteger());
             Assert.True(reader.End);
         }
 
