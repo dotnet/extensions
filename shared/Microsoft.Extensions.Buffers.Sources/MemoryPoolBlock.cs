@@ -93,6 +93,15 @@ namespace System.Buffers
             _disposed = true;
         }
 
+        public void Lease()
+        {
+#if BLOCK_LEASE_TRACKING
+            Leaser = Environment.StackTrace;
+            IsLeased = true;
+#endif
+            _referenceCount = 1;
+        }
+
         public override void Retain()
         {
             while (true)
@@ -111,7 +120,8 @@ namespace System.Buffers
                 if (currentCount <= 0) ThrowHelper.ThrowInvalidOperationException_ReferenceCountZero();
                 if (Interlocked.CompareExchange(ref _referenceCount, currentCount - 1, currentCount) == currentCount)
                 {
-                    if (currentCount == 1)
+                    // TODO: this needs to be changed to 1 when get Pipelines with pool fix.
+                    if (currentCount == 2)
                     {
                         OnZeroReferences();
                         return false;

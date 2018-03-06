@@ -87,20 +87,12 @@ namespace System.Buffers
             {
                 // block successfully taken from the stack - return it
 
-#if BLOCK_LEASE_TRACKING
-                block.Leaser = Environment.StackTrace;
-                block.IsLeased = true;
-#endif
+                block.Lease();
                 return block;
             }
             // no blocks available - grow the pool
             block = AllocateSlab();
-
-#if BLOCK_LEASE_TRACKING
-            block.Leaser = Environment.StackTrace;
-            block.IsLeased = true;
-#endif
-            block.Retain();
+            block.Lease();
             return block;
         }
 
