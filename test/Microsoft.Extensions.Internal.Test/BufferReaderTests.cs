@@ -89,7 +89,6 @@ namespace System.Buffers.Tests
         [Fact]
         public void CursorIsCorrectWithEmptyLastBlock()
         {
-
             var first = new BufferSegment(new byte[] { 1, 2 });
             var last = first.Append(new byte[4]);
 

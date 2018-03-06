@@ -100,6 +100,7 @@ namespace System.Buffers
             block.Leaser = Environment.StackTrace;
             block.IsLeased = true;
 #endif
+            block.Retain();
             return block;
         }
 
