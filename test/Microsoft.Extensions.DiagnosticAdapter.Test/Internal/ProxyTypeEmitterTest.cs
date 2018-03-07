@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Extensions.DiagnosticAdapter.Internal
@@ -621,6 +622,22 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             Assert.NotNull(proxy);
             Assert.Equal(1, proxy[0][0].Count);
             Assert.Equal("Billy", proxy[0][0][0].FirstName);
+        }
+
+        [Fact]
+        public void GetProxyType_LocksPreventDuplicateAssemblyNamesArgumentException_ForConcurrentThreads()
+        {
+            for (var i = 0; i < 5; i++)
+            {
+                Parallel.For(
+                0,
+                100,
+                (j) =>
+                {
+                    var testObject = new Person();
+                    ProxyTypeEmitter.GetProxyType(new ProxyTypeCache(), typeof(IPerson), testObject.GetType());
+                });
+            }
         }
 
         private object ConvertTo(object value, Type type)

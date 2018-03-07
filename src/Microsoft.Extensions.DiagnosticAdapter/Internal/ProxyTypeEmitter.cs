@@ -14,6 +14,7 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
     public static class ProxyTypeEmitter
     {
         private static readonly Type[] EmptyTypes = new Type[0];
+        private static object _lock = new object();
 
         public static Type GetProxyType(ProxyTypeCache cache, Type targetType, Type sourceType)
         {
@@ -164,8 +165,11 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
                     }
                     else
                     {
-                        // We need to proxy each of the elements. Let's generate a type.
-                        GenerateProxyTypeForList(elementKey.Item1, elementKey.Item2, proxyType, verificationResult);
+                        lock (_lock)
+                        {
+                            // We need to proxy each of the elements. Let's generate a type.
+                            GenerateProxyTypeForList(elementKey.Item1, elementKey.Item2, proxyType, verificationResult);
+                        }
                     }
 
                     return true;
@@ -241,7 +245,10 @@ namespace Microsoft.Extensions.DiagnosticAdapter.Internal
             }
 
             verificationResult.Mappings = propertyMappings;
-            GenerateProxyTypeFromProperties(sourceType, targetType, verificationResult);
+            lock (_lock)
+            {
+                GenerateProxyTypeFromProperties(sourceType, targetType, verificationResult);
+            }
 
             return true;
         }
