@@ -93,22 +93,41 @@ namespace System.Buffers
             _disposed = true;
         }
 
+        public void Lease()
+        {
+#if BLOCK_LEASE_TRACKING
+            Leaser = Environment.StackTrace;
+            IsLeased = true;
+#endif
+            _referenceCount = 1;
+        }
+
         public override void Retain()
         {
-            if (IsDisposed) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
-            Interlocked.Increment(ref _referenceCount);
+            while (true)
+            {
+                int currentCount = Volatile.Read(ref _referenceCount);
+                if (currentCount <= 0) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
+                if (Interlocked.CompareExchange(ref _referenceCount, currentCount + 1, currentCount) == currentCount) break;
+            }
         }
 
         public override bool Release()
         {
-            int newRefCount = Interlocked.Decrement(ref _referenceCount);
-            if (newRefCount < 0) ThrowHelper.ThrowInvalidOperationException_ReferenceCountZero();
-            if (newRefCount == 0)
+            while (true)
             {
-                OnZeroReferences();
-                return false;
+                int currentCount = Volatile.Read(ref _referenceCount);
+                if (currentCount <= 0) ThrowHelper.ThrowInvalidOperationException_ReferenceCountZero();
+                if (Interlocked.CompareExchange(ref _referenceCount, currentCount - 1, currentCount) == currentCount)
+                {
+                    if (currentCount == 1)
+                    {
+                        OnZeroReferences();
+                        return false;
+                    }
+                    return true;
+                }
             }
-            return true;
         }
 
         protected override bool IsRetained => _referenceCount > 0;

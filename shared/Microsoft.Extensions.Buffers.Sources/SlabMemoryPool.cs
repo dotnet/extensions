@@ -87,19 +87,12 @@ namespace System.Buffers
             {
                 // block successfully taken from the stack - return it
 
-#if BLOCK_LEASE_TRACKING
-                block.Leaser = Environment.StackTrace;
-                block.IsLeased = true;
-#endif
+                block.Lease();
                 return block;
             }
             // no blocks available - grow the pool
             block = AllocateSlab();
-
-#if BLOCK_LEASE_TRACKING
-            block.Leaser = Environment.StackTrace;
-            block.IsLeased = true;
-#endif
+            block.Lease();
             return block;
         }
 
@@ -177,7 +170,7 @@ namespace System.Buffers
             if (!_disposedValue)
             {
                 _disposedValue = true;
-#if DEBUG
+#if DEBUG && !INNER_LOOP
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 GC.Collect();

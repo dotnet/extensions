@@ -2,25 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Buffers;
-
 namespace System.Buffers
 {
-    internal class BufferSegment : IMemoryList<byte>
+    internal class BufferSegment : ReadOnlySequenceSegment<byte>
     {
         public BufferSegment(Memory<byte> memory)
         {
             Memory = memory;
         }
-
-        /// <summary>
-        /// Combined length of all segments before this
-        /// </summary>
-        public long RunningIndex { get; private set; }
-
-        public Memory<byte> Memory { get; set; }
-
-        public IMemoryList<byte> Next { get; private set; }
 
         public BufferSegment Append(Memory<byte> memory)
         {

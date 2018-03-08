@@ -89,7 +89,6 @@ namespace System.Buffers.Tests
         [Fact]
         public void CursorIsCorrectWithEmptyLastBlock()
         {
-
             var first = new BufferSegment(new byte[] { 1, 2 });
             var last = first.Append(new byte[4]);
 
@@ -97,8 +96,8 @@ namespace System.Buffers.Tests
             reader.Read();
             reader.Read();
             reader.Read();
-            Assert.Same(last, reader.Position.Segment);
-            Assert.Equal(0, reader.Position.Index);
+            Assert.Same(last, reader.Position.GetObject());
+            Assert.Equal(0, reader.Position.GetInteger());
             Assert.True(reader.End);
         }
 
