@@ -9,12 +9,12 @@ using Xunit;
 
 namespace System.IO.Pipelines.Tests
 {
-    public class BufferWriterTes: IDisposable
+    public class BufferWriterTests : IDisposable
     {
         protected Pipe Pipe;
-        public BufferWriterTes()
+        public BufferWriterTests()
         {
-            Pipe = new Pipe();
+            Pipe = new Pipe(new PipeOptions(useSynchronizationContext: false));
         }
 
         public void Dispose()

@@ -7,16 +7,16 @@
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
     <InternalAspNetCoreSdkPackageVersion>2.1.0-preview2-15721</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26305-07</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26308-01</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.0</MicrosoftNETTestSdkPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <NewtonsoftJsonPackageVersion>10.0.1</NewtonsoftJsonPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.5.0-preview2-26305-02</SystemIOPipelinesPackageVersion>
-    <SystemMemoryPackageVersion>4.5.0-preview2-26305-02</SystemMemoryPackageVersion>
-    <SystemReflectionMetadataPackageVersion>1.6.0-preview2-26305-02</SystemReflectionMetadataPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview2-26305-02</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview2-26305-02</SystemSecurityCryptographyCngPackageVersion>
-    <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview2-26305-02</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.5.0-preview2-26308-02</SystemIOPipelinesPackageVersion>
+    <SystemMemoryPackageVersion>4.5.0-preview2-26308-02</SystemMemoryPackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.6.0-preview2-26308-02</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview2-26308-02</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview2-26308-02</SystemSecurityCryptographyCngPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview2-26308-02</SystemThreadingTasksExtensionsPackageVersion>
     <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualstudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualstudioPackageVersion>

@@ -170,7 +170,7 @@ namespace System.Buffers
             if (!_disposedValue)
             {
                 _disposedValue = true;
-#if DEBUG
+#if DEBUG && !INNER_LOOP
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
                 GC.Collect();

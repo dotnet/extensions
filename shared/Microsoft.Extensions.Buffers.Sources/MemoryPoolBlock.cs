@@ -120,8 +120,7 @@ namespace System.Buffers
                 if (currentCount <= 0) ThrowHelper.ThrowInvalidOperationException_ReferenceCountZero();
                 if (Interlocked.CompareExchange(ref _referenceCount, currentCount - 1, currentCount) == currentCount)
                 {
-                    // TODO: this needs to be changed to 1 when get Pipelines with pool fix.
-                    if (currentCount == 2)
+                    if (currentCount == 1)
                     {
                         OnZeroReferences();
                         return false;
