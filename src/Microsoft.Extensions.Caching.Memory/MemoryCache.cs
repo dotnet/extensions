@@ -81,6 +81,8 @@ namespace Microsoft.Extensions.Caching.Memory
         {
             CheckDisposed();
 
+            ValidateCacheKey(key);
+
             return new CacheEntry(
                 key,
                 _setEntry,
@@ -208,10 +210,7 @@ namespace Microsoft.Extensions.Caching.Memory
         /// <inheritdoc />
         public bool TryGetValue(object key, out object result)
         {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
+            ValidateCacheKey(key);
 
             CheckDisposed();
 
@@ -471,6 +470,14 @@ namespace Microsoft.Extensions.Caching.Memory
             if (_disposed)
             {
                 throw new ObjectDisposedException(typeof(MemoryCache).FullName);
+            }
+        }
+
+        private static void ValidateCacheKey(object key)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
             }
         }
     }

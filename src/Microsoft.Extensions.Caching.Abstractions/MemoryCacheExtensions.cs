@@ -9,7 +9,6 @@ namespace Microsoft.Extensions.Caching.Memory
 {
     public static class CacheExtensions
     {
-
         public static object Get(this IMemoryCache cache, object key)
         {
             cache.TryGetValue(key, out object value);
@@ -18,7 +17,7 @@ namespace Microsoft.Extensions.Caching.Memory
 
         public static TItem Get<TItem>(this IMemoryCache cache, object key)
         {
-            cache.TryGetValue<TItem>(key, out TItem value);
+            cache.TryGetValue(key, out TItem value);
             return value;
         }
 
@@ -30,7 +29,7 @@ namespace Microsoft.Extensions.Caching.Memory
                 return true;
             }
 
-            value = default(TItem);
+            value = default;
             return false;
         }
 

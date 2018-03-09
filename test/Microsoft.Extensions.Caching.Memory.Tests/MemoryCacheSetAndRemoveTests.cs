@@ -581,6 +581,50 @@ namespace Microsoft.Extensions.Caching.Memory
             Assert.InRange(cache.Count, 0, 20);
         }
 
+        [Fact]
+        public void GetDataFromCacheWithNullKeyThrows()
+        {
+            var cache = CreateCache();
+            Assert.Throws<ArgumentNullException>(() => cache.Get(null));
+        }
+
+        [Fact]
+        public void SetDataToCacheWithNullKeyThrows()
+        {
+            var cache = CreateCache();
+            var value = new object();
+            Assert.Throws<ArgumentNullException>(() => cache.Set(null, value));
+        }
+
+        [Fact]
+        public void SetDataToCacheWithNullKeyAndChangeTokenThrows()
+        {
+            var cache = CreateCache();
+            var value = new object();
+            Assert.Throws<ArgumentNullException>(() => cache.Set(null, value, expirationToken: null));
+        }
+
+        [Fact]
+        public void TryGetValueFromCacheWithNullKeyThrows()
+        {
+            var cache = CreateCache();
+            Assert.Throws<ArgumentNullException>(() => cache.TryGetValue(null,out long result));
+        }
+
+        [Fact]
+        public void GetOrCreateFromCacheWithNullKeyThrows()
+        {
+            var cache = CreateCache();
+            Assert.Throws<ArgumentNullException>(() => cache.GetOrCreate<object>(null, null))
+;       }
+
+        [Fact]
+        public async Task GetOrCreateAsyncFromCacheWithNullKeyThrows()
+        {
+            var cache = CreateCache();
+            await Assert.ThrowsAsync<ArgumentNullException>(async () => await cache.GetOrCreateAsync<object>(null, null));
+        }
+
         private class TestKey
         {
             public override bool Equals(object obj) => true;
