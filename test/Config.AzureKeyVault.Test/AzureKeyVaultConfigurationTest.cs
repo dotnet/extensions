@@ -29,12 +29,12 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
             client.Setup(c => c.GetSecretsAsync(VaultUri)).ReturnsAsync(new PageMock()
             {
                 NextPageLink = "next",
-                Value = new[] { new SecretItem { Id = secret1Id } }
+                Value = new[] { new SecretItem { Id = secret1Id, Attributes = new SecretAttributes { Enabled = true } } }
             });
 
             client.Setup(c => c.GetSecretsNextAsync("next")).ReturnsAsync(new PageMock()
             {
-                Value = new[] { new SecretItem { Id = secret2Id } }
+                Value = new[] { new SecretItem { Id = secret2Id, Attributes = new SecretAttributes { Enabled = true } } }
             });
 
             client.Setup(c => c.GetSecretAsync(secret1Id)).ReturnsAsync(new SecretBundle() { Value = "Value1", Id = secret1Id });
@@ -62,7 +62,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
 
             client.Setup(c => c.GetSecretsAsync(VaultUri)).ReturnsAsync(new PageMock()
             {
-                Value = new[] { new SecretItem { Id = secret1Id }, new SecretItem { Id = secret2Id } }
+                Value = new[] { new SecretItem { Id = secret1Id, Attributes = new SecretAttributes { Enabled = true } }, new SecretItem { Id = secret2Id, Attributes = new SecretAttributes { Enabled = true } } }
             });
 
             client.Setup(c => c.GetSecretAsync(secret1Id)).ReturnsAsync(new SecretBundle() { Value = "Value1", Id = secret1Id });
@@ -80,6 +80,48 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
         }
 
         [Fact]
+        public void DoesNotLoadDisabledItems()
+        {
+            var client = new Mock<IKeyVaultClient>(MockBehavior.Strict);
+            var secret1Id = GetSecretId("Secret1");
+            var secret2Id = GetSecretId("Secret2");
+            var secret3Id = GetSecretId("Secret3");
+            var secret4Id = GetSecretId("Secret4");
+
+            client.Setup(c => c.GetSecretsAsync(VaultUri)).ReturnsAsync(new PageMock()
+            {
+                NextPageLink = "next",
+                Value = new[] { new SecretItem { Id = secret1Id, Attributes = new SecretAttributes { Enabled = true } } }
+            });
+
+            client.Setup(c => c.GetSecretsNextAsync("next")).ReturnsAsync(new PageMock()
+            {
+                Value = new[]
+                {
+                    new SecretItem { Id = secret2Id, Attributes = new SecretAttributes { Enabled = false } },
+                    new SecretItem { Id = secret3Id, Attributes = new SecretAttributes { Enabled = null } },
+                    new SecretItem { Id = secret4Id, Attributes = null },
+                }
+            });
+
+            client.Setup(c => c.GetSecretAsync(secret1Id)).ReturnsAsync(new SecretBundle() { Value = "Value1", Id = secret1Id });
+
+            // Act
+            var provider = new AzureKeyVaultConfigurationProvider(client.Object, VaultUri, new DefaultKeyVaultSecretManager());
+            provider.Load();
+
+            // Assert
+            client.VerifyAll();
+
+            var childKeys = provider.GetChildKeys(Enumerable.Empty<string>(), null).ToArray();
+            Assert.Equal(new[] { "Secret1" }, childKeys);
+            Assert.Equal("Value1", provider.Get("Secret1"));
+            Assert.Throws<InvalidOperationException>(() => provider.Get("Secret2"));
+            Assert.Throws<InvalidOperationException>(() => provider.Get("Secret3"));
+            Assert.Throws<InvalidOperationException>(() => provider.Get("Secret4"));
+        }
+
+        [Fact]
         public void SupportsReload()
         {
             var client = new Mock<IKeyVaultClient>(MockBehavior.Strict);
@@ -88,7 +130,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
 
             client.Setup(c => c.GetSecretsAsync(VaultUri)).ReturnsAsync(new PageMock()
             {
-                Value = new[] { new SecretItem { Id = secret1Id } }
+                Value = new[] { new SecretItem { Id = secret1Id, Attributes = new SecretAttributes { Enabled = true } } }
             });
 
             client.Setup(c => c.GetSecretAsync(secret1Id)).Returns((string id) => Task.FromResult(new SecretBundle() { Value = value, Id = id }));
@@ -113,7 +155,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault.Test
 
             client.Setup(c => c.GetSecretsAsync(VaultUri)).ReturnsAsync(new PageMock()
             {
-                Value = new[] { new SecretItem { Id = secret1Id } }
+                Value = new[] { new SecretItem { Id = secret1Id, Attributes = new SecretAttributes { Enabled = true } } }
             });
 
             client.Setup(c => c.GetSecretAsync(secret1Id)).ReturnsAsync(new SecretBundle() { Value = "Value1", Id = secret1Id });

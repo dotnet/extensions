@@ -54,7 +54,7 @@ namespace Microsoft.Extensions.Configuration.AzureKeyVault
             {
                 foreach (var secretItem in secrets)
                 {
-                    if (!_manager.Load(secretItem))
+                    if (!_manager.Load(secretItem) || (secretItem.Attributes?.Enabled != true))
                     {
                         continue;
                     }
