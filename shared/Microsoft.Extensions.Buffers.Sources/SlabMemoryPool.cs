@@ -12,17 +12,11 @@ namespace System.Buffers
     /// </summary>
     internal class SlabMemoryPool : MemoryPool<byte>
     {
-#if NETSTANDARD1_1
         /// <summary>
-        /// The gap between blocks' starting address. 4096 is chosen because most operating systems are 4k pages in size and alignment.
+        /// The size of a block. 4096 is chosen because most operating systems use 4k pages.
         /// </summary>
-        private const int _pageSize = 4096;
-#else
-        /// <summary>
-        /// The gap between blocks' starting address.
-        /// </summary>
-        private static readonly int _pageSize = Environment.SystemPageSize;
-#endif
+        private const int _blockSize = 4096;
+
         /// <summary>
         /// Allocating 32 contiguous blocks per slab makes the slab size 128k. This is larger than the 85k size which will place the memory
         /// in the large object heap. This means the GC will not try to relocate this array, so the fact it remains pinned does not negatively
@@ -34,12 +28,12 @@ namespace System.Buffers
         /// Max allocation block size for pooled blocks,
         /// larger values can be leased but they will be disposed after use rather than returned to the pool.
         /// </summary>
-        public override int MaxBufferSize { get; } = _pageSize;
+        public override int MaxBufferSize { get; } = _blockSize;
 
         /// <summary>
         /// 4096 * 32 gives you a slabLength of 128k contiguous bytes allocated per slab
         /// </summary>
-        private static readonly int _slabLength = _pageSize * _blockCount;
+        private static readonly int _slabLength = _blockSize * _blockCount;
 
         /// <summary>
         /// Thread-safe collection of blocks which are currently in the pool. A slab will pre-allocate all of the block tracking objects
@@ -65,10 +59,10 @@ namespace System.Buffers
 
         public override OwnedMemory<byte> Rent(int size = AnySize)
         {
-            if (size == AnySize) size = _pageSize;
-            else if (size > _pageSize)
+            if (size == AnySize) size = _blockSize;
+            else if (size > _blockSize)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_BufferRequestTooLarge(_pageSize);
+                ThrowHelper.ThrowArgumentOutOfRangeException_BufferRequestTooLarge(_blockSize);
             }
 
             var block = Lease();
@@ -107,19 +101,19 @@ namespace System.Buffers
 
             var basePtr = slab.NativePointer;
             // Page align the blocks
-            var firstOffset = (int)((((ulong)basePtr + (uint)_pageSize - 1) & ~((uint)_pageSize - 1)) - (ulong)basePtr);
+            var firstOffset = (int)((((ulong)basePtr + (uint)_blockSize - 1) & ~((uint)_blockSize - 1)) - (ulong)basePtr);
             // Ensure page aligned
-            Debug.Assert((((ulong)basePtr + (uint)firstOffset) & (uint)(_pageSize - 1)) == 0);
+            Debug.Assert((((ulong)basePtr + (uint)firstOffset) & (uint)(_blockSize - 1)) == 0);
 
-            var blockAllocationLength = ((_slabLength - firstOffset) & ~(_pageSize - 1));
+            var blockAllocationLength = ((_slabLength - firstOffset) & ~(_blockSize - 1));
             var offset = firstOffset;
             for (;
-                offset + _pageSize < blockAllocationLength;
-                offset += _pageSize)
+                offset + _blockSize < blockAllocationLength;
+                offset += _blockSize)
             {
                 var block = MemoryPoolBlock.Create(
                     offset,
-                    _pageSize,
+                    _blockSize,
                     this,
                     slab);
 #if BLOCK_LEASE_TRACKING
@@ -128,11 +122,11 @@ namespace System.Buffers
                 Return(block);
             }
 
-            Debug.Assert(offset + _pageSize - firstOffset == blockAllocationLength);
+            Debug.Assert(offset + _blockSize - firstOffset == blockAllocationLength);
             // return last block rather than adding to pool
             var newBlock = MemoryPoolBlock.Create(
                     offset,
-                    _pageSize,
+                    _blockSize,
                     this,
                     slab);
 
