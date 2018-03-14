@@ -1,52 +1,6 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Caching.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Caching.Abstractions, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
-    {
-      "Name": "Microsoft.Extensions.Internal.ISystemClock",
-      "Visibility": "Public",
-      "Kind": "Interface",
-      "Abstract": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_UtcNow",
-          "Parameters": [],
-          "ReturnType": "System.DateTimeOffset",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.Extensions.Internal.SystemClock",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.Extensions.Internal.ISystemClock"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_UtcNow",
-          "Parameters": [],
-          "ReturnType": "System.DateTimeOffset",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Internal.ISystemClock",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
     {
       "Name": "Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryExtensions",
       "Visibility": "Public",
@@ -242,6 +196,11 @@
             {
               "Name": "value",
               "Type": "System.Byte[]"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task",
@@ -315,6 +274,11 @@
             {
               "Name": "value",
               "Type": "System.String"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task",
@@ -342,6 +306,11 @@
             {
               "Name": "options",
               "Type": "Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task",
@@ -380,6 +349,11 @@
             {
               "Name": "key",
               "Type": "System.String"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task<System.String>",
@@ -417,6 +391,11 @@
             {
               "Name": "key",
               "Type": "System.String"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task<System.Byte[]>",
@@ -457,6 +436,11 @@
             {
               "Name": "options",
               "Type": "Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task",
@@ -481,6 +465,11 @@
             {
               "Name": "key",
               "Type": "System.String"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task",
@@ -505,6 +494,11 @@
             {
               "Name": "key",
               "Type": "System.String"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task",
@@ -670,6 +664,25 @@
             {
               "Name": "value",
               "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.ICacheEntry",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetSize",
+          "Parameters": [
+            {
+              "Name": "entry",
+              "Type": "Microsoft.Extensions.Caching.Memory.ICacheEntry"
+            },
+            {
+              "Name": "size",
+              "Type": "System.Int64"
             }
           ],
           "ReturnType": "Microsoft.Extensions.Caching.Memory.ICacheEntry",
@@ -914,6 +927,25 @@
           ],
           "ReturnType": "System.Void",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Size",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Size",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int64>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -991,6 +1023,25 @@
             {
               "Name": "priority",
               "Type": "Microsoft.Extensions.Caching.Memory.CacheItemPriority"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetSize",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions"
+            },
+            {
+              "Name": "size",
+              "Type": "System.Int64"
             }
           ],
           "ReturnType": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions",
@@ -1220,6 +1271,27 @@
             {
               "Name": "value",
               "Type": "Microsoft.Extensions.Caching.Memory.CacheItemPriority"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Size",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Size",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int64>"
             }
           ],
           "ReturnType": "System.Void",
@@ -1700,6 +1772,5 @@
       ],
       "GenericParameters": []
     }
-  ],
-  "SourceFilters": []
+  ]
 }
