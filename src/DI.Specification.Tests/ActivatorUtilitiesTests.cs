@@ -205,6 +205,62 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             Assert.Equal(expectedMessage, ex.Message);
         }
 
+        [Theory]
+        [InlineData("", "string")]
+        [InlineData(5, "IFakeService, int")]
+        public void TypeActivatorCreateInstanceUsesFirstMathchedConstructor(object value, string ctor)
+        {
+            // Arrange
+            var serviceCollection = new TestServiceCollection();
+            serviceCollection.AddSingleton<IFakeService, FakeService>();
+            var serviceProvider = CreateServiceProvider(serviceCollection);
+            var type = typeof(ClassWithAmbiguousCtors);
+
+            // Act
+            var instance = ActivatorUtilities.CreateInstance(serviceProvider, type, value);
+
+            // Assert
+            Assert.Equal(ctor, ((ClassWithAmbiguousCtors)instance).CtorUsed);
+        }
+
+        [Theory]
+        [MemberData(nameof(CreateInstanceFuncs))]
+        public void TypeActivatorUsesMarkedConstructor(CreateInstanceFunc createFunc)
+        {
+            // Arrange
+            var serviceCollection = new TestServiceCollection();
+            serviceCollection.AddSingleton<IFakeService, FakeService>();
+            var serviceProvider = CreateServiceProvider(serviceCollection);
+
+            // Act
+            var instance = CreateInstance<ClassWithAmbiguousCtorsAndAttribute>(createFunc, serviceProvider, "hello");
+
+            // Assert
+            Assert.Equal("IFakeService, string", instance.CtorUsed);
+        }
+
+        [Theory]
+        [MemberData(nameof(CreateInstanceFuncs))]
+        public void TypeActivatorThrowsOnMultipleMarkedCtors(CreateInstanceFunc createFunc)
+        {
+            // Act
+            var exception =  Assert.Throws<InvalidOperationException>(() => CreateInstance<ClassWithMultipleMarkedCtors>(createFunc, null, "hello"));
+
+            // Assert
+            Assert.Equal("Multiple constructors were marked with ActivatorUtilitiesConstructorAttribute.", exception.Message);
+        }
+
+        [Theory]
+        [MemberData(nameof(CreateInstanceFuncs))]
+        public void TypeActivatorThrowsWhenMarkedCtorDoesntAcceptArguments(CreateInstanceFunc createFunc)
+        {
+            // Act
+            var exception =  Assert.Throws<InvalidOperationException>(() => CreateInstance<ClassWithAmbiguousCtorsAndAttribute>(createFunc, null, 0, "hello"));
+
+            // Assert
+            Assert.Equal("Constructor marked with ActivatorUtilitiesConstructorAttribute does not accept all given argument types.", exception.Message);
+        }
+
         [Fact]
         public void GetServiceOrCreateInstanceRegisteredServiceTransient()
         {
