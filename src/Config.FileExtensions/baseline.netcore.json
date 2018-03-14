@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Configuration.FileExtensions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Configuration.FileExtensions, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.Configuration.FileConfigurationExtensions",
@@ -58,6 +58,40 @@
             }
           ],
           "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetFileLoadExceptionHandler",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.Configuration.IConfigurationBuilder"
+            },
+            {
+              "Name": "handler",
+              "Type": "System.Action<Microsoft.Extensions.Configuration.FileLoadExceptionContext>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetFileLoadExceptionHandler",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.Configuration.IConfigurationBuilder"
+            }
+          ],
+          "ReturnType": "System.Action<Microsoft.Extensions.Configuration.FileLoadExceptionContext>",
           "Static": true,
           "Extension": true,
           "Visibility": "Public",
@@ -218,6 +252,48 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_ReloadDelay",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ReloadDelay",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_OnLoadException",
+          "Parameters": [],
+          "ReturnType": "System.Action<Microsoft.Extensions.Configuration.FileLoadExceptionContext>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_OnLoadException",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Action<Microsoft.Extensions.Configuration.FileLoadExceptionContext>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "Build",
           "Parameters": [
             {
@@ -233,10 +309,110 @@
           "GenericParameter": []
         },
         {
+          "Kind": "Method",
+          "Name": "EnsureDefaults",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.Configuration.IConfigurationBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ResolveFileProvider",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
           "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Configuration.FileLoadExceptionContext",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Provider",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Configuration.FileConfigurationProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Provider",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Configuration.FileConfigurationProvider"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Exception",
+          "Parameters": [],
+          "ReturnType": "System.Exception",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Exception",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Exception"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Ignore",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Ignore",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
           "GenericParameter": []
         }
       ],

@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Configuration.Binder, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Configuration.Binder, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.Configuration.ConfigurationBinder",
@@ -10,6 +10,69 @@
       "Sealed": true,
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Get<T0>",
+          "Parameters": [
+            {
+              "Name": "configuration",
+              "Type": "Microsoft.Extensions.Configuration.IConfiguration"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Get",
+          "Parameters": [
+            {
+              "Name": "configuration",
+              "Type": "Microsoft.Extensions.Configuration.IConfiguration"
+            },
+            {
+              "Name": "type",
+              "Type": "System.Type"
+            }
+          ],
+          "ReturnType": "System.Object",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Bind",
+          "Parameters": [
+            {
+              "Name": "configuration",
+              "Type": "Microsoft.Extensions.Configuration.IConfiguration"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "instance",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "Bind",
