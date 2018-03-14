@@ -29,12 +29,8 @@ namespace BenchmarkDotNet.Attributes
 
             Add(Job.Core
                 .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
-                .WithRemoveOutliers(false)
                 .With(new GcMode { Server = true })
-                .With(RunStrategy.Throughput)
-                .WithLaunchCount(3)
-                .WithWarmupCount(5)
-                .WithTargetCount(10));
+                .With(RunStrategy.Throughput));
         }
     }
 }
