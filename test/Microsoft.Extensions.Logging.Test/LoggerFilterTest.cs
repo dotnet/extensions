@@ -4,10 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.Extensions.Logging.Test
@@ -396,6 +398,38 @@ namespace Microsoft.Extensions.Logging.Test
             logger.LogWarning("Message");
 
             Assert.Single(writes);
+        }
+
+        [Fact]
+        public void LogLevelKeyIsCaseInsensitive()
+        {
+            var serviceProvider = new ServiceCollection()
+                .AddLogging(
+                    builder => builder.AddConfiguration(new ConfigurationBuilder()
+                                                            .AddInMemoryCollection(new[] {new KeyValuePair<string, string>("logLevel:Default", "Error")})
+                                                            .Build())
+                )
+                .BuildServiceProvider();
+
+            var options = serviceProvider.GetRequiredService<IOptions<LoggerFilterOptions>>();
+
+            Assert.Equal(LogLevel.Error, options.Value.Rules.Single().LogLevel);
+        }
+
+        [Fact]
+        public void DefaultCategoryIsCaseInsensitive()
+        {
+            var serviceProvider = new ServiceCollection()
+                .AddLogging(
+                    builder => builder.AddConfiguration(new ConfigurationBuilder()
+                                                            .AddInMemoryCollection(new[] {new KeyValuePair<string, string>("LogLevel:default", "Error")})
+                                                            .Build())
+                )
+                .BuildServiceProvider();
+            
+            var options = serviceProvider.GetRequiredService<IOptions<LoggerFilterOptions>>();
+
+            Assert.Null(options.Value.Rules.Single().CategoryName);
         }
 
         [Theory]
