@@ -97,11 +97,17 @@ namespace Microsoft.Extensions.Primitives
             }
         }
 
-        public override string ToString() => GetStringValue() ?? string.Empty;
+        public override string ToString()
+        {
+            return GetStringValue() ?? string.Empty;
+        }
 
         private string GetStringValue() => (_values == null) ? _value : string.Join(",", _values);
 
-        public string[] ToArray() => GetArrayValue() ?? EmptyArray;
+        public string[] ToArray()
+        {
+            return GetArrayValue() ?? EmptyArray;
+        }
 
         private string[] GetArrayValue()
         {
@@ -109,11 +115,13 @@ namespace Microsoft.Extensions.Primitives
             {
                 return new[] { _value };
             }
-
             return _values;
         }
 
-        int IList<string>.IndexOf(string item) => IndexOf(item);
+        int IList<string>.IndexOf(string item)
+        {
+            return IndexOf(item);
+        }
 
         private int IndexOf(string item)
         {
@@ -138,9 +146,15 @@ namespace Microsoft.Extensions.Primitives
             return -1;
         }
 
-        bool ICollection<string>.Contains(string item) => IndexOf(item) >= 0;
+        bool ICollection<string>.Contains(string item)
+        {
+            return IndexOf(item) >= 0;
+        }
 
-        void ICollection<string>.CopyTo(string[] array, int arrayIndex) => CopyTo(array, arrayIndex);
+        void ICollection<string>.CopyTo(string[] array, int arrayIndex)
+        {
+            CopyTo(array, arrayIndex);
+        }
 
         private void CopyTo(string[] array, int arrayIndex)
         {
@@ -170,21 +184,45 @@ namespace Microsoft.Extensions.Primitives
             }
         }
 
-        void ICollection<string>.Add(string item) => throw new NotSupportedException();
+        void ICollection<string>.Add(string item)
+        {
+            throw new NotSupportedException();
+        }
 
-        void IList<string>.Insert(int index, string item) => throw new NotSupportedException();
+        void IList<string>.Insert(int index, string item)
+        {
+            throw new NotSupportedException();
+        }
 
-        bool ICollection<string>.Remove(string item) => throw new NotSupportedException();
+        bool ICollection<string>.Remove(string item)
+        {
+            throw new NotSupportedException();
+        }
 
-        void IList<string>.RemoveAt(int index) => throw new NotSupportedException();
+        void IList<string>.RemoveAt(int index)
+        {
+            throw new NotSupportedException();
+        }
 
-        void ICollection<string>.Clear() => throw new NotSupportedException();
+        void ICollection<string>.Clear()
+        {
+            throw new NotSupportedException();
+        }
 
-        public Enumerator GetEnumerator() => new Enumerator(_values, _value);
+        public Enumerator GetEnumerator()
+        {
+            return new Enumerator(_values, _value);
+        }
 
-        IEnumerator<string> IEnumerable<string>.GetEnumerator() => GetEnumerator();
+        IEnumerator<string> IEnumerable<string>.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
 
         public static bool IsNullOrEmpty(StringValues value)
         {
@@ -258,6 +296,7 @@ namespace Microsoft.Extensions.Primitives
         public static bool Equals(StringValues left, StringValues right)
         {
             var count = left.Count;
+
             if (count != right.Count)
             {
                 return false;
@@ -274,47 +313,109 @@ namespace Microsoft.Extensions.Primitives
             return true;
         }
 
-        public static bool operator ==(StringValues left, StringValues right) => Equals(left, right);
+        public static bool operator ==(StringValues left, StringValues right)
+        {
+            return Equals(left, right);
+        }
 
-        public static bool operator !=(StringValues left, StringValues right) => !Equals(left, right);
+        public static bool operator !=(StringValues left, StringValues right)
+        {
+            return !Equals(left, right);
+        }
 
-        public bool Equals(StringValues other) => Equals(this, other);
+        public bool Equals(StringValues other)
+        {
+            return Equals(this, other);
+        }
 
-        public static bool Equals(string left, StringValues right) => Equals(new StringValues(left), right);
+        public static bool Equals(string left, StringValues right)
+        {
+            return Equals(new StringValues(left), right);
+        }
 
-        public static bool Equals(StringValues left, string right) => Equals(left, new StringValues(right));
+        public static bool Equals(StringValues left, string right)
+        {
+            return Equals(left, new StringValues(right));
+        }
 
-        public bool Equals(string other) => Equals(this, new StringValues(other));
+        public bool Equals(string other)
+        {
+            return Equals(this, new StringValues(other));
+        }
 
-        public static bool Equals(string[] left, StringValues right) => Equals(new StringValues(left), right);
+        public static bool Equals(string[] left, StringValues right)
+        {
+            return Equals(new StringValues(left), right);
+        }
 
-        public static bool Equals(StringValues left, string[] right) => Equals(left, new StringValues(right));
+        public static bool Equals(StringValues left, string[] right)
+        {
+            return Equals(left, new StringValues(right));
+        }
 
-        public bool Equals(string[] other) => Equals(this, new StringValues(other));
+        public bool Equals(string[] other)
+        {
+            return Equals(this, new StringValues(other));
+        }
 
-        public static bool operator ==(StringValues left, string right) => Equals(left, new StringValues(right));
+        public static bool operator ==(StringValues left, string right)
+        {
+            return Equals(left, new StringValues(right));
+        }
 
-        public static bool operator !=(StringValues left, string right) => !Equals(left, new StringValues(right));
+        public static bool operator !=(StringValues left, string right)
+        {
+            return !Equals(left, new StringValues(right));
+        }
 
-        public static bool operator ==(string left, StringValues right) => Equals(new StringValues(left), right);
+        public static bool operator ==(string left, StringValues right)
+        {
+            return Equals(new StringValues(left), right);
+        }
 
-        public static bool operator !=(string left, StringValues right) => !Equals(new StringValues(left), right);
+        public static bool operator !=(string left, StringValues right)
+        {
+            return !Equals(new StringValues(left), right);
+        }
 
-        public static bool operator ==(StringValues left, string[] right) => Equals(left, new StringValues(right));
+        public static bool operator ==(StringValues left, string[] right)
+        {
+            return Equals(left, new StringValues(right));
+        }
 
-        public static bool operator !=(StringValues left, string[] right) => !Equals(left, new StringValues(right));
+        public static bool operator !=(StringValues left, string[] right)
+        {
+            return !Equals(left, new StringValues(right));
+        }
 
-        public static bool operator ==(string[] left, StringValues right) => Equals(new StringValues(left), right);
+        public static bool operator ==(string[] left, StringValues right)
+        {
+            return Equals(new StringValues(left), right);
+        }
 
-        public static bool operator !=(string[] left, StringValues right) => !Equals(new StringValues(left), right);
+        public static bool operator !=(string[] left, StringValues right)
+        {
+            return !Equals(new StringValues(left), right);
+        }
 
-        public static bool operator ==(StringValues left, object right) => left.Equals(right);
+        public static bool operator ==(StringValues left, object right)
+        {
+            return left.Equals(right);
+        }
 
-        public static bool operator !=(StringValues left, object right) => !left.Equals(right);
+        public static bool operator !=(StringValues left, object right)
+        {
+            return !left.Equals(right);
+        }
+        public static bool operator ==(object left, StringValues right)
+        {
+            return right.Equals(left);
+        }
 
-        public static bool operator ==(object left, StringValues right) => right.Equals(left);
-
-        public static bool operator !=(object left, StringValues right) => !right.Equals(left);
+        public static bool operator !=(object left, StringValues right)
+        {
+            return !right.Equals(left);
+        }
 
         public override bool Equals(object obj)
         {
@@ -323,9 +424,9 @@ namespace Microsoft.Extensions.Primitives
                 return this.IsNull;
             }
 
-            if (obj is string)
+            if (obj is string st)
             {
-                return string.Equals(this._value, (string)obj, StringComparison.Ordinal);
+                return this._value == st;
             }
             
             if (obj is string[])
@@ -404,9 +505,14 @@ namespace Microsoft.Extensions.Primitives
 
             object IEnumerator.Current => _current;
 
-            void IEnumerator.Reset() => throw new NotSupportedException();
+            void IEnumerator.Reset()
+            {
+                throw new NotSupportedException();
+            }
 
-            public void Dispose() { }
+            public void Dispose()
+            {
+            }
         }
     }
 }
