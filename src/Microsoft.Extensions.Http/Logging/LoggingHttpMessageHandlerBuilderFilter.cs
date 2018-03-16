@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.Http
 
                 // We want all of our logging message to show up as-if they are coming from HttpClient,
                 // but also to include the name of the client for more fine-grained control.
-                var outerLogger = _loggerFactory.CreateLogger($"System.Net.Http.{builder.Name}");
+                var outerLogger = _loggerFactory.CreateLogger($"System.Net.Http.{builder.Name}.LogicalHandler");
                 var innerLogger = _loggerFactory.CreateLogger($"System.Net.Http.{builder.Name}.ClientHandler");
 
                 // The 'scope' handler goes first so it can surround everything.
