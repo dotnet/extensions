@@ -30,8 +30,8 @@ namespace Microsoft.Extensions.Primitives
             if (values == null || values.Length == 0)
             {
                 // Set null and empty arrays to null
-                _value = null;
-                _values = null;
+                _value = null;  // Both null is required for 
+                _values = null; // IsNull property to work correctly
             }
             else if (values.Length == 1)
             {
