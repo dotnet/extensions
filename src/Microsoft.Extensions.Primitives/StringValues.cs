@@ -41,8 +41,56 @@ namespace Microsoft.Extensions.Primitives
             }
             else
             {
+                // Remove any nulls from the array else counts will be off
+                var nullCount = 0;
+                foreach (var value in values)
+                {
+                    if (value == null)
+                    {
+                        nullCount++;
+                    }
+                }
+
                 _value = null;
-                _values = values;
+                if (nullCount == 0)
+                {
+                    // No nulls, just assign given array
+                    _values = values;
+                }
+                else if (values.Length - nullCount == 0)
+                {
+                    // No values, set to null so IsNull works
+                    _values = null;
+                }
+                else if (values.Length - nullCount == 1)
+                {
+                    // Only one value when nulls are removed
+                    _values = null; // Set array to null
+                    foreach (var value in values)
+                    {
+                        if (value != null)
+                        {
+                            // Set single value to _value
+                            _value = value;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    // Are nulls, remove nulls from the array else counts will be off
+                    var newValues = new string[values.Length - nullCount];
+                    var i = 0;
+                    foreach (var value in values)
+                    {
+                        if (value != null)
+                        {
+                            newValues[i] = value;
+                            i++;
+                        }
+                    }
+                    _values = newValues;
+                }
             }
         }
 
