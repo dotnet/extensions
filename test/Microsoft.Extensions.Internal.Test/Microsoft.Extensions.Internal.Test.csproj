@@ -4,6 +4,7 @@
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
