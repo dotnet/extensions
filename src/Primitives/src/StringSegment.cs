@@ -614,42 +614,53 @@ namespace Microsoft.Extensions.Primitives
         // https://github.com/dotnet/coreclr/pull/6103
         private static void ThrowInvalidArguments(string buffer, int offset, int length)
         {
-            if (buffer == null)
-            {
-                throw ThrowHelper.GetArgumentNullException(ExceptionArgument.buffer);
-            }
+            // Only have single throw in method so is marked as "does not return" and isn't inlined to caller
+            throw GetInvalidArgumentsException();
 
-            if (offset < 0)
+            Exception GetInvalidArgumentsException()
             {
-                throw ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.offset);
-            }
+                if (buffer == null)
+                {
+                    return ThrowHelper.GetArgumentNullException(ExceptionArgument.buffer);
+                }
 
-            if (length < 0)
-            {
-                throw ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.length);
-            }
+                if (offset < 0)
+                {
+                    return ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.offset);
+                }
 
-            throw ThrowHelper.GetArgumentException(ExceptionResource.Argument_InvalidOffsetLength);
+                if (length < 0)
+                {
+                    return ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.length);
+                }
+
+                return ThrowHelper.GetArgumentException(ExceptionResource.Argument_InvalidOffsetLength);
+            }
         }
 
         private void ThrowInvalidArguments(int offset, int length)
         {
-            if (!HasValue)
-            {
-                throw ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.offset);
-            }
+            throw GetInvalidArgumentsException(HasValue);
 
-            if (offset < 0)
+            Exception GetInvalidArgumentsException(bool hasValue)
             {
-                throw ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.offset);
-            }
+                if (!hasValue)
+                {
+                    return ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.offset);
+                }
 
-            if (length < 0)
-            {
-                throw ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.length);
-            }
+                if (offset < 0)
+                {
+                    return ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.offset);
+                }
 
-            throw ThrowHelper.GetArgumentException(ExceptionResource.Argument_InvalidOffsetLengthStringSegment);
+                if (length < 0)
+                {
+                    return ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.length);
+                }
+
+                return ThrowHelper.GetArgumentException(ExceptionResource.Argument_InvalidOffsetLengthStringSegment);
+            }
         }
     }
 }
