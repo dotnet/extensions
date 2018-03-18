@@ -35,6 +35,7 @@ namespace Microsoft.Extensions.Primitives
         /// <param name="buffer">The original <see cref="string"/> used as buffer.</param>
         /// <param name="offset">The offset of the segment within the <paramref name="buffer"/>.</param>
         /// <param name="length">The length of the segment.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringSegment(string buffer, int offset, int length)
         {
             // Validate arguments, check is minimal instructions with reduced branching for inlinable fast-path
@@ -346,7 +347,7 @@ namespace Microsoft.Extensions.Primitives
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string Substring(int offset, int length)
         {
-            if (!HasValue || offset < 0 || offset + length > Length || length < 0)
+            if (!HasValue || offset < 0 || length < 0 || (uint)(offset + length) > (uint)Length)
             {
                 ThrowInvalidArguments(offset, length);
             }
@@ -372,7 +373,7 @@ namespace Microsoft.Extensions.Primitives
         /// <returns>A <see cref="StringSegment"/> that is equivalent to the substring of length <paramref name="length"/> that begins at <paramref name="offset"/> in this <see cref="StringSegment"/></returns>
         public StringSegment Subsegment(int offset, int length)
         {
-            if (!HasValue || offset < 0 || offset + length > Length || length < 0)
+            if (!HasValue || offset < 0 || length < 0 || (uint)(offset + length) > (uint)Length)
             {
                 ThrowInvalidArguments(offset, length);
             }
@@ -393,7 +394,7 @@ namespace Microsoft.Extensions.Primitives
         {
             var offset = Offset + start;
 
-            if (!HasValue || start < 0 || offset > Buffer.Length)
+            if (!HasValue || start < 0 || (uint)offset > (uint)Buffer.Length)
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.start);
             }
@@ -638,12 +639,17 @@ namespace Microsoft.Extensions.Primitives
                 throw ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.offset);
             }
 
-            if (offset < 0 || offset + length > Length)
+            if (offset < 0)
             {
                 throw ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.offset);
             }
 
-            throw ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.length);
+            if (length < 0)
+            {
+                throw ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.length);
+            }
+
+            throw ThrowHelper.GetArgumentException(ExceptionResource.Argument_InvalidOffsetLengthStringSegment);
         }
     }
 }
