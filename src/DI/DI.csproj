@@ -28,9 +28,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsTypeNameHelperSourcesPackageVersion)" />
-
-    <PackageReference Condition="'$(ILEmitBackendSaveAssemblies)' == 'True'" Include="System.Reflection.Emit" PrivateAssets="All" Version="$(SystemReflectionEmitPackageVersion)" />
-    <PackageReference Condition="'$(ILEmitBackend)'  == 'True'" Include="System.Reflection.Emit.Lightweight" PrivateAssets="All" Version="$(SystemReflectionEmitPackageVersion)" />
   </ItemGroup>
 
 </Project>
