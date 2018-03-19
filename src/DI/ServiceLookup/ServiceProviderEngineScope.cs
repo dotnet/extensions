@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         // For testing only
         internal Action<object> _captureDisposableCallback;
 
-        private List<IDisposable> _disposables = new List<IDisposable>();
+        private List<IDisposable> _disposables;
 
         private bool _disposed;
 
@@ -67,8 +67,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             if (!ReferenceEquals(this, service))
             {
-                var disposable = service as IDisposable;
-                if (disposable != null)
+                if (service is IDisposable disposable)
                 {
                     lock (ResolvedServices)
                     {
