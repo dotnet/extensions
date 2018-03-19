@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection.Fakes;
 using Microsoft.Extensions.DependencyInjection.Specification;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
@@ -175,6 +176,22 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             Assert.Throws<ObjectDisposedException>(() => scope.ServiceProvider.GetService<IFakeService>());
             //Check that resolution from root works
             Assert.NotNull(provider.CreateScope());
+        }
+
+        [Theory(Skip = "We don't support value task services currently")]
+        [InlineData(ServiceLifetime.Transient)]
+        [InlineData(ServiceLifetime.Scoped)]
+        [InlineData(ServiceLifetime.Singleton)]
+        public void WorksWithStructServices(ServiceLifetime lifetime)
+        {
+            IServiceCollection serviceCollection = new ServiceCollection();
+            serviceCollection.Add(new ServiceDescriptor(typeof(IFakeService), typeof(StructFakeService), lifetime));
+            serviceCollection.Add(new ServiceDescriptor(typeof(StructService), typeof(StructService), lifetime));
+            serviceCollection.Add(new ServiceDescriptor(typeof(IFakeMultipleService), typeof(StructFakeMultipleService), lifetime));
+
+            var provider = CreateServiceProvider(serviceCollection);
+            var service = provider.GetService<IFakeMultipleService>();
+            Assert.NotNull(service);
         }
 
         private abstract class AbstractFakeOpenGenericService<T> : IFakeOpenGenericService<T>

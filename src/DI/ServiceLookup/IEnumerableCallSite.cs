@@ -19,5 +19,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public Type ServiceType => typeof(IEnumerable<>).MakeGenericType(ItemType);
         public Type ImplementationType  => ItemType.MakeArrayType();
+        public CallSiteKind Kind { get; } = CallSiteKind.IEnumerable;
     }
 }

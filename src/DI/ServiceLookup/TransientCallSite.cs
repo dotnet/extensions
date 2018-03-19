@@ -16,5 +16,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public Type ServiceType => ServiceCallSite.ServiceType;
         public Type ImplementationType => ServiceCallSite.ImplementationType;
+        public CallSiteKind Kind { get; } = CallSiteKind.Transient;
     }
 }

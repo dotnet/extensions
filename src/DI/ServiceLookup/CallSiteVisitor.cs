@@ -6,28 +6,28 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     {
         protected virtual TResult VisitCallSite(IServiceCallSite callSite, TArgument argument)
         {
-            switch (callSite)
+            switch (callSite.Kind)
             {
-                case FactoryCallSite factoryCallSite:
-                    return VisitFactory(factoryCallSite, argument);
-                case IEnumerableCallSite enumerableCallSite:
-                    return VisitIEnumerable(enumerableCallSite, argument);
-                case ConstructorCallSite constructorCallSite:
-                    return VisitConstructor(constructorCallSite, argument);
-                case TransientCallSite transientCallSite:
-                    return VisitTransient(transientCallSite, argument);
-                case SingletonCallSite singletonCallSite:
-                    return VisitSingleton(singletonCallSite, argument);
-                case ScopedCallSite scopedCallSite:
-                    return VisitScoped(scopedCallSite, argument);
-                case ConstantCallSite constantCallSite:
-                    return VisitConstant(constantCallSite, argument);
-                case CreateInstanceCallSite createInstanceCallSite:
-                    return VisitCreateInstance(createInstanceCallSite, argument);
-                case ServiceProviderCallSite serviceProviderCallSite:
-                    return VisitServiceProvider(serviceProviderCallSite, argument);
-                case ServiceScopeFactoryCallSite scopeFactoryCallSite:
-                    return VisitServiceScopeFactory(scopeFactoryCallSite, argument);
+                case CallSiteKind.Factory:
+                    return VisitFactory((FactoryCallSite)callSite, argument);
+                case  CallSiteKind.IEnumerable:
+                    return VisitIEnumerable((IEnumerableCallSite)callSite, argument);
+                case CallSiteKind.Constructor:
+                    return VisitConstructor((ConstructorCallSite)callSite, argument);
+                case CallSiteKind.Transient:
+                    return VisitTransient((TransientCallSite)callSite, argument);
+                case CallSiteKind.Singleton:
+                    return VisitSingleton((SingletonCallSite)callSite, argument);
+                case CallSiteKind.Scope:
+                    return VisitScoped((ScopedCallSite)callSite, argument);
+                case CallSiteKind.Constant:
+                    return VisitConstant((ConstantCallSite)callSite, argument);
+                case CallSiteKind.CreateInstance:
+                    return VisitCreateInstance((CreateInstanceCallSite)callSite, argument);
+                case CallSiteKind.ServiceProvider:
+                    return VisitServiceProvider((ServiceProviderCallSite)callSite, argument);
+                case CallSiteKind.ServiceScopeFactory:
+                    return VisitServiceScopeFactory((ServiceScopeFactoryCallSite)callSite, argument);
                 default:
                     throw new NotSupportedException($"Call site type {callSite.GetType()} is not supported");
             }

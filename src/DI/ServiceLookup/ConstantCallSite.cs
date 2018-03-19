@@ -16,5 +16,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public Type ServiceType => DefaultValue.GetType();
         public Type ImplementationType => DefaultValue.GetType();
+        public CallSiteKind Kind { get; } = CallSiteKind.Constant;
     }
 }

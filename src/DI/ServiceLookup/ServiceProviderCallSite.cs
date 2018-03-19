@@ -9,5 +9,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     {
         public Type ServiceType { get; } = typeof(IServiceProvider);
         public Type ImplementationType { get; } = typeof(ServiceProvider);
+        public CallSiteKind Kind { get; } = CallSiteKind.ServiceProvider;
     }
 }

@@ -21,5 +21,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public Type ServiceType { get; }
 
         public Type ImplementationType => ConstructorInfo.DeclaringType;
+        public CallSiteKind Kind { get; } = CallSiteKind.Constructor;
     }
 }

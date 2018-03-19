@@ -11,6 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public Type ServiceType { get; }
 
         public Type ImplementationType { get; }
+        public CallSiteKind Kind { get; } = CallSiteKind.CreateInstance;
 
         public CreateInstanceCallSite(Type serviceType, Type implementationType)
         {

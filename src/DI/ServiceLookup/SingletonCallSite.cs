@@ -8,5 +8,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public SingletonCallSite(IServiceCallSite serviceCallSite, object cacheKey) : base(serviceCallSite, cacheKey)
         {
         }
+
+        public override CallSiteKind Kind { get; } = CallSiteKind.Singleton;
     }
 }
