@@ -424,9 +424,9 @@ namespace Microsoft.Extensions.Primitives
                 return this.IsNull;
             }
 
-            if (obj is string st)
+            if (obj is string str)
             {
-                return this._value == st;
+                return this._value == str;
             }
             
             if (obj is string[])
