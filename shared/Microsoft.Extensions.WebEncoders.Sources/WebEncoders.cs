@@ -31,6 +31,45 @@ namespace Microsoft.Extensions.Internal
     {
         private static readonly byte[] EmptyBytes = new byte[0];
 
+        // TODO: XML Comment
+        public static int Base64UrlDecode(ReadOnlySpan<char> input, Span<byte> output)
+        {
+            // TODO: implement
+            throw new NotImplementedException();
+        }
+
+        // TODO: XML Comment
+        public static byte[] Base64UrlDecode(ReadOnlySpan<char> input)
+        {
+            // Special-case empty input
+            if (input.IsEmpty)
+            {
+                return EmptyBytes;
+            }
+
+            // Create array large enough for the Base64 characters, not just shorter Base64-URL-encoded form.
+            var arraySizeRequired = GetArraySizeRequiredToDecodeCore(input.Length);
+
+            var buffer = new Buffer<char>(arraySizeRequired);
+            try
+            {
+                return Base64UrlDecodeCore(input, buffer.AsSpan());
+            }
+            finally
+            {
+                buffer.Dispose();
+            }
+        }
+
+#if NETCOREAPP2_1
+        // TODO: XML Comment
+        public static OperationStatus Base64UrlDecode(ReadOnlySpan<byte> utf8, Span<byte> output, out int bytesConsumed, out int bytesWritten, bool isFinalBlock = true)
+        {
+            // TODO: implement
+            throw new NotImplementedException();
+        }
+#endif
+
         /// <summary>
         /// Decodes a base64url-encoded string.
         /// </summary>
@@ -62,24 +101,7 @@ namespace Microsoft.Extensions.Internal
                 ThrowInvalidArguments(input, offset, count);
             }
 
-            // Special-case empty input
-            if (count == 0)
-            {
-                return EmptyBytes;
-            }
-
-            // Create array large enough for the Base64 characters, not just shorter Base64-URL-encoded form.
-            var arraySizeRequired = GetArraySizeRequiredToDecodeCore(count);
-
-            var buffer = new Buffer<char>(arraySizeRequired);
-            try
-            {
-                return Base64UrlDecodeCore(input.AsSpan(offset, count), buffer.AsSpan());
-            }
-            finally
-            {
-                buffer.Dispose();
-            }
+            return Base64UrlDecode(input.AsSpan(offset, count));
         }
 
         /// <summary>
@@ -148,6 +170,50 @@ namespace Microsoft.Extensions.Internal
             return GetArraySizeRequiredToDecodeCore(count);
         }
 
+        // TODO: XML Comment
+        public static int Base64UrlEncode(ReadOnlySpan<byte> input, Span<char> output)
+        {
+            // TODO: implement
+            throw new NotImplementedException();
+        }
+
+        // TODO: XML Comment
+        public static string Base64UrlEncode(ReadOnlySpan<byte> input)
+        {
+            // Special-case empty input
+            if (input.IsEmpty)
+            {
+                return string.Empty;
+            }
+
+#if NETCOREAPP2_1
+            var arraySizeRequired = GetArraySizeRequiredToEncodeCore(input.Length);
+            var buffer = new Buffer<char>(arraySizeRequired);
+            try
+            {
+                var output = buffer.AsSpan();
+                output = Base64UrlEncodeCore(input, output);
+
+                // Todo: use string.Create
+                return new String(output);
+            }
+            finally
+            {
+                buffer.Dispose();
+            }
+#else
+            return Base64UrlEncode(input.ToArray());
+#endif
+        }
+
+#if NETCOREAPP2_1
+        public static OperationStatus Base64UrlEncode(ReadOnlySpan<byte> input, Span<byte> utf8, out int bytesConsumed, out int bytesWritten, bool isFinalBlock = true)
+        {
+            // TODO: implement
+            throw new NotImplementedException();
+        }
+#endif
+
         /// <summary>
         /// Encodes <paramref name="input"/> using base64url encoding.
         /// </summary>
@@ -171,6 +237,9 @@ namespace Microsoft.Extensions.Internal
                 ThrowInvalidArguments(input, offset, count);
             }
 
+#if NETCOREAPP2_1
+            return Base64UrlEncode(input.AsSpan(offset, count));
+#else
             // Special-case empty input
             if (count == 0)
             {
@@ -178,21 +247,6 @@ namespace Microsoft.Extensions.Internal
             }
 
             var arraySizeRequired = GetArraySizeRequiredToEncodeCore(count);
-#if NETCOREAPP2_1
-            var buffer = new Buffer<char>(arraySizeRequired);
-            try
-            {
-                var output = buffer.AsSpan();
-                output = Base64UrlEncodeCore(input.AsSpan(offset, count), output);
-
-                // Todo: use string.Create
-                return new String(output);
-            }
-            finally
-            {
-                buffer.Dispose();
-            }
-#else
             var buffer = new char[arraySizeRequired];
             var numBase64Chars = Base64UrlEncodeCore(input, offset, count, buffer, 0);
 
@@ -308,7 +362,8 @@ namespace Microsoft.Extensions.Internal
             var output = buffer.Slice(0, charsWritten);
 
             return UrlEncodeInternal(output);
-#else
+        }
+#endif
         private static int Base64UrlEncodeCore(byte[] input, int offset, int count, char[] buffer, int bufferOffset)
         {
             // Start with default Base64 encoding.
@@ -316,7 +371,6 @@ namespace Microsoft.Extensions.Internal
             var output = UrlEncodeInternal(buffer.AsSpan(bufferOffset, numBase64Chars));
 
             return output.Length;
-#endif
         }
 
         // internal to make this testable
