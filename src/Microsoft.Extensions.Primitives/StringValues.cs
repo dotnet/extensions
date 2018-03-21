@@ -27,23 +27,8 @@ namespace Microsoft.Extensions.Primitives
 
         public StringValues(string[] values)
         {
-            if (values == null || values.Length == 0)
-            {
-                // Set null and empty arrays to null
-                _value = null;  // Both null is required for 
-                _values = null; // IsNull property to work correctly
-            }
-            else if (values.Length == 1)
-            {
-                // Set single item arrays to the string value
-                _values = null;
-                _value = values[0];
-            }
-            else
-            {
-                _value = null;
-                _values = values;
-            }
+            _value = null;
+            _values = values;
         }
 
         public static implicit operator StringValues(string value)
@@ -67,8 +52,6 @@ namespace Microsoft.Extensions.Primitives
         }
 
         public int Count => _value != null ? 1 : (_values?.Length ?? 0);
-
-        public bool IsNull => _value == null && _values == null;
 
         bool ICollection<string>.IsReadOnly
         {
@@ -102,7 +85,19 @@ namespace Microsoft.Extensions.Primitives
             return GetStringValue() ?? string.Empty;
         }
 
-        private string GetStringValue() => (_values == null) ? _value : string.Join(",", _values);
+        private string GetStringValue()
+        {
+            if (_values == null)
+            {
+                return _value;
+            }
+            switch (_values.Length)
+            {
+                case 0: return null;
+                case 1: return _values[0];
+                default: return string.Join(",", _values);
+            }
+        }
 
         public string[] ToArray()
         {
@@ -230,25 +225,29 @@ namespace Microsoft.Extensions.Primitives
             {
                 return string.IsNullOrEmpty(value._value);
             }
-
-            return false;
+            switch (value._values.Length)
+            {
+                case 0: return true;
+                case 1: return string.IsNullOrEmpty(value._values[0]);
+                default: return false;
+            }
         }
 
         public static StringValues Concat(StringValues values1, StringValues values2)
         {
+            var count1 = values1.Count;
+            var count2 = values2.Count;
 
-            if (values1.IsNull)
+            if (count1 == 0)
             {
                 return values2;
             }
 
-            if (values2.IsNull)
+            if (count2 == 0)
             {
                 return values1;
             }
 
-            var count1 = values1.Count;
-            var count2 = values2.Count;
             var combined = new string[count1 + count2];
             values1.CopyTo(combined, 0);
             values2.CopyTo(combined, count1);
@@ -262,12 +261,12 @@ namespace Microsoft.Extensions.Primitives
                 return values;
             }
 
-            if (values.IsNull)
+            var count = values.Count;
+            if (count == 0)
             {
                 return new StringValues(value);
             }
 
-            var count = values.Count;
             var combined = new string[count + 1];
             values.CopyTo(combined, 0);
             combined[count] = value;
@@ -281,12 +280,12 @@ namespace Microsoft.Extensions.Primitives
                 return values;
             }
 
-            if (values.IsNull)
+            var count = values.Count;
+            if (count == 0)
             {
                 return new StringValues(value);
             }
 
-            var count = values.Count;
             var combined = new string[count + 1];
             combined[0] = value;
             values.CopyTo(combined, 1);
@@ -421,12 +420,12 @@ namespace Microsoft.Extensions.Primitives
         {
             if (obj == null)
             {
-                return this.IsNull;
+                return Equals(this, StringValues.Empty);
             }
 
-            if (obj is string str)
+            if (obj is string)
             {
-                return this._value == str;
+                return Equals(this, (string)obj);
             }
             
             if (obj is string[])
