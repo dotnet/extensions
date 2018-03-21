@@ -37,6 +37,62 @@ namespace Microsoft.Extensions.Internal
         }
 
         [Theory]
+        [InlineData(0, 0)]
+        [InlineData(2, 4)]
+        [InlineData(3, 4)]
+        [InlineData(4, 4)]
+        [InlineData(6, 8)]
+        [InlineData(7, 8)]
+        public void GetArraySizeRequiredToDecode(int inputLength, int expectedPadding)
+        {
+            var result = WebEncoders.GetArraySizeRequiredToDecode(inputLength);
+
+            Assert.Equal(expectedPadding, result);
+        }
+
+        [Fact]
+        public void GetArraySizeRequiredToDecode_NegativeInputLength_Throws()
+        {
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => WebEncoders.GetArraySizeRequiredToDecode(-1));
+            Assert.Equal("count", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(5)]
+        //[InlineData(-1)]
+        //[InlineData(-2)]
+        public void GetArraySizeRequiredToDecode_MalformedInputLength(int inputLength)
+        {
+            Assert.Throws<FormatException>(() =>
+            {
+                var retVal = WebEncoders.GetArraySizeRequiredToDecode(inputLength);
+            });
+        }
+
+        // Taken from https://github.com/aspnet/HttpAbstractions/pull/926
+        [Fact]
+        public void DataOfVariousLength_RoundTripCorrectly()
+        {
+            for (var length = 0; length < 256; length++)
+            {
+                var data = new byte[length];
+                for (var i = 0; i < length; i++)
+                {
+                    data[i] = (byte)(5 + length + (i * 23));
+                }
+
+                string text = WebEncoders.Base64UrlEncode(data);
+                byte[] result = WebEncoders.Base64UrlDecode(text);
+
+                for (var i = 0; i < length; i++)
+                {
+                    Assert.Equal(data[i], result[i]);
+                }
+            }
+        }
+
+        [Theory]
         [InlineData("", "")]
         [InlineData("123456qwerty++//X+/x", "123456qwerty--__X-_x")]
         [InlineData("123456qwerty++//X+/xxw==", "123456qwerty--__X-_xxw")]
@@ -108,6 +164,31 @@ namespace Microsoft.Extensions.Internal
             {
                 var retVal = WebEncoders.Base64UrlEncode(input, offset, count);
             });
+        }
+
+        // Taken from https://github.com/aspnet/HttpAbstractions/pull/926
+        [Theory]
+        [InlineData("_", "/===")]
+        [InlineData("-", "+===")]
+        [InlineData("a-b-c", "a+b+c===")]
+        [InlineData("a_b_c_d", "a/b/c/d=")]
+        [InlineData("a-b_c", "a+b/c===")]
+        [InlineData("a-b_c-d", "a+b/c+d=")]
+        [InlineData("abcd", "abcd")]
+        public void UrlDecodeInternal_ReturnsValid_Base64String(string text, string expectedValue)
+        {
+            // Arrange
+            char[] buffer = new char[expectedValue.Length];
+            var paddingsCharsToAdd = buffer.Length - text.Length;
+
+            // Act
+            WebEncoders.UrlDecodeInternal(text.AsSpan(), buffer);
+
+            // Assert
+            for (var i = 0; i < expectedValue.Length; i++)
+            {
+                Assert.Equal(expectedValue[i], buffer[i]);
+            }
         }
     }
 }

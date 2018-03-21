@@ -37,15 +37,7 @@ namespace Microsoft.Extensions.Internal
         /// The input must not contain any whitespace or padding characters.
         /// Throws <see cref="FormatException"/> if the input is malformed.
         /// </remarks>
-        public static byte[] Base64UrlDecode(string input)
-        {
-            if (input == null)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-
-            return Base64UrlDecode(input, offset: 0, count: input.Length);
-        }
+        public static byte[] Base64UrlDecode(string input) => Base64UrlDecode(input, 0, input.Length);
 
         /// <summary>
         /// Decodes a base64url-encoded substring of a given string.
@@ -60,12 +52,12 @@ namespace Microsoft.Extensions.Internal
         /// </remarks>
         public static byte[] Base64UrlDecode(string input, int offset, int count)
         {
-            if (input == null)
+            if (input == null
+                || (uint)offset > (uint)input.Length
+                || (uint)count > (uint)(input.Length - offset))
             {
-                throw new ArgumentNullException(nameof(input));
+                ThrowInvalidArguments(input, offset, count);
             }
-
-            ValidateParameters(input.Length, nameof(input), offset, count);
 
             // Special-case empty input
             if (count == 0)
@@ -74,9 +66,17 @@ namespace Microsoft.Extensions.Internal
             }
 
             // Create array large enough for the Base64 characters, not just shorter Base64-URL-encoded form.
-            var buffer = new char[GetArraySizeRequiredToDecode(count)];
+            var arraySizeRequired = GetArraySizeRequiredToDecodeCore(count);
 
-            return Base64UrlDecode(input, offset, buffer, bufferOffset: 0, count: count);
+            var buffer = new Buffer<char>(arraySizeRequired);
+            try
+            {
+                return Base64UrlDecodeCore(input.AsSpan(offset, count), buffer.AsSpan());
+            }
+            finally
+            {
+                buffer.Dispose();
+            }
         }
 
         /// <summary>
@@ -100,21 +100,16 @@ namespace Microsoft.Extensions.Internal
         /// </remarks>
         public static byte[] Base64UrlDecode(string input, int offset, char[] buffer, int bufferOffset, int count)
         {
-            if (input == null)
+            if (input == null
+                || (uint)offset > (uint)input.Length
+                || (uint)count > (uint)(input.Length - offset)
+                || buffer == null
+                || (uint)bufferOffset > (uint)buffer.Length)
             {
-                throw new ArgumentNullException(nameof(input));
-            }
-            if (buffer == null)
-            {
-                throw new ArgumentNullException(nameof(buffer));
-            }
-
-            ValidateParameters(input.Length, nameof(input), offset, count);
-            if (bufferOffset < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(bufferOffset));
+                ThrowInvalidArguments(input, offset, count, buffer, bufferOffset, validateBuffer: true);
             }
 
+            // Special-case empty input
             if (count == 0)
             {
                 return EmptyBytes;
@@ -122,50 +117,14 @@ namespace Microsoft.Extensions.Internal
 
             // Assumption: input is base64url encoded without padding and contains no whitespace.
 
-            var paddingCharsToAdd = GetNumBase64PaddingCharsToAddForDecode(count);
-            var arraySizeRequired = checked(count + paddingCharsToAdd);
-            Debug.Assert(arraySizeRequired % 4 == 0, "Invariant: Array length must be a multiple of 4.");
+            var arraySizeRequired = GetArraySizeRequiredToDecodeCore(count);
 
             if (buffer.Length - bufferOffset < arraySizeRequired)
             {
-                throw new ArgumentException(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        EncoderResources.WebEncoders_InvalidCountOffsetOrLength,
-                        nameof(count),
-                        nameof(bufferOffset),
-                        nameof(input)),
-                    nameof(count));
+                ThrowHelper.ThrowInvalidCountOffsetOrLengthException(ExceptionArgument.count, ExceptionArgument.bufferOffset, ExceptionArgument.input);
             }
 
-            // Copy input into buffer, fixing up '-' -> '+' and '_' -> '/'.
-            var i = bufferOffset;
-            for (var j = offset; i - bufferOffset < count; i++, j++)
-            {
-                var ch = input[j];
-                if (ch == '-')
-                {
-                    buffer[i] = '+';
-                }
-                else if (ch == '_')
-                {
-                    buffer[i] = '/';
-                }
-                else
-                {
-                    buffer[i] = ch;
-                }
-            }
-
-            // Add the padding characters back.
-            for (; paddingCharsToAdd > 0; i++, paddingCharsToAdd--)
-            {
-                buffer[i] = '=';
-            }
-
-            // Decode.
-            // If the caller provided invalid base64 chars, they'll be caught here.
-            return Convert.FromBase64CharArray(buffer, bufferOffset, arraySizeRequired);
+            return Base64UrlDecodeCore(input.AsSpan(offset, count), buffer.AsSpan(bufferOffset, arraySizeRequired));
         }
 
         /// <summary>
@@ -180,17 +139,10 @@ namespace Microsoft.Extensions.Internal
         {
             if (count < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(count));
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count);
             }
 
-            if (count == 0)
-            {
-                return 0;
-            }
-
-            var numPaddingCharsToAdd = GetNumBase64PaddingCharsToAddForDecode(count);
-
-            return checked(count + numPaddingCharsToAdd);
+            return GetArraySizeRequiredToDecodeCore(count);
         }
 
         /// <summary>
@@ -331,39 +283,106 @@ namespace Microsoft.Extensions.Internal
             return checked(numWholeOrPartialInputBlocks * 4);
         }
 
-        private static int GetNumBase64PaddingCharsInString(string str)
+        private static byte[] Base64UrlDecodeCore(ReadOnlySpan<char> input, Span<char> buffer)
         {
-            // Assumption: input contains a well-formed base64 string with no whitespace.
+            UrlDecodeInternal(input, buffer);
 
-            // base64 guaranteed have 0 - 2 padding characters.
-            if (str[str.Length - 1] == '=')
+#if NETCOREAPP2_1
+            var maxDecodedSize = Base64.GetMaxDecodedFromUtf8Length(buffer.Length);
+            var resultBuffer = new Buffer<byte>(maxDecodedSize);
+            try
             {
-                if (str[str.Length - 2] == '=')
-                {
-                    return 2;
-                }
-                return 1;
+                var resultSpan = resultBuffer.AsSpan();
+
+                // Decode.
+                // If the caller provided invalid base64 chars, they'll be caught here.
+                // Todo: Ask how to handle result
+                Convert.TryFromBase64Chars(buffer, resultSpan, out int bytesWritten);
+                return resultSpan.Slice(0, bytesWritten).ToArray();
             }
-            return 0;
+            finally
+            {
+                resultBuffer.Dispose();
+            }
+#else
+            // Decode.
+            // If the caller provided invalid base64 chars, they'll be caught here.
+            return Convert.FromBase64CharArray(buffer.ToArray(), 0, buffer.Length);
+#endif
         }
 
+        // internal to make this testable
+        // internal to make this testable
+        internal static unsafe void UrlDecodeInternal(ReadOnlySpan<char> input, Span<char> buffer)
+        {
+            // PERF: &input[0] is faster than &MemoryMarshal.GetReference(input);
+            fixed (char* pInput = &input[0])
+            fixed (char* pBuffer = &buffer[0])
+            {
+                // Copy input into buffer, fixing up '-' -> '+' and '_' -> '/'.
+                var i = 0;
+                for (; i < input.Length; ++i)
+                {
+                    var ch = pInput[i];
+                    if (ch == '-')
+                    {
+                        pBuffer[i] = '+';
+                    }
+                    else if (ch == '_')
+                    {
+                        pBuffer[i] = '/';
+                    }
+                    else
+                    {
+                        pBuffer[i] = ch;
+                    }
+                }
+
+                // Add the padding characters back.
+                for (; i < buffer.Length; ++i)
+                {
+                    pBuffer[i] = '=';
+                }
+            }
+        }
+
+        private static int GetArraySizeRequiredToDecodeCore(int count)
+        {
+            if (count == 0)
+            {
+                return 0;
+            }
+
+            var numPaddingCharsToAdd = GetNumBase64PaddingCharsToAddForDecode(count);
+            var arraySizeRequired = checked(count + numPaddingCharsToAdd);
+            Debug.Assert(arraySizeRequired % 4 == 0, "Invariant: Array length must be a multiple of 4.");
+
+            return arraySizeRequired;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetNumBase64PaddingCharsToAddForDecode(int inputLength)
         {
-            switch (inputLength % 4)
+            // Calculation is:
+            // switch (inputLength % 4)
+            // 0 -> 0
+            // 2 -> 2
+            // 3 -> 1
+            // default -> format exception
+
+            var result = 1;
+            var mod = inputLength & 3;
+
+            if (mod == 1)
             {
-                case 0:
-                    return 0;
-                case 2:
-                    return 2;
-                case 3:
-                    return 1;
-                default:
-                    throw new FormatException(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            EncoderResources.WebEncoders_MalformedInput,
-                            inputLength));
+                ThrowHelper.ThrowMalformedInputException(inputLength);
             }
+            else if (mod == 0 || mod == 2)
+            {
+                result = mod;
+            }
+
+            return result;
         }
 
         private static void ValidateParameters(int bufferLength, string inputName, int offset, int count)
@@ -386,6 +405,41 @@ namespace Microsoft.Extensions.Internal
                         nameof(offset),
                         inputName),
                     nameof(count));
+            }
+        }
+
+        private static void ThrowInvalidArguments(string input, int offset, int count, char[] buffer = null, int bufferOffset = 0, bool validateBuffer = false)
+        {
+            throw GetInvalidArgumentsException();
+
+            Exception GetInvalidArgumentsException()
+            {
+                if (input == null)
+                {
+                    return ThrowHelper.GetArgumentNullException(ExceptionArgument.input);
+                }
+
+                if (validateBuffer && buffer == null)
+                {
+                    return ThrowHelper.GetArgumentNullException(ExceptionArgument.buffer);
+                }
+
+                if (offset < 0)
+                {
+                    return ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.offset);
+                }
+
+                if (count < 0)
+                {
+                    return ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.count);
+                }
+
+                if (bufferOffset < 0)
+                {
+                    return ThrowHelper.GetArgumentOutOfRangeException(ExceptionArgument.bufferOffset);
+                }
+
+                return ThrowHelper.GetInvalidCountOffsetOrLengthException(ExceptionArgument.count, ExceptionArgument.offset, ExceptionArgument.input);
             }
         }
 
@@ -445,6 +499,70 @@ namespace Microsoft.Extensions.Internal
                     _arrayToReturnToPool = null;
                 }
             }
+        }
+
+        private static class ThrowHelper
+        {
+            public static void ThrowArgumentNullException(ExceptionArgument argument)
+            {
+                throw GetArgumentNullException(argument);
+            }
+
+            public static void ThrowArgumentOutOfRangeException(ExceptionArgument argument)
+            {
+                throw GetArgumentOutOfRangeException(argument);
+            }
+
+            public static void ThrowInvalidCountOffsetOrLengthException(ExceptionArgument arg1, ExceptionArgument arg2, ExceptionArgument arg3)
+            {
+                throw GetInvalidCountOffsetOrLengthException(arg1, arg2, arg3);
+            }
+
+            public static void ThrowMalformedInputException(int inputLength)
+            {
+                throw GetMalformdedInputException(inputLength);
+            }
+
+            public static ArgumentNullException GetArgumentNullException(ExceptionArgument argument)
+            {
+                return new ArgumentNullException(GetArgumentName(argument));
+            }
+
+            public static ArgumentOutOfRangeException GetArgumentOutOfRangeException(ExceptionArgument argument)
+            {
+                return new ArgumentOutOfRangeException(GetArgumentName(argument));
+            }
+
+            public static ArgumentException GetInvalidCountOffsetOrLengthException(ExceptionArgument arg1, ExceptionArgument arg2, ExceptionArgument arg3)
+            {
+                return new ArgumentException(EncoderResources.FormatWebEncoders_InvalidCountOffsetOrLength(
+                    GetArgumentName(arg1),
+                    GetArgumentName(arg2),
+                    GetArgumentName(arg3)));
+            }
+
+            private static string GetArgumentName(ExceptionArgument argument)
+            {
+                Debug.Assert(Enum.IsDefined(typeof(ExceptionArgument), argument),
+                    "The enum value is not defined, please check the ExceptionArgument Enum.");
+
+                return argument.ToString();
+            }
+
+            private static FormatException GetMalformdedInputException(int inputLength)
+            {
+                return new FormatException(EncoderResources.FormatWebEncoders_MalformedInput(inputLength));
+            }
+        }
+
+        private enum ExceptionArgument
+        {
+            input,
+            output,
+            buffer,
+            offset,
+            bufferOffset,
+            count
         }
     }
 }
