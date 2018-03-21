@@ -2,8 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
+using System.Buffers.Text;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.WebEncoders.Sources;
 
 #if WebEncoders_In_WebUtilities
@@ -382,6 +386,64 @@ namespace Microsoft.Extensions.Internal
                         nameof(offset),
                         inputName),
                     nameof(count));
+            }
+        }
+
+        private unsafe struct Buffer<T> where T : struct
+        {
+            private const int MaxStack = 32;
+            private T[] _arrayToReturnToPool;
+            private readonly int _size;
+            private fixed long _buffer[MaxStack];
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Buffer(int size)
+            {
+                _arrayToReturnToPool = null;
+                _size = size;
+
+                // T is only char or byte
+                int sizeOfT = typeof(T) == typeof(byte) ? 1 : 2;
+                if (size > MaxStack * sizeof(long) / sizeOfT)
+                {
+#if NETCOREAPP2_1
+                    _arrayToReturnToPool = ArrayPool<T>.Shared.Rent(size);
+#else
+                    _arrayToReturnToPool = new T[size];
+#endif
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Span<T> AsSpan()
+            {
+                Span<T> res;
+
+                if (_arrayToReturnToPool != null)
+                {
+                    res = new Span<T>(_arrayToReturnToPool, 0, _size);
+                }
+                else
+                {
+                    fixed (long* buffer = _buffer)
+                    {
+                        res = new Span<T>(buffer, _size);
+                    }
+                }
+
+                return res;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Dispose()
+            {
+                if (_arrayToReturnToPool != null)
+                {
+#if NETCOREAPP2_1
+                    ArrayPool<T>.Shared.Return(_arrayToReturnToPool);
+#endif
+                    _arrayToReturnToPool = null;
+                }
             }
         }
     }
