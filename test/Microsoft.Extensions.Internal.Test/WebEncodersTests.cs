@@ -168,6 +168,33 @@ namespace Microsoft.Extensions.Internal
 
         // Taken from https://github.com/aspnet/HttpAbstractions/pull/926
         [Theory]
+        [InlineData("", "")]
+        [InlineData("+", "-")]
+        [InlineData("/", "_")]
+        [InlineData("=", "")]
+        [InlineData("==", "")]
+        [InlineData("a+b+c+==", "a-b-c-")]
+        [InlineData("a/b/c==", "a_b_c")]
+        [InlineData("a+b/c==", "a-b_c")]
+        [InlineData("a+b/c", "a-b_c")]
+        [InlineData("abcd", "abcd")]
+        public void UrlEncodeInternal_Replaces_UrlEncodableCharacters(string base64EncodedValue, string expectedValue)
+        {
+            // Arrange
+            char[] buffer = base64EncodedValue.ToCharArray();
+
+            // Act
+            var result = WebEncoders.UrlEncodeInternal(buffer);
+
+            // Assert
+            for (var i = 0; i < result.Length; i++)
+            {
+                Assert.Equal(expectedValue[i], buffer[i]);
+            }
+        }
+
+        // Taken from https://github.com/aspnet/HttpAbstractions/pull/926
+        [Theory]
         [InlineData("_", "/===")]
         [InlineData("-", "+===")]
         [InlineData("a-b-c", "a+b+c===")]
