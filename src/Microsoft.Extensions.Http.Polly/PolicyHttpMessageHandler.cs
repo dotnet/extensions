@@ -46,7 +46,7 @@ namespace Microsoft.Extensions.Http
     /// </example>
     /// </para>
     /// <para>
-    /// The <see cref="PollyHttpClientBuilderExtensions.AddServerErrorPolicyHandler(IHttpClientBuilder, Func{PolicyBuilder{HttpResponseMessage}, IAsyncPolicy{HttpResponseMessage}})"/>
+    /// The <see cref="PollyHttpClientBuilderExtensions.AddTransientHttpErrorPolicy(IHttpClientBuilder, Func{PolicyBuilder{HttpResponseMessage}, IAsyncPolicy{HttpResponseMessage}})"/>
     /// method is an opinionated convenience method that supports the application of a policy for requests that fail due
     /// to a connection failure or server error (5XX HTTP status code). This kind of method supports only reactive policies
     /// such as Retry, Circuit-Breaker or Fallback. This method is only provided for convenience; we recommend creating

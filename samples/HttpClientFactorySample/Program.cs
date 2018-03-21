@@ -84,8 +84,8 @@ namespace HttpClientFactorySample
                     reg.Get<IAsyncPolicy<HttpResponseMessage>>("long");
             })
             
-            // Build a policy that will handle exceptions and 500s from the remote server
-            .AddServerErrorPolicyHandler(p => p.RetryAsync())
+            // Build a policy that will handle exceptions, 408s, and 500s from the remote server
+            .AddTransientHttpErrorPolicy(p => p.RetryAsync())
 
             .AddHttpMessageHandler(() => new RetryHandler()) // Retry requests to github using our retry handler
             .AddTypedClient<GithubClient>();
