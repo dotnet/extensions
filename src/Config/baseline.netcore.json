@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Configuration, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Configuration, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.Configuration.ConfigurationBuilder",
@@ -13,7 +13,7 @@
           "Kind": "Method",
           "Name": "get_Sources",
           "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Configuration.IConfigurationSource>",
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Extensions.Configuration.IConfigurationSource>",
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfigurationBuilder",
@@ -24,7 +24,7 @@
           "Kind": "Method",
           "Name": "get_Properties",
           "Parameters": [],
-          "ReturnType": "System.Collections.Generic.Dictionary<System.String, System.Object>",
+          "ReturnType": "System.Collections.Generic.IDictionary<System.String, System.Object>",
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfigurationBuilder",
@@ -318,6 +318,17 @@
         "Microsoft.Extensions.Configuration.IConfigurationRoot"
       ],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Providers",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Configuration.IConfigurationProvider>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfigurationRoot",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "get_Item",

@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Configuration.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Configuration.Abstractions, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.Configuration.ConfigurationExtensions",
@@ -10,6 +10,34 @@
       "Sealed": true,
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Add<T0>",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.Configuration.IConfigurationBuilder"
+            },
+            {
+              "Name": "configureSource",
+              "Type": "System.Action<T0>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TSource",
+              "ParameterPosition": 0,
+              "New": true,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.Extensions.Configuration.IConfigurationSource"
+              ]
+            }
+          ]
+        },
         {
           "Kind": "Method",
           "Name": "GetConnectionString",
@@ -39,6 +67,40 @@
             }
           ],
           "ReturnType": "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String, System.String>>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AsEnumerable",
+          "Parameters": [
+            {
+              "Name": "configuration",
+              "Type": "Microsoft.Extensions.Configuration.IConfiguration"
+            },
+            {
+              "Name": "makePathsRelative",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String, System.String>>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Exists",
+          "Parameters": [
+            {
+              "Name": "section",
+              "Type": "Microsoft.Extensions.Configuration.IConfigurationSection"
+            }
+          ],
+          "ReturnType": "System.Boolean",
           "Static": true,
           "Extension": true,
           "Visibility": "Public",
@@ -201,14 +263,14 @@
           "Kind": "Method",
           "Name": "get_Properties",
           "Parameters": [],
-          "ReturnType": "System.Collections.Generic.Dictionary<System.String, System.Object>",
+          "ReturnType": "System.Collections.Generic.IDictionary<System.String, System.Object>",
           "GenericParameter": []
         },
         {
           "Kind": "Method",
           "Name": "get_Sources",
           "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Configuration.IConfigurationSource>",
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Extensions.Configuration.IConfigurationSource>",
           "GenericParameter": []
         },
         {
@@ -320,6 +382,13 @@
           "Name": "Reload",
           "Parameters": [],
           "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Providers",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Configuration.IConfigurationProvider>",
           "GenericParameter": []
         }
       ],

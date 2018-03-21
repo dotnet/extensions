@@ -30,6 +30,16 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             public string InternalSetter { get; internal set; }
             public static string StaticProperty { get; set; }
 
+            private string PrivateProperty { get; set; }
+            internal string InternalProperty { get; set; }
+            protected string ProtectedProperty { get; set; }
+
+            protected string ProtectedPrivateSet { get; private set; }
+
+            private string PrivateReadOnly { get; }
+            internal string InternalReadOnly { get; }
+            protected string ProtectedReadOnly { get; }
+
             public string ReadOnly
             {
                 get { return null; }
@@ -542,6 +552,10 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
         [InlineData("PrivateSetter")]
         [InlineData("ProtectedSetter")]
         [InlineData("InternalSetter")]
+        [InlineData("InternalProperty")]
+        [InlineData("PrivateProperty")]
+        [InlineData("ProtectedProperty")]
+        [InlineData("ProtectedPrivateSet")]
         public void GetIgnoresTests(string property)
         {
             var dic = new Dictionary<string, string>
@@ -552,8 +566,47 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             configurationBuilder.AddInMemoryCollection(dic);
             var config = configurationBuilder.Build();
 
-            var options = new ComplexOptions();
-            config.Bind(options);
+            var options = config.Get<ComplexOptions>();
+            Assert.Null(options.GetType().GetTypeInfo().GetDeclaredProperty(property).GetValue(options));
+        }
+
+        [Theory]
+        [InlineData("PrivateSetter")]
+        [InlineData("ProtectedSetter")]
+        [InlineData("InternalSetter")]
+        [InlineData("InternalProperty")]
+        [InlineData("PrivateProperty")]
+        [InlineData("ProtectedProperty")]
+        [InlineData("ProtectedPrivateSet")]
+        public void GetCanSetNonPublicWhenSet(string property)
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {property, "stuff"},
+            };
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
+            var config = configurationBuilder.Build();
+
+            var options = config.Get<ComplexOptions>(o => o.BindNonPublicProperties = true);
+            Assert.Equal("stuff", options.GetType().GetTypeInfo().GetDeclaredProperty(property).GetValue(options));
+        }
+
+        [Theory]
+        [InlineData("InternalReadOnly")]
+        [InlineData("PrivateReadOnly")]
+        [InlineData("ProtectedReadOnly")]
+        public void NonPublicModeGetStillIgnoresReadonly(string property)
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {property, "stuff"},
+            };
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
+            var config = configurationBuilder.Build();
+
+            var options = config.Get<ComplexOptions>(o => o.BindNonPublicProperties = true);
             Assert.Null(options.GetType().GetTypeInfo().GetDeclaredProperty(property).GetValue(options));
         }
 
@@ -562,6 +615,10 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
         [InlineData("PrivateSetter")]
         [InlineData("ProtectedSetter")]
         [InlineData("InternalSetter")]
+        [InlineData("InternalProperty")]
+        [InlineData("PrivateProperty")]
+        [InlineData("ProtectedProperty")]
+        [InlineData("ProtectedPrivateSet")]
         public void BindIgnoresTests(string property)
         {
             var dic = new Dictionary<string, string>
@@ -575,6 +632,48 @@ namespace Microsoft.Extensions.Configuration.Binder.Test
             var options = new ComplexOptions();
             config.Bind(options);
 
+            Assert.Null(options.GetType().GetTypeInfo().GetDeclaredProperty(property).GetValue(options));
+        }
+
+        [Theory]
+        [InlineData("PrivateSetter")]
+        [InlineData("ProtectedSetter")]
+        [InlineData("InternalSetter")]
+        [InlineData("InternalProperty")]
+        [InlineData("PrivateProperty")]
+        [InlineData("ProtectedProperty")]
+        [InlineData("ProtectedPrivateSet")]
+        public void BindCanSetNonPublicWhenSet(string property)
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {property, "stuff"},
+            };
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
+            var config = configurationBuilder.Build();
+
+            var options = new ComplexOptions();
+            config.Bind(options, o => o.BindNonPublicProperties = true );
+            Assert.Equal("stuff", options.GetType().GetTypeInfo().GetDeclaredProperty(property).GetValue(options));
+        }
+
+        [Theory]
+        [InlineData("InternalReadOnly")]
+        [InlineData("PrivateReadOnly")]
+        [InlineData("ProtectedReadOnly")]
+        public void NonPublicModeBindStillIgnoresReadonly(string property)
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {property, "stuff"},
+            };
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(dic);
+            var config = configurationBuilder.Build();
+
+            var options = new ComplexOptions();
+            config.Bind(options, o => o.BindNonPublicProperties = true);
             Assert.Null(options.GetType().GetTypeInfo().GetDeclaredProperty(property).GetValue(options));
         }
 
