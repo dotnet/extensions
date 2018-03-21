@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Primitives
     public readonly struct StringValues : IList<string>, IReadOnlyList<string>, IEquatable<StringValues>, IEquatable<string>, IEquatable<string[]>
     {
         private static readonly string[] EmptyArray = new string[0];
-        public static readonly StringValues Empty = new StringValues(EmptyArray);
+        public static readonly StringValues Empty = default;
 
         private readonly string _value;
         private readonly string[] _values;
@@ -63,7 +63,7 @@ namespace Microsoft.Extensions.Primitives
 
         public static implicit operator string[] (StringValues value)
         {
-            return value.GetArrayValue();
+            return value.ToArray();
         }
 
         public int Count => _value != null ? 1 : (_values?.Length ?? 0);
