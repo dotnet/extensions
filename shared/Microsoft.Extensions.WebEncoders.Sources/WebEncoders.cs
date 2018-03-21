@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
-using System.Buffers.Text;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.WebEncoders.Sources;
 
-#if !NETCOREAPP2_1
+#if NETCOREAPP2_1
+using System.Buffers;
+using System.Buffers.Text;
+#else
 using System.Runtime.InteropServices;
 #endif
 
@@ -161,7 +162,7 @@ namespace Microsoft.Extensions.Internal
         /// <param name="offset">The offset into <paramref name="input"/> at which to begin encoding.</param>
         /// <param name="count">The number of bytes from <paramref name="input"/> to encode.</param>
         /// <returns>The base64url-encoded form of <paramref name="input"/>.</returns>
-        public static unsafe string Base64UrlEncode(byte[] input, int offset, int count)
+        public static string Base64UrlEncode(byte[] input, int offset, int count)
         {
             if (input == null
                 || (uint)offset > (uint)input.Length
@@ -186,18 +187,16 @@ namespace Microsoft.Extensions.Internal
 
                 // Todo: use string.Create
                 return new String(output);
-#else
-            var buffer = new char[arraySizeRequired];
-            var numBase64Chars = Base64UrlEncodeCore(input, offset, count, buffer, 0);
-
-            return new String(buffer, 0, numBase64Chars);
-#endif
-#if NETCOREAPP2_1
             }
             finally
             {
                 buffer.Dispose();
             }
+#else
+            var buffer = new char[arraySizeRequired];
+            var numBase64Chars = Base64UrlEncodeCore(input, offset, count, buffer, 0);
+
+            return new String(buffer, 0, numBase64Chars);
 #endif
         }
 
@@ -276,20 +275,20 @@ namespace Microsoft.Extensions.Internal
 
 #if NETCOREAPP2_1
             var maxDecodedSize = Base64.GetMaxDecodedFromUtf8Length(buffer.Length);
-            var resultBuffer = new Buffer<byte>(maxDecodedSize);
+            var outputBuffer = new Buffer<byte>(maxDecodedSize);
             try
             {
-                var resultSpan = resultBuffer.AsSpan();
+                var output = outputBuffer.AsSpan();
 
                 // Decode.
                 // If the caller provided invalid base64 chars, they'll be caught here.
-                // Todo: Ask how to handle result
-                Convert.TryFromBase64Chars(buffer, resultSpan, out int bytesWritten);
-                return resultSpan.Slice(0, bytesWritten).ToArray();
+                // TODO: Ask how to handle bool-result of TryFromBase64Chars
+                Convert.TryFromBase64Chars(buffer, output, out int bytesWritten);
+                return output.Slice(0, bytesWritten).ToArray();
             }
             finally
             {
-                resultBuffer.Dispose();
+                outputBuffer.Dispose();
             }
 #else
             // Decode.
@@ -304,10 +303,10 @@ namespace Microsoft.Extensions.Internal
             // Use base64url encoding with no padding characters. See RFC 4648, Sec. 5.
 
             // Start with default Base64 encoding.
-            // Todo: Ask how to handle result
+            // TODO: Ask how to handle bool-result of TryToBase64Chars
             var res = Convert.TryToBase64Chars(input, buffer, out int charsWritten);
             var output = buffer.Slice(0, charsWritten);
-            
+
             return UrlEncodeInternal(output);
 #else
         private static int Base64UrlEncodeCore(byte[] input, int offset, int count, char[] buffer, int bufferOffset)
@@ -347,10 +346,12 @@ namespace Microsoft.Extensions.Internal
                 }
 
                 // Add the padding characters back.
-                for (; i < buffer.Length; ++i)
-                {
-                    pBuffer[i] = '=';
-                }
+                // TODO: try Span<T>.Fill('=');
+                //for (; i < buffer.Length; ++i)
+                //{
+                //	pBuffer[i] = '=';
+                //}
+                buffer.Slice(i).Fill('=');
             }
         }
 
