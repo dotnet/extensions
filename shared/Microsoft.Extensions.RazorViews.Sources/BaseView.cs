@@ -20,6 +20,7 @@ namespace Microsoft.Extensions.RazorViews
     internal abstract class BaseView
     {
         private static readonly Encoding UTF8NoBOM = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+        private readonly Stack<TextWriter> _textWriterStack = new Stack<TextWriter>();
 
         /// <summary>
         /// The request context
@@ -39,7 +40,7 @@ namespace Microsoft.Extensions.RazorViews
         /// <summary>
         /// The output stream
         /// </summary>
-        protected StreamWriter Output { get; private set; }
+        protected TextWriter Output { get; private set; }
 
         /// <summary>
         /// Html encoder used to encode content.
@@ -75,22 +76,42 @@ namespace Microsoft.Extensions.RazorViews
         /// </summary>
         public abstract Task ExecuteAsync();
 
-        /// <summary>
-        /// Write the given value directly to the output
-        /// </summary>
-        /// <param name="value"></param>
-        protected void WriteLiteral(string value)
+        protected virtual void PushWriter(TextWriter writer)
         {
-            WriteLiteralTo(Output, value);
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            _textWriterStack.Push(Output);
+            Output = writer;
+        }
+
+        protected virtual TextWriter PopWriter()
+        {
+            Output = _textWriterStack.Pop();
+            return Output;
         }
 
         /// <summary>
-        /// Write the given value directly to the output
+        /// Write the given value without HTML encoding directly to <see cref="Output"/>.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The <see cref="object"/> to write.</param>
         protected void WriteLiteral(object value)
         {
-            WriteLiteralTo(Output, value);
+            WriteLiteral(Convert.ToString(value, CultureInfo.InvariantCulture));
+        }
+
+        /// <summary>
+        /// Write the given value without HTML encoding directly to <see cref="Output"/>.
+        /// </summary>
+        /// <param name="value">The <see cref="string"/> to write.</param>
+        protected void WriteLiteral(string value)
+        {
+            if (!string.IsNullOrEmpty(value))
+            {
+                Output.Write(value);
+            }
         }
 
         private List<string> AttributeValues { get; set; }
@@ -130,23 +151,16 @@ namespace Microsoft.Extensions.RazorViews
         /// <summary>
         /// Writes the given attribute to the given writer
         /// </summary>
-        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         /// <param name="name">The name of the attribute to write</param>
         /// <param name="leader">The value of the prefix</param>
         /// <param name="trailer">The value of the suffix</param>
         /// <param name="values">The <see cref="AttributeValue"/>s to write.</param>
-        protected void WriteAttributeTo(
-            TextWriter writer,
+        protected void WriteAttribute(
             string name,
             string leader,
             string trailer,
             params AttributeValue[] values)
         {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
             if (name == null)
             {
                 throw new ArgumentNullException(nameof(name));
@@ -162,11 +176,10 @@ namespace Microsoft.Extensions.RazorViews
                 throw new ArgumentNullException(nameof(trailer));
             }
 
-
-            WriteLiteralTo(writer, leader);
+            WriteLiteral(leader);
             foreach (var value in values)
             {
-                WriteLiteralTo(writer, value.Prefix);
+                WriteLiteral(value.Prefix);
 
                 // The special cases here are that the value we're writing might already be a string, or that the
                 // value might be a bool. If the value is the bool 'true' we want to write the attribute name
@@ -192,40 +205,22 @@ namespace Microsoft.Extensions.RazorViews
                 // Call the WriteTo(string) overload when possible
                 if (value.Literal && stringValue != null)
                 {
-                    WriteLiteralTo(writer, stringValue);
+                    WriteLiteral(stringValue);
                 }
                 else if (value.Literal)
                 {
-                    WriteLiteralTo(writer, value.Value);
+                    WriteLiteral(value.Value);
                 }
                 else if (stringValue != null)
                 {
-                    WriteTo(writer, stringValue);
+                    Write(stringValue);
                 }
                 else
                 {
-                    WriteTo(writer, value.Value);
+                    Write(value.Value);
                 }
             }
-            WriteLiteralTo(writer, trailer);
-        }
-
-        /// <summary>
-        /// Convert to string and html encode
-        /// </summary>
-        /// <param name="value"></param>
-        protected void Write(object value)
-        {
-            WriteTo(Output, value);
-        }
-
-        /// <summary>
-        /// Html encode and write
-        /// </summary>
-        /// <param name="value"></param>
-        protected void Write(string value)
-        {
-            WriteTo(Output, value);
+            WriteLiteral(trailer);
         }
 
         /// <summary>
@@ -234,66 +229,37 @@ namespace Microsoft.Extensions.RazorViews
         /// <param name="result">The <see cref="HelperResult"/> to invoke</param>
         protected void Write(HelperResult result)
         {
-            WriteTo(Output, result);
+            Write(result);
         }
 
         /// <summary>
-        /// Writes the specified <paramref name="value"/> to <paramref name="writer"/>.
+        /// Writes the specified <paramref name="value"/> to <see cref="Output"/>.
         /// </summary>
-        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         /// <param name="value">The <see cref="object"/> to write.</param>
         /// <remarks>
         /// <see cref="HelperResult.WriteTo(TextWriter)"/> is invoked for <see cref="HelperResult"/> types.
-        /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
-        /// <paramref name="writer"/>.
+        /// For all other types, the encoded result of <see cref="object.ToString"/> is written to
+        /// <see cref="Output"/>.
         /// </remarks>
-        protected void WriteTo(TextWriter writer, object value)
+        protected void Write(object value)
         {
-            if (value != null)
+            if (value is HelperResult helperResult)
             {
-                var helperResult = value as HelperResult;
-                if (helperResult != null)
-                {
-                    helperResult.WriteTo(writer);
-                }
-                else
-                {
-                    WriteTo(writer, Convert.ToString(value, CultureInfo.InvariantCulture));
-                }
+                helperResult.WriteTo(Output);
+            }
+            else
+            {
+                Write(Convert.ToString(value, CultureInfo.InvariantCulture));
             }
         }
 
         /// <summary>
-        /// Writes the specified <paramref name="value"/> with HTML encoding to <paramref name="writer"/>.
+        /// Writes the specified <paramref name="value"/> with HTML encoding to <see cref="Output"/>.
         /// </summary>
-        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         /// <param name="value">The <see cref="string"/> to write.</param>
-        protected void WriteTo(TextWriter writer, string value)
+        protected void Write(string value)
         {
-            WriteLiteralTo(writer, HtmlEncoder.Encode(value));
-        }
-
-        /// <summary>
-        /// Writes the specified <paramref name="value"/> without HTML encoding to the <paramref name="writer"/>.
-        /// </summary>
-        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
-        /// <param name="value">The <see cref="object"/> to write.</param>
-        protected void WriteLiteralTo(TextWriter writer, object value)
-        {
-            WriteLiteralTo(writer, Convert.ToString(value, CultureInfo.InvariantCulture));
-        }
-
-        /// <summary>
-        /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Output"/>.
-        /// </summary>
-        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
-        /// <param name="value">The <see cref="string"/> to write.</param>
-        protected void WriteLiteralTo(TextWriter writer, string value)
-        {
-            if (!string.IsNullOrEmpty(value))
-            {
-                writer.Write(value);
-            }
+            WriteLiteral(HtmlEncoder.Encode(value));
         }
 
         protected string HtmlEncodeAndReplaceLineBreaks(string input)
