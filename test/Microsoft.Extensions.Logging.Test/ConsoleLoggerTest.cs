@@ -926,6 +926,37 @@ namespace Microsoft.Extensions.Logging.Test
         }
 
         [Fact]
+        public void ConsoleLoggerOptions_DisableColors_IsAppliedToLoggers()
+        {
+            // Arrange
+            var monitor = new TestOptionsMonitor(new ConsoleLoggerOptions() { DisableColors = true });
+            var loggerProvider = new ConsoleLoggerProvider(monitor);
+            var logger = (ConsoleLogger)loggerProvider.CreateLogger("Name");
+
+            // Act & Assert
+            Assert.True(logger.DisableColors);
+            monitor.Set(new ConsoleLoggerOptions() { DisableColors = false });
+            Assert.False(logger.DisableColors);
+        }
+
+        [Fact]
+        public void ConsoleLoggerOptions_DisableColors_IsReadFromLoggingConfiguration()
+        {
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new[] { new KeyValuePair<string, string>("Console:DisableColors", "true") }).Build();
+
+            var loggerProvider = new ServiceCollection()
+                .AddLogging(builder => builder
+                    .AddConfiguration(configuration)
+                    .AddConsole())
+                .BuildServiceProvider()
+                .GetRequiredService<ILoggerProvider>();
+
+            var consoleLoggerProvider = Assert.IsType<ConsoleLoggerProvider>(loggerProvider);
+            var logger = (ConsoleLogger)consoleLoggerProvider.CreateLogger("Category");
+            Assert.True(logger.DisableColors);
+        }
+
+        [Fact]
         public void ConsoleLoggerOptions_IncludeScopes_IsAppliedToLoggers()
         {
             // Arrange
