@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Logging.EventLog, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Logging.EventLog, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.Logging.EventLoggerFactoryExtensions",
@@ -10,6 +10,40 @@
       "Sealed": true,
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddEventLog",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.Logging.ILoggingBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Logging.ILoggingBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddEventLog",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.Logging.ILoggingBuilder"
+            },
+            {
+              "Name": "settings",
+              "Type": "Microsoft.Extensions.Logging.EventLog.EventLogSettings"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Logging.ILoggingBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "AddEventLog",
@@ -440,47 +474,6 @@
             }
           ],
           "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.Extensions.Logging.EventLog.Internal.IEventLog",
-      "Visibility": "Public",
-      "Kind": "Interface",
-      "Abstract": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_MaxMessageSize",
-          "Parameters": [],
-          "ReturnType": "System.Int32",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "WriteEntry",
-          "Parameters": [
-            {
-              "Name": "message",
-              "Type": "System.String"
-            },
-            {
-              "Name": "type",
-              "Type": "System.Diagnostics.EventLogEntryType"
-            },
-            {
-              "Name": "eventID",
-              "Type": "System.Int32"
-            },
-            {
-              "Name": "category",
-              "Type": "System.Int16"
-            }
-          ],
-          "ReturnType": "System.Void",
           "GenericParameter": []
         }
       ],

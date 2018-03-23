@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Logging.AzureAppServices, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Logging.AzureAppServices, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.Logging.AzureAppServicesLoggerFactoryExtensions",
@@ -10,6 +10,21 @@
       "Sealed": true,
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddAzureWebAppDiagnostics",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.Logging.ILoggingBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Logging.ILoggingBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "AddAzureWebAppDiagnostics",
@@ -232,13 +247,430 @@
       "GenericParameters": []
     },
     {
-      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.AzureAppServicesDiagnosticsLoggerProvider",
+      "Name": "Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions",
       "Visibility": "Public",
       "Kind": "Class",
+      "BaseType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchingLoggerOptions",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_BlobName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_BlobName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.AzureAppServices.AzureFileLoggerOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchingLoggerOptions",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_FileSizeLimit",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int32>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_FileSizeLimit",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int32>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_RetainedFileCountLimit",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int32>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_RetainedFileCountLimit",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int32>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_FileName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_FileName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchingLogger",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Logging.ILogger"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "BeginScope<T0>",
+          "Parameters": [
+            {
+              "Name": "state",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TState",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsEnabled",
+          "Parameters": [
+            {
+              "Name": "logLevel",
+              "Type": "Microsoft.Extensions.Logging.LogLevel"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Log<T0>",
+          "Parameters": [
+            {
+              "Name": "timestamp",
+              "Type": "System.DateTimeOffset"
+            },
+            {
+              "Name": "logLevel",
+              "Type": "Microsoft.Extensions.Logging.LogLevel"
+            },
+            {
+              "Name": "eventId",
+              "Type": "Microsoft.Extensions.Logging.EventId"
+            },
+            {
+              "Name": "state",
+              "Type": "T0"
+            },
+            {
+              "Name": "exception",
+              "Type": "System.Exception"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Func<T0, System.Exception, System.String>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TState",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Log<T0>",
+          "Parameters": [
+            {
+              "Name": "logLevel",
+              "Type": "Microsoft.Extensions.Logging.LogLevel"
+            },
+            {
+              "Name": "eventId",
+              "Type": "Microsoft.Extensions.Logging.EventId"
+            },
+            {
+              "Name": "state",
+              "Type": "T0"
+            },
+            {
+              "Name": "exception",
+              "Type": "System.Exception"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Func<T0, System.Exception, System.String>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TState",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_RetainedFileCountLimit",
+          "Parameters": [
+            {
+              "Name": "loggerProvider",
+              "Type": "Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchingLoggerProvider"
+            },
+            {
+              "Name": "categoryName",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchingLoggerOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_FlushPeriod",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_FlushPeriod",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_BackgroundQueueSize",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int32>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_BackgroundQueueSize",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int32>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_BatchSize",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int32>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_BatchSize",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int32>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IsEnabled",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_IsEnabled",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchingLoggerProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
       "ImplementedInterfaces": [
         "Microsoft.Extensions.Logging.ILoggerProvider"
       ],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_IsEnabled",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteMessagesAsync",
+          "Parameters": [
+            {
+              "Name": "messages",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Logging.AzureAppServices.Internal.LogMessage>"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IntervalAsync",
+          "Parameters": [
+            {
+              "Name": "interval",
+              "Type": "System.TimeSpan"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "CreateLogger",
@@ -256,182 +688,41 @@
           "GenericParameter": []
         },
         {
-          "Kind": "Method",
-          "Name": "Dispose",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.IDisposable",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [
             {
-              "Name": "context",
-              "Type": "Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppContext"
-            },
-            {
-              "Name": "settings",
-              "Type": "Microsoft.Extensions.Logging.AzureAppServices.AzureAppServicesDiagnosticsSettings"
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchingLoggerOptions>"
             }
           ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.AzureBlobLoggerProvider",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "ConfigureLogger",
-          "Parameters": [
-            {
-              "Name": "reader",
-              "Type": "Microsoft.Extensions.Logging.AzureAppServices.Internal.IWebAppLogConfigurationReader"
-            }
-          ],
-          "ReturnType": "Serilog.Core.Logger",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "outputTemplate",
-              "Type": "System.String"
-            },
-            {
-              "Name": "appName",
-              "Type": "System.String"
-            },
-            {
-              "Name": "instanceId",
-              "Type": "System.String"
-            },
-            {
-              "Name": "fileName",
-              "Type": "System.String"
-            },
-            {
-              "Name": "batchSize",
-              "Type": "System.Int32"
-            },
-            {
-              "Name": "backgroundQueueSize",
-              "Type": "System.Int32"
-            },
-            {
-              "Name": "period",
-              "Type": "System.TimeSpan"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.AzureBlobSink",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "BaseType": "Serilog.Sinks.PeriodicBatching.PeriodicBatchingSink",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "EmitBatchAsync",
-          "Parameters": [
-            {
-              "Name": "events",
-              "Type": "System.Collections.Generic.IEnumerable<Serilog.Events.LogEvent>"
-            }
-          ],
-          "ReturnType": "System.Threading.Tasks.Task",
-          "Virtual": true,
-          "Override": true,
           "Visibility": "Protected",
           "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "blobReferenceFactory",
-              "Type": "System.Func<System.String, Microsoft.Extensions.Logging.AzureAppServices.Internal.ICloudAppendBlob>"
-            },
-            {
-              "Name": "appName",
-              "Type": "System.String"
-            },
-            {
-              "Name": "fileName",
-              "Type": "System.String"
-            },
-            {
-              "Name": "formatter",
-              "Type": "Serilog.Formatting.ITextFormatter"
-            },
-            {
-              "Name": "batchSizeLimit",
-              "Type": "System.Int32"
-            },
-            {
-              "Name": "period",
-              "Type": "System.TimeSpan"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
         }
       ],
       "GenericParameters": []
     },
     {
-      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.BackgroundSink",
+      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchLoggerConfigureOptions",
       "Visibility": "Public",
       "Kind": "Class",
       "ImplementedInterfaces": [
-        "Serilog.Core.ILogEventSink",
-        "System.IDisposable"
+        "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchingLoggerOptions>"
       ],
       "Members": [
         {
           "Kind": "Method",
-          "Name": "Emit",
+          "Name": "Configure",
           "Parameters": [
             {
-              "Name": "logEvent",
-              "Type": "Serilog.Events.LogEvent"
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchingLoggerOptions"
             }
           ],
           "ReturnType": "System.Void",
           "Sealed": true,
           "Virtual": true,
-          "ImplementedInterface": "Serilog.Core.ILogEventSink",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Dispose",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "ImplementedInterface": "System.IDisposable",
+          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchingLoggerOptions>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -440,27 +731,16 @@
           "Name": ".ctor",
           "Parameters": [
             {
-              "Name": "innerSink",
-              "Type": "Serilog.Core.ILogEventSink"
+              "Name": "configuration",
+              "Type": "Microsoft.Extensions.Configuration.IConfiguration"
             },
             {
-              "Name": "maxQueueSize",
-              "Type": "System.Nullable<System.Int32>"
+              "Name": "isEnabledKey",
+              "Type": "System.String"
             }
           ],
           "Visibility": "Public",
           "GenericParameter": []
-        },
-        {
-          "Kind": "Field",
-          "Name": "DefaultLogMessagesQueueSize",
-          "Parameters": [],
-          "ReturnType": "System.Int32",
-          "Static": true,
-          "Visibility": "Public",
-          "GenericParameter": [],
-          "Constant": true,
-          "Literal": "1024"
         }
       ],
       "GenericParameters": []
@@ -475,19 +755,17 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "OpenWriteAsync",
-          "Parameters": [],
-          "ReturnType": "System.Threading.Tasks.Task<System.IO.Stream>",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Logging.AzureAppServices.Internal.ICloudAppendBlob",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "CreateAsync",
-          "Parameters": [],
+          "Name": "AppendAsync",
+          "Parameters": [
+            {
+              "Name": "data",
+              "Type": "System.ArraySegment<System.Byte>"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
           "ReturnType": "System.Threading.Tasks.Task",
           "Sealed": true,
           "Virtual": true,
@@ -500,8 +778,208 @@
           "Name": ".ctor",
           "Parameters": [
             {
-              "Name": "cloudAppendBlob",
-              "Type": "Microsoft.WindowsAzure.Storage.Blob.CloudAppendBlob"
+              "Name": "containerUrl",
+              "Type": "System.String"
+            },
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "client",
+              "Type": "System.Net.Http.HttpClient"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.BlobLoggerConfigureOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchLoggerConfigureOptions",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Configure",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "configuration",
+              "Type": "Microsoft.Extensions.Configuration.IConfiguration"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.Extensions.Logging.AzureAppServices.Internal.IWebAppContext"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.BlobLoggerProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchingLoggerProvider",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "WriteMessagesAsync",
+          "Parameters": [
+            {
+              "Name": "messages",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Logging.AzureAppServices.Internal.LogMessage>"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions>"
+            },
+            {
+              "Name": "blobReferenceFactory",
+              "Type": "System.Func<System.String, Microsoft.Extensions.Logging.AzureAppServices.Internal.ICloudAppendBlob>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.ConfigurationBasedLevelSwitcher",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.Extensions.Logging.LoggerFilterOptions>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Configure",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Logging.LoggerFilterOptions"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.Extensions.Logging.LoggerFilterOptions>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "configuration",
+              "Type": "Microsoft.Extensions.Configuration.IConfiguration"
+            },
+            {
+              "Name": "provider",
+              "Type": "System.Type"
+            },
+            {
+              "Name": "levelKey",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.FileLoggerConfigureOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchLoggerConfigureOptions",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.Extensions.Logging.AzureAppServices.AzureFileLoggerOptions>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Configure",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Logging.AzureAppServices.AzureFileLoggerOptions"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.Extensions.Logging.AzureAppServices.AzureFileLoggerOptions>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "configuration",
+              "Type": "Microsoft.Extensions.Configuration.IConfiguration"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.Extensions.Logging.AzureAppServices.Internal.IWebAppContext"
             }
           ],
           "Visibility": "Public",
@@ -514,19 +992,47 @@
       "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.FileLoggerProvider",
       "Visibility": "Public",
       "Kind": "Class",
+      "BaseType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchingLoggerProvider",
       "ImplementedInterfaces": [],
       "Members": [
         {
           "Kind": "Method",
-          "Name": "ConfigureLogger",
+          "Name": "WriteMessagesAsync",
           "Parameters": [
             {
-              "Name": "reader",
-              "Type": "Microsoft.Extensions.Logging.AzureAppServices.Internal.IWebAppLogConfigurationReader"
+              "Name": "messages",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Logging.AzureAppServices.Internal.LogMessage>"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
             }
           ],
-          "ReturnType": "Serilog.Core.Logger",
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetGrouping",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "Microsoft.Extensions.Logging.AzureAppServices.Internal.LogMessage"
+            }
+          ],
+          "ReturnType": "System.ValueTuple<System.Int32, System.Int32, System.Int32>",
           "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RollFiles",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Visibility": "Protected",
           "GenericParameter": []
         },
         {
@@ -534,24 +1040,8 @@
           "Name": ".ctor",
           "Parameters": [
             {
-              "Name": "fileSizeLimit",
-              "Type": "System.Int32"
-            },
-            {
-              "Name": "retainedFileCountLimit",
-              "Type": "System.Int32"
-            },
-            {
-              "Name": "backgroundQueueSize",
-              "Type": "System.Int32"
-            },
-            {
-              "Name": "outputTemplate",
-              "Type": "System.String"
-            },
-            {
-              "Name": "flushPeriod",
-              "Type": "System.Nullable<System.TimeSpan>"
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.Extensions.Logging.AzureAppServices.AzureFileLoggerOptions>"
             }
           ],
           "Visibility": "Public",
@@ -569,15 +1059,17 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "OpenWriteAsync",
-          "Parameters": [],
-          "ReturnType": "System.Threading.Tasks.Task<System.IO.Stream>",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "CreateAsync",
-          "Parameters": [],
+          "Name": "AppendAsync",
+          "Parameters": [
+            {
+              "Name": "data",
+              "Type": "System.ArraySegment<System.Byte>"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
           "ReturnType": "System.Threading.Tasks.Task",
           "GenericParameter": []
         }
@@ -623,43 +1115,82 @@
       "GenericParameters": []
     },
     {
-      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.IWebAppLogConfigurationReader",
+      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.LogMessage",
       "Visibility": "Public",
-      "Kind": "Interface",
-      "Abstract": true,
-      "ImplementedInterfaces": [
-        "System.IDisposable"
-      ],
+      "Kind": "Struct",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
       "Members": [
         {
           "Kind": "Method",
-          "Name": "add_OnConfigurationChanged",
-          "Parameters": [
-            {
-              "Name": "value",
-              "Type": "System.EventHandler<Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfiguration>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "remove_OnConfigurationChanged",
-          "Parameters": [
-            {
-              "Name": "value",
-              "Type": "System.EventHandler<Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfiguration>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_Current",
+          "Name": "get_Timestamp",
           "Parameters": [],
-          "ReturnType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfiguration",
+          "ReturnType": "System.DateTimeOffset",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Timestamp",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.DateTimeOffset"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Message",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Message",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.SiteConfigurationProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetAzureLoggingConfiguration",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.Extensions.Logging.AzureAppServices.Internal.IWebAppContext"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfiguration",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
           "GenericParameter": []
         }
       ],
@@ -723,298 +1254,6 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.Extensions.Logging.AzureAppServices.Internal.IWebAppContext",
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfiguration",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_Disabled",
-          "Parameters": [],
-          "ReturnType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfiguration",
-          "Static": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_IsRunningInWebApp",
-          "Parameters": [],
-          "ReturnType": "System.Boolean",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_FileLoggingEnabled",
-          "Parameters": [],
-          "ReturnType": "System.Boolean",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_FileLoggingLevel",
-          "Parameters": [],
-          "ReturnType": "Microsoft.Extensions.Logging.LogLevel",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_FileLoggingFolder",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_BlobLoggingEnabled",
-          "Parameters": [],
-          "ReturnType": "System.Boolean",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_BlobLoggingLevel",
-          "Parameters": [],
-          "ReturnType": "Microsoft.Extensions.Logging.LogLevel",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_BlobContainerUrl",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfigurationBuilder",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "SetIsRunningInAzureWebApps",
-          "Parameters": [
-            {
-              "Name": "isRunningInAzureWebApps",
-              "Type": "System.Boolean"
-            }
-          ],
-          "ReturnType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfigurationBuilder",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "SetFileLoggingEnabled",
-          "Parameters": [
-            {
-              "Name": "fileLoggingEnabled",
-              "Type": "System.Boolean"
-            }
-          ],
-          "ReturnType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfigurationBuilder",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "SetFileLoggingLevel",
-          "Parameters": [
-            {
-              "Name": "logLevel",
-              "Type": "Microsoft.Extensions.Logging.LogLevel"
-            }
-          ],
-          "ReturnType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfigurationBuilder",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "SetFileLoggingFolder",
-          "Parameters": [
-            {
-              "Name": "folder",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfigurationBuilder",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "SetBlobLoggingEnabled",
-          "Parameters": [
-            {
-              "Name": "blobLoggingEnabled",
-              "Type": "System.Boolean"
-            }
-          ],
-          "ReturnType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfigurationBuilder",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "SetBlobLoggingLevel",
-          "Parameters": [
-            {
-              "Name": "logLevel",
-              "Type": "Microsoft.Extensions.Logging.LogLevel"
-            }
-          ],
-          "ReturnType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfigurationBuilder",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "SetBlobLoggingUrl",
-          "Parameters": [
-            {
-              "Name": "blobUrl",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfigurationBuilder",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Build",
-          "Parameters": [],
-          "ReturnType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfiguration",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfigurationReader",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.Extensions.Logging.AzureAppServices.Internal.IWebAppLogConfigurationReader"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "add_OnConfigurationChanged",
-          "Parameters": [
-            {
-              "Name": "value",
-              "Type": "System.EventHandler<Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfiguration>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Logging.AzureAppServices.Internal.IWebAppLogConfigurationReader",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "remove_OnConfigurationChanged",
-          "Parameters": [
-            {
-              "Name": "value",
-              "Type": "System.EventHandler<Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfiguration>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Logging.AzureAppServices.Internal.IWebAppLogConfigurationReader",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_Current",
-          "Parameters": [],
-          "ReturnType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfiguration",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Logging.AzureAppServices.Internal.IWebAppLogConfigurationReader",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Dispose",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.IDisposable",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "context",
-              "Type": "Microsoft.Extensions.Logging.AzureAppServices.Internal.IWebAppContext"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.Extensions.Logging.AzureAppServices.Internal.WebConfigurationReaderLevelSwitch",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "BaseType": "Serilog.Core.LoggingLevelSwitch",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "reader",
-              "Type": "Microsoft.Extensions.Logging.AzureAppServices.Internal.IWebAppLogConfigurationReader"
-            },
-            {
-              "Name": "convert",
-              "Type": "System.Func<Microsoft.Extensions.Logging.AzureAppServices.Internal.WebAppLogConfiguration, Microsoft.Extensions.Logging.LogLevel>"
-            }
-          ],
           "Visibility": "Public",
           "GenericParameter": []
         }
