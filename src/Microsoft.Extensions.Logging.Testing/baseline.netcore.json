@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Logging.Testing, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Logging.Testing, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.Logging.XunitLoggerFactoryExtensions",
@@ -134,37 +134,6 @@
         },
         {
           "Kind": "Method",
-          "Name": "StartTestLog",
-          "Parameters": [
-            {
-              "Name": "output",
-              "Type": "Xunit.Abstractions.ITestOutputHelper"
-            },
-            {
-              "Name": "className",
-              "Type": "System.String"
-            },
-            {
-              "Name": "loggerFactory",
-              "Type": "Microsoft.Extensions.Logging.ILoggerFactory",
-              "Direction": "Out"
-            },
-            {
-              "Name": "minLogLevel",
-              "Type": "Microsoft.Extensions.Logging.LogLevel"
-            },
-            {
-              "Name": "testName",
-              "Type": "System.String",
-              "DefaultValue": "null"
-            }
-          ],
-          "ReturnType": "System.IDisposable",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "CreateLoggerFactory",
           "Parameters": [
             {
@@ -182,58 +151,6 @@
             }
           ],
           "ReturnType": "Microsoft.Extensions.Logging.ILoggerFactory",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "CreateLoggerFactory",
-          "Parameters": [
-            {
-              "Name": "output",
-              "Type": "Xunit.Abstractions.ITestOutputHelper"
-            },
-            {
-              "Name": "className",
-              "Type": "System.String"
-            },
-            {
-              "Name": "minLogLevel",
-              "Type": "Microsoft.Extensions.Logging.LogLevel"
-            },
-            {
-              "Name": "testName",
-              "Type": "System.String",
-              "DefaultValue": "null"
-            }
-          ],
-          "ReturnType": "Microsoft.Extensions.Logging.ILoggerFactory",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "CreateLoggerServices",
-          "Parameters": [
-            {
-              "Name": "output",
-              "Type": "Xunit.Abstractions.ITestOutputHelper"
-            },
-            {
-              "Name": "className",
-              "Type": "System.String"
-            },
-            {
-              "Name": "minLogLevel",
-              "Type": "Microsoft.Extensions.Logging.LogLevel"
-            },
-            {
-              "Name": "testName",
-              "Type": "System.String",
-              "DefaultValue": "null"
-            }
-          ],
-          "ReturnType": "System.IServiceProvider",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -488,29 +405,6 @@
           "GenericParameter": []
         },
         {
-          "Kind": "Method",
-          "Name": "StartLog",
-          "Parameters": [
-            {
-              "Name": "loggerFactory",
-              "Type": "Microsoft.Extensions.Logging.ILoggerFactory",
-              "Direction": "Out"
-            },
-            {
-              "Name": "minLogLevel",
-              "Type": "Microsoft.Extensions.Logging.LogLevel"
-            },
-            {
-              "Name": "testName",
-              "Type": "System.String",
-              "DefaultValue": "null"
-            }
-          ],
-          "ReturnType": "System.IDisposable",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [
@@ -733,17 +627,6 @@
         "Microsoft.Extensions.Logging.ILoggerFactory"
       ],
       "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Dispose",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.IDisposable",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
         {
           "Kind": "Method",
           "Name": "CreateLogger",
@@ -1280,17 +1163,6 @@
         "Microsoft.Extensions.Logging.ILoggerProvider"
       ],
       "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Dispose",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.IDisposable",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
         {
           "Kind": "Method",
           "Name": "CreateLogger",

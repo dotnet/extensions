@@ -1,0 +1,14 @@
+[
+    {
+        "TypeId": "public class Microsoft.Extensions.Logging.Abstractions.NullLogger<T0> : Microsoft.Extensions.Logging.ILogger<T0>",
+        "Kind": "Removal"
+    },
+    {
+        "TypeId": "public class Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory : Microsoft.Extensions.Logging.ILoggerFactory",
+        "Kind": "Removal"
+    },
+    {
+        "TypeId": "public class Microsoft.Extensions.Logging.Abstractions.NullLoggerProvider : Microsoft.Extensions.Logging.ILoggerProvider",
+        "Kind": "Removal"
+    }
+]

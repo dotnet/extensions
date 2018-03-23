@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Logging.Console, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Logging.Console, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.Logging.ConsoleLoggerExtensions",
@@ -10,6 +10,40 @@
       "Sealed": true,
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddConsole",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.Logging.ILoggingBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Logging.ILoggingBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddConsole",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.Logging.ILoggingBuilder"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.Extensions.Logging.Console.ConsoleLoggerOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Logging.ILoggingBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "AddConsole",
@@ -455,6 +489,43 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.Extensions.Logging.Console.ConsoleLoggerOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_IncludeScopes",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_IncludeScopes",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.Extensions.Logging.Console.ConsoleLoggerProvider",
       "Visibility": "Public",
       "Kind": "Class",
@@ -500,6 +571,18 @@
             {
               "Name": "includeScopes",
               "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.Extensions.Logging.Console.ConsoleLoggerOptions>"
             }
           ],
           "Visibility": "Public",
@@ -838,6 +921,57 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.Extensions.Logging.Console.Internal.ConsoleLoggerProcessor",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.IDisposable"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "EnqueueMessage",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "Microsoft.Extensions.Logging.Console.Internal.LogMessageEntry"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Console",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Logging.Console.Internal.IConsole",
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.Extensions.Logging.Console.Internal.IAnsiSystemConsole",
       "Visibility": "Public",
       "Kind": "Interface",
@@ -923,6 +1057,56 @@
           "Name": "Flush",
           "Parameters": [],
           "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.Console.Internal.LogMessageEntry",
+      "Visibility": "Public",
+      "Kind": "Struct",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "LevelString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "LevelBackground",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.ConsoleColor>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "LevelForeground",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.ConsoleColor>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "MessageColor",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.ConsoleColor>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Message",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
           "GenericParameter": []
         }
       ],

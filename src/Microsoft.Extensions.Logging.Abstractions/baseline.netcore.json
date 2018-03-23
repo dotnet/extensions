@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Logging.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Logging.Abstractions, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.Logging.EventId",
@@ -35,6 +35,16 @@
           ],
           "ReturnType": "Microsoft.Extensions.Logging.EventId",
           "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -287,6 +297,34 @@
               "Type": "Microsoft.Extensions.Logging.ILogger"
             },
             {
+              "Name": "exception",
+              "Type": "System.Exception"
+            },
+            {
+              "Name": "message",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]",
+              "IsParams": true
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "LogDebug",
+          "Parameters": [
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILogger"
+            },
+            {
               "Name": "message",
               "Type": "System.String"
             },
@@ -371,6 +409,34 @@
               "Type": "Microsoft.Extensions.Logging.ILogger"
             },
             {
+              "Name": "exception",
+              "Type": "System.Exception"
+            },
+            {
+              "Name": "message",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]",
+              "IsParams": true
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "LogTrace",
+          "Parameters": [
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILogger"
+            },
+            {
               "Name": "message",
               "Type": "System.String"
             },
@@ -429,6 +495,34 @@
             {
               "Name": "eventId",
               "Type": "Microsoft.Extensions.Logging.EventId"
+            },
+            {
+              "Name": "message",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]",
+              "IsParams": true
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "LogInformation",
+          "Parameters": [
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILogger"
+            },
+            {
+              "Name": "exception",
+              "Type": "System.Exception"
             },
             {
               "Name": "message",
@@ -513,6 +607,34 @@
             {
               "Name": "eventId",
               "Type": "Microsoft.Extensions.Logging.EventId"
+            },
+            {
+              "Name": "message",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]",
+              "IsParams": true
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "LogWarning",
+          "Parameters": [
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILogger"
+            },
+            {
+              "Name": "exception",
+              "Type": "System.Exception"
             },
             {
               "Name": "message",
@@ -597,6 +719,34 @@
             {
               "Name": "eventId",
               "Type": "Microsoft.Extensions.Logging.EventId"
+            },
+            {
+              "Name": "message",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]",
+              "IsParams": true
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "LogError",
+          "Parameters": [
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILogger"
+            },
+            {
+              "Name": "exception",
+              "Type": "System.Exception"
             },
             {
               "Name": "message",
@@ -681,6 +831,34 @@
             {
               "Name": "eventId",
               "Type": "Microsoft.Extensions.Logging.EventId"
+            },
+            {
+              "Name": "message",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]",
+              "IsParams": true
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "LogCritical",
+          "Parameters": [
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILogger"
+            },
+            {
+              "Name": "exception",
+              "Type": "System.Exception"
             },
             {
               "Name": "message",
@@ -1256,105 +1434,166 @@
       "GenericParameters": []
     },
     {
-      "Name": "Microsoft.Extensions.Logging.Abstractions.Internal.TypeNameHelper",
+      "Name": "Microsoft.Extensions.Logging.Abstractions.NullLogger",
       "Visibility": "Public",
       "Kind": "Class",
-      "ImplementedInterfaces": [],
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Logging.ILogger"
+      ],
       "Members": [
         {
           "Kind": "Method",
-          "Name": "GetTypeDisplayName",
-          "Parameters": [
-            {
-              "Name": "type",
-              "Type": "System.Type"
-            }
-          ],
-          "ReturnType": "System.String",
+          "Name": "get_Instance",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Logging.Abstractions.NullLogger",
           "Static": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
         {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [],
+          "Kind": "Method",
+          "Name": "BeginScope<T0>",
+          "Parameters": [
+            {
+              "Name": "state",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TState",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsEnabled",
+          "Parameters": [
+            {
+              "Name": "logLevel",
+              "Type": "Microsoft.Extensions.Logging.LogLevel"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
           "Visibility": "Public",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Log<T0>",
+          "Parameters": [
+            {
+              "Name": "logLevel",
+              "Type": "Microsoft.Extensions.Logging.LogLevel"
+            },
+            {
+              "Name": "eventId",
+              "Type": "Microsoft.Extensions.Logging.EventId"
+            },
+            {
+              "Name": "state",
+              "Type": "T0"
+            },
+            {
+              "Name": "exception",
+              "Type": "System.Exception"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Func<T0, System.Exception, System.String>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TState",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
         }
       ],
       "GenericParameters": []
     },
     {
-      "Name": "Microsoft.Extensions.Logging.Internal.FormattedLogValues",
+      "Name": "Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory",
       "Visibility": "Public",
       "Kind": "Class",
       "ImplementedInterfaces": [
-        "System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<System.String, System.Object>>"
+        "Microsoft.Extensions.Logging.ILoggerFactory"
       ],
       "Members": [
         {
           "Kind": "Method",
-          "Name": "get_Item",
+          "Name": "CreateLogger",
           "Parameters": [
             {
-              "Name": "index",
-              "Type": "System.Int32"
+              "Name": "name",
+              "Type": "System.String"
             }
           ],
-          "ReturnType": "System.Collections.Generic.KeyValuePair<System.String, System.Object>",
+          "ReturnType": "Microsoft.Extensions.Logging.ILogger",
           "Sealed": true,
           "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<System.String, System.Object>>",
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILoggerFactory",
           "Visibility": "Public",
           "GenericParameter": []
         },
         {
           "Kind": "Method",
-          "Name": "get_Count",
-          "Parameters": [],
-          "ReturnType": "System.Int32",
+          "Name": "AddProvider",
+          "Parameters": [
+            {
+              "Name": "provider",
+              "Type": "Microsoft.Extensions.Logging.ILoggerProvider"
+            }
+          ],
+          "ReturnType": "System.Void",
           "Sealed": true,
           "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<System.String, System.Object>>",
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILoggerFactory",
           "Visibility": "Public",
           "GenericParameter": []
         },
         {
           "Kind": "Method",
-          "Name": "GetEnumerator",
+          "Name": "Dispose",
           "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.String, System.Object>>",
+          "ReturnType": "System.Void",
           "Sealed": true,
           "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String, System.Object>>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "ToString",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Virtual": true,
-          "Override": true,
+          "ImplementedInterface": "System.IDisposable",
           "Visibility": "Public",
           "GenericParameter": []
         },
         {
           "Kind": "Constructor",
           "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "format",
-              "Type": "System.String"
-            },
-            {
-              "Name": "values",
-              "Type": "System.Object[]",
-              "IsParams": true
-            }
-          ],
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Instance",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory",
+          "Static": true,
+          "ReadOnly": true,
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -1362,79 +1601,511 @@
       "GenericParameters": []
     },
     {
-      "Name": "Microsoft.Extensions.Logging.Internal.LogValuesFormatter",
+      "Name": "Microsoft.Extensions.Logging.Abstractions.NullLogger<T0>",
       "Visibility": "Public",
       "Kind": "Class",
-      "ImplementedInterfaces": [],
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Logging.ILogger<T0>"
+      ],
       "Members": [
         {
           "Kind": "Method",
-          "Name": "get_OriginalFormat",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_ValueNames",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.List<System.String>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Format",
+          "Name": "BeginScope<T0>",
           "Parameters": [
             {
-              "Name": "values",
-              "Type": "System.Object[]"
+              "Name": "state",
+              "Type": "T0"
             }
           ],
-          "ReturnType": "System.String",
+          "ReturnType": "System.IDisposable",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
           "Visibility": "Public",
-          "GenericParameter": []
+          "GenericParameter": [
+            {
+              "ParameterName": "TState",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
         },
         {
           "Kind": "Method",
-          "Name": "GetValue",
+          "Name": "Log<T0>",
           "Parameters": [
             {
-              "Name": "values",
-              "Type": "System.Object[]"
+              "Name": "logLevel",
+              "Type": "Microsoft.Extensions.Logging.LogLevel"
             },
             {
-              "Name": "index",
-              "Type": "System.Int32"
+              "Name": "eventId",
+              "Type": "Microsoft.Extensions.Logging.EventId"
+            },
+            {
+              "Name": "state",
+              "Type": "T0"
+            },
+            {
+              "Name": "exception",
+              "Type": "System.Exception"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Func<T0, System.Exception, System.String>"
             }
           ],
-          "ReturnType": "System.Collections.Generic.KeyValuePair<System.String, System.Object>",
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
           "Visibility": "Public",
-          "GenericParameter": []
+          "GenericParameter": [
+            {
+              "ParameterName": "TState",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
         },
         {
           "Kind": "Method",
-          "Name": "GetValues",
+          "Name": "IsEnabled",
           "Parameters": [
             {
-              "Name": "values",
-              "Type": "System.Object[]"
+              "Name": "logLevel",
+              "Type": "Microsoft.Extensions.Logging.LogLevel"
             }
           ],
-          "ReturnType": "System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String, System.Object>>",
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
           "Visibility": "Public",
           "GenericParameter": []
         },
         {
           "Kind": "Constructor",
           "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Instance",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Logging.Abstractions.NullLogger<T0>",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "T",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.Abstractions.NullLoggerProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Logging.ILoggerProvider"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Instance",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Logging.Abstractions.NullLoggerProvider",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateLogger",
           "Parameters": [
             {
-              "Name": "format",
+              "Name": "categoryName",
               "Type": "System.String"
             }
           ],
+          "ReturnType": "Microsoft.Extensions.Logging.ILogger",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILoggerProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.Abstractions.Internal.NullScope",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.IDisposable"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Instance",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Logging.Abstractions.Internal.NullScope",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.Abstractions.Internal.TypeNameHelper",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Logging.ILogger"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Instance",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Logging.Abstractions.NullLogger",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "BeginScope<T0>",
+          "Parameters": [
+            {
+              "Name": "state",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TState",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsEnabled",
+          "Parameters": [
+            {
+              "Name": "logLevel",
+              "Type": "Microsoft.Extensions.Logging.LogLevel"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Log<T0>",
+          "Parameters": [
+            {
+              "Name": "logLevel",
+              "Type": "Microsoft.Extensions.Logging.LogLevel"
+            },
+            {
+              "Name": "eventId",
+              "Type": "Microsoft.Extensions.Logging.EventId"
+            },
+            {
+              "Name": "state",
+              "Type": "T0"
+            },
+            {
+              "Name": "exception",
+              "Type": "System.Exception"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Func<T0, System.Exception, System.String>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TState",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Logging.ILoggerFactory"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateLogger",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Logging.ILogger",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILoggerFactory",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddProvider",
+          "Parameters": [
+            {
+              "Name": "provider",
+              "Type": "Microsoft.Extensions.Logging.ILoggerProvider"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILoggerFactory",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Instance",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.Abstractions.NullLogger<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Logging.ILogger<T0>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "BeginScope<T0>",
+          "Parameters": [
+            {
+              "Name": "state",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TState",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Log<T0>",
+          "Parameters": [
+            {
+              "Name": "logLevel",
+              "Type": "Microsoft.Extensions.Logging.LogLevel"
+            },
+            {
+              "Name": "eventId",
+              "Type": "Microsoft.Extensions.Logging.EventId"
+            },
+            {
+              "Name": "state",
+              "Type": "T0"
+            },
+            {
+              "Name": "exception",
+              "Type": "System.Exception"
+            },
+            {
+              "Name": "formatter",
+              "Type": "System.Func<T0, System.Exception, System.String>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TState",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsEnabled",
+          "Parameters": [
+            {
+              "Name": "logLevel",
+              "Type": "Microsoft.Extensions.Logging.LogLevel"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILogger",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Instance",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Logging.Abstractions.NullLogger<T0>",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "T",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.Abstractions.NullLoggerProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Logging.ILoggerProvider"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Instance",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Logging.Abstractions.NullLoggerProvider",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateLogger",
+          "Parameters": [
+            {
+              "Name": "categoryName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Logging.ILogger",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ILoggerProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
           "Visibility": "Public",
           "GenericParameter": []
         }
