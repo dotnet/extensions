@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.FileSystemGlobbing, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.FileSystemGlobbing, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.FileSystemGlobbing.FilePatternMatch",
@@ -78,6 +78,102 @@
             {
               "Name": "stem",
               "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileSystemGlobbing.InMemoryDirectoryInfo",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_FullName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ParentDirectory",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "EnumerateFileSystemInfos",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileSystemInfoBase>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetDirectory",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.DirectoryInfoBase",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetFile",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.Abstractions.FileInfoBase",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "rootDir",
+              "Type": "System.String"
+            },
+            {
+              "Name": "files",
+              "Type": "System.Collections.Generic.IEnumerable<System.String>"
             }
           ],
           "Visibility": "Public",
@@ -223,6 +319,90 @@
           "Extension": true,
           "Visibility": "Public",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Match",
+          "Parameters": [
+            {
+              "Name": "matcher",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Matcher"
+            },
+            {
+              "Name": "file",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.PatternMatchingResult",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Match",
+          "Parameters": [
+            {
+              "Name": "matcher",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Matcher"
+            },
+            {
+              "Name": "rootDir",
+              "Type": "System.String"
+            },
+            {
+              "Name": "file",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.PatternMatchingResult",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Match",
+          "Parameters": [
+            {
+              "Name": "matcher",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Matcher"
+            },
+            {
+              "Name": "files",
+              "Type": "System.Collections.Generic.IEnumerable<System.String>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.PatternMatchingResult",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Match",
+          "Parameters": [
+            {
+              "Name": "matcher",
+              "Type": "Microsoft.Extensions.FileSystemGlobbing.Matcher"
+            },
+            {
+              "Name": "rootDir",
+              "Type": "System.String"
+            },
+            {
+              "Name": "files",
+              "Type": "System.Collections.Generic.IEnumerable<System.String>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileSystemGlobbing.PatternMatchingResult",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -255,12 +435,36 @@
           "GenericParameter": []
         },
         {
+          "Kind": "Method",
+          "Name": "get_HasMatches",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [
             {
               "Name": "files",
               "Type": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.FileSystemGlobbing.FilePatternMatch>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "files",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.FileSystemGlobbing.FilePatternMatch>"
+            },
+            {
+              "Name": "hasMatches",
+              "Type": "System.Boolean"
             }
           ],
           "Visibility": "Public",
@@ -1584,11 +1788,6 @@
             {
               "Name": "directoryInfo",
               "Type": "System.IO.DirectoryInfo"
-            },
-            {
-              "Name": "isParentPath",
-              "Type": "System.Boolean",
-              "DefaultValue": "False"
             }
           ],
           "Visibility": "Public",

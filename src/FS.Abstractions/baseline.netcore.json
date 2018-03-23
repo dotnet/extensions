@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.FileProviders.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.FileProviders.Abstractions, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.FileProviders.IDirectoryContents",
@@ -133,6 +133,15 @@
         "Microsoft.Extensions.FileProviders.IDirectoryContents"
       ],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Singleton",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.FileProviders.NotFoundDirectoryContents",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "get_Exists",
