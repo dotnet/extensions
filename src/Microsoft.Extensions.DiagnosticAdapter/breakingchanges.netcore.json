@@ -1,0 +1,15 @@
+[
+    {
+        "TypeId": "public class Microsoft.Extensions.DiagnosticAdapter.ProxyDiagnosticSourceMethodAdapter : Microsoft.Extensions.DiagnosticAdapter.IDiagnosticSourceMethodAdapter",
+        "Kind": "Removal"
+    },
+    {
+        "TypeId": "public interface Microsoft.Extensions.DiagnosticAdapter.IDiagnosticSourceMethodAdapter",
+        "Kind": "Removal"
+    },
+    {
+        "TypeId": "public class Microsoft.Extensions.DiagnosticAdapter.DiagnosticSourceAdapter : System.IObserver<System.Collections.Generic.KeyValuePair<System.String, System.Object>>",
+        "MemberId": "public System.Boolean Write(System.String diagnosticName, System.Object arg1, System.Object arg2 = null)",
+        "Kind": "Removal"
+    }
+]

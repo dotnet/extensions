@@ -1,0 +1,986 @@
+{
+  "AssemblyIdentity": "Microsoft.Extensions.DiagnosticAdapter, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.DiagnosticNameAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.DiagnosticSourceAdapter",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.IObserver<System.Collections.Generic.KeyValuePair<System.String, System.Object>>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "IsEnabled",
+          "Parameters": [
+            {
+              "Name": "diagnosticName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsEnabled",
+          "Parameters": [
+            {
+              "Name": "diagnosticName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object",
+              "DefaultValue": "null"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Write",
+          "Parameters": [
+            {
+              "Name": "diagnosticName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "parameters",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "target",
+              "Type": "System.Object"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "target",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "isEnabled",
+              "Type": "System.Func<System.String, System.Boolean>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "target",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "isEnabled",
+              "Type": "System.Func<System.String, System.Object, System.Object, System.Boolean>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "target",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "isEnabled",
+              "Type": "System.Func<System.String, System.Boolean>"
+            },
+            {
+              "Name": "methodAdapter",
+              "Type": "Microsoft.Extensions.DiagnosticAdapter.IDiagnosticSourceMethodAdapter"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "target",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "isEnabled",
+              "Type": "System.Func<System.String, System.Object, System.Object, System.Boolean>"
+            },
+            {
+              "Name": "methodAdapter",
+              "Type": "Microsoft.Extensions.DiagnosticAdapter.IDiagnosticSourceMethodAdapter"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.IDiagnosticSourceMethodAdapter",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Adapt",
+          "Parameters": [
+            {
+              "Name": "method",
+              "Type": "System.Reflection.MethodInfo"
+            },
+            {
+              "Name": "inputType",
+              "Type": "System.Type"
+            }
+          ],
+          "ReturnType": "System.Func<System.Object, System.Object, System.Boolean>",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.ProxyDiagnosticSourceMethodAdapter",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.DiagnosticAdapter.IDiagnosticSourceMethodAdapter"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Adapt",
+          "Parameters": [
+            {
+              "Name": "method",
+              "Type": "System.Reflection.MethodInfo"
+            },
+            {
+              "Name": "inputType",
+              "Type": "System.Type"
+            }
+          ],
+          "ReturnType": "System.Func<System.Object, System.Object, System.Boolean>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.DiagnosticAdapter.IDiagnosticSourceMethodAdapter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.Internal.InvalidProxyOperationException",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.InvalidOperationException",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyAssembly",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "DefineType",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "attributes",
+              "Type": "System.Reflection.TypeAttributes"
+            },
+            {
+              "Name": "baseType",
+              "Type": "System.Type"
+            },
+            {
+              "Name": "interfaces",
+              "Type": "System.Type[]"
+            }
+          ],
+          "ReturnType": "System.Reflection.Emit.TypeBuilder",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyBase",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.DiagnosticAdapter.Infrastructure.IProxy"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_UnderlyingInstanceAsObject",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Upwrap<T0>",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.DiagnosticAdapter.Infrastructure.IProxy",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "wrappedType",
+              "Type": "System.Type"
+            }
+          ],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "WrappedType",
+          "Parameters": [],
+          "ReturnType": "System.Type",
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyBase<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyBase",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_UnderlyingInstance",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_UnderlyingInstanceAsObject",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "instance",
+              "Type": "T0"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Instance",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "T",
+          "ParameterPosition": 0,
+          "Class": true,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyEnumerable<T0, T1>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.Collections.Generic.IEnumerable<T1>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetEnumerator",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerator<T1>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerable<T1>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "source",
+              "Type": "System.Collections.Generic.IEnumerable<T0>"
+            },
+            {
+              "Name": "proxyType",
+              "Type": "System.Type"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TSourceElement",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        },
+        {
+          "ParameterName": "TTargetElement",
+          "ParameterPosition": 1,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyFactory",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.DiagnosticAdapter.Infrastructure.IProxyFactory"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateProxy<T0>",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "T0",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.DiagnosticAdapter.Infrastructure.IProxyFactory",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProxy",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyList<T0, T1>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.Collections.Generic.IReadOnlyList<T1>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Item",
+          "Parameters": [
+            {
+              "Name": "index",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "T1",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IReadOnlyList<T1>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Count",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IReadOnlyCollection<T1>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetEnumerator",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerator<T1>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerable<T1>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "source",
+              "Type": "System.Collections.Generic.IList<T0>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "source",
+              "Type": "System.Collections.Generic.IList<T0>"
+            },
+            {
+              "Name": "proxyType",
+              "Type": "System.Type"
+            }
+          ],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TSourceElement",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        },
+        {
+          "ParameterName": "TTargetElement",
+          "ParameterPosition": 1,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyMethodEmitter",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateProxyMethod",
+          "Parameters": [
+            {
+              "Name": "method",
+              "Type": "System.Reflection.MethodInfo"
+            },
+            {
+              "Name": "inputType",
+              "Type": "System.Type"
+            }
+          ],
+          "ReturnType": "System.Func<System.Object, System.Object, Microsoft.Extensions.DiagnosticAdapter.Infrastructure.IProxyFactory, System.Boolean>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyTypeCache",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Collections.Concurrent.ConcurrentDictionary<System.Tuple<System.Type, System.Type>, Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyTypeCacheResult>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyTypeCacheResult",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "FromError",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.Tuple<System.Type, System.Type>"
+            },
+            {
+              "Name": "error",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyTypeCacheResult",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "FromType",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.Tuple<System.Type, System.Type>"
+            },
+            {
+              "Name": "type",
+              "Type": "System.Type"
+            },
+            {
+              "Name": "constructor",
+              "Type": "System.Reflection.ConstructorInfo"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyTypeCacheResult",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Constructor",
+          "Parameters": [],
+          "ReturnType": "System.Reflection.ConstructorInfo",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Error",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IsError",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Key",
+          "Parameters": [],
+          "ReturnType": "System.Tuple<System.Type, System.Type>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Type",
+          "Parameters": [],
+          "ReturnType": "System.Type",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyTypeEmitter",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetProxyType",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyTypeCache"
+            },
+            {
+              "Name": "targetType",
+              "Type": "System.Type"
+            },
+            {
+              "Name": "sourceType",
+              "Type": "System.Type"
+            }
+          ],
+          "ReturnType": "System.Type",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.Infrastructure.IProxy",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Upwrap<T0>",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.Infrastructure.IProxyFactory",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateProxy<T0>",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "T0",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProxy",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.Diagnostics.DiagnosticListenerExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "SubscribeWithAdapter",
+          "Parameters": [
+            {
+              "Name": "diagnostic",
+              "Type": "System.Diagnostics.DiagnosticListener"
+            },
+            {
+              "Name": "target",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SubscribeWithAdapter",
+          "Parameters": [
+            {
+              "Name": "diagnostic",
+              "Type": "System.Diagnostics.DiagnosticListener"
+            },
+            {
+              "Name": "target",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "isEnabled",
+              "Type": "System.Func<System.String, System.Boolean>"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SubscribeWithAdapter",
+          "Parameters": [
+            {
+              "Name": "diagnostic",
+              "Type": "System.Diagnostics.DiagnosticListener"
+            },
+            {
+              "Name": "target",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "isEnabled",
+              "Type": "System.Func<System.String, System.Object, System.Object, System.Boolean>"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DiagnosticAdapter.Internal.ProxyEnumerable<T0, T1>+ProxyEnumerator",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.Collections.Generic.IEnumerator<T1>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Current",
+          "Parameters": [],
+          "ReturnType": "T1",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerator<T1>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MoveNext",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.IEnumerator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Reset",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.IEnumerator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "source",
+              "Type": "System.Collections.Generic.IEnumerator<T0>"
+            },
+            {
+              "Name": "proxyType",
+              "Type": "System.Type"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TSourceElement",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        },
+        {
+          "ParameterName": "TTargetElement",
+          "ParameterPosition": 1,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    }
+  ]
+}
