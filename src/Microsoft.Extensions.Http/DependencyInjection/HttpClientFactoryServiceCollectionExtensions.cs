@@ -123,6 +123,47 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// Adds the <see cref="IHttpClientFactory"/> and related services to the <see cref="IServiceCollection"/> and configures
+        /// a named <see cref="HttpClient"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="name">The logical name of the <see cref="HttpClient"/> to configure.</param>
+        /// <param name="configureClient">A delegate that is used to configure an <see cref="HttpClient"/>.</param>
+        /// <returns>An <see cref="IHttpClientBuilder"/> that can be used to configure the client.</returns>
+        /// <remarks>
+        /// <para>
+        /// <see cref="HttpClient"/> instances that apply the provided configuration can be retrieved using 
+        /// <see cref="IHttpClientFactory.CreateClient(string)"/> and providing the matching name.
+        /// </para>
+        /// <para>
+        /// Use <see cref="Options.Options.DefaultName"/> as the name to configure the default client.
+        /// </para>
+        /// </remarks>
+        public static IHttpClientBuilder AddHttpClient(this IServiceCollection services, string name, Action<IServiceProvider, HttpClient> configureClient)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (configureClient == null)
+            {
+                throw new ArgumentNullException(nameof(configureClient));
+            }
+
+            AddHttpClient(services);
+
+            var builder = new DefaultHttpClientBuilder(services, name);
+            builder.ConfigureHttpClient(configureClient);
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds the <see cref="IHttpClientFactory"/> and related services to the <see cref="IServiceCollection"/> and configures
         /// a binding between the <typeparamref name="TClient"/> type and a named <see cref="HttpClient"/>. The client name
         /// will be set to the full name of <typeparamref name="TClient"/>.
         /// </summary>
