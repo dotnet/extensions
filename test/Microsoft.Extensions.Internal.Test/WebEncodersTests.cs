@@ -184,7 +184,7 @@ namespace Microsoft.Extensions.Internal
             char[] buffer = base64EncodedValue.ToCharArray();
 
             // Act
-            var result = WebEncoders.UrlEncodeInternal(buffer);
+            var result = WebEncoders.EncodingHelper.UrlEncodeInternal(buffer);
 
             // Assert
             for (var i = 0; i < result.Length; i++)
@@ -209,7 +209,7 @@ namespace Microsoft.Extensions.Internal
             var paddingsCharsToAdd = buffer.Length - text.Length;
 
             // Act
-            WebEncoders.UrlDecodeInternal(text.AsSpan(), buffer);
+            WebEncoders.EncodingHelper.UrlDecodeInternal(text.AsSpan(), buffer);
 
             // Assert
             for (var i = 0; i < expectedValue.Length; i++)
