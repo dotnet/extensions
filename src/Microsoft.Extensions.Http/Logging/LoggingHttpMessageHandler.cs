@@ -66,12 +66,12 @@ namespace Microsoft.Extensions.Http.Logging
                 "Received HTTP response after {ElapsedMilliseconds}ms - {StatusCode}");
 
             private static readonly Action<ILogger, string, IEnumerable<string>, Exception> _requestHeader = LoggerMessage.Define<string, IEnumerable<string>>(
-                LogLevel.Debug,
+                LogLevel.Trace,
                 EventIds.RequestHeader,
                 "Request header: '{HeaderName}' - '{HeaderNames}'");
 
             private static readonly Action<ILogger, string, IEnumerable<string>, Exception> _responseHeader = LoggerMessage.Define<string, IEnumerable<string>>(
-                LogLevel.Debug,
+                LogLevel.Trace,
                 EventIds.ResponseHeader,
                 "Response header: '{HeaderName}' - '{HeaderValues}'");
 
@@ -79,7 +79,7 @@ namespace Microsoft.Extensions.Http.Logging
             {
                 _requestStart(logger, request.Method, request.RequestUri, null);
 
-                if (logger.IsEnabled(LogLevel.Debug))
+                if (logger.IsEnabled(LogLevel.Trace))
                 {
                     foreach (var header in request.Headers)
                     {
@@ -100,7 +100,7 @@ namespace Microsoft.Extensions.Http.Logging
             {
                 _requestEnd(logger, duration.TotalMilliseconds, response.StatusCode, null);
 
-                if (logger.IsEnabled(LogLevel.Debug))
+                if (logger.IsEnabled(LogLevel.Trace))
                 {
                     foreach (var header in response.Headers)
                     {
