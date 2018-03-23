@@ -99,13 +99,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 var registry = services.GetRequiredService<IReadOnlyPolicyRegistry<string>>();
 
-                // The policy might be either IAsyncPolicy or IAsyncPolicy<HttpRequestMessage> but never both.
-                // But, the handler expects IAsyncPolicy<HttpRequestMessage>, so try first for what we want and then
-                // fall back to the non-generic interface. We'll get the non-generic case throw the policy isn't registred.
-                if (!registry.TryGet<IAsyncPolicy<HttpResponseMessage>>(policyKey, out var policy))
-                {
-                    policy = registry.Get<IAsyncPolicy>(policyKey).WrapAsync(Policy.NoOpAsync<HttpResponseMessage>());
-                }
+                var policy = registry.Get<IAsyncPolicy<HttpResponseMessage>>(policyKey);
 
                 return new PolicyHttpMessageHandler(policy);
             });
