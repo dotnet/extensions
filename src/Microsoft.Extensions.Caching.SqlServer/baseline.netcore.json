@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Caching.SqlServer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Caching.SqlServer, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.DependencyInjection.SqlServerCachingServicesExtensions",
@@ -63,6 +63,11 @@
             {
               "Name": "key",
               "Type": "System.String"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task<System.Byte[]>",
@@ -95,6 +100,11 @@
             {
               "Name": "key",
               "Type": "System.String"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task",
@@ -127,6 +137,11 @@
             {
               "Name": "key",
               "Type": "System.String"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task",
@@ -175,6 +190,11 @@
             {
               "Name": "options",
               "Type": "Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task",
@@ -306,6 +326,27 @@
             {
               "Name": "value",
               "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_DefaultSlidingExpiration",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_DefaultSlidingExpiration",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
             }
           ],
           "ReturnType": "System.Void",
@@ -456,6 +497,5 @@
       ],
       "GenericParameters": []
     }
-  ],
-  "SourceFilters": []
+  ]
 }
