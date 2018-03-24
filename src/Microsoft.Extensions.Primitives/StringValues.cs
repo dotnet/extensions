@@ -104,19 +104,7 @@ namespace Microsoft.Extensions.Primitives
 
         private string GetStringValue() => (_values == null) ? _value : string.Join(",", _values);
 
-        public string[] ToArray()
-        {
-            return GetArrayValue() ?? EmptyArray;
-        }
-
-        private string[] GetArrayValue()
-        {
-            if (_value != null)
-            {
-                return new[] { _value };
-            }
-            return _values;
-        }
+        public string[] ToArray() => (_values != null) ? new[] { _value } : (_values ?? EmptyArray);
 
         int IList<string>.IndexOf(string item)
         {
