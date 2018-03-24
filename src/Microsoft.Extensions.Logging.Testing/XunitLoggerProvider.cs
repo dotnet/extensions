@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -59,7 +59,8 @@ namespace Microsoft.Extensions.Logging.Testing
             // Buffer the message into a single string in order to avoid shearing the message when running across multiple threads.
             var messageBuilder = new StringBuilder();
 
-            var firstLinePrefix = $"| {_category} {logLevel}: ";
+            var timestamp = DateTime.Now.ToString("s");
+            var firstLinePrefix = $"| [{timestamp}] {_category} {logLevel}: ";
             var lines = formatter(state, exception).Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
             messageBuilder.AppendLine(firstLinePrefix + lines.FirstOrDefault() ?? string.Empty);
 
