@@ -44,9 +44,9 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 logger.LogTrace("Trace!");
             }
 
-            Assert.Equal(@"| TestLifetime Information: Starting test TestLogWritesToITestOutputHelper
-| TestLogger Information: Information!
-| TestLifetime Information: Finished test TestLogWritesToITestOutputHelper in DURATION
+            Assert.Equal(@"[TIMESTAMP] TestLifetime Information: Starting test TestLogWritesToITestOutputHelper
+[TIMESTAMP] TestLogger Information: Information!
+[TIMESTAMP] TestLifetime Information: Finished test TestLogWritesToITestOutputHelper in DURATION
 ", MakeConsistent(output.Output), ignoreLineEndingDifferences: true);
         }
 
@@ -113,11 +113,20 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             }
         }
 
+        private static readonly Regex TimestampRegex = new Regex(@"\d+-\d+-\d+T\d+:\d+:\d+");
         private static readonly Regex DurationRegex = new Regex(@"[^ ]+s$");
         private static string MakeConsistent(string input)
         {
             return string.Join(Environment.NewLine, input.Split(new[] { Environment.NewLine }, StringSplitOptions.None)
-                .Select(line => DurationRegex.Replace(line.IndexOf("[") >= 0 ? line.Substring(line.IndexOf("[")) : line, "DURATION")));
+                .Select(line =>
+                {
+                    var strippedPrefix = line.IndexOf("[") >= 0 ? line.Substring(line.IndexOf("[")) : line;
+
+                    var strippedDuration =
+                        DurationRegex.Replace(strippedPrefix, "DURATION");
+                    var strippedTimestamp = TimestampRegex.Replace(strippedDuration, "TIMESTAMP");
+                    return strippedTimestamp;
+                }));
         }
     }
 }

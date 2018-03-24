@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Test;
 using Xunit;
@@ -24,10 +25,10 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             logger.LogTrace("This is some unimportant information");
 
             var expectedOutput =
-                "| TestCategory Information: This is some great information" + Environment.NewLine +
-                "| TestCategory Trace: This is some unimportant information" + Environment.NewLine;
+                "| [TIMESTAMP] TestCategory Information: This is some great information" + Environment.NewLine +
+                "| [TIMESTAMP] TestCategory Trace: This is some unimportant information" + Environment.NewLine;
 
-            Assert.Equal(expectedOutput, testTestOutputHelper.Output);
+            Assert.Equal(expectedOutput, MakeConsistent(testTestOutputHelper.Output));
         }
 
         [Fact]
@@ -41,7 +42,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             logger.LogInformation("This is some great information");
             logger.LogError("This is a bad error");
 
-            Assert.Equal("| TestCategory Error: This is a bad error" + Environment.NewLine, testTestOutputHelper.Output);
+            Assert.Equal("| [TIMESTAMP] TestCategory Error: This is a bad error" + Environment.NewLine, MakeConsistent(testTestOutputHelper.Output));
         }
 
         [Fact]
@@ -54,12 +55,13 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             var logger = loggerFactory.CreateLogger("TestCategory");
             logger.LogInformation("This is a" + Environment.NewLine + "multi-line" + Environment.NewLine + "message");
 
+            // The lines after the first one are indented more because the indentation was calculated based on the timestamp's actual length.
             var expectedOutput =
-                "| TestCategory Information: This is a" + Environment.NewLine +
-                "|                           multi-line" + Environment.NewLine +
-                "|                           message" + Environment.NewLine;
+                "| [TIMESTAMP] TestCategory Information: This is a" + Environment.NewLine +
+                "|                                                 multi-line" + Environment.NewLine +
+                "|                                                 message" + Environment.NewLine;
 
-            Assert.Equal(expectedOutput, testTestOutputHelper.Output);
+            Assert.Equal(expectedOutput, MakeConsistent(testTestOutputHelper.Output));
         }
 
         [Fact]
@@ -67,6 +69,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         {
             var testTestOutputHelper = new TestTestOutputHelper();
             var loggerFactory = TestLoggerBuilder.Create(builder => builder
+
                 .AddXunit(testTestOutputHelper));
 
             testTestOutputHelper.Throw = true;
@@ -76,5 +79,9 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
 
             Assert.Equal(0, testTestOutputHelper.Output.Length);
         }
+
+        private static readonly Regex TimestampRegex = new Regex(@"\d+-\d+-\d+T\d+:\d+:\d+");
+
+        private string MakeConsistent(string input) => TimestampRegex.Replace(input, "TIMESTAMP");
     }
 }
