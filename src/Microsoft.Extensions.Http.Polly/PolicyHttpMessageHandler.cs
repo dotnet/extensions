@@ -24,12 +24,12 @@ namespace Microsoft.Extensions.Http
     /// </para>
     /// <para>
     /// The extension methods on <see cref="PollyHttpClientBuilderExtensions"/> are designed as a convenient and correct
-    /// to creating a <see cref="PolicyHttpMessageHandler"/>.
+    /// way to create a <see cref="PolicyHttpMessageHandler"/>.
     /// </para>
     /// <para>
     /// The <see cref="PollyHttpClientBuilderExtensions.AddPolicyHandler(IHttpClientBuilder, IAsyncPolicy{HttpResponseMessage})"/>
     /// method supports the creation of a <see cref="PolicyHttpMessageHandler"/> for any kind of policy. This includes
-    /// non-reactive policies such as Timeout, or Cache which don't require the underlying request to fail first.
+    /// non-reactive policies, such as Timeout or Cache, which don't require the underlying request to fail first.
     /// </para>
     /// <para>
     /// <see cref="PolicyHttpMessageHandler"/> and the <see cref="PollyHttpClientBuilderExtensions"/> convenience methods
@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.Http
     /// The <see cref="PollyHttpClientBuilderExtensions.AddServerErrorPolicyHandler(IHttpClientBuilder, Func{PolicyBuilder{HttpResponseMessage}, IAsyncPolicy{HttpResponseMessage}})"/>
     /// method is an opinionated convenience method that supports the application of a policy for requests that fail due
     /// to a connection failure or server error (5XX HTTP status code). This kind of method supports only reactive policies
-    /// such as Retry, Circuit-Breaker or Fallback. This method is only provided for convenience, we recommend creating
+    /// such as Retry, Circuit-Breaker or Fallback. This method is only provided for convenience; we recommend creating
     /// your own policies as needed if this does not meet your requirements.
     /// </para>
     /// <para>
