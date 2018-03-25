@@ -92,8 +92,7 @@ namespace Microsoft.Extensions.Primitives
         public void StringSegmentConstructor_NegativeOffset_Throws()
         {
             // Arrange, Act and Assert
-            // offset + length = 0 for the test
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new StringSegment("lengthof9", -1, 1));
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new StringSegment("", -1, 0));
             Assert.Contains("offset", exception.Message);
         }
 
@@ -101,8 +100,7 @@ namespace Microsoft.Extensions.Primitives
         public void StringSegmentConstructor_NegativeLength_Throws()
         {
             // Arrange, Act and Assert
-            // offset + length = 0 for the test
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new StringSegment("lengthof9", 1, -1));
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new StringSegment("", 0, -1));
             Assert.Contains("length", exception.Message);
         }
 
