@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,9 +20,11 @@ namespace Microsoft.Extensions.Logging.Analyzers
         {
             SupportedDiagnostics = ImmutableArray.Create(new[]
             {
-                Descriptors.MEL1NumericsInFormatString,
-                Descriptors.MEL2ConcatenationInFormatString,
-                Descriptors.MEL3FormatParameterCountMismatch
+                Descriptors.MEL0001NumericsInFormatString,
+                Descriptors.MEL0002ConcatenationInFormatString,
+                Descriptors.MEL0003FormatParameterCountMismatch,
+                Descriptors.MEL0004UseCompiledLogMessages,
+                Descriptors.MEL0005UsePascalCasedLogMessageTokens,
             });
         }
 
@@ -35,27 +37,37 @@ namespace Microsoft.Extensions.Logging.Analyzers
             context.RegisterCompilationStartAction(analysisContext =>
             {
                 var loggerExtensionsType = analysisContext.Compilation.GetTypeByMetadataName("Microsoft.Extensions.Logging.LoggerExtensions");
-                var logerType = analysisContext.Compilation.GetTypeByMetadataName("Microsoft.Extensions.Logging.ILogger");
-                if (loggerExtensionsType == null || logerType == null)
+                var loggerType = analysisContext.Compilation.GetTypeByMetadataName("Microsoft.Extensions.Logging.ILogger");
+                var loggerMessageType = analysisContext.Compilation.GetTypeByMetadataName("Microsoft.Extensions.Logging.LoggerMessage");
+                if (loggerExtensionsType == null || loggerType == null || loggerMessageType == null)
+                {
                     return;
+                }
 
-                analysisContext.RegisterSyntaxNodeAction(syntaxContext => AnalyzeInvocation(syntaxContext, logerType, loggerExtensionsType), SyntaxKind.InvocationExpression);
+                analysisContext.RegisterSyntaxNodeAction(syntaxContext => AnalyzeInvocation(syntaxContext, loggerType, loggerExtensionsType, loggerMessageType), SyntaxKind.InvocationExpression);
             });
         }
 
-        private void AnalyzeInvocation(SyntaxNodeAnalysisContext syntaxContext, INamedTypeSymbol loggerType, INamedTypeSymbol loggerExtensionsType)
+        private void AnalyzeInvocation(SyntaxNodeAnalysisContext syntaxContext, INamedTypeSymbol loggerType, INamedTypeSymbol loggerExtensionsType, INamedTypeSymbol loggerMessageType)
         {
             var invocation = (InvocationExpressionSyntax)syntaxContext.Node;
 
             var symbolInfo = ModelExtensions.GetSymbolInfo(syntaxContext.SemanticModel, invocation, syntaxContext.CancellationToken);
             if (symbolInfo.Symbol?.Kind != SymbolKind.Method)
+            {
                 return;
+            }
 
             var methodSymbol = (IMethodSymbol)symbolInfo.Symbol;
 
-            if (methodSymbol.ContainingType != loggerExtensionsType &&
-                methodSymbol.ContainingType != loggerType)
+            if (methodSymbol.ContainingType == loggerExtensionsType)
+            {
+                syntaxContext.ReportDiagnostic(Diagnostic.Create(Descriptors.MEL0004UseCompiledLogMessages, invocation.GetLocation(), methodSymbol.Name));
+            }
+            else if (methodSymbol.ContainingType != loggerType && methodSymbol.ContainingType != loggerMessageType)
+            {
                 return;
+            }
 
             if (FindLogParameters(methodSymbol, out var messageArgument, out var paramsArgument))
             {
@@ -63,25 +75,39 @@ namespace Microsoft.Extensions.Logging.Analyzers
                 ExpressionSyntax formatExpression = null;
                 bool argsIsArray = false;
 
-                foreach (var argument in invocation.ArgumentList.Arguments)
+                if (methodSymbol.ContainingType == loggerMessageType)
                 {
-                    var parameter = DetermineParameter(argument, syntaxContext.SemanticModel, syntaxContext.CancellationToken);
-                    if (Equals(parameter, messageArgument))
+                    // For LoggerMessage.Define, count type parameters on the invocation instead of arguments
+                    paramsCount = methodSymbol.TypeParameters.Length;
+                    var arg = invocation.ArgumentList.Arguments.FirstOrDefault(argument =>
                     {
-                        formatExpression = argument.Expression;
-                    }
-                    else if (Equals(parameter, paramsArgument))
+                        var parameter = DetermineParameter(argument, syntaxContext.SemanticModel, syntaxContext.CancellationToken);
+                        return Equals(parameter, messageArgument);
+                    });
+                    formatExpression = arg.Expression;
+                }
+                else
+                {
+                    foreach (var argument in invocation.ArgumentList.Arguments)
                     {
-                        var parameterType = syntaxContext.SemanticModel.GetTypeInfo(argument.Expression).ConvertedType;
-                        if (parameterType == null)
+                        var parameter = DetermineParameter(argument, syntaxContext.SemanticModel, syntaxContext.CancellationToken);
+                        if (Equals(parameter, messageArgument))
                         {
-                            return;
+                            formatExpression = argument.Expression;
                         }
+                        else if (Equals(parameter, paramsArgument))
+                        {
+                            var parameterType = syntaxContext.SemanticModel.GetTypeInfo(argument.Expression).ConvertedType;
+                            if (parameterType == null)
+                            {
+                                return;
+                            }
 
-                        //Detect if current argument can be passed directly to args
-                        argsIsArray = parameterType.TypeKind == TypeKind.Array && ((IArrayTypeSymbol)parameterType).ElementType.SpecialType == SpecialType.System_Object;
+                            //Detect if current argument can be passed directly to args
+                            argsIsArray = parameterType.TypeKind == TypeKind.Array && ((IArrayTypeSymbol)parameterType).ElementType.SpecialType == SpecialType.System_Object;
 
-                        paramsCount++;
+                            paramsCount++;
+                        }
                     }
                 }
 
@@ -94,7 +120,7 @@ namespace Microsoft.Extensions.Logging.Analyzers
             var text = TryGetFormatText(formatExpression, syntaxContext.SemanticModel);
             if (text == null)
             {
-                syntaxContext.ReportDiagnostic(Diagnostic.Create(Descriptors.MEL2ConcatenationInFormatString, formatExpression.GetLocation()));
+                syntaxContext.ReportDiagnostic(Diagnostic.Create(Descriptors.MEL0002ConcatenationInFormatString, formatExpression.GetLocation()));
                 return;
             }
 
@@ -112,15 +138,18 @@ namespace Microsoft.Extensions.Logging.Analyzers
             {
                 if (int.TryParse(valueName, out _))
                 {
-                    syntaxContext.ReportDiagnostic(Diagnostic.Create(Descriptors.MEL1NumericsInFormatString, formatExpression.GetLocation()));
-                    break;
+                    syntaxContext.ReportDiagnostic(Diagnostic.Create(Descriptors.MEL0001NumericsInFormatString, formatExpression.GetLocation()));
+                }
+                else if (char.IsLower(valueName[0]))
+                {
+                    syntaxContext.ReportDiagnostic(Diagnostic.Create(Descriptors.MEL0005UsePascalCasedLogMessageTokens, formatExpression.GetLocation()));
                 }
             }
 
             var argsPassedDirectly = argsIsArray && paramsCount == 1;
             if (!argsPassedDirectly && paramsCount != formatter.ValueNames.Count)
             {
-                syntaxContext.ReportDiagnostic(Diagnostic.Create(Descriptors.MEL3FormatParameterCountMismatch, formatExpression.GetLocation()));
+                syntaxContext.ReportDiagnostic(Diagnostic.Create(Descriptors.MEL0003FormatParameterCountMismatch, formatExpression.GetLocation()));
             }
         }
 
@@ -173,13 +202,12 @@ namespace Microsoft.Extensions.Logging.Analyzers
         {
             message = null;
             arguments = null;
-            for (int i = 0; i < methodSymbol.Parameters.Length; i++)
+            foreach (var parameter in methodSymbol.Parameters)
             {
-                var parameter = methodSymbol.Parameters[i];
-
                 if (parameter.Type.SpecialType == SpecialType.System_String &&
                     string.Equals(parameter.Name, "message", StringComparison.Ordinal) ||
-                    string.Equals(parameter.Name, "messageFormat", StringComparison.Ordinal))
+                    string.Equals(parameter.Name, "messageFormat", StringComparison.Ordinal) ||
+                    string.Equals(parameter.Name, "formatString", StringComparison.Ordinal))
                 {
                     message = parameter;
                 }
