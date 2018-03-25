@@ -54,12 +54,14 @@ namespace Microsoft.Extensions.Http
     /// </para>
     /// <para>
     /// Take care when using policies such as Retry or Timeout together as HttpClient provides its own timeout via 
-    /// <see cref="HttpClient.Timeout"/>. 
+    /// <see cref="HttpClient.Timeout"/>.  When combining Retry and Timeout, <see cref="HttpClient.Timeout"/> will act as a
+    /// timeout across all tries; a Polly Timeout policy can be configured after a Retry policy in the configuration sequence,
+    /// to provide a timeout-per-try.
     /// </para>
     /// <para>
-    /// All policies provided by Polly are designed to efficient when used in a long-lived way. Certain policies such as the 
-    /// Bulkhead and Circuit-Breaker share state and may not have the desired effect when not shared properly. Take care to
-    /// ensure the correct lifetimes when using policies and message handlers together in custom scenarios. The extension
+    /// All policies provided by Polly are designed to be efficient when used in a long-lived way. Certain policies such as the 
+    /// Bulkhead and Circuit-Breaker maintain state and should be scoped across calls you wish to share the Bulkhead or Circuit-Breaker state. 
+    /// Take care to ensure the correct lifetimes when using policies and message handlers together in custom scenarios. The extension
     /// methods provided by <see cref="PollyHttpClientBuilderExtensions"/> are designed to assign a long lifetime to policies
     /// and ensure that they can be used when the handler rotation feature is active.
     /// </para>
