@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
@@ -25,10 +26,11 @@ namespace Microsoft.Extensions.Logging.Analyzer.Test
         /// </summary>
         /// <param name="sources">Classes in the form of strings</param>
         /// <param name="analyzer">The analyzer to be run on the sources</param>
+        /// <param name="additionalEnabledDiagnostics">Additional diagnostics to enable at Info level</param>
         /// <returns>An IEnumerable of Diagnostics that surfaced in the source code, sorted by Location</returns>
-        protected static Diagnostic[] GetSortedDiagnostics(string[] sources, DiagnosticAnalyzer analyzer)
+        protected static Task<Diagnostic[]> GetSortedDiagnosticsAsync(string[] sources, DiagnosticAnalyzer analyzer, string[] additionalEnabledDiagnostics)
         {
-            return GetSortedDiagnosticsFromDocuments(analyzer, GetDocuments(sources));
+            return GetSortedDiagnosticsFromDocumentsAsync(analyzer, GetDocuments(sources), additionalEnabledDiagnostics);
         }
 
         /// <summary>
@@ -37,8 +39,9 @@ namespace Microsoft.Extensions.Logging.Analyzer.Test
         /// </summary>
         /// <param name="analyzer">The analyzer to run on the documents</param>
         /// <param name="documents">The Documents that the analyzer will be run on</param>
+        /// <param name="additionalEnabledDiagnostics">Additional diagnostics to enable at Info level</param>
         /// <returns>An IEnumerable of Diagnostics that surfaced in the source code, sorted by Location</returns>
-        protected static Diagnostic[] GetSortedDiagnosticsFromDocuments(DiagnosticAnalyzer analyzer, Document[] documents)
+        protected static async Task<Diagnostic[]> GetSortedDiagnosticsFromDocumentsAsync(DiagnosticAnalyzer analyzer, Document[] documents, string[] additionalEnabledDiagnostics)
         {
             var projects = new HashSet<Project>();
             foreach (var document in documents)
@@ -49,11 +52,29 @@ namespace Microsoft.Extensions.Logging.Analyzer.Test
             var diagnostics = new List<Diagnostic>();
             foreach (var project in projects)
             {
-                var compilationWithAnalyzers = project.GetCompilationAsync().Result.WithAnalyzers(ImmutableArray.Create(analyzer));
+                var compilation = project.GetCompilationAsync().Result;
 
-                var diags = compilationWithAnalyzers.GetAllDiagnosticsAsync().Result;
+                // Enable any additional diagnostics
+                var options = compilation.Options;
+                if (additionalEnabledDiagnostics.Length > 0)
+                {
+                    options = compilation.Options
+                        .WithSpecificDiagnosticOptions(
+                            additionalEnabledDiagnostics.ToDictionary(s => s, s => ReportDiagnostic.Info));
+                }
+
+                var compilationWithAnalyzers = compilation
+                    .WithOptions(options)
+                    .WithAnalyzers(ImmutableArray.Create(analyzer));
+
+                var diags = await compilationWithAnalyzers.GetAllDiagnosticsAsync();
 
                 Assert.DoesNotContain(diags, d => d.Id == "AD0001");
+
+                // Filter out non-error diagnostics not produced by our analyzer
+                // We want to KEEP errors because we might have written bad code. But sometimes we leave warnings in to make the
+                // test code more convenient
+                diags = diags.Where(d => d.Severity == DiagnosticSeverity.Error || analyzer.SupportedDiagnostics.Any(s => s.Id.Equals(d.Id))).ToImmutableArray();
 
                 foreach (var diag in diags)
                 {
@@ -63,10 +84,9 @@ namespace Microsoft.Extensions.Logging.Analyzer.Test
                     }
                     else
                     {
-                        for (int i = 0; i < documents.Length; i++)
+                        foreach (var document in documents)
                         {
-                            var document = documents[i];
-                            var tree = document.GetSyntaxTreeAsync().Result;
+                            var tree = await document.GetSyntaxTreeAsync();
                             if (tree == diag.Location.SourceTree)
                             {
                                 diagnostics.Add(diag);
