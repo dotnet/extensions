@@ -168,6 +168,45 @@ namespace Microsoft.Extensions.Internal
 
         // Taken from https://github.com/aspnet/HttpAbstractions/pull/926
         [Theory]
+        [InlineData("_", "/===")]
+        [InlineData("-", "+===")]
+        [InlineData("a-b-c", "a+b+c===")]
+        [InlineData("a_b_c_d", "a/b/c/d=")]
+        [InlineData("a-b_c", "a+b/c===")]
+        [InlineData("a-b_c-d", "a+b/c+d=")]
+        [InlineData("abcd", "abcd")]
+        public void UrlDecode_ReturnsValid_Base64String(string text, string expectedValue)
+        {
+#if NETCOREAPP2_1
+            // Arrange
+            Span<byte> bytes = stackalloc byte[text.Length];
+            WebEncoders.EncodingHelper.GetBytes(text.AsSpan(), bytes);
+            Span<byte> expected = stackalloc byte[expectedValue.Length];
+            WebEncoders.EncodingHelper.GetBytes(expectedValue.AsSpan(), expected);
+            Span<byte> result = stackalloc byte[expectedValue.Length];
+
+            // Act
+            WebEncoders.EncodingHelper.UrlDecode(bytes, result);
+
+            // Assert
+            Assert.True(expected.SequenceEqual(result));
+#else
+            // Arrange
+            var buffer = new char[expectedValue.Length];
+
+            // Act
+            WebEncoders.EncodingHelper.UrlDecode(text.AsSpan(), buffer);
+
+            // Assert
+            for (var i = 0; i < expectedValue.Length; i++)
+            {
+                Assert.Equal(expectedValue[i], buffer[i]);
+            }
+#endif
+        }
+
+        // Taken from https://github.com/aspnet/HttpAbstractions/pull/926
+        [Theory]
         [InlineData("", "")]
         [InlineData("+", "-")]
         [InlineData("/", "_")]
@@ -178,44 +217,34 @@ namespace Microsoft.Extensions.Internal
         [InlineData("a+b/c==", "a-b_c")]
         [InlineData("a+b/c", "a-b_c")]
         [InlineData("abcd", "abcd")]
-        public void UrlEncodeInternal_Replaces_UrlEncodableCharacters(string base64EncodedValue, string expectedValue)
+        public void UrlEncode_Replaces_UrlEncodableCharacters(string base64EncodedValue, string expectedValue)
         {
+#if NETCOREAPP2_1
             // Arrange
-            char[] buffer = base64EncodedValue.ToCharArray();
+            Span<byte> bytes = stackalloc byte[base64EncodedValue.Length];
+            WebEncoders.EncodingHelper.GetBytes(base64EncodedValue.AsSpan(), bytes);
+            Span<byte> expected = stackalloc byte[expectedValue.Length];
+            WebEncoders.EncodingHelper.GetBytes(expectedValue.AsSpan(), expected);
 
             // Act
-            var result = WebEncoders.EncodingHelper.UrlEncodeInternal(buffer);
+            var result = WebEncoders.EncodingHelper.UrlEncode(bytes);
 
             // Assert
-            for (var i = 0; i < result.Length; i++)
+            Assert.True(expected.SequenceEqual(bytes.Slice(0, result)));
+#else
+            // Arrange
+            var buffer = base64EncodedValue.ToCharArray();
+
+            // Act
+            var result = WebEncoders.EncodingHelper.UrlEncode(buffer);
+
+            // Assert
+            Assert.Equal(expectedValue.Length, result);
+            for (var i = 0; i < result; i++)
             {
                 Assert.Equal(expectedValue[i], buffer[i]);
             }
-        }
-
-        // Taken from https://github.com/aspnet/HttpAbstractions/pull/926
-        [Theory]
-        [InlineData("_", "/===")]
-        [InlineData("-", "+===")]
-        [InlineData("a-b-c", "a+b+c===")]
-        [InlineData("a_b_c_d", "a/b/c/d=")]
-        [InlineData("a-b_c", "a+b/c===")]
-        [InlineData("a-b_c-d", "a+b/c+d=")]
-        [InlineData("abcd", "abcd")]
-        public void UrlDecodeInternal_ReturnsValid_Base64String(string text, string expectedValue)
-        {
-            // Arrange
-            char[] buffer = new char[expectedValue.Length];
-            var paddingsCharsToAdd = buffer.Length - text.Length;
-
-            // Act
-            WebEncoders.EncodingHelper.UrlDecodeInternal(text.AsSpan(), buffer);
-
-            // Assert
-            for (var i = 0; i < expectedValue.Length; i++)
-            {
-                Assert.Equal(expectedValue[i], buffer[i]);
-            }
+#endif
         }
     }
 }

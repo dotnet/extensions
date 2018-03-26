@@ -325,7 +325,7 @@ namespace Microsoft.Extensions.Internal
 
         private static byte[] Base64UrlDecodeCore(ReadOnlySpan<char> input, Span<char> buffer)
         {
-            EncodingHelper.UrlDecodeInternal(input, buffer);
+            EncodingHelper.UrlDecode(input, buffer);
 
 #if NETCOREAPP2_1
             var maxDecodedSize = Base64.GetMaxDecodedFromUtf8Length(buffer.Length);
@@ -361,16 +361,15 @@ namespace Microsoft.Extensions.Internal
             var res = Convert.TryToBase64Chars(input, buffer, out int charsWritten);
             var output = buffer.Slice(0, charsWritten);
 
-            return EncodingHelper.UrlEncodeInternal(output);
+            var len = EncodingHelper.UrlEncode(output);
+            return output.Slice(0, len);
         }
 #endif
         private static int Base64UrlEncodeCore(byte[] input, int offset, int count, char[] buffer, int bufferOffset)
         {
             // Start with default Base64 encoding.
             var numBase64Chars = Convert.ToBase64CharArray(input, offset, count, buffer, bufferOffset);
-            var output = EncodingHelper.UrlEncodeInternal(buffer.AsSpan(bufferOffset, numBase64Chars));
-
-            return output.Length;
+            return EncodingHelper.UrlEncode(buffer.AsSpan(bufferOffset, numBase64Chars));
         }
 
         private static int GetArraySizeRequiredToDecodeCore(int count)
@@ -524,27 +523,29 @@ namespace Microsoft.Extensions.Internal
                 // A subset of the ASCII-range can be assumed, so no need
                 // to call the encoders
 
-                fixed (byte* ptrBytes = &MemoryMarshal.GetReference(bytes))
-                fixed (char* ptrChars = &MemoryMarshal.GetReference(chars))
-                {
-                    var i = 0;
-#if !NET461
-                    if (bytes.Length >= Vector<byte>.Count)
-                    {
-                        for (; i < bytes.Length - Vector<byte>.Count; i += Vector<byte>.Count)
-                        {
-                            var bytesVec = Unsafe.Read<Vector<byte>>(Unsafe.Add<byte>(ptrBytes, i));
-                            Vector.Widen(bytesVec, out Vector<ushort> charsVec1, out Vector<ushort> charsVec2);
+                ref var source = ref MemoryMarshal.GetReference(bytes);
+                ref var target = ref MemoryMarshal.GetReference(chars);
 
-                            Unsafe.Write(Unsafe.Add<char>(ptrChars, i), charsVec1);
-                            Unsafe.Write(Unsafe.Add<char>(ptrChars, i + Vector<ushort>.Count), charsVec2);
-                        }
-                    }
-#endif
-                    for (; i < bytes.Length; ++i)
+                var i = (IntPtr)0;      // Use IntPtr for arithmetic to avoid unnecessary 64->32->64 truncations
+                var n = (IntPtr)bytes.Length;
+#if !NET461
+                if (Vector.IsHardwareAccelerated && (int*)n >= (int*)Vector<byte>.Count)
+                {
+                    var m = n - Vector<byte>.Count;
+                    for (; (int*)i < (int*)m; i += Vector<byte>.Count)
                     {
-                        ptrChars[i] = (char)ptrBytes[i];
+                        var bytesVec = Unsafe.As<byte, Vector<byte>>(ref Unsafe.Add(ref source, i));
+                        Vector.Widen(bytesVec, out Vector<ushort> charsVec1, out Vector<ushort> charsVec2);
+
+                        ref var tmp = ref Unsafe.Add(ref target, i);
+                        Unsafe.WriteUnaligned(ref Unsafe.As<char, byte>(ref tmp), charsVec1);
+                        Unsafe.WriteUnaligned(ref Unsafe.As<char, byte>(ref Unsafe.Add(ref tmp, Vector<ushort>.Count)), charsVec2);
                     }
+                }
+#endif
+                for (; (int*)i < (int*)n; i += 1)
+                {
+                    Unsafe.Add(ref target, i) = (char)Unsafe.Add(ref source, i);
                 }
             }
 
@@ -553,60 +554,124 @@ namespace Microsoft.Extensions.Internal
                 // A subset of the ASCII-range can be assumed, so no need
                 // to call the encoders.
 
-                fixed (char* ptrChars = &MemoryMarshal.GetReference(chars))
-                fixed (byte* ptrBytes = &MemoryMarshal.GetReference(bytes))
-                {
-                    var i = 0;
+                ref var source = ref MemoryMarshal.GetReference(chars);
+                ref var target = ref MemoryMarshal.GetReference(bytes);
+
+                var i = (IntPtr)0;      // Use IntPtr for arithmetic to avoid unnecessary 64->32->64 truncations
+                var n = (IntPtr)chars.Length;
 #if !NET461
-                    if (chars.Length >= Vector<ushort>.Count * 2)
-                    {
-                        for (; i < chars.Length - 2 * Vector<ushort>.Count; i += 2 * Vector<ushort>.Count)
-                        {
-                            var charsVec1 = Unsafe.Read<Vector<ushort>>(Unsafe.Add<char>(ptrChars, i));
-                            var charsVec2 = Unsafe.Read<Vector<ushort>>(Unsafe.Add<char>(ptrChars, i + Vector<ushort>.Count));
-                            var bytesVec = Vector.Narrow(charsVec1, charsVec2);
-
-                            Unsafe.Write(Unsafe.Add<byte>(ptrBytes, i), bytesVec);
-                        }
-                    }
-#endif
-                    for (; i < chars.Length; ++i)
-                    {
-                        ptrBytes[i] = (byte)ptrChars[i];
-                    }
-                }
-            }
-
-            internal static void UrlDecodeInternal(ReadOnlySpan<byte> input, Span<byte> output)
-            {
-                fixed (byte* pInput = &MemoryMarshal.GetReference(input))
-                fixed (byte* pOutput = &MemoryMarshal.GetReference(output))
+                if (Vector.IsHardwareAccelerated && (int*)n >= (int*)(Vector<ushort>.Count * 2))
                 {
-                    // Copy input into buffer, fixing up '-' -> '+' and '_' -> '/'.
-                    var i = 0;
-                    for (; i < input.Length; ++i)
+                    var m = n - 2 * Vector<ushort>.Count;
+                    for (; (int*)i < (int*)m; i += 2 * Vector<ushort>.Count)
                     {
-                        var ch = pInput[i];
-                        if (ch == '-')
-                        {
-                            pOutput[i] = (byte)'+';
-                        }
-                        else if (ch == (byte)'_')
-                        {
-                            pOutput[i] = (byte)'/';
-                        }
-                        else
-                        {
-                            pOutput[i] = ch;
-                        }
-                    }
+                        ref var tmp = ref Unsafe.Add(ref source, i);
+                        var charsVec1 = Unsafe.As<char, Vector<ushort>>(ref tmp);
+                        var charsVec2 = Unsafe.As<char, Vector<ushort>>(ref Unsafe.Add(ref tmp, Vector<ushort>.Count));
+                        var bytesVec = Vector.Narrow(charsVec1, charsVec2);
 
-                    // Add the padding characters back.
-                    output.Slice(i).Fill((byte)'=');
+                        Unsafe.WriteUnaligned(ref Unsafe.Add(ref target, i), bytesVec);
+                    }
+                }
+#endif
+                for (; (int*)i < (int*)n; i += 1)
+                {
+                    Unsafe.Add(ref target, i) = (byte)Unsafe.Add(ref source, i);
                 }
             }
 
-            internal static void UrlDecodeInternal(ReadOnlySpan<char> input, Span<char> output)
+            public static void UrlDecode(ReadOnlySpan<byte> input, Span<byte> output)
+            {
+                // Copy input into buffer, fixing up '-' -> '+' and '_' -> '/'.
+
+                ref var inputRef = ref MemoryMarshal.GetReference(input);
+                ref var outputRef = ref MemoryMarshal.GetReference(output);
+
+                var i = (IntPtr)0;      // Use IntPtr for arithmetic to avoid unnecessary 64->32->64 truncations
+                var n = (IntPtr)input.Length;
+#if !NET461
+                if (Vector.IsHardwareAccelerated && (int*)n >= (int*)Vector<byte>.Count)
+                {
+                    var m = n - Vector<byte>.Count;
+                    for (; (int*)i < (int*)m; i += Vector<byte>.Count)
+                    {
+                        var inputVec = Unsafe.As<byte, Vector<byte>>(ref Unsafe.Add(ref inputRef, i));
+
+                        inputVec = Substitute(inputVec, (byte)'-', (byte)'+');
+                        inputVec = Substitute(inputVec, (byte)'_', (byte)'/');
+
+                        Unsafe.WriteUnaligned(ref Unsafe.Add(ref outputRef, i), inputVec);
+                    }
+                }
+#endif
+                for (; (int*)i < (int*)n; i += 1)
+                {
+                    var value = Unsafe.Add(ref inputRef, i);
+                    var subst = value;
+
+                    if (value == '-')
+                    {
+                        subst = (byte)'+';
+                    }
+                    else if (value == '_')
+                    {
+                        subst = (byte)'/';
+                    }
+
+                    Unsafe.Add(ref outputRef, i) = subst;
+                }
+
+                output.Slice((int)i).Fill((byte)'=');
+            }
+
+            public static int UrlEncode(Span<byte> base64)
+            {
+                ref var data = ref MemoryMarshal.GetReference(base64);
+
+                var i = (IntPtr)0;      // Use IntPtr for arithmetic to avoid unnecessary 64->32->64 truncations
+                var n = (IntPtr)base64.Length;
+#if !NET461
+                if (Vector.IsHardwareAccelerated && (int*)n >= (int*)Vector<byte>.Count)
+                {
+                    var m = n - Vector<byte>.Count;
+                    for (; (int*)i < (int*)m; i += Vector<byte>.Count)
+                    {
+                        var vec = Unsafe.As<byte, Vector<byte>>(ref Unsafe.Add(ref data, i));
+
+                        if (Vector.EqualsAny(vec, new Vector<byte>((byte)'=')))
+                        {
+                            break;
+                        }
+
+                        vec = Substitute(vec, (byte)'+', (byte)'-');
+                        vec = Substitute(vec, (byte)'/', (byte)'_');
+
+                        Unsafe.WriteUnaligned(ref Unsafe.Add(ref data, i), vec);
+                    }
+                }
+#endif
+                for (; (int*)i < (int*)n; i += 1)
+                {
+                    ref var value = ref Unsafe.Add(ref data, i);
+
+                    if (value == '+')
+                    {
+                        value = (byte)'-';
+                    }
+                    else if (value == '/')
+                    {
+                        value = (byte)'_';
+                    }
+                    else if (value == '=')
+                    {
+                        break;
+                    }
+                }
+
+                return (int)i;
+            }
+
+            public static void UrlDecode(ReadOnlySpan<char> input, Span<char> output)
             {
                 fixed (char* pInput = &MemoryMarshal.GetReference(input))
                 fixed (char* pOutput = &MemoryMarshal.GetReference(output))
@@ -635,32 +700,10 @@ namespace Microsoft.Extensions.Internal
                 }
             }
 
-            public static Span<byte> UrlEncodeInternal(Span<byte> output)
+            public static int UrlEncode(Span<char> output)
             {
-                for (var i = 0; i < output.Length; ++i)
-                {
-                    var ch = output[i];
-                    if (ch == (byte)'+')
-                    {
-                        output[i] = (byte)'-';
-                    }
-                    else if (ch == (byte)'/')
-                    {
-                        output[i] = (byte)'_';
-                    }
-                    else if (ch == (byte)'=')
-                    {
-                        // We've reached a padding character; truncate the remainder.
-                        return output.Slice(0, i);
-                    }
-                }
-
-                return output;
-            }
-
-            internal static Span<char> UrlEncodeInternal(Span<char> output)
-            {
-                for (var i = 0; i < output.Length; ++i)
+                var i = 0;
+                for (; i < output.Length; ++i)
                 {
                     var ch = output[i];
                     if (ch == '+')
@@ -674,12 +717,20 @@ namespace Microsoft.Extensions.Internal
                     else if (ch == '=')
                     {
                         // We've reached a padding character; truncate the remainder.
-                        return output.Slice(0, i);
+                        break;
                     }
                 }
 
-                return output;
+                return i;
             }
+
+#if !NET461
+            private static Vector<byte> Substitute(Vector<byte> vector, byte match, byte substitution)
+                => Vector.ConditionalSelect(
+                    Vector.Equals(vector, new Vector<byte>(match)),
+                    new Vector<byte>(substitution),
+                    vector);
+#endif
         }
 
         private static class ThrowHelper
