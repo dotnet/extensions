@@ -25,61 +25,6 @@ namespace Microsoft.Extensions.Options.Tests
             Assert.Equal(FakeOptionsFactory.Options, snap.Value);
         }
 
-        public class ComplexOptions
-        {
-            public ComplexOptions()
-            {
-                Nested = new NestedOptions();
-                Virtual = "complex";
-            }
-            public NestedOptions Nested { get; set; }
-            public int Integer { get; set; }
-            public bool Boolean { get; set; }
-            public virtual string Virtual { get; set; }
-
-            public string PrivateSetter { get; private set; }
-            public string ProtectedSetter { get; protected set; }
-            public string InternalSetter { get; internal set; }
-            public static string StaticProperty { get; set; }
-
-            public string ReadOnly
-            {
-                get { return null; }
-            }
-        }
-
-        public class NestedOptions
-        {
-            public int Integer { get; set; }
-        }
-
-        public class DerivedOptions : ComplexOptions
-        {
-            public override string Virtual
-            {
-                get
-                {
-                    return base.Virtual;
-                }
-                set
-                {
-                    base.Virtual = "Derived:" + value;
-                }
-            }
-        }
-
-        public class NullableOptions
-        {
-            public bool? MyNullableBool { get; set; }
-            public int? MyNullableInt { get; set; }
-            public DateTime? MyNullableDateTime { get; set; }
-        }
-
-        public class EnumOptions
-        {
-            public UriKind UriKind { get; set; }
-        }
-
         [Fact]
         public void CanReadComplexProperties()
         {
@@ -89,10 +34,10 @@ namespace Microsoft.Extensions.Options.Tests
                 {"Boolean", "TRUe"},
                 {"Nested:Integer", "11"}
             };
-            var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
-            var config = builder.Build();
-            var options = new ComplexOptions();
-            ConfigurationBinder.Bind(config, options);
+            var services = new ServiceCollection();
+            services.Configure<ComplexOptions>(new ConfigurationBuilder().AddInMemoryCollection(dic).Build());
+            var sp = services.BuildServiceProvider();
+            var options = sp.GetRequiredService<IOptions<ComplexOptions>>().Value;
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
             Assert.Equal(11, options.Nested.Integer);
@@ -108,10 +53,10 @@ namespace Microsoft.Extensions.Options.Tests
                 {"Nested:Integer", "11"},
                 {"Virtual","Sup"}
             };
-            var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
-            var config = builder.Build();
-            var options = new DerivedOptions();
-            ConfigurationBinder.Bind(config, options);
+            var services = new ServiceCollection();
+            services.Configure<DerivedOptions>(new ConfigurationBuilder().AddInMemoryCollection(dic).Build());
+            var sp = services.BuildServiceProvider();
+            var options = sp.GetRequiredService<IOptions<DerivedOptions>>().Value;
             Assert.True(options.Boolean);
             Assert.Equal(-2, options.Integer);
             Assert.Equal(11, options.Nested.Integer);
@@ -125,10 +70,10 @@ namespace Microsoft.Extensions.Options.Tests
             {
                 {"StaticProperty", "stuff"},
             };
-            var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
-            var config = builder.Build();
-            var options = new ComplexOptions();
-            ConfigurationBinder.Bind(config, options);
+            var services = new ServiceCollection();
+            services.Configure<ComplexOptions>(new ConfigurationBuilder().AddInMemoryCollection(dic).Build());
+            var sp = services.BuildServiceProvider();
+            var options = sp.GetRequiredService<IOptions<ComplexOptions>>().Value;
             Assert.Equal("stuff", ComplexOptions.StaticProperty);
         }
 
@@ -143,11 +88,45 @@ namespace Microsoft.Extensions.Options.Tests
             {
                 {property, "stuff"},
             };
-            var builder = new ConfigurationBuilder().AddInMemoryCollection(dic);
-            var config = builder.Build();
-            var options = new ComplexOptions();
-            ConfigurationBinder.Bind(config, options);
+            var services = new ServiceCollection();
+            services.Configure<ComplexOptions>(new ConfigurationBuilder().AddInMemoryCollection(dic).Build());
+            var sp = services.BuildServiceProvider();
+            var options = sp.GetRequiredService<IOptions<ComplexOptions>>().Value;
             Assert.Null(options.GetType().GetProperty(property).GetValue(options));
+        }
+
+        [Theory]
+        [InlineData("PrivateSetter")]
+        [InlineData("ProtectedSetter")]
+        [InlineData("InternalSetter")]
+        public void CanBindToNonPublicProperties(string property)
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {property, "stuff"},
+            };
+            var services = new ServiceCollection();
+            services.Configure<ComplexOptions>(new ConfigurationBuilder().AddInMemoryCollection(dic).Build(), o => o.BindNonPublicProperties = true);
+            var sp = services.BuildServiceProvider();
+            var options = sp.GetRequiredService<IOptions<ComplexOptions>>().Value;
+            Assert.Equal("stuff", options.GetType().GetProperty(property).GetValue(options));
+        }
+
+        [Theory]
+        [InlineData("PrivateSetter")]
+        [InlineData("ProtectedSetter")]
+        [InlineData("InternalSetter")]
+        public void CanNamedBindToNonPublicProperties(string property)
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {property, "stuff"},
+            };
+            var services = new ServiceCollection();
+            services.Configure<ComplexOptions>("named", new ConfigurationBuilder().AddInMemoryCollection(dic).Build(), o => o.BindNonPublicProperties = true);
+            var sp = services.BuildServiceProvider();
+            var options = sp.GetRequiredService<IOptionsMonitor<ComplexOptions>>().Get("named");
+            Assert.Equal("stuff", options.GetType().GetProperty(property).GetValue(options));
         }
 
         [Fact]
@@ -181,7 +160,6 @@ namespace Microsoft.Extensions.Options.Tests
             services.PostConfigure<FakeOptions>(o => o.Message += "B");
             services.PostConfigure<FakeOptions>(o => o.Message += "C");
             services.Configure<FakeOptions>(o => o.Message += "-");
-
 
             var sp = services.BuildServiceProvider();
             var option = sp.GetRequiredService<IOptions<FakeOptions>>().Value;
