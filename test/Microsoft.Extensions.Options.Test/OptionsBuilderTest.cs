@@ -198,5 +198,40 @@ namespace Microsoft.Extensions.Options.Tests
             var factory = sp.GetRequiredService<IOptionsFactory<FakeOptions>>();
             Assert.Equal("Something", factory.Create(Options.DefaultName).Message);
         }
+
+        [Theory]
+        [InlineData("PrivateSetter")]
+        [InlineData("ProtectedSetter")]
+        [InlineData("InternalSetter")]
+        public void CanBindToNonPublicProperties(string property)
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {property, "stuff"},
+            };
+            var services = new ServiceCollection();
+            services.AddOptions<ComplexOptions>().Bind(new ConfigurationBuilder().AddInMemoryCollection(dic).Build(), o => o.BindNonPublicProperties = true);
+            var sp = services.BuildServiceProvider();
+            var options = sp.GetRequiredService<IOptions<ComplexOptions>>().Value;
+            Assert.Equal("stuff", options.GetType().GetProperty(property).GetValue(options));
+        }
+
+        [Theory]
+        [InlineData("PrivateSetter")]
+        [InlineData("ProtectedSetter")]
+        [InlineData("InternalSetter")]
+        public void CanNamedBindToNonPublicProperties(string property)
+        {
+            var dic = new Dictionary<string, string>
+            {
+                {property, "stuff"},
+            };
+            var services = new ServiceCollection();
+            services.AddOptions<ComplexOptions>("named").Bind(new ConfigurationBuilder().AddInMemoryCollection(dic).Build(), o => o.BindNonPublicProperties = true);
+            var sp = services.BuildServiceProvider();
+            var options = sp.GetRequiredService<IOptionsMonitor<ComplexOptions>>().Get("named");
+            Assert.Equal("stuff", options.GetType().GetProperty(property).GetValue(options));
+        }
+
     }
 }
