@@ -38,6 +38,35 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Adds a delegate that will be used to configure a named <see cref="HttpClient"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="configureClient">A delegate that is used to configure an <see cref="HttpClient"/>.</param>
+        /// <returns>An <see cref="IHttpClientBuilder"/> that can be used to configure the client.</returns>
+        public static IHttpClientBuilder ConfigureHttpClient(this IHttpClientBuilder builder, Action<IServiceProvider, HttpClient> configureClient)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (configureClient == null)
+            {
+                throw new ArgumentNullException(nameof(configureClient));
+            }
+
+            builder.Services.AddTransient<IConfigureOptions<HttpClientFactoryOptions>>(services =>
+            {
+                return new ConfigureNamedOptions<HttpClientFactoryOptions>(builder.Name, (options) =>
+                {
+                    options.HttpClientActions.Add(client => configureClient(services, client));
+                });
+            });
+
+            return builder;
+        }
+
+        /// <summary>
         /// Adds a delegate that will be used to create an additional message handler for a named <see cref="HttpClient"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
