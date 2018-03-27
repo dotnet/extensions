@@ -3,11 +3,8 @@
 
 using System;
 using System.Linq;
-using Xunit;
-
-#if NETCOREAPP2_1
 using System.Buffers;
-#endif
+using Xunit;
 
 namespace Microsoft.Extensions.Internal
 {
@@ -35,7 +32,6 @@ namespace Microsoft.Extensions.Internal
             }
         }
 
-#if NETCOREAPP2_1
         [Fact]
         public void DataOfVariousLengthAsSpan_RoundTripCorrectly()
         {
@@ -67,7 +63,6 @@ namespace Microsoft.Extensions.Internal
                 }
             }
         }
-#endif
 
         [Theory]
         [InlineData("", 1, 0)]
@@ -224,7 +219,8 @@ namespace Microsoft.Extensions.Internal
         [InlineData("abcd", "abcd")]
         public void UrlDecode_ReturnsValid_Base64String(string text, string expectedValue)
         {
-#if NETCOREAPP2_1
+// To test the alternate code-path
+#if !NET461
             // Arrange
             Span<byte> bytes = stackalloc byte[text.Length];
             WebEncoders.EncodingHelper.GetBytes(text.AsSpan(), bytes);
@@ -266,7 +262,8 @@ namespace Microsoft.Extensions.Internal
         [InlineData("abcd", "abcd")]
         public void UrlEncode_Replaces_UrlEncodableCharacters(string base64EncodedValue, string expectedValue)
         {
-#if NETCOREAPP2_1
+// To test the alternate code-path
+#if !NET461
             // Arrange
             Span<byte> bytes = stackalloc byte[base64EncodedValue.Length];
             WebEncoders.EncodingHelper.GetBytes(base64EncodedValue.AsSpan(), bytes);
@@ -294,7 +291,6 @@ namespace Microsoft.Extensions.Internal
 #endif
         }
 
-#if NETCOREAPP2_1
         [Fact]
         public void Base64UrlDecode_BufferChain()
         {
@@ -317,8 +313,13 @@ namespace Microsoft.Extensions.Internal
 
             // Assert
             var expected = data;
-            Assert.Equal(expected.Length, written1 + written2);
-            Assert.True(bytes.AsSpan(0, written1 + written2).SequenceEqual(expected));
+            var actual = bytes.AsSpan(0, written1 + written2);
+            Assert.Equal(expected.Length, actual.Length);
+#if !NET461
+            Assert.True(expected.AsSpan().SequenceEqual(actual));
+#else
+            Assert.Equal(string.Join(",", expected), string.Join(",", actual.ToArray()));
+#endif
         }
 
         [Fact]
@@ -343,9 +344,12 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal(expected.Length, written1 + written2);
             Span<char> chars = stackalloc char[expected.Length];
             WebEncoders.EncodingHelper.GetChars(base64Url.AsSpan(0, written1 + written2), chars);
+#if NETCOREAPP2_1
             var actual = new String(chars);
+#else
+            var actual = new String(chars.ToArray());
+#endif
             Assert.Equal(expected, actual);
         }
-#endif
     }
 }

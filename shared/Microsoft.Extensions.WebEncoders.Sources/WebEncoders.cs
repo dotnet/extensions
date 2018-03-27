@@ -5,12 +5,12 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Numerics;
 using Microsoft.Extensions.WebEncoders.Sources;
-
-#if NETCOREAPP2_1
 using System.Buffers;
 using System.Buffers.Text;
+
+#if !NET461
+using System.Numerics;
 #endif
 
 #if WebEncoders_In_WebUtilities
@@ -46,6 +46,7 @@ namespace Microsoft.Extensions.Internal
             {
                 var base64UrlBytes = buffer.AsSpan();
                 EncodingHelper.GetBytes(base64Url, base64UrlBytes);
+
                 var status = Base64UrlDecode(base64UrlBytes, data, out int bytesConsumed, out int bytesWritten);
 
                 if (status == OperationStatus.InvalidData)
@@ -89,7 +90,6 @@ namespace Microsoft.Extensions.Internal
             }
         }
 
-#if NETCOREAPP2_1
         // TODO: XML Comment
         public static OperationStatus Base64UrlDecode(ReadOnlySpan<byte> base64Url, Span<byte> data, out int bytesConsumed, out int bytesWritten, bool isFinalBlock = true)
         {
@@ -122,7 +122,6 @@ namespace Microsoft.Extensions.Internal
                 buffer.Dispose();
             }
         }
-#endif
 
         /// <summary>
         /// Decodes a base64url-encoded string.
@@ -217,7 +216,6 @@ namespace Microsoft.Extensions.Internal
             {
                 var output = outputBuffer.AsSpan();
 
-                // Decode.
                 // If the caller provided invalid base64 chars, they'll be caught here.
                 // TODO: try  byte-based variant
                 Convert.TryFromBase64Chars(buffer, output, out int bytesWritten);
@@ -307,11 +305,10 @@ namespace Microsoft.Extensions.Internal
                 });
             }
 #else
-            return Base64UrlEncode(input.ToArray());
+            return Base64UrlEncode(data.ToArray());
 #endif
         }
 
-#if NETCOREAPP2_1
         // TODO: XML Comment
         public static OperationStatus Base64UrlEncode(ReadOnlySpan<byte> data, Span<byte> base64Url, out int bytesConsumed, out int bytesWritten, bool isFinalBlock = true)
         {
@@ -333,7 +330,6 @@ namespace Microsoft.Extensions.Internal
 
             return status;
         }
-#endif
 
         /// <summary>
         /// Encodes <paramref name="input"/> using base64url encoding.
@@ -367,7 +363,7 @@ namespace Microsoft.Extensions.Internal
                 return string.Empty;
             }
 
-            var arraySizeRequired = GetArraySizeRequiredToEncodeCore(count);
+            var arraySizeRequired = GetBufferSizeRequiredToBase64Encode(count);
             var buffer = new char[arraySizeRequired];
             var numBase64Chars = Base64UrlEncodeCore(input, offset, count, buffer, 0);
 
@@ -416,11 +412,7 @@ namespace Microsoft.Extensions.Internal
                 return 0;
             }
 
-#if NETCOREAPP2_1
             return Base64UrlEncode(input.AsSpan(offset, count), output.AsSpan(outputOffset));
-#else
-            return Base64UrlEncodeCore(input, offset, count, output, outputOffset);
-#endif
         }
 
         /// <summary>
@@ -477,11 +469,6 @@ namespace Microsoft.Extensions.Internal
             return numWholeOrPartialInputBlocks * 4;
         }
 
-        private static int GetBufferSizeRequiredToUrlEncode(int dataLength)
-        {
-            return GetBufferSizeRequiredToBase64Encode(dataLength) - GetNumBase64PaddingCharsAddedByEncode(dataLength);
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetNumBase64PaddingCharsToAddForDecode(int inputLength)
         {
@@ -507,6 +494,12 @@ namespace Microsoft.Extensions.Internal
             return result;
         }
 
+#if NETCOREAPP2_1
+        private static int GetBufferSizeRequiredToUrlEncode(int dataLength)
+        {
+            return GetBufferSizeRequiredToBase64Encode(dataLength) - GetNumBase64PaddingCharsAddedByEncode(dataLength);
+        }
+
         private static int GetNumBase64PaddingCharsAddedByEncode(int dataLength)
         {
             // Calculation is:
@@ -517,6 +510,7 @@ namespace Microsoft.Extensions.Internal
 
             return dataLength % 3 == 0 ? 0 : 3 - dataLength % 3;
         }
+#endif
 
         private static void ThrowInvalidArguments(object input, int offset, int count, char[] buffer = null, int bufferOffset = 0, ExceptionArgument bufferName = ExceptionArgument.buffer, bool validateBuffer = false)
         {
@@ -570,7 +564,7 @@ namespace Microsoft.Extensions.Internal
                 int sizeOfT = typeof(T) == typeof(byte) ? 1 : 2;
                 if (size > MaxStack * sizeof(long) / sizeOfT)
                 {
-#if NETCOREAPP2_1
+#if !NET461
                     _arrayToReturnToPool = ArrayPool<T>.Shared.Rent(size);
 #else
                     _arrayToReturnToPool = new T[size];
@@ -603,7 +597,7 @@ namespace Microsoft.Extensions.Internal
             {
                 if (_arrayToReturnToPool != null)
                 {
-#if NETCOREAPP2_1
+#if !NET461
                     ArrayPool<T>.Shared.Return(_arrayToReturnToPool);
 #endif
                     _arrayToReturnToPool = null;
@@ -816,20 +810,20 @@ namespace Microsoft.Extensions.Internal
                 return (int)i;
             }
 
-            public static void UrlEncode(ReadOnlySpan<char> input, Span<char> output)
+#if !NETCOREAPP2_1
+            public static int UrlEncode(ReadOnlySpan<char> base64)
             {
-                ref ushort inputRef = ref MemoryMarshal.GetReference(MemoryMarshal.Cast<char, ushort>(input));
-                ref ushort outputRef = ref MemoryMarshal.GetReference(MemoryMarshal.Cast<char, ushort>(output));
+                ref var data = ref MemoryMarshal.GetReference(MemoryMarshal.Cast<char, ushort>(base64));
 
                 var i = (IntPtr)0;      // Use IntPtr for arithmetic to avoid unnecessary 64->32->64 truncations
-                var n = (IntPtr)input.Length;
+                var n = (IntPtr)base64.Length;
 #if !NET461
                 if (Vector.IsHardwareAccelerated && (int*)n >= (int*)Vector<ushort>.Count)
                 {
                     var m = n - Vector<ushort>.Count;
                     for (; (int*)i < (int*)m; i += Vector<ushort>.Count)
                     {
-                        var vec = Unsafe.As<ushort, Vector<ushort>>(ref Unsafe.Add(ref inputRef, i));
+                        var vec = Unsafe.As<ushort, Vector<ushort>>(ref Unsafe.Add(ref data, i));
 
                         if (Vector.EqualsAny(vec, new Vector<ushort>('=')))
                         {
@@ -839,31 +833,31 @@ namespace Microsoft.Extensions.Internal
                         vec = Substitute(vec, '+', '-');
                         vec = Substitute(vec, '/', '_');
 
-                        Unsafe.WriteUnaligned(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref outputRef, i)), vec);
+                        Unsafe.WriteUnaligned(ref Unsafe.As<ushort, byte>(ref Unsafe.Add(ref data, i)), vec);
                     }
                 }
 #endif
                 for (; (int*)i < (int*)n; i += 1)
                 {
-                    var value = Unsafe.Add(ref inputRef, i);
-                    var subst = value;
+                    ref var value = ref Unsafe.Add(ref data, i);
 
                     if (value == '+')
                     {
-                        subst = '-';
+                        value = '-';
                     }
                     else if (value == '/')
                     {
-                        subst = '_';
+                        value = '_';
                     }
                     else if (value == '=')
                     {
                         break;
                     }
-
-                    Unsafe.Add(ref outputRef, i) = subst;
                 }
+
+                return (int)i;
             }
+#endif
 
 #if !NET461
             private static Vector<T> Substitute<T>(Vector<T> vector, T match, T substitution) where T : struct
@@ -896,12 +890,10 @@ namespace Microsoft.Extensions.Internal
                 throw GetMalformdedInputException(inputLength);
             }
 
-#if NETCOREAPP2_1
             public static void ThrowInvalidOperationException(OperationStatus status)
             {
                 throw new InvalidOperationException(status.ToString());
             }
-#endif
 
             public static ArgumentNullException GetArgumentNullException(ExceptionArgument argument)
             {
