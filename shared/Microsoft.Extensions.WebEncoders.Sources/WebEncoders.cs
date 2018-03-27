@@ -32,7 +32,16 @@ namespace Microsoft.Extensions.Internal
         private const int MaxEncodedLength = int.MaxValue / 4 * 3;  // encode inflates the data by 4/3
         private static readonly byte[] EmptyBytes = new byte[0];
 
-        // TODO: XML Comment
+        /// <summary>
+        /// Decodes a base64url-encoded <paramref name="base64Url"/> into a <paramref name="data"/>.
+        /// </summary>
+        /// <param name="base64Url">A span containing the base64url-encoded input to decode.</param>
+        /// <param name="data">The base64url-decoded form of the <paramref name="base64Url"/>.</param>
+        /// <returns>The number of the bytes written to <paramref name="data"/>.</returns>
+        /// <remarks>
+        /// The input must not contain any whitespace or padding characters.
+        /// Throws <see cref="FormatException"/> if the input is malformed.
+        /// </remarks>
         public static int Base64UrlDecode(ReadOnlySpan<char> base64Url, Span<byte> data)
         {
             // Special-case empty input
@@ -66,7 +75,15 @@ namespace Microsoft.Extensions.Internal
             }
         }
 
-        // TODO: XML Comment
+        /// <summary>
+        /// Decodes a base64url-encoded <paramref name="base64Url"/>.
+        /// </summary>
+        /// <param name="base64Url">The base64url-encoded input to decode.</param>
+        /// <returns>The base64url-decoded form of the input.</returns>
+        /// <remarks>
+        /// The input must not contain any whitespace or padding characters.
+        /// Throws <see cref="FormatException"/> if the input is malformed.
+        /// </remarks>
         public static byte[] Base64UrlDecode(ReadOnlySpan<char> base64Url)
         {
             // Special-case empty input
@@ -90,7 +107,21 @@ namespace Microsoft.Extensions.Internal
             }
         }
 
-        // TODO: XML Comment
+        /// <summary>
+        /// Decode the span of UTF-8 base64url-encoded text into binary data.
+        /// </summary>
+        /// <param name="base64Url">The input span which contains UTF-8 base64url-encoded text that needs to be decoded.</param>
+        /// <param name="data">The output span which contains the result of the operation, i.e. the decoded binary data.</param>
+        /// <param name="bytesConsumed">The number of input bytes consumed during the operation. This can be used to slice the input for subsequent calls, if necessary.</param>
+        /// <param name="bytesWritten">The number of bytes written into the output span. This can be used to slice the output for subsequent calls, if necessary.</param>
+        /// <param name="isFinalBlock">True (default) when the input span contains the entire data to decode. 
+        /// Set to false only if it is known that the input span contains partial data with more data to follow.</param>
+        /// <returns>It returns the OperationStatus enum values:
+        /// - Done - on successful processing of the entire input span
+        /// - DestinationTooSmall - if there is not enough space in the output span to fit the decoded input
+        /// - NeedMoreData - only if isFinalBlock is false and the input is not a multiple of 4, otherwise the partial input would be considered as InvalidData
+        /// - InvalidData - if the input contains bytes outside of the expected base 64 range, or if it contains invalid/more than two padding characters,
+        ///   or if the input is incomplete (i.e. not a multiple of 4) and isFinalBlock is true.</returns>
         public static OperationStatus Base64UrlDecode(ReadOnlySpan<byte> base64Url, Span<byte> data, out int bytesConsumed, out int bytesWritten, bool isFinalBlock = true)
         {
             // Special-case empty input
@@ -217,7 +248,6 @@ namespace Microsoft.Extensions.Internal
                 var output = outputBuffer.AsSpan();
 
                 // If the caller provided invalid base64 chars, they'll be caught here.
-                // TODO: try  byte-based variant
                 Convert.TryFromBase64Chars(buffer, output, out int bytesWritten);
                 return output.Slice(0, bytesWritten).ToArray();
             }
@@ -250,7 +280,12 @@ namespace Microsoft.Extensions.Internal
             return GetBufferSizeRequiredToUrlDecode(count);
         }
 
-        // TODO: XML Comment
+        /// <summary>
+        /// Encodes <paramref name="data"/> using base64url-encoding into <paramref name="base64Url"/>.
+        /// </summary>
+        /// <param name="data">The binary input to encode.</param>
+        /// <param name="base64Url">The base64url-encoded form of <paramref name="data"/>.</param>
+        /// <returns>The number of chars written to <paramref name="base64Url"/>.</returns>
         public static int Base64UrlEncode(ReadOnlySpan<byte> data, Span<char> base64Url)
         {
             // Use base64url encoding with no padding characters. See RFC 4648, Sec. 5.
@@ -285,7 +320,11 @@ namespace Microsoft.Extensions.Internal
             }
         }
 
-        // TODO: XML Comment
+        /// <summary>
+        /// Encodes <paramref name="data"/> using base64url-encoding.
+        /// </summary>
+        /// <param name="data">The binary input to encode.</param>
+        /// <returns>The base64url-encoded form of <paramref name="input"/>.</returns>
         public static unsafe string Base64UrlEncode(ReadOnlySpan<byte> data)
         {
             // Special-case empty input
@@ -309,7 +348,20 @@ namespace Microsoft.Extensions.Internal
 #endif
         }
 
-        // TODO: XML Comment
+        /// <summary>
+        /// Encode the span of binary data into UTF-8 base64url-encoded representation.
+        /// </summary>
+        /// <param name="data">The input span which contains binary data that needs to be encoded.</param>
+        /// <param name="base64Url">The output span which contains the result of the operation, i.e. the UTF-8 base64url-encoded text.</param>
+        /// <param name="bytesConsumed">The number of input bytes consumed during the operation. This can be used to slice the input for subsequent calls, if necessary.</param>
+        /// <param name="bytesWritten">The number of bytes written into the output span. This can be used to slice the output for subsequent calls, if necessary.</param>
+        /// <param name="isFinalBlock">True (default) when the input span contains the entire data to decode. 
+        /// Set to false only if it is known that the input span contains partial data with more data to follow.</param>
+        /// <returns>It returns the OperationStatus enum values:
+        /// - Done - on successful processing of the entire input span
+        /// - DestinationTooSmall - if there is not enough space in the output span to fit the encoded input
+        /// - NeedMoreData - only if isFinalBlock is false, otherwise the output is padded if the input is not a multiple of 3
+        /// It does not return InvalidData since that is not possible for base 64 encoding.</returns>
         public static OperationStatus Base64UrlEncode(ReadOnlySpan<byte> data, Span<byte> base64Url, out int bytesConsumed, out int bytesWritten, bool isFinalBlock = true)
         {
             // Special-case empty input
@@ -332,14 +384,14 @@ namespace Microsoft.Extensions.Internal
         }
 
         /// <summary>
-        /// Encodes <paramref name="input"/> using base64url encoding.
+        /// Encodes <paramref name="input"/> using base64url-encoding.
         /// </summary>
         /// <param name="input">The binary input to encode.</param>
         /// <returns>The base64url-encoded form of <paramref name="input"/>.</returns>
         public static string Base64UrlEncode(byte[] input) => Base64UrlEncode(input, 0, input.Length);
 
         /// <summary>
-        /// Encodes <paramref name="input"/> using base64url encoding.
+        /// Encodes <paramref name="input"/> using base64url-encoding.
         /// </summary>
         /// <param name="input">The binary input to encode.</param>
         /// <param name="offset">The offset into <paramref name="input"/> at which to begin encoding.</param>
@@ -372,7 +424,7 @@ namespace Microsoft.Extensions.Internal
         }
 
         /// <summary>
-        /// Encodes <paramref name="input"/> using base64url encoding.
+        /// Encodes <paramref name="input"/> using base64url-encoding.
         /// </summary>
         /// <param name="input">The binary input to encode.</param>
         /// <param name="offset">The offset into <paramref name="input"/> at which to begin encoding.</param>
