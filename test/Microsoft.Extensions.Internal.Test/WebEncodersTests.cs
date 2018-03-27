@@ -5,10 +5,70 @@ using System;
 using System.Linq;
 using Xunit;
 
+#if NETCOREAPP2_1
+using System.Buffers;
+#endif
+
 namespace Microsoft.Extensions.Internal
 {
     public class WebEncodersTests
     {
+        // Taken from https://github.com/aspnet/HttpAbstractions/pull/926
+        [Fact]
+        public void DataOfVariousLength_RoundTripCorrectly()
+        {
+            for (var length = 0; length < 256; length++)
+            {
+                var data = new byte[length];
+                for (var i = 0; i < length; i++)
+                {
+                    data[i] = (byte)(5 + length + (i * 23));
+                }
+
+                string text = WebEncoders.Base64UrlEncode(data);
+                byte[] result = WebEncoders.Base64UrlDecode(text);
+
+                for (var i = 0; i < length; i++)
+                {
+                    Assert.Equal(data[i], result[i]);
+                }
+            }
+        }
+
+#if NETCOREAPP2_1
+        [Fact]
+        public void DataOfVariousLengthAsSpan_RoundTripCorrectly()
+        {
+            for (var length = 0; length < 256; length++)
+            {
+                var data = new byte[length];
+                for (var i = 0; i < length; i++)
+                {
+                    data[i] = (byte)(5 + length + (i * 23));
+                }
+
+                var num = WebEncoders.GetArraySizeRequiredToEncode(data.Length);
+                var utf8Buffer = new byte[num].AsSpan();
+                var status = WebEncoders.Base64UrlEncode(data, utf8Buffer, out int bytesConsumed, out int bytesWritten);
+                Assert.Equal(OperationStatus.Done, status);
+                Assert.Equal(data.Length, bytesConsumed);
+
+                utf8Buffer = utf8Buffer.Slice(0, bytesWritten);
+                num = WebEncoders.GetArraySizeRequiredToDecode(utf8Buffer.Length);
+                var byteBuffer = new byte[num].AsSpan();
+                status = WebEncoders.Base64UrlDecode(utf8Buffer, byteBuffer, out bytesConsumed, out bytesWritten);
+                Assert.Equal(OperationStatus.Done, status);
+                Assert.Equal(utf8Buffer.Length, bytesConsumed);
+                var result = byteBuffer.Slice(0, bytesWritten).ToArray();
+
+                for (var i = 0; i < length; i++)
+                {
+                    Assert.Equal(data[i], result[i]);
+                }
+            }
+        }
+#endif
+
         [Theory]
         [InlineData("", 1, 0)]
         [InlineData("", 0, 1)]
@@ -36,60 +96,15 @@ namespace Microsoft.Extensions.Internal
             });
         }
 
-        [Theory]
-        [InlineData(0, 0)]
-        [InlineData(2, 4)]
-        [InlineData(3, 4)]
-        [InlineData(4, 4)]
-        [InlineData(6, 8)]
-        [InlineData(7, 8)]
-        public void GetArraySizeRequiredToDecode(int inputLength, int expectedPadding)
-        {
-            var result = WebEncoders.GetArraySizeRequiredToDecode(inputLength);
-
-            Assert.Equal(expectedPadding, result);
-        }
-
         [Fact]
-        public void GetArraySizeRequiredToDecode_NegativeInputLength_Throws()
+        public void Base64UrlDecodeAsSpan_InputIsEmptyReturns0()
         {
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => WebEncoders.GetArraySizeRequiredToDecode(-1));
-            Assert.Equal("count", exception.ParamName);
-        }
+            var input = string.Empty.AsSpan();
+            var output = new byte[100].AsSpan();
 
-        [Theory]
-        [InlineData(1)]
-        [InlineData(5)]
-        //[InlineData(-1)]
-        //[InlineData(-2)]
-        public void GetArraySizeRequiredToDecode_MalformedInputLength(int inputLength)
-        {
-            Assert.Throws<FormatException>(() =>
-            {
-                var retVal = WebEncoders.GetArraySizeRequiredToDecode(inputLength);
-            });
-        }
+            var result = WebEncoders.Base64UrlDecode(input, output);
 
-        // Taken from https://github.com/aspnet/HttpAbstractions/pull/926
-        [Fact]
-        public void DataOfVariousLength_RoundTripCorrectly()
-        {
-            for (var length = 0; length < 256; length++)
-            {
-                var data = new byte[length];
-                for (var i = 0; i < length; i++)
-                {
-                    data[i] = (byte)(5 + length + (i * 23));
-                }
-
-                string text = WebEncoders.Base64UrlEncode(data);
-                byte[] result = WebEncoders.Base64UrlDecode(text);
-
-                for (var i = 0; i < length; i++)
-                {
-                    Assert.Equal(data[i], result[i]);
-                }
-            }
+            Assert.Equal(0, result);
         }
 
         [Theory]
@@ -163,6 +178,38 @@ namespace Microsoft.Extensions.Internal
             Assert.ThrowsAny<ArgumentException>(() =>
             {
                 var retVal = WebEncoders.Base64UrlEncode(input, offset, count);
+            });
+        }
+
+        [Theory]
+        [InlineData(0, 0)]
+        [InlineData(2, 4)]
+        [InlineData(3, 4)]
+        [InlineData(4, 4)]
+        [InlineData(6, 8)]
+        [InlineData(7, 8)]
+        public void GetArraySizeRequiredToDecode(int inputLength, int expectedPadding)
+        {
+            var result = WebEncoders.GetArraySizeRequiredToDecode(inputLength);
+
+            Assert.Equal(expectedPadding, result);
+        }
+
+        [Fact]
+        public void GetArraySizeRequiredToDecode_NegativeInputLength_Throws()
+        {
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => WebEncoders.GetArraySizeRequiredToDecode(-1));
+            Assert.Equal("count", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(5)]
+        public void GetArraySizeRequiredToDecode_MalformedInputLength(int inputLength)
+        {
+            Assert.Throws<FormatException>(() =>
+            {
+                var retVal = WebEncoders.GetArraySizeRequiredToDecode(inputLength);
             });
         }
 
