@@ -1,19 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Microsoft.Extensions.Configuration.DockerSecrets.Test</AssemblyName>
-    <RootNamespace>Microsoft.Extensions.Configuration.DockerSecrets.Test</RootNamespace>
+    <AssemblyName>Microsoft.Extensions.Configuration.KeyPerFile.Test</AssemblyName>
+    <RootNamespace>Microsoft.Extensions.Configuration.KeyPerFile.Test</RootNamespace>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Config.DockerSecrets\Config.DockerSecrets.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualstudioPackageVersion)" />
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Config.KeyPerFile\Config.KeyPerFile.csproj" />
   </ItemGroup>
 
 </Project>

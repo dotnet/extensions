@@ -62,9 +62,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Config
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.UserSecrets.Test", "test\Config.UserSecrets.Test\Config.UserSecrets.Test.csproj", "{AC7FAD2A-5763-404D-B0FC-3CCA81A16B0A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.DockerSecrets", "src\Config.DockerSecrets\Config.DockerSecrets.csproj", "{69AB0230-D82E-438B-AFE5-85BFF414F1B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.KeyPerFile", "src\Config.KeyPerFile\Config.KeyPerFile.csproj", "{69AB0230-D82E-438B-AFE5-85BFF414F1B8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.DockerSecrets.Test", "test\Config.DockerSecrets.Test\Config.DockerSecrets.Test.csproj", "{82A403ED-F827-4FED-BE38-7F87925A07E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.KeyPerFile.Test", "test\Config.KeyPerFile.Test\Config.KeyPerFile.Test.csproj", "{82A403ED-F827-4FED-BE38-7F87925A07E1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B926267F-98A3-41F0-90F5-0B1ADF78CA65}"
 	ProjectSection(SolutionItems) = preProject
