@@ -293,5 +293,59 @@ namespace Microsoft.Extensions.Internal
             }
 #endif
         }
+
+#if NETCOREAPP2_1
+        [Fact]
+        public void Base64UrlDecode_BufferChain()
+        {
+            // Arrange
+            var data = new byte[20];
+            var rnd = new Random(0);
+            rnd.NextBytes(data);
+            var base64UrlString = WebEncoders.Base64UrlEncode(data);
+            var base64Url = new byte[base64UrlString.Length];
+            WebEncoders.EncodingHelper.GetBytes(base64UrlString.AsSpan(), base64Url);
+
+            var size = WebEncoders.GetArraySizeRequiredToDecode(base64Url.Length);
+            var bytes = new byte[size];
+
+            // Act
+            var status = WebEncoders.Base64UrlDecode(base64Url.AsSpan(0, base64Url.Length / 2), bytes.AsSpan(), out int consumed, out int written1, isFinalBlock: false);
+            Assert.Equal(OperationStatus.NeedMoreData, status);
+            status = WebEncoders.Base64UrlDecode(base64Url.AsSpan(consumed), bytes.AsSpan(written1), out consumed, out int written2, isFinalBlock: true);
+            Assert.Equal(OperationStatus.Done, status);
+
+            // Assert
+            var expected = data;
+            Assert.Equal(expected.Length, written1 + written2);
+            Assert.True(bytes.AsSpan(0, written1 + written2).SequenceEqual(expected));
+        }
+
+        [Fact]
+        public void Base64UrlEncode_BufferChain()
+        {
+            // Arrange
+            var data = new byte[200];
+            var rnd = new Random(0);
+            rnd.NextBytes(data);
+
+            var size = WebEncoders.GetArraySizeRequiredToEncode(data.Length);
+            var base64Url = new byte[size];
+
+            // Act
+            var status = WebEncoders.Base64UrlEncode(data.AsSpan(0, data.Length / 2), base64Url.AsSpan(), out int consumed, out int written1, isFinalBlock: false);
+            Assert.Equal(OperationStatus.NeedMoreData, status);
+            status = WebEncoders.Base64UrlEncode(data.AsSpan(consumed), base64Url.AsSpan(written1), out consumed, out int written2, isFinalBlock: true);
+            Assert.Equal(OperationStatus.Done, status);
+
+            // Assert
+            var expected = WebEncoders.Base64UrlEncode(data);
+            Assert.Equal(expected.Length, written1 + written2);
+            Span<char> chars = stackalloc char[expected.Length];
+            WebEncoders.EncodingHelper.GetChars(base64Url.AsSpan(0, written1 + written2), chars);
+            var actual = new String(chars);
+            Assert.Equal(expected, actual);
+        }
+#endif
     }
 }

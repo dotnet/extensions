@@ -102,16 +102,15 @@ namespace Microsoft.Extensions.Internal
             }
 
             // Create array large enough for the Base64 characters, not just shorter Base64-URL-encoded form.
-            var bufferSizeRequired = GetBufferSizeRequiredToUrlDecode(base64Url.Length);
+            var bufferSizeRequired = isFinalBlock ? GetBufferSizeRequiredToUrlDecode(base64Url.Length) : base64Url.Length;
             var buffer = new Buffer<byte>(bufferSizeRequired);
             try
             {
                 var base64Encoded = buffer.AsSpan();
-                EncodingHelper.UrlDecode(base64Url, base64Encoded);
+                EncodingHelper.UrlDecode(base64Url, base64Encoded, isFinalBlock);
 
                 // If the caller provided invalid base64 chars, they'll be caught here.
-                // TODO: isFinalBlock -> padding only on the final block. If lenght is not correct just throw
-                var status = Base64.DecodeFromUtf8(base64Encoded, data, out bytesConsumed, out bytesWritten);
+                var status = Base64.DecodeFromUtf8(base64Encoded, data, out bytesConsumed, out bytesWritten, isFinalBlock);
 
                 // Fix bytesConsumed to match the input 'base64Url' (and not the 'base64Encoded')
                 bytesConsumed = base64Url.Length - (base64Encoded.Length - bytesConsumed);
@@ -220,7 +219,7 @@ namespace Microsoft.Extensions.Internal
 
                 // Decode.
                 // If the caller provided invalid base64 chars, they'll be caught here.
-                // TODO: Ask how to handle bool-result of TryFromBase64Chars
+                // TODO: try  byte-based variant
                 Convert.TryFromBase64Chars(buffer, output, out int bytesWritten);
                 return output.Slice(0, bytesWritten).ToArray();
             }
@@ -313,6 +312,7 @@ namespace Microsoft.Extensions.Internal
         }
 
 #if NETCOREAPP2_1
+        // TODO: XML Comment
         public static OperationStatus Base64UrlEncode(ReadOnlySpan<byte> data, Span<byte> base64Url, out int bytesConsumed, out int bytesWritten, bool isFinalBlock = true)
         {
             // Special-case empty input
@@ -323,9 +323,9 @@ namespace Microsoft.Extensions.Internal
                 return OperationStatus.Done;
             }
 
-            // TODO: isFinalBlock
-            var status = Base64.EncodeToUtf8(data, base64Url, out bytesConsumed, out bytesWritten);
-            if (status == OperationStatus.Done)
+            var status = Base64.EncodeToUtf8(data, base64Url, out bytesConsumed, out bytesWritten, isFinalBlock);
+
+            if (status == OperationStatus.Done || status == OperationStatus.NeedMoreData)
             {
                 var span = base64Url.Slice(0, bytesWritten);
                 bytesWritten = EncodingHelper.UrlEncode(span);
@@ -676,7 +676,7 @@ namespace Microsoft.Extensions.Internal
                 }
             }
 
-            public static void UrlDecode(ReadOnlySpan<byte> input, Span<byte> output)
+            public static void UrlDecode(ReadOnlySpan<byte> input, Span<byte> output, bool isFinalBlock = true)
             {
                 // Copy input into buffer, fixing up '-' -> '+' and '_' -> '/'.
 
@@ -717,7 +717,10 @@ namespace Microsoft.Extensions.Internal
                     Unsafe.Add(ref outputRef, i) = subst;
                 }
 
-                output.Slice((int)i).Fill((byte)'=');
+                if (isFinalBlock)
+                {
+                    output.Slice((int)i).Fill((byte)'=');
+                }
             }
 
             public static void UrlDecode(ReadOnlySpan<char> input, Span<char> output)
