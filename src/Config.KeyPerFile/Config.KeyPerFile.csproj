@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Microsoft.Extensions.Configuration.DockerSecrets</AssemblyName>
-    <RootNamespace>Microsoft.Extensions.Configuration.DockerSecrets</RootNamespace>
-    <Description>Configuration providers that work with docker secrets for Microsoft.Extensions.Configuration.</Description>
+    <AssemblyName>Microsoft.Extensions.Configuration.KeyPerFile</AssemblyName>
+    <RootNamespace>Microsoft.Extensions.Configuration.KeyPerFile</RootNamespace>
+    <Description>Configuration provider that uses files in a directory for Microsoft.Extensions.Configuration.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <PackageTags>$(PackageTags);docker</PackageTags>
     <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
