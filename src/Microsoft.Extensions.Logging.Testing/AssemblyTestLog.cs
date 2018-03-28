@@ -18,6 +18,8 @@ namespace Microsoft.Extensions.Logging.Testing
     public class AssemblyTestLog : IDisposable
     {
         public static readonly string OutputDirectoryEnvironmentVariableName = "ASPNETCORE_TEST_LOG_DIR";
+        private static readonly string LogFileExtension = ".log";
+        private static readonly int MaxPathLength = 245;
 
         private static readonly object _lock = new object();
         private static readonly Dictionary<Assembly, AssemblyTestLog> _logs = new Dictionary<Assembly, AssemblyTestLog>();
@@ -84,7 +86,42 @@ namespace Microsoft.Extensions.Logging.Testing
             SerilogLoggerProvider serilogLoggerProvider = null;
             if (!string.IsNullOrEmpty(_baseDirectory))
             {
-                var testOutputFile = Path.Combine(_baseDirectory, _assemblyName, RuntimeInformation.FrameworkDescription.TrimStart('.'), className, $"{testName}.log");
+                var testOutputDirectory = Path.Combine(GetAssemblyBaseDirectory(_assemblyName, _baseDirectory), className);
+
+                if (testOutputDirectory.Length + testName.Length + LogFileExtension.Length >= MaxPathLength)
+                {
+                    _globalLogger.LogWarning($"Test name {testName} is too long. Please shorten test name.");
+
+                    // Shorten the test name by removing the middle portion of the testname
+                    var testNameLength = MaxPathLength - testOutputDirectory.Length - LogFileExtension.Length;
+
+                    if (testNameLength <= 0)
+                    {
+                        throw new InvalidOperationException("Output file path could not be constructed due to max path length restrictions. Please shorten test assembly, class or method names.");
+                    }
+
+                    testName = testName.Substring(0, testNameLength / 2) + testName.Substring(testName.Length - testNameLength / 2, testNameLength / 2);
+
+                    _globalLogger.LogWarning($"To prevent long paths test name was shortened to {testName}.");
+                }
+
+                var testOutputFile = Path.Combine(testOutputDirectory, $"{testName}{LogFileExtension}");
+
+                if (File.Exists(testOutputFile))
+                {
+                    _globalLogger.LogWarning($"Output log file {testOutputFile} already exists. Please try to keep log file names unique.");
+
+                    for (var i = 0; i < 1000; i++)
+                    {
+                        testOutputFile = Path.Combine(testOutputDirectory, $"{testName}.{i}{LogFileExtension}");
+
+                        if (!File.Exists(testOutputFile))
+                        {
+                            _globalLogger.LogWarning($"To resolve log file collision, the enumerated file {testOutputFile} will be used.");
+                            break;
+                        }
+                    }
+                }
 
                 serilogLoggerProvider = ConfigureFileLogging(testOutputFile);
             }
@@ -112,9 +149,10 @@ namespace Microsoft.Extensions.Logging.Testing
         public static AssemblyTestLog Create(string assemblyName, string baseDirectory)
         {
             SerilogLoggerProvider serilogLoggerProvider = null;
-            if (!string.IsNullOrEmpty(baseDirectory))
+            var globalLogDirectory = GetAssemblyBaseDirectory(assemblyName, baseDirectory);
+            if (!string.IsNullOrEmpty(globalLogDirectory))
             {
-                var globalLogFileName = Path.Combine(baseDirectory, assemblyName, RuntimeInformation.FrameworkDescription.TrimStart('.'), "global.log");
+                var globalLogFileName = Path.Combine(globalLogDirectory, "global.log");
                 serilogLoggerProvider = ConfigureFileLogging(globalLogFileName);
             }
 
@@ -146,11 +184,33 @@ namespace Microsoft.Extensions.Logging.Testing
             {
                 if (!_logs.TryGetValue(assembly, out var log))
                 {
-                    log = Create(assembly.GetName().Name, Environment.GetEnvironmentVariable(OutputDirectoryEnvironmentVariableName));
+                    var assemblyName = assembly.GetName().Name;
+                    var baseDirectory = Environment.GetEnvironmentVariable(OutputDirectoryEnvironmentVariableName);
+                    log = Create(assemblyName, baseDirectory);
                     _logs[assembly] = log;
+
+                    // Try to clear previous logs
+                    var assemblyBaseDirectory = GetAssemblyBaseDirectory(assemblyName, baseDirectory);
+                    if (Directory.Exists(assemblyBaseDirectory))
+                    {
+                        try
+                        {
+                            Directory.Delete(assemblyBaseDirectory, recursive: true);
+                        }
+                        catch {}
+                    }
                 }
                 return log;
             }
+        }
+
+        private static string GetAssemblyBaseDirectory(string assemblyName, string baseDirectory)
+        {
+            if (!string.IsNullOrEmpty(baseDirectory))
+            {
+                return Path.Combine(baseDirectory, assemblyName, RuntimeInformation.FrameworkDescription.TrimStart('.'));
+            }
+            return string.Empty;
         }
 
         private static SerilogLoggerProvider ConfigureFileLogging(string fileName)
