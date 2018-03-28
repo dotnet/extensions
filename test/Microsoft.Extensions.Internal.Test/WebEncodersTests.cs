@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Buffers;
 using Xunit;
+using System.Text;
 
 namespace Microsoft.Extensions.Internal
 {
@@ -210,22 +211,22 @@ namespace Microsoft.Extensions.Internal
 
         // Taken from https://github.com/aspnet/HttpAbstractions/pull/926
         [Theory]
-        [InlineData("_", "/===")]
-        [InlineData("-", "+===")]
-        [InlineData("a-b-c", "a+b+c===")]
+        [InlineData("_", "/")]
+        [InlineData("-", "+")]
+        [InlineData("a-b-c", "a+b+c=")]
         [InlineData("a_b_c_d", "a/b/c/d=")]
-        [InlineData("a-b_c", "a+b/c===")]
+        [InlineData("a-b_c", "a+b/c==")]
         [InlineData("a-b_c-d", "a+b/c+d=")]
         [InlineData("abcd", "abcd")]
         public void UrlDecode_ReturnsValid_Base64String(string text, string expectedValue)
         {
 // To test the alternate code-path
-#if !NET461
+#if NETCOREAPP2_1
             // Arrange
             Span<byte> bytes = stackalloc byte[text.Length];
-            WebEncoders.EncodingHelper.GetBytes(text.AsSpan(), bytes);
+            Encoding.ASCII.GetBytes(text.AsSpan(), bytes);
             Span<byte> expected = stackalloc byte[expectedValue.Length];
-            WebEncoders.EncodingHelper.GetBytes(expectedValue.AsSpan(), expected);
+            Encoding.ASCII.GetBytes(expectedValue.AsSpan(), expected);
             Span<byte> result = stackalloc byte[expectedValue.Length];
 
             // Act
@@ -241,34 +242,32 @@ namespace Microsoft.Extensions.Internal
             WebEncoders.EncodingHelper.UrlDecode(text.AsSpan(), buffer);
 
             // Assert
-            for (var i = 0; i < expectedValue.Length; i++)
-            {
-                Assert.Equal(expectedValue[i], buffer[i]);
-            }
+            Assert.Equal(expectedValue, new string(buffer));
 #endif
         }
 
         // Taken from https://github.com/aspnet/HttpAbstractions/pull/926
+        // Input length must be a multiple of 4
         [Theory]
-        [InlineData("", "")]
-        [InlineData("+", "-")]
-        [InlineData("/", "_")]
-        [InlineData("=", "")]
-        [InlineData("==", "")]
+        [InlineData("    ", "    ")]
+        [InlineData("+   ", "-   ")]
+        [InlineData("/   ", "_   ")]
+        [InlineData("=   ", "")]
+        [InlineData("==  ", "")]
         [InlineData("a+b+c+==", "a-b-c-")]
-        [InlineData("a/b/c==", "a_b_c")]
-        [InlineData("a+b/c==", "a-b_c")]
-        [InlineData("a+b/c", "a-b_c")]
+        [InlineData("a/b/c== ", "a_b_c")]
+        [InlineData("a+b/c== ", "a-b_c")]
+        [InlineData("a+b/c   ", "a-b_c   ")]
         [InlineData("abcd", "abcd")]
         public void UrlEncode_Replaces_UrlEncodableCharacters(string base64EncodedValue, string expectedValue)
         {
 // To test the alternate code-path
-#if !NET461
+#if NETCOREAPP2_1
             // Arrange
             Span<byte> bytes = stackalloc byte[base64EncodedValue.Length];
-            WebEncoders.EncodingHelper.GetBytes(base64EncodedValue.AsSpan(), bytes);
+            Encoding.ASCII.GetBytes(base64EncodedValue.AsSpan(), bytes);
             Span<byte> expected = stackalloc byte[expectedValue.Length];
-            WebEncoders.EncodingHelper.GetBytes(expectedValue.AsSpan(), expected);
+            Encoding.ASCII.GetBytes(expectedValue.AsSpan(), expected);
 
             // Act
             var result = WebEncoders.EncodingHelper.UrlEncode(bytes);
@@ -280,7 +279,7 @@ namespace Microsoft.Extensions.Internal
             var buffer = base64EncodedValue.ToCharArray();
 
             // Act
-            var result = WebEncoders.EncodingHelper.UrlEncode(buffer);
+            var result = WebEncoders.EncodingHelper.UrlEncode(buffer, buffer);
 
             // Assert
             Assert.Equal(expectedValue.Length, result);
@@ -300,7 +299,7 @@ namespace Microsoft.Extensions.Internal
             rnd.NextBytes(data);
             var base64UrlString = WebEncoders.Base64UrlEncode(data);
             var base64Url = new byte[base64UrlString.Length];
-            WebEncoders.EncodingHelper.GetBytes(base64UrlString.AsSpan(), base64Url);
+            Encoding.ASCII.GetBytes(base64UrlString, 0, base64UrlString.Length, base64Url, 0);
 
             var size = WebEncoders.GetArraySizeRequiredToDecode(base64Url.Length);
             var bytes = new byte[size];
@@ -342,8 +341,8 @@ namespace Microsoft.Extensions.Internal
             // Assert
             var expected = WebEncoders.Base64UrlEncode(data);
             Assert.Equal(expected.Length, written1 + written2);
-            Span<char> chars = stackalloc char[expected.Length];
-            WebEncoders.EncodingHelper.GetChars(base64Url.AsSpan(0, written1 + written2), chars);
+            var chars = new char[expected.Length];
+            Encoding.ASCII.GetChars(base64Url, 0, written1 + written2, chars, 0);
 #if NETCOREAPP2_1
             var actual = new String(chars);
 #else
