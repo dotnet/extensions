@@ -53,9 +53,8 @@ namespace Microsoft.Extensions.Internal
             var buffer = new Buffer<byte>(base64Url.Length);
             try
             {
-                var base64UrlBytes = buffer.AsSpan();
+                var base64UrlBytes = buffer.Span;
                 EncodingHelper.GetBytes(base64Url, base64UrlBytes);
-
                 var status = Base64UrlDecode(base64UrlBytes, data, out int bytesConsumed, out int bytesWritten);
 
                 if (status == OperationStatus.InvalidData)
@@ -97,9 +96,9 @@ namespace Microsoft.Extensions.Internal
             var buffer = new Buffer<byte>(arraySizeRequired);
             try
             {
-                var span = buffer.AsSpan();
-                var written = Base64UrlDecode(base64Url, span);
-                return span.Slice(0, written).ToArray();
+                var data = buffer.Span;
+                var written = Base64UrlDecode(base64Url, data);
+                return data.Slice(0, written).ToArray();
             }
             finally
             {
@@ -121,7 +120,7 @@ namespace Microsoft.Extensions.Internal
         /// - DestinationTooSmall - if there is not enough space in the output span to fit the decoded input
         /// - NeedMoreData - only if isFinalBlock is false and the input is not a multiple of 4, otherwise the partial input would be considered as InvalidData
         /// - InvalidData - if the input contains bytes outside of the expected base 64 range, or if it contains invalid/more than two padding characters,
-        ///   or if the input is incomplete (i.e. not a multiple of 4) and isFinalBlock is true.</returns>
+        ///	  or if the input is incomplete (i.e. not a multiple of 4) and isFinalBlock is true.</returns>
         public static OperationStatus Base64UrlDecode(ReadOnlySpan<byte> base64Url, Span<byte> data, out int bytesConsumed, out int bytesWritten, bool isFinalBlock = true)
         {
             // Special-case empty input
@@ -137,7 +136,7 @@ namespace Microsoft.Extensions.Internal
             var buffer = new Buffer<byte>(bufferSizeRequired);
             try
             {
-                var base64Encoded = buffer.AsSpan();
+                var base64Encoded = buffer.Span;
                 EncodingHelper.UrlDecode(base64Url, base64Encoded, isFinalBlock);
 
                 // If the caller provided invalid base64 chars, they'll be caught here.
@@ -245,7 +244,7 @@ namespace Microsoft.Extensions.Internal
             var outputBuffer = new Buffer<byte>(maxDecodedSize);
             try
             {
-                var output = outputBuffer.AsSpan();
+                var output = outputBuffer.Span;
 
                 // If the caller provided invalid base64 chars, they'll be caught here.
                 Convert.TryFromBase64Chars(buffer, output, out int bytesWritten);
@@ -300,7 +299,7 @@ namespace Microsoft.Extensions.Internal
             var buffer = new Buffer<byte>(bufferSizeRequired);
             try
             {
-                var base64Bytes = buffer.AsSpan();
+                var base64Bytes = buffer.Span;
                 var status = Base64UrlEncode(data, base64Bytes, out int consumed, out int written);
 
                 if (status == OperationStatus.Done)
@@ -599,49 +598,37 @@ namespace Microsoft.Extensions.Internal
             }
         }
 
-        private unsafe struct Buffer<T> where T : struct
+        private unsafe ref struct Buffer<T> where T : struct
         {
-            private const int MaxStack = 32;
+            private const int MaxStack = 128;
             private T[] _arrayToReturnToPool;
-            private readonly int _size;
-            private fixed long _buffer[MaxStack];
+            private fixed char _buffer[MaxStack];
+
+            public Span<T> Span { get; }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Buffer(int size)
             {
                 _arrayToReturnToPool = null;
-                _size = size;
 
                 // T is only char or byte
                 int sizeOfT = typeof(T) == typeof(byte) ? 1 : 2;
-                if (size > MaxStack * sizeof(long) / sizeOfT)
+                if (size > MaxStack * sizeof(char) / sizeOfT)
                 {
 #if !NET461
                     _arrayToReturnToPool = ArrayPool<T>.Shared.Rent(size);
 #else
                     _arrayToReturnToPool = new T[size];
 #endif
-                }
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Span<T> AsSpan()
-            {
-                Span<T> res;
-
-                if (_arrayToReturnToPool != null)
-                {
-                    res = new Span<T>(_arrayToReturnToPool, 0, _size);
+                    Span = new Span<T>(_arrayToReturnToPool, 0, size);
                 }
                 else
                 {
-                    fixed (long* buffer = _buffer)
+                    fixed(char* buffer=_buffer)
                     {
-                        res = new Span<T>(buffer, _size);
+                        Span = new Span<T>(buffer, size);
                     }
                 }
-
-                return res;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
