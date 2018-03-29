@@ -345,8 +345,9 @@ namespace Microsoft.Extensions.Http
             kvp = default;
             client1 = null;
             GC.Collect();
-            GC.Collect();
             GC.WaitForPendingFinalizers();
+            GC.Collect();
+
             Assert.True(cleanupEntry.CanDispose, "Cleanup entry disposable");
 
             // Act
@@ -402,8 +403,9 @@ namespace Microsoft.Extensions.Http
             // the factory isn't keeping any references.
             client1 = null;
             GC.Collect();
-            GC.Collect();
             GC.WaitForPendingFinalizers();
+            GC.Collect();
+
             Assert.True(cleanupEntry.CanDispose, "Cleanup entry disposable");
 
             // Act - 2
