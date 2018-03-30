@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <PackageReference Include="Polly-Signed" Version="$(PollySignedPackageVersion)" />
-    <PackageReference Include="Polly.Extensions.Http-Signed" Version="$(PollyExtensionsHttpSignedPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.ValueStopwatch.Sources" Version="$(MicrosoftExtensionsValueStopwatchSourcesPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 
