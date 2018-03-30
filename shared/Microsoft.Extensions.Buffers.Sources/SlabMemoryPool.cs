@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.IO.Pipelines;
 
 namespace System.Buffers
 {
@@ -57,7 +56,7 @@ namespace System.Buffers
         /// </summary>
         private const int AnySize = -1;
 
-        public override OwnedMemory<byte> Rent(int size = AnySize)
+        public override IMemoryOwner<byte> Rent(int size = AnySize)
         {
             if (size == AnySize) size = _blockSize;
             else if (size > _blockSize)

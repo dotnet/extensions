@@ -12,11 +12,10 @@ namespace System.Buffers
     /// Block tracking object used by the byte buffer memory pool. A slab is a large allocation which is divided into smaller blocks. The
     /// individual blocks are then treated as independent array segments.
     /// </summary>
-    internal class MemoryPoolBlock : OwnedMemory<byte>
+    internal class MemoryPoolBlock : IMemoryOwner<byte>
     {
         private readonly int _offset;
         private readonly int _length;
-        private int _referenceCount;
         private bool _disposed;
 
         /// <summary>
@@ -41,14 +40,13 @@ namespace System.Buffers
         /// </summary>
         public MemoryPoolSlab Slab { get; }
 
-        public override int Length => _length;
 
-        public override Span<byte> Span
+        public Memory<byte> Memory
         {
             get
             {
-                if (IsDisposed) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
-                return new Span<byte>(Slab.Array, _offset, _length);
+                if (_disposed) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
+                return Memory<byte>.CreateFromPinnedArray(Slab.Array, _offset, _length);
             }
         }
 
@@ -88,7 +86,7 @@ namespace System.Buffers
             Pool.Return(this);
         }
 
-        protected override void Dispose(bool disposing)
+        public void Dispose()
         {
             _disposed = true;
         }
@@ -99,57 +97,6 @@ namespace System.Buffers
             Leaser = Environment.StackTrace;
             IsLeased = true;
 #endif
-            _referenceCount = 1;
-        }
-
-        public override void Retain()
-        {
-            while (true)
-            {
-                int currentCount = Volatile.Read(ref _referenceCount);
-                if (currentCount <= 0) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
-                if (Interlocked.CompareExchange(ref _referenceCount, currentCount + 1, currentCount) == currentCount) break;
-            }
-        }
-
-        public override bool Release()
-        {
-            while (true)
-            {
-                int currentCount = Volatile.Read(ref _referenceCount);
-                if (currentCount <= 0) ThrowHelper.ThrowInvalidOperationException_ReferenceCountZero();
-                if (Interlocked.CompareExchange(ref _referenceCount, currentCount - 1, currentCount) == currentCount)
-                {
-                    if (currentCount == 1)
-                    {
-                        OnZeroReferences();
-                        return false;
-                    }
-                    return true;
-                }
-            }
-        }
-
-        protected override bool IsRetained => _referenceCount > 0;
-        public override bool IsDisposed => _disposed;
-
-        // In kestrel both MemoryPoolBlock and OwnedMemory end up in the same assembly so
-        // this method access modifiers need to be `protected internal`
-        protected override bool TryGetArray(out ArraySegment<byte> arraySegment)
-        {
-            if (IsDisposed) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
-            arraySegment = new ArraySegment<byte>(Slab.Array, _offset, _length);
-            return true;
-        }
-
-        public override MemoryHandle Pin(int byteOffset = 0)
-        {
-            Retain();   // checks IsDisposed
-            if (byteOffset < 0 || byteOffset > _length) ThrowHelper.ThrowArgumentOutOfRangeException(_length, byteOffset);
-            unsafe
-            {
-                return new MemoryHandle(this, (Slab.NativePointer + _offset + byteOffset).ToPointer());
-            }
         }
     }
 }
