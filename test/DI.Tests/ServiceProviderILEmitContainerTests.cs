@@ -5,9 +5,9 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
 {
-    public class ServiceProviderCompiledContainerTests : ServiceProviderContainerTests
+    public class ServiceProviderILEmitContainerTests : ServiceProviderContainerTests
     {
         protected override IServiceProvider CreateServiceProvider(IServiceCollection collection) =>
-            collection.BuildServiceProvider(new ServiceProviderOptions { Mode = ServiceProviderMode.Compiled });
+            collection.BuildServiceProvider(new ServiceProviderOptions() { Mode = ServiceProviderMode.ILEmit});
     }
 }

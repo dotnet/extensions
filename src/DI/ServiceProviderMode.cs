@@ -7,6 +7,7 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         Dynamic,
         Runtime,
-        Compiled
+        Expressions,
+        ILEmit
     }
 }

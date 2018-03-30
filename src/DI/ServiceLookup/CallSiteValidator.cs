@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public void ValidateCallSite(IServiceCallSite callSite)
         {
-            var scoped = VisitCallSite(callSite, default(CallSiteValidatorState));
+            var scoped = VisitCallSite(callSite, default);
             if (scoped != null)
             {
                 _scopedServices[callSite.ServiceType] = scoped;
@@ -22,9 +22,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public void ValidateResolution(Type serviceType, IServiceScope scope, IServiceScope rootScope)
         {
-            Type scopedService;
             if (ReferenceEquals(scope, rootScope)
-                && _scopedServices.TryGetValue(serviceType, out scopedService))
+                && _scopedServices.TryGetValue(serviceType, out var scopedService))
             {
                 if (serviceType == scopedService)
                 {

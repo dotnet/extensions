@@ -18,5 +18,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public Type ServiceType => ServiceCallSite.ServiceType;
         public Type ImplementationType => ServiceCallSite.ImplementationType;
+        public virtual CallSiteKind Kind { get; } = CallSiteKind.Scope;
     }
 }
