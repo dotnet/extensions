@@ -164,7 +164,7 @@ namespace Microsoft.Extensions.Caching.Redis
 
         private void Connect()
         {
-            if (_connection != null)
+            if (_cache != null)
             {
                 return;
             }
@@ -172,7 +172,7 @@ namespace Microsoft.Extensions.Caching.Redis
             _connectionLock.Wait();
             try
             {
-                if (_connection == null)
+                if (_cache == null)
                 {
                     _connection = ConnectionMultiplexer.Connect(_options.Configuration);
                     _cache = _connection.GetDatabase();
@@ -188,7 +188,7 @@ namespace Microsoft.Extensions.Caching.Redis
         {
             token.ThrowIfCancellationRequested();
 
-            if (_connection != null)
+            if (_cache != null)
             {
                 return;
             }
@@ -196,7 +196,7 @@ namespace Microsoft.Extensions.Caching.Redis
             await _connectionLock.WaitAsync();
             try
             {
-                if (_connection == null)
+                if (_cache == null)
                 {
                     _connection = await ConnectionMultiplexer.ConnectAsync(_options.Configuration);
                     _cache = _connection.GetDatabase();
