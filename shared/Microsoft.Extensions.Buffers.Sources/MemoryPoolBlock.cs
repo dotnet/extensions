@@ -12,11 +12,12 @@ namespace System.Buffers
     /// Block tracking object used by the byte buffer memory pool. A slab is a large allocation which is divided into smaller blocks. The
     /// individual blocks are then treated as independent array segments.
     /// </summary>
-    internal class MemoryPoolBlock : IMemoryOwner<byte>
+    internal class MemoryPoolBlock : MemoryManager<byte>
     {
         private readonly int _offset;
         private readonly int _length;
-        private bool _disposed;
+
+        private int _pinCount;
 
         /// <summary>
         /// This object cannot be instantiated outside of the static Create method
@@ -40,12 +41,11 @@ namespace System.Buffers
         /// </summary>
         public MemoryPoolSlab Slab { get; }
 
-
-        public Memory<byte> Memory
+        public override Memory<byte> Memory
         {
             get
             {
-                if (_disposed) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
+                if (!Slab.IsActive) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
                 return Memory<byte>.CreateFromPinnedArray(Slab.Array, _offset, _length);
             }
         }
@@ -81,16 +81,39 @@ namespace System.Buffers
             return new MemoryPoolBlock(pool, slab, offset, length);
         }
 
-        protected void OnZeroReferences()
+        protected override void Dispose(bool disposing)
         {
+            if (!Slab.IsActive) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
+
+            if (Volatile.Read(ref _pinCount) > 0)
+            {
+                ThrowHelper.ThrowInvalidOperationException_ReturningPinnedBlock();
+            }
             Pool.Return(this);
         }
 
-        public void Dispose()
-        {
-            _disposed = true;
+        public override Span<byte> GetSpan() => Memory.Span;
+
+        public override MemoryHandle Pin(int byteOffset = 0)
+        {                
+            if (!Slab.IsActive) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
+            if (byteOffset < 0 || byteOffset > _length) ThrowHelper.ThrowArgumentOutOfRangeException(_length, byteOffset);
+            
+            Interlocked.Increment(ref _pinCount);
+            unsafe
+            {
+                return new MemoryHandle((Slab.NativePointer + _offset + byteOffset).ToPointer(), default, this);
+            }
         }
 
+        public override void Unpin()
+        {
+            if (Interlocked.Decrement(ref _pinCount) < 0)
+            {
+                ThrowHelper.ThrowInvalidOperationException_ReferenceCountZero();
+            }
+        }
+        
         public void Lease()
         {
 #if BLOCK_LEASE_TRACKING
