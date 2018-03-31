@@ -14,7 +14,7 @@ namespace System.IO.Pipelines.Tests
         protected Pipe Pipe;
         public BufferWriterTests()
         {
-            Pipe = new Pipe(new PipeOptions(useSynchronizationContext: false));
+            Pipe = new Pipe(new PipeOptions(useSynchronizationContext: false, pauseWriterThreshold: 0, resumeWriterThreshold: 0));
         }
 
         public void Dispose()
@@ -26,6 +26,7 @@ namespace System.IO.Pipelines.Tests
         private byte[] Read()
         {
             Pipe.Writer.FlushAsync().GetAwaiter().GetResult();
+            Pipe.Writer.Complete();
             ReadResult readResult = Pipe.Reader.ReadAsync().GetAwaiter().GetResult();
             byte[] data = readResult.Buffer.ToArray();
             Pipe.Reader.AdvanceTo(readResult.Buffer.End);
@@ -140,7 +141,6 @@ namespace System.IO.Pipelines.Tests
         {
             BufferWriter<PipeWriter> writer = new BufferWriter<PipeWriter>(Pipe.Writer);
             writer.Ensure(10);
-
             Assert.True(writer.Span.Length > 10);
             Assert.Equal(new byte[] { }, Read());
         }
