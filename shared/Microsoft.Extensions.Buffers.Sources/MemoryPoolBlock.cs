@@ -46,7 +46,7 @@ namespace System.Buffers
             get
             {
                 if (!Slab.IsActive) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
-                return Memory<byte>.CreateFromPinnedArray(Slab.Array, _offset, _length);
+                return new Memory<byte>(this, _offset, _length);
             }
         }
 
@@ -92,7 +92,7 @@ namespace System.Buffers
             Pool.Return(this);
         }
 
-        public override Span<byte> GetSpan() => Memory.Span;
+        public override Span<byte> GetSpan() => new Span<byte>(Slab.Array, _offset, _length);
 
         public override MemoryHandle Pin(int byteOffset = 0)
         {                
