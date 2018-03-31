@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Text;
+#if DEBUG
+
 using System.Threading;
 using System.Diagnostics;
-using System.IO.Pipelines;
 
 namespace System.Buffers
 {
@@ -12,7 +12,7 @@ namespace System.Buffers
     /// Block tracking object used by the byte buffer memory pool. A slab is a large allocation which is divided into smaller blocks. The
     /// individual blocks are then treated as independent array segments.
     /// </summary>
-    internal class MemoryPoolBlock : MemoryManager<byte>
+    internal sealed class MemoryPoolBlock : MemoryManager<byte>
     {
         private readonly int _offset;
         private readonly int _length;
@@ -22,7 +22,7 @@ namespace System.Buffers
         /// <summary>
         /// This object cannot be instantiated outside of the static Create method
         /// </summary>
-        protected MemoryPoolBlock(SlabMemoryPool pool, MemoryPoolSlab slab, int offset, int length)
+        internal MemoryPoolBlock(SlabMemoryPool pool, MemoryPoolSlab slab, int offset, int length)
         {
             _offset = offset;
             _length = length;
@@ -72,15 +72,6 @@ namespace System.Buffers
             }
         }
 
-        internal static MemoryPoolBlock Create(
-            int offset,
-            int length,
-            SlabMemoryPool pool,
-            MemoryPoolSlab slab)
-        {
-            return new MemoryPoolBlock(pool, slab, offset, length);
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (!Slab.IsActive) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
@@ -123,3 +114,5 @@ namespace System.Buffers
         }
     }
 }
+
+#endif

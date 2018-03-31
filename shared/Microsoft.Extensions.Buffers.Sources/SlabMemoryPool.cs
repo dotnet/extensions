@@ -110,11 +110,11 @@ namespace System.Buffers
                 offset + _blockSize < blockAllocationLength;
                 offset += _blockSize)
             {
-                var block = MemoryPoolBlock.Create(
-                    offset,
-                    _blockSize,
+                var block = new MemoryPoolBlock(
                     this,
-                    slab);
+                    slab,
+                    offset,
+                    _blockSize);
 #if BLOCK_LEASE_TRACKING
                 block.IsLeased = true;
 #endif
@@ -123,11 +123,11 @@ namespace System.Buffers
 
             Debug.Assert(offset + _blockSize - firstOffset == blockAllocationLength);
             // return last block rather than adding to pool
-            var newBlock = MemoryPoolBlock.Create(
-                    offset,
-                    _blockSize,
+            var newBlock = new MemoryPoolBlock(
                     this,
-                    slab);
+                    slab,
+                    offset,
+                    _blockSize);
 
             return newBlock;
         }
