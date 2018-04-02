@@ -102,7 +102,7 @@ namespace System.Buffers
 
         protected override bool TryGetArray(out ArraySegment<byte> segment)
         {
-            segment = new ArraySegment<byte>(Slab.Array, _offset, _length);
+            segment = new ArraySegment<byte>(Slab.Array);
             return true;
         }
 
