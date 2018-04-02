@@ -29,6 +29,7 @@ namespace System.Buffers
 
             Pool = pool;
             Slab = slab;
+            Length = slab.Array.Length;
         }
 
         /// <summary>
@@ -41,6 +42,8 @@ namespace System.Buffers
         /// </summary>
         public MemoryPoolSlab Slab { get; }
 
+        public override int Length { get; }
+
         public override Memory<byte> Memory
         {
             get
@@ -49,6 +52,7 @@ namespace System.Buffers
                 return new Memory<byte>(this, _offset, _length);
             }
         }
+
 
 #if BLOCK_LEASE_TRACKING
         public bool IsLeased { get; set; }
@@ -59,13 +63,11 @@ namespace System.Buffers
         {
             if (Slab != null && Slab.IsActive)
             {
-#if DEBUG
-                Debug.Assert(false, $"{Environment.NewLine}{Environment.NewLine}*** Block being garbage collected instead of returned to pool" +
+               Debug.Assert(false, $"{Environment.NewLine}{Environment.NewLine}*** Block being garbage collected instead of returned to pool" +
 #if BLOCK_LEASE_TRACKING
-                    $": {Leaser}" +
+                   $": {Leaser}" +
 #endif
-                    $" ***{ Environment.NewLine}");
-#endif
+                   $" ***{ Environment.NewLine}");
 
                 // Need to make a new object because this one is being finalized
                 Pool.Return(new MemoryPoolBlock(Pool, Slab, _offset, _length));
@@ -80,21 +82,28 @@ namespace System.Buffers
             {
                 ThrowHelper.ThrowInvalidOperationException_ReturningPinnedBlock();
             }
+
             Pool.Return(this);
         }
 
-        public override Span<byte> GetSpan() => new Span<byte>(Slab.Array, _offset, _length);
+        public override Span<byte> GetSpan() => new Span<byte>(Slab.Array);
 
         public override MemoryHandle Pin(int byteOffset = 0)
-        {                
+        {
             if (!Slab.IsActive) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
             if (byteOffset < 0 || byteOffset > _length) ThrowHelper.ThrowArgumentOutOfRangeException(_length, byteOffset);
-            
+
             Interlocked.Increment(ref _pinCount);
             unsafe
             {
                 return new MemoryHandle((Slab.NativePointer + _offset + byteOffset).ToPointer(), default, this);
             }
+        }
+
+        protected override bool TryGetArray(out ArraySegment<byte> segment)
+        {
+            segment = new ArraySegment<byte>(Slab.Array, _offset, _length);
+            return true;
         }
 
         public override void Unpin()
@@ -104,7 +113,7 @@ namespace System.Buffers
                 ThrowHelper.ThrowInvalidOperationException_ReferenceCountZero();
             }
         }
-        
+
         public void Lease()
         {
 #if BLOCK_LEASE_TRACKING
