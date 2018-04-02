@@ -29,7 +29,6 @@ namespace System.Buffers
 
             Pool = pool;
             Slab = slab;
-            Length = slab.Array.Length;
         }
 
         /// <summary>
@@ -42,14 +41,14 @@ namespace System.Buffers
         /// </summary>
         public MemoryPoolSlab Slab { get; }
 
-        public override int Length { get; }
+        public override int Length => _length;
 
         public override Memory<byte> Memory
         {
             get
             {
                 if (!Slab.IsActive) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
-                return new Memory<byte>(this, _offset, _length);
+                return new Memory<byte>(this, 0, _length);
             }
         }
 
@@ -86,7 +85,7 @@ namespace System.Buffers
             Pool.Return(this);
         }
 
-        public override Span<byte> GetSpan() => new Span<byte>(Slab.Array);
+        public override Span<byte> GetSpan() => new Span<byte>(Slab.Array, _offset, _length);
 
         public override MemoryHandle Pin(int byteOffset = 0)
         {
@@ -102,7 +101,7 @@ namespace System.Buffers
 
         protected override bool TryGetArray(out ArraySegment<byte> segment)
         {
-            segment = new ArraySegment<byte>(Slab.Array);
+            segment = new ArraySegment<byte>(Slab.Array, _offset, _length);
             return true;
         }
 
