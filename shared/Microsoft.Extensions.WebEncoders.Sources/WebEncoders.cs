@@ -783,59 +783,6 @@ namespace Microsoft.Extensions.Internal
             }
         }
 
-        private unsafe ref struct Buffer<T> where T : struct
-        {
-            private const int MaxStack = 128;
-            private T[] _arrayToReturnToPool;
-            private fixed char _buffer[MaxStack];
-
-            public Span<T> Span { get; }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Buffer(int size)
-            {
-                _arrayToReturnToPool = null;
-
-                if (IsStackAllocated(size))
-                {
-                    fixed (char* buffer = _buffer)
-                    {
-                        Span = new Span<T>(buffer, size);
-                    }
-                }
-                else
-                {
-#if !NET461
-                    _arrayToReturnToPool = ArrayPool<T>.Shared.Rent(size);
-#else
-                    _arrayToReturnToPool = new T[size];
-#endif
-                    Span = new Span<T>(_arrayToReturnToPool, 0, size);
-                }
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public bool IsStackAllocated(int size)
-            {
-                // T is only char or byte
-                int sizeOfT = typeof(T) == typeof(byte) ? 1 : 2;
-
-                return size <= MaxStack * sizeof(char) / sizeOfT;
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void Dispose()
-            {
-                if (_arrayToReturnToPool != null)
-                {
-#if !NET461
-                    ArrayPool<T>.Shared.Return(_arrayToReturnToPool);
-#endif
-                    _arrayToReturnToPool = null;
-                }
-            }
-        }
-
         // internal to make this testable
         internal static unsafe class EncodingHelper
         {
