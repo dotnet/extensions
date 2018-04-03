@@ -78,7 +78,7 @@ namespace Microsoft.Extensions.Logging
         /// <param name="logger">The <see cref="ILogger"/> to write to.</param>
         /// <param name="message">Format string of the log message in message template format. Example: <code>"User {User} logged in from {Address}"</code></param>
         /// <param name="args">An object array that contains zero or more objects to format.</param>
-        /// <example>logger.LogDebug(0, "Processing request from {Address}", address)</example>
+        /// <example>logger.LogDebug("Processing request from {Address}", address)</example>
         public static void LogDebug(this ILogger logger, string message, params object[] args)
         {
             if (logger == null)
@@ -431,7 +431,7 @@ namespace Microsoft.Extensions.Logging
         /// <param name="exception">The exception to log.</param>
         /// <param name="message">Format string of the log message in message template format. Example: <code>"User {User} logged in from {Address}"</code></param>
         /// <param name="args">An object array that contains zero or more objects to format.</param>
-        /// <example>logger.LogCritical(0, exception, "Error while processing request from {Address}", address)</example>
+        /// <example>logger.LogCritical(exception, "Error while processing request from {Address}", address)</example>
         public static void LogCritical(this ILogger logger, Exception exception, string message, params object[] args)
         {
             if (logger == null)
