@@ -30,8 +30,13 @@ namespace System.Buffers
         {
             throw GetArgumentOutOfRangeException(argument);
         }
-
+        
         public static void ThrowInvalidOperationException_ReferenceCountZero()
+        {
+            throw new InvalidOperationException("Can't release when reference count is already zero");
+        }
+
+        public static void ThrowInvalidOperationException_ReturningPinnedBlock()
         {
             throw new InvalidOperationException("Can't release when reference count is already zero");
         }
