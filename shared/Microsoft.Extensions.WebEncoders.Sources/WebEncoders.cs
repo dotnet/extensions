@@ -359,7 +359,8 @@ namespace Microsoft.Extensions.Internal
             }
 
             Span<char> base64 = stackalloc char[base64Len];
-            return Base64UrlEncodeCore(data, base64, base64Url);
+            Convert.TryToBase64Chars(data, base64, out int written);
+            return EncodingHelper.UrlEncode(base64, base64Url);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -369,7 +370,8 @@ namespace Microsoft.Extensions.Internal
             try
             {
                 var base64 = new Span<char>(arrayToReturnToPool = ArrayPool<char>.Shared.Rent(base64Len), 0, base64Len);
-                return Base64UrlEncodeCore(data, base64, base64Url);
+                Convert.TryToBase64Chars(data, base64, out int written);
+                return EncodingHelper.UrlEncode(base64, base64Url);
             }
             finally
             {
@@ -378,12 +380,6 @@ namespace Microsoft.Extensions.Internal
                     ArrayPool<char>.Shared.Return(arrayToReturnToPool);
                 }
             }
-        }
-
-        private static int Base64UrlEncodeCore(ReadOnlySpan<byte> data, Span<char> base64, Span<char> base64Url)
-        {
-            Convert.TryToBase64Chars(data, base64, out int written);
-            return EncodingHelper.UrlEncode(base64, base64Url);
         }
 #else
         private static int Base64UrlEncodeCore(ReadOnlySpan<byte> data, Span<char> base64Url, int base64Len)
