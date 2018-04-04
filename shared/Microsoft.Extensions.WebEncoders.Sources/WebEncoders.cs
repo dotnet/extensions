@@ -646,7 +646,7 @@ namespace Microsoft.Extensions.Internal
 #if NET461
                     : new byte[base64Len];
 #else
-                    : arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64Len);
+                    : new Span<byte>(arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64Len), 0, base64Len);
 #endif
                 var status = Base64.EncodeToUtf8(data, base64Bytes, out int consumed, out int written);
 
@@ -1011,7 +1011,7 @@ namespace Microsoft.Extensions.Internal
                 if (Vector.IsHardwareAccelerated && (int*)n >= (int*)Vector<byte>.Count)
                 {
                     // TODO: replace with nuint once available
-                    m = (IntPtr)((int)(int*)n & ~(Vector<ushort>.Count - 1));
+                    m = (IntPtr)((int)(int*)n & ~(Vector<byte>.Count - 1));
                     for (; (int*)i < (int*)m; i += Vector<byte>.Count)
                     {
                         var bytesVec = Unsafe.As<byte, Vector<byte>>(ref Unsafe.Add(ref input, i));
