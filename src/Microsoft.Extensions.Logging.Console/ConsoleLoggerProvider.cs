@@ -86,14 +86,12 @@ namespace Microsoft.Extensions.Logging.Console
                 _settings = _settings.Reload();
 
                 _includeScopes = _settings?.IncludeScopes ?? false;
-                var disableColors = _settings?.DisableColors ?? false;
 
                 var scopeProvider = GetScopeProvider();
                 foreach (var logger in _loggers.Values)
                 {
                     logger.Filter = GetFilter(logger.Name, _settings);
                     logger.ScopeProvider = scopeProvider;
-                    logger.DisableColors = disableColors;
                 }
             }
             catch (Exception ex)
@@ -118,7 +116,7 @@ namespace Microsoft.Extensions.Logging.Console
         private ConsoleLogger CreateLoggerImplementation(string name)
         {
             var includeScopes = _settings?.IncludeScopes ?? _includeScopes;
-            var disableColors = _settings?.DisableColors ?? _disableColors;
+            var disableColors = _disableColors;
 
             return new ConsoleLogger(name, GetFilter(name, _settings), includeScopes? _scopeProvider: null, _messageQueue)
                 {

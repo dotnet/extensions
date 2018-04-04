@@ -7,8 +7,6 @@ namespace Microsoft.Extensions.Logging.Console
     {
         bool IncludeScopes { get; }
 
-        bool DisableColors { get; }
-
         IChangeToken ChangeToken { get; }
 
         bool TryGetSwitch(string name, out LogLevel level);
