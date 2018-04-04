@@ -270,7 +270,7 @@ namespace Microsoft.Extensions.Internal
             Encoding.ASCII.GetBytes(expectedValue.AsSpan(), expected);
 
             // Act
-            var result = WebEncoders.EncodingHelper.UrlEncode(bytes);
+            var result = WebEncoders.EncodingHelper.UrlEncode(bytes, bytes.Length);
 
             // Assert
             Assert.True(expected.SequenceEqual(bytes.Slice(0, result)));
