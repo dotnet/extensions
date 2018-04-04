@@ -258,7 +258,7 @@ namespace Microsoft.Extensions.Internal
         /// Encodes <paramref name="data"/> using base64url-encoding.
         /// </summary>
         /// <param name="data">The binary input to encode.</param>
-        /// <returns>The base64url-encoded form of <paramref name="input"/>.</returns>
+        /// <returns>The base64url-encoded form of <paramref name="data"/>.</returns>
         public static unsafe string Base64UrlEncode(ReadOnlySpan<byte> data)
         {
             // Special-case empty input
