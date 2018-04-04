@@ -13,6 +13,8 @@ namespace Microsoft.Extensions.Logging.Console
 
         public bool IncludeScopes { get; set; }
 
+        public bool DisableColors { get; set; }
+
         public IDictionary<string, LogLevel> Switches { get; set; } = new Dictionary<string, LogLevel>();
 
         public IConsoleLoggerSettings Reload()

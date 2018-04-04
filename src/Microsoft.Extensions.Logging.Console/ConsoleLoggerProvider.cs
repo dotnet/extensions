@@ -22,9 +22,15 @@ namespace Microsoft.Extensions.Logging.Console
         private static readonly Func<string, LogLevel, bool> falseFilter = (cat, level) => false;
         private IDisposable _optionsReloadToken;
         private bool _includeScopes;
+        private bool _disableColors;
         private IExternalScopeProvider _scopeProvider;
 
         public ConsoleLoggerProvider(Func<string, LogLevel, bool> filter, bool includeScopes)
+            : this(filter, includeScopes, false)
+        {
+        }
+
+        public ConsoleLoggerProvider(Func<string, LogLevel, bool> filter, bool includeScopes, bool disableColors)
         {
             if (filter == null)
             {
@@ -33,6 +39,7 @@ namespace Microsoft.Extensions.Logging.Console
 
             _filter = filter;
             _includeScopes = includeScopes;
+            _disableColors = disableColors;
         }
 
         public ConsoleLoggerProvider(IOptionsMonitor<ConsoleLoggerOptions> options)
@@ -46,10 +53,12 @@ namespace Microsoft.Extensions.Logging.Console
         private void ReloadLoggerOptions(ConsoleLoggerOptions options)
         {
             _includeScopes = options.IncludeScopes;
+            _disableColors = options.DisableColors;
             var scopeProvider = GetScopeProvider();
             foreach (var logger in _loggers.Values)
             {
                 logger.ScopeProvider = scopeProvider;
+                logger.DisableColors = options.DisableColors;
             }
         }
 
@@ -77,6 +86,7 @@ namespace Microsoft.Extensions.Logging.Console
                 _settings = _settings.Reload();
 
                 _includeScopes = _settings?.IncludeScopes ?? false;
+
                 var scopeProvider = GetScopeProvider();
                 foreach (var logger in _loggers.Values)
                 {
@@ -106,8 +116,12 @@ namespace Microsoft.Extensions.Logging.Console
         private ConsoleLogger CreateLoggerImplementation(string name)
         {
             var includeScopes = _settings?.IncludeScopes ?? _includeScopes;
+            var disableColors = _disableColors;
 
-            return new ConsoleLogger(name, GetFilter(name, _settings), includeScopes? _scopeProvider: null, _messageQueue);
+            return new ConsoleLogger(name, GetFilter(name, _settings), includeScopes? _scopeProvider: null, _messageQueue)
+                {
+                    DisableColors = disableColors
+                };
         }
 
         private Func<string, LogLevel, bool> GetFilter(string name, IConsoleLoggerSettings settings)
