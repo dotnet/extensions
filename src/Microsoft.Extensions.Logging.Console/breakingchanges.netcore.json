@@ -1,0 +1,7 @@
+[
+    {
+      "TypeId": "public interface Microsoft.Extensions.Logging.Console.IConsoleLoggerSettings",
+      "MemberId": "System.Boolean get_DisableColors()",
+      "Kind": "Addition"
+    }
+  ]
