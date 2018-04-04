@@ -209,13 +209,13 @@ namespace Microsoft.Extensions.Internal
 #if NETCOREAPP2_1
             var data = new byte[dataLength];
             var base64 = buffer.AsSpan(bufferOffset, base64Len);
-            EncodingHelper.UrlDecode(input.AsSpan(offset, count), base64);
+            UrlEncoder.UrlDecode(input.AsSpan(offset, count), base64);
             Convert.TryFromBase64Chars(base64, data, out int written);
             Debug.Assert(written == dataLength);
 
             return data;
 #else
-            EncodingHelper.UrlDecode(input.AsSpan(offset, count), buffer.AsSpan(bufferOffset, base64Len));
+            UrlEncoder.UrlDecode(input.AsSpan(offset, count), buffer.AsSpan(bufferOffset, base64Len));
             return Convert.FromBase64CharArray(buffer, bufferOffset, base64Len);
 #endif
         }
@@ -363,7 +363,7 @@ namespace Microsoft.Extensions.Internal
 
             if (status == OperationStatus.Done || status == OperationStatus.NeedMoreData)
             {
-                bytesWritten = EncodingHelper.UrlEncode(base64Url, bytesWritten);
+                bytesWritten = UrlEncoder.UrlEncode(base64Url, bytesWritten);
             }
 
             return status;
@@ -494,7 +494,7 @@ namespace Microsoft.Extensions.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int Base64UrlDecodeCore(ReadOnlySpan<char> base64Url, Span<byte> base64Bytes, Span<byte> data)
         {
-            EncodingHelper.UrlDecode(base64Url, base64Bytes);
+            UrlEncoder.UrlDecode(base64Url, base64Bytes);
             var status = Base64.DecodeFromUtf8(base64Bytes, data, out int consumed, out int written);
 
             if (status != OperationStatus.Done)
@@ -531,7 +531,7 @@ namespace Microsoft.Extensions.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static OperationStatus Base64UrlDecodeCore(ReadOnlySpan<byte> base64Url, Span<byte> base64, Span<byte> data, out int consumed, out int written, bool isFinalBlock)
         {
-            EncodingHelper.UrlDecode(base64Url, base64, isFinalBlock);
+            UrlEncoder.UrlDecode(base64Url, base64, isFinalBlock);
             var status = Base64.DecodeFromUtf8(base64, data, out consumed, out written, isFinalBlock);
 
             if (status != OperationStatus.Done && status != OperationStatus.NeedMoreData)
@@ -555,7 +555,7 @@ namespace Microsoft.Extensions.Internal
 
             Span<char> base64 = stackalloc char[base64Len];
             Convert.TryToBase64Chars(data, base64, out int written);
-            return EncodingHelper.UrlEncode(base64, base64Url);
+            return UrlEncoder.UrlEncode(base64, base64Url);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -566,7 +566,7 @@ namespace Microsoft.Extensions.Internal
             {
                 var base64 = new Span<char>(arrayToReturnToPool = ArrayPool<char>.Shared.Rent(base64Len), 0, base64Len);
                 Convert.TryToBase64Chars(data, base64, out int written);
-                return EncodingHelper.UrlEncode(base64, base64Url);
+                return UrlEncoder.UrlEncode(base64, base64Url);
             }
             finally
             {
@@ -598,7 +598,7 @@ namespace Microsoft.Extensions.Internal
                     ThrowHelper.ThrowOperationNotDone(status);
                 }
 
-                return EncodingHelper.UrlEncode(base64Bytes, base64Url);
+                return UrlEncoder.UrlEncode(base64Bytes, base64Url);
 #if !NET461
             }
             finally
@@ -723,9 +723,8 @@ namespace Microsoft.Extensions.Internal
             }
         }
 
-        // internal to make this testable
         // TODO: replace IntPtr and (int*) with nuint once available
-        internal static unsafe class EncodingHelper
+        internal static unsafe class UrlEncoder
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void UrlDecode(ReadOnlySpan<byte> urlEncoded, Span<byte> base64, bool isFinalBlock = true)

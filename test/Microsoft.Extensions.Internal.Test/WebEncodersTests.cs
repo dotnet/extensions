@@ -230,7 +230,7 @@ namespace Microsoft.Extensions.Internal
             Span<byte> result = stackalloc byte[expectedValue.Length];
 
             // Act
-            WebEncoders.EncodingHelper.UrlDecode(bytes, result);
+            WebEncoders.UrlEncoder.UrlDecode(bytes, result);
 
             // Assert
             Assert.True(expected.SequenceEqual(result));
@@ -239,7 +239,7 @@ namespace Microsoft.Extensions.Internal
             var buffer = new char[expectedValue.Length];
 
             // Act
-            WebEncoders.EncodingHelper.UrlDecode(text.AsSpan(), buffer);
+            WebEncoders.UrlEncoder.UrlDecode(text.AsSpan(), buffer);
 
             // Assert
             Assert.Equal(expectedValue, new string(buffer));
@@ -270,7 +270,7 @@ namespace Microsoft.Extensions.Internal
             Encoding.ASCII.GetBytes(expectedValue.AsSpan(), expected);
 
             // Act
-            var result = WebEncoders.EncodingHelper.UrlEncode(bytes, bytes.Length);
+            var result = WebEncoders.UrlEncoder.UrlEncode(bytes, bytes.Length);
 
             // Assert
             Assert.True(expected.SequenceEqual(bytes.Slice(0, result)));
@@ -279,7 +279,7 @@ namespace Microsoft.Extensions.Internal
             var buffer = base64EncodedValue.ToCharArray();
 
             // Act
-            var result = WebEncoders.EncodingHelper.UrlEncode(buffer, buffer);
+            var result = WebEncoders.UrlEncoder.UrlEncode(buffer, buffer);
 
             // Assert
             Assert.Equal(expectedValue.Length, result);
