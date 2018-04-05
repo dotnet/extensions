@@ -184,11 +184,11 @@ namespace Microsoft.Extensions.Internal
         [InlineData(4, 4)]
         [InlineData(6, 8)]
         [InlineData(7, 8)]
-        public void GetArraySizeRequiredToDecode(int inputLength, int expectedPadding)
+        public void GetArraySizeRequiredToDecode(int inputLength, int expectedLength)
         {
             var result = WebEncoders.GetArraySizeRequiredToDecode(inputLength);
 
-            Assert.Equal(expectedPadding, result);
+            Assert.Equal(expectedLength, result);
         }
 
         [Fact]
@@ -209,6 +209,35 @@ namespace Microsoft.Extensions.Internal
             });
         }
 
+        [Theory]
+        [InlineData(0, 0)]
+        [InlineData(2, 4)]
+        [InlineData(3, 4)]
+        [InlineData(4, 8)]
+        [InlineData(6, 8)]
+        [InlineData(7, 12)]
+        [InlineData(16, 24)]
+        public void GetArraySizeRequiredToEncode(int inputLength, int expectedLength)
+        {
+            var result = WebEncoders.GetArraySizeRequiredToEncode(inputLength);
+
+            Assert.Equal(expectedLength, result);
+        }
+
+        [Fact]
+        public void GetArraySizeRequiredToEncode_NegativeInputLength_Throws()
+        {
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => WebEncoders.GetArraySizeRequiredToEncode(-1));
+            Assert.Equal("count", exception.ParamName);
+        }
+
+        [Fact]
+        public void GetArraySizeRequiredToEncode_InputLengthTooBig_Throws()
+        {
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => WebEncoders.GetArraySizeRequiredToEncode((int.MaxValue / 4) * 3 + 1));
+            Assert.Equal("count", exception.ParamName);
+        }
+
         // Taken from https://github.com/aspnet/HttpAbstractions/pull/926
         [Theory]
         [InlineData("_", "/")]
@@ -218,7 +247,7 @@ namespace Microsoft.Extensions.Internal
         [InlineData("a-b_c", "a+b/c==")]
         [InlineData("a-b_c-d", "a+b/c+d=")]
         [InlineData("abcd", "abcd")]
-        public void UrlDecode_ReturnsValid_Base64String(string text, string expectedValue)
+        public void SubstituteUrlCharsForDecoding_ReturnsValid_Base64String(string text, string expectedValue)
         {
 // To test the alternate code-path
 #if NETCOREAPP2_1
@@ -230,7 +259,7 @@ namespace Microsoft.Extensions.Internal
             Span<byte> result = stackalloc byte[expectedValue.Length];
 
             // Act
-            WebEncoders.UrlEncoder.UrlDecode(bytes, result);
+            WebEncoders.UrlCharsHelper.SubstituteUrlCharsForDecoding(bytes, result);
 
             // Assert
             Assert.True(expected.SequenceEqual(result));
@@ -239,7 +268,7 @@ namespace Microsoft.Extensions.Internal
             var buffer = new char[expectedValue.Length];
 
             // Act
-            WebEncoders.UrlEncoder.UrlDecode(text.AsSpan(), buffer);
+            WebEncoders.UrlCharsHelper.SubstituteUrlCharsForDecoding(text.AsSpan(), buffer);
 
             // Assert
             Assert.Equal(expectedValue, new string(buffer));
@@ -259,7 +288,7 @@ namespace Microsoft.Extensions.Internal
         [InlineData("a+b/c== ", "a-b_c")]
         [InlineData("a+b/c   ", "a-b_c   ")]
         [InlineData("abcd", "abcd")]
-        public void UrlEncode_Replaces_UrlEncodableCharacters(string base64EncodedValue, string expectedValue)
+        public void SubstituteUrlCharsForEncoding_Replaces_UrlEncodableCharacters(string base64EncodedValue, string expectedValue)
         {
 // To test the alternate code-path
 #if NETCOREAPP2_1
@@ -270,7 +299,7 @@ namespace Microsoft.Extensions.Internal
             Encoding.ASCII.GetBytes(expectedValue.AsSpan(), expected);
 
             // Act
-            var result = WebEncoders.UrlEncoder.UrlEncode(bytes, bytes.Length);
+            var result = WebEncoders.UrlCharsHelper.SubstituteUrlCharsForEncoding(bytes, bytes.Length);
 
             // Assert
             Assert.True(expected.SequenceEqual(bytes.Slice(0, result)));
@@ -279,7 +308,7 @@ namespace Microsoft.Extensions.Internal
             var buffer = base64EncodedValue.ToCharArray();
 
             // Act
-            var result = WebEncoders.UrlEncoder.UrlEncode(buffer, buffer);
+            var result = WebEncoders.UrlCharsHelper.SubstituteUrlCharsForEncoding(buffer, buffer);
 
             // Assert
             Assert.Equal(expectedValue.Length, result);

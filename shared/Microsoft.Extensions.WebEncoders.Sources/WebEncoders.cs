@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
+using System.Buffers.Text;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.WebEncoders.Sources;
-using System.Buffers;
-using System.Buffers.Text;
 
 #if !NET461
 using System.Numerics;
@@ -209,13 +209,13 @@ namespace Microsoft.Extensions.Internal
 #if NETCOREAPP2_1
             var data = new byte[dataLength];
             var base64 = buffer.AsSpan(bufferOffset, base64Len);
-            UrlEncoder.UrlDecode(input.AsSpan(offset, count), base64);
+            UrlCharsHelper.SubstituteUrlCharsForDecoding(input.AsSpan(offset, count), base64);
             Convert.TryFromBase64Chars(base64, data, out int written);
             Debug.Assert(written == dataLength);
 
             return data;
 #else
-            UrlEncoder.UrlDecode(input.AsSpan(offset, count), buffer.AsSpan(bufferOffset, base64Len));
+            UrlCharsHelper.SubstituteUrlCharsForDecoding(input.AsSpan(offset, count), buffer.AsSpan(bufferOffset, base64Len));
             return Convert.FromBase64CharArray(buffer, bufferOffset, base64Len);
 #endif
         }
@@ -328,7 +328,7 @@ namespace Microsoft.Extensions.Internal
                 return 0;
             }
 
-            var base64Len = GetBufferSizeRequiredToBase64Encode(data.Length);
+            var base64Len = GetArraySizeRequiredToEncode(data.Length);
             return Base64UrlEncodeCore(data, base64Url, base64Len);
         }
 
@@ -363,7 +363,7 @@ namespace Microsoft.Extensions.Internal
 
             if (status == OperationStatus.Done || status == OperationStatus.NeedMoreData)
             {
-                bytesWritten = UrlEncoder.UrlEncode(base64Url, bytesWritten);
+                bytesWritten = UrlCharsHelper.SubstituteUrlCharsForEncoding(base64Url, bytesWritten);
             }
 
             return status;
@@ -398,7 +398,7 @@ namespace Microsoft.Extensions.Internal
                 ThrowInvalidArguments(input, offset, count, output, outputOffset, ExceptionArgument.output, validateBuffer: true);
             }
 
-            var base64Len = GetBufferSizeRequiredToBase64Encode(count);
+            var base64Len = GetArraySizeRequiredToEncode(count);
             if ((uint)output.Length < (uint)(outputOffset + base64Len))
             {
                 ThrowHelper.ThrowInvalidCountOffsetOrLengthException(ExceptionArgument.count, ExceptionArgument.outputOffset, ExceptionArgument.output);
@@ -449,7 +449,7 @@ namespace Microsoft.Extensions.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetArraySizeRequiredToEncode(int count)
         {
-            if (count < 0 || count > MaxEncodedLength)
+            if ((uint)count > MaxEncodedLength)
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count);
             }
@@ -459,6 +459,9 @@ namespace Microsoft.Extensions.Internal
 
         private static int Base64UrlDecodeCore(ReadOnlySpan<char> base64Url, Span<byte> data, int base64Len)
         {
+            // Internal usage, so it can be assumed that base64Len is exactely a multiple of 4
+            Debug.Assert(base64Len % 4 == 0, "base64Len must be multiple of 4");
+
             if (base64Len > MaxStackallocBytes / sizeof(char))
             {
                 return Base64UrlDecodeCoreSlow(base64Url, data, base64Len);
@@ -471,6 +474,8 @@ namespace Microsoft.Extensions.Internal
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static int Base64UrlDecodeCoreSlow(ReadOnlySpan<char> base64Url, Span<byte> data, int base64Len)
         {
+            // Internal usage, so it can be assumed that base64Len is exactely a multiple of 4
+            Debug.Assert(base64Len % 4 == 0, "base64Len must be multiple of 4");
 #if !NET461
             byte[] arrayToReturnToPool = null;
             try
@@ -494,7 +499,7 @@ namespace Microsoft.Extensions.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int Base64UrlDecodeCore(ReadOnlySpan<char> base64Url, Span<byte> base64Bytes, Span<byte> data)
         {
-            UrlEncoder.UrlDecode(base64Url, base64Bytes);
+            UrlCharsHelper.SubstituteUrlCharsForDecoding(base64Url, base64Bytes);
             var status = Base64.DecodeFromUtf8(base64Bytes, data, out int consumed, out int written);
 
             if (status != OperationStatus.Done)
@@ -508,6 +513,8 @@ namespace Microsoft.Extensions.Internal
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static OperationStatus Base64UrlDecodeCoreSlow(ReadOnlySpan<byte> base64Url, Span<byte> data, int base64Len, out int bytesConsumed, out int bytesWritten, bool isFinalBlock)
         {
+            // Internal usage, so it can be assumed that base64Len is exactely a multiple of 4
+            Debug.Assert(base64Len % 4 == 0, "base64Len must be multiple of 4");
 #if NET461
             var base64 = new byte[base64Len];
             return Base64UrlDecodeCore(base64Url, base64, data, out bytesConsumed, out bytesWritten, isFinalBlock);
@@ -531,7 +538,7 @@ namespace Microsoft.Extensions.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static OperationStatus Base64UrlDecodeCore(ReadOnlySpan<byte> base64Url, Span<byte> base64, Span<byte> data, out int consumed, out int written, bool isFinalBlock)
         {
-            UrlEncoder.UrlDecode(base64Url, base64, isFinalBlock);
+            UrlCharsHelper.SubstituteUrlCharsForDecoding(base64Url, base64, isFinalBlock);
             var status = Base64.DecodeFromUtf8(base64, data, out consumed, out written, isFinalBlock);
 
             if (status != OperationStatus.Done && status != OperationStatus.NeedMoreData)
@@ -548,6 +555,9 @@ namespace Microsoft.Extensions.Internal
 #if NETCOREAPP2_1
         private static int Base64UrlEncodeCore(ReadOnlySpan<byte> data, Span<char> base64Url, int base64Len)
         {
+            // Internal usage, so it can be assumed that base64Len is exactely a multiple of 4
+            Debug.Assert(base64Len % 4 == 0, "base64Len must be multiple of 4");
+
             if (base64Len > MaxStackallocBytes / sizeof(char))
             {
                 return Base64UrlEncodeCoreSlow(data, base64Url, base64Len);
@@ -555,18 +565,21 @@ namespace Microsoft.Extensions.Internal
 
             Span<char> base64 = stackalloc char[base64Len];
             Convert.TryToBase64Chars(data, base64, out int written);
-            return UrlEncoder.UrlEncode(base64, base64Url);
+            return UrlCharsHelper.SubstituteUrlCharsForEncoding(base64, base64Url);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static int Base64UrlEncodeCoreSlow(ReadOnlySpan<byte> data, Span<char> base64Url, int base64Len)
         {
+            // Internal usage, so it can be assumed that base64Len is exactely a multiple of 4
+            Debug.Assert(base64Len % 4 == 0, "base64Len must be multiple of 4");
+
             char[] arrayToReturnToPool = null;
             try
             {
                 var base64 = new Span<char>(arrayToReturnToPool = ArrayPool<char>.Shared.Rent(base64Len), 0, base64Len);
                 Convert.TryToBase64Chars(data, base64, out int written);
-                return UrlEncoder.UrlEncode(base64, base64Url);
+                return UrlCharsHelper.SubstituteUrlCharsForEncoding(base64, base64Url);
             }
             finally
             {
@@ -579,6 +592,8 @@ namespace Microsoft.Extensions.Internal
 #else
         private static int Base64UrlEncodeCore(ReadOnlySpan<byte> data, Span<char> base64Url, int base64Len)
         {
+            // Internal usage, so it can be assumed that base64Len is exactely a multiple of 4
+            Debug.Assert(base64Len % 4 == 0, "base64Len must be multiple of 4");
 #if !NET461
             byte[] arrayToReturnToPool = null;
             try
@@ -598,7 +613,7 @@ namespace Microsoft.Extensions.Internal
                     ThrowHelper.ThrowOperationNotDone(status);
                 }
 
-                return UrlEncoder.UrlEncode(base64Bytes, base64Url);
+                return UrlCharsHelper.SubstituteUrlCharsForEncoding(base64Bytes, base64Url);
 #if !NET461
             }
             finally
@@ -640,16 +655,11 @@ namespace Microsoft.Extensions.Internal
             // 3 -> 1
             // default -> format exception
 
-            var result = 1;
-            var mod = urlEncodedLen & 3;
+            var result = (4 - urlEncodedLen) & 3;
 
-            if (mod == 1)
+            if (result == 3)
             {
                 ThrowHelper.ThrowMalformedInputException(urlEncodedLen);
-            }
-            else if (mod == 0 || mod == 2)
-            {
-                result = mod;
             }
 
             return result;
@@ -658,6 +668,7 @@ namespace Microsoft.Extensions.Internal
         private static int GetBufferSizeRequiredToBase64Encode(int dataLength)
         {
             // overflow conditions are already eliminated, so 'checked' is not necessary
+            Debug.Assert(dataLength >= 0 && dataLength <= MaxEncodedLength);
 
             var numWholeOrPartialInputBlocks = (dataLength + 2) / 3;
             return numWholeOrPartialInputBlocks * 4;
@@ -724,28 +735,28 @@ namespace Microsoft.Extensions.Internal
         }
 
         // TODO: replace IntPtr and (int*) with nuint once available
-        internal static unsafe class UrlEncoder
+        internal static unsafe class UrlCharsHelper
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void UrlDecode(ReadOnlySpan<byte> urlEncoded, Span<byte> base64, bool isFinalBlock = true)
+            public static void SubstituteUrlCharsForDecoding(ReadOnlySpan<byte> urlEncoded, Span<byte> base64, bool isFinalBlock = true)
             {
                 ref var input = ref MemoryMarshal.GetReference(urlEncoded);
                 ref var output = ref MemoryMarshal.GetReference(base64);
 
-                UrlDecode(ref input, ref output, urlEncoded.Length, base64.Length, isFinalBlock);
+                SubstituteUrlCharsForDecoding(ref input, ref output, urlEncoded.Length, base64.Length, isFinalBlock);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void UrlDecode(ReadOnlySpan<char> urlEncoded, Span<char> base64)
+            public static void SubstituteUrlCharsForDecoding(ReadOnlySpan<char> urlEncoded, Span<char> base64)
             {
                 ref var input = ref Unsafe.As<char, ushort>(ref MemoryMarshal.GetReference(urlEncoded));
                 ref var output = ref Unsafe.As<char, ushort>(ref MemoryMarshal.GetReference(base64));
 
-                UrlDecode(ref input, ref output, urlEncoded.Length, base64.Length);
+                SubstituteUrlCharsForDecoding(ref input, ref output, urlEncoded.Length, base64.Length);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static void UrlDecode<T>(ref T urlEncoded, ref T base64, int urlEncodedLen, int base64Len, bool isFinalBlock = true) where T : struct
+            private static void SubstituteUrlCharsForDecoding<T>(ref T urlEncoded, ref T base64, int urlEncodedLen, int base64Len, bool isFinalBlock = true) where T : struct
             {
                 // Copy input into base64, fixing up '-' -> '+' and '_' -> '/' and add padding.
 
@@ -758,7 +769,7 @@ namespace Microsoft.Extensions.Internal
                     m = (IntPtr)((int)(int*)n & ~(Vector<T>.Count - 1));
                     for (; (int*)i < (int*)m; i += Vector<T>.Count)
                     {
-                        var vec = Unsafe.As<T, Vector<T>>(ref Unsafe.Add(ref urlEncoded, i));
+                        var vec = Unsafe.ReadUnaligned<Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.Add(ref urlEncoded, i)));
 
                         if (typeof(T) == typeof(byte))
                         {
@@ -770,6 +781,10 @@ namespace Microsoft.Extensions.Internal
                             vec = Substitute(vec, (T)(object)(ushort)'-', (T)(object)(ushort)'+');
                             vec = Substitute(vec, (T)(object)(ushort)'_', (T)(object)(ushort)'/');
                         }
+                        else
+                        {
+                            throw new NotSupportedException();  // just in case new types are introduced in the future
+                        }
 
                         Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref Unsafe.Add(ref base64, i)), vec);
                     }
@@ -778,15 +793,15 @@ namespace Microsoft.Extensions.Internal
                 m = (IntPtr)((int)(int*)n & ~3);
                 for (; (int*)i < (int*)m; i += 4)
                 {
-                    UrlDecode(ref urlEncoded, ref base64, i + 0);
-                    UrlDecode(ref urlEncoded, ref base64, i + 1);
-                    UrlDecode(ref urlEncoded, ref base64, i + 2);
-                    UrlDecode(ref urlEncoded, ref base64, i + 3);
+                    SubstituteUrlCharsForDecoding(ref urlEncoded, ref base64, i + 0);
+                    SubstituteUrlCharsForDecoding(ref urlEncoded, ref base64, i + 1);
+                    SubstituteUrlCharsForDecoding(ref urlEncoded, ref base64, i + 2);
+                    SubstituteUrlCharsForDecoding(ref urlEncoded, ref base64, i + 3);
                 }
 
                 for (; (int*)i < (int*)n; i += 1)
                 {
-                    UrlDecode(ref urlEncoded, ref base64, i);
+                    SubstituteUrlCharsForDecoding(ref urlEncoded, ref base64, i);
                 }
 
                 if (isFinalBlock)
@@ -808,7 +823,7 @@ namespace Microsoft.Extensions.Internal
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void UrlDecode(ReadOnlySpan<char> urlEncoded, Span<byte> base64)
+            public static void SubstituteUrlCharsForDecoding(ReadOnlySpan<char> urlEncoded, Span<byte> base64)
             {
                 // Copy input into base64, fixing up '-' -> '+' and '_' -> '/' and add padding.
 
@@ -839,15 +854,15 @@ namespace Microsoft.Extensions.Internal
                 m = (IntPtr)((int)(int*)n & ~3);
                 for (; (int*)i < (int*)m; i += 4)
                 {
-                    UrlDecode(ref input, ref output, i + 0);
-                    UrlDecode(ref input, ref output, i + 1);
-                    UrlDecode(ref input, ref output, i + 2);
-                    UrlDecode(ref input, ref output, i + 3);
+                    SubstituteUrlCharsForDecoding(ref input, ref output, i + 0);
+                    SubstituteUrlCharsForDecoding(ref input, ref output, i + 1);
+                    SubstituteUrlCharsForDecoding(ref input, ref output, i + 2);
+                    SubstituteUrlCharsForDecoding(ref input, ref output, i + 3);
                 }
 
                 for (; (int*)i < (int*)n; i += 1)
                 {
-                    UrlDecode(ref input, ref output, i);
+                    SubstituteUrlCharsForDecoding(ref input, ref output, i);
                 }
 
                 n = (IntPtr)base64.Length;
@@ -866,24 +881,24 @@ namespace Microsoft.Extensions.Internal
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static int UrlEncode(Span<byte> base64, int count)
+            public static int SubstituteUrlCharsForEncoding(Span<byte> base64, int count)
             {
                 ref var r = ref MemoryMarshal.GetReference(base64);
 
-                return UrlEncode(ref r, ref r, count);
+                return SubstituteUrlCharsForEncoding(ref r, ref r, count);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static int UrlEncode(ReadOnlySpan<char> base64, Span<char> urlEncoded)
+            public static int SubstituteUrlCharsForEncoding(ReadOnlySpan<char> base64, Span<char> urlEncoded)
             {
                 ref var input = ref Unsafe.As<char, ushort>(ref MemoryMarshal.GetReference(base64));
                 ref var output = ref Unsafe.As<char, ushort>(ref MemoryMarshal.GetReference(urlEncoded));
 
-                return UrlEncode(ref input, ref output, base64.Length);
+                return SubstituteUrlCharsForEncoding(ref input, ref output, base64.Length);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static int UrlEncode<T>(ref T base64, ref T urlEncoded, int base64Length) where T : struct
+            private static int SubstituteUrlCharsForEncoding<T>(ref T base64, ref T urlEncoded, int base64Length) where T : struct
             {
                 // Use base64url encoding with no padding characters. See RFC 4648, Sec. 5.
 
@@ -896,7 +911,7 @@ namespace Microsoft.Extensions.Internal
                     m = (IntPtr)((int)(int*)n & ~(Vector<T>.Count - 1));
                     for (; (int*)i < (int*)m; i += Vector<T>.Count)
                     {
-                        var vec = Unsafe.As<T, Vector<T>>(ref Unsafe.Add(ref base64, i));
+                        var vec = Unsafe.ReadUnaligned<Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.Add(ref base64, i)));
 
                         if (typeof(T) == typeof(byte))
                         {
@@ -912,19 +927,23 @@ namespace Microsoft.Extensions.Internal
                             vec = Substitute<T>(vec, (T)(object)(ushort)'+', (T)(object)(ushort)'-');
                             vec = Substitute<T>(vec, (T)(object)(ushort)'/', (T)(object)(ushort)'_');
                         }
+                        else
+                        {
+                            throw new NotSupportedException();	// just in case new types are introduced in the future
+                        }
 
                         Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref Unsafe.Add(ref urlEncoded, i)), vec);
                     }
                 }
 #endif
                 // n is always a multiple of 4
-                Debug.Assert((int)n == ((int)n & ~3));
+                Debug.Assert((int)n % 4 == 0);
                 for (; (int*)i < (int*)n; i += 4)
                 {
-                    if (UrlEncode(ref base64, ref urlEncoded, i + 0)) goto Exit0;
-                    if (UrlEncode(ref base64, ref urlEncoded, i + 1)) goto Exit1;
-                    if (UrlEncode(ref base64, ref urlEncoded, i + 2)) goto Exit2;
-                    if (UrlEncode(ref base64, ref urlEncoded, i + 3)) goto Exit3;
+                    if (SubstituteUrlCharsForEncoding(ref base64, ref urlEncoded, i + 0)) goto Exit0;
+                    if (SubstituteUrlCharsForEncoding(ref base64, ref urlEncoded, i + 1)) goto Exit1;
+                    if (SubstituteUrlCharsForEncoding(ref base64, ref urlEncoded, i + 2)) goto Exit2;
+                    if (SubstituteUrlCharsForEncoding(ref base64, ref urlEncoded, i + 3)) goto Exit3;
                 }
                 goto Exit0;
 
@@ -936,7 +955,7 @@ namespace Microsoft.Extensions.Internal
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static int UrlEncode(ReadOnlySpan<byte> base64, Span<char> urlEncoded)
+            public static int SubstituteUrlCharsForEncoding(ReadOnlySpan<byte> base64, Span<char> urlEncoded)
             {
                 // A subset of the ASCII-range can be assumed, so no need
                 // to call the encoders necessary for byte -> char
@@ -974,10 +993,10 @@ namespace Microsoft.Extensions.Internal
                 Debug.Assert((int)n == ((int)n & ~3));
                 for (; (int*)i < (int*)n; i += 4)
                 {
-                    if (UrlEncode(ref input, ref output, i + 0)) goto Exit0;
-                    if (UrlEncode(ref input, ref output, i + 1)) goto Exit1;
-                    if (UrlEncode(ref input, ref output, i + 2)) goto Exit2;
-                    if (UrlEncode(ref input, ref output, i + 3)) goto Exit3;
+                    if (SubstituteUrlCharsForEncoding(ref input, ref output, i + 0)) goto Exit0;
+                    if (SubstituteUrlCharsForEncoding(ref input, ref output, i + 1)) goto Exit1;
+                    if (SubstituteUrlCharsForEncoding(ref input, ref output, i + 2)) goto Exit2;
+                    if (SubstituteUrlCharsForEncoding(ref input, ref output, i + 3)) goto Exit3;
                 }
                 goto Exit0;
 
@@ -995,33 +1014,52 @@ namespace Microsoft.Extensions.Internal
                     vector);
 #endif
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static void UrlDecode<TIn, TOut>(ref TIn urlEncoded, ref TOut base64, IntPtr idx)
+            private static void SubstituteUrlCharsForDecoding<TIn, TOut>(ref TIn urlEncoded, ref TOut base64, IntPtr idx)
                 where TIn : struct
                 where TOut : struct
             {
-                var value = Unsafe.As<TIn, byte>(ref Unsafe.Add(ref urlEncoded, idx));
+                TIn tmp = Unsafe.Add(ref urlEncoded, idx);
+                int value = default;
+
+                if (typeof(TIn) == typeof(byte))
+                {
+                    value = (byte)(object)tmp;
+                }
+                else if (typeof(TIn) == typeof(ushort))
+                {
+                    value = (ushort)(object)tmp;
+                }
+                else if (typeof(TIn) == typeof(char))
+                {
+                    value = (char)(object)tmp;
+                }
+                else
+                {
+                    throw new NotSupportedException();  // just in case new types are introduced in the future
+                }
+
                 var subst = value;
 
-                if (value == (byte)'-')
+                if (value == '-')
                 {
-                    subst = (byte)'+';
+                    subst = '+';
                 }
-                else if (value == (byte)'_')
+                else if (value == '_')
                 {
-                    subst = (byte)'/';
+                    subst = '/';
                 }
 
-                // With 'Unsafe.Add(ref output, idx) = Unsafe.As<byte, TOut>(ref subst);'
-                // the JIT will push subst to the stack, instead of using registers.
-                // Therefore this 'if' is used. The JIT will eliminate at compile-time
-                // the not taken branch.
                 if (typeof(TOut) == typeof(byte))
                 {
-                    Unsafe.Add(ref Unsafe.As<TOut, byte>(ref base64), idx) = subst;
+                    Unsafe.Add(ref base64, idx) = (TOut)(object)(byte)subst;
                 }
                 else if (typeof(TOut) == typeof(ushort))
                 {
-                    Unsafe.Add(ref Unsafe.As<TOut, ushort>(ref base64), idx) = subst;
+                    Unsafe.Add(ref base64, idx) = (TOut)(object)(ushort)subst;
+                }
+                else
+                {
+                    throw new NotSupportedException();  // just in case new types are introduced in the future
                 }
             }
 
@@ -1030,16 +1068,20 @@ namespace Microsoft.Extensions.Internal
             {
                 if (typeof(T) == typeof(byte))
                 {
-                    Unsafe.Add(ref Unsafe.As<T, byte>(ref base64), idx) = (byte)'=';
+                    Unsafe.Add(ref base64, idx) = (T)(object)(byte)'=';
                 }
                 else if (typeof(T) == typeof(ushort))
                 {
-                    Unsafe.Add(ref Unsafe.As<T, ushort>(ref base64), idx) = '=';
+                    Unsafe.Add(ref base64, idx) = (T)(object)(ushort)'=';
+                }
+                else
+                {
+                    throw new NotSupportedException();  // just in case new types are introduced in the future
                 }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static bool UrlEncode<TIn, TOut>(ref TIn base64, ref TOut urlEncoded, IntPtr idx)
+            private static bool SubstituteUrlCharsForEncoding<TIn, TOut>(ref TIn base64, ref TOut urlEncoded, IntPtr idx)
                 where TIn : struct
                 where TOut : struct
             {
@@ -1070,6 +1112,10 @@ namespace Microsoft.Extensions.Internal
                 else if (typeof(TOut) == typeof(ushort))
                 {
                     Unsafe.Add(ref Unsafe.As<TOut, ushort>(ref urlEncoded), idx) = subst;
+                }
+                else
+                {
+                    throw new NotSupportedException();  // just in case new types are introduced in the future
                 }
 
                 return false;
