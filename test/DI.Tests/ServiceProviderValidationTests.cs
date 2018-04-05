@@ -50,6 +50,23 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             // Act + Assert
             var exception = Assert.Throws<InvalidOperationException>(() => serviceProvider.GetService(typeof(IFoo)));
             Assert.Equal($"Cannot consume scoped service '{typeof(IBaz)}' from singleton '{typeof(IBar)}'.", exception.Message);
+        }       
+        
+        [Fact]
+        public void GetService_Throws_WhenScopedIsInjectedIntoSingletonThroughSingletonAndScopedWhileInScope()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            
+            serviceCollection.AddScoped<IFoo, Foo>();
+            serviceCollection.AddSingleton<IBar, Bar2>();
+            serviceCollection.AddScoped<IBaz, Baz>();
+            var serviceProvider = serviceCollection.BuildServiceProvider(validateScopes: true);
+            var scope = serviceProvider.CreateScope();
+
+            // Act + Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => scope.ServiceProvider.GetService(typeof(IFoo)));
+            Assert.Equal($"Cannot consume scoped service '{typeof(IBaz)}' from singleton '{typeof(IBar)}'.", exception.Message);
         }
 
         [Fact]

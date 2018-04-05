@@ -96,6 +96,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     nameof(ServiceLifetime.Singleton).ToLowerInvariant()
                     ));
             }
+
+            VisitCallSite(scopedCallSite.ServiceCallSite, state);
             return scopedCallSite.ServiceType;
         }
 
