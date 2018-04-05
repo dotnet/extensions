@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\Microsoft.Extensions.Logging.Testing\build\Microsoft.Extensions.Logging.Testing.props" />
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
@@ -9,5 +10,4 @@
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Logging\Microsoft.Extensions.Logging.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Logging.Test\Microsoft.Extensions.Logging.Test.csproj" />
   </ItemGroup>
-
 </Project>
