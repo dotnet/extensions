@@ -1085,33 +1085,44 @@ namespace Microsoft.Extensions.Internal
                 where TIn : struct
                 where TOut : struct
             {
-                var value = Unsafe.As<TIn, byte>(ref Unsafe.Add(ref base64, idx));
+                TIn tmp = Unsafe.Add(ref base64, idx);
+                int value = default;
+
+                if (typeof(TIn) == typeof(byte))
+                {
+                    value = (byte)(object)tmp;
+                }
+                else if (typeof(TIn) == typeof(ushort))
+                {
+                    value = (ushort)(object)tmp;
+                }
+                else
+                {
+                    throw new NotSupportedException();  // just in case new types are introduced in the future
+                }
+
                 var subst = value;
 
                 if (value == '+')
                 {
-                    subst = (byte)'-';
+                    subst = '-';
                 }
                 else if (value == '/')
                 {
-                    subst = (byte)'_';
+                    subst = '_';
                 }
                 else if (value == '=')
                 {
                     return true;
                 }
 
-                // With 'Unsafe.Add(ref output, idx) = Unsafe.As<byte, TOut>(ref subst);'
-                // the JIT will push subst to the stack, instead of using registers.
-                // Therefore this 'if' is used. The JIT will eliminate at compile-time
-                // the not taken branch.
                 if (typeof(TOut) == typeof(byte))
                 {
-                    Unsafe.Add(ref Unsafe.As<TOut, byte>(ref urlEncoded), idx) = subst;
+                    Unsafe.Add(ref urlEncoded, idx) = (TOut)(object)(byte)subst;
                 }
                 else if (typeof(TOut) == typeof(ushort))
                 {
-                    Unsafe.Add(ref Unsafe.As<TOut, ushort>(ref urlEncoded), idx) = subst;
+                    Unsafe.Add(ref urlEncoded, idx) = (TOut)(object)(ushort)subst;
                 }
                 else
                 {
