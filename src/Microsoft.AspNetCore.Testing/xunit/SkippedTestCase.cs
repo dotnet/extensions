@@ -7,7 +7,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Testing.xunit
 {
-    internal class SkippedTestCase : XunitTestCase
+    public class SkippedTestCase : XunitTestCase
     {
         private string _skipReason;
 
