@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -763,7 +765,18 @@ namespace Microsoft.Extensions.Logging.Test
             var cancellationTokenSource = settings.Cancel;
             settings.Cancel = new CancellationTokenSource();
 
-            cancellationTokenSource.Cancel();
+            var oldConsole = System.Console.Out;
+            var consoleOutput = new StringBuilder();
+            try
+            {
+                var stringWriter = new StringWriter(consoleOutput);
+                System.Console.SetOut(stringWriter);
+                cancellationTokenSource.Cancel();
+            }
+            finally
+            {
+                System.Console.SetOut(oldConsole);
+            }
 
             Assert.False(logger.IsEnabled(LogLevel.Trace));
 
@@ -776,6 +789,7 @@ namespace Microsoft.Extensions.Logging.Test
             cancellationTokenSource.Cancel();
 
             Assert.True(logger.IsEnabled(LogLevel.Trace));
+            Assert.Contains("Failed to parse LogLevel", consoleOutput.ToString());
         }
 
         [Fact]
