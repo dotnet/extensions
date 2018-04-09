@@ -929,7 +929,7 @@ namespace Microsoft.Extensions.Internal
                         }
                         else
                         {
-                            throw new NotSupportedException();	// just in case new types are introduced in the future
+                            throw new NotSupportedException();  // just in case new types are introduced in the future
                         }
 
                         Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref Unsafe.Add(ref urlEncoded, i)), vec);
@@ -1183,11 +1183,11 @@ namespace Microsoft.Extensions.Internal
                 switch (status)
                 {
                     case OperationStatus.DestinationTooSmall:
-                        return new InvalidOperationException();
+                        return new InvalidOperationException(EncoderResources.WebEncoders_DestinationTooSmall);
                     case OperationStatus.InvalidData:
                         return new FormatException(EncoderResources.WebEncoders_InvalidInput);
-                    default:                // This case won't happen.
-                        return null;
+                    default:                                // This case won't happen.
+                        throw new NotSupportedException();  // Just in case new states are introduced
                 }
             }
 

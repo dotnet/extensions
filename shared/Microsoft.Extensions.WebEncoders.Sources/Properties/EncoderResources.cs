@@ -25,6 +25,11 @@ namespace Microsoft.Extensions.WebEncoders.Sources
         internal static readonly string WebEncoders_InvalidInput = "The input is not a valid Base-64 string as it contains a non-base 64 character, more than two padding characters, or an illegal character among the padding characters.";
 
         /// <summary>
+        /// Destination buffer is too small.
+        /// </summary>
+        internal static readonly string WebEncoders_DestinationTooSmall = "The destination buffer is too small.";
+
+        /// <summary>
         /// Invalid {0}, {1} or {2} length.
         /// </summary>
         internal static string FormatWebEncoders_InvalidCountOffsetOrLength(object p0, object p1, object p2)
