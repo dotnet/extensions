@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.Http
     /// <example>
     /// Converting a non-generic <code>IAsyncPolicy policy</code> to <see cref="IAsyncPolicy{HttpResponseMessage}"/>.
     /// <code>
-    /// policy.WrapAsync(Policy.NoOpAsync&lt;HttpResponseMessage&gt;())
+    /// policy.AsAsyncPolicy&lt;HttpResponseMessage&gt;()
     /// </code>
     /// </example>
     /// </para>
@@ -117,7 +117,7 @@ namespace Microsoft.Extensions.Http
             var context = request.GetPolicyExecutionContext();
             if (context == null)
             {
-                context = new Context(null);
+                context = new Context();
                 request.SetPolicyExecutionContext(context);
             }
 
