@@ -294,7 +294,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
                     var id = await reader.GetFieldValueAsync<string>(Columns.Indexes.CacheItemIdIndex, token);
 
                     expirationTime = await reader.GetFieldValueAsync<DateTimeOffset>(
-                        Columns.Indexes.ExpiresAtTimeIndex);
+                        Columns.Indexes.ExpiresAtTimeIndex, token);
 
                     if (!await reader.IsDBNullAsync(Columns.Indexes.SlidingExpirationInSecondsIndex, token))
                     {

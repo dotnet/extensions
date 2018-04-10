@@ -193,7 +193,7 @@ namespace Microsoft.Extensions.Caching.Redis
                 return;
             }
 
-            await _connectionLock.WaitAsync();
+            await _connectionLock.WaitAsync(token);
             try
             {
                 if (_cache == null)
