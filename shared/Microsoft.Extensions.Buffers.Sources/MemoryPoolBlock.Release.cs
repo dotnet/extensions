@@ -3,6 +3,8 @@
 
 #if RELEASE
 
+using System.Runtime.InteropServices;
+
 namespace System.Buffers
 {
     /// <summary>
@@ -25,7 +27,7 @@ namespace System.Buffers
             Pool = pool;
             Slab = slab;
             
-            Memory = Memory<byte>.CreateFromPinnedArray(slab.Array, _offset, _length);
+            Memory = MemoryMarshal.CreateFromPinnedArray(slab.Array, _offset, _length);
         }
 
         /// <summary>
