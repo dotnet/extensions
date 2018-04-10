@@ -628,21 +628,29 @@ namespace Microsoft.Extensions.Internal
 #endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetBufferSizeRequiredToUrlDecode(int urlEncodedLen, out int dataLength)
+        private static int GetBufferSizeRequiredToUrlDecode(int urlEncodedLen, out int dataLength, bool isFinalBlock = true)
         {
-            // Shortcut for Guid and other 16 byte data
-            if (urlEncodedLen == 22)
+            if (isFinalBlock)
             {
-                dataLength = 16;
-                return 24;
+                // Shortcut for Guid and other 16 byte data
+                if (urlEncodedLen == 22)
+                {
+                    dataLength = 16;
+                    return 24;
+                }
+
+                var numPaddingChars = GetNumBase64PaddingCharsToAddForDecode(urlEncodedLen);
+                var base64Len = urlEncodedLen + numPaddingChars;
+                Debug.Assert(base64Len % 4 == 0, "Invariant: Array length must be a multiple of 4.");
+                dataLength = (base64Len >> 2) * 3 - numPaddingChars;
+
+                return base64Len;
             }
-
-            var numPaddingChars = GetNumBase64PaddingCharsToAddForDecode(urlEncodedLen);
-            var base64Len = urlEncodedLen + numPaddingChars;
-            Debug.Assert(base64Len % 4 == 0, "Invariant: Array length must be a multiple of 4.");
-            dataLength = (base64Len >> 2) * 3 - numPaddingChars;
-
-            return base64Len;
+            else
+            {
+                dataLength = (urlEncodedLen >> 2) * 3;
+                return urlEncodedLen;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -732,6 +740,440 @@ namespace Microsoft.Extensions.Internal
 
                 return ThrowHelper.GetInvalidCountOffsetOrLengthException(ExceptionArgument.count, ExceptionArgument.offset, ExceptionArgument.input);
             }
+        }
+
+        internal static class UrlEncoder<T>
+        {
+            public static OperationStatus Decode(ReadOnlySpan<T> urlEncoded, Span<byte> data, out int consumed, out int written, bool isFinalBlock = true)
+            {
+                ref T source = ref MemoryMarshal.GetReference(urlEncoded);
+                ref byte destBytes = ref MemoryMarshal.GetReference(data);
+
+                int base64Len = GetBufferSizeRequiredToUrlDecode(urlEncoded.Length, out int dataLength, isFinalBlock);
+                int srcLength = base64Len & ~0x3;       // only decode input up to closest multiple of 4.
+                int destLength = data.Length;
+
+                int sourceIndex = 0;
+                int destIndex = 0;
+
+                if (urlEncoded.Length == 0)
+                {
+                    goto DoneExit;
+                }
+
+                ref sbyte decodingMap = ref s_decodingMap[0];
+
+                // Last bytes could have padding characters, so process them separately and treat them as valid only if isFinalBlock is true.
+                // If isFinalBlock is false, padding characters are considered invalid.
+                int skipLastChunk = isFinalBlock ? 4 : 0;
+
+                int maxSrcLength = 0;
+                if (destLength >= dataLength)
+                {
+                    maxSrcLength = srcLength - skipLastChunk;
+                }
+                else
+                {
+                    // This should never overflow since destLength here is less than int.MaxValue / 4 * 3.
+                    // Therefore, (destLength / 3) * 4 will always be less than int.MaxValue.
+                    maxSrcLength = (destLength / 3) * 4;
+                }
+
+                while (sourceIndex < maxSrcLength)
+                {
+                    int result = DecodeFour(ref Unsafe.Add(ref source, sourceIndex), ref decodingMap);
+
+                    if (result < 0) goto InvalidExit;
+
+                    WriteThreeLowOrderBytes(ref destBytes, destIndex, result);
+                    destIndex += 3;
+                    sourceIndex += 4;
+                }
+
+                if (maxSrcLength != srcLength - skipLastChunk)
+                {
+                    goto DestinationSmallExit;
+                }
+
+                // If input is less than 4 bytes, srcLength == sourceIndex == 0
+                // If input is not a multiple of 4, sourceIndex == srcLength != 0
+                if (sourceIndex == srcLength)
+                {
+                    if (isFinalBlock)
+                    {
+                        goto InvalidExit;
+                    }
+
+                    goto NeedMoreExit;
+                }
+
+                // If isFinalBlock is false, we will never reach this point.
+
+                // Handle last four bytes. There are 0, 1, 2 padding chars.
+                int numPaddingChars = base64Len - urlEncoded.Length;
+                ref T lastFourStart = ref Unsafe.Add(ref source, srcLength - 4);
+
+                if (numPaddingChars == 0)
+                {
+                    int result = DecodeFour(ref lastFourStart, ref decodingMap);
+
+                    if (result < 0) goto InvalidExit;
+                    if (destIndex > destLength - 3) goto DestinationSmallExit;
+
+                    WriteThreeLowOrderBytes(ref destBytes, destIndex, result);
+                    destIndex += 3;
+                    sourceIndex += 4;
+                }
+                else if (numPaddingChars == 1)
+                {
+                    int result = DecodeThree(ref lastFourStart, ref decodingMap);
+
+                    if (result < 0) goto InvalidExit;
+                    if (destIndex > destLength - 2) goto DestinationSmallExit;
+
+                    WriteTwoLowOrderBytes(ref destBytes, destIndex, result);
+                    destIndex += 2;
+                    sourceIndex += 3;
+                }
+                else
+                {
+                    int result = DecodeTwo(ref lastFourStart, ref decodingMap);
+
+                    if (result < 0) goto InvalidExit;
+                    if (destIndex > destLength - 1) goto DestinationSmallExit;
+
+                    WriteOneLowOrderByte(ref destBytes, destIndex, result);
+                    destIndex += 1;
+                    sourceIndex += 2;
+                }
+
+                if (srcLength != base64Len)
+                {
+                    goto InvalidExit;
+                }
+
+            DoneExit:
+                consumed = sourceIndex;
+                written = destIndex;
+                return OperationStatus.Done;
+
+            DestinationSmallExit:
+                if (srcLength != urlEncoded.Length && isFinalBlock)
+                {
+                    goto InvalidExit;   // if input is not a multiple of 4, and there is no more data, return invalid data instead
+                }
+                consumed = sourceIndex;
+                written = destIndex;
+                return OperationStatus.DestinationTooSmall;
+
+            NeedMoreExit:
+                consumed = sourceIndex;
+                written = destIndex;
+                return OperationStatus.NeedMoreData;
+
+            InvalidExit:
+                consumed = sourceIndex;
+                written = destIndex;
+                return OperationStatus.InvalidData;
+            }
+
+            public static OperationStatus Encode(ReadOnlySpan<byte> data, Span<T> urlEncoded, out int consumed, out int written, bool isFinalBlock = true)
+            {
+                ref byte srcBytes = ref MemoryMarshal.GetReference(data);
+                ref T destination = ref MemoryMarshal.GetReference(urlEncoded);
+
+                int srcLength = data.Length;
+                int destLength = urlEncoded.Length;
+
+                int maxSrcLength = -2;
+                if (srcLength <= MaxEncodedLength && destLength >= GetBufferSizeRequiredToBase64Encode(srcLength, out int numPaddingChars) - numPaddingChars)
+                {
+                    maxSrcLength += srcLength;
+                }
+                else
+                {
+                    maxSrcLength += (destLength >> 2) * 3;
+                }
+
+                int sourceIndex = 0;
+                int destIndex = 0;
+
+                ref byte encodingMap = ref s_encodingMap[0];
+
+                while (sourceIndex < maxSrcLength)
+                {
+                    EncodeThreeBytes(ref Unsafe.Add(ref srcBytes, sourceIndex), ref Unsafe.Add(ref destination, destIndex), ref encodingMap);
+                    destIndex += 4;
+                    sourceIndex += 3;
+                }
+
+                if (maxSrcLength != srcLength - 2)
+                    goto DestinationSmallExit;
+
+                if (!isFinalBlock)
+                    goto NeedMoreDataExit;
+
+                if (sourceIndex == srcLength - 1)
+                {
+                    EncodeOneByte(ref Unsafe.Add(ref srcBytes, sourceIndex), ref Unsafe.Add(ref destination, destIndex), ref encodingMap);
+                    destIndex += 2;
+                    sourceIndex += 1;
+                }
+                else if (sourceIndex == srcLength - 2)
+                {
+                    EncodeTwoBytes(ref Unsafe.Add(ref srcBytes, sourceIndex), ref Unsafe.Add(ref destination, destIndex), ref encodingMap);
+                    destIndex += 3;
+                    sourceIndex += 2;
+                }
+
+                consumed = sourceIndex;
+                written = destIndex;
+                return OperationStatus.Done;
+
+            NeedMoreDataExit:
+                consumed = sourceIndex;
+                written = destIndex;
+                return OperationStatus.NeedMoreData;
+
+            DestinationSmallExit:
+                consumed = sourceIndex;
+                written = destIndex;
+                return OperationStatus.DestinationTooSmall;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static int DecodeFour(ref T encoded, ref sbyte decodingMap)
+            {
+                int i0, i1, i2, i3;
+
+                if (typeof(T) == typeof(byte))
+                {
+                    ref byte tmp = ref Unsafe.As<T, byte>(ref encoded);
+                    i0 = Unsafe.Add(ref tmp, 0);
+                    i1 = Unsafe.Add(ref tmp, 1);
+                    i2 = Unsafe.Add(ref tmp, 2);
+                    i3 = Unsafe.Add(ref tmp, 3);
+                }
+                else if (typeof(T) == typeof(char))
+                {
+                    ref char tmp = ref Unsafe.As<T, char>(ref encoded);
+                    i0 = Unsafe.Add(ref tmp, 0);
+                    i1 = Unsafe.Add(ref tmp, 1);
+                    i2 = Unsafe.Add(ref tmp, 2);
+                    i3 = Unsafe.Add(ref tmp, 3);
+                }
+                else
+                {
+                    throw new NotSupportedException();  // just in case new types are introduced in the future
+                }
+
+                i0 = Unsafe.Add(ref decodingMap, i0);
+                i1 = Unsafe.Add(ref decodingMap, i1);
+                i2 = Unsafe.Add(ref decodingMap, i2);
+                i3 = Unsafe.Add(ref decodingMap, i3);
+
+                return i0 << 18
+                    | i1 << 12
+                    | i2 << 6
+                    | i3;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static int DecodeThree(ref T encoded, ref sbyte decodingMap)
+            {
+                int i0, i1, i2;
+
+                if (typeof(T) == typeof(byte))
+                {
+                    ref byte tmp = ref Unsafe.As<T, byte>(ref encoded);
+                    i0 = Unsafe.Add(ref tmp, 0);
+                    i1 = Unsafe.Add(ref tmp, 1);
+                    i2 = Unsafe.Add(ref tmp, 2);
+                }
+                else if (typeof(T) == typeof(char))
+                {
+                    ref char tmp = ref Unsafe.As<T, char>(ref encoded);
+                    i0 = Unsafe.Add(ref tmp, 0);
+                    i1 = Unsafe.Add(ref tmp, 1);
+                    i2 = Unsafe.Add(ref tmp, 2);
+                }
+                else
+                {
+                    throw new NotSupportedException();  // just in case new types are introduced in the future
+                }
+
+                i0 = Unsafe.Add(ref decodingMap, i0);
+                i1 = Unsafe.Add(ref decodingMap, i1);
+                i2 = Unsafe.Add(ref decodingMap, i2);
+
+                return i0 << 18
+                    | i1 << 12
+                    | i2 << 6;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static int DecodeTwo(ref T encoded, ref sbyte decodingMap)
+            {
+                int i0, i1;
+
+                if (typeof(T) == typeof(byte))
+                {
+                    ref byte tmp = ref Unsafe.As<T, byte>(ref encoded);
+                    i0 = Unsafe.Add(ref tmp, 0);
+                    i1 = Unsafe.Add(ref tmp, 1);
+                }
+                else if (typeof(T) == typeof(char))
+                {
+                    ref char tmp = ref Unsafe.As<T, char>(ref encoded);
+                    i0 = Unsafe.Add(ref tmp, 0);
+                    i1 = Unsafe.Add(ref tmp, 1);
+                }
+                else
+                {
+                    throw new NotSupportedException();  // just in case new types are introduced in the future
+                }
+
+                i0 = Unsafe.Add(ref decodingMap, i0);
+                i1 = Unsafe.Add(ref decodingMap, i1);
+
+                return i0 << 18
+                    | i1 << 12;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static void WriteThreeLowOrderBytes(ref byte destination, int destIndex, int value)
+            {
+                Unsafe.Add(ref destination, destIndex + 0) = (byte)(value >> 16);
+                Unsafe.Add(ref destination, destIndex + 1) = (byte)(value >> 8);
+                Unsafe.Add(ref destination, destIndex + 2) = (byte)value;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static void WriteTwoLowOrderBytes(ref byte destination, int destIndex, int value)
+            {
+                Unsafe.Add(ref destination, destIndex + 0) = (byte)(value >> 16);
+                Unsafe.Add(ref destination, destIndex + 1) = (byte)(value >> 8);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static void WriteOneLowOrderByte(ref byte destination, int destIndex, int value)
+            {
+                Unsafe.Add(ref destination, destIndex) = (byte)(value >> 16);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static void EncodeThreeBytes(ref byte threeBytes, ref T encoded, ref byte encodingMap)
+            {
+                int i = (threeBytes << 16) | (Unsafe.Add(ref threeBytes, 1) << 8) | Unsafe.Add(ref threeBytes, 2);
+
+                int i0 = Unsafe.Add(ref encodingMap, i >> 18);
+                int i1 = Unsafe.Add(ref encodingMap, (i >> 12) & 0x3F);
+                int i2 = Unsafe.Add(ref encodingMap, (i >> 6) & 0x3F);
+                int i3 = Unsafe.Add(ref encodingMap, i & 0x3F);
+
+                if (typeof(T) == typeof(byte))
+                {
+                    i = i0 | (i1 << 8) | (i2 << 16) | (i3 << 24);
+                    Unsafe.WriteUnaligned(ref Unsafe.As<T, byte>(ref encoded), i);
+                }
+                else if (typeof(T) == typeof(char))
+                {
+                    ref char enc = ref Unsafe.As<T, char>(ref encoded);
+                    Unsafe.Add(ref enc, 0) = (char)i0;
+                    Unsafe.Add(ref enc, 1) = (char)i1;
+                    Unsafe.Add(ref enc, 2) = (char)i2;
+                    Unsafe.Add(ref enc, 3) = (char)i3;
+                }
+                else
+                {
+                    throw new NotSupportedException();  // just in case new types are introduced in the future
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static void EncodeTwoBytes(ref byte twoBytes, ref T encoded, ref byte encodingMap)
+            {
+                int i = (twoBytes << 16) | (Unsafe.Add(ref twoBytes, 1) << 8);
+
+                int i0 = Unsafe.Add(ref encodingMap, i >> 18);
+                int i1 = Unsafe.Add(ref encodingMap, (i >> 12) & 0x3F);
+                int i2 = Unsafe.Add(ref encodingMap, (i >> 6) & 0x3F);
+
+                if (typeof(T) == typeof(byte))
+                {
+                    ref byte enc = ref Unsafe.As<T, byte>(ref encoded);
+                    Unsafe.Add(ref enc, 0) = (byte)i0;
+                    Unsafe.Add(ref enc, 1) = (byte)i1;
+                    Unsafe.Add(ref enc, 2) = (byte)i2;
+                }
+                else if (typeof(T) == typeof(char))
+                {
+                    ref char enc = ref Unsafe.As<T, char>(ref encoded);
+                    Unsafe.Add(ref enc, 0) = (char)i0;
+                    Unsafe.Add(ref enc, 1) = (char)i1;
+                    Unsafe.Add(ref enc, 2) = (char)i2;
+                }
+                else
+                {
+                    throw new NotSupportedException();  // just in case new types are introduced in the future
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static void EncodeOneByte(ref byte oneByte, ref T encoded, ref byte encodingMap)
+            {
+                int i = (oneByte << 16);
+
+                int i0 = Unsafe.Add(ref encodingMap, i >> 18);
+                int i1 = Unsafe.Add(ref encodingMap, (i >> 12) & 0x3F);
+
+                if (typeof(T) == typeof(byte))
+                {
+                    ref byte enc = ref Unsafe.As<T, byte>(ref encoded);
+                    Unsafe.Add(ref enc, 0) = (byte)i0;
+                    Unsafe.Add(ref enc, 1) = (byte)i1;
+                }
+                else if (typeof(T) == typeof(char))
+                {
+                    ref char enc = ref Unsafe.As<T, char>(ref encoded);
+                    Unsafe.Add(ref enc, 0) = (char)i0;
+                    Unsafe.Add(ref enc, 1) = (char)i1;
+                }
+                else
+                {
+                    throw new NotSupportedException();  // just in case new types are introduced in the future
+                }
+            }
+
+            private static readonly sbyte[] s_decodingMap = {
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1,
+                52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1,
+                -1,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
+                15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, 63,
+                -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+                41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1,
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+            };
+
+            private static readonly byte[] s_encodingMap = {
+                 65/*A*/,  66/*B*/,  67/*C*/,  68/*D*/,  69/*E*/,  70/*F*/,  71/*G*/,  72/*H*/,
+                 73/*I*/,  74/*J*/,  75/*K*/,  76/*L*/,  77/*M*/,  78/*N*/,  79/*O*/,  80/*P*/,
+                 81/*Q*/,  82/*R*/,  83/*S*/,  84/*T*/,  85/*U*/,  86/*V*/,  87/*W*/,  88/*X*/,
+                 89/*Y*/,  90/*Z*/,  97/*a*/,  98/*b*/,  99/*c*/, 100/*d*/, 101/*e*/, 102/*f*/,
+                103/*g*/, 104/*h*/, 105/*i*/, 106/*j*/, 107/*k*/, 108/*l*/, 109/*m*/, 110/*n*/,
+                111/*o*/, 112/*p*/, 113/*q*/, 114/*r*/, 115/*s*/, 116/*t*/, 117/*u*/, 118/*v*/,
+                119/*w*/, 120/*x*/, 121/*y*/, 122/*z*/,  48/*0*/,  49/*1*/,  50/*2*/,  51/*3*/,
+                 52/*4*/,  53/*5*/,  54/*6*/,  55/*7*/,  56/*8*/,  57/*9*/,  45/*-*/,  95/*_*/
+            };
         }
 
         // TODO: replace IntPtr and (int*) with nuint once available
@@ -947,10 +1389,10 @@ namespace Microsoft.Extensions.Internal
                 }
                 goto Exit0;
 
-                Exit3: i += 1;
-                Exit2: i += 1;
-                Exit1: i += 1;
-                Exit0:
+            Exit3: i += 1;
+            Exit2: i += 1;
+            Exit1: i += 1;
+            Exit0:
                 return (int)(int*)i;
             }
 
@@ -1000,10 +1442,10 @@ namespace Microsoft.Extensions.Internal
                 }
                 goto Exit0;
 
-                Exit3: i += 1;
-                Exit2: i += 1;
-                Exit1: i += 1;
-                Exit0:
+            Exit3: i += 1;
+            Exit2: i += 1;
+            Exit1: i += 1;
+            Exit0:
                 return (int)(int*)i;
             }
 #if !NET461
