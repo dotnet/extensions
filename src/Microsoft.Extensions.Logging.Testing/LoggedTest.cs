@@ -11,8 +11,6 @@ namespace Microsoft.Extensions.Logging.Testing
 {
     public abstract class LoggedTest
     {
-        private ILoggerFactory _loggerFactory;
-
         // Obsolete but keeping for back compat
         public LoggedTest(ITestOutputHelper output = null)
         {
@@ -20,28 +18,20 @@ namespace Microsoft.Extensions.Logging.Testing
         }
 
         // Internal for testing
-        internal string TestMethodTestName { get; set; }
+        internal string ResolvedTestMethodName { get; set; }
+
+        // Internal for testing
+        internal string ResolvedTestClassName { get; set; }
 
         public ILogger Logger { get; set; }
 
-        public ILoggerFactory LoggerFactory
-        {
-            get
-            {
-                return _loggerFactory;
-            }
-            set
-            {
-                _loggerFactory = value;
-                AddTestLogging = services => services.AddSingleton(_loggerFactory);
-            }
-        }
+        public ILoggerFactory LoggerFactory { get; set; }
 
         public ITestOutputHelper TestOutputHelper { get; set; }
 
         public ITestSink TestSink { get; set; }
 
-        public Action<IServiceCollection> AddTestLogging { get; private set; } = services => { };
+        public void AddTestLogging(IServiceCollection services) => services.AddSingleton(LoggerFactory);
 
         public IDisposable StartLog(out ILoggerFactory loggerFactory, [CallerMemberName] string testName = null) => StartLog(out loggerFactory, LogLevel.Information, testName);
 

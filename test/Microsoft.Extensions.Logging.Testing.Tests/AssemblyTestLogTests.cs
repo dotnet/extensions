@@ -9,7 +9,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Extensions.Logging.Testing.Tests
@@ -17,6 +16,12 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
     public class AssemblyTestLogTests : LoggedTest
     {
         private static readonly Assembly ThisAssembly = typeof(AssemblyTestLog).GetTypeInfo().Assembly;
+
+        [Fact]
+        public void FullClassNameUsedWhenShortClassNameAttributeNotSpecified()
+        {
+            Assert.Equal(GetType().FullName, ResolvedTestClassName);
+        }
 
         [Fact]
         public void ForAssembly_ReturnsSameInstanceForSameAssembly()
@@ -52,7 +57,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             RunTestLogFunctionalTest((tempDir) =>
             {
                 var illegalTestName = "Testing-https://localhost:5000";
-                var escapedTestName = "Testing-https___localhost_5000";
+                var escapedTestName = "Testing-https_localhost_5000";
                 using (var testAssemblyLog = AssemblyTestLog.Create("FakeTestAssembly", baseDirectory: tempDir))
                 using (testAssemblyLog.StartTestLog(output: null, className: "FakeTestAssembly.FakeTestClass", loggerFactory: out var testLoggerFactory, minLogLevel: LogLevel.Trace, resolvedTestName: out var resolvedTestname, testName: illegalTestName))
                 {

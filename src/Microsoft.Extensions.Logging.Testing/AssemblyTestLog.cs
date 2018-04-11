@@ -258,7 +258,17 @@ namespace Microsoft.Extensions.Logging.Testing
 
             foreach (var c in s)
             {
-                sb.Append(InvalidFileChars.Contains(c) ? '_' : c);
+                if (InvalidFileChars.Contains(c))
+                {
+                    if (sb.Length > 0 && sb[sb.Length - 1] != '_')
+                    {
+                        sb.Append('_');
+                    }
+                }
+                else
+                {
+                    sb.Append(c);
+                }
             }
             return sb.ToString();
         }
