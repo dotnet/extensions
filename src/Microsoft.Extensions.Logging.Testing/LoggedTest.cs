@@ -39,5 +39,7 @@ namespace Microsoft.Extensions.Logging.Testing
         {
             return AssemblyTestLog.ForAssembly(GetType().GetTypeInfo().Assembly).StartTestLog(TestOutputHelper, GetType().FullName, out loggerFactory, minLogLevel, testName);
         }
+
+        public virtual void AdditionalLoggerSetup() { }
     }
 }

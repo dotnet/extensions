@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 namespace Microsoft.Extensions.Logging.Testing.Tests
 {
     [ShortClassName]
-    public class LoggedTestXunitTests : LoggedTest
+    public class LoggedTestXunitTests : TestLoggedTest
     {
         private readonly ITestOutputHelper _output;
 
@@ -121,6 +121,23 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             Assert.Equal($"{nameof(LoggedTheoryNullArgumentsAreEscaped)}_null", ResolvedTestMethodName);
             // Use the test argument
             Assert.Null(argument);
+        }
+
+
+        [Fact]
+        public void AdditionalSetupInvoked()
+        {
+            Assert.True(SetupInvoked);
+        }
+    }
+
+    public class TestLoggedTest : LoggedTest
+    {
+        public bool SetupInvoked { get; private set; } = false;
+
+        public override void AdditionalLoggerSetup()
+        {
+            SetupInvoked = true;
         }
     }
 }

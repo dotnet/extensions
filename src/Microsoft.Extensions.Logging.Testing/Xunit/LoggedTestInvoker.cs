@@ -90,6 +90,8 @@ namespace Microsoft.Extensions.Logging.Testing
                 loggedTestClass.Logger = loggerFactory.CreateLogger(classType);
                 loggedTestClass.TestSink = new TestSink();
                 loggerFactory.AddProvider(new TestLoggerProvider(loggedTestClass.TestSink));
+
+                loggedTestClass.AdditionalLoggerSetup();
             }
 
             return testClass;
