@@ -20,5 +20,13 @@ namespace Microsoft.Extensions.Logging.Testing
         public object Scope { get; set; }
 
         public string LoggerName { get; set; }
+
+        public string Message
+        {
+            get
+            {
+                return Formatter(State, Exception);
+            }
+        }
     }
 }
