@@ -123,7 +123,6 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             Assert.Null(argument);
         }
 
-
         [Fact]
         public void AdditionalSetupInvoked()
         {
@@ -135,7 +134,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
     {
         public bool SetupInvoked { get; private set; } = false;
 
-        public override void AdditionalLoggerSetup()
+        public override void AdditionalSetup()
         {
             SetupInvoked = true;
         }
