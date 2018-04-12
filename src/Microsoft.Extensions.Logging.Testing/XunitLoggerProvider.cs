@@ -74,7 +74,7 @@ namespace Microsoft.Extensions.Logging.Testing
             {
                 lines = exception.ToString().Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
                 additionalLinePrefix = "| ";
-                foreach (var line in lines.Skip(1))
+                foreach (var line in lines)
                 {
                     messageBuilder.AppendLine(additionalLinePrefix + line);
                 }
