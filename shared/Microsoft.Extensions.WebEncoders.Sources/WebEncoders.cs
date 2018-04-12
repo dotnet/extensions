@@ -94,7 +94,7 @@ namespace Microsoft.Extensions.Internal
 
             var base64Len = GetBufferSizeRequiredToUrlDecode(base64Url.Length, out int dataLength);
             var data = new byte[dataLength];
-            var written = Base64UrlDecodeCore(base64Url, data, base64Len);
+            var written = Base64UrlDecodeCore(base64Url, data);
             Debug.Assert(data.Length == written);
 
             return data;
@@ -118,11 +118,7 @@ namespace Microsoft.Extensions.Internal
                 return 0;
             }
 
-            var base64Len = GetBufferSizeRequiredToUrlDecode(base64Url.Length, out int dataLength);
-            var written = Base64UrlDecodeCore(base64Url, data, base64Len);
-            Debug.Assert(dataLength == written);
-
-            return written;
+            return Base64UrlDecodeCore(base64Url, data);
         }
 
         /// <summary>
@@ -150,17 +146,7 @@ namespace Microsoft.Extensions.Internal
                 return OperationStatus.Done;
             }
 
-            var base64Len = isFinalBlock
-                ? GetBufferSizeRequiredToUrlDecode(base64Url.Length, out int dataLength)
-                : base64Url.Length;
-
-            if (base64Len > MaxStackallocBytes / sizeof(byte))
-            {
-                return Base64UrlDecodeCoreSlow(base64Url, data, base64Len, out bytesConsumed, out bytesWritten, isFinalBlock);
-            }
-
-            Span<byte> base64 = stackalloc byte[base64Len];
-            return Base64UrlDecodeCore(base64Url, base64, data, out bytesConsumed, out bytesWritten, isFinalBlock);
+            return Base64UrlDecodeCore(base64Url, data, out bytesConsumed, out bytesWritten, isFinalBlock);
         }
 
         /// <summary>
@@ -206,18 +192,11 @@ namespace Microsoft.Extensions.Internal
                 ThrowHelper.ThrowInvalidCountOffsetOrLengthException(ExceptionArgument.count, ExceptionArgument.bufferOffset, ExceptionArgument.input);
             }
 
-#if NETCOREAPP2_1
             var data = new byte[dataLength];
-            var base64 = buffer.AsSpan(bufferOffset, base64Len);
-            UrlCharsHelper.SubstituteUrlCharsForDecoding(input.AsSpan(offset, count), base64);
-            Convert.TryFromBase64Chars(base64, data, out int written);
-            Debug.Assert(written == dataLength);
+            var written = Base64UrlDecodeCore(input.AsSpan(offset, count), data);
+            Debug.Assert(dataLength == written);
 
             return data;
-#else
-            UrlCharsHelper.SubstituteUrlCharsForDecoding(input.AsSpan(offset, count), buffer.AsSpan(bufferOffset, base64Len));
-            return Convert.FromBase64CharArray(buffer, bufferOffset, base64Len);
-#endif
         }
 
         /// <summary>
@@ -268,14 +247,15 @@ namespace Microsoft.Extensions.Internal
             }
 
             var base64Len = GetBufferSizeRequiredToBase64Encode(data.Length, out int numPaddingChars);
+            var base64UrlLen = base64Len - numPaddingChars;
 #if NETCOREAPP2_1
             fixed (byte* ptr = &MemoryMarshal.GetReference(data))
             {
-                return string.Create(base64Len - numPaddingChars, (Ptr: (IntPtr)ptr, data.Length, base64Len), (base64Url, state) =>
+                return string.Create(base64UrlLen, (Ptr: (IntPtr)ptr, data.Length), (base64Url, state) =>
                 {
                     var bytes = new ReadOnlySpan<byte>(state.Ptr.ToPointer(), state.Length);
-
-                    Base64UrlEncodeCore(bytes, base64Url, state.base64Len);
+                    var urlEncodedLen = Base64UrlEncodeCore(bytes, base64Url);
+                    Debug.Assert(base64Url.Length == urlEncodedLen);
                 });
             }
 #else
@@ -284,7 +264,7 @@ namespace Microsoft.Extensions.Internal
             try
             {
 #endif
-                var base64UrlLen = base64Len - numPaddingChars;
+
                 var base64Url = base64UrlLen <= MaxStackallocBytes / sizeof(char)
                     ? stackalloc char[base64UrlLen]
 #if NET461
@@ -292,7 +272,7 @@ namespace Microsoft.Extensions.Internal
 #else
                     : arrayToReturnToPool = ArrayPool<char>.Shared.Rent(base64UrlLen);
 #endif
-                var urlEncodedLen = Base64UrlEncodeCore(data, base64Url, base64Len);
+                var urlEncodedLen = Base64UrlEncodeCore(data, base64Url);
                 Debug.Assert(base64UrlLen == urlEncodedLen);
 
                 fixed (char* ptr = &MemoryMarshal.GetReference(base64Url))
@@ -328,8 +308,7 @@ namespace Microsoft.Extensions.Internal
                 return 0;
             }
 
-            var base64Len = GetArraySizeRequiredToEncode(data.Length);
-            return Base64UrlEncodeCore(data, base64Url, base64Len);
+            return Base64UrlEncodeCore(data, base64Url);
         }
 
         /// <summary>
@@ -359,14 +338,9 @@ namespace Microsoft.Extensions.Internal
                 return OperationStatus.Done;
             }
 
-            var status = Base64.EncodeToUtf8(data, base64Url, out bytesConsumed, out bytesWritten, isFinalBlock);
+            // TODO check if status exception should be thrown
 
-            if (status == OperationStatus.Done || status == OperationStatus.NeedMoreData)
-            {
-                bytesWritten = UrlCharsHelper.SubstituteUrlCharsForEncoding(base64Url, bytesWritten);
-            }
-
-            return status;
+            return UrlEncoder<byte>.Encode(data, base64Url, out bytesConsumed, out bytesWritten, isFinalBlock);
         }
 
         /// <summary>
@@ -410,7 +384,7 @@ namespace Microsoft.Extensions.Internal
                 return 0;
             }
 
-            return Base64UrlEncodeCore(input.AsSpan(offset, count), output.AsSpan(outputOffset), base64Len);
+            return Base64UrlEncodeCore(input.AsSpan(offset, count), output.AsSpan(outputOffset));
         }
 
         /// <summary>
@@ -449,58 +423,13 @@ namespace Microsoft.Extensions.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetArraySizeRequiredToEncode(int count)
         {
-            if ((uint)count > MaxEncodedLength)
-            {
-                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count);
-            }
-
             return count == 0 ? 0 : GetBufferSizeRequiredToBase64Encode(count);
         }
 
-        private static int Base64UrlDecodeCore(ReadOnlySpan<char> base64Url, Span<byte> data, int base64Len)
-        {
-            // Internal usage, so it can be assumed that base64Len is exactely a multiple of 4
-            Debug.Assert(base64Len % 4 == 0, "base64Len must be multiple of 4");
-
-            if (base64Len > MaxStackallocBytes / sizeof(char))
-            {
-                return Base64UrlDecodeCoreSlow(base64Url, data, base64Len);
-            }
-
-            Span<byte> base64Bytes = stackalloc byte[base64Len];
-            return Base64UrlDecodeCore(base64Url, base64Bytes, data);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static int Base64UrlDecodeCoreSlow(ReadOnlySpan<char> base64Url, Span<byte> data, int base64Len)
-        {
-            // Internal usage, so it can be assumed that base64Len is exactely a multiple of 4
-            Debug.Assert(base64Len % 4 == 0, "base64Len must be multiple of 4");
-#if !NET461
-            byte[] arrayToReturnToPool = null;
-            try
-            {
-                var base64Bytes = new Span<byte>(arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64Len), 0, base64Len);
-                return Base64UrlDecodeCore(base64Url, base64Bytes, data);
-            }
-            finally
-            {
-                if (arrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
-                }
-            }
-#else
-            var base64Bytes = new byte[base64Len];
-            return Base64UrlDecodeCore(base64Url, base64Bytes, data);
-#endif
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int Base64UrlDecodeCore(ReadOnlySpan<char> base64Url, Span<byte> base64Bytes, Span<byte> data)
+        private static int Base64UrlDecodeCore(ReadOnlySpan<char> base64Url, Span<byte> data)
         {
-            UrlCharsHelper.SubstituteUrlCharsForDecoding(base64Url, base64Bytes);
-            var status = Base64.DecodeFromUtf8(base64Bytes, data, out int consumed, out int written);
+            var status = UrlEncoder<char>.Decode(base64Url, data, out int consumed, out int written);
 
             if (status != OperationStatus.Done)
             {
@@ -510,122 +439,31 @@ namespace Microsoft.Extensions.Internal
             return written;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static OperationStatus Base64UrlDecodeCoreSlow(ReadOnlySpan<byte> base64Url, Span<byte> data, int base64Len, out int bytesConsumed, out int bytesWritten, bool isFinalBlock)
-        {
-            // Internal usage, so it can be assumed that base64Len is exactely a multiple of 4
-            Debug.Assert(base64Len % 4 == 0, "base64Len must be multiple of 4");
-#if NET461
-            var base64 = new byte[base64Len];
-            return Base64UrlDecodeCore(base64Url, base64, data, out bytesConsumed, out bytesWritten, isFinalBlock);
-#else
-            byte[] arrayToReturnToPool = null;
-            try
-            {
-                var base64 = new Span<byte>(arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64Len), 0, base64Len);
-                return Base64UrlDecodeCore(base64Url, base64, data, out bytesConsumed, out bytesWritten, isFinalBlock);
-            }
-            finally
-            {
-                if (arrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
-                }
-            }
-#endif
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static OperationStatus Base64UrlDecodeCore(ReadOnlySpan<byte> base64Url, Span<byte> base64, Span<byte> data, out int consumed, out int written, bool isFinalBlock)
+        private static OperationStatus Base64UrlDecodeCore(ReadOnlySpan<byte> base64Url, Span<byte> data, out int consumed, out int written, bool isFinalBlock)
         {
-            UrlCharsHelper.SubstituteUrlCharsForDecoding(base64Url, base64, isFinalBlock);
-            var status = Base64.DecodeFromUtf8(base64, data, out consumed, out written, isFinalBlock);
+            var status = UrlEncoder<byte>.Decode(base64Url, data, out consumed, out written, isFinalBlock);
 
             if (status != OperationStatus.Done && status != OperationStatus.NeedMoreData)
             {
                 ThrowHelper.ThrowOperationNotDone(status);
             }
 
-            // Fix bytesConsumed to match the input 'base64Url' (and not the 'base64')
-            consumed = base64Url.Length - (base64.Length - consumed);
-
             return status;
         }
 
-#if NETCOREAPP2_1
-        private static int Base64UrlEncodeCore(ReadOnlySpan<byte> data, Span<char> base64Url, int base64Len)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int Base64UrlEncodeCore(ReadOnlySpan<byte> data, Span<char> base64Url)
         {
-            // Internal usage, so it can be assumed that base64Len is exactely a multiple of 4
-            Debug.Assert(base64Len % 4 == 0, "base64Len must be multiple of 4");
+            var status = UrlEncoder<char>.Encode(data, base64Url, out int consumed, out int written);
 
-            if (base64Len > MaxStackallocBytes / sizeof(char))
+            if (status != OperationStatus.Done)
             {
-                return Base64UrlEncodeCoreSlow(data, base64Url, base64Len);
+                ThrowHelper.ThrowOperationNotDone(status);
             }
 
-            Span<char> base64 = stackalloc char[base64Len];
-            Convert.TryToBase64Chars(data, base64, out int written);
-            return UrlCharsHelper.SubstituteUrlCharsForEncoding(base64, base64Url);
+            return written;
         }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static int Base64UrlEncodeCoreSlow(ReadOnlySpan<byte> data, Span<char> base64Url, int base64Len)
-        {
-            // Internal usage, so it can be assumed that base64Len is exactely a multiple of 4
-            Debug.Assert(base64Len % 4 == 0, "base64Len must be multiple of 4");
-
-            char[] arrayToReturnToPool = null;
-            try
-            {
-                var base64 = new Span<char>(arrayToReturnToPool = ArrayPool<char>.Shared.Rent(base64Len), 0, base64Len);
-                Convert.TryToBase64Chars(data, base64, out int written);
-                return UrlCharsHelper.SubstituteUrlCharsForEncoding(base64, base64Url);
-            }
-            finally
-            {
-                if (arrayToReturnToPool != null)
-                {
-                    ArrayPool<char>.Shared.Return(arrayToReturnToPool);
-                }
-            }
-        }
-#else
-        private static int Base64UrlEncodeCore(ReadOnlySpan<byte> data, Span<char> base64Url, int base64Len)
-        {
-            // Internal usage, so it can be assumed that base64Len is exactely a multiple of 4
-            Debug.Assert(base64Len % 4 == 0, "base64Len must be multiple of 4");
-#if !NET461
-            byte[] arrayToReturnToPool = null;
-            try
-            {
-#endif
-                var base64Bytes = base64Len <= MaxStackallocBytes / sizeof(byte)
-                    ? stackalloc byte[base64Len]
-#if NET461
-                    : new byte[base64Len];
-#else
-                    : new Span<byte>(arrayToReturnToPool = ArrayPool<byte>.Shared.Rent(base64Len), 0, base64Len);
-#endif
-                var status = Base64.EncodeToUtf8(data, base64Bytes, out int consumed, out int written);
-
-                if (status != OperationStatus.Done)
-                {
-                    ThrowHelper.ThrowOperationNotDone(status);
-                }
-
-                return UrlCharsHelper.SubstituteUrlCharsForEncoding(base64Bytes, base64Url);
-#if !NET461
-            }
-            finally
-            {
-                if (arrayToReturnToPool != null)
-                {
-                    ArrayPool<byte>.Shared.Return(arrayToReturnToPool);
-                }
-            }
-#endif
-        }
-#endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetBufferSizeRequiredToUrlDecode(int urlEncodedLen, out int dataLength, bool isFinalBlock = true)
@@ -673,12 +511,14 @@ namespace Microsoft.Extensions.Internal
             return result;
         }
 
-        private static int GetBufferSizeRequiredToBase64Encode(int dataLength)
+        private static int GetBufferSizeRequiredToBase64Encode(int count)
         {
-            // overflow conditions are already eliminated, so 'checked' is not necessary
-            Debug.Assert(dataLength >= 0 && dataLength <= MaxEncodedLength);
+            if ((uint)count > MaxEncodedLength)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count);
+            }
 
-            var numWholeOrPartialInputBlocks = (dataLength + 2) / 3;
+            var numWholeOrPartialInputBlocks = (count + 2) / 3;
             return numWholeOrPartialInputBlocks * 4;
         }
 
