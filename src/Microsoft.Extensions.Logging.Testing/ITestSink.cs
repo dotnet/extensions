@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace Microsoft.Extensions.Logging.Testing
 {
@@ -9,9 +9,9 @@ namespace Microsoft.Extensions.Logging.Testing
 
         Func<BeginScopeContext, bool> BeginEnabled { get; set; }
 
-        List<BeginScopeContext> Scopes { get; set; }
+        IProducerConsumerCollection<BeginScopeContext> Scopes { get; set; }
 
-        List<WriteContext> Writes { get; set; }
+        IProducerConsumerCollection<WriteContext> Writes { get; set; }
 
         void Write(WriteContext context);
 

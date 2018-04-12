@@ -71,8 +71,8 @@ namespace Microsoft.Extensions.Logging.Test
             logger.LogInformation("test message");
 
             // Assert
-            Assert.Single(testSink.Writes);
-            Assert.Equal(fullNameWithoutBacktick, testSink.Writes[0].LoggerName);
+            var sinkWrite = Assert.Single(testSink.Writes);
+            Assert.Equal(fullNameWithoutBacktick, sinkWrite.LoggerName);
         }
 
         [Fact]
@@ -89,8 +89,8 @@ namespace Microsoft.Extensions.Logging.Test
             logger.LogInformation("test message");
 
             // Assert
-            Assert.Single(testSink.Writes);
-            Assert.Equal(fullNameWithoutBacktick, testSink.Writes[0].LoggerName);
+            var sinkWrite = Assert.Single(testSink.Writes);
+            Assert.Equal(fullNameWithoutBacktick, sinkWrite.LoggerName);
         }
 
         [Fact]
@@ -107,8 +107,8 @@ namespace Microsoft.Extensions.Logging.Test
             logger.LogInformation("test message");
 
             // Assert
-            Assert.Single(testSink.Writes);
-            Assert.Equal(fullNameWithoutBacktick, testSink.Writes[0].LoggerName);
+            var sinkWrite = Assert.Single(testSink.Writes);
+            Assert.Equal(fullNameWithoutBacktick, sinkWrite.LoggerName);
         }
 
 
