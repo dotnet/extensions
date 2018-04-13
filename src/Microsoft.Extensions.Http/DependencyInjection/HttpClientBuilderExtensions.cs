@@ -278,7 +278,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <typeparam name="TClient">
         /// The type of the typed client. They type specified will be registered in the service collection as
-        /// a transient service. See <see cref="ITypedHttpClientFactory" /> for more details about authoring typed clients.
+        /// a transient service. See <see cref="ITypedHttpClientFactory{TClient}" /> for more details about authoring typed clients.
         /// </typeparam>
         /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
         /// <remarks>
@@ -289,7 +289,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </para>
         /// <para>
         /// Calling <see cref="HttpClientBuilderExtensions.AddTypedClient{TClient}(IHttpClientBuilder)"/> will register a typed
-        /// client binding that creates <typeparamref name="TClient"/> using the <see cref="ITypedHttpClientFactory" />.
+        /// client binding that creates <typeparamref name="TClient"/> using the <see cref="ITypedHttpClientFactory{TClient}" />.
         /// </para>
         /// </remarks>
         public static IHttpClientBuilder AddTypedClient<TClient>(this IHttpClientBuilder builder)
@@ -305,8 +305,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 var httpClientFactory = s.GetRequiredService<IHttpClientFactory>();
                 var httpClient = httpClientFactory.CreateClient(builder.Name);
 
-                var typedClientFactory = s.GetRequiredService<ITypedHttpClientFactory>();
-                return typedClientFactory.CreateClient<TClient>(httpClient);
+                var typedClientFactory = s.GetRequiredService<ITypedHttpClientFactory<TClient>>();
+                return typedClientFactory.CreateClient(httpClient);
             });
 
             return builder;
@@ -319,11 +319,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <typeparam name="TClient">
         /// The declared type of the typed client. They type specified will be registered in the service collection as
-        /// a transient service. See <see cref="ITypedHttpClientFactory" /> for more details about authoring typed clients.
+        /// a transient service. See <see cref="ITypedHttpClientFactory{TImplementation}" /> for more details about authoring typed clients.
         /// </typeparam>
         /// <typeparam name="TImplementation">
         /// The implementation type of the typed client. The type specified by will be instantiated by the 
-        /// <see cref="ITypedHttpClientFactory"/>.
+        /// <see cref="ITypedHttpClientFactory{TImplementation}"/>.
         /// </typeparam>
         /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
         /// <remarks>
@@ -335,7 +335,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <para>
         /// Calling <see cref="HttpClientBuilderExtensions.AddTypedClient{TClient,TImplementation}(IHttpClientBuilder)"/>
         /// will register a typed client binding that creates <typeparamref name="TImplementation"/> using the 
-        /// <see cref="ITypedHttpClientFactory" />.
+        /// <see cref="ITypedHttpClientFactory{TImplementation}" />.
         /// </para>
         /// </remarks>
         public static IHttpClientBuilder AddTypedClient<TClient, TImplementation>(this IHttpClientBuilder builder)
@@ -352,8 +352,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 var httpClientFactory = s.GetRequiredService<IHttpClientFactory>();
                 var httpClient = httpClientFactory.CreateClient(builder.Name);
 
-                var typedClientFactory = s.GetRequiredService<ITypedHttpClientFactory>();
-                return typedClientFactory.CreateClient<TImplementation>(httpClient);
+                var typedClientFactory = s.GetRequiredService<ITypedHttpClientFactory<TImplementation>>();
+                return typedClientFactory.CreateClient(httpClient);
             });
 
             return builder;

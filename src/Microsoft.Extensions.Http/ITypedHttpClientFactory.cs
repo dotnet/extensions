@@ -11,21 +11,23 @@ namespace Microsoft.Extensions.Http
     /// A factory abstraction for a component that can create typed client instances with custom
     /// configuration for a given logical name.
     /// </summary>
+    /// <typeparam name="TClient">The type of typed client to create.</typeparam>
     /// <remarks>
     /// <para>
-    /// The <see cref="ITypedHttpClientFactory"/> is infrastructure that supports the
+    /// The <see cref="ITypedHttpClientFactory{TClient}"/> is infrastructure that supports the
     /// <see cref="HttpClientFactoryServiceCollectionExtensions.AddHttpClient{TClient}(IServiceCollection, string)"/> and
     /// <see cref="HttpClientBuilderExtensions.AddTypedClient{TClient}(IHttpClientBuilder)"/> functionality. This type
     /// should rarely be used directly in application code, use <see cref="IServiceProvider.GetService(Type)"/> instead
     /// to retrieve typed clients.
     /// </para>
     /// <para>
-    /// A default <see cref="ITypedHttpClientFactory"/> can be registered in an <see cref="IServiceCollection"/>
+    /// A default <see cref="ITypedHttpClientFactory{TClient}"/> can be registered in an <see cref="IServiceCollection"/>
     /// by calling <see cref="HttpClientFactoryServiceCollectionExtensions.AddHttpClient(IServiceCollection)"/>.
-    /// The default <see cref="ITypedHttpClientFactory"/> will be registered in the service collection as a singleton.
+    /// The default <see cref="ITypedHttpClientFactory{TClient}"/> will be registered in the service collection as a singleton
+    /// open-generic service.
     /// </para>
     /// <para>
-    /// The default <see cref="ITypedHttpClientFactory"/> uses type activation to create typed client instances. Typed
+    /// The default <see cref="ITypedHttpClientFactory{TClient}"/> uses type activation to create typed client instances. Typed
     /// client types are not retrieved directly from the <see cref="IServiceProvider"/>. See 
     /// <see cref="ActivatorUtilities.CreateInstance(IServiceProvider, Type, object[])" /> for details.
     /// </para>
@@ -94,17 +96,16 @@ namespace Microsoft.Extensions.Http
     /// }
     /// </code>
     /// </example>
-    public interface ITypedHttpClientFactory
+    public interface ITypedHttpClientFactory<TClient>
     {
         /// <summary>
         /// Creates a typed client given an associated <see cref="HttpClient"/>.
         /// </summary>
-        /// <typeparam name="TClient">The type of typed client to create.</typeparam>
         /// <param name="httpClient">
         /// An <see cref="HttpClient"/> created by the <see cref="IHttpClientFactory"/> for the named client
         /// associated with <typeparamref name="TClient"/>.
         /// </param>
         /// <returns>An instance of <typeparamref name="TClient"/>.</returns>
-        TClient CreateClient<TClient>(HttpClient httpClient);
+        TClient CreateClient(HttpClient httpClient);
     }
 }
