@@ -18,7 +18,7 @@ namespace Polly
         /// Gets the <see cref="Context"/> associated with the provided <see cref="HttpRequestMessage"/>.
         /// </summary>
         /// <param name="request">The <see cref="HttpRequestMessage"/>.</param>
-        /// <returns>The <see cref="Context"/> is set, otherwise <c>null</c>.</returns>
+        /// <returns>The <see cref="Context"/> if set, otherwise <c>null</c>.</returns>
         /// <remarks>
         /// The <see cref="PolicyHttpMessageHandler"/> will attach a context to the <see cref="HttpResponseMessage"/> prior
         /// to executing a <see cref="Policy"/>, if one does not already exist. The <see cref="Context"/> will be provided
