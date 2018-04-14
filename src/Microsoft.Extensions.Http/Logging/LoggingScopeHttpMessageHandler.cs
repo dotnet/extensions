@@ -68,16 +68,6 @@ namespace Microsoft.Extensions.Http.Logging
                 EventIds.PipelineEnd,
                 "End processing HTTP request after {ElapsedMilliseconds}ms - {StatusCode}");
 
-            private static readonly Action<ILogger, string, IEnumerable<string>, Exception> _requestHeader = LoggerMessage.Define<string, IEnumerable<string>>(
-                LogLevel.Trace,
-                EventIds.RequestHeader,
-                "Request header: '{HeaderName}' - '{HeaderValues}'");
-
-            private static readonly Action<ILogger, string, IEnumerable<string>, Exception> _responseHeader = LoggerMessage.Define<string, IEnumerable<string>>(
-                LogLevel.Trace,
-                EventIds.ResponseHeader,
-                "Response header: '{HeaderName}' - '{HeaderValues}'");
-
             public static IDisposable BeginRequestPipelineScope(ILogger logger, HttpRequestMessage request)
             {
                 return _beginRequestPipelineScope(logger, request.Method, request.RequestUri);
@@ -89,18 +79,12 @@ namespace Microsoft.Extensions.Http.Logging
 
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    foreach (var header in request.Headers)
-                    {
-                        _requestHeader(logger, header.Key, header.Value, null);
-                    }
-
-                    if (request.Content != null)
-                    {
-                        foreach (var header in request.Content.Headers)
-                        {
-                            _requestHeader(logger, header.Key, header.Value, null);
-                        }
-                    }
+                    logger.Log(
+                        LogLevel.Trace,
+                        EventIds.RequestHeader,
+                        new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Request, request.Headers, request.Content?.Headers),
+                        null,
+                        (state, ex) => state.ToString());
                 }
             }
 
@@ -110,18 +94,12 @@ namespace Microsoft.Extensions.Http.Logging
 
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    foreach (var header in response.Headers)
-                    {
-                        _responseHeader(logger, header.Key, header.Value, null);
-                    }
-
-                    if (response.Content != null)
-                    {
-                        foreach (var header in response.Content.Headers)
-                        {
-                            _responseHeader(logger, header.Key, header.Value, null);
-                        }
-                    }
+                    logger.Log(
+                        LogLevel.Trace,
+                        EventIds.ResponseHeader,
+                        new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Response, response.Headers, response.Content?.Headers),
+                        null,
+                        (state, ex) => state.ToString());
                 }
             }
         }

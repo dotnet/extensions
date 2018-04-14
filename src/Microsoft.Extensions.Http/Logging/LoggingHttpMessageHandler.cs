@@ -2,9 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
@@ -65,34 +69,18 @@ namespace Microsoft.Extensions.Http.Logging
                 EventIds.RequestEnd,
                 "Received HTTP response after {ElapsedMilliseconds}ms - {StatusCode}");
 
-            private static readonly Action<ILogger, string, IEnumerable<string>, Exception> _requestHeader = LoggerMessage.Define<string, IEnumerable<string>>(
-                LogLevel.Trace,
-                EventIds.RequestHeader,
-                "Request header: '{HeaderName}' - '{HeaderNames}'");
-
-            private static readonly Action<ILogger, string, IEnumerable<string>, Exception> _responseHeader = LoggerMessage.Define<string, IEnumerable<string>>(
-                LogLevel.Trace,
-                EventIds.ResponseHeader,
-                "Response header: '{HeaderName}' - '{HeaderValues}'");
-
             public static void RequestStart(ILogger logger, HttpRequestMessage request)
             {
                 _requestStart(logger, request.Method, request.RequestUri, null);
 
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    foreach (var header in request.Headers)
-                    {
-                        _requestHeader(logger, header.Key, header.Value, null);
-                    }
-
-                    if (request.Content != null)
-                    {
-                        foreach (var header in request.Content.Headers)
-                        {
-                            _requestHeader(logger, header.Key, header.Value, null);
-                        }
-                    }
+                    logger.Log(
+                        LogLevel.Trace, 
+                        EventIds.RequestHeader, 
+                        new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Request, request.Headers, request.Content?.Headers),
+                        null, 
+                        (state, ex) => state.ToString());
                 }
             }
 
@@ -102,18 +90,12 @@ namespace Microsoft.Extensions.Http.Logging
 
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
-                    foreach (var header in response.Headers)
-                    {
-                        _responseHeader(logger, header.Key, header.Value, null);
-                    }
-
-                    if (response.Content != null)
-                    {
-                        foreach (var header in response.Content.Headers)
-                        {
-                            _responseHeader(logger, header.Key, header.Value, null);
-                        }
-                    }
+                    logger.Log(
+                        LogLevel.Trace, 
+                        EventIds.ResponseHeader, 
+                        new HttpHeadersLogValue(HttpHeadersLogValue.Kind.Response, response.Headers, response.Content?.Headers), 
+                        null, 
+                        (state, ex) => state.ToString());
                 }
             }
         }
