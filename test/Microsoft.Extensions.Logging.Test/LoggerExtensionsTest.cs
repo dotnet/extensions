@@ -623,338 +623,158 @@ namespace Microsoft.Extensions.Logging.Test
                 debug.Formatter(debug.State, debug.Exception));
         }
 
-        [Fact]
-        public void LogLevel_MessageOnly_LogsCorrectValues()
+        [Theory]
+        [InlineData(LogLevel.Trace)]
+        [InlineData(LogLevel.Information)]
+        [InlineData(LogLevel.Warning)]
+        [InlineData(LogLevel.Error)]
+        [InlineData(LogLevel.Critical)]
+        [InlineData(LogLevel.Debug)]
+        public void LogLevel_MessageOnly_LogsCorrectValues(LogLevel logLevel)
         {
             // Arrange
             var sink = new TestSink();
             var logger = SetUp(sink);
 
             // Act
-            logger.Log(LogLevel.Trace, _state);
-            logger.Log(LogLevel.Information, _state);
-            logger.Log(LogLevel.Warning, _state);
-            logger.Log(LogLevel.Error, _state);
-            logger.Log(LogLevel.Critical, _state);
-            logger.Log(LogLevel.Debug, _state);
+            logger.Log(logLevel, _state);
 
             // Assert
-            Assert.Equal(6, sink.Writes.Count);
-
-            Assert.True(sink.Writes.TryTake(out var trace));
-            Assert.Equal(LogLevel.Trace, trace.LogLevel);
-            Assert.Equal(_state, trace.State.ToString());
-            Assert.Equal(0, trace.EventId);
-            Assert.Null(trace.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var information));
-            Assert.Equal(LogLevel.Information, information.LogLevel);
-            Assert.Equal(_state, information.State.ToString());
-            Assert.Equal(0, information.EventId);
-            Assert.Null(information.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var warning));
-            Assert.Equal(LogLevel.Warning, warning.LogLevel);
-            Assert.Equal(_state, warning.State.ToString());
-            Assert.Equal(0, warning.EventId);
-            Assert.Null(warning.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var error));
-            Assert.Equal(LogLevel.Error, error.LogLevel);
-            Assert.Equal(_state, error.State.ToString());
-            Assert.Equal(0, error.EventId);
-            Assert.Null(error.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var critical));
-            Assert.Equal(LogLevel.Critical, critical.LogLevel);
-            Assert.Equal(_state, critical.State.ToString());
-            Assert.Equal(0, critical.EventId);
-            Assert.Null(critical.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var debug));
-            Assert.Equal(LogLevel.Debug, debug.LogLevel);
-            Assert.Equal(_state, debug.State.ToString());
-            Assert.Equal(0, debug.EventId);
-            Assert.Null(debug.Exception);
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(_state, write.State.ToString());
+            Assert.Equal(0, write.EventId);
+            Assert.Null(write.Exception);
         }
 
-        [Fact]
-        public void LogLevel_FormatMessage_LogsCorrectValues()
+        [Theory]
+        [InlineData(LogLevel.Trace)]
+        [InlineData(LogLevel.Information)]
+        [InlineData(LogLevel.Warning)]
+        [InlineData(LogLevel.Error)]
+        [InlineData(LogLevel.Critical)]
+        [InlineData(LogLevel.Debug)]
+        public void LogLevel_FormatMessage_LogsCorrectValues(LogLevel logLevel)
         {
             // Arrange
             var sink = new TestSink();
             var logger = SetUp(sink);
 
             // Act
-            logger.Log(LogLevel.Trace, _format, "test1", "test2");
-            logger.Log(LogLevel.Information, _format, "test1", "test2");
-            logger.Log(LogLevel.Warning, _format, "test1", "test2");
-            logger.Log(LogLevel.Error, _format, "test1", "test2");
-            logger.Log(LogLevel.Critical, _format, "test1", "test2");
-            logger.Log(LogLevel.Debug, _format, "test1", "test2");
+            logger.Log(logLevel, _format, "test1", "test2");
 
             // Assert
-            Assert.Equal(6, sink.Writes.Count);
-
-            Assert.True(sink.Writes.TryTake(out var trace));
-            Assert.Equal(LogLevel.Trace, trace.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), trace.State?.ToString());
-            Assert.Equal(0, trace.EventId);
-            Assert.Null(trace.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var information));
-            Assert.Equal(LogLevel.Information, information.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), information.State?.ToString());
-            Assert.Equal(0, information.EventId);
-            Assert.Null(information.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var warning));
-            Assert.Equal(LogLevel.Warning, warning.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), warning.State?.ToString());
-            Assert.Equal(0, warning.EventId);
-            Assert.Null(warning.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var error));
-            Assert.Equal(LogLevel.Error, error.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), error.State?.ToString());
-            Assert.Equal(0, error.EventId);
-            Assert.Null(error.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var critical));
-            Assert.Equal(LogLevel.Critical, critical.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), critical.State?.ToString());
-            Assert.Equal(0, critical.EventId);
-            Assert.Null(critical.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var debug));
-            Assert.Equal(LogLevel.Debug, debug.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), debug.State?.ToString());
-            Assert.Equal(0, debug.EventId);
-            Assert.Null(debug.Exception);
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(string.Format(_format, "test1", "test2"), write.State?.ToString());
+            Assert.Equal(0, write.EventId);
+            Assert.Null(write.Exception);
         }
 
-        [Fact]
-        public void LogLevel_MessageAndEventId_LogsCorrectValues()
+        [Theory]
+        [InlineData(LogLevel.Trace, 1)]
+        [InlineData(LogLevel.Information, 2)]
+        [InlineData(LogLevel.Warning, 3)]
+        [InlineData(LogLevel.Error, 4)]
+        [InlineData(LogLevel.Critical, 5)]
+        [InlineData(LogLevel.Debug, 6)]
+        public void LogLevel_MessageAndEventId_LogsCorrectValues(LogLevel logLevel, int eventId)
         {
             // Arrange
             var sink = new TestSink();
             var logger = SetUp(sink);
 
             // Act
-            logger.Log(LogLevel.Trace, 1, _state);
-            logger.Log(LogLevel.Information, 2, _state);
-            logger.Log(LogLevel.Warning, 3, _state);
-            logger.Log(LogLevel.Error, 4, _state);
-            logger.Log(LogLevel.Critical, 5, _state);
-            logger.Log(LogLevel.Debug, 6, _state);
+            logger.Log(logLevel, eventId, _state);
 
             // Assert
-            Assert.Equal(6, sink.Writes.Count);
-
-            Assert.True(sink.Writes.TryTake(out var trace));
-            Assert.Equal(LogLevel.Trace, trace.LogLevel);
-            Assert.Equal(_state, trace.State.ToString());
-            Assert.Equal(1, trace.EventId);
-            Assert.Null(trace.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var information));
-            Assert.Equal(LogLevel.Information, information.LogLevel);
-            Assert.Equal(_state, information.State.ToString());
-            Assert.Equal(2, information.EventId);
-            Assert.Null(information.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var warning));
-            Assert.Equal(LogLevel.Warning, warning.LogLevel);
-            Assert.Equal(_state, warning.State.ToString());
-            Assert.Equal(3, warning.EventId);
-            Assert.Null(warning.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var error));
-            Assert.Equal(LogLevel.Error, error.LogLevel);
-            Assert.Equal(_state, error.State.ToString());
-            Assert.Equal(4, error.EventId);
-            Assert.Null(error.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var critical));
-            Assert.Equal(LogLevel.Critical, critical.LogLevel);
-            Assert.Equal(_state, critical.State.ToString());
-            Assert.Equal(5, critical.EventId);
-            Assert.Null(critical.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var debug));
-            Assert.Equal(LogLevel.Debug, debug.LogLevel);
-            Assert.Equal(_state, debug.State.ToString());
-            Assert.Equal(6, debug.EventId);
-            Assert.Null(debug.Exception);
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(_state, write.State.ToString());
+            Assert.Equal(eventId, write.EventId);
+            Assert.Null(write.Exception);
         }
 
-        [Fact]
-        public void LogLevel_FormatMessageAndEventId_LogsCorrectValues()
+        [Theory]
+        [InlineData(LogLevel.Trace, 1)]
+        [InlineData(LogLevel.Information, 2)]
+        [InlineData(LogLevel.Warning, 3)]
+        [InlineData(LogLevel.Error, 4)]
+        [InlineData(LogLevel.Critical, 5)]
+        [InlineData(LogLevel.Debug, 6)]
+        public void LogLevel_FormatMessageAndEventId_LogsCorrectValues(LogLevel logLevel, int eventId)
         {
             // Arrange
             var sink = new TestSink();
             var logger = SetUp(sink);
 
             // Act
-            logger.Log(LogLevel.Trace, 1, _format, "test1", "test2");
-            logger.Log(LogLevel.Information, 2, _format, "test1", "test2");
-            logger.Log(LogLevel.Warning, 3, _format, "test1", "test2");
-            logger.Log(LogLevel.Error, 4, _format, "test1", "test2");
-            logger.Log(LogLevel.Critical, 5, _format, "test1", "test2");
-            logger.Log(LogLevel.Debug, 6, _format, "test1", "test2");
+            logger.Log(logLevel, eventId, _format, "test1", "test2");
 
             // Assert
-            Assert.Equal(6, sink.Writes.Count);
-
-            Assert.True(sink.Writes.TryTake(out var trace));
-            Assert.Equal(LogLevel.Trace, trace.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), trace.State?.ToString());
-            Assert.Equal(1, trace.EventId);
-            Assert.Null(trace.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var information));
-            Assert.Equal(LogLevel.Information, information.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), information.State?.ToString());
-            Assert.Equal(2, information.EventId);
-            Assert.Null(information.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var warning));
-            Assert.Equal(LogLevel.Warning, warning.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), warning.State?.ToString());
-            Assert.Equal(3, warning.EventId);
-            Assert.Null(warning.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var error));
-            Assert.Equal(LogLevel.Error, error.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), error.State?.ToString());
-            Assert.Equal(4, error.EventId);
-            Assert.Null(error.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var critical));
-            Assert.Equal(LogLevel.Critical, critical.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), critical.State?.ToString());
-            Assert.Equal(5, critical.EventId);
-            Assert.Null(critical.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var debug));
-            Assert.Equal(LogLevel.Debug, debug.LogLevel);
-            Assert.Equal(string.Format(_format, "test1", "test2"), debug.State?.ToString());
-            Assert.Equal(6, debug.EventId);
-            Assert.Null(debug.Exception);
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(string.Format(_format, "test1", "test2"), write.State?.ToString());
+            Assert.Equal(eventId, write.EventId);
+            Assert.Null(write.Exception);
         }
 
-        [Fact]
-        public void LogLevel_MessageAndError_LogsCorrectValues()
+        [Theory]
+        [InlineData(LogLevel.Trace)]
+        [InlineData(LogLevel.Information)]
+        [InlineData(LogLevel.Warning)]
+        [InlineData(LogLevel.Error)]
+        [InlineData(LogLevel.Critical)]
+        [InlineData(LogLevel.Debug)]
+        public void LogLevel_MessageAndError_LogsCorrectValues(LogLevel logLevel)
         {
             // Arrange
             var sink = new TestSink();
             var logger = SetUp(sink);
 
             // Act
-            logger.Log(LogLevel.Trace, _exception, _state);
-            logger.Log(LogLevel.Information, _exception, _state);
-            logger.Log(LogLevel.Warning, _exception, _state);
-            logger.Log(LogLevel.Error, _exception, _state);
-            logger.Log(LogLevel.Critical, _exception, _state);
-            logger.Log(LogLevel.Debug, _exception, _state);
+            logger.Log(logLevel, _exception, _state);
 
             // Assert
-            Assert.Equal(6, sink.Writes.Count);
-
-            Assert.True(sink.Writes.TryTake(out var trace));
-            Assert.Equal(LogLevel.Trace, trace.LogLevel);
-            Assert.Equal(_state, trace.State.ToString());
-            Assert.Equal(0, trace.EventId);
-            Assert.Equal(_exception, trace.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var information));
-            Assert.Equal(LogLevel.Information, information.LogLevel);
-            Assert.Equal(_state, information.State.ToString());
-            Assert.Equal(0, information.EventId);
-            Assert.Equal(_exception, information.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var warning));
-            Assert.Equal(LogLevel.Warning, warning.LogLevel);
-            Assert.Equal(_state, warning.State.ToString());
-            Assert.Equal(0, warning.EventId);
-            Assert.Equal(_exception, warning.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var error));
-            Assert.Equal(LogLevel.Error, error.LogLevel);
-            Assert.Equal(_state, error.State.ToString());
-            Assert.Equal(0, error.EventId);
-            Assert.Equal(_exception, error.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var critical));
-            Assert.Equal(LogLevel.Critical, critical.LogLevel);
-            Assert.Equal(_state, critical.State.ToString());
-            Assert.Equal(0, critical.EventId);
-            Assert.Equal(_exception, critical.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var debug));
-            Assert.Equal(LogLevel.Debug, debug.LogLevel);
-            Assert.Equal(_state, debug.State.ToString());
-            Assert.Equal(0, debug.EventId);
-            Assert.Equal(_exception, debug.Exception);
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(_state, write.State.ToString());
+            Assert.Equal(0, write.EventId);
+            Assert.Equal(_exception, write.Exception);
         }
 
-        [Fact]
-        public void LogLevel_MessageEventIdAndError_LogsCorrectValues()
+        [Theory]
+        [InlineData(LogLevel.Trace, 1)]
+        [InlineData(LogLevel.Information, 2)]
+        [InlineData(LogLevel.Warning, 3)]
+        [InlineData(LogLevel.Error, 4)]
+        [InlineData(LogLevel.Critical, 5)]
+        [InlineData(LogLevel.Debug, 6)]
+        public void LogLevel_MessageEventIdAndError_LogsCorrectValues(LogLevel logLevel, int eventId)
         {
             // Arrange
             var sink = new TestSink();
             var logger = SetUp(sink);
 
             // Act
-            logger.Log(LogLevel.Trace, 1, _exception, _state);
-            logger.Log(LogLevel.Information, 2, _exception, _state);
-            logger.Log(LogLevel.Warning, 3, _exception, _state);
-            logger.Log(LogLevel.Error, 4, _exception, _state);
-            logger.Log(LogLevel.Critical, 5, _exception, _state);
-            logger.Log(LogLevel.Debug, 6, _exception, _state);
+            logger.Log(logLevel, eventId, _exception, _state);
 
             // Assert
-            Assert.Equal(6, sink.Writes.Count());
-
-            Assert.True(sink.Writes.TryTake(out var trace));
-            Assert.Equal(LogLevel.Trace, trace.LogLevel);
-            Assert.Equal(_state, trace.State.ToString());
-            Assert.Equal(1, trace.EventId);
-            Assert.Equal(_exception, trace.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var information));
-            Assert.Equal(LogLevel.Information, information.LogLevel);
-            Assert.Equal(_state, information.State.ToString());
-            Assert.Equal(2, information.EventId);
-            Assert.Equal(_exception, information.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var warning));
-            Assert.Equal(LogLevel.Warning, warning.LogLevel);
-            Assert.Equal(_state, warning.State.ToString());
-            Assert.Equal(3, warning.EventId);
-            Assert.Equal(_exception, warning.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var error));
-            Assert.Equal(LogLevel.Error, error.LogLevel);
-            Assert.Equal(_state, error.State.ToString());
-            Assert.Equal(4, error.EventId);
-            Assert.Equal(_exception, error.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var critical));
-            Assert.Equal(LogLevel.Critical, critical.LogLevel);
-            Assert.Equal(_state, critical.State.ToString());
-            Assert.Equal(5, critical.EventId);
-            Assert.Equal(_exception, critical.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var debug));
-            Assert.Equal(LogLevel.Debug, debug.LogLevel);
-            Assert.Equal(_state, debug.State.ToString());
-            Assert.Equal(6, debug.EventId);
-            Assert.Equal(_exception, debug.Exception);
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(_state, write.State.ToString());
+            Assert.Equal(eventId, write.EventId);
+            Assert.Equal(_exception, write.Exception);
         }
 
-        [Fact]
-        public void LogLevel_LogValues_LogsCorrectValues()
+        [Theory]
+        [InlineData(LogLevel.Trace)]
+        [InlineData(LogLevel.Information)]
+        [InlineData(LogLevel.Warning)]
+        [InlineData(LogLevel.Error)]
+        [InlineData(LogLevel.Critical)]
+        [InlineData(LogLevel.Debug)]
+        public void LogLevel_LogValues_LogsCorrectValues(LogLevel logLevel)
         {
             // Arrange
             var sink = new TestSink();
@@ -965,55 +785,24 @@ namespace Microsoft.Extensions.Logging.Test
             };
 
             // Act
-            logger.Log(LogLevel.Trace, 0, testLogValues.ToString());
-            logger.Log(LogLevel.Information, 0, testLogValues.ToString());
-            logger.Log(LogLevel.Warning, 0, testLogValues.ToString());
-            logger.Log(LogLevel.Error, 0, testLogValues.ToString());
-            logger.Log(LogLevel.Critical, 0, testLogValues.ToString());
-            logger.Log(LogLevel.Debug, 0, testLogValues.ToString());
+            logger.Log(logLevel, 0, testLogValues.ToString());
 
             // Assert
-            Assert.Equal(6, sink.Writes.Count());
-
-            Assert.True(sink.Writes.TryTake(out var trace));
-            Assert.Equal(LogLevel.Trace, trace.LogLevel);
-            Assert.Equal(0, trace.EventId);
-            Assert.Null(trace.Exception);
-            Assert.Equal("Test 1", trace.Formatter(trace.State, trace.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var information));
-            Assert.Equal(LogLevel.Information, information.LogLevel);
-            Assert.Equal(0, information.EventId);
-            Assert.Null(information.Exception);
-            Assert.Equal("Test 1", information.Formatter(information.State, information.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var warning));
-            Assert.Equal(LogLevel.Warning, warning.LogLevel);
-            Assert.Equal(0, warning.EventId);
-            Assert.Null(warning.Exception);
-            Assert.Equal("Test 1", warning.Formatter(warning.State, warning.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var error));
-            Assert.Equal(LogLevel.Error, error.LogLevel);
-            Assert.Equal(0, error.EventId);
-            Assert.Null(error.Exception);
-            Assert.Equal("Test 1", error.Formatter(error.State, error.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var critical));
-            Assert.Equal(LogLevel.Critical, critical.LogLevel);
-            Assert.Equal(0, critical.EventId);
-            Assert.Null(critical.Exception);
-            Assert.Equal("Test 1", critical.Formatter(critical.State, critical.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var debug));
-            Assert.Equal(LogLevel.Debug, debug.LogLevel);
-            Assert.Equal(0, debug.EventId);
-            Assert.Null(debug.Exception);
-            Assert.Equal("Test 1", debug.Formatter(debug.State, debug.Exception));
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(0, write.EventId);
+            Assert.Null(write.Exception);
+            Assert.Equal("Test 1", write.Formatter(write.State, write.Exception));
         }
 
-        [Fact]
-        public void LogLevel_LogValuesAndEventId_LogsCorrectValues()
+        [Theory]
+        [InlineData(LogLevel.Trace, 1)]
+        [InlineData(LogLevel.Information, 2)]
+        [InlineData(LogLevel.Warning, 3)]
+        [InlineData(LogLevel.Error, 4)]
+        [InlineData(LogLevel.Critical, 5)]
+        [InlineData(LogLevel.Debug, 6)]
+        public void LogLevel_LogValuesAndEventId_LogsCorrectValues(LogLevel logLevel, int eventId)
         {
             // Arrange
             var sink = new TestSink();
@@ -1024,55 +813,24 @@ namespace Microsoft.Extensions.Logging.Test
             };
 
             // Act
-            logger.Log(LogLevel.Trace, 1, testLogValues.ToString());
-            logger.Log(LogLevel.Information, 2, testLogValues.ToString());
-            logger.Log(LogLevel.Warning, 3, testLogValues.ToString());
-            logger.Log(LogLevel.Error, 4, testLogValues.ToString());
-            logger.Log(LogLevel.Critical, 5, testLogValues.ToString());
-            logger.Log(LogLevel.Debug, 6, testLogValues.ToString());
+            logger.Log(logLevel, eventId, testLogValues.ToString());
 
             // Assert
-            Assert.Equal(6, sink.Writes.Count());
-
-            Assert.True(sink.Writes.TryTake(out var trace));
-            Assert.Equal(LogLevel.Trace, trace.LogLevel);
-            Assert.Equal(1, trace.EventId);
-            Assert.Null(trace.Exception);
-            Assert.Equal("Test 1", trace.Formatter(trace.State, trace.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var information));
-            Assert.Equal(LogLevel.Information, information.LogLevel);
-            Assert.Equal(2, information.EventId);
-            Assert.Null(information.Exception);
-            Assert.Equal("Test 1", information.Formatter(information.State, information.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var warning));
-            Assert.Equal(LogLevel.Warning, warning.LogLevel);
-            Assert.Equal(3, warning.EventId);
-            Assert.Null(warning.Exception);
-            Assert.Equal("Test 1", warning.Formatter(warning.State, warning.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var error));
-            Assert.Equal(LogLevel.Error, error.LogLevel);
-            Assert.Equal(4, error.EventId);
-            Assert.Null(error.Exception);
-            Assert.Equal("Test 1", error.Formatter(error.State, error.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var critical));
-            Assert.Equal(LogLevel.Critical, critical.LogLevel);
-            Assert.Equal(5, critical.EventId);
-            Assert.Null(critical.Exception);
-            Assert.Equal("Test 1", critical.Formatter(critical.State, critical.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var debug));
-            Assert.Equal(LogLevel.Debug, debug.LogLevel);
-            Assert.Equal(6, debug.EventId);
-            Assert.Null(debug.Exception);
-            Assert.Equal("Test 1", debug.Formatter(debug.State, debug.Exception));
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(eventId, write.EventId);
+            Assert.Null(write.Exception);
+            Assert.Equal("Test 1", write.Formatter(write.State, write.Exception));
         }
 
-        [Fact]
-        public void LogLevel_LogValuesAndError_LogsCorrectValues()
+        [Theory]
+        [InlineData(LogLevel.Trace)]
+        [InlineData(LogLevel.Information)]
+        [InlineData(LogLevel.Warning)]
+        [InlineData(LogLevel.Error)]
+        [InlineData(LogLevel.Critical)]
+        [InlineData(LogLevel.Debug)]
+        public void LogLevel_LogValuesAndError_LogsCorrectValues(LogLevel logLevel)
         {
             // Arrange
             var sink = new TestSink();
@@ -1083,67 +841,26 @@ namespace Microsoft.Extensions.Logging.Test
             };
 
             // Act
-            logger.Log(LogLevel.Trace, 0, _exception, testLogValues.ToString());
-            logger.Log(LogLevel.Information, 0, _exception, testLogValues.ToString());
-            logger.Log(LogLevel.Warning, 0, _exception, testLogValues.ToString());
-            logger.Log(LogLevel.Error, 0, _exception, testLogValues.ToString());
-            logger.Log(LogLevel.Critical, 0, _exception, testLogValues.ToString());
-            logger.Log(LogLevel.Debug, 0, _exception, testLogValues.ToString());
+            logger.Log(logLevel, 0, _exception, testLogValues.ToString());
 
             // Assert
-            Assert.Equal(6, sink.Writes.Count());
-
-            Assert.True(sink.Writes.TryTake(out var trace));
-            Assert.Equal(LogLevel.Trace, trace.LogLevel);
-            Assert.Equal(0, trace.EventId);
-            Assert.Equal(_exception, trace.Exception);
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(0, write.EventId);
+            Assert.Equal(_exception, write.Exception);
             Assert.Equal(
                 "Test 1",
-                trace.Formatter(trace.State, trace.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var information));
-            Assert.Equal(LogLevel.Information, information.LogLevel);
-            Assert.Equal(0, information.EventId);
-            Assert.Equal(_exception, information.Exception);
-            Assert.Equal(
-                "Test 1",
-                information.Formatter(information.State, information.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var warning));
-            Assert.Equal(LogLevel.Warning, warning.LogLevel);
-            Assert.Equal(0, warning.EventId);
-            Assert.Equal(_exception, warning.Exception);
-            Assert.Equal(
-                "Test 1",
-                warning.Formatter(warning.State, warning.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var error));
-            Assert.Equal(LogLevel.Error, error.LogLevel);
-            Assert.Equal(0, error.EventId);
-            Assert.Equal(_exception, error.Exception);
-            Assert.Equal(
-                "Test 1",
-                error.Formatter(error.State, error.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var critical));
-            Assert.Equal(LogLevel.Critical, critical.LogLevel);
-            Assert.Equal(0, critical.EventId);
-            Assert.Equal(_exception, critical.Exception);
-            Assert.Equal(
-                "Test 1",
-                critical.Formatter(critical.State, critical.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var debug));
-            Assert.Equal(LogLevel.Debug, debug.LogLevel);
-            Assert.Equal(0, debug.EventId);
-            Assert.Equal(_exception, debug.Exception);
-            Assert.Equal(
-                "Test 1",
-                debug.Formatter(debug.State, debug.Exception));
+                write.Formatter(write.State, write.Exception));
         }
 
-        [Fact]
-        public void LogLevel_LogValuesEventIdAndError_LogsCorrectValues()
+        [Theory]
+        [InlineData(LogLevel.Trace, 1)]
+        [InlineData(LogLevel.Information, 2)]
+        [InlineData(LogLevel.Warning, 3)]
+        [InlineData(LogLevel.Error, 4)]
+        [InlineData(LogLevel.Critical, 5)]
+        [InlineData(LogLevel.Debug, 6)]
+        public void LogLevel_LogValuesEventIdAndError_LogsCorrectValues(LogLevel logLevel, int eventId)
         {
             // Arrange
             var sink = new TestSink();
@@ -1154,69 +871,17 @@ namespace Microsoft.Extensions.Logging.Test
             };
 
             // Act
-            logger.Log(LogLevel.Trace, 1, _exception, testLogValues.ToString());
-            logger.Log(LogLevel.Information, 2, _exception, testLogValues.ToString());
-            logger.Log(LogLevel.Warning, 3, _exception, testLogValues.ToString());
-            logger.Log(LogLevel.Error, 4, _exception, testLogValues.ToString());
-            logger.Log(LogLevel.Critical, 5, _exception, testLogValues.ToString());
-            logger.Log(LogLevel.Debug, 6, _exception, testLogValues.ToString());
+            logger.Log(logLevel, eventId, _exception, testLogValues.ToString());
 
             // Assert
-            Assert.Equal(6, sink.Writes.Count());
-
-            Assert.True(sink.Writes.TryTake(out var trace));
-            Assert.Equal(LogLevel.Trace, trace.LogLevel);
-            Assert.Equal(testLogValues.ToString(), trace.State.ToString());
-            Assert.Equal(1, trace.EventId);
-            Assert.Equal(_exception, trace.Exception);
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(testLogValues.ToString(), write.State.ToString());
+            Assert.Equal(eventId, write.EventId);
+            Assert.Equal(_exception, write.Exception);
             Assert.Equal(
                 "Test 1",
-                trace.Formatter(trace.State, trace.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var information));
-            Assert.Equal(LogLevel.Information, information.LogLevel);
-            Assert.Equal(testLogValues.ToString(), information.State.ToString());
-            Assert.Equal(2, information.EventId);
-            Assert.Equal(_exception, information.Exception);
-            Assert.Equal(
-                "Test 1",
-                information.Formatter(information.State, information.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var warning));
-            Assert.Equal(LogLevel.Warning, warning.LogLevel);
-            Assert.Equal(testLogValues.ToString(), warning.State.ToString());
-            Assert.Equal(3, warning.EventId);
-            Assert.Equal(_exception, warning.Exception);
-            Assert.Equal(
-                "Test 1",
-                warning.Formatter(warning.State, warning.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var error));
-            Assert.Equal(LogLevel.Error, error.LogLevel);
-            Assert.Equal(testLogValues.ToString(), error.State.ToString());
-            Assert.Equal(4, error.EventId);
-            Assert.Equal(_exception, error.Exception);
-            Assert.Equal(
-                "Test 1",
-                error.Formatter(error.State, error.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var critical));
-            Assert.Equal(LogLevel.Critical, critical.LogLevel);
-            Assert.Equal(testLogValues.ToString(), critical.State.ToString());
-            Assert.Equal(5, critical.EventId);
-            Assert.Equal(_exception, critical.Exception);
-            Assert.Equal(
-                "Test 1",
-                critical.Formatter(critical.State, critical.Exception));
-
-            Assert.True(sink.Writes.TryTake(out var debug));
-            Assert.Equal(LogLevel.Debug, debug.LogLevel);
-            Assert.Equal(testLogValues.ToString(), debug.State.ToString());
-            Assert.Equal(6, debug.EventId);
-            Assert.Equal(_exception, debug.Exception);
-            Assert.Equal(
-                "Test 1",
-                debug.Formatter(debug.State, debug.Exception));
+                write.Formatter(write.State, write.Exception));
         }
 
         [Fact]
