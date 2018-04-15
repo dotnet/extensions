@@ -4,22 +4,22 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview3-17002</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview3-32110</MicrosoftAspNetCoreTestingPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview3-17018</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.1.0-preview3-32233</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview3-32233</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftAspNetWebApiClientPackageVersion>5.2.4</MicrosoftAspNetWebApiClientPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.1.0-preview3-32110</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.1.0-preview3-32233</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview3-32233</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview3-32233</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>2.1.0-preview3-32233</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview3-32233</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.1.0-preview3-32233</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview3-26331-01</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview3-26413-05</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
-    <PollySignedPackageVersion>5.9.0</PollySignedPackageVersion>
     <PollyExtensionsHttpSignedPackageVersion>1.0.2-rc1</PollyExtensionsHttpSignedPackageVersion>
+    <PollySignedPackageVersion>5.9.0</PollySignedPackageVersion>
     <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
