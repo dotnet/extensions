@@ -39,10 +39,9 @@ namespace Microsoft.Extensions.Logging.Test
             logger.LogError(_state);
             logger.LogCritical(_state);
             logger.LogDebug(_state);
-            logger.Log(LogLevel.Information, _state);
 
             // Assert
-            Assert.Equal(7, sink.Writes.Count());
+            Assert.Equal(6, sink.Writes.Count());
 
             Assert.True(sink.Writes.TryTake(out var trace));
             Assert.Equal(LogLevel.Trace, trace.LogLevel);
@@ -79,12 +78,6 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(_state, debug.State.ToString());
             Assert.Equal(0, debug.EventId);
             Assert.Null(debug.Exception);
-
-            Assert.True(sink.Writes.TryTake(out var logInf));
-            Assert.Equal(LogLevel.Information, logInf.LogLevel);
-            Assert.Equal(_state, logInf.State.ToString());
-            Assert.Equal(0, logInf.EventId);
-            Assert.Null(logInf.Exception);
         }
 
         [Fact]
@@ -270,6 +263,8 @@ namespace Microsoft.Extensions.Logging.Test
             var writeList = sink.Writes.ToList();
 
             // Assert
+            Assert.Equal(6, sink.Writes.Count);
+
             Assert.True(sink.Writes.TryTake(out var trace));
             Assert.Equal(LogLevel.Trace, trace.LogLevel);
             Assert.Equal(_state, trace.State.ToString());
@@ -626,6 +621,267 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(
                 "Test 1",
                 debug.Formatter(debug.State, debug.Exception));
+        }
+
+        [Theory]
+        [InlineData(LogLevel.Trace)]
+        [InlineData(LogLevel.Information)]
+        [InlineData(LogLevel.Warning)]
+        [InlineData(LogLevel.Error)]
+        [InlineData(LogLevel.Critical)]
+        [InlineData(LogLevel.Debug)]
+        public void LogLevel_MessageOnly_LogsCorrectValues(LogLevel logLevel)
+        {
+            // Arrange
+            var sink = new TestSink();
+            var logger = SetUp(sink);
+
+            // Act
+            logger.Log(logLevel, _state);
+
+            // Assert
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(_state, write.State.ToString());
+            Assert.Equal(0, write.EventId);
+            Assert.Null(write.Exception);
+        }
+
+        [Theory]
+        [InlineData(LogLevel.Trace)]
+        [InlineData(LogLevel.Information)]
+        [InlineData(LogLevel.Warning)]
+        [InlineData(LogLevel.Error)]
+        [InlineData(LogLevel.Critical)]
+        [InlineData(LogLevel.Debug)]
+        public void LogLevel_FormatMessage_LogsCorrectValues(LogLevel logLevel)
+        {
+            // Arrange
+            var sink = new TestSink();
+            var logger = SetUp(sink);
+
+            // Act
+            logger.Log(logLevel, _format, "test1", "test2");
+
+            // Assert
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(string.Format(_format, "test1", "test2"), write.State?.ToString());
+            Assert.Equal(0, write.EventId);
+            Assert.Null(write.Exception);
+        }
+
+        [Theory]
+        [InlineData(LogLevel.Trace, 1)]
+        [InlineData(LogLevel.Information, 2)]
+        [InlineData(LogLevel.Warning, 3)]
+        [InlineData(LogLevel.Error, 4)]
+        [InlineData(LogLevel.Critical, 5)]
+        [InlineData(LogLevel.Debug, 6)]
+        public void LogLevel_MessageAndEventId_LogsCorrectValues(LogLevel logLevel, int eventId)
+        {
+            // Arrange
+            var sink = new TestSink();
+            var logger = SetUp(sink);
+
+            // Act
+            logger.Log(logLevel, eventId, _state);
+
+            // Assert
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(_state, write.State.ToString());
+            Assert.Equal(eventId, write.EventId);
+            Assert.Null(write.Exception);
+        }
+
+        [Theory]
+        [InlineData(LogLevel.Trace, 1)]
+        [InlineData(LogLevel.Information, 2)]
+        [InlineData(LogLevel.Warning, 3)]
+        [InlineData(LogLevel.Error, 4)]
+        [InlineData(LogLevel.Critical, 5)]
+        [InlineData(LogLevel.Debug, 6)]
+        public void LogLevel_FormatMessageAndEventId_LogsCorrectValues(LogLevel logLevel, int eventId)
+        {
+            // Arrange
+            var sink = new TestSink();
+            var logger = SetUp(sink);
+
+            // Act
+            logger.Log(logLevel, eventId, _format, "test1", "test2");
+
+            // Assert
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(string.Format(_format, "test1", "test2"), write.State?.ToString());
+            Assert.Equal(eventId, write.EventId);
+            Assert.Null(write.Exception);
+        }
+
+        [Theory]
+        [InlineData(LogLevel.Trace)]
+        [InlineData(LogLevel.Information)]
+        [InlineData(LogLevel.Warning)]
+        [InlineData(LogLevel.Error)]
+        [InlineData(LogLevel.Critical)]
+        [InlineData(LogLevel.Debug)]
+        public void LogLevel_MessageAndError_LogsCorrectValues(LogLevel logLevel)
+        {
+            // Arrange
+            var sink = new TestSink();
+            var logger = SetUp(sink);
+
+            // Act
+            logger.Log(logLevel, _exception, _state);
+
+            // Assert
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(_state, write.State.ToString());
+            Assert.Equal(0, write.EventId);
+            Assert.Equal(_exception, write.Exception);
+        }
+
+        [Theory]
+        [InlineData(LogLevel.Trace, 1)]
+        [InlineData(LogLevel.Information, 2)]
+        [InlineData(LogLevel.Warning, 3)]
+        [InlineData(LogLevel.Error, 4)]
+        [InlineData(LogLevel.Critical, 5)]
+        [InlineData(LogLevel.Debug, 6)]
+        public void LogLevel_MessageEventIdAndError_LogsCorrectValues(LogLevel logLevel, int eventId)
+        {
+            // Arrange
+            var sink = new TestSink();
+            var logger = SetUp(sink);
+
+            // Act
+            logger.Log(logLevel, eventId, _exception, _state);
+
+            // Assert
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(_state, write.State.ToString());
+            Assert.Equal(eventId, write.EventId);
+            Assert.Equal(_exception, write.Exception);
+        }
+
+        [Theory]
+        [InlineData(LogLevel.Trace)]
+        [InlineData(LogLevel.Information)]
+        [InlineData(LogLevel.Warning)]
+        [InlineData(LogLevel.Error)]
+        [InlineData(LogLevel.Critical)]
+        [InlineData(LogLevel.Debug)]
+        public void LogLevel_LogValues_LogsCorrectValues(LogLevel logLevel)
+        {
+            // Arrange
+            var sink = new TestSink();
+            var logger = SetUp(sink);
+            var testLogValues = new TestLogValues()
+            {
+                Value = 1
+            };
+
+            // Act
+            logger.Log(logLevel, 0, testLogValues.ToString());
+
+            // Assert
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(0, write.EventId);
+            Assert.Null(write.Exception);
+            Assert.Equal("Test 1", write.Formatter(write.State, write.Exception));
+        }
+
+        [Theory]
+        [InlineData(LogLevel.Trace, 1)]
+        [InlineData(LogLevel.Information, 2)]
+        [InlineData(LogLevel.Warning, 3)]
+        [InlineData(LogLevel.Error, 4)]
+        [InlineData(LogLevel.Critical, 5)]
+        [InlineData(LogLevel.Debug, 6)]
+        public void LogLevel_LogValuesAndEventId_LogsCorrectValues(LogLevel logLevel, int eventId)
+        {
+            // Arrange
+            var sink = new TestSink();
+            var logger = SetUp(sink);
+            var testLogValues = new TestLogValues()
+            {
+                Value = 1
+            };
+
+            // Act
+            logger.Log(logLevel, eventId, testLogValues.ToString());
+
+            // Assert
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(eventId, write.EventId);
+            Assert.Null(write.Exception);
+            Assert.Equal("Test 1", write.Formatter(write.State, write.Exception));
+        }
+
+        [Theory]
+        [InlineData(LogLevel.Trace)]
+        [InlineData(LogLevel.Information)]
+        [InlineData(LogLevel.Warning)]
+        [InlineData(LogLevel.Error)]
+        [InlineData(LogLevel.Critical)]
+        [InlineData(LogLevel.Debug)]
+        public void LogLevel_LogValuesAndError_LogsCorrectValues(LogLevel logLevel)
+        {
+            // Arrange
+            var sink = new TestSink();
+            var logger = SetUp(sink);
+            var testLogValues = new TestLogValues()
+            {
+                Value = 1
+            };
+
+            // Act
+            logger.Log(logLevel, 0, _exception, testLogValues.ToString());
+
+            // Assert
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(0, write.EventId);
+            Assert.Equal(_exception, write.Exception);
+            Assert.Equal(
+                "Test 1",
+                write.Formatter(write.State, write.Exception));
+        }
+
+        [Theory]
+        [InlineData(LogLevel.Trace, 1)]
+        [InlineData(LogLevel.Information, 2)]
+        [InlineData(LogLevel.Warning, 3)]
+        [InlineData(LogLevel.Error, 4)]
+        [InlineData(LogLevel.Critical, 5)]
+        [InlineData(LogLevel.Debug, 6)]
+        public void LogLevel_LogValuesEventIdAndError_LogsCorrectValues(LogLevel logLevel, int eventId)
+        {
+            // Arrange
+            var sink = new TestSink();
+            var logger = SetUp(sink);
+            var testLogValues = new TestLogValues()
+            {
+                Value = 1
+            };
+
+            // Act
+            logger.Log(logLevel, eventId, _exception, testLogValues.ToString());
+
+            // Assert
+            Assert.True(sink.Writes.TryTake(out var write));
+            Assert.Equal(logLevel, write.LogLevel);
+            Assert.Equal(testLogValues.ToString(), write.State.ToString());
+            Assert.Equal(eventId, write.EventId);
+            Assert.Equal(_exception, write.Exception);
+            Assert.Equal(
+                "Test 1",
+                write.Formatter(write.State, write.Exception));
         }
 
         [Fact]
