@@ -21,6 +21,11 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
         private static string NormalizeKey(string key)
             => key.Replace("__", ConfigurationPath.KeyDelimiter);
 
+        private static string TrimNewLine(string value)
+            => value.EndsWith(Environment.NewLine)
+                ? value.Substring(0, value.Length - Environment.NewLine.Length)
+                : value;
+
         /// <summary>
         /// Loads the docker secrets.
         /// </summary>
@@ -58,7 +63,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
                 {
                     if (Source.IgnoreCondition == null || !Source.IgnoreCondition(file.Name))
                     {
-                        Data.Add(NormalizeKey(file.Name), streamReader.ReadToEnd());
+                        Data.Add(NormalizeKey(file.Name), TrimNewLine(streamReader.ReadToEnd()));
                     }
                 }
             }
