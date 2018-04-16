@@ -582,28 +582,28 @@ namespace Microsoft.Extensions.Internal
         {
             public static OperationStatus Decode(ReadOnlySpan<T> urlEncoded, Span<byte> data, out int consumed, out int written, bool isFinalBlock = true)
             {
-                ref T source = ref MemoryMarshal.GetReference(urlEncoded);
-                ref byte destBytes = ref MemoryMarshal.GetReference(data);
+                ref var source = ref MemoryMarshal.GetReference(urlEncoded);
+                ref var destBytes = ref MemoryMarshal.GetReference(data);
 
-                int base64Len = GetBufferSizeRequiredToUrlDecode(urlEncoded.Length, out int dataLength, isFinalBlock);
-                int srcLength = base64Len & ~0x3;       // only decode input up to closest multiple of 4.
-                int destLength = data.Length;
+                var base64Len = GetBufferSizeRequiredToUrlDecode(urlEncoded.Length, out int dataLength, isFinalBlock);
+                var srcLength = base64Len & ~0x3;       // only decode input up to closest multiple of 4.
+                var destLength = data.Length;
 
-                int sourceIndex = 0;
-                int destIndex = 0;
+                var sourceIndex = 0;
+                var destIndex = 0;
 
                 if (urlEncoded.Length == 0)
                 {
                     goto DoneExit;
                 }
 
-                ref sbyte decodingMap = ref s_decodingMap[0];
+                ref var decodingMap = ref s_decodingMap[0];
 
                 // Last bytes could have padding characters, so process them separately and treat them as valid only if isFinalBlock is true.
                 // If isFinalBlock is false, padding characters are considered invalid.
-                int skipLastChunk = isFinalBlock ? 4 : 0;
+                var skipLastChunk = isFinalBlock ? 4 : 0;
 
-                int maxSrcLength = 0;
+                var maxSrcLength = 0;
                 if (destLength >= dataLength)
                 {
                     maxSrcLength = srcLength - skipLastChunk;
@@ -617,7 +617,7 @@ namespace Microsoft.Extensions.Internal
 
                 while (sourceIndex < maxSrcLength)
                 {
-                    int result = DecodeFour(ref Unsafe.Add(ref source, sourceIndex), ref decodingMap);
+                    var result = DecodeFour(ref Unsafe.Add(ref source, sourceIndex), ref decodingMap);
 
                     if (result < 0) goto InvalidExit;
 
@@ -646,12 +646,12 @@ namespace Microsoft.Extensions.Internal
                 // If isFinalBlock is false, we will never reach this point.
 
                 // Handle last four bytes. There are 0, 1, 2 padding chars.
-                int numPaddingChars = base64Len - urlEncoded.Length;
-                ref T lastFourStart = ref Unsafe.Add(ref source, srcLength - 4);
+                var numPaddingChars = base64Len - urlEncoded.Length;
+                ref var lastFourStart = ref Unsafe.Add(ref source, srcLength - 4);
 
                 if (numPaddingChars == 0)
                 {
-                    int result = DecodeFour(ref lastFourStart, ref decodingMap);
+                    var result = DecodeFour(ref lastFourStart, ref decodingMap);
 
                     if (result < 0) goto InvalidExit;
                     if (destIndex > destLength - 3) goto DestinationSmallExit;
@@ -662,10 +662,17 @@ namespace Microsoft.Extensions.Internal
                 }
                 else if (numPaddingChars == 1)
                 {
-                    int result = DecodeThree(ref lastFourStart, ref decodingMap);
+                    var result = DecodeThree(ref lastFourStart, ref decodingMap);
 
-                    if (result < 0) goto InvalidExit;
-                    if (destIndex > destLength - 2) goto DestinationSmallExit;
+                    if (result < 0)
+                    {
+                        goto InvalidExit;
+                    }
+
+                    if (destIndex > destLength - 2)
+                    {
+                        goto DestinationSmallExit;
+                    }
 
                     WriteTwoLowOrderBytes(ref destBytes, destIndex, result);
                     destIndex += 2;
@@ -673,10 +680,17 @@ namespace Microsoft.Extensions.Internal
                 }
                 else
                 {
-                    int result = DecodeTwo(ref lastFourStart, ref decodingMap);
+                    var result = DecodeTwo(ref lastFourStart, ref decodingMap);
 
-                    if (result < 0) goto InvalidExit;
-                    if (destIndex > destLength - 1) goto DestinationSmallExit;
+                    if (result < 0)
+                    {
+                        goto InvalidExit;
+                    }
+
+                    if (destIndex > destLength - 1)
+                    {
+                        goto DestinationSmallExit;
+                    }
 
                     WriteOneLowOrderByte(ref destBytes, destIndex, result);
                     destIndex += 1;
@@ -715,13 +729,13 @@ namespace Microsoft.Extensions.Internal
 
             public static OperationStatus Encode(ReadOnlySpan<byte> data, Span<T> urlEncoded, out int consumed, out int written, bool isFinalBlock = true)
             {
-                ref byte srcBytes = ref MemoryMarshal.GetReference(data);
-                ref T destination = ref MemoryMarshal.GetReference(urlEncoded);
+                ref var srcBytes = ref MemoryMarshal.GetReference(data);
+                ref var destination = ref MemoryMarshal.GetReference(urlEncoded);
 
-                int srcLength = data.Length;
-                int destLength = urlEncoded.Length;
+                var srcLength = data.Length;
+                var destLength = urlEncoded.Length;
 
-                int maxSrcLength = -2;
+                var maxSrcLength = -2;
                 if (srcLength <= MaxEncodedLength && destLength >= GetBufferSizeRequiredToBase64Encode(srcLength, out int numPaddingChars) - numPaddingChars)
                 {
                     maxSrcLength += srcLength;
@@ -731,8 +745,8 @@ namespace Microsoft.Extensions.Internal
                     maxSrcLength += (destLength >> 2) * 3;
                 }
 
-                int sourceIndex = 0;
-                int destIndex = 0;
+                var sourceIndex = 0;
+                var destIndex = 0;
 
                 ref byte encodingMap = ref s_encodingMap[0];
 
@@ -744,10 +758,14 @@ namespace Microsoft.Extensions.Internal
                 }
 
                 if (maxSrcLength != srcLength - 2)
+                {
                     goto DestinationSmallExit;
+                }
 
                 if (!isFinalBlock)
+                {
                     goto NeedMoreDataExit;
+                }
 
                 if (sourceIndex == srcLength - 1)
                 {
@@ -784,7 +802,7 @@ namespace Microsoft.Extensions.Internal
 
                 if (typeof(T) == typeof(byte))
                 {
-                    ref byte tmp = ref Unsafe.As<T, byte>(ref encoded);
+                    ref var tmp = ref Unsafe.As<T, byte>(ref encoded);
                     i0 = Unsafe.Add(ref tmp, 0);
                     i1 = Unsafe.Add(ref tmp, 1);
                     i2 = Unsafe.Add(ref tmp, 2);
@@ -792,7 +810,7 @@ namespace Microsoft.Extensions.Internal
                 }
                 else if (typeof(T) == typeof(char))
                 {
-                    ref char tmp = ref Unsafe.As<T, char>(ref encoded);
+                    ref var tmp = ref Unsafe.As<T, char>(ref encoded);
                     i0 = Unsafe.Add(ref tmp, 0);
                     i1 = Unsafe.Add(ref tmp, 1);
                     i2 = Unsafe.Add(ref tmp, 2);
@@ -821,14 +839,14 @@ namespace Microsoft.Extensions.Internal
 
                 if (typeof(T) == typeof(byte))
                 {
-                    ref byte tmp = ref Unsafe.As<T, byte>(ref encoded);
+                    ref var tmp = ref Unsafe.As<T, byte>(ref encoded);
                     i0 = Unsafe.Add(ref tmp, 0);
                     i1 = Unsafe.Add(ref tmp, 1);
                     i2 = Unsafe.Add(ref tmp, 2);
                 }
                 else if (typeof(T) == typeof(char))
                 {
-                    ref char tmp = ref Unsafe.As<T, char>(ref encoded);
+                    ref var tmp = ref Unsafe.As<T, char>(ref encoded);
                     i0 = Unsafe.Add(ref tmp, 0);
                     i1 = Unsafe.Add(ref tmp, 1);
                     i2 = Unsafe.Add(ref tmp, 2);
@@ -854,13 +872,13 @@ namespace Microsoft.Extensions.Internal
 
                 if (typeof(T) == typeof(byte))
                 {
-                    ref byte tmp = ref Unsafe.As<T, byte>(ref encoded);
+                    ref var tmp = ref Unsafe.As<T, byte>(ref encoded);
                     i0 = Unsafe.Add(ref tmp, 0);
                     i1 = Unsafe.Add(ref tmp, 1);
                 }
                 else if (typeof(T) == typeof(char))
                 {
-                    ref char tmp = ref Unsafe.As<T, char>(ref encoded);
+                    ref var tmp = ref Unsafe.As<T, char>(ref encoded);
                     i0 = Unsafe.Add(ref tmp, 0);
                     i1 = Unsafe.Add(ref tmp, 1);
                 }
@@ -900,12 +918,12 @@ namespace Microsoft.Extensions.Internal
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static void EncodeThreeBytes(ref byte threeBytes, ref T encoded, ref byte encodingMap)
             {
-                int i = (threeBytes << 16) | (Unsafe.Add(ref threeBytes, 1) << 8) | Unsafe.Add(ref threeBytes, 2);
+                var i = (threeBytes << 16) | (Unsafe.Add(ref threeBytes, 1) << 8) | Unsafe.Add(ref threeBytes, 2);
 
-                int i0 = Unsafe.Add(ref encodingMap, i >> 18);
-                int i1 = Unsafe.Add(ref encodingMap, (i >> 12) & 0x3F);
-                int i2 = Unsafe.Add(ref encodingMap, (i >> 6) & 0x3F);
-                int i3 = Unsafe.Add(ref encodingMap, i & 0x3F);
+                var i0 = Unsafe.Add(ref encodingMap, i >> 18);
+                var i1 = Unsafe.Add(ref encodingMap, (i >> 12) & 0x3F);
+                var i2 = Unsafe.Add(ref encodingMap, (i >> 6) & 0x3F);
+                var i3 = Unsafe.Add(ref encodingMap, i & 0x3F);
 
                 if (typeof(T) == typeof(byte))
                 {
@@ -914,7 +932,7 @@ namespace Microsoft.Extensions.Internal
                 }
                 else if (typeof(T) == typeof(char))
                 {
-                    ref char enc = ref Unsafe.As<T, char>(ref encoded);
+                    ref var enc = ref Unsafe.As<T, char>(ref encoded);
                     Unsafe.Add(ref enc, 0) = (char)i0;
                     Unsafe.Add(ref enc, 1) = (char)i1;
                     Unsafe.Add(ref enc, 2) = (char)i2;
@@ -929,22 +947,22 @@ namespace Microsoft.Extensions.Internal
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static void EncodeTwoBytes(ref byte twoBytes, ref T encoded, ref byte encodingMap)
             {
-                int i = (twoBytes << 16) | (Unsafe.Add(ref twoBytes, 1) << 8);
+                var i = (twoBytes << 16) | (Unsafe.Add(ref twoBytes, 1) << 8);
 
-                int i0 = Unsafe.Add(ref encodingMap, i >> 18);
-                int i1 = Unsafe.Add(ref encodingMap, (i >> 12) & 0x3F);
-                int i2 = Unsafe.Add(ref encodingMap, (i >> 6) & 0x3F);
+                var i0 = Unsafe.Add(ref encodingMap, i >> 18);
+                var i1 = Unsafe.Add(ref encodingMap, (i >> 12) & 0x3F);
+                var i2 = Unsafe.Add(ref encodingMap, (i >> 6) & 0x3F);
 
                 if (typeof(T) == typeof(byte))
                 {
-                    ref byte enc = ref Unsafe.As<T, byte>(ref encoded);
+                    ref var enc = ref Unsafe.As<T, byte>(ref encoded);
                     Unsafe.Add(ref enc, 0) = (byte)i0;
                     Unsafe.Add(ref enc, 1) = (byte)i1;
                     Unsafe.Add(ref enc, 2) = (byte)i2;
                 }
                 else if (typeof(T) == typeof(char))
                 {
-                    ref char enc = ref Unsafe.As<T, char>(ref encoded);
+                    ref var enc = ref Unsafe.As<T, char>(ref encoded);
                     Unsafe.Add(ref enc, 0) = (char)i0;
                     Unsafe.Add(ref enc, 1) = (char)i1;
                     Unsafe.Add(ref enc, 2) = (char)i2;
@@ -958,20 +976,20 @@ namespace Microsoft.Extensions.Internal
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static void EncodeOneByte(ref byte oneByte, ref T encoded, ref byte encodingMap)
             {
-                int i = (oneByte << 16);
+                var i = (oneByte << 16);
 
-                int i0 = Unsafe.Add(ref encodingMap, i >> 18);
-                int i1 = Unsafe.Add(ref encodingMap, (i >> 12) & 0x3F);
+                var i0 = Unsafe.Add(ref encodingMap, i >> 18);
+                var i1 = Unsafe.Add(ref encodingMap, (i >> 12) & 0x3F);
 
                 if (typeof(T) == typeof(byte))
                 {
-                    ref byte enc = ref Unsafe.As<T, byte>(ref encoded);
+                    ref var enc = ref Unsafe.As<T, byte>(ref encoded);
                     Unsafe.Add(ref enc, 0) = (byte)i0;
                     Unsafe.Add(ref enc, 1) = (byte)i1;
                 }
                 else if (typeof(T) == typeof(char))
                 {
-                    ref char enc = ref Unsafe.As<T, char>(ref encoded);
+                    ref var enc = ref Unsafe.As<T, char>(ref encoded);
                     Unsafe.Add(ref enc, 0) = (char)i0;
                     Unsafe.Add(ref enc, 1) = (char)i1;
                 }
