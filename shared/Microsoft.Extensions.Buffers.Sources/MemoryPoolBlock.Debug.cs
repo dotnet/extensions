@@ -46,6 +46,7 @@ namespace System.Buffers
             get
             {
                 if (!Slab.IsActive) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
+
                 return CreateMemory(_length);
             }
         }
