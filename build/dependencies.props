@@ -17,7 +17,10 @@
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview3-26413-02</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview3-26413-02</SystemSecurityCryptographyCngPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview3-26413-02</SystemThreadingTasksExtensionsPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.6.1</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0-preview3-26413-05</MicrosoftExtensionsDependencyModelPackageVersion>
     <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
+    <XunitAssertPackageVersion>2.3.1</XunitAssertPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualstudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualstudioPackageVersion>
   </PropertyGroup>
