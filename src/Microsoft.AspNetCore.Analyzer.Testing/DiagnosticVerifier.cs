@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
         /// <param name="analyzer">The analyzer to be run on the sources</param>
         /// <param name="additionalEnabledDiagnostics">Additional diagnostics to enable at Info level</param>
         /// <returns>An IEnumerable of Diagnostics that surfaced in the source code, sorted by Location</returns>
-        protected static Task<Diagnostic[]> GetSortedDiagnosticsAsync(string[] sources, DiagnosticAnalyzer analyzer, string[] additionalEnabledDiagnostics)
+        protected Task<Diagnostic[]> GetSortedDiagnosticsAsync(string[] sources, DiagnosticAnalyzer analyzer, string[] additionalEnabledDiagnostics)
         {
             return GetSortedDiagnosticsFromDocumentsAsync(analyzer, GetDocuments(sources), additionalEnabledDiagnostics);
         }
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
         /// </summary>
         /// <param name="sources">Classes in the form of strings</param>
         /// <returns>A Tuple containing the Documents produced from the sources and their TextSpans if relevant</returns>
-        private static Document[] GetDocuments(string[] sources)
+        private Document[] GetDocuments(string[] sources)
         {
             var project = CreateProject(sources);
             var documents = project.Documents.ToArray();
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
         /// </summary>
         /// <param name="sources">Classes in the form of strings</param>
         /// <returns>A Project created out of the Documents created from the source strings</returns>
-        private static Project CreateProject(string[] sources)
+        private Project CreateProject(string[] sources)
         {
             string fileNamePrefix = DefaultFilePathPrefix;
 
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
                 .CurrentSolution
                 .AddProject(projectId, TestProjectName, TestProjectName, LanguageNames.CSharp);
 
-            foreach (var defaultCompileLibrary in DependencyContext.Load(typeof(DiagnosticVerifier).Assembly).CompileLibraries)
+            foreach (var defaultCompileLibrary in DependencyContext.Load(this.GetType().Assembly).CompileLibraries)
             {
                 foreach (var resolveReferencePath in defaultCompileLibrary.ResolveReferencePaths(new AppLocalResolver()))
                 {
