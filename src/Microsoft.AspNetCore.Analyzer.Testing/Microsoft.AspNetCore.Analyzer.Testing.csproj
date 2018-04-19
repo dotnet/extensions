@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <Content Include="build\**\*" Pack="true" PackagePath="build" />
-    <Content Include="contentFiles\**\*" Pack="true" PackagePath="contentFiles" PackageCopyToOutput="True" />
   </ItemGroup>
 
 </Project>
