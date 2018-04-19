@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,32 +20,38 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
     /// <summary>
     /// Superclass of all Unit Tests for DiagnosticAnalyzers
     /// </summary>
-    public class DiagnosticVerifier
+    public abstract class DiagnosticVerifier
     {
-        internal static string DefaultFilePathPrefix = "Test";
-        internal static string TestProjectName = "TestProject";
+        /// <summary>
+        /// File name prefix used to generate Documents instances from source.
+        /// </summary>
+        protected static string DefaultFilePathPrefix = "Test";
+        /// <summary>
+        /// Project name of
+        /// </summary>
+        protected static string TestProjectName = "TestProject";
 
         /// <summary>
-        /// Given classes in the form of strings, their language, and an IDiagnosticAnalyzer to apply to it, return the diagnostics found in the string after converting it to a document.
+        /// Given classes in the form of strings, and an IDiagnosticAnalyzer to apply to it, return the diagnostics found in the string after converting it to a document.
         /// </summary>
         /// <param name="sources">Classes in the form of strings</param>
         /// <param name="analyzer">The analyzer to be run on the sources</param>
         /// <param name="additionalEnabledDiagnostics">Additional diagnostics to enable at Info level</param>
         /// <returns>An IEnumerable of Diagnostics that surfaced in the source code, sorted by Location</returns>
-        protected Task<Diagnostic[]> GetSortedDiagnosticsAsync(string[] sources, DiagnosticAnalyzer analyzer, string[] additionalEnabledDiagnostics)
+        protected Task<Diagnostic[]> GetDiagnosticsAsync(string[] sources, DiagnosticAnalyzer analyzer, string[] additionalEnabledDiagnostics)
         {
-            return GetSortedDiagnosticsFromDocumentsAsync(analyzer, GetDocuments(sources), additionalEnabledDiagnostics);
+            return GetDiagnosticsAsync(GetDocuments(sources), analyzer, additionalEnabledDiagnostics);
         }
 
         /// <summary>
         /// Given an analyzer and a document to apply it to, run the analyzer and gather an array of diagnostics found in it.
         /// The returned diagnostics are then ordered by location in the source document.
         /// </summary>
-        /// <param name="analyzer">The analyzer to run on the documents</param>
         /// <param name="documents">The Documents that the analyzer will be run on</param>
+        /// <param name="analyzer">The analyzer to run on the documents</param>
         /// <param name="additionalEnabledDiagnostics">Additional diagnostics to enable at Info level</param>
         /// <returns>An IEnumerable of Diagnostics that surfaced in the source code, sorted by Location</returns>
-        protected static async Task<Diagnostic[]> GetSortedDiagnosticsFromDocumentsAsync(DiagnosticAnalyzer analyzer, Document[] documents, string[] additionalEnabledDiagnostics)
+        protected static async Task<Diagnostic[]> GetDiagnosticsAsync(Document[] documents, DiagnosticAnalyzer analyzer, string[] additionalEnabledDiagnostics)
         {
             var projects = new HashSet<Project>();
             foreach (var document in documents)
@@ -55,7 +62,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
             var diagnostics = new List<Diagnostic>();
             foreach (var project in projects)
             {
-                var compilation = project.GetCompilationAsync().Result;
+                var compilation = await project.GetCompilationAsync();
 
                 // Enable any additional diagnostics
                 var options = compilation.Options;
@@ -99,18 +106,6 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
                 }
             }
 
-            var results = SortDiagnostics(diagnostics);
-            diagnostics.Clear();
-            return results;
-        }
-
-        /// <summary>
-        /// Sort diagnostics by location in source document
-        /// </summary>
-        /// <param name="diagnostics">The list of Diagnostics to be sorted</param>
-        /// <returns>An IEnumerable containing the Diagnostics in order of Location</returns>
-        private static Diagnostic[] SortDiagnostics(IEnumerable<Diagnostic> diagnostics)
-        {
             return diagnostics.OrderBy(d => d.Location.SourceSpan.Start).ToArray();
         }
 
@@ -118,16 +113,13 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
         /// Given an array of strings as sources and a language, turn them into a project and return the documents and spans of it.
         /// </summary>
         /// <param name="sources">Classes in the form of strings</param>
-        /// <returns>A Tuple containing the Documents produced from the sources and their TextSpans if relevant</returns>
+        /// <returns>An array of Documents produced from the sources.</returns>
         private Document[] GetDocuments(string[] sources)
         {
             var project = CreateProject(sources);
             var documents = project.Documents.ToArray();
 
-            if (sources.Length != documents.Length)
-            {
-                throw new InvalidOperationException("Amount of sources did not match amount of Documents created");
-            }
+            Debug.Assert(sources.Length == documents.Length);
 
             return documents;
         }
@@ -139,7 +131,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
         /// <returns>A Project created out of the Documents created from the source strings</returns>
         private Project CreateProject(string[] sources)
         {
-            string fileNamePrefix = DefaultFilePathPrefix;
+            var fileNamePrefix = DefaultFilePathPrefix;
 
             var projectId = ProjectId.CreateNewId(debugName: TestProjectName);
 
@@ -147,7 +139,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
                 .CurrentSolution
                 .AddProject(projectId, TestProjectName, TestProjectName, LanguageNames.CSharp);
 
-            foreach (var defaultCompileLibrary in DependencyContext.Load(this.GetType().Assembly).CompileLibraries)
+            foreach (var defaultCompileLibrary in DependencyContext.Load(GetType().Assembly).CompileLibraries)
             {
                 foreach (var resolveReferencePath in defaultCompileLibrary.ResolveReferencePaths(new AppLocalResolver()))
                 {
@@ -155,7 +147,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
                 }
             }
 
-            int count = 0;
+            var count = 0;
             foreach (var source in sources)
             {
                 var newFileName = fileNamePrefix + count;
