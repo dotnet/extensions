@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging.Analyzers;
 using Xunit;
@@ -146,7 +147,7 @@ namespace Microsoft.Extensions.Logging.Analyzer.Test
             return method;
         }
 
-        private static Diagnostic[] GetDiagnostics(string expression, params string[] additionalEnabledDiagnostics)
+        private Diagnostic[] GetDiagnostics(string expression, params string[] additionalEnabledDiagnostics)
         {
             var code = $@"
 using Microsoft.Extensions.Logging;
@@ -160,7 +161,7 @@ public class Program
     }}
 }}
 ";
-            return GetSortedDiagnosticsAsync(new[] { code }, new LogFormatAnalyzer(), additionalEnabledDiagnostics).Result;
+            return GetDiagnosticsAsync(new[] { code }, new LogFormatAnalyzer(), additionalEnabledDiagnostics).Result;
         }
     }
 }
