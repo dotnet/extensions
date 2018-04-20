@@ -9,11 +9,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.DependencyModel.Resolution;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Analyzer.Testing
 {
@@ -22,6 +24,19 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
     /// </summary>
     public abstract class DiagnosticVerifier
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+
+        /// <inheritdoc />
+        protected DiagnosticVerifier(): this(null)
+        {
+        }
+
+        /// <inheritdoc />
+        protected DiagnosticVerifier(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
+
         /// <summary>
         /// File name prefix used to generate Documents instances from source.
         /// </summary>
@@ -30,6 +45,8 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
         /// Project name of
         /// </summary>
         protected static string TestProjectName = "TestProject";
+
+        private Solution _solution;
 
         /// <summary>
         /// Given classes in the form of strings, and an IDiagnosticAnalyzer to apply to it, return the diagnostics found in the string after converting it to a document.
@@ -51,7 +68,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
         /// <param name="analyzer">The analyzer to run on the documents</param>
         /// <param name="additionalEnabledDiagnostics">Additional diagnostics to enable at Info level</param>
         /// <returns>An IEnumerable of Diagnostics that surfaced in the source code, sorted by Location</returns>
-        protected static async Task<Diagnostic[]> GetDiagnosticsAsync(Document[] documents, DiagnosticAnalyzer analyzer, string[] additionalEnabledDiagnostics)
+        protected async Task<Diagnostic[]> GetDiagnosticsAsync(Document[] documents, DiagnosticAnalyzer analyzer, string[] additionalEnabledDiagnostics)
         {
             var projects = new HashSet<Project>();
             foreach (var document in documents)
@@ -78,6 +95,11 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
                     .WithAnalyzers(ImmutableArray.Create(analyzer));
 
                 var diags = await compilationWithAnalyzers.GetAllDiagnosticsAsync();
+
+                foreach (var diag in diags)
+                {
+                    _testOutputHelper?.WriteLine("Diagnostics: " + diag);
+                }
 
                 Assert.DoesNotContain(diags, d => d.Id == "AD0001");
 
@@ -129,21 +151,22 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
         /// </summary>
         /// <param name="sources">Classes in the form of strings</param>
         /// <returns>A Project created out of the Documents created from the source strings</returns>
-        private Project CreateProject(string[] sources)
+        protected Project CreateProject(params string[] sources)
         {
             var fileNamePrefix = DefaultFilePathPrefix;
 
             var projectId = ProjectId.CreateNewId(debugName: TestProjectName);
 
-            var solution = new AdhocWorkspace()
-                .CurrentSolution
-                .AddProject(projectId, TestProjectName, TestProjectName, LanguageNames.CSharp);
+            _solution = _solution ?? new AdhocWorkspace().CurrentSolution;
+
+            _solution = _solution.AddProject(projectId, TestProjectName, TestProjectName, LanguageNames.CSharp)
+                .WithProjectCompilationOptions(projectId, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
             foreach (var defaultCompileLibrary in DependencyContext.Load(GetType().Assembly).CompileLibraries)
             {
                 foreach (var resolveReferencePath in defaultCompileLibrary.ResolveReferencePaths(new AppLocalResolver()))
                 {
-                    solution = solution.AddMetadataReference(projectId, MetadataReference.CreateFromFile(resolveReferencePath));
+                    _solution = _solution.AddMetadataReference(projectId, MetadataReference.CreateFromFile(resolveReferencePath));
                 }
             }
 
@@ -151,11 +174,14 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
             foreach (var source in sources)
             {
                 var newFileName = fileNamePrefix + count;
+
+                _testOutputHelper?.WriteLine("Adding file: " + newFileName + Environment.NewLine + source);
+
                 var documentId = DocumentId.CreateNewId(projectId, debugName: newFileName);
-                solution = solution.AddDocument(documentId, newFileName, SourceText.From(source));
+                _solution = _solution.AddDocument(documentId, newFileName, SourceText.From(source));
                 count++;
             }
-            return solution.GetProject(projectId);
+            return _solution.GetProject(projectId);
         }
 
         // Required to resolve compilation assemblies inside unit tests
