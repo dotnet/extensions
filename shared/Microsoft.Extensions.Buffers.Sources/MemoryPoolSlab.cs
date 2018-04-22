@@ -77,6 +77,12 @@ namespace System.Buffers
                 _isActive = false;
 
                 _disposedValue = true;
+#if DEBUG
+                if (_ownedBlocks != 0)
+                {
+                    throw new InvalidOperationException("MemoryPoolBlocks still outstanding!");
+                }
+#endif
             }
         }
 

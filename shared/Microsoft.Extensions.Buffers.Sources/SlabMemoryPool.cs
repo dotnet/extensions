@@ -172,6 +172,13 @@ namespace System.Buffers
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
 #endif
+                // Discard blocks in pool
+                while (_blocks.TryDequeue(out MemoryPoolBlock block))
+                {
+                    GC.SuppressFinalize(block);
+                    block.Slab?.Return(block);
+                }
+
                 if (disposing)
                 {
                     while (_slabs.TryPop(out MemoryPoolSlab slab))
@@ -179,12 +186,6 @@ namespace System.Buffers
                         // dispose managed state (managed objects).
                         slab.Dispose();
                     }
-                }
-
-                // Discard blocks in pool
-                while (_blocks.TryDequeue(out MemoryPoolBlock block))
-                {
-                    GC.SuppressFinalize(block);
                 }
 
                 // N/A: free unmanaged resources (unmanaged objects) and override a finalizer below.
