@@ -104,6 +104,7 @@ namespace System.Buffers
             // Ensure page aligned
             Debug.Assert((((ulong)basePtr + (uint)firstOffset) & (uint)(_blockSize - 1)) == 0);
 
+            var blocksCreated = 0;
             var blockAllocationLength = ((_slabLength - firstOffset) & ~(_blockSize - 1));
             var offset = firstOffset;
             for (;
@@ -119,9 +120,12 @@ namespace System.Buffers
                 block.IsLeased = true;
 #endif
                 Return(block);
+                blocksCreated++;
             }
 
             Debug.Assert(offset + _blockSize - firstOffset == blockAllocationLength);
+
+            slab.OwnedBlocks = blocksCreated + 1;
             // return last block rather than adding to pool
             var newBlock = new MemoryPoolBlock(
                     this,

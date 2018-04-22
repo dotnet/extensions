@@ -53,8 +53,14 @@ namespace System.Buffers
 
         public void Dispose()
         {
-            if (!Slab.IsActive) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
-            Pool.Return(this);
+            if (Slab.IsActive)
+            {
+                Pool.Return(this);
+            }
+            else
+            {
+                Slab.Return(this);
+            }
         }
 
         public void Lease()

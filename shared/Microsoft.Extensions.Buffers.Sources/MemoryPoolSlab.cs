@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace System.Buffers
 {
@@ -21,6 +22,7 @@ namespace System.Buffers
 
         private bool _isActive;
         private bool _disposedValue;
+        private int _ownedBlocks;
 
         public MemoryPoolSlab(byte[] data)
         {
@@ -46,6 +48,14 @@ namespace System.Buffers
 
         public int Length => _data.Length;
 
+        internal int OwnedBlocks
+        {
+            set
+            {
+                _ownedBlocks = value;
+            }
+        }
+
         public static MemoryPoolSlab Create(int length)
         {
             // allocate and pin requested memory length
@@ -66,6 +76,29 @@ namespace System.Buffers
 
                 _isActive = false;
 
+                _disposedValue = true;
+            }
+        }
+
+        internal void Return(MemoryPoolBlock block)
+        {
+#if BLOCK_LEASE_TRACKING
+            Debug.Assert(block.Slab == this, "Returned block was not this slab");
+            Debug.Assert(block.IsLeased, $"Block being returned to pool twice: {block.Leaser}{Environment.NewLine}");
+            block.IsLeased = false;
+#endif
+            GC.SuppressFinalize(block);
+
+            var remaining = Interlocked.Decrement(ref _ownedBlocks);
+
+            if (remaining < 0)
+            {
+                ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
+            }
+            else if (remaining == 0)
+            {
+                // No more blocks outstanding, unpin
+
                 if (_gcHandle.IsAllocated)
                 {
                     _gcHandle.Free();
@@ -73,8 +106,6 @@ namespace System.Buffers
 
                 // set large fields to null.
                 _data = null;
-
-                _disposedValue = true;
             }
         }
 
