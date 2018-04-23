@@ -104,6 +104,7 @@ namespace System.Buffers
             // Ensure page aligned
             Debug.Assert((((ulong)basePtr + (uint)firstOffset) & (uint)(_blockSize - 1)) == 0);
 
+            var blocksCreated = 0;
             var blockAllocationLength = ((_slabLength - firstOffset) & ~(_blockSize - 1));
             var offset = firstOffset;
             for (;
@@ -119,9 +120,12 @@ namespace System.Buffers
                 block.IsLeased = true;
 #endif
                 Return(block);
+                blocksCreated++;
             }
 
             Debug.Assert(offset + _blockSize - firstOffset == blockAllocationLength);
+
+            slab.OwnedBlocks = blocksCreated + 1;
             // return last block rather than adding to pool
             var newBlock = new MemoryPoolBlock(
                     this,
@@ -168,6 +172,13 @@ namespace System.Buffers
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
 #endif
+                // Discard blocks in pool
+                while (_blocks.TryDequeue(out MemoryPoolBlock block))
+                {
+                    GC.SuppressFinalize(block);
+                    block.Slab?.Return(block);
+                }
+
                 if (disposing)
                 {
                     while (_slabs.TryPop(out MemoryPoolSlab slab))
@@ -175,12 +186,6 @@ namespace System.Buffers
                         // dispose managed state (managed objects).
                         slab.Dispose();
                     }
-                }
-
-                // Discard blocks in pool
-                while (_blocks.TryDequeue(out MemoryPoolBlock block))
-                {
-                    GC.SuppressFinalize(block);
                 }
 
                 // N/A: free unmanaged resources (unmanaged objects) and override a finalizer below.

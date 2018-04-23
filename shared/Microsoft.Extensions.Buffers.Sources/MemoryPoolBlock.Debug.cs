@@ -74,14 +74,19 @@ namespace System.Buffers
 
         protected override void Dispose(bool disposing)
         {
-            if (!Slab.IsActive) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
-
             if (Volatile.Read(ref _pinCount) > 0)
             {
                 ThrowHelper.ThrowInvalidOperationException_ReturningPinnedBlock();
             }
 
-            Pool.Return(this);
+            if (Slab.IsActive)
+            {
+                Pool.Return(this);
+            }
+            else
+            {
+                Slab.Return(this);
+            }
         }
 
         public override Span<byte> GetSpan() => new Span<byte>(Slab.Array, _offset, _length);
