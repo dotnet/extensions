@@ -58,6 +58,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Object
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Primitives.Performance", "benchmarks\Microsoft.Extensions.Primitives.Performance\Microsoft.Extensions.Primitives.Performance.csproj", "{E180A42D-2CB3-4810-8605-1AC30250EFED}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Testing", "src\Microsoft.AspNetCore.Testing\Microsoft.AspNetCore.Testing.csproj", "{FBFB870A-39D1-4DA3-B002-C21E5EA247D9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.Tests", "test\Sample.Tests\Sample.Tests.csproj", "{225CFC67-B1CB-46E6-A4EE-E42B532F4986}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -100,6 +104,14 @@ Global
 		{E180A42D-2CB3-4810-8605-1AC30250EFED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E180A42D-2CB3-4810-8605-1AC30250EFED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E180A42D-2CB3-4810-8605-1AC30250EFED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBFB870A-39D1-4DA3-B002-C21E5EA247D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBFB870A-39D1-4DA3-B002-C21E5EA247D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBFB870A-39D1-4DA3-B002-C21E5EA247D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBFB870A-39D1-4DA3-B002-C21E5EA247D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{225CFC67-B1CB-46E6-A4EE-E42B532F4986}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{225CFC67-B1CB-46E6-A4EE-E42B532F4986}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{225CFC67-B1CB-46E6-A4EE-E42B532F4986}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{225CFC67-B1CB-46E6-A4EE-E42B532F4986}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -114,6 +126,8 @@ Global
 		{E1586801-D345-43C7-BC4B-9D4A83101B6C} = {8668B1D5-9C54-49CA-8446-18040B4C7D15}
 		{7486AB7B-C22F-4CA0-91EA-D31D9443DBFB} = {A9A93AF9-2113-4321-AD20-51F60FF8B2BD}
 		{E180A42D-2CB3-4810-8605-1AC30250EFED} = {A9A93AF9-2113-4321-AD20-51F60FF8B2BD}
+		{FBFB870A-39D1-4DA3-B002-C21E5EA247D9} = {FEAA3936-5906-4383-B750-F07FE1B156C5}
+		{225CFC67-B1CB-46E6-A4EE-E42B532F4986} = {6878D8F1-6DCE-4677-AA1A-4D14BA6D2D60}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {371030CF-B541-4BA9-9F54-3C7563415CF1}
