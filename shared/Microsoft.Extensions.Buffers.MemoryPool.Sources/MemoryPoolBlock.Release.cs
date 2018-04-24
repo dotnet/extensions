@@ -15,7 +15,7 @@ namespace System.Buffers
     {
         private readonly int _offset;
         private readonly int _length;
-        
+
         /// <summary>
         /// This object cannot be instantiated outside of the static Create method
         /// </summary>
@@ -26,7 +26,7 @@ namespace System.Buffers
 
             Pool = pool;
             Slab = slab;
-            
+
             Memory = MemoryMarshal.CreateFromPinnedArray(slab.Array, _offset, _length);
         }
 
@@ -53,7 +53,7 @@ namespace System.Buffers
 
         public void Dispose()
         {
-            if (!Slab.IsActive) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
+            if (!Slab.IsActive) MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
             Pool.Return(this);
         }
 

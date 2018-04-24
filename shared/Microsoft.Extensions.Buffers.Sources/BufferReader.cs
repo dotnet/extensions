@@ -94,7 +94,7 @@ namespace System.Buffers
         {
             if (byteCount < 0)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.length);
+                BuffersThrowHelper.ThrowArgumentOutOfRangeException(BuffersThrowHelper.ExceptionArgument.length);
             }
 
             _consumedBytes += byteCount;
@@ -118,7 +118,7 @@ namespace System.Buffers
 
             if (byteCount > 0)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.length);
+                BuffersThrowHelper.ThrowArgumentOutOfRangeException(BuffersThrowHelper.ExceptionArgument.length);
             }
         }
     }
