@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Threading;
 
 namespace System.Buffers
 {
@@ -49,7 +50,9 @@ namespace System.Buffers
         /// <summary>
         /// This is part of implementing the IDisposable pattern.
         /// </summary>
-        private bool _isDisposed = false; // To detect redundant calls
+        private bool _isDisposed; // To detect redundant calls
+
+        private int _totalAllocatedBlocks;
 
         private readonly object _disposeSync = new object();
 
@@ -60,8 +63,7 @@ namespace System.Buffers
 
         public override IMemoryOwner<byte> Rent(int size = AnySize)
         {
-            if (size == AnySize) size = _blockSize;
-            else if (size > _blockSize)
+            if (size > _blockSize)
             {
                 MemoryPoolThrowHelper.ThrowArgumentOutOfRangeException_BufferRequestTooLarge(_blockSize);
             }
@@ -76,7 +78,10 @@ namespace System.Buffers
         /// <returns>The block that is reserved for the called. It must be passed to Return when it is no longer being used.</returns>
         private MemoryPoolBlock Lease()
         {
-            Debug.Assert(!_isDisposed, "Block being leased from disposed pool!");
+            if (_isDisposed)
+            {
+                MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPool);
+            }
 
             if (_blocks.TryDequeue(out MemoryPoolBlock block))
             {
@@ -106,6 +111,7 @@ namespace System.Buffers
             // Ensure page aligned
             Debug.Assert((((ulong)basePtr + (uint)firstOffset) & (uint)(_blockSize - 1)) == 0);
 
+            var blocksAllocated = 0;
             var blockAllocationLength = ((_slabLength - firstOffset) & ~(_blockSize - 1));
             var offset = firstOffset;
             for (;
@@ -121,6 +127,7 @@ namespace System.Buffers
                 block.IsLeased = true;
 #endif
                 Return(block);
+                blocksAllocated++;
             }
 
             Debug.Assert(offset + _blockSize - firstOffset == blockAllocationLength);
@@ -130,7 +137,9 @@ namespace System.Buffers
                     slab,
                     offset,
                     _blockSize);
+            blocksAllocated++;
 
+            Interlocked.Add(ref _totalAllocatedBlocks, blocksAllocated);
             return newBlock;
         }
 
@@ -150,7 +159,7 @@ namespace System.Buffers
             block.IsLeased = false;
 #endif
 
-            if (block.Slab != null && block.Slab.IsActive)
+            if (!_isDisposed)
             {
                 _blocks.Enqueue(block);
             }
@@ -174,7 +183,6 @@ namespace System.Buffers
             {
                 _isDisposed = true;
 
-
 #if DEBUG && !INNER_LOOP
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
@@ -189,11 +197,24 @@ namespace System.Buffers
                     }
                 }
 
+#if DEBUG
+                var returnedBlocks = _blocks.Count;
+#endif
+
                 // Discard blocks in pool
                 while (_blocks.TryDequeue(out MemoryPoolBlock block))
                 {
                     GC.SuppressFinalize(block);
                 }
+
+#if DEBUG
+                // This check is in the end because we still want
+                // finalizers to be suppressed for blocks returned to the pool
+                if (_totalAllocatedBlocks != returnedBlocks)
+                {
+                    MemoryPoolThrowHelper.ThrowInvalidOperationException_DisposingPoolWithActiveBlocks(returnedBlocks, _totalAllocatedBlocks);
+                }
+#endif
             }
         }
     }

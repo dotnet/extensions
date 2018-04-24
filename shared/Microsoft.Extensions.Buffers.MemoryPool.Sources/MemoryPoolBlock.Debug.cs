@@ -14,6 +14,16 @@ namespace System.Buffers
     /// </summary>
     internal sealed class MemoryPoolBlock : MemoryManager<byte>
     {
+        /// <summary>
+        /// Back-reference to the memory pool which this block was allocated from. It may only be returned to this pool.
+        /// </summary>
+        private readonly SlabMemoryPool _pool;
+
+        /// <summary>
+        /// Back-reference to the slab from which this block was taken, or null if it is one-time-use memory.
+        /// </summary>
+        private readonly MemoryPoolSlab _slab;
+
         private readonly int _offset;
         private readonly int _length;
 
@@ -24,83 +34,68 @@ namespace System.Buffers
         /// </summary>
         internal MemoryPoolBlock(SlabMemoryPool pool, MemoryPoolSlab slab, int offset, int length)
         {
+            _pool = pool;
+            _slab = slab;
+
             _offset = offset;
             _length = length;
-
-            Pool = pool;
-            Slab = slab;
         }
-
-        /// <summary>
-        /// Back-reference to the memory pool which this block was allocated from. It may only be returned to this pool.
-        /// </summary>
-        public SlabMemoryPool Pool { get; }
-
-        /// <summary>
-        /// Back-reference to the slab from which this block was taken, or null if it is one-time-use memory.
-        /// </summary>
-        public MemoryPoolSlab Slab { get; }
 
         public override Memory<byte> Memory
         {
             get
             {
-                if (!Slab.IsActive) MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
+                if (!_slab.IsActive)
+                {
+                    MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
+                }
 
                 return CreateMemory(_length);
             }
         }
 
-
-#if BLOCK_LEASE_TRACKING
-        public bool IsLeased { get; set; }
-        public string Leaser { get; set; }
-#endif
-
-        ~MemoryPoolBlock()
-        {
-            if (Slab != null && Slab.IsActive)
-            {
-               Debug.Assert(false, $"{Environment.NewLine}{Environment.NewLine}*** Block being garbage collected instead of returned to pool" +
-#if BLOCK_LEASE_TRACKING
-                   $": {Leaser}" +
-#endif
-                   $" ***{ Environment.NewLine}");
-            }
-        }
-
         protected override void Dispose(bool disposing)
         {
-            if (!Slab.IsActive)
-            {
-                MemoryPoolThrowHelper.ThrowInvalidOperationException_DoubleDispose();
-            }
-
             if (Volatile.Read(ref _pinCount) > 0)
             {
                 MemoryPoolThrowHelper.ThrowInvalidOperationException_ReturningPinnedBlock();
             }
 
-            Pool.Return(this);
+            _pool.Return(this);
+
+            // Let finalizer to run in _pool.Return so we don't crash
+            // process with Debug.Assert
+            if (!_slab.IsActive)
+            {
+                MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockReturnedToDisposedPool();
+            }
         }
 
-        public override Span<byte> GetSpan() => new Span<byte>(Slab.Array, _offset, _length);
+        public override Span<byte> GetSpan() => new Span<byte>(_slab.Array, _offset, _length);
 
         public override MemoryHandle Pin(int byteOffset = 0)
         {
-            if (!Slab.IsActive) MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
-            if (byteOffset < 0 || byteOffset > _length) MemoryPoolThrowHelper.ThrowArgumentOutOfRangeException(_length, byteOffset);
+            if (!_slab.IsActive)
+            {
+                MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
+            }
+
+            if (byteOffset < 0 || byteOffset > _length)
+            {
+                MemoryPoolThrowHelper.ThrowArgumentOutOfRangeException(_length, byteOffset);
+            }
 
             Interlocked.Increment(ref _pinCount);
+
             unsafe
             {
-                return new MemoryHandle((Slab.NativePointer + _offset + byteOffset).ToPointer(), default, this);
+                return new MemoryHandle((_slab.NativePointer + _offset + byteOffset).ToPointer(), default, this);
             }
         }
 
         protected override bool TryGetArray(out ArraySegment<byte> segment)
         {
-            segment = new ArraySegment<byte>(Slab.Array, _offset, _length);
+            segment = new ArraySegment<byte>(_slab.Array, _offset, _length);
             return true;
         }
 
@@ -108,16 +103,36 @@ namespace System.Buffers
         {
             if (Interlocked.Decrement(ref _pinCount) < 0)
             {
-                MemoryPoolThrowHelper.ThrowInvalidOperationException_ReferenceCountZero();
+                MemoryPoolThrowHelper.ThrowInvalidOperationException_PinCountZero();
             }
         }
 
+#if BLOCK_LEASE_TRACKING
+        public bool IsLeased { get; set; }
+        public string Leaser { get; set; }
+
         public void Lease()
         {
-#if BLOCK_LEASE_TRACKING
             Leaser = Environment.StackTrace;
             IsLeased = true;
+        }
+#else
+
+        public void Lease()
+        {
+        }
 #endif
+
+        ~MemoryPoolBlock()
+        {
+            if (_slab != null && _slab.IsActive)
+            {
+                Debug.Assert(false, $"{Environment.NewLine}{Environment.NewLine}*** Block being garbage collected instead of returned to pool" +
+#if BLOCK_LEASE_TRACKING
+                                    $": {Leaser}" +
+#endif
+                                    $" ***{ Environment.NewLine}");
+            }
         }
     }
 }

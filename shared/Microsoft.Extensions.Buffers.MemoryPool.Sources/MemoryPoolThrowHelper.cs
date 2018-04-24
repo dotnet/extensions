@@ -26,9 +26,9 @@ namespace System.Buffers
             return new ArgumentOutOfRangeException(GetArgumentName(ExceptionArgument.length));
         }
 
-        public static void ThrowInvalidOperationException_ReferenceCountZero()
+        public static void ThrowInvalidOperationException_PinCountZero()
         {
-            throw new InvalidOperationException("Can't release when reference count is already zero");
+            throw new InvalidOperationException("Can't unpin, pin count is zero");
         }
 
         public static void ThrowInvalidOperationException_ReturningPinnedBlock()
@@ -39,6 +39,16 @@ namespace System.Buffers
         public static void ThrowInvalidOperationException_DoubleDispose()
         {
             throw new InvalidOperationException("Object is being disposed twice");
+        }
+
+        public static void ThrowInvalidOperationException_BlockReturnedToDisposedPool()
+        {
+            throw new InvalidOperationException("Block is being returned to disposed pool");
+        }
+
+        public static void ThrowInvalidOperationException_DisposingPoolWithActiveBlocks(int returned, int total)
+        {
+            throw new InvalidOperationException($"Memory pool with active blocks is being disposed, {returned} of {total} returned");
         }
 
         public static void ThrowArgumentOutOfRangeException_BufferRequestTooLarge(int maxSize)
@@ -75,7 +85,8 @@ namespace System.Buffers
             size,
             offset,
             length,
-            MemoryPoolBlock
+            MemoryPoolBlock,
+            MemoryPool
         }
     }
 }
