@@ -71,7 +71,15 @@ namespace System.Buffers
             }
         }
 
-        public override Span<byte> GetSpan() => new Span<byte>(_slab.Array, _offset, _length);
+        public override Span<byte> GetSpan()
+        {
+            if (!_slab.IsActive)
+            {
+                MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
+            }
+
+            return new Span<byte>(_slab.Array, _offset, _length);
+        }
 
         public override MemoryHandle Pin(int byteOffset = 0)
         {
@@ -95,6 +103,11 @@ namespace System.Buffers
 
         protected override bool TryGetArray(out ArraySegment<byte> segment)
         {
+            if (!_slab.IsActive)
+            {
+                MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
+            }
+
             segment = new ArraySegment<byte>(_slab.Array, _offset, _length);
             return true;
         }
