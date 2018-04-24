@@ -26,11 +26,6 @@ namespace System.Buffers
             return new ArgumentOutOfRangeException(GetArgumentName(ExceptionArgument.length));
         }
 
-        public static void ThrowArgumentOutOfRangeException(ExceptionArgument argument)
-        {
-            throw GetArgumentOutOfRangeException(argument);
-        }
-
         public static void ThrowInvalidOperationException_ReferenceCountZero()
         {
             throw new InvalidOperationException("Can't release when reference count is already zero");
@@ -38,7 +33,12 @@ namespace System.Buffers
 
         public static void ThrowInvalidOperationException_ReturningPinnedBlock()
         {
-            throw new InvalidOperationException("Can't release when reference count is already zero");
+            throw new InvalidOperationException("Disposing pinned block");
+        }
+
+        public static void ThrowInvalidOperationException_DoubleDispose()
+        {
+            throw new InvalidOperationException("Object is being disposed twice");
         }
 
         public static void ThrowArgumentOutOfRangeException_BufferRequestTooLarge(int maxSize)
@@ -49,12 +49,6 @@ namespace System.Buffers
         public static void ThrowObjectDisposedException(ExceptionArgument argument)
         {
             throw GetObjectDisposedException(argument);
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static ArgumentOutOfRangeException GetArgumentOutOfRangeException(ExceptionArgument argument)
-        {
-            return new ArgumentOutOfRangeException(GetArgumentName(argument));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

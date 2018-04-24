@@ -15,19 +15,15 @@ namespace System.Buffers
         /// This handle pins the managed array in memory until the slab is disposed. This prevents it from being
         /// relocated and enables any subsections of the array to be used as native memory pointers to P/Invoked API calls.
         /// </summary>
-        private readonly GCHandle _gcHandle;
-        private readonly IntPtr _nativePointer;
-        private byte[] _data;
-
-        private bool _isActive;
-        private bool _disposedValue;
+        private GCHandle _gcHandle;
+        private bool _isDisposed;
 
         public MemoryPoolSlab(byte[] data)
         {
-            _data = data;
+            IsActive = true;
+            Array = data;
             _gcHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            _nativePointer = _gcHandle.AddrOfPinnedObject();
-            _isActive = true;
+            NativePointer = _gcHandle.AddrOfPinnedObject();
         }
 
         /// <summary>
@@ -38,13 +34,11 @@ namespace System.Buffers
         /// collected and the slab is no longer references the slab will be garbage collected and the memory unpinned will
         /// be unpinned by the slab's Dispose.
         /// </summary>
-        public bool IsActive => _isActive;
+        public bool IsActive { get; private set; }
 
-        public IntPtr NativePointer => _nativePointer;
+        public IntPtr NativePointer { get; private set; }
 
-        public byte[] Array => _data;
-
-        public int Length => _data.Length;
+        public byte[] Array { get; private set; }
 
         public static MemoryPoolSlab Create(int length)
         {
@@ -57,40 +51,32 @@ namespace System.Buffers
 
         protected void Dispose(bool disposing)
         {
-            if (!_disposedValue)
+            if (_isDisposed)
             {
-                if (disposing)
-                {
-                    // N/A: dispose managed state (managed objects).
-                }
-
-                _isActive = false;
-
-                if (_gcHandle.IsAllocated)
-                {
-                    _gcHandle.Free();
-                }
-
-                // set large fields to null.
-                _data = null;
-
-                _disposedValue = true;
+                return;
             }
+
+            IsActive = false;
+
+            Array = null;
+            NativePointer = IntPtr.Zero;;
+
+            if (_gcHandle.IsAllocated)
+            {
+                _gcHandle.Free();
+            }
+
+            _isDisposed = true;
         }
 
-        // override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
         ~MemoryPoolSlab()
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(false);
         }
 
-        // This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
-            // uncomment the following line if the finalizer is overridden above.
             GC.SuppressFinalize(this);
         }
     }

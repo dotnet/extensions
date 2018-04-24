@@ -49,7 +49,9 @@ namespace System.Buffers
         /// <summary>
         /// This is part of implementing the IDisposable pattern.
         /// </summary>
-        private bool _disposedValue = false; // To detect redundant calls
+        private bool _isDisposed = false; // To detect redundant calls
+
+        private readonly object _disposeSync = new object();
 
         /// <summary>
         /// This default value passed in to Rent to use the default value for the pool.
@@ -74,7 +76,7 @@ namespace System.Buffers
         /// <returns>The block that is reserved for the called. It must be passed to Return when it is no longer being used.</returns>
         private MemoryPoolBlock Lease()
         {
-            Debug.Assert(!_disposedValue, "Block being leased from disposed pool!");
+            Debug.Assert(!_isDisposed, "Block being leased from disposed pool!");
 
             if (_blocks.TryDequeue(out MemoryPoolBlock block))
             {
@@ -160,9 +162,19 @@ namespace System.Buffers
 
         protected override void Dispose(bool disposing)
         {
-            if (!_disposedValue)
+            if (_isDisposed)
             {
-                _disposedValue = true;
+#if DEBUG
+                MemoryPoolThrowHelper.ThrowInvalidOperationException_DoubleDispose();
+#endif
+                return;
+            }
+
+            lock (_disposeSync)
+            {
+                _isDisposed = true;
+
+
 #if DEBUG && !INNER_LOOP
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
@@ -182,11 +194,6 @@ namespace System.Buffers
                 {
                     GC.SuppressFinalize(block);
                 }
-
-                // N/A: free unmanaged resources (unmanaged objects) and override a finalizer below.
-
-                // N/A: set large fields to null.
-
             }
         }
     }

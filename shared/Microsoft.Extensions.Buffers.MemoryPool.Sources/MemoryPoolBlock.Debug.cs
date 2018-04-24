@@ -66,15 +66,15 @@ namespace System.Buffers
                    $": {Leaser}" +
 #endif
                    $" ***{ Environment.NewLine}");
-
-                // Need to make a new object because this one is being finalized
-                Pool.Return(new MemoryPoolBlock(Pool, Slab, _offset, _length));
             }
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (!Slab.IsActive) MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
+            if (!Slab.IsActive)
+            {
+                MemoryPoolThrowHelper.ThrowInvalidOperationException_DoubleDispose();
+            }
 
             if (Volatile.Read(ref _pinCount) > 0)
             {
