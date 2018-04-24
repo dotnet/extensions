@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace System.Buffers
 {
-    internal class ThrowHelper
+    internal class MemoryPoolThrowHelper
     {
         public static void ThrowArgumentOutOfRangeException(int sourceLength, int offset)
         {
@@ -30,7 +30,7 @@ namespace System.Buffers
         {
             throw GetArgumentOutOfRangeException(argument);
         }
-        
+
         public static void ThrowInvalidOperationException_ReferenceCountZero()
         {
             throw new InvalidOperationException("Can't release when reference count is already zero");
@@ -75,13 +75,13 @@ namespace System.Buffers
 
             return argument.ToString();
         }
-    }
 
-    internal enum ExceptionArgument
-    {
-        size,
-        offset,
-        length,
-        MemoryPoolBlock
+        internal enum ExceptionArgument
+        {
+            size,
+            offset,
+            length,
+            MemoryPoolBlock
+        }
     }
 }

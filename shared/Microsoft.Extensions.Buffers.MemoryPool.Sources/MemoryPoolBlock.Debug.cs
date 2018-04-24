@@ -45,7 +45,7 @@ namespace System.Buffers
         {
             get
             {
-                if (!Slab.IsActive) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
+                if (!Slab.IsActive) MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
 
                 return CreateMemory(_length);
             }
@@ -74,11 +74,11 @@ namespace System.Buffers
 
         protected override void Dispose(bool disposing)
         {
-            if (!Slab.IsActive) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
+            if (!Slab.IsActive) MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
 
             if (Volatile.Read(ref _pinCount) > 0)
             {
-                ThrowHelper.ThrowInvalidOperationException_ReturningPinnedBlock();
+                MemoryPoolThrowHelper.ThrowInvalidOperationException_ReturningPinnedBlock();
             }
 
             Pool.Return(this);
@@ -88,8 +88,8 @@ namespace System.Buffers
 
         public override MemoryHandle Pin(int byteOffset = 0)
         {
-            if (!Slab.IsActive) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
-            if (byteOffset < 0 || byteOffset > _length) ThrowHelper.ThrowArgumentOutOfRangeException(_length, byteOffset);
+            if (!Slab.IsActive) MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
+            if (byteOffset < 0 || byteOffset > _length) MemoryPoolThrowHelper.ThrowArgumentOutOfRangeException(_length, byteOffset);
 
             Interlocked.Increment(ref _pinCount);
             unsafe
@@ -108,7 +108,7 @@ namespace System.Buffers
         {
             if (Interlocked.Decrement(ref _pinCount) < 0)
             {
-                ThrowHelper.ThrowInvalidOperationException_ReferenceCountZero();
+                MemoryPoolThrowHelper.ThrowInvalidOperationException_ReferenceCountZero();
             }
         }
 
