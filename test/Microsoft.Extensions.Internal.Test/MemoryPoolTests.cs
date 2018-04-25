@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.Internal.Test
             memoryPool.Dispose();
 
             var exception = Assert.Throws<ObjectDisposedException>(() => memoryPool.Rent());
-            Assert.Equal("Cannot access a disposed object.\r\nObject name: 'MemoryPool'.", exception.Message);
+            Assert.Equal($"Cannot access a disposed object.{Environment.NewLine}Object name: 'MemoryPool'.", exception.Message);
         }
     }
 }
