@@ -106,7 +106,7 @@ namespace Microsoft.Extensions.Internal.Test
         private static void ExpectDisposeException(SlabMemoryPool memoryPool)
         {
             var exception = Assert.Throws<InvalidOperationException>(() => memoryPool.Dispose());
-            Assert.Equal("Memory pool with active blocks is being disposed, 31 of 32 returned", exception.Message);
+            Assert.Equal("Memory pool with active blocks is being disposed, 30 of 31 returned", exception.Message);
         }
 
 
