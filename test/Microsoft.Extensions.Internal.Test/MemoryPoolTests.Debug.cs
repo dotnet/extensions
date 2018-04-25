@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.Internal.Test
             ExpectDisposeException(memoryPool);
 
             var exception = Assert.Throws<InvalidOperationException>(() => block.Memory);
-            Assert.Equal($"Block is backed by disposed slab", exception.Message);
+            Assert.Equal("Block is backed by disposed slab", exception.Message);
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace Microsoft.Extensions.Internal.Test
             ExpectDisposeException(memoryPool);
 
             var exception = Assert.Throws<InvalidOperationException>(() => memory.Pin());
-            Assert.Equal($"Block is backed by disposed slab", exception.Message);
+            Assert.Equal("Block is backed by disposed slab", exception.Message);
         }
 
         [Fact]
@@ -100,13 +100,13 @@ namespace Microsoft.Extensions.Internal.Test
             ExpectDisposeException(memoryPool);
 
             var exception = Assert.Throws<InvalidOperationException>(() => MemoryMarshal.TryGetArray<byte>(memory, out _));
-            Assert.Equal($"Block is backed by disposed slab", exception.Message);
+            Assert.Equal("Block is backed by disposed slab", exception.Message);
         }
 
         private static void ExpectDisposeException(SlabMemoryPool memoryPool)
         {
             var exception = Assert.Throws<InvalidOperationException>(() => memoryPool.Dispose());
-            Assert.Equal("Memory pool with active blocks is being disposed, 30 of 31 returned", exception.Message);
+            Assert.Equal("Memory pool with active blocks is being disposed, 31 of 32 returned", exception.Message);
         }
 
 

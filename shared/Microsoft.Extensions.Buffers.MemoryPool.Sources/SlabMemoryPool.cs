@@ -115,7 +115,7 @@ namespace System.Buffers
             var blockAllocationLength = ((_slabLength - firstOffset) & ~(_blockSize - 1));
             var offset = firstOffset;
             for (;
-                offset + _blockSize < blockAllocationLength;
+                offset + _blockSize <= _slabLength;
                 offset += _blockSize)
             {
                 var block = new MemoryPoolBlock(
@@ -130,7 +130,7 @@ namespace System.Buffers
                 blocksAllocated++;
             }
 
-            Debug.Assert(offset + _blockSize - firstOffset == blockAllocationLength);
+            Debug.Assert(offset - firstOffset == blockAllocationLength);
             // return last block rather than adding to pool
             var newBlock = new MemoryPoolBlock(
                     this,
