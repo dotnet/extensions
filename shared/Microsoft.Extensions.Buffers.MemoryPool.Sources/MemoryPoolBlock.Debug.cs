@@ -27,6 +27,8 @@ namespace System.Buffers
         private readonly int _offset;
         private readonly int _length;
 
+        private readonly object _syncObj = new object();
+        private bool _isDisposed;
         private int _pinCount;
 
         /// <summary>
@@ -41,82 +43,129 @@ namespace System.Buffers
             _length = length;
         }
 
+
         public override Memory<byte> Memory
         {
             get
             {
-                if (!_slab.IsActive)
+                lock (_syncObj)
                 {
-                    MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
-                }
+                    if (_isDisposed)
+                    {
+                        MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
+                    }
 
-                return CreateMemory(_length);
+                    if (!_slab.IsActive)
+                    {
+                        MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab();
+                    }
+
+                    return CreateMemory(_length);
+                }
             }
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (Volatile.Read(ref _pinCount) > 0)
+            lock (_syncObj)
             {
-                MemoryPoolThrowHelper.ThrowInvalidOperationException_ReturningPinnedBlock();
-            }
+                if (Volatile.Read(ref _pinCount) > 0)
+                {
+                    MemoryPoolThrowHelper.ThrowInvalidOperationException_ReturningPinnedBlock();
+                }
 
-            _pool.Return(this);
+                if (_isDisposed)
+                {
+                    MemoryPoolThrowHelper.ThrowInvalidOperationException_DoubleDispose();
+                }
 
-            // Let finalizer to run in _pool.Return so we don't crash
-            // process with Debug.Assert
-            if (!_slab.IsActive)
-            {
-                MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockReturnedToDisposedPool();
+                _pool.Return(this);
+
+                // Let finalizer to run in _pool.Return so we don't crash
+                // process with Debug.Assert
+
+                if (!_slab.IsActive)
+                {
+                    MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockReturnedToDisposedPool();
+                }
+
+                _isDisposed = true;
             }
         }
 
         public override Span<byte> GetSpan()
         {
-            if (!_slab.IsActive)
+            lock (_syncObj)
             {
-                MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
-            }
+                if (_isDisposed)
+                {
+                    MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
+                }
 
-            return new Span<byte>(_slab.Array, _offset, _length);
+                if (!_slab.IsActive)
+                {
+                    MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab();
+                }
+
+                return new Span<byte>(_slab.Array, _offset, _length);
+            }
         }
 
         public override MemoryHandle Pin(int byteOffset = 0)
         {
-            if (!_slab.IsActive)
+            lock (_syncObj)
             {
-                MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
-            }
+                if (_isDisposed)
+                {
+                    MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
+                }
 
-            if (byteOffset < 0 || byteOffset > _length)
-            {
-                MemoryPoolThrowHelper.ThrowArgumentOutOfRangeException(_length, byteOffset);
-            }
+                if (!_slab.IsActive)
+                {
+                    MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab();
+                }
 
-            Interlocked.Increment(ref _pinCount);
+                if (byteOffset < 0 || byteOffset > _length)
+                {
+                    MemoryPoolThrowHelper.ThrowArgumentOutOfRangeException(_length, byteOffset);
+                }
 
-            unsafe
-            {
-                return new MemoryHandle((_slab.NativePointer + _offset + byteOffset).ToPointer(), default, this);
+                _pinCount ++;
+
+                unsafe
+                {
+                    return new MemoryHandle((_slab.NativePointer + _offset + byteOffset).ToPointer(), default, this);
+                }
             }
         }
 
         protected override bool TryGetArray(out ArraySegment<byte> segment)
         {
-            if (!_slab.IsActive)
+            lock (_syncObj)
             {
-                MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
-            }
+                if (_isDisposed)
+                {
+                    MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
+                }
 
-            segment = new ArraySegment<byte>(_slab.Array, _offset, _length);
-            return true;
+                if (!_slab.IsActive)
+                {
+                    MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab();
+                }
+
+                segment = new ArraySegment<byte>(_slab.Array, _offset, _length);
+                return true;
+            }
         }
 
         public override void Unpin()
         {
-            if (Interlocked.Decrement(ref _pinCount) < 0)
+            lock (_syncObj)
             {
-                MemoryPoolThrowHelper.ThrowInvalidOperationException_PinCountZero();
+                if (_pinCount == 0)
+                {
+                    MemoryPoolThrowHelper.ThrowInvalidOperationException_PinCountZero();
+                }
             }
         }
 
@@ -133,6 +182,10 @@ namespace System.Buffers
 
         public void Lease()
         {
+            lock (_syncObj)
+            {
+                _isDisposed = false;
+            }
         }
 #endif
 

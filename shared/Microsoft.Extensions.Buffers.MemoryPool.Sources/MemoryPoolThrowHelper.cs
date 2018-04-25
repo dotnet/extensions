@@ -46,6 +46,11 @@ namespace System.Buffers
             throw new InvalidOperationException("Block is being returned to disposed pool");
         }
 
+        public static void ThrowInvalidOperationException_BlockIsBackedByDisposedSlab()
+        {
+            throw new InvalidOperationException("Block is backed by disposed slab");
+        }
+
         public static void ThrowInvalidOperationException_DisposingPoolWithActiveBlocks(int returned, int total)
         {
             throw new InvalidOperationException($"Memory pool with active blocks is being disposed, {returned} of {total} returned");

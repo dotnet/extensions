@@ -20,7 +20,6 @@ namespace System.Buffers
 
         public MemoryPoolSlab(byte[] data)
         {
-            IsActive = true;
             Array = data;
             _gcHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
             NativePointer = _gcHandle.AddrOfPinnedObject();
@@ -34,7 +33,7 @@ namespace System.Buffers
         /// collected and the slab is no longer references the slab will be garbage collected and the memory unpinned will
         /// be unpinned by the slab's Dispose.
         /// </summary>
-        public bool IsActive { get; private set; }
+        public bool IsActive => !_isDisposed;
 
         public IntPtr NativePointer { get; private set; }
 
@@ -56,7 +55,7 @@ namespace System.Buffers
                 return;
             }
 
-            IsActive = false;
+            _isDisposed = true;
 
             Array = null;
             NativePointer = IntPtr.Zero;;
@@ -65,8 +64,6 @@ namespace System.Buffers
             {
                 _gcHandle.Free();
             }
-
-            _isDisposed = true;
         }
 
         ~MemoryPoolSlab()
