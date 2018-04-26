@@ -107,40 +107,31 @@ namespace System.Buffers
 
             var basePtr = slab.NativePointer;
             // Page align the blocks
-            var firstOffset = (int)((((ulong)basePtr + (uint)_blockSize - 1) & ~((uint)_blockSize - 1)) - (ulong)basePtr);
+            var offset = (int)((((ulong)basePtr + (uint)_blockSize - 1) & ~((uint)_blockSize - 1)) - (ulong)basePtr);
             // Ensure page aligned
-            Debug.Assert((((ulong)basePtr + (uint)firstOffset) & (uint)(_blockSize - 1)) == 0);
+            Debug.Assert(((ulong)basePtr + (uint)offset) % _blockSize == 0);
 
-            var blocksAllocated = 0;
-            var blockAllocationLength = ((_slabLength - firstOffset) & ~(_blockSize - 1));
-            var offset = firstOffset;
-            for (;
-                offset + _blockSize < blockAllocationLength;
-                offset += _blockSize)
+            var blockCount = (_slabLength - offset) / _blockSize;
+            Interlocked.Add(ref _totalAllocatedBlocks, blockCount);
+
+            MemoryPoolBlock block = null;
+
+            for (int i = 0; i < blockCount; i++)
             {
-                var block = new MemoryPoolBlock(
-                    this,
-                    slab,
-                    offset,
-                    _blockSize);
+                block = new MemoryPoolBlock(this, slab, offset, _blockSize);
+
+                if (i != blockCount - 1) // last block
+                {
 #if BLOCK_LEASE_TRACKING
-                block.IsLeased = true;
+                    block.IsLeased = true;
 #endif
-                Return(block);
-                blocksAllocated++;
+                    Return(block);
+                }
+
+                offset += _blockSize;
             }
 
-            Debug.Assert(offset + _blockSize - firstOffset == blockAllocationLength);
-            // return last block rather than adding to pool
-            var newBlock = new MemoryPoolBlock(
-                    this,
-                    slab,
-                    offset,
-                    _blockSize);
-            blocksAllocated++;
-
-            Interlocked.Add(ref _totalAllocatedBlocks, blocksAllocated);
-            return newBlock;
+            return block;
         }
 
         /// <summary>
