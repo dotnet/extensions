@@ -26,6 +26,16 @@ namespace Microsoft.Extensions.Internal.Test
         }
 
         [Fact]
+        public void CanDisposeAfterPinUnpinBlock()
+        {
+            var memoryPool = new SlabMemoryPool();
+            var block = memoryPool.Rent();
+            block.Memory.Pin().Dispose();
+            block.Dispose();
+            memoryPool.Dispose();
+        }
+
+        [Fact]
         public void LeasingFromDisposedPoolThrows()
         {
             var memoryPool = new SlabMemoryPool();

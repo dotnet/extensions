@@ -166,6 +166,8 @@ namespace System.Buffers
                 {
                     MemoryPoolThrowHelper.ThrowInvalidOperationException_PinCountZero();
                 }
+
+                _pinCount--;
             }
         }
 
