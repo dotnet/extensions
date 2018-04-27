@@ -16,6 +16,8 @@ namespace System.Buffers
 
         private readonly bool _allowLateReturn;
 
+        private readonly bool _leaseTracking;
+
         private readonly object _syncObj;
 
         private readonly HashSet<DiagnosticPoolBlock> _blocks;
@@ -31,10 +33,11 @@ namespace System.Buffers
         /// </summary>
         private const int AnySize = -1;
 
-        public DiagnosticMemoryPool(MemoryPool<byte> pool, bool allowLateReturn = false)
+        public DiagnosticMemoryPool(MemoryPool<byte> pool, bool allowLateReturn = false, bool leaseTracking = false)
         {
             _pool = pool;
             _allowLateReturn = allowLateReturn;
+            _leaseTracking = leaseTracking;
             _blocks = new HashSet<DiagnosticPoolBlock>();
             _syncObj = new object();
             _allBlocksRetuned = new TaskCompletionSource<object>();
@@ -53,6 +56,10 @@ namespace System.Buffers
                 }
 
                 var diagnosticPoolBlock = new DiagnosticPoolBlock(this, _pool.Rent(size));
+                if (_leaseTracking)
+                {
+                    diagnosticPoolBlock.Track();
+                }
                 _totalBlocks++;
                 _blocks.Add(diagnosticPoolBlock);
                 return diagnosticPoolBlock;
@@ -67,13 +74,22 @@ namespace System.Buffers
             lock (_syncObj)
             {
                 _blocks.Remove(block);
-                returnedAllBlocks = IsDisposed && _blocks.Count == 0;
+                returnedAllBlocks = _blocks.Count == 0;
             }
 
-            if (returnedAllBlocks)
+            if (IsDisposed)
             {
-                SetAllBlocksReturned();
+                if (!_allowLateReturn)
+                {
+                    MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockReturnedToDisposedPool(block);
+                }
+
+                if (returnedAllBlocks)
+                {
+                    SetAllBlocksReturned();
+                }
             }
+
         }
 
         internal void ReportException(Exception exception)
@@ -100,8 +116,7 @@ namespace System.Buffers
                     allBlocksReturned = _blocks.Count == 0;
                     if (!allBlocksReturned && !_allowLateReturn)
                     {
-                        MemoryPoolThrowHelper.ThrowInvalidOperationException_DisposingPoolWithActiveBlocks(
-                            _totalBlocks - _blocks.Count, _totalBlocks);
+                        MemoryPoolThrowHelper.ThrowInvalidOperationException_DisposingPoolWithActiveBlocks(_totalBlocks - _blocks.Count, _totalBlocks, _blocks.ToArray());
                     }
 
                     if (_blockAccessExceptions.Any())
@@ -134,6 +149,17 @@ namespace System.Buffers
         private AggregateException CreateAccessExceptions()
         {
             return new AggregateException("Exceptions occurred while accessing blocks", _blockAccessExceptions.ToArray());
+        }
+
+        public async Task WhenAllBlocksReturnedAsync(TimeSpan timeout)
+        {
+            var task = await Task.WhenAny(_allBlocksRetuned.Task, Task.Delay(timeout));
+            if (task != _allBlocksRetuned.Task)
+            {
+                MemoryPoolThrowHelper.ThrowInvalidOperationException_BlocksWereNotReturnedInTime(_totalBlocks - _blocks.Count, _totalBlocks, _blocks.ToArray());
+            }
+
+            await task;
         }
     }
 }

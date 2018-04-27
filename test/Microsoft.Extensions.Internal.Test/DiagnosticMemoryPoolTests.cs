@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Extensions.Internal.Test
@@ -172,6 +173,32 @@ namespace Microsoft.Extensions.Internal.Test
             ExpectDisposeAggregateException(memoryPool, exception);
         }
 
+        [Fact]
+        public async Task DoesNotThrowWithLateReturns()
+        {
+            var memoryPool = new DiagnosticMemoryPool(new SlabMemoryPool(), allowLateReturn: true);
+            var block = memoryPool.Rent();
+            memoryPool.Dispose();
+            block.Dispose();
+            await memoryPool.WhenAllBlocksReturnedAsync(TimeSpan.FromSeconds(5));
+        }
+
+        [Fact]
+        public async Task ThrowsOnAccessToLateBlocks()
+        {
+            var memoryPool = new DiagnosticMemoryPool(new SlabMemoryPool(), allowLateReturn: true);
+            var block = memoryPool.Rent();
+            memoryPool.Dispose();
+
+            var exception = Assert.Throws<InvalidOperationException>(() => block.Memory);
+            Assert.Equal("Block is backed by disposed slab", exception.Message);
+
+            block.Dispose();
+            var aggregateException = await Assert.ThrowsAsync<AggregateException>(async () => await memoryPool.WhenAllBlocksReturnedAsync(TimeSpan.FromSeconds(5)));
+
+            Assert.Equal(new Exception [] { exception }, aggregateException.InnerExceptions);
+        }
+
         private static void ExpectDisposeException(MemoryPool<byte> memoryPool)
         {
             var exception = Assert.Throws<InvalidOperationException>(() => memoryPool.Dispose());
@@ -184,6 +211,5 @@ namespace Microsoft.Extensions.Internal.Test
 
             Assert.Equal(inner, exception.InnerExceptions);
         }
-
     }
 }

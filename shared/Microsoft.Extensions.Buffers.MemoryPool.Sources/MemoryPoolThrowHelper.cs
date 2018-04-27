@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace System.Buffers
 {
@@ -26,14 +27,14 @@ namespace System.Buffers
             return new ArgumentOutOfRangeException(GetArgumentName(ExceptionArgument.length));
         }
 
-        public static void ThrowInvalidOperationException_PinCountZero()
+        public static void ThrowInvalidOperationException_PinCountZero(DiagnosticPoolBlock block)
         {
-            throw new InvalidOperationException("Can't unpin, pin count is zero");
+            throw new InvalidOperationException(GenerateMessage("Can't unpin, pin count is zero", block));
         }
 
-        public static void ThrowInvalidOperationException_ReturningPinnedBlock()
+        public static void ThrowInvalidOperationException_ReturningPinnedBlock(DiagnosticPoolBlock block)
         {
-            throw new InvalidOperationException("Disposing pinned block");
+            throw new InvalidOperationException(GenerateMessage("Disposing pinned block", block));
         }
 
         public static void ThrowInvalidOperationException_DoubleDispose()
@@ -41,19 +42,46 @@ namespace System.Buffers
             throw new InvalidOperationException("Object is being disposed twice");
         }
 
-        public static void ThrowInvalidOperationException_BlockReturnedToDisposedPool()
+        public static void ThrowInvalidOperationException_BlockDoubleDispose(DiagnosticPoolBlock block)
         {
-            throw new InvalidOperationException("Block is being returned to disposed pool");
+            throw new InvalidOperationException("Block is being disposed twice");
         }
 
-        public static void ThrowInvalidOperationException_BlockIsBackedByDisposedSlab()
+        public static void ThrowInvalidOperationException_BlockReturnedToDisposedPool(DiagnosticPoolBlock block)
         {
-            throw new InvalidOperationException("Block is backed by disposed slab");
+            throw new InvalidOperationException(GenerateMessage("Block is being returned to disposed pool", block));
         }
 
-        public static void ThrowInvalidOperationException_DisposingPoolWithActiveBlocks(int returned, int total)
+        public static void ThrowInvalidOperationException_BlockIsBackedByDisposedSlab(DiagnosticPoolBlock block)
         {
-            throw new InvalidOperationException($"Memory pool with active blocks is being disposed, {returned} of {total} returned");
+            throw new InvalidOperationException(GenerateMessage("Block is backed by disposed slab", block));
+        }
+
+        public static void ThrowInvalidOperationException_DisposingPoolWithActiveBlocks(int returned, int total, DiagnosticPoolBlock[] blocks)
+        {
+            throw new InvalidOperationException(GenerateMessage($"Memory pool with active blocks is being disposed, {returned} of {total} returned", blocks));
+        }
+
+        public static void ThrowInvalidOperationException_BlocksWereNotReturnedInTime(int returned, int total, DiagnosticPoolBlock[] blocks)
+        {
+            throw new InvalidOperationException(GenerateMessage($"Blocks were not returned in time, {returned} of {total} returned ", blocks));
+        }
+
+        private static string GenerateMessage(string message, params DiagnosticPoolBlock[] blocks)
+        {
+            StringBuilder builder = new StringBuilder(message);
+            foreach (var diagnosticPoolBlock in blocks)
+            {
+                if (diagnosticPoolBlock.Leaser != null)
+                {
+                    builder.AppendLine("Block leased from:");
+                    builder.AppendLine(diagnosticPoolBlock.Leaser.ToString());
+
+                    builder.AppendLine();
+                }
+            }
+
+            return builder.ToString();
         }
 
         public static void ThrowArgumentOutOfRangeException_BufferRequestTooLarge(int maxSize)

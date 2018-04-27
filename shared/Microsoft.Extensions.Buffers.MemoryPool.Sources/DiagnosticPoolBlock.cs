@@ -52,7 +52,7 @@ namespace System.Buffers
 
                         if (_pool.IsDisposed)
                         {
-                            MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab();
+                            MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab(this);
                         }
 
                         return CreateMemory(_memory.Length);
@@ -74,22 +74,17 @@ namespace System.Buffers
                 {
                     if (Volatile.Read(ref _pinCount) > 0)
                     {
-                        MemoryPoolThrowHelper.ThrowInvalidOperationException_ReturningPinnedBlock();
+                        MemoryPoolThrowHelper.ThrowInvalidOperationException_ReturningPinnedBlock(this);
                     }
 
                     if (_isDisposed)
                     {
-                        MemoryPoolThrowHelper.ThrowInvalidOperationException_DoubleDispose();
+                        MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockDoubleDispose(this);
                     }
-
-                    _pool.Return(this);
 
                     _memoryOwner.Dispose();
 
-                    if (_pool.IsDisposed)
-                    {
-                        MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockReturnedToDisposedPool();
-                    }
+                    _pool.Return(this);
 
                     _isDisposed = true;
                 }
@@ -114,7 +109,7 @@ namespace System.Buffers
 
                     if (_pool.IsDisposed)
                     {
-                        MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab();
+                        MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab(this);
                     }
 
                     return _memory.Span;
@@ -140,7 +135,7 @@ namespace System.Buffers
 
                     if (_pool.IsDisposed)
                     {
-                        MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab();
+                        MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab(this);
                     }
 
                     if (byteOffset < 0 || byteOffset > _memory.Length)
@@ -178,7 +173,7 @@ namespace System.Buffers
 
                     if (_pool.IsDisposed)
                     {
-                        MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab();
+                        MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab(this);
                     }
 
                     return MemoryMarshal.TryGetArray(_memory, out segment);
@@ -199,7 +194,7 @@ namespace System.Buffers
                 {
                     if (_pinCount == 0)
                     {
-                        MemoryPoolThrowHelper.ThrowInvalidOperationException_PinCountZero();
+                        MemoryPoolThrowHelper.ThrowInvalidOperationException_PinCountZero(this);
                     }
 
                     _pinCount--;
@@ -219,15 +214,11 @@ namespace System.Buffers
             }
         }
 
-#if BLOCK_LEASE_TRACKING
-        public bool IsLeased { get; set; }
-        public string Leaser { get; set; }
+        public StackTrace Leaser { get; set; }
 
-        public void Lease()
+        public void Track()
         {
-            Leaser = Environment.StackTrace;
-            IsLeased = true;
+            Leaser = new StackTrace(false);
         }
-#endif
     }
 }
