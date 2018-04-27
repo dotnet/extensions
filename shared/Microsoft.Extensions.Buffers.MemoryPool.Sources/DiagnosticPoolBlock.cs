@@ -149,7 +149,7 @@ namespace System.Buffers
 
                     unsafe
                     {
-                        return new MemoryHandle(_memoryHandle.Value.Pointer, default, this);
+                        return new MemoryHandle(((IntPtr)_memoryHandle.Value.Pointer + byteOffset).ToPointer(), default, this);
                     }
                 }
             }
