@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.Internal.Test
             var block = memoryPool.Rent();
             block.Dispose();
             var exception = Assert.Throws<InvalidOperationException>(() => block.Dispose());
-            Assert.Equal("Object is being disposed twice", exception.Message);
+            Assert.Equal("Block is being disposed twice", exception.Message);
 
             ExpectDisposeAggregateException(memoryPool, exception);
         }

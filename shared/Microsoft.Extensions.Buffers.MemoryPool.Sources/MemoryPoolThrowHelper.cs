@@ -74,10 +74,10 @@ namespace System.Buffers
             {
                 if (diagnosticPoolBlock.Leaser != null)
                 {
+                    builder.AppendLine();
+
                     builder.AppendLine("Block leased from:");
                     builder.AppendLine(diagnosticPoolBlock.Leaser.ToString());
-
-                    builder.AppendLine();
                 }
             }
 
