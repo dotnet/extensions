@@ -16,7 +16,7 @@ namespace System.Buffers
 
         private readonly bool _allowLateReturn;
 
-        private readonly bool _leaseTracking;
+        private readonly bool _rentTracking;
 
         private readonly object _syncObj;
 
@@ -33,11 +33,11 @@ namespace System.Buffers
         /// </summary>
         private const int AnySize = -1;
 
-        public DiagnosticMemoryPool(MemoryPool<byte> pool, bool allowLateReturn = false, bool leaseTracking = false)
+        public DiagnosticMemoryPool(MemoryPool<byte> pool, bool allowLateReturn = false, bool rentTracking = false)
         {
             _pool = pool;
             _allowLateReturn = allowLateReturn;
-            _leaseTracking = leaseTracking;
+            _rentTracking = rentTracking;
             _blocks = new HashSet<DiagnosticPoolBlock>();
             _syncObj = new object();
             _allBlocksRetuned = new TaskCompletionSource<object>();
@@ -56,7 +56,7 @@ namespace System.Buffers
                 }
 
                 var diagnosticPoolBlock = new DiagnosticPoolBlock(this, _pool.Rent(size));
-                if (_leaseTracking)
+                if (_rentTracking)
                 {
                     diagnosticPoolBlock.Track();
                 }

@@ -199,10 +199,23 @@ namespace Microsoft.Extensions.Internal.Test
             Assert.Equal(new Exception [] { exception }, aggregateException.InnerExceptions);
         }
 
+        [Fact]
+        public void ExceptionsContainStackTraceWhenEnabled()
+        {
+            var memoryPool = new DiagnosticMemoryPool(new SlabMemoryPool(), rentTracking: true);
+            var block = memoryPool.Rent();
+
+            ExpectDisposeException(memoryPool);
+
+            var exception = Assert.Throws<InvalidOperationException>(() => block.Memory);
+            Assert.Contains("Block is backed by disposed slab", exception.Message);
+            Assert.Contains("ExceptionsContainStackTraceWhenEnabled", exception.Message);
+        }
+
         private static void ExpectDisposeException(MemoryPool<byte> memoryPool)
         {
             var exception = Assert.Throws<InvalidOperationException>(() => memoryPool.Dispose());
-            Assert.Equal("Memory pool with active blocks is being disposed, 0 of 1 returned", exception.Message);
+            Assert.Contains("Memory pool with active blocks is being disposed, 0 of 1 returned", exception.Message);
         }
 
         private static void ExpectDisposeAggregateException(MemoryPool<byte> memoryPool, params Exception[] inner)
