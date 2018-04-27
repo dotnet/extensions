@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#if DEBUG
-
 using System;
 using System.Buffers;
 using System.Runtime.InteropServices;
@@ -10,12 +8,14 @@ using Xunit;
 
 namespace Microsoft.Extensions.Internal.Test
 {
-    public partial class MemoryPoolTests
+    public class DiagnosticMemoryPoolTests: MemoryPoolTests
     {
+        protected override MemoryPool<byte> CreatePool() => new DiagnosticMemoryPool(new SlabMemoryPool());
+
         [Fact]
         public void DoubleDisposeThrows()
         {
-            var memoryPool = new SlabMemoryPool();
+            var memoryPool = CreatePool();
             memoryPool.Dispose();
             var exception = Assert.Throws<InvalidOperationException>(() => memoryPool.Dispose());
             Assert.Equal("Object is being disposed twice", exception.Message);
@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.Internal.Test
         [Fact]
         public void DisposeWithActiveBlocksThrows()
         {
-            var memoryPool = new SlabMemoryPool();
+            var memoryPool = CreatePool();
             var block = memoryPool.Rent();
             ExpectDisposeException(memoryPool);
 
@@ -35,18 +35,19 @@ namespace Microsoft.Extensions.Internal.Test
         [Fact]
         public void DoubleBlockDisposeThrows()
         {
-            var memoryPool = new SlabMemoryPool();
+            var memoryPool = CreatePool();
             var block = memoryPool.Rent();
             block.Dispose();
             var exception = Assert.Throws<InvalidOperationException>(() => block.Dispose());
             Assert.Equal("Object is being disposed twice", exception.Message);
-            memoryPool.Dispose();
+
+            ExpectDisposeAggregateException(memoryPool, exception);
         }
 
         [Fact]
         public void GetMemoryOfDisposedPoolThrows()
         {
-            var memoryPool = new SlabMemoryPool();
+            var memoryPool = CreatePool();
             var block = memoryPool.Rent();
 
             ExpectDisposeException(memoryPool);
@@ -58,7 +59,7 @@ namespace Microsoft.Extensions.Internal.Test
         [Fact]
         public void GetMemoryPinOfDisposedPoolThrows()
         {
-            var memoryPool = new SlabMemoryPool();
+            var memoryPool = CreatePool();
             var block = memoryPool.Rent();
             var memory = block.Memory;
 
@@ -71,7 +72,7 @@ namespace Microsoft.Extensions.Internal.Test
         [Fact]
         public void GetMemorySpanOfDisposedPoolThrows()
         {
-            var memoryPool = new SlabMemoryPool();
+            var memoryPool = CreatePool();
             var block = memoryPool.Rent();
             var memory = block.Memory;
 
@@ -93,7 +94,7 @@ namespace Microsoft.Extensions.Internal.Test
         [Fact]
         public void GetMemoryTryGetArrayOfDisposedPoolThrows()
         {
-            var memoryPool = new SlabMemoryPool();
+            var memoryPool = CreatePool();
             var block = memoryPool.Rent();
             var memory = block.Memory;
 
@@ -103,30 +104,24 @@ namespace Microsoft.Extensions.Internal.Test
             Assert.Equal("Block is backed by disposed slab", exception.Message);
         }
 
-        private static void ExpectDisposeException(SlabMemoryPool memoryPool)
-        {
-            var exception = Assert.Throws<InvalidOperationException>(() => memoryPool.Dispose());
-            Assert.Equal("Memory pool with active blocks is being disposed, 30 of 31 returned", exception.Message);
-        }
-
-
         [Fact]
         public void GetMemoryOfDisposedThrows()
         {
-            var memoryPool = new SlabMemoryPool();
+            var memoryPool = CreatePool();
             var block = memoryPool.Rent();
 
             block.Dispose();
 
             var exception = Assert.Throws<ObjectDisposedException>(() => block.Memory);
             Assert.Equal($"Cannot access a disposed object.{Environment.NewLine}Object name: 'MemoryPoolBlock'.", exception.Message);
-            memoryPool.Dispose();
+
+            ExpectDisposeAggregateException(memoryPool, exception);
         }
 
         [Fact]
         public void GetMemoryPinOfDisposedThrows()
         {
-            var memoryPool = new SlabMemoryPool();
+            var memoryPool = CreatePool();
             var block = memoryPool.Rent();
             var memory = block.Memory;
 
@@ -134,36 +129,38 @@ namespace Microsoft.Extensions.Internal.Test
 
             var exception = Assert.Throws<ObjectDisposedException>(() => memory.Pin());
             Assert.Equal($"Cannot access a disposed object.{Environment.NewLine}Object name: 'MemoryPoolBlock'.", exception.Message);
-            memoryPool.Dispose();
+
+            ExpectDisposeAggregateException(memoryPool, exception);
         }
 
         [Fact]
         public void GetMemorySpanOfDisposedThrows()
         {
-            var memoryPool = new SlabMemoryPool();
+            var memoryPool = CreatePool();
             var block = memoryPool.Rent();
             var memory = block.Memory;
 
             block.Dispose();
 
-            var threw = false;
+            Exception exception = null;
             try
             {
                 _ = memory.Span;
             }
             catch (ObjectDisposedException ode)
             {
-                threw = true;
+                exception = ode;
                 Assert.Equal($"Cannot access a disposed object.{Environment.NewLine}Object name: 'MemoryPoolBlock'.", ode.Message);
             }
-            Assert.True(threw);
-            memoryPool.Dispose();
+            Assert.NotNull(exception);
+
+            ExpectDisposeAggregateException(memoryPool, exception);
         }
 
         [Fact]
         public void GetMemoryTryGetArrayOfDisposedThrows()
         {
-            var memoryPool = new SlabMemoryPool();
+            var memoryPool = CreatePool();
             var block = memoryPool.Rent();
             var memory = block.Memory;
 
@@ -171,9 +168,22 @@ namespace Microsoft.Extensions.Internal.Test
 
             var exception = Assert.Throws<ObjectDisposedException>(() => MemoryMarshal.TryGetArray<byte>(memory, out _));
             Assert.Equal($"Cannot access a disposed object.{Environment.NewLine}Object name: 'MemoryPoolBlock'.", exception.Message);
-            memoryPool.Dispose();
+
+            ExpectDisposeAggregateException(memoryPool, exception);
         }
+
+        private static void ExpectDisposeException(MemoryPool<byte> memoryPool)
+        {
+            var exception = Assert.Throws<InvalidOperationException>(() => memoryPool.Dispose());
+            Assert.Equal("Memory pool with active blocks is being disposed, 0 of 1 returned", exception.Message);
+        }
+
+        private static void ExpectDisposeAggregateException(MemoryPool<byte> memoryPool, params Exception[] inner)
+        {
+            var exception = Assert.Throws<AggregateException>(() => memoryPool.Dispose());
+
+            Assert.Equal(inner, exception.InnerExceptions);
+        }
+
     }
 }
-
-#endif

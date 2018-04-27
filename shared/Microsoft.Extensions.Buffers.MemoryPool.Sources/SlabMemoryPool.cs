@@ -164,9 +164,6 @@ namespace System.Buffers
         {
             if (_isDisposed)
             {
-#if DEBUG
-                MemoryPoolThrowHelper.ThrowInvalidOperationException_DoubleDispose();
-#endif
                 return;
             }
 
@@ -174,11 +171,6 @@ namespace System.Buffers
             {
                 _isDisposed = true;
 
-#if DEBUG && !INNER_LOOP
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-#endif
                 if (disposing)
                 {
                     while (_slabs.TryPop(out MemoryPoolSlab slab))
@@ -188,24 +180,11 @@ namespace System.Buffers
                     }
                 }
 
-#if DEBUG
-                var returnedBlocks = _blocks.Count;
-#endif
-
                 // Discard blocks in pool
                 while (_blocks.TryDequeue(out MemoryPoolBlock block))
                 {
                     GC.SuppressFinalize(block);
                 }
-
-#if DEBUG
-                // This check is in the end because we still want
-                // finalizers to be suppressed for blocks returned to the pool
-                if (_totalAllocatedBlocks != returnedBlocks)
-                {
-                    MemoryPoolThrowHelper.ThrowInvalidOperationException_DisposingPoolWithActiveBlocks(returnedBlocks, _totalAllocatedBlocks);
-                }
-#endif
             }
         }
     }

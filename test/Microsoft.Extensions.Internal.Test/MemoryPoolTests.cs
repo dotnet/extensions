@@ -7,19 +7,21 @@ using Xunit;
 
 namespace Microsoft.Extensions.Internal.Test
 {
-    public partial class MemoryPoolTests
+    public abstract class MemoryPoolTests
     {
+        protected abstract MemoryPool<byte> CreatePool();
+
         [Fact]
         public void CanDisposeAfterCreation()
         {
-            var memoryPool = new SlabMemoryPool();
+            var memoryPool = CreatePool();
             memoryPool.Dispose();
         }
 
         [Fact]
         public void CanDisposeAfterReturningBlock()
         {
-            var memoryPool = new SlabMemoryPool();
+            var memoryPool = CreatePool();
             var block = memoryPool.Rent();
             block.Dispose();
             memoryPool.Dispose();
@@ -28,7 +30,7 @@ namespace Microsoft.Extensions.Internal.Test
         [Fact]
         public void CanDisposeAfterPinUnpinBlock()
         {
-            var memoryPool = new SlabMemoryPool();
+            var memoryPool = CreatePool();
             var block = memoryPool.Rent();
             block.Memory.Pin().Dispose();
             block.Dispose();
@@ -38,7 +40,7 @@ namespace Microsoft.Extensions.Internal.Test
         [Fact]
         public void LeasingFromDisposedPoolThrows()
         {
-            var memoryPool = new SlabMemoryPool();
+            var memoryPool = CreatePool();
             memoryPool.Dispose();
 
             var exception = Assert.Throws<ObjectDisposedException>(() => memoryPool.Rent());
