@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#if RELEASE
-
 using System.Runtime.InteropServices;
 
 namespace System.Buffers
@@ -53,7 +51,6 @@ namespace System.Buffers
 
         public void Dispose()
         {
-            if (!Slab.IsActive) MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPoolBlock);
             Pool.Return(this);
         }
 
@@ -62,5 +59,3 @@ namespace System.Buffers
         }
     }
 }
-
-#endif
