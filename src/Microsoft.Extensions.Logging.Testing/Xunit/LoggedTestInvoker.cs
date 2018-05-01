@@ -30,16 +30,6 @@ namespace Microsoft.Extensions.Logging.Testing
         {
         }
 
-        protected override Task BeforeTestMethodInvokedAsync()
-        {
-            if (_output != null)
-            {
-                _output.Initialize(MessageBus, Test);
-            }
-
-            return base.BeforeTestMethodInvokedAsync();
-        }
-
         protected override async Task AfterTestMethodInvokedAsync()
         {
             await base.AfterTestMethodInvokedAsync();
@@ -70,6 +60,7 @@ namespace Microsoft.Extensions.Logging.Testing
                 if (loggedTestClass.TestOutputHelper == null)
                 {
                     loggedTestClass.TestOutputHelper = _output = new TestOutputHelper();
+                    _output.Initialize(MessageBus, Test);
                 }
 
                 AssemblyTestLog

@@ -130,12 +130,27 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         }
     }
 
+    public class LoggedTestXunitInitializationTests : TestLoggedTest
+    {
+        [Fact]
+        public void ITestOutputHelperInitializedByDefault()
+        {
+            Assert.True(ITestOutputHelperIsInitialized);
+        }
+    }
+
     public class TestLoggedTest : LoggedTest
     {
         public bool SetupInvoked { get; private set; } = false;
+        public bool ITestOutputHelperIsInitialized { get; private set; } = false;
 
         public override void AdditionalSetup()
         {
+            try
+            {
+                TestOutputHelper.WriteLine("Test");
+                ITestOutputHelperIsInitialized = true;
+            } catch { }
             SetupInvoked = true;
         }
     }
