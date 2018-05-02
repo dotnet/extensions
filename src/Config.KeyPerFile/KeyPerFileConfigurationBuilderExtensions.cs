@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Microsoft.Extensions.Configuration.KeyPerFile;
 using Microsoft.Extensions.FileProviders;
 
@@ -20,7 +21,11 @@ namespace Microsoft.Extensions.Configuration
         public static IConfigurationBuilder AddKeyPerFile(this IConfigurationBuilder builder, string directoryPath, bool optional)
             => builder.AddKeyPerFile(source =>
             {
-                source.FileProvider = new PhysicalFileProvider(directoryPath);
+                // Only try to set the file provider if its not optional or the directory exists 
+                if (!optional || Directory.Exists(directoryPath))
+                {
+                    source.FileProvider = new PhysicalFileProvider(directoryPath);
+                }
                 source.Optional = optional;
             });
 

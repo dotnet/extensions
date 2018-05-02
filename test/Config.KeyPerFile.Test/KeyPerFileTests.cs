@@ -19,6 +19,19 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
         }
 
         [Fact]
+        public void DoesNotThrowWhenOptionalAndDirectoryDoesntExist()
+        {
+            new ConfigurationBuilder().AddKeyPerFile("nonexistent", true).Build();
+        }
+
+        [Fact]
+        public void ThrowsWhenNotOptionalAndDirectoryDoesntExist()
+        {
+            var e = Assert.Throws<ArgumentException>(() => new ConfigurationBuilder().AddKeyPerFile("nonexistent", false).Build());
+            Assert.Contains("The directory name", e.Message);
+        }
+
+        [Fact]
         public void CanLoadMultipleSecrets()
         {
             var testFileProvider = new TestFileProvider(
