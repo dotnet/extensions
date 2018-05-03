@@ -1205,23 +1205,23 @@ namespace Microsoft.Extensions.FileProviders
                 var newFileTcs = new TaskCompletionSource<object>();
                 newFileToken.RegisterChangeCallback(_ => newFileTcs.TrySetResult(true), null);
 
-                Assert.False(oldDirectoryToken.HasChanged);
-                Assert.False(oldSubDirectoryToken.HasChanged);
-                Assert.False(oldFileToken.HasChanged);
-                Assert.False(newDirectoryToken.HasChanged);
-                Assert.False(newSubDirectoryToken.HasChanged);
-                Assert.False(newFileToken.HasChanged);
+                Assert.False(oldDirectoryToken.HasChanged, "Old directory token should not have changed");
+                Assert.False(oldSubDirectoryToken.HasChanged, "Old subdirectory token should not have changed");
+                Assert.False(oldFileToken.HasChanged, "Old file token should not have changed");
+                Assert.False(newDirectoryToken.HasChanged, "New directory token should not have changed");
+                Assert.False(newSubDirectoryToken.HasChanged, "New subdirectory token should not have changed");
+                Assert.False(newFileToken.HasChanged, "New file token should not have changed");
 
                 fileSystemWatcher.CallOnRenamed(new RenamedEventArgs(WatcherChangeTypes.Renamed, root.RootPath, newDirectoryName, oldDirectoryName));
 
                 await Task.WhenAll(oldDirectoryTcs.Task, newDirectoryTcs.Task, newSubDirectoryTcs.Task, newFileTcs.Task).TimeoutAfter(TimeSpan.FromSeconds(30));
 
-                Assert.False(oldSubDirectoryToken.HasChanged);
-                Assert.False(oldFileToken.HasChanged);
-                Assert.True(oldDirectoryToken.HasChanged);
-                Assert.True(newDirectoryToken.HasChanged);
-                Assert.True(newSubDirectoryToken.HasChanged);
-                Assert.True(newFileToken.HasChanged);
+                Assert.False(oldSubDirectoryToken.HasChanged, "Old subdirectory token should not have changed");
+                Assert.False(oldFileToken.HasChanged, "Old file token should not have changed");
+                Assert.True(oldDirectoryToken.HasChanged, "Old directory token should have changed");
+                Assert.True(newDirectoryToken.HasChanged, "New directory token should have changed");
+                Assert.True(newSubDirectoryToken.HasChanged, "New sub directory token should have changed");
+                Assert.True(newFileToken.HasChanged, "New file token should have changed");
             }
 
             // wait a little to ensure these tokens don't fire even after disposing the watcher
