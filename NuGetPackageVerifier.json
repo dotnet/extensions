@@ -2,8 +2,10 @@
   "adx-nonshipping": {
     "rules": [],
     "packages": {
+      "Microsoft.AspNetCore.Analyzer.Testing": {},
       "Microsoft.AspNetCore.BenchmarkRunner.Sources": {},
       "Microsoft.Extensions.Buffers.Sources": {},
+      "Microsoft.Extensions.Buffers.MemoryPool.Sources": {},
       "Microsoft.Extensions.Buffers.Testing.Sources": {},
       "Microsoft.AspNetCore.Certificates.Generation.Sources": {},
       "Microsoft.Extensions.ClosedGenericMatcher.Sources": {},

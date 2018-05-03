@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Threading;
 
 namespace System.Buffers
 {
@@ -49,7 +50,11 @@ namespace System.Buffers
         /// <summary>
         /// This is part of implementing the IDisposable pattern.
         /// </summary>
-        private bool _disposedValue = false; // To detect redundant calls
+        private bool _isDisposed; // To detect redundant calls
+
+        private int _totalAllocatedBlocks;
+
+        private readonly object _disposeSync = new object();
 
         /// <summary>
         /// This default value passed in to Rent to use the default value for the pool.
@@ -58,10 +63,9 @@ namespace System.Buffers
 
         public override IMemoryOwner<byte> Rent(int size = AnySize)
         {
-            if (size == AnySize) size = _blockSize;
-            else if (size > _blockSize)
+            if (size > _blockSize)
             {
-                ThrowHelper.ThrowArgumentOutOfRangeException_BufferRequestTooLarge(_blockSize);
+                MemoryPoolThrowHelper.ThrowArgumentOutOfRangeException_BufferRequestTooLarge(_blockSize);
             }
 
             var block = Lease();
@@ -74,7 +78,10 @@ namespace System.Buffers
         /// <returns>The block that is reserved for the called. It must be passed to Return when it is no longer being used.</returns>
         private MemoryPoolBlock Lease()
         {
-            Debug.Assert(!_disposedValue, "Block being leased from disposed pool!");
+            if (_isDisposed)
+            {
+                MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPool);
+            }
 
             if (_blocks.TryDequeue(out MemoryPoolBlock block))
             {
@@ -100,36 +107,31 @@ namespace System.Buffers
 
             var basePtr = slab.NativePointer;
             // Page align the blocks
-            var firstOffset = (int)((((ulong)basePtr + (uint)_blockSize - 1) & ~((uint)_blockSize - 1)) - (ulong)basePtr);
+            var offset = (int)((((ulong)basePtr + (uint)_blockSize - 1) & ~((uint)_blockSize - 1)) - (ulong)basePtr);
             // Ensure page aligned
-            Debug.Assert((((ulong)basePtr + (uint)firstOffset) & (uint)(_blockSize - 1)) == 0);
+            Debug.Assert(((ulong)basePtr + (uint)offset) % _blockSize == 0);
 
-            var blockAllocationLength = ((_slabLength - firstOffset) & ~(_blockSize - 1));
-            var offset = firstOffset;
-            for (;
-                offset + _blockSize < blockAllocationLength;
-                offset += _blockSize)
+            var blockCount = (_slabLength - offset) / _blockSize;
+            Interlocked.Add(ref _totalAllocatedBlocks, blockCount);
+
+            MemoryPoolBlock block = null;
+
+            for (int i = 0; i < blockCount; i++)
             {
-                var block = new MemoryPoolBlock(
-                    this,
-                    slab,
-                    offset,
-                    _blockSize);
+                block = new MemoryPoolBlock(this, slab, offset, _blockSize);
+
+                if (i != blockCount - 1) // last block
+                {
 #if BLOCK_LEASE_TRACKING
-                block.IsLeased = true;
+                    block.IsLeased = true;
 #endif
-                Return(block);
+                    Return(block);
+                }
+
+                offset += _blockSize;
             }
 
-            Debug.Assert(offset + _blockSize - firstOffset == blockAllocationLength);
-            // return last block rather than adding to pool
-            var newBlock = new MemoryPoolBlock(
-                    this,
-                    slab,
-                    offset,
-                    _blockSize);
-
-            return newBlock;
+            return block;
         }
 
         /// <summary>
@@ -148,7 +150,7 @@ namespace System.Buffers
             block.IsLeased = false;
 #endif
 
-            if (block.Slab != null && block.Slab.IsActive)
+            if (!_isDisposed)
             {
                 _blocks.Enqueue(block);
             }
@@ -160,14 +162,15 @@ namespace System.Buffers
 
         protected override void Dispose(bool disposing)
         {
-            if (!_disposedValue)
+            if (_isDisposed)
             {
-                _disposedValue = true;
-#if DEBUG && !INNER_LOOP
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-#endif
+                return;
+            }
+
+            lock (_disposeSync)
+            {
+                _isDisposed = true;
+
                 if (disposing)
                 {
                     while (_slabs.TryPop(out MemoryPoolSlab slab))
@@ -182,11 +185,6 @@ namespace System.Buffers
                 {
                     GC.SuppressFinalize(block);
                 }
-
-                // N/A: free unmanaged resources (unmanaged objects) and override a finalizer below.
-
-                // N/A: set large fields to null.
-
             }
         }
     }

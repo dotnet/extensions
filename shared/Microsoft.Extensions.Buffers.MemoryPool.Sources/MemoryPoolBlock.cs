@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#if RELEASE
-
 using System.Runtime.InteropServices;
 
 namespace System.Buffers
@@ -15,7 +13,7 @@ namespace System.Buffers
     {
         private readonly int _offset;
         private readonly int _length;
-        
+
         /// <summary>
         /// This object cannot be instantiated outside of the static Create method
         /// </summary>
@@ -26,7 +24,7 @@ namespace System.Buffers
 
             Pool = pool;
             Slab = slab;
-            
+
             Memory = MemoryMarshal.CreateFromPinnedArray(slab.Array, _offset, _length);
         }
 
@@ -53,7 +51,6 @@ namespace System.Buffers
 
         public void Dispose()
         {
-            if (!Slab.IsActive) ThrowHelper.ThrowObjectDisposedException(ExceptionArgument.MemoryPoolBlock);
             Pool.Return(this);
         }
 
@@ -62,5 +59,3 @@ namespace System.Buffers
         }
     }
 }
-
-#endif
