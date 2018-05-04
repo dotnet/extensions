@@ -173,6 +173,8 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
                 {
                     newFileName += i;
                 }
+                newFileName += ".cs";
+
                 var documentId = DocumentId.CreateNewId(projectId, debugName: newFileName);
                 solution = solution.AddDocument(documentId, newFileName, SourceText.From(sources[i]));
             }
