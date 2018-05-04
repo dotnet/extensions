@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -18,27 +17,37 @@ using Xunit;
 namespace Microsoft.AspNetCore.Analyzer.Testing
 {
     /// <summary>
-    /// Superclass of all Unit Tests for DiagnosticAnalyzers
+    /// Base type for executing a <see cref="DiagnosticAnalyzer" />. Derived types implemented in the test assembly will
+    /// correctly resolve reference assemblies required for compilaiton.
     /// </summary>
-    public abstract class DiagnosticVerifier
+    public abstract class DiagnosticAnalyzerRunner
     {
         /// <summary>
         /// File name prefix used to generate Documents instances from source.
         /// </summary>
-        protected static string DefaultFilePathPrefix = "Test";
-        /// <summary>
-        /// Project name of
-        /// </summary>
-        protected static string TestProjectName = "TestProject";
+        public static string DefaultFilePathPrefix = "Test";
 
         /// <summary>
-        /// Given classes in the form of strings, and an IDiagnosticAnalyzer to apply to it, return the diagnostics found in the string after converting it to a document.
+        /// Project name.
+        /// </summary>
+        public static string TestProjectName = "TestProject";
+
+        /// <summary>
+        /// Given classes in the form of strings, and an DiagnosticAnalyzer to apply to it, return the diagnostics found in the string after converting it to a document.
         /// </summary>
         /// <param name="sources">Classes in the form of strings</param>
         /// <param name="analyzer">The analyzer to be run on the sources</param>
         /// <param name="additionalEnabledDiagnostics">Additional diagnostics to enable at Info level</param>
+        /// <param name="getAllDiagnostics">
+        /// When <c>true</c>, returns all diagnostics including compilation errors.
+        /// Otherwise; only returns analyzer diagnostics.
+        /// </param>
         /// <returns>An IEnumerable of Diagnostics that surfaced in the source code, sorted by Location</returns>
-        protected Task<Diagnostic[]> GetDiagnosticsAsync(string[] sources, DiagnosticAnalyzer analyzer, string[] additionalEnabledDiagnostics)
+        protected Task<Diagnostic[]> GetDiagnosticsAsync(
+            string[] sources,
+            DiagnosticAnalyzer analyzer,
+            string[] additionalEnabledDiagnostics,
+            bool getAllDiagnostics = true)
         {
             return GetDiagnosticsAsync(GetDocuments(sources), analyzer, additionalEnabledDiagnostics);
         }
@@ -50,8 +59,16 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
         /// <param name="documents">The Documents that the analyzer will be run on</param>
         /// <param name="analyzer">The analyzer to run on the documents</param>
         /// <param name="additionalEnabledDiagnostics">Additional diagnostics to enable at Info level</param>
+        /// <param name="getAllDiagnostics">
+        /// When <c>true</c>, returns all diagnostics including compilation errors.
+        /// Otherwise only returns analyzer diagnostics.
+        /// </param>
         /// <returns>An IEnumerable of Diagnostics that surfaced in the source code, sorted by Location</returns>
-        protected static async Task<Diagnostic[]> GetDiagnosticsAsync(Document[] documents, DiagnosticAnalyzer analyzer, string[] additionalEnabledDiagnostics)
+        protected async Task<Diagnostic[]> GetDiagnosticsAsync(
+            Document[] documents,
+            DiagnosticAnalyzer analyzer,
+            string[] additionalEnabledDiagnostics,
+            bool getAllDiagnostics = true)
         {
             var projects = new HashSet<Project>();
             foreach (var document in documents)
@@ -65,7 +82,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
                 var compilation = await project.GetCompilationAsync();
 
                 // Enable any additional diagnostics
-                var options = compilation.Options;
+                var options = ConfigureCompilationOptions(compilation.Options);
                 if (additionalEnabledDiagnostics.Length > 0)
                 {
                     options = compilation.Options
@@ -77,43 +94,50 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
                     .WithOptions(options)
                     .WithAnalyzers(ImmutableArray.Create(analyzer));
 
-                var diags = await compilationWithAnalyzers.GetAllDiagnosticsAsync();
-
-                Assert.DoesNotContain(diags, d => d.Id == "AD0001");
-
-                // Filter out non-error diagnostics not produced by our analyzer
-                // We want to KEEP errors because we might have written bad code. But sometimes we leave warnings in to make the
-                // test code more convenient
-                diags = diags.Where(d => d.Severity == DiagnosticSeverity.Error || analyzer.SupportedDiagnostics.Any(s => s.Id.Equals(d.Id))).ToImmutableArray();
-
-                foreach (var diag in diags)
+                if (getAllDiagnostics)
                 {
-                    if (diag.Location == Location.None || diag.Location.IsInMetadata)
+                    var diags = await compilationWithAnalyzers.GetAllDiagnosticsAsync();
+
+                    Assert.DoesNotContain(diags, d => d.Id == "AD0001");
+
+                    // Filter out non-error diagnostics not produced by our analyzer
+                    // We want to KEEP errors because we might have written bad code. But sometimes we leave warnings in to make the
+                    // test code more convenient
+                    diags = diags.Where(d => d.Severity == DiagnosticSeverity.Error || analyzer.SupportedDiagnostics.Any(s => s.Id.Equals(d.Id))).ToImmutableArray();
+
+                    foreach (var diag in diags)
                     {
-                        diagnostics.Add(diag);
-                    }
-                    else
-                    {
-                        foreach (var document in documents)
+                        if (diag.Location == Location.None || diag.Location.IsInMetadata)
                         {
-                            var tree = await document.GetSyntaxTreeAsync();
-                            if (tree == diag.Location.SourceTree)
+                            diagnostics.Add(diag);
+                        }
+                        else
+                        {
+                            foreach (var document in documents)
                             {
-                                diagnostics.Add(diag);
+                                var tree = await document.GetSyntaxTreeAsync();
+                                if (tree == diag.Location.SourceTree)
+                                {
+                                    diagnostics.Add(diag);
+                                }
                             }
                         }
                     }
+                }
+                else
+                {
+                    diagnostics.AddRange(await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync());
                 }
             }
 
             return diagnostics.OrderBy(d => d.Location.SourceSpan.Start).ToArray();
         }
 
-        /// <summary>
-        /// Given an array of strings as sources and a language, turn them into a project and return the documents and spans of it.
-        /// </summary>
-        /// <param name="sources">Classes in the form of strings</param>
-        /// <returns>An array of Documents produced from the sources.</returns>
+        protected virtual CodeAnalysis.CompilationOptions ConfigureCompilationOptions(CodeAnalysis.CompilationOptions options)
+        {
+            return options.WithOutputKind(OutputKind.DynamicallyLinkedLibrary);
+        }
+
         private Document[] GetDocuments(string[] sources)
         {
             var project = CreateProject(sources);
@@ -124,11 +148,6 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
             return documents;
         }
 
-        /// <summary>
-        /// Create a project using the inputted strings as sources.
-        /// </summary>
-        /// <param name="sources">Classes in the form of strings</param>
-        /// <returns>A Project created out of the Documents created from the source strings</returns>
         private Project CreateProject(string[] sources)
         {
             var fileNamePrefix = DefaultFilePathPrefix;
@@ -147,14 +166,17 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
                 }
             }
 
-            var count = 0;
-            foreach (var source in sources)
+            for (var i = 0; i < sources.Length; i++)
             {
-                var newFileName = fileNamePrefix + count;
+                var newFileName = fileNamePrefix;
+                if (sources.Length > 1)
+                {
+                    newFileName += i;
+                }
                 var documentId = DocumentId.CreateNewId(projectId, debugName: newFileName);
-                solution = solution.AddDocument(documentId, newFileName, SourceText.From(source));
-                count++;
+                solution = solution.AddDocument(documentId, newFileName, SourceText.From(sources[i]));
             }
+
             return solution.GetProject(projectId);
         }
 
