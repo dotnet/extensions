@@ -11,15 +11,18 @@ namespace System.Buffers
         private T _output;
         private Span<byte> _span;
         private int _buffered;
+        private long _bytesCommitted;
 
         public BufferWriter(T output)
         {
             _buffered = 0;
+            _bytesCommitted = 0;
             _output = output;
             _span = output.GetSpan();
         }
 
         public Span<byte> Span => _span;
+        public long BytesCommitted => _bytesCommitted;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Commit()
@@ -27,6 +30,7 @@ namespace System.Buffers
             var buffered = _buffered;
             if (buffered > 0)
             {
+                _bytesCommitted += buffered;
                 _buffered = 0;
                 _output.Advance(buffered);
             }
