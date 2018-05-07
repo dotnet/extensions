@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.CodeAnalysis;
+using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Analyzer.Testing
 {
-    internal class Assert : Xunit.Assert
+    public class AnalyzerAssert
     {
         public static void DiagnosticLocation(DiagnosticLocation expected, Location actual)
         {
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
             }
         }
 
-        private class DiagnosticLocationAssertException : Xunit.Sdk.EqualException
+        private class DiagnosticLocationAssertException : EqualException
         {
             public DiagnosticLocationAssertException(
                 DiagnosticLocation expected,
