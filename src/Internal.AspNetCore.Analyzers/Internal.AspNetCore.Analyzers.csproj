@@ -5,6 +5,8 @@
     <VersionSuffix>$(ExperimentalVersionSuffix)</VersionSuffix>
     <PackageVersion>$(ExperimentalPackageVersion)</PackageVersion>
     <VerifyVersion>false</VerifyVersion>
+    <Description>ASP.NET Core internal use analyzers.</Description>
+    <PackageTags>$(PackageTags);analyzers</PackageTags>
     <TargetFramework>netstandard1.3</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <EnableApiCheck>false</EnableApiCheck>
