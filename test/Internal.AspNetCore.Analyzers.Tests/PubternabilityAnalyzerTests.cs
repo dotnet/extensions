@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -191,12 +190,12 @@ namespace A
 
             var mainProject = CreateProject(code).AddProjectReference(new ProjectReference(libraray.Id));
 
-            return GetDiagnosticsAsync(mainProject.Documents.ToArray(), new PubternalityAnalyzer(), Array.Empty<string>());
+            return GetDiagnosticsAsync(mainProject.Documents.ToArray(), new PubternalityAnalyzer(), new [] { "PUB0002" });
         }
 
         private Task<Diagnostic[]> GetDiagnostics(string code)
         {
-            return GetDiagnosticsAsync(new[] { code }, new PubternalityAnalyzer(), Array.Empty<string>());
+            return GetDiagnosticsAsync(new[] { code }, new PubternalityAnalyzer(), new [] { "PUB0002" });
         }
     }
 }

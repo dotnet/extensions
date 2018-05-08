@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Pubternal.Analyzers\Microsoft.AspNetCore.Pubternal.Analyzers.csproj" />
+    <ProjectReference Include="..\..\src\Internal.AspNetCore.Analyzers\Internal.AspNetCore.Analyzers.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Analyzer.Testing\Microsoft.AspNetCore.Analyzer.Testing.csproj" />
   </ItemGroup>
 

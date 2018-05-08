@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Pubternal.Analyzers
 
         public static DiagnosticDescriptor PUB0002 = new DiagnosticDescriptor(
             "PUB0002", "Cross assembly pubternal reference",
-            "Cross assembly pubternal reference", "Usage", DiagnosticSeverity.Error, true);
+            "Cross assembly pubternal reference", "Usage", DiagnosticSeverity.Error, false);
     }
 }
