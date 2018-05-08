@@ -3,7 +3,7 @@
 
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.AspNetCore.Pubternal.Analyzers
+namespace Internal.AspNetCore.Analyzers
 {
     internal class PubturnalityDescriptors
     {

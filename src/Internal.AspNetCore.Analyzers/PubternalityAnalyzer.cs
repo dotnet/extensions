@@ -1,17 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Microsoft.AspNetCore.Pubternal.Analyzers
+namespace Internal.AspNetCore.Analyzers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class PubternalityAnalyzer : DiagnosticAnalyzer
@@ -41,7 +37,7 @@ namespace Microsoft.AspNetCore.Pubternal.Analyzers
         private void AnalyzeTypeUsage(SymbolAnalysisContext context)
         {
             var ns = (INamespaceSymbol)context.Symbol;
-            if (ns.Name == "Internal")
+            if (IsInternal(ns))
             {
                 return;
             }
@@ -86,6 +82,7 @@ namespace Microsoft.AspNetCore.Pubternal.Analyzers
 
             if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
             {
+                // Check delegate signatures
                 if (namedTypeSymbol.DelegateInvokeMethod != null)
                 {
                     CheckMethod(context, namedTypeSymbol.DelegateInvokeMethod);
@@ -117,6 +114,7 @@ namespace Microsoft.AspNetCore.Pubternal.Analyzers
                 }
                 case IMethodSymbol methodSymbol:
                 {
+                    // Skip compiler generated members that we already explicitly check
                     switch (methodSymbol.MethodKind)
                     {
                         case MethodKind.EventAdd:
@@ -161,7 +159,7 @@ namespace Microsoft.AspNetCore.Pubternal.Analyzers
             return symbol != null &&
                    (symbol.DeclaredAccessibility == Accessibility.Private ||
                    symbol.DeclaredAccessibility == Accessibility.Internal ||
-                   symbol.ContainingNamespace.Name == "Internal");
+                   IsInternal(symbol.ContainingNamespace));
         }
 
         private void CheckAttributes(SymbolAnalysisContext context, ImmutableArray<AttributeData> attributes)
@@ -193,7 +191,7 @@ namespace Microsoft.AspNetCore.Pubternal.Analyzers
 
         private bool ContainsPubternalType(ITypeSymbol symbol)
         {
-            if (symbol.ContainingNamespace.Name == "Internal")
+            if (IsInternal(symbol.ContainingNamespace))
             {
                 return true;
             }
@@ -225,7 +223,7 @@ namespace Microsoft.AspNetCore.Pubternal.Analyzers
             }
 
             var type = symbolInfo.Type;
-            if (type.ContainingNamespace.Name != "Internal")
+            if (!IsInternal(type.ContainingNamespace))
             {
                 // don't care about non-pubternal type references
                 return;
@@ -235,6 +233,21 @@ namespace Microsoft.AspNetCore.Pubternal.Analyzers
             {
                 syntaxContext.ReportDiagnostic(Diagnostic.Create(PubturnalityDescriptors.PUB0002, identifier.GetLocation()));
             }
+        }
+
+        private static bool IsInternal(INamespaceSymbol ns)
+        {
+            while (ns != null)
+            {
+                if (ns.Name == "Internal")
+                {
+                    return true;
+                }
+
+                ns = ns.ContainingNamespace;
+            }
+
+            return false;
         }
     }
 }

@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
         /// </summary>
         protected static string TestProjectName = "TestProject";
 
-        private Solution _solution;
+        protected Solution Solution { get; set; }
 
         /// <summary>
         /// Given classes in the form of strings, and an IDiagnosticAnalyzer to apply to it, return the diagnostics found in the string after converting it to a document.
@@ -157,16 +157,16 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
 
             var projectId = ProjectId.CreateNewId(debugName: TestProjectName);
 
-            _solution = _solution ?? new AdhocWorkspace().CurrentSolution;
+            Solution = Solution ?? new AdhocWorkspace().CurrentSolution;
 
-            _solution = _solution.AddProject(projectId, TestProjectName, TestProjectName, LanguageNames.CSharp)
+            Solution = Solution.AddProject(projectId, TestProjectName, TestProjectName, LanguageNames.CSharp)
                 .WithProjectCompilationOptions(projectId, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
             foreach (var defaultCompileLibrary in DependencyContext.Load(GetType().Assembly).CompileLibraries)
             {
                 foreach (var resolveReferencePath in defaultCompileLibrary.ResolveReferencePaths(new AppLocalResolver()))
                 {
-                    _solution = _solution.AddMetadataReference(projectId, MetadataReference.CreateFromFile(resolveReferencePath));
+                    Solution = Solution.AddMetadataReference(projectId, MetadataReference.CreateFromFile(resolveReferencePath));
                 }
             }
 
@@ -178,10 +178,10 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
                 _testOutputHelper?.WriteLine("Adding file: " + newFileName + Environment.NewLine + source);
 
                 var documentId = DocumentId.CreateNewId(projectId, debugName: newFileName);
-                _solution = _solution.AddDocument(documentId, newFileName, SourceText.From(source));
+                Solution = Solution.AddDocument(documentId, newFileName, SourceText.From(source));
                 count++;
             }
-            return _solution.GetProject(projectId);
+            return Solution.GetProject(projectId);
         }
 
         // Required to resolve compilation assemblies inside unit tests

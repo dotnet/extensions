@@ -9,13 +9,13 @@ using Microsoft.AspNetCore.Analyzer.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Pubternal.Analyzers.Test
+namespace Internal.AspNetCore.Analyzers.Tests
 {
     public class PubternabilityAnalyzerTests : DiagnosticVerifier
     {
 
         private const string InternalDefinitions = @"
-namespace A.Internal
+namespace A.Internal.Namespace
 {
    public class C {}
    public delegate C CD ();
@@ -97,7 +97,7 @@ namespace A
         public async Task DefinitionOfPubternalCrossAssemblyProducesPUB0002(string member)
         {
             var code = $@"
-using A.Internal;
+using A.Internal.Namespace;
 namespace A
 {{
     internal class T
@@ -115,7 +115,7 @@ namespace A
         public async Task UsageOfPubternalCrossAssemblyProducesPUB0002(string usage)
         {
             var code = $@"
-using A.Internal;
+using A.Internal.Namespace;
 namespace A
 {{
     public class T
@@ -180,7 +180,7 @@ namespace A
 
         private Task<Diagnostic[]> GetDiagnosticFromNamespaceDeclaration(string namespaceDefinition)
         {
-            var code = "using A.Internal;" + InternalDefinitions + namespaceDefinition;
+            var code = "using A.Internal.Namespace;" + InternalDefinitions + namespaceDefinition;
             return GetDiagnostics(code);
         }
 
