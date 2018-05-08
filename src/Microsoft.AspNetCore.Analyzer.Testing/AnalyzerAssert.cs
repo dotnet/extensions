@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzer.Testing
 {
-    internal class Assert : Xunit.Assert
+    public class AnalyzerAssert : Xunit.Assert
     {
         public static void DiagnosticLocation(DiagnosticLocation expected, Location actual)
         {
