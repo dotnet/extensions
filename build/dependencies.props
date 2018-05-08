@@ -20,6 +20,7 @@
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.6.0-preview3-26423-04</SystemReflectionMetadataPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview3-26423-04</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemValueTuplePackageVersion>4.5.0-preview3-26423-04</SystemValueTuplePackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview3-26423-04</SystemSecurityCryptographyCngPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview3-26423-04</SystemThreadingTasksExtensionsPackageVersion>

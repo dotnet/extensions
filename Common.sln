@@ -66,9 +66,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Analyz
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Testing.Tests", "test\Microsoft.AspNetCore.Testing.Tests\Microsoft.AspNetCore.Testing.Tests.csproj", "{B439E0C8-F892-4AC5-BBF7-63BCDAACA7A9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Pubternal.Analyzers", "src\Microsoft.AspNetCore.Pubternal.Analyzers\Microsoft.AspNetCore.Pubternal.Analyzers.csproj", "{FACBCBCB-D043-4AE8-A22D-A683040999DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Internal.AspNetCore.Analyzers", "src\Internal.AspNetCore.Analyzers\Internal.AspNetCore.Analyzers.csproj", "{FACBCBCB-D043-4AE8-A22D-A683040999DD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Pubternal.Analyzers.Test", "test\Microsoft.AspNetCore.Pubternal.Analyzers.Test\Microsoft.AspNetCore.Pubternal.Analyzers.Test.csproj", "{1A579BD1-A4C4-4B1B-B092-D1670DF7F239}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Internal.AspNetCore.Analyzers.Tests", "test\Internal.AspNetCore.Analyzers.Tests\Internal.AspNetCore.Analyzers.Tests.csproj", "{1A579BD1-A4C4-4B1B-B092-D1670DF7F239}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
