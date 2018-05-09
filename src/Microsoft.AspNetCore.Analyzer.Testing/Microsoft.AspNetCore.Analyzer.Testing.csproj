@@ -12,6 +12,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
     <PackageReference Include="xunit.assert" Version="$(XunitAssertPackageVersion)" />
+    <PackageReference Include="xunit.abstractions" Version="$(XunitAbstractionsPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
