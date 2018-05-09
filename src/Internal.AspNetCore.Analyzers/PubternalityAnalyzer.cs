@@ -97,7 +97,6 @@ namespace Internal.AspNetCore.Analyzers
                 return;
             }
 
-
             switch (symbol)
             {
                 case IFieldSymbol fieldSymbol:
@@ -172,28 +171,65 @@ namespace Internal.AspNetCore.Analyzers
 
         private void CheckType(SymbolAnalysisContext context, ITypeSymbol symbol, SyntaxReference syntax)
         {
-            if (ContainsPubternalType(symbol))
+            var pubternalType = GetPubternalType(symbol);
+            if (pubternalType != null)
             {
-                context.ReportDiagnostic(Diagnostic.Create(PubturnalityDescriptors.PUB0001, syntax.GetSyntax().GetLocation()));
+                ReportPUB0001(context, pubternalType, syntax);
             }
         }
-
         private void CheckType(SymbolAnalysisContext context, ITypeSymbol symbol, ImmutableArray<SyntaxReference> syntaxReferences)
         {
-            if (ContainsPubternalType(symbol))
+            var pubternalType = GetPubternalType(symbol);
+            if (pubternalType != null)
             {
                 foreach (var syntaxReference in syntaxReferences)
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(PubturnalityDescriptors.PUB0001, syntaxReference.GetSyntax().GetLocation()));
+                    ReportPUB0001(context, pubternalType, syntaxReference);
                 }
             }
         }
 
-        private bool ContainsPubternalType(ITypeSymbol symbol)
+        private static void ReportPUB0001(SymbolAnalysisContext context, ITypeSymbol pubternalType, SyntaxReference syntax)
+        {
+            var syntaxNode = syntax.GetSyntax();
+            var location = syntaxNode.GetLocation();
+
+            if (syntaxNode is BaseTypeDeclarationSyntax baseTypeDeclarationSyntax)
+            {
+                location = baseTypeDeclarationSyntax.Identifier.GetLocation();
+            }
+
+            if (syntaxNode is DelegateDeclarationSyntax delegateDeclarationSyntax)
+            {
+                location = delegateDeclarationSyntax.ReturnType.GetLocation();
+            }
+
+            if (syntaxNode is BasePropertyDeclarationSyntax propertyDeclaration)
+            {
+                location = propertyDeclaration.Type.GetLocation();
+            }
+
+            if (syntaxNode is MethodDeclarationSyntax method)
+            {
+                location = method.ReturnType.GetLocation();
+            }
+
+            if (syntaxNode is VariableDeclaratorSyntax variableDeclarator)
+            {
+                if (variableDeclarator.Parent is VariableDeclarationSyntax fieldDeclaration)
+                {
+                    location = fieldDeclaration.Type.GetLocation();
+                }
+            }
+
+            context.ReportDiagnostic(Diagnostic.Create(PubturnalityDescriptors.PUB0001, location, pubternalType.ToDisplayString()));
+        }
+
+        private ITypeSymbol GetPubternalType(ITypeSymbol symbol)
         {
             if (IsInternal(symbol.ContainingNamespace))
             {
-                return true;
+                return symbol;
             }
             else
             {
@@ -201,15 +237,16 @@ namespace Internal.AspNetCore.Analyzers
                 {
                     foreach (var argument in namedTypeSymbol.TypeArguments)
                     {
-                        if (ContainsPubternalType(argument))
+                        var argumentSymbol = GetPubternalType(argument);
+                        if (argumentSymbol != null)
                         {
-                            return true;
+                            return argumentSymbol;
                         }
                     }
                 }
             }
 
-            return false;
+            return null;
         }
 
         private void AnalyzeTypeUsage(SyntaxNodeAnalysisContext syntaxContext)
@@ -231,7 +268,7 @@ namespace Internal.AspNetCore.Analyzers
 
             if (!syntaxContext.ContainingSymbol.ContainingAssembly.Equals(type.ContainingAssembly))
             {
-                syntaxContext.ReportDiagnostic(Diagnostic.Create(PubturnalityDescriptors.PUB0002, identifier.GetLocation()));
+                syntaxContext.ReportDiagnostic(Diagnostic.Create(PubturnalityDescriptors.PUB0002, identifier.GetLocation(), type.ToDisplayString()));
             }
         }
 

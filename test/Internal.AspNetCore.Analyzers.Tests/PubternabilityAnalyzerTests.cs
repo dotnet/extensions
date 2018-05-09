@@ -34,44 +34,46 @@ namespace A.Internal.Namespace
         [MemberData(nameof(PublicMemberDefinitions))]
         public async Task PublicExposureOfPubternalTypeProducesPUB0001(string member)
         {
-            var code = $@"
+            var code = GetSourceFromNamespaceDeclaration($@"
 namespace A
 {{
     public class T
     {{
         {member}
     }}
-}}";
-            var diagnostic = Assert.Single(await GetDiagnosticFromNamespaceDeclaration(code));
+}}");
+            var diagnostic = Assert.Single(await GetDiagnostics(code.Source));
             Assert.Equal("PUB0001", diagnostic.Id);
+            AnalyzerAssert.DiagnosticLocation(code.DefaultMarkerLocation, diagnostic.Location);
         }
 
         [Theory]
         [MemberData(nameof(PublicTypeDefinitions))]
         public async Task PublicExposureOfPubternalTypeProducesInTypeDefinitionPUB0001(string member)
         {
-            var code = $@"
+            var code = GetSourceFromNamespaceDeclaration($@"
 namespace A
 {{
     {member}
-}}";
-            var diagnostic = Assert.Single(await GetDiagnosticFromNamespaceDeclaration(code));
+}}");
+            var diagnostic = Assert.Single(await GetDiagnostics(code.Source));
             Assert.Equal("PUB0001", diagnostic.Id);
+            AnalyzerAssert.DiagnosticLocation(code.DefaultMarkerLocation, diagnostic.Location);
         }
 
         [Theory]
         [MemberData(nameof(PublicMemberDefinitions))]
         public async Task PrivateUsageOfPubternalTypeDoesNotProduce(string member)
         {
-            var code = $@"
+            var code = GetSourceFromNamespaceDeclaration($@"
 namespace A
 {{
     internal class T
     {{
         {member}
     }}
-}}";
-            var diagnostics = await GetDiagnosticFromNamespaceDeclaration(code);
+}}");
+            var diagnostics = await GetDiagnostics(code.Source);
             Assert.Empty(diagnostics);
         }
 
@@ -79,15 +81,15 @@ namespace A
         [MemberData(nameof(PrivateMemberDefinitions))]
         public async Task PrivateUsageOfPubternalTypeDoesNotProduceInPublicClasses(string member)
         {
-            var code = $@"
+            var code = GetSourceFromNamespaceDeclaration($@"
 namespace A
 {{
     public class T
     {{
         {member}
     }}
-}}";
-            var diagnostics = await GetDiagnosticFromNamespaceDeclaration(code);
+}}");
+            var diagnostics = await GetDiagnostics(code.Source);
             Assert.Empty(diagnostics);
         }
 
@@ -96,7 +98,7 @@ namespace A
         [MemberData(nameof(PublicMemberDefinitions))]
         public async Task DefinitionOfPubternalCrossAssemblyProducesPUB0002(string member)
         {
-            var code = $@"
+            var code = TestSource.Read($@"
 using A.Internal.Namespace;
 namespace A
 {{
@@ -104,17 +106,18 @@ namespace A
     {{
         {member}
     }}
-}}";
+}}");
 
-            var diagnostic = Assert.Single(await GetDiagnosticWithProjectReference(code));
+            var diagnostic = Assert.Single(await GetDiagnosticWithProjectReference(code.Source));
             Assert.Equal("PUB0002", diagnostic.Id);
+            AnalyzerAssert.DiagnosticLocation(code.DefaultMarkerLocation, diagnostic.Location);
         }
 
         [Theory]
         [MemberData(nameof(TypeUsages))]
         public async Task UsageOfPubternalCrossAssemblyProducesPUB0002(string usage)
         {
-            var code = $@"
+            var code = TestSource.Read($@"
 using A.Internal.Namespace;
 namespace A
 {{
@@ -125,10 +128,10 @@ namespace A
             {usage}
         }}
     }}
-}}";
-
-            var diagnostic = Assert.Single(await GetDiagnosticWithProjectReference(code));
+}}");
+            var diagnostic = Assert.Single(await GetDiagnosticWithProjectReference(code.Source));
             Assert.Equal("PUB0002", diagnostic.Id);
+            AnalyzerAssert.DiagnosticLocation(code.DefaultMarkerLocation, diagnostic.Location);
         }
 
         public static IEnumerable<object[]> PublicMemberDefinitions =>
@@ -145,26 +148,27 @@ namespace A
 
         public static string[] MemberDefinitions => new []
         {
-            "C c;",
-            "T(C c) {}",
-            "T([CA]int c) {}",
-            "CD c { get; }",
-            "event CD c;",
-            "delegate C WOW();"
+            "/*MM*/C c;",
+            "T(/*MM*/C c) {}",
+            "T([/*MM*/CA]int c) {}",
+            "/*MM*/CD c { get; }",
+            "event /*MM*/CD c;",
+            "delegate /*MM*/C WOW();"
         };
 
         public static string[] TypeDefinitions => new []
         {
-            "delegate C WOW();",
-            "class T: I<C> { } interface I<T> {}",
-            "class T: C {}"
+            "delegate /*MM*/C WOW();",
+            "class /*MM*/T: I<C> { } interface I<T> {}",
+            "class /*MM*/T: C {}",
+            "class T { public class /*MM*/T1: C { } }"
         };
 
         public static string[] TypeUsageStrings => new []
         {
-            "var c = new C();",
-            "CD d = () => null;",
-            "var t = typeof(CAAttribute);"
+            "/*MM*/var c = new C();",
+            "/*MM*/CD d = () => null;",
+            "var t = typeof(/*MM*/CAAttribute);"
         };
 
         private static IEnumerable<object[]> ApplyModifiers(string[] code, params string[] mods)
@@ -178,10 +182,9 @@ namespace A
             }
         }
 
-        private Task<Diagnostic[]> GetDiagnosticFromNamespaceDeclaration(string namespaceDefinition)
+        private TestSource GetSourceFromNamespaceDeclaration(string namespaceDefinition)
         {
-            var code = "using A.Internal.Namespace;" + InternalDefinitions + namespaceDefinition;
-            return GetDiagnostics(code);
+            return TestSource.Read("using A.Internal.Namespace;" + InternalDefinitions + namespaceDefinition);
         }
 
         private Task<Diagnostic[]> GetDiagnosticWithProjectReference(string code)

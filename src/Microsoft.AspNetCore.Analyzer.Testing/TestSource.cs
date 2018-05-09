@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
         private const string MarkerStart = "/*MM";
         private const string MarkerEnd = "*/";
 
-        public IDictionary<string, DiagnosticLocation> MarkerLocations { get; } 
+        public IDictionary<string, DiagnosticLocation> MarkerLocations { get; }
             = new Dictionary<string, DiagnosticLocation>(StringComparer.Ordinal);
 
         public DiagnosticLocation DefaultMarkerLocation { get; private set; }

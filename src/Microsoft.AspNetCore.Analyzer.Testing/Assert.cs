@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
                     throw new DiagnosticLocationAssertException(
                         expected,
                         actual,
-                        $"Expected diagnostic to start at column \"{expected.Column}\" was actually on line \"{actualLinePosition.Character + 1}\"");
+                        $"Expected diagnostic to start at column \"{expected.Column}\" was actually on column \"{actualLinePosition.Character + 1}\"");
                 }
             }
         }
