@@ -25,8 +25,22 @@ namespace Microsoft.AspNetCore.Testing.xunit
         protected override IEnumerable<IXunitTestCase> CreateTestCasesForDataRow(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo theoryAttribute, object[] dataRow)
         {
             var skipReason = testMethod.EvaluateSkipConditions();
-            return skipReason != null
-                ? base.CreateTestCasesForSkippedDataRow(discoveryOptions, testMethod, theoryAttribute, dataRow, skipReason)
+            if (skipReason == null && dataRow?.Length > 0)
+            {
+                var obj = dataRow[0];
+                if (obj != null)
+                {
+                    var type = obj.GetType();
+                    var property = type.GetProperty("Skip");
+                    if (property != null && property.PropertyType.Equals(typeof(string)))
+                    {
+                        skipReason = property.GetValue(obj) as string;
+                    }
+                }
+            }
+
+            return skipReason != null ?
+                base.CreateTestCasesForSkippedDataRow(discoveryOptions, testMethod, theoryAttribute, dataRow, skipReason)
                 : base.CreateTestCasesForDataRow(discoveryOptions, testMethod, theoryAttribute, dataRow);
         }
     }

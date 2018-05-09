@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -113,6 +114,42 @@ namespace Microsoft.AspNetCore.Testing
             public void Dispose()
             {
                 Assert.True(TestRan, "If this assertion fails, a conditional theory wasn't discovered.");
+            }
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(SkippableData))]
+        public void WithSkipableData(Skippable skippable)
+        {
+            Assert.Null(skippable.Skip);
+            Assert.Equal(1, skippable.Data);
+        }
+
+        public static TheoryData<Skippable> SkippableData => new TheoryData<Skippable>
+        {
+            new Skippable() { Data = 1 },
+            new Skippable() { Data = 2, Skip = "This row should be skipped." }
+        };
+
+        public class Skippable : IXunitSerializable
+        {
+            public Skippable() { }
+            public int Data { get; set; }
+            public string Skip { get; set; }
+
+            public void Serialize(IXunitSerializationInfo info)
+            {
+                info.AddValue(nameof(Data), Data, typeof(int));
+            }
+
+            public void Deserialize(IXunitSerializationInfo info)
+            {
+                Data = info.GetValue<int>(nameof(Data));
+            }
+
+            public override string ToString()
+            {
+                return Data.ToString();
             }
         }
     }
