@@ -64,6 +64,17 @@ namespace Microsoft.AspNetCore.Testing
             => new TheoryData<int> { 0, 1 };
 
         [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX | OperatingSystems.Linux)]
+        [MemberData(nameof(GetNoInts))]
+        public void ConditionalTheoriesWithEmptyMemberDataStillSkipped(int arg)
+        {
+            Assert.True(false, "This should never run");
+        }
+
+        public static TheoryData<int> GetNoInts
+            => new TheoryData<int> { };
+
+        [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [OSSkipCondition(OperatingSystems.Linux)]
