@@ -65,11 +65,6 @@ namespace Internal.AspNetCore.Analyzers
                 CheckType(context, typeSymbol.BaseType, typeSymbol.DeclaringSyntaxReferences);
             }
 
-            foreach (var interfaceImpl in typeSymbol.AllInterfaces)
-            {
-                CheckType(context, interfaceImpl, typeSymbol.DeclaringSyntaxReferences);
-            }
-
             foreach (var member in typeSymbol.GetMembers())
             {
                 CheckMember(context, member);

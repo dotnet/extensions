@@ -93,6 +93,20 @@ namespace A
             Assert.Empty(diagnostics);
         }
 
+
+        [Theory]
+        [MemberData(nameof(PublicTypeWithAllowedDefinitions))]
+        public async Task PublicExposureOfPubternalTypeSometimesAllowed(string member)
+        {
+            var code = GetSourceFromNamespaceDeclaration($@"
+namespace A
+{{
+    {member}
+}}");
+            var diagnostics = await GetDiagnostics(code.Source);
+            Assert.Empty(diagnostics);
+        }
+
         [Theory]
         [MemberData(nameof(PrivateMemberDefinitions))]
         [MemberData(nameof(PublicMemberDefinitions))]
@@ -140,6 +154,9 @@ namespace A
         public static IEnumerable<object[]> PublicTypeDefinitions =>
             ApplyModifiers(TypeDefinitions, "public");
 
+        public static IEnumerable<object[]> PublicTypeWithAllowedDefinitions =>
+            ApplyModifiers(AllowedDefinitions, "public");
+
         public static IEnumerable<object[]> PrivateMemberDefinitions =>
             ApplyModifiers(MemberDefinitions, "private", "internal");
 
@@ -159,9 +176,14 @@ namespace A
         public static string[] TypeDefinitions => new []
         {
             "delegate /*MM*/C WOW();",
-            "class /*MM*/T: I<C> { } interface I<T> {}",
+            "class /*MM*/T: P<C> { } public class P<T> {}",
             "class /*MM*/T: C {}",
             "class T { public class /*MM*/T1: C { } }"
+        };
+
+        public static string[] AllowedDefinitions => new []
+        {
+            "class T: I<C> { } interface I<T> {}"
         };
 
         public static string[] TypeUsageStrings => new []
