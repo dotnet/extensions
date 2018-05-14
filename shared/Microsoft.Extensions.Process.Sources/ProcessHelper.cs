@@ -33,25 +33,27 @@ namespace Microsoft.Extensions.Internal
             else
             {
                 var children = new HashSet<int>();
-                GetAllChildIdsUnix(process.Id, children, timeout);
+                var id = process.Id;
+                GetAllChildIdsUnix(id, children, timeout);
                 foreach (var childId in children)
                 {
                     KillProcessUnix(childId, timeout);
                 }
-                KillProcessUnix(process.Id, timeout);
+                KillProcessUnix(id, timeout);
             }
+
+            process.Kill();
         }
 
         private static void GetAllChildIdsUnix(int parentId, ISet<int> children, TimeSpan timeout)
         {
-            string stdout;
-            var exitCode = RunProcessAndWaitForExit(
+            RunProcessAndWaitForExit(
                 "pgrep",
                 $"-P {parentId}",
                 timeout,
-                out stdout);
+                out var stdout);
 
-            if (exitCode == 0 && !string.IsNullOrEmpty(stdout))
+            if (!string.IsNullOrEmpty(stdout))
             {
                 using (var reader = new StringReader(stdout))
                 {
@@ -77,22 +79,23 @@ namespace Microsoft.Extensions.Internal
 
         private static void KillProcessUnix(int processId, TimeSpan timeout)
         {
-            string stdout;
             RunProcessAndWaitForExit(
                 "kill",
                 $"-TERM {processId}",
                 timeout,
-                out stdout);
+                reporter,
+                out var _);
         }
 
-        private static int RunProcessAndWaitForExit(string fileName, string arguments, TimeSpan timeout, out string stdout)
+        private static void RunProcessAndWaitForExit(string fileName, string arguments, TimeSpan timeout, out string stdout)
         {
             var startInfo = new ProcessStartInfo
             {
                 FileName = fileName,
                 Arguments = arguments,
                 RedirectStandardOutput = true,
-                UseShellExecute = false
+                RedirectStandardError = true,
+                UseShellExecute = false,
             };
 
             var process = Process.Start(startInfo);
@@ -101,13 +104,17 @@ namespace Microsoft.Extensions.Internal
             if (process.WaitForExit((int)timeout.TotalMilliseconds))
             {
                 stdout = process.StandardOutput.ReadToEnd();
-            }
-            else
-            {
-                process.Kill();
+                return;
             }
 
-            return process.ExitCode;
+            process.Kill();
+
+            // Kill is asynchronous so we should still wait a little
+            // Try to read one more time
+            if (process.WaitForExit(500))
+            {
+                stdout = process.StandardOutput.ReadToEnd();
+            }
         }
     }
 }
