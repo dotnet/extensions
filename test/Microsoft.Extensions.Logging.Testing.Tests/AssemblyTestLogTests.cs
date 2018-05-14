@@ -46,10 +46,13 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 logger.LogTrace("Trace!");
             }
 
-            Assert.Equal(@"[TIMESTAMP] TestLifetime Information: Starting test TestLogWritesToITestOutputHelper
+            var testLogContent = MakeConsistent(output.Output);
+
+            Assert.Equal(
+@"[TIMESTAMP] TestLifetime Information: Starting test TestLogWritesToITestOutputHelper
 [TIMESTAMP] TestLogger Information: Information!
 [TIMESTAMP] TestLifetime Information: Finished test TestLogWritesToITestOutputHelper in DURATION
-", MakeConsistent(output.Output), ignoreLineEndingDifferences: true);
+", testLogContent, ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -96,14 +99,16 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 var globalLogContent = MakeConsistent(File.ReadAllText(globalLogPath));
                 var testLogContent = MakeConsistent(File.ReadAllText(testLog));
 
-                Assert.Equal(@"[GlobalTestLog] [Information] Global Test Logging initialized. Set the 'ASPNETCORE_TEST_LOG_DIR' Environment Variable in order to create log files on disk.
-[GlobalTestLog] [Information] Starting test ""FakeTestName""
-[GlobalTestLog] [Information] Finished test ""FakeTestName"" in DURATION
+                Assert.Equal(
+@"[TIMESTAMP] [GlobalTestLog] [Information] Global Test Logging initialized. Set the 'ASPNETCORE_TEST_LOG_DIR' Environment Variable in order to create log files on disk.
+[OFFSET] [GlobalTestLog] [Information] Starting test ""FakeTestName""
+[OFFSET] [GlobalTestLog] [Information] Finished test ""FakeTestName"" in DURATION
 ", globalLogContent, ignoreLineEndingDifferences: true);
-            Assert.Equal(@"[TestLifetime] [Information] Starting test ""FakeTestName""
-[TestLogger] [Information] Information!
-[TestLogger] [Verbose] Trace!
-[TestLifetime] [Information] Finished test ""FakeTestName"" in DURATION
+                Assert.Equal(
+@"[TIMESTAMP] [TestLifetime] [Information] Starting test ""FakeTestName""
+[OFFSET] [TestLogger] [Information] Information!
+[OFFSET] [TestLogger] [Verbose] Trace!
+[OFFSET] [TestLifetime] [Information] Finished test ""FakeTestName"" in DURATION
 ", testLogContent, ignoreLineEndingDifferences: true);
             });
 
@@ -164,6 +169,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             });
 
         private static readonly Regex TimestampRegex = new Regex(@"\d+-\d+-\d+T\d+:\d+:\d+");
+        private static readonly Regex TimestampOffsetRegex = new Regex(@"\d+\.\d+s");
         private static readonly Regex DurationRegex = new Regex(@"[^ ]+s$");
 
         private async Task RunTestLogFunctionalTest(Action<string> action, [CallerMemberName] string testName = null)
@@ -197,10 +203,10 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 {
                     var strippedPrefix = line.IndexOf("[") >= 0 ? line.Substring(line.IndexOf("[")) : line;
 
-                    var strippedDuration =
-                        DurationRegex.Replace(strippedPrefix, "DURATION");
+                    var strippedDuration = DurationRegex.Replace(strippedPrefix, "DURATION");
                     var strippedTimestamp = TimestampRegex.Replace(strippedDuration, "TIMESTAMP");
-                    return strippedTimestamp;
+                    var strippedTimestampOffset = TimestampOffsetRegex.Replace(strippedTimestamp, "OFFSET");
+                    return strippedTimestampOffset;
                 }));
         }
     }

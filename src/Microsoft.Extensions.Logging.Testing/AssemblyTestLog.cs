@@ -12,6 +12,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 using Serilog.Extensions.Logging;
 using Xunit.Abstractions;
 
@@ -246,8 +248,9 @@ namespace Microsoft.Extensions.Logging.Testing
 
             var serilogger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
+                .Enrich.With(new AssemblyLogTimestampOffsetEnricher())
                 .MinimumLevel.Verbose()
-                .WriteTo.File(fileName, outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{SourceContext}] [{Level}] {Message}{NewLine}{Exception}", flushToDiskInterval: TimeSpan.FromSeconds(1), shared: true)
+                .WriteTo.File(fileName, outputTemplate: "[{TimestampOffset}] [{SourceContext}] [{Level}] {Message}{NewLine}{Exception}", flushToDiskInterval: TimeSpan.FromSeconds(1), shared: true)
                 .CreateLogger();
             return new SerilogLoggerProvider(serilogger, dispose: true);
         }
@@ -277,6 +280,30 @@ namespace Microsoft.Extensions.Logging.Testing
         {
             (_serviceProvider as IDisposable)?.Dispose();
             _globalLoggerFactory.Dispose();
+        }
+
+        private class AssemblyLogTimestampOffsetEnricher : ILogEventEnricher
+        {
+            private DateTimeOffset? _logStart;
+
+            public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+            {
+                if (_logStart.HasValue)
+                {
+                    logEvent.AddPropertyIfAbsent(
+                        propertyFactory.CreateProperty(
+                            "TimestampOffset",
+                            $"{(DateTimeOffset.UtcNow - _logStart.Value).TotalSeconds.ToString("N3")}s"));
+                }
+                else
+                {
+                    _logStart = DateTimeOffset.UtcNow;
+                    logEvent.AddPropertyIfAbsent(
+                        propertyFactory.CreateProperty(
+                            "TimestampOffset",
+                            _logStart.Value.ToString("s")));
+                }
+            }
         }
 
         private class Disposable : IDisposable

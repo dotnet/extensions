@@ -44,45 +44,19 @@ namespace Microsoft.Extensions.Logging.Testing
         {
             var testClass = base.CreateTestClass();
 
-            if (testClass is LoggedTest loggedTestClass)
+            if (testClass is ILoggedTest loggedTest)
             {
-                var classType = loggedTestClass.GetType();
-                var logLevelAttribute = TestMethod.GetCustomAttribute<LogLevelAttribute>() as LogLevelAttribute;
-                var testName = TestMethodArguments.Aggregate(TestMethod.Name, (a, b) => $"{a}-{(b ?? "null")}");
-
                 // Try resolving ITestOutputHelper from constructor arguments
-                loggedTestClass.TestOutputHelper = ConstructorArguments?.SingleOrDefault(a => typeof(ITestOutputHelper).IsAssignableFrom(a.GetType())) as ITestOutputHelper;
+                var testOutputHelper = ConstructorArguments?.SingleOrDefault(a => typeof(ITestOutputHelper).IsAssignableFrom(a.GetType())) as ITestOutputHelper;
 
-                var useShortClassName = TestMethod.DeclaringType.GetCustomAttribute<ShortClassNameAttribute>()
-                    ?? TestMethod.DeclaringType.Assembly.GetCustomAttribute<ShortClassNameAttribute>();
-                var resolvedClassName = useShortClassName == null ? classType.FullName : classType.Name;
                 // None resolved so create a new one and retain a reference to it for initialization/uninitialization
-                if (loggedTestClass.TestOutputHelper == null)
+                if (testOutputHelper == null)
                 {
-                    loggedTestClass.TestOutputHelper = _output = new TestOutputHelper();
+                    testOutputHelper = _output = new TestOutputHelper();
                     _output.Initialize(MessageBus, Test);
                 }
 
-                AssemblyTestLog
-                    .ForAssembly(classType.GetTypeInfo().Assembly)
-                    .StartTestLog(
-                        loggedTestClass.TestOutputHelper,
-                        resolvedClassName,
-                        out var loggerFactory,
-                        logLevelAttribute?.LogLevel ?? LogLevel.Trace,
-                        out var resolvedTestName,
-                        testName);
-
-                // internal for testing
-                loggedTestClass.ResolvedTestMethodName = resolvedTestName;
-                loggedTestClass.ResolvedTestClassName = resolvedClassName;
-
-                loggedTestClass.LoggerFactory = loggerFactory;
-                loggedTestClass.Logger = loggerFactory.CreateLogger(classType);
-                loggedTestClass.TestSink = new TestSink();
-                loggerFactory.AddProvider(new TestLoggerProvider(loggedTestClass.TestSink));
-
-                loggedTestClass.AdditionalSetup();
+                loggedTest.Initialize(TestMethod, TestMethodArguments, testOutputHelper);
             }
 
             return testClass;

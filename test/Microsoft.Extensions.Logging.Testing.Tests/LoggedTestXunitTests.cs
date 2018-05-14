@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Reflection;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -144,8 +145,10 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         public bool SetupInvoked { get; private set; } = false;
         public bool ITestOutputHelperIsInitialized { get; private set; } = false;
 
-        public override void AdditionalSetup()
+        public override void Initialize(MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
         {
+            base.Initialize(methodInfo, testMethodArguments, testOutputHelper);
+
             try
             {
                 TestOutputHelper.WriteLine("Test");
