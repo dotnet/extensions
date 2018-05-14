@@ -83,7 +83,6 @@ namespace Microsoft.Extensions.Internal
                 "kill",
                 $"-TERM {processId}",
                 timeout,
-                reporter,
                 out var _);
         }
 
