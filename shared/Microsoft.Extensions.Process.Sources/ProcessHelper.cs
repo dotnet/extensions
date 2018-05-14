@@ -47,13 +47,13 @@ namespace Microsoft.Extensions.Internal
 
         private static void GetAllChildIdsUnix(int parentId, ISet<int> children, TimeSpan timeout)
         {
-            var exitCode = RunProcessAndWaitForExit(
+            RunProcessAndWaitForExit(
                 "pgrep",
                 $"-P {parentId}",
                 timeout,
                 out var stdout);
 
-            if (exitCode == 0 && !string.IsNullOrEmpty(stdout))
+            if (!string.IsNullOrEmpty(stdout))
             {
                 using (var reader = new StringReader(stdout))
                 {
@@ -87,7 +87,7 @@ namespace Microsoft.Extensions.Internal
                 out var _);
         }
 
-        private static int RunProcessAndWaitForExit(string fileName, string arguments, TimeSpan timeout, out string stdout)
+        private static void RunProcessAndWaitForExit(string fileName, string arguments, TimeSpan timeout, out string stdout)
         {
             var startInfo = new ProcessStartInfo
             {
@@ -104,17 +104,17 @@ namespace Microsoft.Extensions.Internal
             if (process.WaitForExit((int)timeout.TotalMilliseconds))
             {
                 stdout = process.StandardOutput.ReadToEnd();
+                return;
             }
-            else
+
+            process.Kill();
+
+            // Kill is asynchronous so we should still wait a little
+            // Try to read one more time
+            if (process.WaitForExit(500))
             {
-                process.Kill();
-
-                // Kill is asynchronous so we should still wait a little
-                //
-                process.WaitForExit(500);
+                stdout = process.StandardOutput.ReadToEnd();
             }
-
-            return process.HasExited ? process.ExitCode : -1;
         }
     }
 }
