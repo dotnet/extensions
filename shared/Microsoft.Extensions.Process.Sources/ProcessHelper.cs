@@ -33,23 +33,25 @@ namespace Microsoft.Extensions.Internal
             else
             {
                 var children = new HashSet<int>();
-                GetAllChildIdsUnix(process.Id, children, timeout);
+                var id = process.Id;
+                GetAllChildIdsUnix(id, children, timeout);
                 foreach (var childId in children)
                 {
                     KillProcessUnix(childId, timeout);
                 }
-                KillProcessUnix(process.Id, timeout);
+                KillProcessUnix(id, timeout);
             }
+
+            process.Kill();
         }
 
         private static void GetAllChildIdsUnix(int parentId, ISet<int> children, TimeSpan timeout)
         {
-            string stdout;
             var exitCode = RunProcessAndWaitForExit(
                 "pgrep",
                 $"-P {parentId}",
                 timeout,
-                out stdout);
+                out var stdout);
 
             if (exitCode == 0 && !string.IsNullOrEmpty(stdout))
             {
@@ -77,12 +79,12 @@ namespace Microsoft.Extensions.Internal
 
         private static void KillProcessUnix(int processId, TimeSpan timeout)
         {
-            string stdout;
             RunProcessAndWaitForExit(
                 "kill",
                 $"-TERM {processId}",
                 timeout,
-                out stdout);
+                reporter,
+                out var _);
         }
 
         private static int RunProcessAndWaitForExit(string fileName, string arguments, TimeSpan timeout, out string stdout)
@@ -92,7 +94,8 @@ namespace Microsoft.Extensions.Internal
                 FileName = fileName,
                 Arguments = arguments,
                 RedirectStandardOutput = true,
-                UseShellExecute = false
+                RedirectStandardError = true,
+                UseShellExecute = false,
             };
 
             var process = Process.Start(startInfo);
@@ -105,9 +108,13 @@ namespace Microsoft.Extensions.Internal
             else
             {
                 process.Kill();
+
+                // Kill is asynchronous so we should still wait a little
+                //
+                process.WaitForExit(500);
             }
 
-            return process.ExitCode;
+            return process.HasExited ? process.ExitCode : -1;
         }
     }
 }
