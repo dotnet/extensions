@@ -90,15 +90,33 @@ namespace System.Buffers
             _end = true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Advance(int byteCount)
         {
-            if (byteCount < 0)
+            if (byteCount == 0)
+            {
+                return;
+            }
+            if (byteCount < 0 || _end)
             {
                 BuffersThrowHelper.ThrowArgumentOutOfRangeException(BuffersThrowHelper.ExceptionArgument.length);
             }
 
             _consumedBytes += byteCount;
 
+            if ((_index + byteCount) < _currentSpan.Length)
+            {
+                _index += byteCount;
+            }
+            else
+            {
+                AdvanceNext(byteCount);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void AdvanceNext(int byteCount)
+        {
             while (!_end && byteCount > 0)
             {
                 if ((_index + byteCount) < _currentSpan.Length)
