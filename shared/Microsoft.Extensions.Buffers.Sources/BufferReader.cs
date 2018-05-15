@@ -93,19 +93,9 @@ namespace System.Buffers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Advance(int byteCount)
         {
-            if (byteCount == 0)
+            if (!_end && byteCount > 0 && (_index + byteCount) < _currentSpan.Length)
             {
-                return;
-            }
-            if (byteCount < 0 || _end)
-            {
-                BuffersThrowHelper.ThrowArgumentOutOfRangeException(BuffersThrowHelper.ExceptionArgument.length);
-            }
-
-            _consumedBytes += byteCount;
-
-            if ((_index + byteCount) < _currentSpan.Length)
-            {
+                _consumedBytes += byteCount;
                 _index += byteCount;
             }
             else
@@ -117,6 +107,13 @@ namespace System.Buffers
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void AdvanceNext(int byteCount)
         {
+            if (byteCount < 0)
+            {
+                BuffersThrowHelper.ThrowArgumentOutOfRangeException(BuffersThrowHelper.ExceptionArgument.length);
+            }
+
+            _consumedBytes += byteCount;
+
             while (!_end && byteCount > 0)
             {
                 if ((_index + byteCount) < _currentSpan.Length)
