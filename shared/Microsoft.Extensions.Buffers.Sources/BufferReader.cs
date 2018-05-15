@@ -19,16 +19,31 @@ namespace System.Buffers
         private int _consumedBytes;
         private bool _end;
 
-        public BufferReader(ReadOnlySequence<byte> buffer)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public BufferReader(in ReadOnlySequence<byte> buffer)
         {
-            _end = false;
             _index = 0;
             _consumedBytes = 0;
             _sequence = buffer;
             _currentSequencePosition = _sequence.Start;
             _nextSequencePosition = _currentSequencePosition;
-            _currentSpan = ReadOnlySpan<byte>.Empty;
-            MoveNext();
+
+            if (_sequence.TryGet(ref _nextSequencePosition, out var memory, true))
+            {
+                _end = false;
+                _currentSpan = memory.Span;
+                if (_currentSpan.Length == 0)
+                {
+                    // No space in first span, move to one with space
+                    MoveNext();
+                }
+            }
+            else
+            {
+                // No space in any spans and at end of sequence
+                _end = true;
+                _currentSpan = default;
+            }
         }
 
         public bool End => _end;
