@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Internal
 
         public static void KillTree(this Process process, TimeSpan timeout)
         {
-            var pid = process.Id;    
+            var pid = process.Id;
             if (_isWindows)
             {
                 RunProcessAndWaitForExit(
