@@ -107,7 +107,6 @@ namespace System.Buffers
             if ((_index + byteCount) < _currentSpan.Length)
             {
                 _index += byteCount;
-                byteCount = 0;
             }
             else
             {
