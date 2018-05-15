@@ -18,23 +18,24 @@ namespace Microsoft.Extensions.Internal
 
         public static void KillTree(this Process process, TimeSpan timeout)
         {
+            var pid = process.Id;    
             if (_isWindows)
             {
                 RunProcessAndWaitForExit(
                     "taskkill",
-                    $"/T /F /PID {process.Id}",
+                    $"/T /F /PID {pid}",
                     timeout,
                     out var _);
             }
             else
             {
                 var children = new HashSet<int>();
-                GetAllChildIdsUnix(process.Id, children, timeout);
+                GetAllChildIdsUnix(pid, children, timeout);
                 foreach (var childId in children)
                 {
                     KillProcessUnix(childId, timeout);
                 }
-                KillProcessUnix(process.Id, timeout);
+                KillProcessUnix(pid, timeout);
             }
         }
 
