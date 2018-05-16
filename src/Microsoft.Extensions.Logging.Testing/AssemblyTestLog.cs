@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -39,15 +38,15 @@ namespace Microsoft.Extensions.Logging.Testing
         private readonly ILoggerFactory _globalLoggerFactory;
         private readonly ILogger _globalLogger;
         private readonly string _baseDirectory;
-        private readonly string _assemblyName;
+        private readonly Assembly _assembly;
         private readonly IServiceProvider _serviceProvider;
 
-        private AssemblyTestLog(ILoggerFactory globalLoggerFactory, ILogger globalLogger, string baseDirectory, string assemblyName, IServiceProvider serviceProvider)
+        private AssemblyTestLog(ILoggerFactory globalLoggerFactory, ILogger globalLogger, string baseDirectory, Assembly assembly, IServiceProvider serviceProvider)
         {
             _globalLoggerFactory = globalLoggerFactory;
             _globalLogger = globalLogger;
             _baseDirectory = baseDirectory;
-            _assemblyName = assemblyName;
+            _assembly = assembly;
             _serviceProvider = serviceProvider;
         }
 
@@ -93,17 +92,18 @@ namespace Microsoft.Extensions.Logging.Testing
         public IServiceProvider CreateLoggerServices(ITestOutputHelper output, string className, LogLevel minLogLevel, out string normalizedTestName, [CallerMemberName] string testName = null)
         {
             normalizedTestName = string.Empty;
+            var assemblyName = _assembly.GetName().Name;
 
             // Try to shorten the class name using the assembly name
-            if (className.StartsWith(_assemblyName + "."))
+            if (className.StartsWith(assemblyName + "."))
             {
-                className = className.Substring(_assemblyName.Length + 1);
+                className = className.Substring(assemblyName.Length + 1);
             }
 
             SerilogLoggerProvider serilogLoggerProvider = null;
             if (!string.IsNullOrEmpty(_baseDirectory))
             {
-                var testOutputDirectory = Path.Combine(GetAssemblyBaseDirectory(_assemblyName, _baseDirectory), className);
+                var testOutputDirectory = Path.Combine(GetAssemblyBaseDirectory(_baseDirectory, _assembly), className);
                 testName = RemoveIllegalFileChars(testName);
 
                 if (testOutputDirectory.Length + testName.Length + LogFileExtension.Length >= MaxPathLength)
@@ -166,10 +166,14 @@ namespace Microsoft.Extensions.Logging.Testing
             return serviceCollection.BuildServiceProvider();
         }
 
+        // For back compat
         public static AssemblyTestLog Create(string assemblyName, string baseDirectory)
+            => Create(Assembly.Load(new AssemblyName(assemblyName)), baseDirectory);
+
+        public static AssemblyTestLog Create(Assembly assembly, string baseDirectory)
         {
             SerilogLoggerProvider serilogLoggerProvider = null;
-            var globalLogDirectory = GetAssemblyBaseDirectory(assemblyName, baseDirectory);
+            var globalLogDirectory = GetAssemblyBaseDirectory(baseDirectory, assembly);
             if (!string.IsNullOrEmpty(globalLogDirectory))
             {
                 var globalLogFileName = Path.Combine(globalLogDirectory, "global.log");
@@ -194,8 +198,8 @@ namespace Microsoft.Extensions.Logging.Testing
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
             var logger = loggerFactory.CreateLogger("GlobalTestLog");
-            logger.LogInformation($"Global Test Logging initialized. Set the '{OutputDirectoryEnvironmentVariableName}' Environment Variable in order to create log files on disk.");
-            return new AssemblyTestLog(loggerFactory, logger, baseDirectory, assemblyName, serviceProvider);
+            logger.LogInformation($"Global Test Logging initialized. Set the '{OutputDirectoryEnvironmentVariableName}' Environment Variable to set the locations of files on disk.");
+            return new AssemblyTestLog(loggerFactory, logger, baseDirectory, assembly, serviceProvider);
         }
 
         public static AssemblyTestLog ForAssembly(Assembly assembly)
@@ -204,13 +208,14 @@ namespace Microsoft.Extensions.Logging.Testing
             {
                 if (!_logs.TryGetValue(assembly, out var log))
                 {
-                    var assemblyName = assembly.GetName().Name;
-                    var baseDirectory = Environment.GetEnvironmentVariable(OutputDirectoryEnvironmentVariableName);
-                    log = Create(assemblyName, baseDirectory);
+                    var baseDirectory = Environment.GetEnvironmentVariable(OutputDirectoryEnvironmentVariableName)
+                        ?? assembly.GetCustomAttribute<TestFrameworkFileLoggerAttribute>()?.BaseDirectory;
+
+                    log = Create(assembly, baseDirectory);
                     _logs[assembly] = log;
 
                     // Try to clear previous logs
-                    var assemblyBaseDirectory = GetAssemblyBaseDirectory(assemblyName, baseDirectory);
+                    var assemblyBaseDirectory = GetAssemblyBaseDirectory(baseDirectory, assembly);
                     if (Directory.Exists(assemblyBaseDirectory))
                     {
                         try
@@ -224,11 +229,12 @@ namespace Microsoft.Extensions.Logging.Testing
             }
         }
 
-        private static string GetAssemblyBaseDirectory(string assemblyName, string baseDirectory)
+        private static string GetAssemblyBaseDirectory(string baseDirectory, Assembly assembly)
         {
             if (!string.IsNullOrEmpty(baseDirectory))
             {
-                return Path.Combine(baseDirectory, assemblyName, RuntimeInformation.FrameworkDescription.TrimStart('.'));
+                var fileLoggerAttribute = assembly.GetCustomAttribute<TestFrameworkFileLoggerAttribute>();
+                return Path.Combine(baseDirectory, assembly.GetName().Name, fileLoggerAttribute?.TFM);
             }
             return string.Empty;
         }

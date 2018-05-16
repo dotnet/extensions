@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Logging.Testing
 {
-    public interface ILoggedTest
+    public interface ILoggedTest : IDisposable
     {
         ILogger Logger { get; }
 

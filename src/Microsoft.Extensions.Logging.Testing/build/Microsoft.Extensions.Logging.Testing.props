@@ -1,8 +1,21 @@
 ﻿<Project>
-  <ItemGroup>
-    <AssemblyAttribute Include="Xunit.TestFramework">
-      <_Parameter1>Microsoft.Extensions.Logging.Testing.LoggedTestFramework</_Parameter1>
-      <_Parameter2>Microsoft.Extensions.Logging.Testing</_Parameter2>
-    </AssemblyAttribute>
-  </ItemGroup>
+  <PropertyGroup>
+    <LoggingTestingFileLoggingDirectory Condition="'$(LoggingTestingFileLoggingDirectory)' == '' AND '$(RepositoryRoot)' != ''">$(RepositoryRoot)artifacts\logs\</LoggingTestingFileLoggingDirectory>
+  </PropertyGroup>
+
+  <Target Name="SetLoggingTestingAssemblyAttributes"
+    BeforeTargets="GetAssemblyAttributes"
+    Condition="'$(GenerateLoggingTestingAssemblyAttributes)' != 'false'">
+    <ItemGroup>
+      <AssemblyAttribute Include="Xunit.TestFramework">
+        <_Parameter1>Microsoft.Extensions.Logging.Testing.LoggedTestFramework</_Parameter1>
+        <_Parameter2>Microsoft.Extensions.Logging.Testing</_Parameter2>
+      </AssemblyAttribute>
+
+      <AssemblyAttribute Include="Microsoft.Extensions.Logging.Testing.TestFrameworkFileLoggerAttribute">
+        <_Parameter1>$(TargetFramework)</_Parameter1>
+        <_Parameter2>$(LoggingTestingFileLoggingDirectory)</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
 </Project>

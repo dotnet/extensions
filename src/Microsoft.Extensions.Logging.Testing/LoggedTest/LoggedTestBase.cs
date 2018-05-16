@@ -12,6 +12,8 @@ namespace Microsoft.Extensions.Logging.Testing
 {
     public class LoggedTestBase : ILoggedTest
     {
+        private IDisposable _testLog;
+
         // Obsolete but keeping for back compat
         public LoggedTestBase(ITestOutputHelper output = null)
         {
@@ -53,7 +55,7 @@ namespace Microsoft.Extensions.Logging.Testing
                 ?? methodInfo.DeclaringType.Assembly.GetCustomAttribute<ShortClassNameAttribute>();
             var resolvedClassName = useShortClassName == null ? classType.FullName : classType.Name;
 
-            AssemblyTestLog
+            _testLog = AssemblyTestLog
                 .ForAssembly(classType.GetTypeInfo().Assembly)
                 .StartTestLog(
                     TestOutputHelper,
@@ -70,5 +72,7 @@ namespace Microsoft.Extensions.Logging.Testing
             LoggerFactory = loggerFactory;
             Logger = loggerFactory.CreateLogger(classType);
         }
+
+        public virtual void Dispose() => _testLog.Dispose();
     }
 }
