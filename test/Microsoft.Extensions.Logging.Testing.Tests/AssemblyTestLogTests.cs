@@ -101,7 +101,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 var testLogContent = MakeConsistent(File.ReadAllText(testLog));
 
                 Assert.Equal(
-@"[TIMESTAMP] [GlobalTestLog] [Information] Global Test Logging initialized. Set the 'ASPNETCORE_TEST_LOG_DIR' Environment Variable to set the locations of files on disk.
+@"[TIMESTAMP] [GlobalTestLog] [Information] Global Test Logging initialized. Configure the output directory via 'LoggingTestingFileLoggingDirectory' MSBuild property or set 'LoggingTestingDisableFileLogging' to 'true' to disable file logging.
 [OFFSET] [GlobalTestLog] [Information] Starting test ""FakeTestName""
 [OFFSET] [GlobalTestLog] [Information] Finished test ""FakeTestName"" in DURATION
 ", globalLogContent, ignoreLineEndingDifferences: true);

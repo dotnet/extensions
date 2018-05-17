@@ -20,7 +20,6 @@ namespace Microsoft.Extensions.Logging.Testing
 {
     public class AssemblyTestLog : IDisposable
     {
-        public static readonly string OutputDirectoryEnvironmentVariableName = "ASPNETCORE_TEST_LOG_DIR";
         private static readonly string LogFileExtension = ".log";
         private static readonly int MaxPathLength = 245;
         private static char[] InvalidFileChars = new char[]
@@ -198,7 +197,7 @@ namespace Microsoft.Extensions.Logging.Testing
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
             var logger = loggerFactory.CreateLogger("GlobalTestLog");
-            logger.LogInformation($"Global Test Logging initialized. Set the '{OutputDirectoryEnvironmentVariableName}' Environment Variable to set the locations of files on disk.");
+            logger.LogInformation($"Global Test Logging initialized. Configure the output directory via 'LoggingTestingFileLoggingDirectory' MSBuild property or set 'LoggingTestingDisableFileLogging' to 'true' to disable file logging.");
             return new AssemblyTestLog(loggerFactory, logger, baseDirectory, assembly, serviceProvider);
         }
 
@@ -208,8 +207,7 @@ namespace Microsoft.Extensions.Logging.Testing
             {
                 if (!_logs.TryGetValue(assembly, out var log))
                 {
-                    var baseDirectory = Environment.GetEnvironmentVariable(OutputDirectoryEnvironmentVariableName)
-                        ?? assembly.GetCustomAttribute<TestFrameworkFileLoggerAttribute>()?.BaseDirectory;
+                    var baseDirectory = GetFileLoggerAttribute(assembly).BaseDirectory;
 
                     log = Create(assembly, baseDirectory);
                     _logs[assembly] = log;
@@ -230,14 +228,15 @@ namespace Microsoft.Extensions.Logging.Testing
         }
 
         private static string GetAssemblyBaseDirectory(string baseDirectory, Assembly assembly)
-        {
-            if (!string.IsNullOrEmpty(baseDirectory))
-            {
-                var fileLoggerAttribute = assembly.GetCustomAttribute<TestFrameworkFileLoggerAttribute>();
-                return Path.Combine(baseDirectory, assembly.GetName().Name, fileLoggerAttribute?.TFM);
-            }
-            return string.Empty;
-        }
+            => string.IsNullOrEmpty(baseDirectory)
+                ? string.Empty
+                : Path.Combine(baseDirectory, assembly.GetName().Name, GetFileLoggerAttribute(assembly).TFM);
+
+        private static TestFrameworkFileLoggerAttribute GetFileLoggerAttribute(Assembly assembly)
+            => assembly.GetCustomAttribute<TestFrameworkFileLoggerAttribute>()
+                ?? throw new InvalidOperationException($"No {nameof(TestFrameworkFileLoggerAttribute)} found on the assembly {assembly.GetName().Name}. "
+                    + "The attribute is added via msbuild properties of the Microsoft.Extensions.Logging.Testing. "
+                    + "Please ensure the msbuild property is imported or a direct reference to Microsoft.Extensions.Logging.Testing is added.");
 
         private static SerilogLoggerProvider ConfigureFileLogging(string fileName)
         {
