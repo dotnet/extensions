@@ -58,8 +58,6 @@ namespace Internal.AspNetCore.Analyzers
                 return;
             }
 
-            CheckAttributes(context, typeSymbol.GetAttributes());
-
             if (typeSymbol.BaseType != null)
             {
                 CheckType(context, typeSymbol.BaseType, typeSymbol.DeclaringSyntaxReferences);
@@ -96,13 +94,11 @@ namespace Internal.AspNetCore.Analyzers
             {
                 case IFieldSymbol fieldSymbol:
                 {
-                    CheckAttributes(context, fieldSymbol.GetAttributes());
                     CheckType(context, fieldSymbol.Type, fieldSymbol.DeclaringSyntaxReferences);
                     break;
                 }
                 case IPropertySymbol propertySymbol:
                 {
-                    CheckAttributes(context, propertySymbol.GetAttributes());
                     CheckType(context, propertySymbol.Type, propertySymbol.DeclaringSyntaxReferences);
                     break;
                 }
@@ -137,11 +133,8 @@ namespace Internal.AspNetCore.Analyzers
                 return;
             }
 
-            CheckAttributes(context, methodSymbol.GetAttributes());
-            CheckAttributes(context, methodSymbol.GetReturnTypeAttributes());
             foreach (var parameter in methodSymbol.Parameters)
             {
-                CheckAttributes(context, parameter.GetAttributes());
                 CheckType(context, parameter.Type, parameter.DeclaringSyntaxReferences);
             }
 
