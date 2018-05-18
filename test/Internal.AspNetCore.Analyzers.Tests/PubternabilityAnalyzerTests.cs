@@ -48,6 +48,22 @@ namespace A
         }
 
         [Theory]
+        [MemberData(nameof(PublicMemberWithAllowedDefinitions))]
+        public async Task PublicExposureOfPubternalMembersSometimesAllowed(string member)
+        {
+            var code = GetSourceFromNamespaceDeclaration($@"
+namespace A
+{{
+    public class T
+    {{
+        {member}
+    }}
+}}");
+            Assert.Empty(await GetDiagnostics(code.Source));
+        }
+
+
+        [Theory]
         [MemberData(nameof(PublicTypeDefinitions))]
         public async Task PublicExposureOfPubternalTypeProducesInTypeDefinitionPUB0001(string member)
         {
@@ -151,6 +167,9 @@ namespace A
         public static IEnumerable<object[]> PublicMemberDefinitions =>
             ApplyModifiers(MemberDefinitions, "public", "protected");
 
+        public static IEnumerable<object[]> PublicMemberWithAllowedDefinitions =>
+            ApplyModifiers(AllowedMemberDefinitions, "public");
+
         public static IEnumerable<object[]> PublicTypeDefinitions =>
             ApplyModifiers(TypeDefinitions, "public");
 
@@ -167,7 +186,6 @@ namespace A
         {
             "/*MM*/C c;",
             "T(/*MM*/C c) {}",
-            "T([/*MM*/CA]int c) {}",
             "/*MM*/CD c { get; }",
             "event /*MM*/CD c;",
             "delegate /*MM*/C WOW();"
@@ -179,6 +197,14 @@ namespace A
             "class /*MM*/T: P<C> { } public class P<T> {}",
             "class /*MM*/T: C {}",
             "class T { public class /*MM*/T1: C { } }"
+        };
+
+        public static string[] AllowedMemberDefinitions => new []
+        {
+            "T([CA]int c) {}",
+            "[CA] MOD int f;",
+            "[CA] MOD int f { get; set; }",
+            "[CA] MOD class CC { }"
         };
 
         public static string[] AllowedDefinitions => new []
@@ -199,7 +225,14 @@ namespace A
             {
                 foreach (var s in code)
                 {
-                    yield return new object[] { mod + " " + s };
+                    if (s.Contains("MOD"))
+                    {
+                        yield return new object[] { s.Replace("MOD", mod) };
+                    }
+                    else
+                    {
+                        yield return new object[] { mod + " " + s };
+                    }
                 }
             }
         }
