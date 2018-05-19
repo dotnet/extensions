@@ -57,7 +57,8 @@ namespace Microsoft.Extensions.Logging.Testing
 
         internal IDisposable StartTestLog(ITestOutputHelper output, string className, out ILoggerFactory loggerFactory, LogLevel minLogLevel, out string resolvedTestName, [CallerMemberName] string testName = null)
         {
-            var serviceProvider = CreateLoggerServices(output, className, minLogLevel, out resolvedTestName, testName);
+            var logStart = DateTimeOffset.UtcNow;
+            var serviceProvider = CreateLoggerServices(output, className, minLogLevel, out resolvedTestName, testName, logStart);
             var factory = serviceProvider.GetRequiredService<ILoggerFactory>();
             loggerFactory = factory;
             var logger = loggerFactory.CreateLogger("TestLifetime");
@@ -67,7 +68,7 @@ namespace Microsoft.Extensions.Logging.Testing
             var scope = logger.BeginScope("Test: {testName}", testName);
 
             _globalLogger.LogInformation("Starting test {testName}", testName);
-            logger.LogInformation("Starting test {testName}", testName);
+            logger.LogInformation("Starting test {testName} at {logStart}", testName, logStart.ToString("s"));
 
             return new Disposable(() =>
             {
@@ -80,15 +81,13 @@ namespace Microsoft.Extensions.Logging.Testing
             });
         }
 
-        public ILoggerFactory CreateLoggerFactory(ITestOutputHelper output, string className, [CallerMemberName] string testName = null) =>
-            CreateLoggerFactory(output, className, LogLevel.Trace, testName);
+        public ILoggerFactory CreateLoggerFactory(ITestOutputHelper output, string className, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
+            => CreateLoggerFactory(output, className, LogLevel.Trace, testName, logStart);
 
-        public ILoggerFactory CreateLoggerFactory(ITestOutputHelper output, string className, LogLevel minLogLevel, [CallerMemberName] string testName = null)
-        {
-            return CreateLoggerServices(output, className, minLogLevel, out var _, testName).GetRequiredService<ILoggerFactory>();
-        }
+        public ILoggerFactory CreateLoggerFactory(ITestOutputHelper output, string className, LogLevel minLogLevel, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
+            => CreateLoggerServices(output, className, minLogLevel, out var _, testName, logStart).GetRequiredService<ILoggerFactory>();
 
-        public IServiceProvider CreateLoggerServices(ITestOutputHelper output, string className, LogLevel minLogLevel, out string normalizedTestName, [CallerMemberName] string testName = null)
+        public IServiceProvider CreateLoggerServices(ITestOutputHelper output, string className, LogLevel minLogLevel, out string normalizedTestName, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
         {
             normalizedTestName = string.Empty;
             var assemblyName = _assembly.GetName().Name;
@@ -142,7 +141,7 @@ namespace Microsoft.Extensions.Logging.Testing
                 }
 
                 normalizedTestName = testName;
-                serilogLoggerProvider = ConfigureFileLogging(testOutputFile);
+                serilogLoggerProvider = ConfigureFileLogging(testOutputFile, logStart);
             }
 
             var serviceCollection = new ServiceCollection();
@@ -152,7 +151,7 @@ namespace Microsoft.Extensions.Logging.Testing
 
                 if (output != null)
                 {
-                    builder.AddXunit(output, minLogLevel);
+                    builder.AddXunit(output, minLogLevel, logStart);
                 }
 
                 if (serilogLoggerProvider != null)
@@ -171,12 +170,13 @@ namespace Microsoft.Extensions.Logging.Testing
 
         public static AssemblyTestLog Create(Assembly assembly, string baseDirectory)
         {
+            var logStart = DateTimeOffset.UtcNow;
             SerilogLoggerProvider serilogLoggerProvider = null;
             var globalLogDirectory = GetAssemblyBaseDirectory(baseDirectory, assembly);
             if (!string.IsNullOrEmpty(globalLogDirectory))
             {
                 var globalLogFileName = Path.Combine(globalLogDirectory, "global.log");
-                serilogLoggerProvider = ConfigureFileLogging(globalLogFileName);
+                serilogLoggerProvider = ConfigureFileLogging(globalLogFileName, logStart);
             }
 
             var serviceCollection = new ServiceCollection();
@@ -197,7 +197,10 @@ namespace Microsoft.Extensions.Logging.Testing
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
             var logger = loggerFactory.CreateLogger("GlobalTestLog");
-            logger.LogInformation($"Global Test Logging initialized. Configure the output directory via 'LoggingTestingFileLoggingDirectory' MSBuild property or set 'LoggingTestingDisableFileLogging' to 'true' to disable file logging.");
+            logger.LogInformation("Global Test Logging initialized at {logStart}. "
+                + "Configure the output directory via 'LoggingTestingFileLoggingDirectory' MSBuild property "
+                + "or set 'LoggingTestingDisableFileLogging' to 'true' to disable file logging.",
+                logStart.ToString("s"));
             return new AssemblyTestLog(loggerFactory, logger, baseDirectory, assembly, serviceProvider);
         }
 
@@ -238,7 +241,7 @@ namespace Microsoft.Extensions.Logging.Testing
                     + "The attribute is added via msbuild properties of the Microsoft.Extensions.Logging.Testing. "
                     + "Please ensure the msbuild property is imported or a direct reference to Microsoft.Extensions.Logging.Testing is added.");
 
-        private static SerilogLoggerProvider ConfigureFileLogging(string fileName)
+        private static SerilogLoggerProvider ConfigureFileLogging(string fileName, DateTimeOffset? logStart)
         {
             var dir = Path.GetDirectoryName(fileName);
             if (!Directory.Exists(dir))
@@ -253,7 +256,7 @@ namespace Microsoft.Extensions.Logging.Testing
 
             var serilogger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
-                .Enrich.With(new AssemblyLogTimestampOffsetEnricher())
+                .Enrich.With(new AssemblyLogTimestampOffsetEnricher(logStart))
                 .MinimumLevel.Verbose()
                 .WriteTo.File(fileName, outputTemplate: "[{TimestampOffset}] [{SourceContext}] [{Level}] {Message}{NewLine}{Exception}", flushToDiskInterval: TimeSpan.FromSeconds(1), shared: true)
                 .CreateLogger();
@@ -291,24 +294,18 @@ namespace Microsoft.Extensions.Logging.Testing
         {
             private DateTimeOffset? _logStart;
 
-            public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+            public AssemblyLogTimestampOffsetEnricher(DateTimeOffset? logStart)
             {
-                if (_logStart.HasValue)
-                {
-                    logEvent.AddPropertyIfAbsent(
-                        propertyFactory.CreateProperty(
-                            "TimestampOffset",
-                            $"{(DateTimeOffset.UtcNow - _logStart.Value).TotalSeconds.ToString("N3")}s"));
-                }
-                else
-                {
-                    _logStart = DateTimeOffset.UtcNow;
-                    logEvent.AddPropertyIfAbsent(
-                        propertyFactory.CreateProperty(
-                            "TimestampOffset",
-                            _logStart.Value.ToString("s")));
-                }
+                _logStart = logStart;
             }
+
+            public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+                => logEvent.AddPropertyIfAbsent(
+                    propertyFactory.CreateProperty(
+                        "TimestampOffset",
+                        _logStart.HasValue
+                            ? $"{(DateTimeOffset.UtcNow - _logStart.Value).TotalSeconds.ToString("N3")}s"
+                            : DateTimeOffset.UtcNow.ToString("s")));
         }
 
         private class Disposable : IDisposable

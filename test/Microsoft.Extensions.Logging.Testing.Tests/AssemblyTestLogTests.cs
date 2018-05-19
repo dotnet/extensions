@@ -50,9 +50,9 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             var testLogContent = MakeConsistent(output.Output);
 
             Assert.Equal(
-@"[TIMESTAMP] TestLifetime Information: Starting test TestLogWritesToITestOutputHelper
-[TIMESTAMP] TestLogger Information: Information!
-[TIMESTAMP] TestLifetime Information: Finished test TestLogWritesToITestOutputHelper in DURATION
+@"[OFFSET] TestLifetime Information: Starting test TestLogWritesToITestOutputHelper at TIMESTAMP
+[OFFSET] TestLogger Information: Information!
+[OFFSET] TestLifetime Information: Finished test TestLogWritesToITestOutputHelper in DURATION
 ", testLogContent, ignoreLineEndingDifferences: true);
         }
 
@@ -101,12 +101,12 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 var testLogContent = MakeConsistent(File.ReadAllText(testLog));
 
                 Assert.Equal(
-@"[TIMESTAMP] [GlobalTestLog] [Information] Global Test Logging initialized. Configure the output directory via 'LoggingTestingFileLoggingDirectory' MSBuild property or set 'LoggingTestingDisableFileLogging' to 'true' to disable file logging.
+@"[OFFSET] [GlobalTestLog] [Information] Global Test Logging initialized at ""TIMESTAMP"". Configure the output directory via 'LoggingTestingFileLoggingDirectory' MSBuild property or set 'LoggingTestingDisableFileLogging' to 'true' to disable file logging.
 [OFFSET] [GlobalTestLog] [Information] Starting test ""FakeTestName""
 [OFFSET] [GlobalTestLog] [Information] Finished test ""FakeTestName"" in DURATION
 ", globalLogContent, ignoreLineEndingDifferences: true);
                 Assert.Equal(
-@"[TIMESTAMP] [TestLifetime] [Information] Starting test ""FakeTestName""
+@"[OFFSET] [TestLifetime] [Information] Starting test ""FakeTestName"" at ""TIMESTAMP""
 [OFFSET] [TestLogger] [Information] Information!
 [OFFSET] [TestLogger] [Verbose] Trace!
 [OFFSET] [TestLifetime] [Information] Finished test ""FakeTestName"" in DURATION

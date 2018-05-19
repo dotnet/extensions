@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,7 +28,24 @@ namespace Microsoft.Extensions.Logging.Testing
         {
         }
 
+        protected async override Task<Tuple<decimal, string>> InvokeTestAsync(ExceptionAggregator aggregator)
+        {
+            var testOutputHelper = ConstructorArguments.SingleOrDefault(a => typeof(TestOutputHelper).IsAssignableFrom(a.GetType())) as TestOutputHelper
+                ?? new TestOutputHelper();
+            testOutputHelper.Initialize(MessageBus, Test);
+
+            var executionTime = await InvokeTestMethodAsync(aggregator, testOutputHelper);
+
+            var output = testOutputHelper.Output;
+            testOutputHelper.Uninitialize();
+
+            return Tuple.Create(executionTime, output);
+        }
+
         protected override Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator)
-            => new LoggedTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource).RunAsync();
+            => InvokeTestMethodAsync(aggregator, null);
+
+        private Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator, ITestOutputHelper output)
+            => new LoggedTestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource, output).RunAsync();
     }
 }

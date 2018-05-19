@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -14,7 +13,7 @@ namespace Microsoft.Extensions.Logging.Testing
 {
     public class LoggedTestInvoker : XunitTestInvoker
     {
-        private TestOutputHelper _output;
+        private readonly ITestOutputHelper _output;
 
         public LoggedTestInvoker(
             ITest test,
@@ -25,19 +24,11 @@ namespace Microsoft.Extensions.Logging.Testing
             object[] testMethodArguments,
             IReadOnlyList<BeforeAfterTestAttribute> beforeAfterAttributes,
             ExceptionAggregator aggregator,
-            CancellationTokenSource cancellationTokenSource)
+            CancellationTokenSource cancellationTokenSource,
+            ITestOutputHelper output)
             : base(test, messageBus, testClass, constructorArguments, testMethod, testMethodArguments, beforeAfterAttributes, aggregator, cancellationTokenSource)
         {
-        }
-
-        protected override async Task AfterTestMethodInvokedAsync()
-        {
-            await base.AfterTestMethodInvokedAsync();
-
-            if (_output != null)
-            {
-                _output.Uninitialize();
-            }
+            _output = output;
         }
 
         protected override object CreateTestClass()
@@ -46,17 +37,10 @@ namespace Microsoft.Extensions.Logging.Testing
 
             if (testClass is ILoggedTest loggedTest)
             {
-                // Try resolving ITestOutputHelper from constructor arguments
-                var testOutputHelper = ConstructorArguments?.SingleOrDefault(a => typeof(ITestOutputHelper).IsAssignableFrom(a.GetType())) as ITestOutputHelper;
-
-                // None resolved so create a new one and retain a reference to it for initialization/uninitialization
-                if (testOutputHelper == null)
-                {
-                    testOutputHelper = _output = new TestOutputHelper();
-                    _output.Initialize(MessageBus, Test);
-                }
-
-                loggedTest.Initialize(TestMethod, TestMethodArguments, testOutputHelper);
+                loggedTest.Initialize(
+                    TestMethod,
+                    TestMethodArguments,
+                    _output ?? ConstructorArguments.SingleOrDefault(a => typeof(ITestOutputHelper).IsAssignableFrom(a.GetType())) as ITestOutputHelper);
             }
 
             return testClass;
