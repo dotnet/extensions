@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
     public class DiagnosticLocation
     {
         public DiagnosticLocation(int line, int column)
-            : this($"{DiagnosticAnalyzerRunner.DefaultFilePathPrefix}.cs", line, column)
+            : this($"{DiagnosticProject.DefaultFilePathPrefix}.cs", line, column)
         {
         }
 
