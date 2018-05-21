@@ -3,15 +3,10 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Text;
-using Microsoft.Extensions.DependencyModel;
-using Microsoft.Extensions.DependencyModel.Resolution;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Analyzer.Testing
@@ -22,16 +17,6 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
     /// </summary>
     public abstract class DiagnosticAnalyzerRunner
     {
-        /// <summary>
-        /// File name prefix used to generate Documents instances from source.
-        /// </summary>
-        public static string DefaultFilePathPrefix = "Test";
-
-        /// <summary>
-        /// Project name.
-        /// </summary>
-        public static string TestProjectName = "TestProject";
-
         /// <summary>
         /// Given classes in the form of strings, and an DiagnosticAnalyzer to apply to it, return the diagnostics found in the string after converting it to a document.
         /// </summary>
@@ -49,7 +34,8 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
             string[] additionalEnabledDiagnostics,
             bool getAllDiagnostics = true)
         {
-            return GetDiagnosticsAsync(GetDocuments(sources), analyzer, additionalEnabledDiagnostics);
+            var project = DiagnosticProject.Create(GetType().Assembly, sources);
+            return GetDiagnosticsAsync(new[] { project }, analyzer, additionalEnabledDiagnostics);
         }
 
         /// <summary>
@@ -65,17 +51,11 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
         /// </param>
         /// <returns>An IEnumerable of Diagnostics that surfaced in the source code, sorted by Location</returns>
         protected async Task<Diagnostic[]> GetDiagnosticsAsync(
-            Document[] documents,
+            IEnumerable<Project> projects,
             DiagnosticAnalyzer analyzer,
             string[] additionalEnabledDiagnostics,
             bool getAllDiagnostics = true)
         {
-            var projects = new HashSet<Project>();
-            foreach (var document in documents)
-            {
-                projects.Add(document.Project);
-            }
-
             var diagnostics = new List<Diagnostic>();
             foreach (var project in projects)
             {
@@ -113,7 +93,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
                         }
                         else
                         {
-                            foreach (var document in documents)
+                            foreach (var document in projects.SelectMany(p => p.Documents))
                             {
                                 var tree = await document.GetSyntaxTreeAsync();
                                 if (tree == diag.Location.SourceTree)
@@ -133,79 +113,9 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
             return diagnostics.OrderBy(d => d.Location.SourceSpan.Start).ToArray();
         }
 
-        protected virtual CodeAnalysis.CompilationOptions ConfigureCompilationOptions(CodeAnalysis.CompilationOptions options)
+        protected virtual CompilationOptions ConfigureCompilationOptions(CompilationOptions options)
         {
             return options.WithOutputKind(OutputKind.DynamicallyLinkedLibrary);
-        }
-
-        private Document[] GetDocuments(string[] sources)
-        {
-            var project = CreateProject(sources);
-            var documents = project.Documents.ToArray();
-
-            Debug.Assert(sources.Length == documents.Length);
-
-            return documents;
-        }
-
-        private Project CreateProject(string[] sources)
-        {
-            var fileNamePrefix = DefaultFilePathPrefix;
-
-            var projectId = ProjectId.CreateNewId(debugName: TestProjectName);
-
-            var solution = new AdhocWorkspace()
-                .CurrentSolution
-                .AddProject(projectId, TestProjectName, TestProjectName, LanguageNames.CSharp);
-
-            foreach (var defaultCompileLibrary in DependencyContext.Load(GetType().Assembly).CompileLibraries)
-            {
-                foreach (var resolveReferencePath in defaultCompileLibrary.ResolveReferencePaths(new AppLocalResolver()))
-                {
-                    solution = solution.AddMetadataReference(projectId, MetadataReference.CreateFromFile(resolveReferencePath));
-                }
-            }
-
-            for (var i = 0; i < sources.Length; i++)
-            {
-                var newFileName = fileNamePrefix;
-                if (sources.Length > 1)
-                {
-                    newFileName += i;
-                }
-                newFileName += ".cs";
-
-                var documentId = DocumentId.CreateNewId(projectId, debugName: newFileName);
-                solution = solution.AddDocument(documentId, newFileName, SourceText.From(sources[i]));
-            }
-
-            return solution.GetProject(projectId);
-        }
-
-        // Required to resolve compilation assemblies inside unit tests
-        private class AppLocalResolver : ICompilationAssemblyResolver
-        {
-            public bool TryResolveAssemblyPaths(CompilationLibrary library, List<string> assemblies)
-            {
-                foreach (var assembly in library.Assemblies)
-                {
-                    var dll = Path.Combine(Directory.GetCurrentDirectory(), "refs", Path.GetFileName(assembly));
-                    if (File.Exists(dll))
-                    {
-                        assemblies.Add(dll);
-                        return true;
-                    }
-
-                    dll = Path.Combine(Directory.GetCurrentDirectory(), Path.GetFileName(assembly));
-                    if (File.Exists(dll))
-                    {
-                        assemblies.Add(dll);
-                        return true;
-                    }
-                }
-
-                return false;
-            }
         }
     }
 }
