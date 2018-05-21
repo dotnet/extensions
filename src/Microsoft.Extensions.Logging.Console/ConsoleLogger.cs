@@ -4,7 +4,6 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions.Internal;
 using Microsoft.Extensions.Logging.Console.Internal;
 
@@ -274,7 +273,7 @@ namespace Microsoft.Extensions.Logging.Console
             }
         }
 
-        private struct ConsoleColors
+        private readonly struct ConsoleColors
         {
             public ConsoleColors(ConsoleColor? foreground, ConsoleColor? background)
             {
