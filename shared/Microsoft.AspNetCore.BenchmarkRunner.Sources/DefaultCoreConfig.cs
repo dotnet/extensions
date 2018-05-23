@@ -28,11 +28,7 @@ namespace BenchmarkDotNet.Attributes
             Add(JitOptimizationsValidator.FailOnError);
 
             Add(Job.Core
-#if NETCOREAPP2_1
-                .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21)
-#else
-                .With(CsProjCoreToolchain.From(new NetCoreAppSettings("netcoreapp2.2", null, ".NET Core 2.2")))
-#endif
+                .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
                 .With(new GcMode { Server = true })
                 .With(RunStrategy.Throughput));
         }
