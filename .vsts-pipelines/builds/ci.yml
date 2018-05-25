@@ -6,8 +6,9 @@ trigger:
 resources:
   repositories:
   - repository: buildtools
-    type: git
-    name: https://github.com/aspnet/BuildTools.git
+    type: github
+    endpoint: AspNetCI GitHub
+    name: aspnet/BuildTools
     ref: refs/heads/namc/templates
     
 phases:
