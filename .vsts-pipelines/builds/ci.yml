@@ -8,7 +8,7 @@ resources:
   - repository: buildtools
     type: github
     endpoint: AspNetCI GitHub
-    name: aspnet/buildtools
+    name: aspnet/BuildTools
     ref: refs/heads/namc/templates
     
 phases:
