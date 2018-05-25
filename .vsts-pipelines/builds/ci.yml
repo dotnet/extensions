@@ -1,0 +1,23 @@
+trigger:
+- dev
+- release/*
+
+# See https://github.com/aspnet/BuildTools
+resources:
+  repositories:
+  - repository: buildtools
+    type: github
+    endpoint: my-github-endpoint
+    name: aspnet/buildtools
+    ref: refs/heads/namc/templates
+    
+phases:
+- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+  parameters:
+    agentOs: macOS
+- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+  parameters:
+    agentOs: Windows
+- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+  parameters:
+    agentOs: Linux
