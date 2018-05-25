@@ -7,7 +7,7 @@ resources:
   repositories:
   - repository: buildtools
     type: github
-    endpoint: my-github-endpoint
+    endpoint: AspNetCI GitHub
     name: aspnet/buildtools
     ref: refs/heads/namc/templates
     
