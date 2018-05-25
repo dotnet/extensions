@@ -6,8 +6,8 @@ trigger:
 resources:
   repositories:
   - repository: buildtools
-    type: github
-    name: https://dotnet.visualstudio.com/public/_git/aspnet-BuildTools
+    type: git
+    name: aspnet-BuildTools
     ref: refs/heads/namc/templates
     
 phases:
