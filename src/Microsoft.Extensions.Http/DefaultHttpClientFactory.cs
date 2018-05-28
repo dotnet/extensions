@@ -257,7 +257,7 @@ namespace Microsoft.Extensions.Http
                 {
                     // Since we're the only one removing from _expired, TryDequeue must always succeed.
                     _expiredHandlers.TryDequeue(out var entry);
-                    Debug.Assert(entry != null, "Entry was null, we should always get an entry back from TryDeqeue");
+                    Debug.Assert(entry != null, "Entry was null, we should always get an entry back from TryDequeue");
 
                     if (entry.CanDispose)
                     {

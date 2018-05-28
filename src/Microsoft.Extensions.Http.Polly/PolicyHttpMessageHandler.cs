@@ -112,7 +112,7 @@ namespace Microsoft.Extensions.Http
                 throw new ArgumentNullException(nameof(request));
             }
 
-            // Guarantee the existance of a context for every policy execution, but only create a new one if needed. This
+            // Guarantee the existence of a context for every policy execution, but only create a new one if needed. This
             // allows later handlers to flow state if desired.
             var cleanUpContext = false;
             var context = request.GetPolicyExecutionContext();

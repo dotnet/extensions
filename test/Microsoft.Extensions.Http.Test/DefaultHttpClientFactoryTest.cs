@@ -386,7 +386,7 @@ namespace Microsoft.Extensions.Http
             var cleanupEntry = Assert.Single(factory._expiredHandlers);
             Assert.True(factory.CleanupTimerStarted.IsSet, "Cleanup timer started");
 
-            // Nulling out the refernces to the internal state of the factory since they wouldn't exist in the non-test
+            // Nulling out the references to the internal state of the factory since they wouldn't exist in the non-test
             // scenario. We're holding on the client to prevent disposal - like a real use case.
             kvp = default;
 

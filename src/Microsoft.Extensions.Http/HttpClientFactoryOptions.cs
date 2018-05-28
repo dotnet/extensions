@@ -42,8 +42,8 @@ namespace Microsoft.Extensions.Http
         /// a handler can be pooled before it is scheduled for removal from the pool and disposal.
         /// </para>
         /// <para>
-        /// Pooling of handlers is desirable as each handler typially manages its own underlying HTTP connections; creating
-        /// more handlers than necessary can result in connection delays. Some handlers also keep connections open indefinitly
+        /// Pooling of handlers is desirable as each handler typically manages its own underlying HTTP connections; creating
+        /// more handlers than necessary can result in connection delays. Some handlers also keep connections open indefinitely
         /// which can prevent the handler from reacting to DNS changes. The value of <see cref="HandlerLifetime"/> should be
         /// chosen with an understanding of the application's requirement to respond to changes in the network environment.
         /// </para>

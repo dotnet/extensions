@@ -221,7 +221,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Configures the primary <see cref="HttpMessageHandler"/> from the dependency inection container
+        /// Configures the primary <see cref="HttpMessageHandler"/> from the dependency injection container
         /// for a  named <see cref="HttpClient"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
@@ -461,8 +461,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// a handler can be pooled before it is scheduled for removal from the pool and disposal.
         /// </para>
         /// <para>
-        /// Pooling of handlers is desirable as each handler typially manages its own underlying HTTP connections; creating
-        /// more handlers than necessary can result in connection delays. Some handlers also keep connections open indefinitly
+        /// Pooling of handlers is desirable as each handler typically manages its own underlying HTTP connections; creating
+        /// more handlers than necessary can result in connection delays. Some handlers also keep connections open indefinitely
         /// which can prevent the handler from reacting to DNS changes. The value of <paramref name="handlerLifetime"/> should be
         /// chosen with an understanding of the application's requirement to respond to changes in the network environment.
         /// </para>
