@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -28,12 +29,25 @@ namespace Microsoft.AspNetCore.Testing
                 using (var writer = new StreamWriter(stream, Encoding.ASCII, bufferSize: 1024, leaveOpen: true))
                 {
                     await writer.WriteAsync($"GET {requestUri.PathAndQuery} HTTP/1.0\r\n").ConfigureAwait(false);
-                    await writer.WriteAsync($"Host: {requestUri.Authority}\r\n").ConfigureAwait(false);
+                    await writer.WriteAsync($"Host: {GetHost(requestUri)}\r\n").ConfigureAwait(false);
                     await writer.WriteAsync("\r\n").ConfigureAwait(false);
                 }
 
                 return await ReadResponse(stream).ConfigureAwait(false);
             }
+        }
+
+        internal static string GetHost(Uri requestUri)
+        {
+            var authority = requestUri.Authority;
+            if (requestUri.HostNameType == UriHostNameType.IPv6)
+            {
+                // Make sure there's no % scope id. https://github.com/aspnet/KestrelHttpServer/issues/2637
+                var address = IPAddress.Parse(requestUri.Host);
+                address = new IPAddress(address.GetAddressBytes()); // Drop scope Id.
+                authority = $"[{address}]:{requestUri.Port.ToString(CultureInfo.InvariantCulture)}";
+            }
+            return authority;
         }
 
         public static async Task<string> PostAsync(string requestUri, HttpContent content, bool validateCertificate = true)
