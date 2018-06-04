@@ -45,7 +45,14 @@ namespace Microsoft.AspNetCore.Testing
                 // Make sure there's no % scope id. https://github.com/aspnet/KestrelHttpServer/issues/2637
                 var address = IPAddress.Parse(requestUri.Host);
                 address = new IPAddress(address.GetAddressBytes()); // Drop scope Id.
-                authority = $"[{address}]:{requestUri.Port.ToString(CultureInfo.InvariantCulture)}";
+                if (requestUri.IsDefaultPort)
+                {
+                    authority = $"[{address}]";
+                }
+                else
+                {
+                    authority = $"[{address}]:{requestUri.Port.ToString(CultureInfo.InvariantCulture)}";
+                }
             }
             return authority;
         }

@@ -59,6 +59,13 @@ namespace Microsoft.AspNetCore.Testing
             Assert.Equal("[fe80::5d2a:d070:6fd6:1bac]:5003", HttpClientSlim.GetHost(requestUri));
         }
 
+        [Fact]
+        public void GetHostExcludesDefaultPort()
+        {
+            var requestUri = new Uri("http://[fe80::5d2a:d070:6fd6:1bac%7]:80/");
+            Assert.Equal("[fe80::5d2a:d070:6fd6:1bac]", HttpClientSlim.GetHost(requestUri));
+        }
+
         private HttpListener StartHost(out string address, int statusCode = 200, Func<HttpListenerContext, Task> handler = null)
         {
             var listener = new HttpListener();
