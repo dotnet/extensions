@@ -7,6 +7,9 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <EnableApiCheck>false</EnableApiCheck>
     <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
+    <!-- Do not sign this package. -->
+    <AssemblySigningCertName />
+    <PackageSigningCertName />
   </PropertyGroup>
 
   <ItemGroup>
