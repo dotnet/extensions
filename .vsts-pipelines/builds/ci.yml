@@ -6,9 +6,9 @@ trigger:
 resources:
   repositories:
   - repository: buildtools
-    type: git
-    name: aspnet-BuildTools
-    ref: refs/heads/namc/templates
+    type: github
+    name: DotNet-Bot GitHub Connection
+    ref: refs/heads/dev
     
 phases:
 - template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
