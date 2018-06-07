@@ -195,7 +195,7 @@ namespace Microsoft.Extensions.Http
         // Internal so it can be overridden in tests
         internal virtual void StartHandlerEntryTimer(ActiveHandlerTrackingEntry entry)
         {
-            entry.StartExpiryTimer(ExpiryTimer_Tick);
+            entry.StartExpiryTimer(_expiryCallback);
         }
 
         // Internal so it can be overridden in tests
