@@ -10,4 +10,4 @@ resources:
     ref: refs/heads/dev
 
 phases:
-- template: ../templates/build.yml
+- template: .vsts-pipelines/templates/project-ci.yml@buildtools
