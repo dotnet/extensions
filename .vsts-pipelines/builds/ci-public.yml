@@ -12,4 +12,4 @@ resources:
     ref: refs/heads/dev
     
 phases:
-- template: .vsts-pipelines/templates/project-ci.yml
+- template: .vsts-pipelines/templates/project-ci.yml@buildtools
