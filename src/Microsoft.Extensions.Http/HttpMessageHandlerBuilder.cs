@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.Http
         /// Gets or sets the name of the <see cref="HttpClient"/> being created.
         /// </summary>
         /// <remarks>
-        /// The <see cref="Name"/> is set by the <see cref="IHttpClientFactory"/> instructure
+        /// The <see cref="Name"/> is set by the <see cref="IHttpClientFactory"/> infrastructure
         /// and is public for unit testing purposes only. Setting the <see cref="Name"/> outside of
         /// testing scenarios may have unpredictable results.
         /// </remarks>
