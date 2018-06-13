@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Primitives, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Primitives, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.Primitives.CancellationChangeToken",
@@ -125,6 +125,110 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.Extensions.Primitives.CompositeChangeToken",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Primitives.IChangeToken"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ChangeTokens",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Primitives.IChangeToken>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RegisterChangeCallback",
+          "Parameters": [
+            {
+              "Name": "callback",
+              "Type": "System.Action<System.Object>"
+            },
+            {
+              "Name": "state",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Primitives.IChangeToken",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HasChanged",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Primitives.IChangeToken",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ActiveChangeCallbacks",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Primitives.IChangeToken",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "changeTokens",
+              "Type": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Primitives.IChangeToken>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Primitives.Extensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Append",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "System.Text.StringBuilder"
+            },
+            {
+              "Name": "segment",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Text.StringBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.Extensions.Primitives.IChangeToken",
       "Visibility": "Public",
       "Kind": "Interface",
@@ -159,6 +263,119 @@
             }
           ],
           "ReturnType": "System.IDisposable",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Primitives.InplaceStringBuilder",
+      "Visibility": "Public",
+      "Kind": "Struct",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Capacity",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Capacity",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Append",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Append",
+          "Parameters": [
+            {
+              "Name": "segment",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Append",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            },
+            {
+              "Name": "offset",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "count",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Append",
+          "Parameters": [
+            {
+              "Name": "c",
+              "Type": "System.Char"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "capacity",
+              "Type": "System.Int32"
+            }
+          ],
+          "Visibility": "Public",
           "GenericParameter": []
         }
       ],
@@ -216,6 +433,35 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_Item",
+          "Parameters": [
+            {
+              "Name": "index",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Char",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AsSpan",
+          "Parameters": [],
+          "ReturnType": "System.ReadOnlySpan<System.Char>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AsMemory",
+          "Parameters": [],
+          "ReturnType": "System.ReadOnlyMemory<System.Char>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "Equals",
           "Parameters": [
             {
@@ -259,6 +505,28 @@
             }
           ],
           "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "a",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "b",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "comparisonType",
+              "Type": "System.StringComparison"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -343,6 +611,48 @@
         },
         {
           "Kind": "Method",
+          "Name": "op_Implicit",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "op_Implicit",
+          "Parameters": [
+            {
+              "Name": "segment",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.ReadOnlySpan<System.Char>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "op_Implicit",
+          "Parameters": [
+            {
+              "Name": "segment",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.ReadOnlyMemory<System.Char>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "StartsWith",
           "Parameters": [
             {
@@ -382,6 +692,19 @@
             {
               "Name": "offset",
               "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Substring",
+          "Parameters": [
+            {
+              "Name": "offset",
+              "Type": "System.Int32"
             },
             {
               "Name": "length",
@@ -389,6 +712,19 @@
             }
           ],
           "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Subsegment",
+          "Parameters": [
+            {
+              "Name": "offset",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -462,6 +798,70 @@
         },
         {
           "Kind": "Method",
+          "Name": "IndexOfAny",
+          "Parameters": [
+            {
+              "Name": "anyOf",
+              "Type": "System.Char[]"
+            },
+            {
+              "Name": "startIndex",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "count",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IndexOfAny",
+          "Parameters": [
+            {
+              "Name": "anyOf",
+              "Type": "System.Char[]"
+            },
+            {
+              "Name": "startIndex",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IndexOfAny",
+          "Parameters": [
+            {
+              "Name": "anyOf",
+              "Type": "System.Char[]"
+            }
+          ],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "LastIndexOf",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Char"
+            }
+          ],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "Trim",
           "Parameters": [],
           "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
@@ -481,6 +881,33 @@
           "Name": "TrimEnd",
           "Parameters": [],
           "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Split",
+          "Parameters": [
+            {
+              "Name": "chars",
+              "Type": "System.Char[]"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringTokenizer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsNullOrEmpty",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -525,6 +952,81 @@
           ],
           "Visibility": "Public",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Empty",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Primitives.StringSegmentComparer",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.Collections.Generic.IEqualityComparer<Microsoft.Extensions.Primitives.StringSegment>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Ordinal",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegmentComparer",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_OrdinalIgnoreCase",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegmentComparer",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "x",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "y",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEqualityComparer<Microsoft.Extensions.Primitives.StringSegment>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Int32",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEqualityComparer<Microsoft.Extensions.Primitives.StringSegment>",
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -561,6 +1063,22 @@
           ],
           "Visibility": "Public",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "separators",
+              "Type": "System.Char[]"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -578,6 +1096,17 @@
         "System.IEquatable<System.String[]>"
       ],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Count",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.ICollection<System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "op_Implicit",
@@ -631,17 +1160,6 @@
           ],
           "ReturnType": "System.String[]",
           "Static": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_Count",
-          "Parameters": [],
-          "ReturnType": "System.Int32",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.ICollection<System.String>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -712,6 +1230,44 @@
             {
               "Name": "values2",
               "Type": "Microsoft.Extensions.Primitives.StringValues"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringValues",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Concat",
+          "Parameters": [
+            {
+              "Name": "values",
+              "Type": "Microsoft.Extensions.Primitives.StringValues",
+              "Direction": "Ref"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringValues",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Concat",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            },
+            {
+              "Name": "values",
+              "Type": "Microsoft.Extensions.Primitives.StringValues",
+              "Direction": "Ref"
             }
           ],
           "ReturnType": "Microsoft.Extensions.Primitives.StringValues",
@@ -1182,17 +1738,6 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "get_Current",
-          "Parameters": [],
-          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IEnumerator<Microsoft.Extensions.Primitives.StringSegment>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "Dispose",
           "Parameters": [],
           "ReturnType": "System.Void",
@@ -1225,6 +1770,17 @@
           "GenericParameter": []
         },
         {
+          "Kind": "Method",
+          "Name": "get_Current",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerator<Microsoft.Extensions.Primitives.StringSegment>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [
@@ -1249,6 +1805,17 @@
         "System.Collections.Generic.IEnumerator<System.String>"
       ],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "MoveNext",
