@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Configuration.CommandLine, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Configuration.CommandLine, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.Configuration.CommandLineConfigurationExtensions",
@@ -83,14 +83,6 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "get_Args",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IEnumerable<System.String>",
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "Load",
           "Parameters": [],
           "ReturnType": "System.Void",
@@ -98,6 +90,14 @@
           "Override": true,
           "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfigurationProvider",
           "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Args",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerable<System.String>",
+          "Visibility": "Protected",
           "GenericParameter": []
         },
         {
