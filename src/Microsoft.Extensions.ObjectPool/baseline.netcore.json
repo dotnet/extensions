@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.ObjectPool, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.ObjectPool, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.ObjectPool.DefaultObjectPool<T0>",
@@ -135,17 +135,16 @@
       "Name": "Microsoft.Extensions.ObjectPool.DefaultPooledObjectPolicy<T0>",
       "Visibility": "Public",
       "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T0>"
-      ],
+      "BaseType": "Microsoft.Extensions.ObjectPool.PooledObjectPolicy<T0>",
+      "ImplementedInterfaces": [],
       "Members": [
         {
           "Kind": "Method",
           "Name": "Create",
           "Parameters": [],
           "ReturnType": "T0",
-          "Sealed": true,
           "Virtual": true,
+          "Override": true,
           "ImplementedInterface": "Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T0>",
           "Visibility": "Public",
           "GenericParameter": []
@@ -160,8 +159,8 @@
             }
           ],
           "ReturnType": "System.Boolean",
-          "Sealed": true,
           "Virtual": true,
+          "Override": true,
           "ImplementedInterface": "Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T0>",
           "Visibility": "Public",
           "GenericParameter": []
@@ -376,22 +375,6 @@
         {
           "Kind": "Method",
           "Name": "Create<T0>",
-          "Parameters": [],
-          "ReturnType": "Microsoft.Extensions.ObjectPool.ObjectPool<T0>",
-          "Visibility": "Public",
-          "GenericParameter": [
-            {
-              "ParameterName": "T",
-              "ParameterPosition": 0,
-              "New": true,
-              "Class": true,
-              "BaseTypeOrInterfaces": []
-            }
-          ]
-        },
-        {
-          "Kind": "Method",
-          "Name": "Create<T0>",
           "Parameters": [
             {
               "Name": "policy",
@@ -406,6 +389,22 @@
             {
               "ParameterName": "T",
               "ParameterPosition": 0,
+              "Class": true,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Create<T0>",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.ObjectPool.ObjectPool<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T",
+              "ParameterPosition": 0,
+              "New": true,
               "Class": true,
               "BaseTypeOrInterfaces": []
             }
@@ -472,13 +471,91 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.Extensions.ObjectPool.PooledObjectPolicy<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T0>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Create",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Virtual": true,
+          "Abstract": true,
+          "ImplementedInterface": "Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Return",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Abstract": true,
+          "ImplementedInterface": "Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "T",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
       "Name": "Microsoft.Extensions.ObjectPool.StringBuilderPooledObjectPolicy",
       "Visibility": "Public",
       "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<System.Text.StringBuilder>"
-      ],
+      "BaseType": "Microsoft.Extensions.ObjectPool.PooledObjectPolicy<System.Text.StringBuilder>",
+      "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Create",
+          "Parameters": [],
+          "ReturnType": "System.Text.StringBuilder",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<System.Text.StringBuilder>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Return",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Text.StringBuilder"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<System.Text.StringBuilder>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "get_InitialCapacity",
@@ -518,33 +595,6 @@
             }
           ],
           "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Create",
-          "Parameters": [],
-          "ReturnType": "System.Text.StringBuilder",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<System.Text.StringBuilder>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Return",
-          "Parameters": [
-            {
-              "Name": "obj",
-              "Type": "System.Text.StringBuilder"
-            }
-          ],
-          "ReturnType": "System.Boolean",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<System.Text.StringBuilder>",
           "Visibility": "Public",
           "GenericParameter": []
         },
