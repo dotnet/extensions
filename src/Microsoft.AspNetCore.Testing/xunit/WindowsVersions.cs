@@ -8,5 +8,11 @@ namespace Microsoft.AspNetCore.Testing.xunit
         public const string Win7 = "6.1";
 
         public const string Win2008R2 = Win7;
+
+        public const string Win8 = "6.2";
+
+        public const string Win81 = "6.3";
+
+        public const string Win10 = "10.0";
     }
 }
