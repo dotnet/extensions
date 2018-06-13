@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Configuration.AzureKeyVault, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Configuration.AzureKeyVault, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.Configuration.AzureKeyVaultConfigurationExtensions",
@@ -114,6 +114,48 @@
             {
               "Name": "certificate",
               "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2"
+            },
+            {
+              "Name": "manager",
+              "Type": "Microsoft.Extensions.Configuration.AzureKeyVault.IKeyVaultSecretManager"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddAzureKeyVault",
+          "Parameters": [
+            {
+              "Name": "configurationBuilder",
+              "Type": "Microsoft.Extensions.Configuration.IConfigurationBuilder"
+            },
+            {
+              "Name": "vault",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddAzureKeyVault",
+          "Parameters": [
+            {
+              "Name": "configurationBuilder",
+              "Type": "Microsoft.Extensions.Configuration.IConfigurationBuilder"
+            },
+            {
+              "Name": "vault",
+              "Type": "System.String"
             },
             {
               "Name": "manager",

@@ -1,6 +1,198 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Configuration, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Configuration, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
+    {
+      "Name": "Microsoft.Extensions.Configuration.ChainedBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddConfiguration",
+          "Parameters": [
+            {
+              "Name": "configurationBuilder",
+              "Type": "Microsoft.Extensions.Configuration.IConfigurationBuilder"
+            },
+            {
+              "Name": "config",
+              "Type": "Microsoft.Extensions.Configuration.IConfiguration"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Configuration.ChainedConfigurationProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Configuration.IConfigurationProvider"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "TryGet",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfigurationProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Set",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfigurationProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetReloadToken",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.IChangeToken",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfigurationProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Load",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfigurationProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetChildKeys",
+          "Parameters": [
+            {
+              "Name": "earlierKeys",
+              "Type": "System.Collections.Generic.IEnumerable<System.String>"
+            },
+            {
+              "Name": "parentPath",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IEnumerable<System.String>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfigurationProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "source",
+              "Type": "Microsoft.Extensions.Configuration.ChainedConfigurationSource"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Configuration.ChainedConfigurationSource",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Configuration.IConfigurationSource"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Configuration",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfiguration",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Configuration",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Configuration.IConfiguration"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Build",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.Configuration.IConfigurationBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationProvider",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfigurationSource",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
     {
       "Name": "Microsoft.Extensions.Configuration.ConfigurationBuilder",
       "Visibility": "Public",
@@ -320,6 +512,80 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "get_Item",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfiguration",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Item",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfiguration",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetSection",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationSection",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfiguration",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetChildren",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Configuration.IConfigurationSection>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfiguration",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetReloadToken",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.IChangeToken",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfiguration",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_Providers",
           "Parameters": [],
           "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Configuration.IConfigurationProvider>",
@@ -329,6 +595,40 @@
           "Visibility": "Public",
           "GenericParameter": []
         },
+        {
+          "Kind": "Method",
+          "Name": "Reload",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfigurationRoot",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "providers",
+              "Type": "System.Collections.Generic.IList<Microsoft.Extensions.Configuration.IConfigurationProvider>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Configuration.ConfigurationSection",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Configuration.IConfigurationSection"
+      ],
+      "Members": [
         {
           "Kind": "Method",
           "Name": "get_Item",
@@ -367,6 +667,22 @@
         },
         {
           "Kind": "Method",
+          "Name": "GetSection",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationSection",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfiguration",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "GetChildren",
           "Parameters": [],
           "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Configuration.IConfigurationSection>",
@@ -387,56 +703,6 @@
           "Visibility": "Public",
           "GenericParameter": []
         },
-        {
-          "Kind": "Method",
-          "Name": "GetSection",
-          "Parameters": [
-            {
-              "Name": "key",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationSection",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfiguration",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Reload",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfigurationRoot",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "providers",
-              "Type": "System.Collections.Generic.IList<Microsoft.Extensions.Configuration.IConfigurationProvider>"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.Extensions.Configuration.ConfigurationSection",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.Extensions.Configuration.IConfigurationSection"
-      ],
-      "Members": [
         {
           "Kind": "Method",
           "Name": "get_Path",
@@ -483,80 +749,6 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfigurationSection",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_Item",
-          "Parameters": [
-            {
-              "Name": "key",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.String",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfiguration",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "set_Item",
-          "Parameters": [
-            {
-              "Name": "key",
-              "Type": "System.String"
-            },
-            {
-              "Name": "value",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfiguration",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetSection",
-          "Parameters": [
-            {
-              "Name": "key",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationSection",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfiguration",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetChildren",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Configuration.IConfigurationSection>",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfiguration",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetReloadToken",
-          "Parameters": [],
-          "ReturnType": "Microsoft.Extensions.Primitives.IChangeToken",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Configuration.IConfiguration",
           "Visibility": "Public",
           "GenericParameter": []
         },
