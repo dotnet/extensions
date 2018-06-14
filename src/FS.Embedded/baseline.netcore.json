@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.FileProviders.Embedded, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.FileProviders.Embedded, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.FileProviders.EmbeddedFileProvider",
@@ -80,6 +80,145 @@
             {
               "Name": "baseNamespace",
               "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.FileProviders.ManifestEmbeddedFileProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.FileProviders.IFileProvider"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Assembly",
+          "Parameters": [],
+          "ReturnType": "System.Reflection.Assembly",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetDirectoryContents",
+          "Parameters": [
+            {
+              "Name": "subpath",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileProviders.IDirectoryContents",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileProviders.IFileProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetFileInfo",
+          "Parameters": [
+            {
+              "Name": "subpath",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.FileProviders.IFileInfo",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileProviders.IFileProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Watch",
+          "Parameters": [
+            {
+              "Name": "filter",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Primitives.IChangeToken",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.FileProviders.IFileProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "assembly",
+              "Type": "System.Reflection.Assembly"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "assembly",
+              "Type": "System.Reflection.Assembly"
+            },
+            {
+              "Name": "root",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "assembly",
+              "Type": "System.Reflection.Assembly"
+            },
+            {
+              "Name": "root",
+              "Type": "System.String"
+            },
+            {
+              "Name": "lastModified",
+              "Type": "System.DateTimeOffset"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "assembly",
+              "Type": "System.Reflection.Assembly"
+            },
+            {
+              "Name": "root",
+              "Type": "System.String"
+            },
+            {
+              "Name": "manifestName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "lastModified",
+              "Type": "System.DateTimeOffset"
             }
           ],
           "Visibility": "Public",

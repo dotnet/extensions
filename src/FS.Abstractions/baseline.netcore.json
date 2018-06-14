@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.FileProviders.Abstractions, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.FileProviders.Abstractions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.FileProviders.IDirectoryContents",
@@ -135,6 +135,17 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "GetEnumerator",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerator<Microsoft.Extensions.FileProviders.IFileInfo>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.FileProviders.IFileInfo>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_Singleton",
           "Parameters": [],
           "ReturnType": "Microsoft.Extensions.FileProviders.NotFoundDirectoryContents",
@@ -150,17 +161,6 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.Extensions.FileProviders.IDirectoryContents",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetEnumerator",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IEnumerator<Microsoft.Extensions.FileProviders.IFileInfo>",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.FileProviders.IFileInfo>",
           "Visibility": "Public",
           "GenericParameter": []
         },
