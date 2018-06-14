@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Extensions.Logging.Console, Version=2.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Extensions.Logging.Console, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.Logging.ConsoleLoggerExtensions",
@@ -332,6 +332,14 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_IncludeScopes",
           "Parameters": [],
           "ReturnType": "System.Boolean",
@@ -353,9 +361,22 @@
         },
         {
           "Kind": "Method",
-          "Name": "get_Name",
+          "Name": "get_DisableColors",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_DisableColors",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -484,6 +505,26 @@
           ],
           "Visibility": "Public",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "filter",
+              "Type": "System.Func<System.String, Microsoft.Extensions.Logging.LogLevel, System.Boolean>"
+            },
+            {
+              "Name": "scopeProvider",
+              "Type": "Microsoft.Extensions.Logging.IExternalScopeProvider"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -516,6 +557,27 @@
           "GenericParameter": []
         },
         {
+          "Kind": "Method",
+          "Name": "get_DisableColors",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_DisableColors",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
@@ -530,9 +592,21 @@
       "Visibility": "Public",
       "Kind": "Class",
       "ImplementedInterfaces": [
-        "Microsoft.Extensions.Logging.ILoggerProvider"
+        "Microsoft.Extensions.Logging.ILoggerProvider",
+        "Microsoft.Extensions.Logging.ISupportExternalScope"
       ],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "CreateLogger",
@@ -551,12 +625,17 @@
         },
         {
           "Kind": "Method",
-          "Name": "Dispose",
-          "Parameters": [],
+          "Name": "SetScopeProvider",
+          "Parameters": [
+            {
+              "Name": "scopeProvider",
+              "Type": "Microsoft.Extensions.Logging.IExternalScopeProvider"
+            }
+          ],
           "ReturnType": "System.Void",
           "Sealed": true,
           "Virtual": true,
-          "ImplementedInterface": "System.IDisposable",
+          "ImplementedInterface": "Microsoft.Extensions.Logging.ISupportExternalScope",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -570,6 +649,26 @@
             },
             {
               "Name": "includeScopes",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "filter",
+              "Type": "System.Func<System.String, Microsoft.Extensions.Logging.LogLevel, System.Boolean>"
+            },
+            {
+              "Name": "includeScopes",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "disableColors",
               "Type": "System.Boolean"
             }
           ],
@@ -649,6 +748,27 @@
         {
           "Kind": "Method",
           "Name": "set_IncludeScopes",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_DisableColors",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_DisableColors",
           "Parameters": [
             {
               "Name": "value",
@@ -833,357 +953,6 @@
           "Name": "Reload",
           "Parameters": [],
           "ReturnType": "Microsoft.Extensions.Logging.Console.IConsoleLoggerSettings",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.Extensions.Logging.Console.Internal.AnsiLogConsole",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.Extensions.Logging.Console.Internal.IConsole"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Write",
-          "Parameters": [
-            {
-              "Name": "message",
-              "Type": "System.String"
-            },
-            {
-              "Name": "background",
-              "Type": "System.Nullable<System.ConsoleColor>"
-            },
-            {
-              "Name": "foreground",
-              "Type": "System.Nullable<System.ConsoleColor>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Logging.Console.Internal.IConsole",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "WriteLine",
-          "Parameters": [
-            {
-              "Name": "message",
-              "Type": "System.String"
-            },
-            {
-              "Name": "background",
-              "Type": "System.Nullable<System.ConsoleColor>"
-            },
-            {
-              "Name": "foreground",
-              "Type": "System.Nullable<System.ConsoleColor>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Logging.Console.Internal.IConsole",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Flush",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Logging.Console.Internal.IConsole",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "systemConsole",
-              "Type": "Microsoft.Extensions.Logging.Console.Internal.IAnsiSystemConsole"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.Extensions.Logging.Console.Internal.ConsoleLoggerProcessor",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "System.IDisposable"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "EnqueueMessage",
-          "Parameters": [
-            {
-              "Name": "message",
-              "Type": "Microsoft.Extensions.Logging.Console.Internal.LogMessageEntry"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Dispose",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.IDisposable",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [],
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Field",
-          "Name": "Console",
-          "Parameters": [],
-          "ReturnType": "Microsoft.Extensions.Logging.Console.Internal.IConsole",
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.Extensions.Logging.Console.Internal.IAnsiSystemConsole",
-      "Visibility": "Public",
-      "Kind": "Interface",
-      "Abstract": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Write",
-          "Parameters": [
-            {
-              "Name": "message",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "WriteLine",
-          "Parameters": [
-            {
-              "Name": "message",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.Extensions.Logging.Console.Internal.IConsole",
-      "Visibility": "Public",
-      "Kind": "Interface",
-      "Abstract": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Write",
-          "Parameters": [
-            {
-              "Name": "message",
-              "Type": "System.String"
-            },
-            {
-              "Name": "background",
-              "Type": "System.Nullable<System.ConsoleColor>"
-            },
-            {
-              "Name": "foreground",
-              "Type": "System.Nullable<System.ConsoleColor>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "WriteLine",
-          "Parameters": [
-            {
-              "Name": "message",
-              "Type": "System.String"
-            },
-            {
-              "Name": "background",
-              "Type": "System.Nullable<System.ConsoleColor>"
-            },
-            {
-              "Name": "foreground",
-              "Type": "System.Nullable<System.ConsoleColor>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Flush",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.Extensions.Logging.Console.Internal.LogMessageEntry",
-      "Visibility": "Public",
-      "Kind": "Struct",
-      "Sealed": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Field",
-          "Name": "LevelString",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Field",
-          "Name": "LevelBackground",
-          "Parameters": [],
-          "ReturnType": "System.Nullable<System.ConsoleColor>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Field",
-          "Name": "LevelForeground",
-          "Parameters": [],
-          "ReturnType": "System.Nullable<System.ConsoleColor>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Field",
-          "Name": "MessageColor",
-          "Parameters": [],
-          "ReturnType": "System.Nullable<System.ConsoleColor>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Field",
-          "Name": "Message",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.Extensions.Logging.Console.Internal.WindowsLogConsole",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.Extensions.Logging.Console.Internal.IConsole"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Write",
-          "Parameters": [
-            {
-              "Name": "message",
-              "Type": "System.String"
-            },
-            {
-              "Name": "background",
-              "Type": "System.Nullable<System.ConsoleColor>"
-            },
-            {
-              "Name": "foreground",
-              "Type": "System.Nullable<System.ConsoleColor>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Logging.Console.Internal.IConsole",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "WriteLine",
-          "Parameters": [
-            {
-              "Name": "message",
-              "Type": "System.String"
-            },
-            {
-              "Name": "background",
-              "Type": "System.Nullable<System.ConsoleColor>"
-            },
-            {
-              "Name": "foreground",
-              "Type": "System.Nullable<System.ConsoleColor>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Logging.Console.Internal.IConsole",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Flush",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.Extensions.Logging.Console.Internal.IConsole",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [],
-          "Visibility": "Public",
           "GenericParameter": []
         }
       ],

@@ -254,6 +254,17 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "CreateLogger",
           "Parameters": [
             {
@@ -265,17 +276,6 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.Extensions.Logging.ILoggerProvider",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Dispose",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.IDisposable",
           "Visibility": "Public",
           "GenericParameter": []
         },
