@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.Internal
 #endif
     static class WebEncoders
     {
-#if !NETCOREAPP2_1
+#if !NETCOREAPP2_2 && !NETCOREAPP2_1
         private const int MaxStackallocBytes = 256;
 #endif
         private const int MaxEncodedLength = (int.MaxValue / 4) * 3;  // encode inflates the data by 4/3
@@ -251,7 +251,8 @@ namespace Microsoft.Extensions.Internal
 
             var base64Len = GetBufferSizeRequiredToBase64Encode(data.Length, out int numPaddingChars);
             var base64UrlLen = base64Len - numPaddingChars;
-#if NETCOREAPP2_1
+
+#if NETCOREAPP2_2 || NETCOREAPP2_1
             fixed (byte* ptr = &MemoryMarshal.GetReference(data))
             {
                 return string.Create(base64UrlLen, (Ptr: (IntPtr)ptr, data.Length), (base64Url, state) =>
