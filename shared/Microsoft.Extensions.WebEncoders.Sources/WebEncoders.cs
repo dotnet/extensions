@@ -263,20 +263,15 @@ namespace Microsoft.Extensions.Internal
                     Debug.Assert(base64Url.Length == written);
                 });
             }
-#else
-#if !NET461
+
+#elif NETCOREAPP2_0
             char[] arrayToReturnToPool = null;
             try
             {
-#endif
-
                 var base64Url = base64UrlLen <= MaxStackallocBytes / sizeof(char)
                     ? stackalloc char[base64UrlLen]
-#if NET461
-                    : new char[base64UrlLen];
-#else
                     : arrayToReturnToPool = ArrayPool<char>.Shared.Rent(base64UrlLen);
-#endif
+
                 var status = Base64UrlEncodeCore(data, base64Url, out int consumed, out int written);
                 Debug.Assert(base64UrlLen == written);
 
@@ -284,7 +279,6 @@ namespace Microsoft.Extensions.Internal
                 {
                     return new string(ptr, 0, written);
                 }
-#if !NET461
             }
             finally
             {
@@ -293,7 +287,18 @@ namespace Microsoft.Extensions.Internal
                     ArrayPool<char>.Shared.Return(arrayToReturnToPool);
                 }
             }
-#endif
+#else
+            var base64Url = base64UrlLen <= MaxStackallocBytes / sizeof(char)
+                ? stackalloc char[base64UrlLen]
+                : new char[base64UrlLen];
+
+            var status = Base64UrlEncodeCore(data, base64Url, out int consumed, out int written);
+            Debug.Assert(base64UrlLen == written);
+
+            fixed (char* ptr = &MemoryMarshal.GetReference(base64Url))
+            {
+                return new string(ptr, 0, written);
+            }
 #endif
         }
 
