@@ -1,0 +1,3 @@
+[submodule "modules/csharp-language-server-protocol"]
+	path = modules/csharp-language-server-protocol
+	url = https://github.com/OmniSharp/csharp-language-server-protocol.git
