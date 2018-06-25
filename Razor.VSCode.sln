@@ -3,16 +3,30 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2BBB2AB1-2AE4-4306-AA88-FD66A90AA101}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{9AD3190E-86E4-419B-9D57-C6FFEF3A01F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.LanguageServer", "src\Microsoft.AspNetCore.Razor.LanguageServer\Microsoft.AspNetCore.Razor.LanguageServer.csproj", "{AF5FB0D8-BACD-45DE-B4A2-4CA172DCAEB6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AF5FB0D8-BACD-45DE-B4A2-4CA172DCAEB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF5FB0D8-BACD-45DE-B4A2-4CA172DCAEB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF5FB0D8-BACD-45DE-B4A2-4CA172DCAEB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF5FB0D8-BACD-45DE-B4A2-4CA172DCAEB6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{AF5FB0D8-BACD-45DE-B4A2-4CA172DCAEB6} = {2BBB2AB1-2AE4-4306-AA88-FD66A90AA101}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ED1782EB-ABE7-4615-80E2-442006DF2826}
 	EndGlobalSection
 EndGlobal
