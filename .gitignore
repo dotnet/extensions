@@ -32,9 +32,15 @@ project.lock.json
 .vs/
 launchSettings.json
 global.json
-.vscode/*
 BenchmarkDotNet.Artifacts/
 Microsoft.VisualStudio.RazorExtension.nuget.props
 Microsoft.VisualStudio.RazorExtension.nuget.targets
 msbuild.binlog
 msbuild.log
+node_modules
+package-lock.json
+.vscode-test/**
+client/out/*
+.gitignore
+tsconfig.json
+tslint.json
