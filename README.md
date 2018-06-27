@@ -21,6 +21,7 @@ Community projects adapt _Microsoft.Extensions.Logging_ for use with different b
  * [Loggr](https://github.com/imobile3/Loggr.Extensions.Logging) - provider for the Loggr service
  * [NLog](https://github.com/NLog/NLog.Extensions.Logging) - provider for the NLog library
  * [Graylog](https://github.com/mattwcole/gelf-extensions-logging) - provider for the Graylog service
+ * [Sharpbrake](https://github.com/airbrake/sharpbrake#microsoftextensionslogging-integration) - provider for the Airbrake notifier
 
 ## Building from source
 
