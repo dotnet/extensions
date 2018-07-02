@@ -5,7 +5,7 @@ env:
   global:
   - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   - DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  - ASPNETCORE_TEST_LOG_DIR: "$APPVEYOR_BUILD_FOLDER\\artifacts\\logs"
+  - ASPNETCORE_TEST_LOG_DIR: $APPVEYOR_BUILD_FOLDER\artifacts\logs
 mono: none
 os:
 - linux
@@ -17,7 +17,7 @@ addons:
     - libunwind8
 branches:
   only:
-  - dev
+  - master
   - /^release\/.*$/
   - /^(.*\/)?ci-.*$/
 before_install:
