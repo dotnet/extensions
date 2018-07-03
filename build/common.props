@@ -1,5 +1,4 @@
 <Project>
-  <Import Project="..\version.props" />
 
   <PropertyGroup>
     <Product>Microsoft .NET Extensions</Product>
