@@ -5,7 +5,7 @@
   <PropertyGroup Label="Package Versions">
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17090</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-17099</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>2.2.0-preview1-26618-02</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26618-02</MicrosoftNETCoreApp22PackageVersion>
@@ -27,7 +27,7 @@
     <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
     <XunitAssertPackageVersion>2.3.1</XunitAssertPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
-    <XunitRunnerVisualstudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualstudioPackageVersion>
+    <XunitRunnerVisualstudioPackageVersion>2.4.0-rc.1.build4038</XunitRunnerVisualstudioPackageVersion>
   </PropertyGroup>
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 </Project>
