@@ -5,26 +5,26 @@
   <PropertyGroup Label="Package Versions">
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-10005</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-10009</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>2.2.0-preview1-26618-02</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETCoreApp30PackageVersion>3.0.0-preview1-26629-04</MicrosoftNETCoreApp30PackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview1-26710-03</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftNETCoreApp30PackageVersion>3.0.0-preview1-26710-03</MicrosoftNETCoreApp30PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
-    <MicrosoftWin32RegistryPackageVersion>4.6.0-preview1-26617-01</MicrosoftWin32RegistryPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.6.0-preview1-26708-04</MicrosoftWin32RegistryPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.6.0-preview1-26617-01</SystemIOPipelinesPackageVersion>
-    <SystemMemoryPackageVersion>4.6.0-preview1-26617-01</SystemMemoryPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.6.0-preview1-26708-04</SystemIOPipelinesPackageVersion>
+    <SystemMemoryPackageVersion>4.6.0-preview1-26708-04</SystemMemoryPackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
-    <SystemReflectionMetadataPackageVersion>1.7.0-preview1-26617-01</SystemReflectionMetadataPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0-preview1-26617-01</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.7.0-preview1-26708-04</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0-preview1-26708-04</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>4.6.0-preview1-26617-01</SystemSecurityCryptographyCngPackageVersion>
-    <SystemThreadingTasksExtensionsPackageVersion>4.6.0-preview1-26617-01</SystemThreadingTasksExtensionsPackageVersion>
-    <SystemValueTuplePackageVersion>4.6.0-preview1-26617-01</SystemValueTuplePackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.6.0-preview1-26708-04</SystemSecurityCryptographyCngPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.6.0-preview1-26708-04</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemValueTuplePackageVersion>4.6.0-preview1-26708-04</SystemValueTuplePackageVersion>
     <XunitAbstractionsPackageVersion>2.0.1</XunitAbstractionsPackageVersion>
-    <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
+    <XunitAnalyzersPackageVersion>0.9.0</XunitAnalyzersPackageVersion>
     <XunitAssertPackageVersion>2.3.1</XunitAssertPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualstudioPackageVersion>2.4.0-rc.1.build4038</XunitRunnerVisualstudioPackageVersion>
