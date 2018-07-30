@@ -13,16 +13,27 @@ namespace Microsoft.Extensions.Options
     {
         private readonly IEnumerable<IConfigureOptions<TOptions>> _setups;
         private readonly IEnumerable<IPostConfigureOptions<TOptions>> _postConfigures;
+        private readonly IEnumerable<IValidateOptions<TOptions>> _validations;
 
         /// <summary>
         /// Initializes a new instance with the specified options configurations.
         /// </summary>
         /// <param name="setups">The configuration actions to run.</param>
         /// <param name="postConfigures">The initialization actions to run.</param>
-        public OptionsFactory(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IPostConfigureOptions<TOptions>> postConfigures)
+        public OptionsFactory(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IPostConfigureOptions<TOptions>> postConfigures) : this(setups, postConfigures, validations: null)
+        { }
+
+        /// <summary>
+        /// Initializes a new instance with the specified options configurations.
+        /// </summary>
+        /// <param name="setups">The configuration actions to run.</param>
+        /// <param name="postConfigures">The initialization actions to run.</param>
+        /// <param name="validations">The validations to run.</param>
+        public OptionsFactory(IEnumerable<IConfigureOptions<TOptions>> setups, IEnumerable<IPostConfigureOptions<TOptions>> postConfigures, IEnumerable<IValidateOptions<TOptions>> validations)
         {
             _setups = setups;
             _postConfigures = postConfigures;
+            _validations = validations;
         }
 
         public TOptions Create(string name)
@@ -43,6 +54,24 @@ namespace Microsoft.Extensions.Options
             {
                 post.PostConfigure(name, options);
             }
+
+            if (_validations != null)
+            {
+                var failures = new List<string>();
+                foreach (var validate in _validations)
+                {
+                    var result = validate.Validate(name, options);
+                    if (result.Failed)
+                    {
+                        failures.Add(result.FailureMessage);
+                    }
+                }
+                if (failures.Count > 0)
+                {
+                    throw new OptionsValidationException(failures);
+                }
+            }
+
             return options;
         }
     }

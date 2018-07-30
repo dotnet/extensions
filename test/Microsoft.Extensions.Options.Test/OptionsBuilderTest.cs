@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -231,6 +232,175 @@ namespace Microsoft.Extensions.Options.Tests
             var sp = services.BuildServiceProvider();
             var options = sp.GetRequiredService<IOptionsMonitor<ComplexOptions>>().Get("named");
             Assert.Equal("stuff", options.GetType().GetProperty(property).GetValue(options));
+        }
+
+        [Fact]
+        public void CanValidateOptionsWithCustomError()
+        {
+            var services = new ServiceCollection();
+            services.AddOptions<ComplexOptions>()
+                .Configure(o => o.Boolean = false)
+                .Validate(Options.DefaultName, o => o.Boolean, "Boolean must be true.");
+            var sp = services.BuildServiceProvider();
+            var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
+            Assert.Equal("Boolean must be true.", error.Failures.First());
+        }
+
+        [Fact]
+        public void CanValidateOptionsWithDefaultError()
+        {
+            var services = new ServiceCollection();
+            services.AddOptions<ComplexOptions>()
+                .Configure(o => o.Boolean = false)
+                .Validate(o => o.Boolean);
+            var sp = services.BuildServiceProvider();
+            var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
+            Assert.Equal("A validation error has occured.", error.Failures.First());
+        }
+
+        [Fact]
+        public void CanValidateOptionsWithMultipleDefaultErrors()
+        {
+            var services = new ServiceCollection();
+            services.AddOptions<ComplexOptions>()
+                .Configure(o =>
+                {
+                    o.Boolean = false;
+                    o.Integer = 11;
+                })
+                .Validate(o => o.Boolean)
+                .Validate(o => o.Integer > 12);
+
+            var sp = services.BuildServiceProvider();
+            var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
+            var errors = error.Failures.ToArray();
+            Assert.Equal(2, errors.Length);
+            Assert.Equal("A validation error has occured.", errors[0]);
+            Assert.Equal("A validation error has occured.", errors[1]);
+        }
+
+        [Fact]
+        public void CanValidateOptionsWithMixedOverloads()
+        {
+            var services = new ServiceCollection();
+            services.AddOptions<ComplexOptions>()
+                .Configure(o =>
+                {
+                    o.Boolean = false;
+                    o.Integer = 11;
+                    o.Virtual = "wut";
+                })
+                .Validate(o => o.Boolean)
+                .Validate(Options.DefaultName, o => o.Virtual == null, "Virtual")
+                .Validate(o => o.Integer > 12, "Integer");
+
+            var sp = services.BuildServiceProvider();
+            var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
+            var errors = error.Failures.ToArray();
+            Assert.Equal(3, errors.Length);
+            Assert.Equal("A validation error has occured.", errors[0]);
+            Assert.Equal("Virtual", errors[1]);
+            Assert.Equal("Integer", errors[2]);
+        }
+
+        private class MultiOptionValidator : IValidateOptions<ComplexOptions>, IValidateOptions<FakeOptions>
+        {
+            private readonly string _allowed;
+            public MultiOptionValidator(string allowed) => _allowed = allowed;
+
+            public ValidateOptionsResult Validate(string name, ComplexOptions options)
+            {
+                if (options.Virtual == _allowed)
+                {
+                    return ValidateOptionsResult.Success;
+                }
+                return ValidateOptionsResult.Fail("Virtual != " + _allowed);
+            }
+
+            public ValidateOptionsResult Validate(string name, FakeOptions options)
+            {
+                if (options.Message == _allowed)
+                {
+                    return ValidateOptionsResult.Success;
+                }
+                return ValidateOptionsResult.Fail("Message != " + _allowed);
+            }
+        }
+
+        [Fact]
+        public void CanValidateMultipleOptionsWithOneValidator()
+        {
+            var services = new ServiceCollection();
+            services.AddOptions<ComplexOptions>()
+                .Configure(o => o.Virtual = "wut");
+            services.AddOptions<FakeOptions>("fake")
+                .Configure(o => o.Message = "real");
+
+            var validator = new MultiOptionValidator("real");
+            services.AddSingleton<IValidateOptions<ComplexOptions>>(validator);
+            services.AddSingleton<IValidateOptions<FakeOptions>>(validator);
+
+            var sp = services.BuildServiceProvider();
+            var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
+            Assert.Single(error.Failures);
+            Assert.Equal("Virtual != real", error.Failures.First());
+
+            error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<FakeOptions>>().Value);
+            Assert.Single(error.Failures);
+            Assert.Equal("Message != real", error.Failures.First());
+
+            var fake = sp.GetRequiredService<IOptionsMonitor<FakeOptions>>().Get("fake");
+            Assert.Equal("real", fake.Message);
+        }
+
+        private class DependencyValidator : IValidateOptions<ComplexOptions>
+        {
+            private readonly string _allowed;
+            public DependencyValidator(IOptions<FakeOptions> _fake)
+            {
+                _allowed = _fake.Value.Message;
+            }
+
+            public ValidateOptionsResult Validate(string name, ComplexOptions options)
+            {
+                if (options.Virtual == _allowed)
+                {
+                    return ValidateOptionsResult.Success;
+                }
+                return ValidateOptionsResult.Fail("Virtual != " + _allowed);
+            }
+        }
+
+        [Fact]
+        public void CanValidateOptionsThatDependOnOptions()
+        {
+            var services = new ServiceCollection();
+            services.AddOptions<ComplexOptions>()
+                .Configure(o => o.Virtual = "default");
+            services.AddOptions<ComplexOptions>("yes")
+                .Configure(o => o.Virtual = "target");
+            services.AddOptions<ComplexOptions>("no")
+                .Configure(o => o.Virtual = "no");
+            services.AddOptions<FakeOptions>()
+                .Configure(o => o.Message = "target");
+            services.AddSingleton<IValidateOptions<ComplexOptions>, DependencyValidator>();
+
+            var sp = services.BuildServiceProvider();
+
+            var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
+            Assert.Single(error.Failures);
+            Assert.Equal("Virtual != target", error.Failures.First());
+
+            error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptionsMonitor<ComplexOptions>>().Get(Options.DefaultName));
+            Assert.Single(error.Failures);
+            Assert.Equal("Virtual != target", error.Failures.First());
+
+            error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptionsMonitor<ComplexOptions>>().Get("no"));
+            Assert.Single(error.Failures);
+            Assert.Equal("Virtual != target", error.Failures.First());
+
+            var op = sp.GetRequiredService<IOptionsMonitor<ComplexOptions>>().Get("yes");
+            Assert.Equal("target", op.Virtual);
         }
 
     }

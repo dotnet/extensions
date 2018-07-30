@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Options
@@ -253,6 +254,26 @@ namespace Microsoft.Extensions.Options
                     sp.GetRequiredService<TDep4>(),
                     sp.GetRequiredService<TDep5>(),
                     configureOptions));
+            return this;
+        }
+
+        public virtual OptionsBuilder<TOptions> Validate(Func<TOptions, bool> validation)
+            => Validate(name: Options.DefaultName, validation: validation, failureMessage: "A validation error has occured.");
+
+        public virtual OptionsBuilder<TOptions> Validate(string name, Func<TOptions, bool> validation)
+            => Validate(name: name, validation: validation, failureMessage: "A validation error has occured.");
+
+        public virtual OptionsBuilder<TOptions> Validate(Func<TOptions, bool> validation, string failureMessage)
+            => Validate(name: Options.DefaultName, validation: validation, failureMessage: failureMessage);
+
+        public virtual OptionsBuilder<TOptions> Validate(string name, Func<TOptions, bool> validation, string failureMessage)
+        {
+            if (validation == null)
+            {
+                throw new ArgumentNullException(nameof(validation));
+            }
+
+            Services.AddSingleton<IValidateOptions<TOptions>>(new ValidateOptions<TOptions>(name, validation, failureMessage));
             return this;
         }
     }
