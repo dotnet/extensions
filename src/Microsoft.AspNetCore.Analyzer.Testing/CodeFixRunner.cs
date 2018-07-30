@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
     {
         public static CodeFixRunner Default { get; } = new CodeFixRunner();
 
-        public async Task<string> ApplyCodeFixAsync(
+        public async Task<Solution> GetChangedSolutionAsync(
             CodeFixProvider codeFixProvider,
             Document document,
             Diagnostic analyzerDiagnostic,
@@ -30,17 +30,26 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
 
             Assert.NotEmpty(actions);
 
-            var updatedSolution = await ApplyFixAsync(actions[codeFixIndex]);
+            return await ApplyFixAsync(actions[codeFixIndex]);
+        }
 
-            var updatedProject = updatedSolution.GetProject(document.Project.Id);
-            await EnsureCompilable(updatedProject);
+        public async Task<string> ApplyCodeFixAsync(
+            CodeFixProvider codeFixProvider,
+            Document document,
+            Diagnostic analyzerDiagnostic,
+            int codeFixIndex = 0)
+        {
+            var updatedSolution = await GetChangedSolutionAsync(codeFixProvider, document, analyzerDiagnostic, codeFixIndex);
+
+            var project = updatedSolution.GetProject(document.Project.Id);
+            await EnsureCompilable(project);
 
             var updatedDocument = updatedSolution.GetDocument(document.Id);
             var sourceText = await updatedDocument.GetTextAsync();
             return sourceText.ToString();
         }
 
-        private async Task EnsureCompilable(Project project)
+        public async Task EnsureCompilable(Project project)
         {
             var compilationOptions = ConfigureCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
