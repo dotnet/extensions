@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\modules\csharp-language-server-protocol\src\Server\Server.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed\Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed.csproj" />
   </ItemGroup>
 
 </Project>

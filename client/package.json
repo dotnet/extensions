@@ -11,9 +11,65 @@
         "Other"
     ],
     "activationEvents": [
-        "onLanguage:razor"
+        "onLanguage:razorcore"
     ],
     "main": "./out/extension",
+    "contributes": {
+        "commands": [
+            {
+                "command": "extension.showRazorCSharpWindow",
+                "title": "Show Razor CSharp"
+            },
+            {
+                "command": "extension.showRazorHtmlWindow",
+                "title": "Show Razor Html"
+            }
+        ],
+        "menus": {
+            "editor/title": [
+                {
+                    "command": "extension.showRazorCSharpWindow",
+                    "when": "resourceLangId == razor"
+                },
+                {
+                    "command": "extension.showRazorHtmlWindow",
+                    "when": "resourceLangId == razor"
+                }
+            ]
+        },
+        "languages": [
+            {
+                "id": "razorcore",
+                "extensions": [
+                    ".razor"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "configuration": {
+            "title": "Razor Configuration",
+            "properties": {
+                "razor.languageServer.path": {
+                    "type": [
+                        "string",
+                        "null"
+                      ],
+                      "default": null,
+                      "description": "Specifies the path to the Razor LanguageServer. This should be the absolute path to the language server dll."
+                },
+                "razor.languageServer.debug": {
+                    "type": "boolean",
+                      "default": false,
+                      "description": "Specifies whether to wait for debug attach when launching the language server."
+                },
+                "razor.languageServer.trace": {
+                    "type": "string",
+                      "default": "Messages",
+                      "description": "Specifies whether to output all messages [Verbose], some messages [Messages] or not at all [Off]."
+                }
+            }
+        }
+    },
     "scripts": {
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
@@ -23,9 +79,12 @@
     },
     "devDependencies": {
         "typescript": "^2.6.1",
-        "vscode": "^1.1.6",
         "tslint": "^5.8.0",
         "@types/node": "^7.0.43",
         "@types/mocha": "^2.2.42"
+    },
+    "dependencies": {
+        "vscode": "^1.1.18",
+        "vscode-languageclient": "^4.1.4"
     }
 }
