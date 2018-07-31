@@ -21,8 +21,10 @@ export class RazorLanguageServerClient implements vscode.Disposable {
     private _client: LanguageClient;
     private _startDisposable: vscode.Disposable | undefined;
     private _eventBus: EventEmitter;
+    private _isStarted: boolean;
 
     constructor(options: RazorLanguageServerOptions) {
+        this._isStarted = false;
         this._clientOptions = {
             documentSelector: <any>RazorLanguage.documentSelector, // No idea why I need to cast here.
             outputChannel: options.outputChannel
@@ -44,6 +46,10 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         this._eventBus = new EventEmitter();
     }
 
+    public get isStarted(): boolean {
+        return this._isStarted;
+    }
+
     public onStart(listener: () => any): vscode.Disposable {
         this._eventBus.addListener(RazorLanguageServerClient.Events.ServerStart, listener);
 
@@ -62,7 +68,16 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         this._startDisposable = await this._client.start();
         await this._client.onReady();
 
+        this._isStarted = true;
         this._eventBus.emit(RazorLanguageServerClient.Events.ServerStart);
+    }
+
+    public async sendRequest<TResponseType>(method: string, param: any): Promise<TResponseType> {
+        if (!this._isStarted) {
+            throw new Error("Tried to send requests while server is not started.");
+        }
+
+        return this._client.sendRequest<TResponseType>(method, param);
     }
 
     public dispose(): void {
@@ -70,6 +85,7 @@ export class RazorLanguageServerClient implements vscode.Disposable {
             this._startDisposable.dispose();
         }
 
+        this._isStarted = false;
         this._eventBus.emit(RazorLanguageServerClient.Events.ServerStop);
     }
 }

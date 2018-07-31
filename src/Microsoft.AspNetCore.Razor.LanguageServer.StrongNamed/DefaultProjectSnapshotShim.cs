@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
             {
                 if (InnerProjectSnapshot is DefaultProjectSnapshot defaultSnapshot)
                 {
-                    new DefaultHostProjectShim(defaultSnapshot.HostProject);
+                    return new DefaultHostProjectShim(defaultSnapshot.HostProject);
                 }
 
                 return null;

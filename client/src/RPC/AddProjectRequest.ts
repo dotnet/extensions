@@ -4,11 +4,11 @@
  * ------------------------------------------------------------------------------------------ */
 
 export class AddProjectRequest {
-    constructor (filePath: string, configurationName: string) {
+    constructor (filePath: string, configurationName?: string) {
         this.filePath = filePath;
         this.configurationName = configurationName;
     }
 
     public readonly filePath:  string;
-    public readonly configurationName:  string;
+    public readonly configurationName:  string | undefined;
 }

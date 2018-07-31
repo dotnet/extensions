@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -55,11 +57,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Projects
 
             if (!_configurationResolver.TryResolve(notification.ConfigurationName, out var razorConfiguration))
             {
-                LogToClient($"Could not resolve Razor configuration '{notification.ConfigurationName}'. Falling back to default.");
                 razorConfiguration = RazorConfiguration.Default;
+                LogToClient($"Could not resolve Razor configuration '{notification.ConfigurationName}'. Falling back to default configuration '{razorConfiguration.ConfigurationName}'.");
             }
 
             await AddProjectOnForegroundAsync(notification, razorConfiguration);
+            LogToClient($"Added project '{notification.FilePath}' to the Razor project system.");
 
             return Unit.Value;
         }
@@ -71,34 +74,61 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Projects
                 throw new ArgumentNullException(nameof(notification));
             }
 
-            await AddDocumentOnForegroundAsync(notification.ProjectFilePath, notification.TextDocument);
+            await AddDocumentOnForegroundAsync(notification.TextDocument);
 
             return Unit.Value;
         }
 
-        private Task AddDocumentOnForegroundAsync(string projectFilePath, TextDocumentItem textDocument)
+        private Task AddDocumentOnForegroundAsync(TextDocumentItem textDocument)
         {
             return Task.Factory.StartNew(() =>
             {
-                var projectSnapshot = _projectSnapshotManagerAccessor.Instance.GetLoadedProject(projectFilePath);
-                if (projectSnapshot == null)
+                var textDocumentPath = NormalizePath(textDocument.Uri.AbsolutePath);
+                if (!TryResolveProject(textDocumentPath, out var projectSnapshot))
                 {
-                    // No active project to track the document. Treat this as a misc Razor file.
+                    // TODO: Support non-project based documents.
+                    LogToClient($"Could not resolve project for document '{textDocument.Uri.LocalPath}'.");
                     return;
                 }
 
-                var hostDocument = HostDocumentShim.Create(textDocument.Uri.AbsolutePath, textDocument.Uri.AbsolutePath);
+                var hostDocument = HostDocumentShim.Create(textDocumentPath, textDocumentPath);
                 var sourceText = SourceText.From(textDocument.Text);
                 var textAndVersion = TextAndVersion.Create(sourceText, VersionStamp.Default);
                 var textLoader = TextLoader.From(textAndVersion);
                 _projectSnapshotManagerAccessor.Instance.DocumentAdded(projectSnapshot.HostProject, hostDocument, textLoader);
+                LogToClient($"Added document '{textDocumentPath}' to project {projectSnapshot.FilePath} in the Razor project system.");
             }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
+        }
+
+        private bool TryResolveProject(string textDocumentPath, out ProjectSnapshotShim projectSnapshot)
+        {
+            var projects = _projectSnapshotManagerAccessor.Instance.Projects;
+            for (var i = 0; i < projects.Count; i++)
+            {
+                var projectDirectory = NormalizePath(new FileInfo(projects[i].FilePath).Directory.FullName);
+                if (textDocumentPath.StartsWith(projectDirectory))
+                {
+                    projectSnapshot = projects[i];
+                    return true;
+                }
+            }
+
+            projectSnapshot = null;
+            return false;
+        }
+
+        private string NormalizePath(string filePath)
+        {
+            var decodedPath = WebUtility.UrlDecode(filePath);
+            var normalized = decodedPath.Replace('\\', '/');
+            return normalized;
         }
 
         private Task AddProjectOnForegroundAsync(RazorAddProjectParams notification, RazorConfiguration razorConfiguration)
         {
             return Task.Factory.StartNew(() =>
             {
+                var normalizedPath = NormalizePath(notification.FilePath);
                 var hostProject = HostProjectShim.Create(notification.FilePath, razorConfiguration);
                 _projectSnapshotManagerAccessor.Instance.HostProjectAdded(hostProject);
             }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);

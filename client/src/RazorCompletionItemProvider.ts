@@ -17,7 +17,7 @@ export class RazorCompletionItemProvider implements vscode.CompletionItemProvide
     }
 
     public async provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext): Promise<vscode.CompletionItem[] | vscode.CompletionList> {
-        let projectedDocument = await this._htmlFeature.ProjectionProvider.getDocument(document.uri);
+        let projectedDocument = await this._csharpFeature.ProjectionProvider.getDocument(document.uri);
         let completionList = await vscode.commands.executeCommand<vscode.CompletionList | vscode.CompletionItem[]>(
             "vscode.executeCompletionItemProvider",
             projectedDocument.projectedUri,

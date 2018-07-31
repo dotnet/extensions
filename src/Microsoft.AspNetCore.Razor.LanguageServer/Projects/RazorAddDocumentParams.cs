@@ -9,7 +9,5 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Projects
     public class RazorAddDocumentParams : IRequest
     {
         public TextDocumentItem TextDocument { get; set; }
-
-        public string ProjectFilePath { get; set; }
     }
 }

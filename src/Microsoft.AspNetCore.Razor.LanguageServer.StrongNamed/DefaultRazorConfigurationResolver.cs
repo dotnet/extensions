@@ -22,7 +22,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
         {
             if (configurationName == null)
             {
-                throw new ArgumentNullException(nameof(configurationName));
+                configuration = RazorConfiguration.Default;
+                return true;
             }
 
             if (SupportedConfigurations.TryGetValue(configurationName, out configuration))
