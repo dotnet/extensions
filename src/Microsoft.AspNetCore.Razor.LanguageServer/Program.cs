@@ -49,6 +49,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     {
                         services.AddSingleton<VSCodeLogger>();
                         services.AddSingleton<ProjectResolver, DefaultProjectResolver>();
+                        services.AddSingleton<DocumentResolver, DefaultDocumentResolver>();
                         services.AddSingleton<FilePathNormalizer>();
                         services.AddSingleton<RazorProjectService, DefaultRazorProjectService>();
                         services.AddRazorShims();

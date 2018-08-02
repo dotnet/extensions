@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
         public DefaultProjectResolver(
             ForegroundDispatcherShim foregroundDispatcher,
             FilePathNormalizer filePathNormalizer,
+            RazorConfigurationResolver configurationResolver,
             ProjectSnapshotManagerShimAccessor projectSnapshotManagerAccessor)
         {
             if (foregroundDispatcher == null)
@@ -30,6 +31,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 throw new ArgumentNullException(nameof(filePathNormalizer));
             }
 
+            if (configurationResolver == null)
+            {
+                throw new ArgumentNullException(nameof(configurationResolver));
+            }
+
             if (projectSnapshotManagerAccessor == null)
             {
                 throw new ArgumentNullException(nameof(projectSnapshotManagerAccessor));
@@ -38,19 +44,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _foregroundDispatcher = foregroundDispatcher;
             _filePathNormalizer = filePathNormalizer;
             _projectSnapshotManagerAccessor = projectSnapshotManagerAccessor;
-            _miscellaneousHostProject = HostProjectShim.Create("__MISC_RAZOR_PROJECT__", RazorConfiguration.Default);
+            _miscellaneousHostProject = HostProjectShim.Create("__MISC_RAZOR_PROJECT__", configurationResolver.Default);
         }
 
-        public override bool TryResolveProject(string documentPath, out ProjectSnapshotShim projectSnapshot)
+        public override bool TryResolveProject(string documentFilePath, out ProjectSnapshotShim projectSnapshot)
         {
-            if (documentPath == null)
+            if (documentFilePath == null)
             {
-                throw new ArgumentNullException(nameof(documentPath));
+                throw new ArgumentNullException(nameof(documentFilePath));
             }
 
             _foregroundDispatcher.AssertForegroundThread();
 
-            var normalizedDocumentPath = _filePathNormalizer.Normalize(documentPath);
+            var normalizedDocumentPath = _filePathNormalizer.Normalize(documentFilePath);
             var projects = _projectSnapshotManagerAccessor.Instance.Projects;
             for (var i = 0; i < projects.Count; i++)
             {

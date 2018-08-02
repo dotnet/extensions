@@ -43,6 +43,10 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         };
 
         this._client = new LanguageClient('razorLanguageServer', 'Razor Language Server', this._serverOptions, this._clientOptions);
+        if (options.trace) {
+            this._client.trace = options.trace;
+        }
+        
         this._eventBus = new EventEmitter();
     }
 

@@ -106,6 +106,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _logger.Log($"Removed document '{textDocumentPath}' from project '{projectSnapshot.FilePath}'.");
         }
 
+        public override void UpdateDocument(string text, Uri uri)
+        {
+            _foregroundDispatcher.AssertForegroundThread();
+
+            var textDocumentPath = _filePathNormalizer.Normalize(uri.AbsolutePath);
+            if (!_projectResolver.TryResolveProject(textDocumentPath, out var projectSnapshot))
+            {
+                projectSnapshot = _projectResolver.GetMiscellaneousProject();
+            }
+            var sourceText = SourceText.From(text);
+            _projectSnapshotManagerAccessor.Instance.DocumentChanged(projectSnapshot.HostProject.FilePath, textDocumentPath, sourceText);
+
+            _logger.Log($"Updated document '{textDocumentPath}'.");
+        }
+
         public override void AddProject(string filePath, RazorConfiguration configuration)
         {
             _foregroundDispatcher.AssertForegroundThread();

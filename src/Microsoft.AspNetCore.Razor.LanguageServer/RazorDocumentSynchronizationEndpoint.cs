@@ -2,11 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
+using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -47,7 +51,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _logger = logger;
         }
 
-        public TextDocumentSyncKind Change { get; } = TextDocumentSyncKind.Incremental;
+        // TODO: GO INCREMENTAL
+        public TextDocumentSyncKind Change { get; } = TextDocumentSyncKind.Full;
 
         public void SetCapability(SynchronizationCapability capability)
         {
@@ -56,11 +61,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _capability = capability;
         }
 
-        public Task<Unit> Handle(DidChangeTextDocumentParams notification, CancellationToken token)
+        public async Task<Unit> Handle(DidChangeTextDocumentParams notification, CancellationToken token)
         {
-            _logger.Log("Changed Document");
+            var newContent = notification.ContentChanges.Single().Text;
+            await Task.Factory.StartNew(
+                () => _projectService.UpdateDocument(newContent, notification.TextDocument.Uri),
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                _foregroundDispatcher.ForegroundScheduler);
 
-            return Unit.Task;
+            return Unit.Value;
         }
 
         public async Task<Unit> Handle(DidOpenTextDocumentParams notification, CancellationToken token)

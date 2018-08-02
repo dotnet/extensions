@@ -5,10 +5,8 @@ using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 {
-    public abstract class ProjectResolver
+    public abstract class DocumentResolver
     {
-        public abstract bool TryResolveProject(string documentFilePath, out ProjectSnapshotShim projectSnapshot);
-
-        public abstract ProjectSnapshotShim GetMiscellaneousProject();
+        public abstract bool TryResolveDocument(string documentFilePath, out DocumentSnapshotShim document);
     }
 }

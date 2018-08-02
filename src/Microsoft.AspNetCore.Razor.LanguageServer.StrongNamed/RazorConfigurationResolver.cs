@@ -7,6 +7,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
 {
     public abstract class RazorConfigurationResolver
     {
+        public abstract RazorConfiguration Default { get; }
+
         public abstract bool TryResolve(string configurationName, out RazorConfiguration configuration);
     }
 }

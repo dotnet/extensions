@@ -32,6 +32,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.Razo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Language", "modules\Razor\src\Microsoft.AspNetCore.Razor.Language\Microsoft.AspNetCore.Razor.Language.csproj", "{487B924C-B52C-44B0-A10C-9CCE95138F14}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.Editor.Razor", "modules\Razor\src\Microsoft.VisualStudio.Editor.Razor\Microsoft.VisualStudio.Editor.Razor.csproj", "{F8FDEFA7-9574-4FF3-B854-44BD3F8F37C6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions", "modules\Razor\src\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj", "{73F9F775-30E0-43DA-AA35-1F0D70130276}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X", "modules\Razor\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.csproj", "{917E8383-55BB-44EB-BECF-4DDFD19174B4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -70,6 +76,18 @@ Global
 		{487B924C-B52C-44B0-A10C-9CCE95138F14}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{487B924C-B52C-44B0-A10C-9CCE95138F14}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{487B924C-B52C-44B0-A10C-9CCE95138F14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8FDEFA7-9574-4FF3-B854-44BD3F8F37C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8FDEFA7-9574-4FF3-B854-44BD3F8F37C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8FDEFA7-9574-4FF3-B854-44BD3F8F37C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8FDEFA7-9574-4FF3-B854-44BD3F8F37C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73F9F775-30E0-43DA-AA35-1F0D70130276}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73F9F775-30E0-43DA-AA35-1F0D70130276}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73F9F775-30E0-43DA-AA35-1F0D70130276}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73F9F775-30E0-43DA-AA35-1F0D70130276}.Release|Any CPU.Build.0 = Release|Any CPU
+		{917E8383-55BB-44EB-BECF-4DDFD19174B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{917E8383-55BB-44EB-BECF-4DDFD19174B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{917E8383-55BB-44EB-BECF-4DDFD19174B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{917E8383-55BB-44EB-BECF-4DDFD19174B4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -85,6 +103,9 @@ Global
 		{A3E388BC-F625-4A6A-AD31-04E8B1DD0D91} = {3C0D9AB8-562E-4736-A31D-839AF8C9D9FD}
 		{8CFC36F5-61B4-4F56-8311-750C2969B61D} = {3C0D9AB8-562E-4736-A31D-839AF8C9D9FD}
 		{487B924C-B52C-44B0-A10C-9CCE95138F14} = {3C0D9AB8-562E-4736-A31D-839AF8C9D9FD}
+		{F8FDEFA7-9574-4FF3-B854-44BD3F8F37C6} = {3C0D9AB8-562E-4736-A31D-839AF8C9D9FD}
+		{73F9F775-30E0-43DA-AA35-1F0D70130276} = {3C0D9AB8-562E-4736-A31D-839AF8C9D9FD}
+		{917E8383-55BB-44EB-BECF-4DDFD19174B4} = {3C0D9AB8-562E-4736-A31D-839AF8C9D9FD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ED1782EB-ABE7-4615-80E2-442006DF2826}

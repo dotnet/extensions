@@ -18,11 +18,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
             [FallbackRazorConfiguration.MVC_2_1.ConfigurationName] = FallbackRazorConfiguration.MVC_2_1,
         };
 
+        public override RazorConfiguration Default => FallbackRazorConfiguration.MVC_2_1;
+
         public override bool TryResolve(string configurationName, out RazorConfiguration configuration)
         {
             if (configurationName == null)
             {
-                configuration = RazorConfiguration.Default;
+                configuration = Default;
                 return true;
             }
 

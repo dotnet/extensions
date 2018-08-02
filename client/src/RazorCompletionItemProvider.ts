@@ -26,7 +26,7 @@ export class RazorCompletionItemProvider implements vscode.CompletionItemProvide
 
         if (!completionList) {
             completionList = {
-                isIncomplete: true,
+                isIncomplete: false,
                 items: []
             };
         }

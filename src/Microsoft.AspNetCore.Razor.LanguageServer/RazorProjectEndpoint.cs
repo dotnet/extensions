@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             if (!_configurationResolver.TryResolve(request.ConfigurationName, out var razorConfiguration))
             {
-                razorConfiguration = RazorConfiguration.Default;
+                razorConfiguration = _configurationResolver.Default;
                 _logger.Log($"Could not resolve Razor configuration '{request.ConfigurationName}'. Falling back to default configuration '{razorConfiguration.ConfigurationName}'.");
             }
 
