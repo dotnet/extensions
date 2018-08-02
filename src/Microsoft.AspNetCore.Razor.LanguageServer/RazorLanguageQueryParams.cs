@@ -9,13 +9,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     public class RazorLanguageQueryParams : IRequest<RazorLanguageQueryResponse>
     {
-        public Uri HostDocumentUri { get; set; }
+        public Uri Uri { get; set; }
 
-        public Uri ProjectedCSharpDocumentUri { get; set; }
-
-        // TODO: Not implemented on client.
-        public Uri ProjectedHtmlDocumentUri { get; set; }
-
-        public Position HostDocumentPosition { get; set; }
+        public Position Position { get; set; }
     }
 }

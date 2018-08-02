@@ -4,13 +4,9 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
+import { LanguageKind } from './LanguageKind';
 
-export class LanguageQueryResponse {
-    constructor (textDocumentUri: vscode.Uri, position: vscode.Position) {
-        this.textDocumentUri = textDocumentUri.path;
-        this.position = position;
-    }
-
-    public readonly textDocumentUri: string;
-    public readonly position: vscode.Position;
+export interface LanguageQueryResponse {
+    kind: LanguageKind;
+    position: vscode.Position;
 }

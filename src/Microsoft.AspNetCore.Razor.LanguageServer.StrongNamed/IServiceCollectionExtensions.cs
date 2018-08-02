@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualStudio.Editor.Razor;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -16,6 +17,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             services.AddSingleton<ErrorReporter, DefaultErrorReporter>();
             services.AddSingleton<ProjectSnapshotManagerShimAccessor, DefaultProjectSnapshotManagerShimAccessor>();
             services.AddSingleton<RazorConfigurationResolver, DefaultRazorConfigurationResolver>();
+            services.AddSingleton<RazorSyntaxFactsService, DefaultRazorSyntaxFactsService>();
 
             return services;
         }

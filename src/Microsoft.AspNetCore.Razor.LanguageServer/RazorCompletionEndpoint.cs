@@ -56,8 +56,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public async Task<CompletionList> Handle(CompletionParams request, CancellationToken cancellationToken)
         {
-            _logger.Log("Handling completion request.");
-
             var document = await Task.Factory.StartNew(() =>
             {
                 _documentResolver.TryResolveDocument(request.TextDocument.Uri.AbsolutePath, out var documentSnapshot);
@@ -74,6 +72,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
 
             var directives = syntaxTree.Options.Directives;
+            _logger.Log($"Found {directives.Count} directives. At a valid completion point, providing completion.");
 
             var completionItems = new List<CompletionItem>();
             foreach (var directive in directives)

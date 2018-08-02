@@ -24,7 +24,7 @@ export async function activate(context: ExtensionContext) {
     let localRegistrations: vscode.Disposable[] = [];
 
     let onStartRegistration = languageServerClient.onStart(() => {
-        localRegistrations.push(vscode.languages.registerCompletionItemProvider(RazorLanguage.id, new RazorCompletionItemProvider(csharpFeature, htmlFeature)));
+        localRegistrations.push(vscode.languages.registerCompletionItemProvider(RazorLanguage.id, new RazorCompletionItemProvider(csharpFeature, htmlFeature, languageServiceClient)));
         localRegistrations.push(projectTracker.register());
         localRegistrations.push(csharpFeature.register());
         localRegistrations.push(htmlFeature.register());
