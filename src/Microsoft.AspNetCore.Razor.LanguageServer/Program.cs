@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .AddDefaultLoggingProvider()
                     .WithMinimumLogLevel(LogLevel.Trace)
                     .WithHandler<RazorDocumentSynchronizationEndpoint>()
-                    .WithHandler<RazorCompletionHandler>()
+                    .WithHandler<RazorCompletionEndpoint>()
                     .WithHandler<RazorLanguageEndpoint>()
                     .WithHandler<RazorProjectEndpoint>()
                     .WithServices(services =>

@@ -15,14 +15,14 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class RazorCompletionHandler : ICompletionHandler
+    internal class RazorCompletionEndpoint : ICompletionHandler
     {
         private CompletionCapability _capability;
         private readonly VSCodeLogger _logger;
         private readonly ForegroundDispatcherShim _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
 
-        public RazorCompletionHandler(
+        public RazorCompletionEndpoint(
             ForegroundDispatcherShim foregroundDispatcher,
             DocumentResolver documentResolver,
             VSCodeLogger logger)
