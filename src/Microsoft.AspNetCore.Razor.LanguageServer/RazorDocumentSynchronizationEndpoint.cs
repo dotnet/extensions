@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
@@ -14,70 +15,88 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    public class RazorDocumentSynchronizationHandler : LanguageServerHandlerBase, ITextDocumentSyncHandler
+    internal class RazorDocumentSynchronizationEndpoint : ITextDocumentSyncHandler
     {
         private SynchronizationCapability _capability;
-        private readonly ProjectSnapshotManagerShimAccessor _projectSnapshotManagerAccessor;
+        private readonly VSCodeLogger _logger;
+        private readonly ForegroundDispatcherShim _foregroundDispatcher;
+        private readonly RazorProjectService _projectService;
 
-        public RazorDocumentSynchronizationHandler(
-            ILanguageServer router,
-            ProjectSnapshotManagerShimAccessor projectSnapshotManagerAccessor) : base(router)
+        public RazorDocumentSynchronizationEndpoint(
+            ForegroundDispatcherShim foregroundDispatcher,
+            RazorProjectService projectService,
+            VSCodeLogger logger)
         {
-            if (router == null)
+            if (foregroundDispatcher == null)
             {
-                throw new ArgumentNullException(nameof(router));
+                throw new ArgumentNullException(nameof(foregroundDispatcher));
             }
 
-            if (projectSnapshotManagerAccessor == null)
+            if (projectService == null)
             {
-                throw new ArgumentNullException(nameof(projectSnapshotManagerAccessor));
+                throw new ArgumentNullException(nameof(projectService));
             }
 
-            _projectSnapshotManagerAccessor = projectSnapshotManagerAccessor;
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            _foregroundDispatcher = foregroundDispatcher;
+            _projectService = projectService;
+            _logger = logger;
         }
 
         public TextDocumentSyncKind Change { get; } = TextDocumentSyncKind.Incremental;
 
         public void SetCapability(SynchronizationCapability capability)
         {
-            LogToClient("Setting Capability");
+            _logger.Log("Setting Capability");
 
             _capability = capability;
         }
 
         public Task<Unit> Handle(DidChangeTextDocumentParams notification, CancellationToken token)
         {
-            LogToClient("Changed Document");
+            _logger.Log("Changed Document");
 
             return Unit.Task;
         }
 
-        public Task<Unit> Handle(DidOpenTextDocumentParams notification, CancellationToken token)
+        public async Task<Unit> Handle(DidOpenTextDocumentParams notification, CancellationToken token)
         {
-            LogToClient("Opened Document");
+            await Task.Factory.StartNew(
+                () => _projectService.AddDocument(notification.TextDocument.Text, notification.TextDocument.Uri),
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                _foregroundDispatcher.ForegroundScheduler);
 
-            return Unit.Task;
+            return Unit.Value;
         }
 
-        public Task<Unit> Handle(DidCloseTextDocumentParams notification, CancellationToken token)
+        public async Task<Unit> Handle(DidCloseTextDocumentParams notification, CancellationToken token)
         {
-            LogToClient("Closed Document");
+            await Task.Factory.StartNew(
+                () => _projectService.RemoveDocument(notification.TextDocument.Uri),
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                _foregroundDispatcher.ForegroundScheduler);
 
-            return Unit.Task;
+            return Unit.Value;
         }
 
         public Task<Unit> Handle(DidSaveTextDocumentParams notification, CancellationToken token)
         {
-            LogToClient("Saved Document");
+            _logger.Log("Saved Document");
 
             return Unit.Task;
         }
 
         public TextDocumentAttributes GetTextDocumentAttributes(Uri uri)
         {
-            LogToClient("Asked for attributes");
+            _logger.Log("Asked for attributes");
 
-            return new TextDocumentAttributes(uri, "razor");
+            return new TextDocumentAttributes(uri, "razorcore");
         }
 
         TextDocumentChangeRegistrationOptions IRegistration<TextDocumentChangeRegistrationOptions>.GetRegistrationOptions()

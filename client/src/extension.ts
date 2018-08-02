@@ -13,7 +13,6 @@ import { RazorHtmlFeature } from './Html/RazorHtmlFeature';
 import { RazorCompletionItemProvider } from './RazorCompletionItemProvider';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { RazorProjectTracker } from './RazorProjectTracker';
-import { RazorDocumentTracker } from './RazorDocumentTracker';
 
 export async function activate(context: ExtensionContext) {
     let languageServerOptions = resolveRazorLanguageServerOptions();
@@ -22,13 +21,11 @@ export async function activate(context: ExtensionContext) {
     let csharpFeature = new RazorCSharpFeature();
     let htmlFeature = new RazorHtmlFeature();
     let projectTracker = new RazorProjectTracker(languageServiceClient);
-    let documentTracker = new RazorDocumentTracker(languageServiceClient);
     let localRegistrations: vscode.Disposable[] = [];
 
     let onStartRegistration = languageServerClient.onStart(() => {
         localRegistrations.push(vscode.languages.registerCompletionItemProvider(RazorLanguage.id, new RazorCompletionItemProvider(csharpFeature, htmlFeature)));
         localRegistrations.push(projectTracker.register());
-        localRegistrations.push(documentTracker.register());
         localRegistrations.push(csharpFeature.register());
         localRegistrations.push(htmlFeature.register());
 
@@ -49,7 +46,6 @@ export async function activate(context: ExtensionContext) {
 
     await languageServerClient.start();
     await projectTracker.initialize();
-    await documentTracker.initialize();
     await csharpFeature.initialize();
     await htmlFeature.initialize();
 

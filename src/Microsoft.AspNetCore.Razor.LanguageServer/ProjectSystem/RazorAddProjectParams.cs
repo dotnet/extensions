@@ -3,7 +3,7 @@
 
 using MediatR;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Projects
+namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 {
     public class RazorAddProjectParams : IRequest
     {

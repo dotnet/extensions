@@ -5,9 +5,10 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.LanguageServer.Projects;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Server;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -40,11 +41,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithLoggerFactory(new LoggerFactory())
                     .AddDefaultLoggingProvider()
                     .WithMinimumLogLevel(LogLevel.Trace)
-                    .WithHandler<RazorDocumentSynchronizationHandler>()
+                    .WithHandler<RazorDocumentSynchronizationEndpoint>()
                     .WithHandler<RazorCompletionHandler>()
-                    .WithHandler<RazorLanguageService>()
-                    .WithHandler<RazorProjectService>()
-                    .WithServices(services => services.AddRazorShims()));
+                    .WithHandler<RazorLanguageEndpoint>()
+                    .WithHandler<RazorProjectSystemEndpoint>()
+                    .WithServices(services =>
+                    {
+                        services.AddSingleton<VSCodeLogger>();
+                        services.AddSingleton<ProjectResolver, DefaultProjectResolver>();
+                        services.AddSingleton<FilePathNormalizer>();
+                        services.AddSingleton<RazorProjectService, DefaultRazorProjectService>();
+                        services.AddRazorShims();
+                    }));
 
             await server.WaitForExit;
         }

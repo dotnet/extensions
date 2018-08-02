@@ -1,19 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
+﻿using System;
 using System.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    public abstract class LanguageServerHandlerBase
+    internal class VSCodeLogger
     {
         private readonly ILanguageServer _router;
         private static string LastLogType = string.Empty;
 
-        public LanguageServerHandlerBase(ILanguageServer router)
+        public VSCodeLogger(ILanguageServer router)
         {
             if (router == null)
             {
@@ -23,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _router = router;
         }
 
-        protected void LogToClient(string message)
+        public void Log(string message)
         {
             var messageBuilder = new StringBuilder();
             var typeName = GetType().Name;

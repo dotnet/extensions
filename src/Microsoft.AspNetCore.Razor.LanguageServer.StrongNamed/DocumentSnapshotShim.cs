@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
 {
     public abstract class DocumentSnapshotShim
     {
+        public abstract HostDocumentShim HostDocument { get; }
+
         public abstract string FilePath { get; }
 
         public abstract string TargetPath { get; }

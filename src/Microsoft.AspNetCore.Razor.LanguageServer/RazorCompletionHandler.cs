@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,24 +11,31 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    public class RazorCompletionHandler : LanguageServerHandlerBase, ICompletionHandler
+    internal class RazorCompletionHandler : ICompletionHandler
     {
         private CompletionCapability _capability;
+        private readonly VSCodeLogger _logger;
 
-        public RazorCompletionHandler(ILanguageServer router) : base(router)
+        public RazorCompletionHandler(VSCodeLogger logger)
         {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            _logger = logger;
         }
 
         public void SetCapability(CompletionCapability capability)
         {
-            LogToClient("Setting capability");
+            _logger.Log("Setting capability");
 
             _capability = capability;
         }
 
         public Task<CompletionList> Handle(CompletionParams request, CancellationToken cancellationToken)
         {
-            LogToClient("Handling completion request.");
+            _logger.Log("Handling completion request.");
 
             var completionItems = new List<CompletionItem>()
             {

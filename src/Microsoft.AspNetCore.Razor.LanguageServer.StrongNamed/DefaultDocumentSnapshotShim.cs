@@ -19,6 +19,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
             _snapshot = snapshot;
         }
 
+        public override HostDocumentShim HostDocument
+        {
+            get
+            {
+                if (_snapshot is DefaultDocumentSnapshot defaultSnapshot)
+                {
+                    return new DefaultHostDocumentShim(defaultSnapshot.State.HostDocument);
+                }
+
+                return null;
+            }
+        }
+
         public override string FilePath => _snapshot.FilePath;
 
         public override string TargetPath => _snapshot.TargetPath;

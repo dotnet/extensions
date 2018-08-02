@@ -3,10 +3,10 @@
 
 using OmniSharp.Extensions.JsonRpc;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Projects
+namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 {
-    [Parallel, Method("projects/addDocument")]
-    public interface IRazorAddDocumentHandler : IJsonRpcNotificationHandler<RazorAddDocumentParams>
+    [Serial, Method("projects/addProject")]
+    public interface IRazorAddProjectHandler : IJsonRpcNotificationHandler<RazorAddProjectParams>
     {
     }
 }
