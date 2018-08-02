@@ -17,7 +17,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class RazorProjectEndpoint : IRazorAddProjectHandler
+    internal class RazorProjectEndpoint : IRazorAddProjectHandler, IRazorRemoveProjectHandler
     {
         private readonly RazorProjectService _projectService;
         private readonly RazorConfigurationResolver _configurationResolver;
@@ -71,6 +71,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             await Task.Factory.StartNew(
                 () => _projectService.AddProject(request.FilePath, razorConfiguration),
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                _foregroundDispatcher.ForegroundScheduler);
+
+            return Unit.Value;
+        }
+
+        public async Task<Unit> Handle(RazorRemoveProjectParams request, CancellationToken cancellationToken)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            await Task.Factory.StartNew(
+                () => _projectService.RemoveProject(request.FilePath),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);

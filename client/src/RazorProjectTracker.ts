@@ -30,8 +30,10 @@ export class RazorProjectTracker {
             await this._languageServiceClient.addProject(uri);
         });
 
-        // TODO: Track delete
+        let deleteRegistration = watcher.onDidDelete(async (uri: vscode.Uri) => {
+            await this._languageServiceClient.removeProject(uri);
+        });
 
-        return vscode.Disposable.from(watcher, createRegistration);
+        return vscode.Disposable.from(watcher, createRegistration, deleteRegistration);
     }
 }

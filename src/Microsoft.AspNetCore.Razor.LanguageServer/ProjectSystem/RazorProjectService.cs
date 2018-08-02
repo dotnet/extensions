@@ -13,5 +13,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
         public abstract void RemoveDocument(Uri textDocumentUri);
 
         public abstract void AddProject(string filePath, RazorConfiguration configuration);
+
+        public abstract void RemoveProject(string filePath);
     }
 }

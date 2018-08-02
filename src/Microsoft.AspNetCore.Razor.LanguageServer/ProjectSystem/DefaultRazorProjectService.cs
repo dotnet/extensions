@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
@@ -82,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             var textLoader = TextLoader.From(textAndVersion);
             _projectSnapshotManagerAccessor.Instance.DocumentAdded(projectSnapshot.HostProject, hostDocument, textLoader);
 
-            _logger.Log($"Added document '{textDocumentPath}' to project {projectSnapshot.FilePath} in the Razor project system.");
+            _logger.Log($"Added document '{textDocumentPath}' to project '{projectSnapshot.FilePath}'.");
         }
 
         public override void RemoveDocument(Uri textDocumentUri)
@@ -104,7 +103,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             var document = projectSnapshot.GetDocument(textDocumentPath);
             _projectSnapshotManagerAccessor.Instance.DocumentRemoved(projectSnapshot.HostProject, document.HostDocument);
 
-            _logger.Log($"Removed document '{textDocumentPath}' from project {projectSnapshot.FilePath} in the Razor project system.");
+            _logger.Log($"Removed document '{textDocumentPath}' from project '{projectSnapshot.FilePath}'.");
         }
 
         public override void AddProject(string filePath, RazorConfiguration configuration)
@@ -114,35 +113,80 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             var normalizedPath = _filePathNormalizer.Normalize(filePath);
             var hostProject = HostProjectShim.Create(normalizedPath, configuration);
             _projectSnapshotManagerAccessor.Instance.HostProjectAdded(hostProject);
-            _logger.Log($"Added project '{filePath}' to the Razor project system.");
+            _logger.Log($"Added project '{filePath}' to project system.");
 
-            TryMigrateMiscellaneousDocuments();
+            TryMigrateMiscellaneousDocumentsToProjectAsync();
         }
 
-        private void TryMigrateMiscellaneousDocuments()
+        public override void RemoveProject(string filePath)
+        {
+            _foregroundDispatcher.AssertForegroundThread();
+
+            var normalizedPath = _filePathNormalizer.Normalize(filePath);
+            var project = _projectSnapshotManagerAccessor.Instance.GetLoadedProject(normalizedPath);
+
+            if (project == null)
+            {
+                // Never tracked the project to begin with, noop.
+                return;
+            }
+
+            _projectSnapshotManagerAccessor.Instance.HostProjectRemoved(project.HostProject);
+            _logger.Log($"Removing project '{filePath}' from project system.");
+
+            TryMigrateDocumentsFromRemovedProject(project);
+        }
+
+        private void TryMigrateDocumentsFromRemovedProject(ProjectSnapshotShim project)
+        {
+            var miscellaneousProject = _projectResolver.GetMiscellaneousProject();
+
+            foreach (var documentFilePath in project.DocumentFilePaths)
+            {
+                var documentSnapshot = project.GetDocument(documentFilePath);
+
+                // HACK, this should probably all be async.but to do that we need something like the JTF in VS
+                var sourceText = documentSnapshot.GetTextAsync().Result;
+                var textAndVersion = TextAndVersion.Create(sourceText, VersionStamp.Default);
+                var textLoader = TextLoader.From(textAndVersion);
+
+                if (!_projectResolver.TryResolveProject(documentFilePath, out var toProject))
+                {
+                    // This is the common case. It'd be rare for a project to be nested but we need to protect against it anyhow.
+                    toProject = miscellaneousProject;
+                }
+
+                _projectSnapshotManagerAccessor.Instance.DocumentAdded(toProject.HostProject, documentSnapshot.HostDocument, textLoader);
+                _logger.Log($"Migrated '{documentFilePath}' from the '{project.FilePath}' project to '{toProject.FilePath}' project.");
+            }
+        }
+
+        private void TryMigrateMiscellaneousDocumentsToProjectAsync()
         {
             var miscellaneousProject = _projectResolver.GetMiscellaneousProject();
 
             foreach (var documentFilePath in miscellaneousProject.DocumentFilePaths)
             {
-                if (_projectResolver.TryResolveProject(documentFilePath, out var projectSnapshot))
+                if (!_projectResolver.TryResolveProject(documentFilePath, out var projectSnapshot))
                 {
-                    var documentSnapshot = miscellaneousProject.GetDocument(documentFilePath);
-                    
-                    // Remove from miscellaneous project
-                    _projectSnapshotManagerAccessor.Instance.DocumentRemoved(miscellaneousProject.HostProject, documentSnapshot.HostDocument);
-
-                    // Add to new project
-
-                    // HACK, this should probably all be async.
-                    var sourceText = documentSnapshot.GetTextAsync().Result;
-                    var textAndVersion = TextAndVersion.Create(sourceText, VersionStamp.Default);
-                    var textLoader = TextLoader.From(textAndVersion);
-
-                    _projectSnapshotManagerAccessor.Instance.DocumentAdded(projectSnapshot.HostProject, documentSnapshot.HostDocument, textLoader);
-
-                    _logger.Log($"Migrated '{documentFilePath}' from the Miscellaneous Project to project '{projectSnapshot.FilePath}'.");
+                    continue;
                 }
+
+                var documentSnapshot = miscellaneousProject.GetDocument(documentFilePath);
+
+                // Remove from miscellaneous project
+                _projectSnapshotManagerAccessor.Instance.DocumentRemoved(miscellaneousProject.HostProject, documentSnapshot.HostDocument);
+
+                // Add to new project
+
+                // HACK, this should probably all be async.but to do that we need something like the JTF in VS
+                var sourceText = documentSnapshot.GetTextAsync().Result;
+                var textAndVersion = TextAndVersion.Create(sourceText, VersionStamp.Default);
+                var textLoader = TextLoader.From(textAndVersion);
+
+                _projectSnapshotManagerAccessor.Instance.DocumentAdded(projectSnapshot.HostProject, documentSnapshot.HostDocument, textLoader);
+
+                _logger.Log($"Migrated '{documentFilePath}' from the '{miscellaneousProject.FilePath}' project to '{projectSnapshot.FilePath}' project.");
             }
         }
     }

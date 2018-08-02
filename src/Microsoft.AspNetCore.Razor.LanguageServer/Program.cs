@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<RazorDocumentSynchronizationEndpoint>()
                     .WithHandler<RazorCompletionHandler>()
                     .WithHandler<RazorLanguageEndpoint>()
-                    .WithHandler<RazorProjectSystemEndpoint>()
+                    .WithHandler<RazorProjectEndpoint>()
                     .WithServices(services =>
                     {
                         services.AddSingleton<VSCodeLogger>();
