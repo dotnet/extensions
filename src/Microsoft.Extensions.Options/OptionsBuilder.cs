@@ -258,22 +258,16 @@ namespace Microsoft.Extensions.Options
         }
 
         public virtual OptionsBuilder<TOptions> Validate(Func<TOptions, bool> validation)
-            => Validate(name: Options.DefaultName, validation: validation, failureMessage: "A validation error has occured.");
-
-        public virtual OptionsBuilder<TOptions> Validate(string name, Func<TOptions, bool> validation)
-            => Validate(name: name, validation: validation, failureMessage: "A validation error has occured.");
+            => Validate(validation: validation, failureMessage: "A validation error has occured.");
 
         public virtual OptionsBuilder<TOptions> Validate(Func<TOptions, bool> validation, string failureMessage)
-            => Validate(name: Options.DefaultName, validation: validation, failureMessage: failureMessage);
-
-        public virtual OptionsBuilder<TOptions> Validate(string name, Func<TOptions, bool> validation, string failureMessage)
         {
             if (validation == null)
             {
                 throw new ArgumentNullException(nameof(validation));
             }
 
-            Services.AddSingleton<IValidateOptions<TOptions>>(new ValidateOptions<TOptions>(name, validation, failureMessage));
+            Services.AddSingleton<IValidateOptions<TOptions>>(new ValidateOptions<TOptions>(Name, validation, failureMessage));
             return this;
         }
     }
