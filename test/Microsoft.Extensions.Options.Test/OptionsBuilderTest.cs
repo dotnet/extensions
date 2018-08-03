@@ -240,11 +240,17 @@ namespace Microsoft.Extensions.Options.Tests
             var services = new ServiceCollection();
             services.AddOptions<ComplexOptions>()
                 .Configure(o => o.Boolean = false)
-                .Validate(Options.DefaultName, o => o.Boolean, "Boolean must be true.");
+                .Validate(o => o.Boolean, "Boolean must be true.");
+            services.AddOptions<ComplexOptions>("named")
+                .Configure(o => o.Boolean = true)
+                .Validate(o => !o.Boolean, "named Boolean must be false.");
             var sp = services.BuildServiceProvider();
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
-            Assert.Equal("Boolean must be true.", error.Failures.First());
+            ValidateFailure<ComplexOptions>(error, Options.DefaultName, "Boolean must be true.");
+            error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptionsMonitor<ComplexOptions>>().Get("named"));
+            ValidateFailure<ComplexOptions>(error, "named", "named Boolean must be false.");
         }
+
 
         [Fact]
         public void CanValidateOptionsWithDefaultError()
@@ -255,7 +261,7 @@ namespace Microsoft.Extensions.Options.Tests
                 .Validate(o => o.Boolean);
             var sp = services.BuildServiceProvider();
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
-            Assert.Equal("A validation error has occured.", error.Failures.First());
+            ValidateFailure<ComplexOptions>(error);
         }
 
         [Fact]
@@ -273,10 +279,7 @@ namespace Microsoft.Extensions.Options.Tests
 
             var sp = services.BuildServiceProvider();
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
-            var errors = error.Failures.ToArray();
-            Assert.Equal(2, errors.Length);
-            Assert.Equal("A validation error has occured.", errors[0]);
-            Assert.Equal("A validation error has occured.", errors[1]);
+            ValidateFailure<ComplexOptions>(error, Options.DefaultName, "A validation error has occured.", "A validation error has occured.");
         }
 
         [Fact]
@@ -291,16 +294,29 @@ namespace Microsoft.Extensions.Options.Tests
                     o.Virtual = "wut";
                 })
                 .Validate(o => o.Boolean)
-                .Validate(Options.DefaultName, o => o.Virtual == null, "Virtual")
+                .Validate(o => o.Virtual == null, "Virtual")
                 .Validate(o => o.Integer > 12, "Integer");
 
             var sp = services.BuildServiceProvider();
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
-            var errors = error.Failures.ToArray();
-            Assert.Equal(3, errors.Length);
-            Assert.Equal("A validation error has occured.", errors[0]);
-            Assert.Equal("Virtual", errors[1]);
-            Assert.Equal("Integer", errors[2]);
+            ValidateFailure<ComplexOptions>(error, Options.DefaultName, "A validation error has occured.", "Virtual", "Integer");
+        }
+
+        public class BadValidator : IValidateOptions<FakeOptions>
+        {
+            public ValidateOptionsResult Validate(string name, FakeOptions options)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        [Fact]
+        public void BadValidatorFailsGracefully()
+        {
+            var services = new ServiceCollection().AddOptions();
+            services.AddSingleton<IValidateOptions<FakeOptions>, BadValidator>();
+            var sp = services.BuildServiceProvider();
+            var error = Assert.Throws<NotImplementedException>(() => sp.GetRequiredService<IOptions<FakeOptions>>().Value);
         }
 
         private class MultiOptionValidator : IValidateOptions<ComplexOptions>, IValidateOptions<FakeOptions>
@@ -342,12 +358,10 @@ namespace Microsoft.Extensions.Options.Tests
 
             var sp = services.BuildServiceProvider();
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
-            Assert.Single(error.Failures);
-            Assert.Equal("Virtual != real", error.Failures.First());
+            ValidateFailure<ComplexOptions>(error, Options.DefaultName, "Virtual != real");
 
             error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<FakeOptions>>().Value);
-            Assert.Single(error.Failures);
-            Assert.Equal("Message != real", error.Failures.First());
+            ValidateFailure<FakeOptions>(error, Options.DefaultName, "Message != real");
 
             var fake = sp.GetRequiredService<IOptionsMonitor<FakeOptions>>().Get("fake");
             Assert.Equal("real", fake.Message);
@@ -371,6 +385,17 @@ namespace Microsoft.Extensions.Options.Tests
             }
         }
 
+        private void ValidateFailure<TOptions>(OptionsValidationException e, string name = "", params string[] errors)
+        {
+            Assert.Equal(typeof(TOptions), e.OptionsType);
+            Assert.Equal(name, e.OptionsName);
+            if (errors.Length == 0)
+            {
+                errors = new string[] { "A validation error has occured." };
+            }
+            Assert.True(errors.SequenceEqual(e.Failures));
+        }
+
         [Fact]
         public void CanValidateOptionsThatDependOnOptions()
         {
@@ -388,20 +413,105 @@ namespace Microsoft.Extensions.Options.Tests
             var sp = services.BuildServiceProvider();
 
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
-            Assert.Single(error.Failures);
-            Assert.Equal("Virtual != target", error.Failures.First());
+            ValidateFailure<ComplexOptions>(error, Options.DefaultName, "Virtual != target");
 
             error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptionsMonitor<ComplexOptions>>().Get(Options.DefaultName));
-            Assert.Single(error.Failures);
-            Assert.Equal("Virtual != target", error.Failures.First());
+            ValidateFailure<ComplexOptions>(error, Options.DefaultName, "Virtual != target");
 
             error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptionsMonitor<ComplexOptions>>().Get("no"));
-            Assert.Single(error.Failures);
-            Assert.Equal("Virtual != target", error.Failures.First());
+            ValidateFailure<ComplexOptions>(error, "no", "Virtual != target");
 
             var op = sp.GetRequiredService<IOptionsMonitor<ComplexOptions>>().Get("yes");
             Assert.Equal("target", op.Virtual);
         }
 
+        // Prototype of startup validation
+
+        public interface IStartupValidator
+        {
+            void Validate();
+        }
+
+        public class StartupValidationOptions
+        {
+            private Dictionary<Type, IList<string>> _targets = new Dictionary<Type, IList<string>>();
+
+            public IDictionary<Type, IList<string>> ValidationTargets { get => _targets; }
+
+            public void Validate<TOptions>(string name) where TOptions : class
+            {
+                if (!_targets.ContainsKey(typeof(TOptions)))
+                {
+                    _targets[typeof(TOptions)] = new List<string>();
+                }
+                _targets[typeof(TOptions)].Add(name ?? Options.DefaultName);
+            }
+
+            public void Validate<TOptions>() where TOptions : class => Validate<TOptions>(Options.DefaultName);
+        }
+
+        public class OptionsStartupValidator : IStartupValidator
+        {
+            private IServiceProvider _services;
+            private StartupValidationOptions _options;
+
+            public OptionsStartupValidator(IOptions<StartupValidationOptions> options, IServiceProvider services)
+            {
+                _services = services;
+                _options = options.Value;
+            }
+
+            public void Validate()
+            {
+                var errors = new List<string>();
+                foreach (var targetType in _options.ValidationTargets.Keys)
+                {
+                    var optionsType = typeof(IOptionsMonitor<>).MakeGenericType(targetType);
+                    var monitor = _services.GetRequiredService(optionsType);
+                    var getMethod = optionsType.GetMethod("Get");
+                    foreach (var namedInstance in _options.ValidationTargets[targetType])
+                    {
+                        // TODO: maybe aggregate and catch all options instead of one at a time?
+                        try
+                        {
+                            getMethod.Invoke(monitor, new object[] { namedInstance });
+                        } catch (Exception e)
+                        {
+                            if (e.InnerException is OptionsValidationException)
+                            {
+                                throw e.InnerException;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void CanValidateOptionsEagerly()
+        {
+            var services = new ServiceCollection();
+            services.AddOptions<ComplexOptions>()
+                .Configure(o =>
+                {
+                    o.Boolean = false;
+                    o.Integer = 11;
+                    o.Virtual = "wut";
+                })
+                .Validate(o => o.Boolean)
+                .Validate(o => o.Virtual == null, "Virtual")
+                .Validate(o => o.Integer > 12, "Integer");
+
+            services.Configure<StartupValidationOptions>(o => o.Validate<ComplexOptions>());
+            services.AddSingleton<IStartupValidator, OptionsStartupValidator>();
+
+            var sp = services.BuildServiceProvider();
+
+            var startupValidator = sp.GetRequiredService<IStartupValidator>();
+
+            var error = Assert.Throws<OptionsValidationException>(() => startupValidator.Validate());
+            ValidateFailure<ComplexOptions>(error, Options.DefaultName, "A validation error has occured.", "Virtual", "Integer");
+        }
+
     }
-}
+} 
