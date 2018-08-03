@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public static DocumentSelector Selector { get; } = new DocumentSelector(
             new DocumentFilter()
             {
-                Pattern = "**/*.razor"
+                Pattern = "**/*.cshtml"
             });
     }
 }

@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             _logger.Log("Asked for attributes");
 
-            return new TextDocumentAttributes(uri, "razorcore");
+            return new TextDocumentAttributes(uri, "razor");
         }
 
         TextDocumentChangeRegistrationOptions IRegistration<TextDocumentChangeRegistrationOptions>.GetRegistrationOptions()

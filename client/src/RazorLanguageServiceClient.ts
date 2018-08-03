@@ -17,8 +17,6 @@ export class RazorLanguageServiceClient {
         this._serverClient = serverClient;
     }
 
-    // TODO: Communicate with server to pull project endpoints on server start
-
     public async addProject(projectFileUri: vscode.Uri, configurationName?: string): Promise<void> {
         let request = new AddProjectRequest(projectFileUri.fsPath, configurationName);
 

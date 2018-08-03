@@ -160,17 +160,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             {
                 var documentSnapshot = project.GetDocument(documentFilePath);
 
-                // HACK, this should probably all be async.but to do that we need something like the JTF in VS
-                var sourceText = documentSnapshot.GetTextAsync().Result;
-                var textAndVersion = TextAndVersion.Create(sourceText, VersionStamp.Default);
-                var textLoader = TextLoader.From(textAndVersion);
-
                 if (!_projectResolver.TryResolveProject(documentFilePath, out var toProject))
                 {
                     // This is the common case. It'd be rare for a project to be nested but we need to protect against it anyhow.
                     toProject = miscellaneousProject;
                 }
 
+                var textLoader = new DocumentSnapshotTextLoader(documentSnapshot);
                 _projectSnapshotManagerAccessor.Instance.DocumentAdded(toProject.HostProject, documentSnapshot.HostDocument, textLoader);
                 _logger.Log($"Migrated '{documentFilePath}' from the '{project.FilePath}' project to '{toProject.FilePath}' project.");
             }
@@ -194,11 +190,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
                 // Add to new project
 
-                // HACK, this should probably all be async.but to do that we need something like the JTF in VS
-                var sourceText = documentSnapshot.GetTextAsync().Result;
-                var textAndVersion = TextAndVersion.Create(sourceText, VersionStamp.Default);
-                var textLoader = TextLoader.From(textAndVersion);
-
+                var textLoader = new DocumentSnapshotTextLoader(documentSnapshot);
                 _projectSnapshotManagerAccessor.Instance.DocumentAdded(projectSnapshot.HostProject, documentSnapshot.HostDocument, textLoader);
 
                 _logger.Log($"Migrated '{documentFilePath}' from the '{miscellaneousProject.FilePath}' project to '{projectSnapshot.FilePath}' project.");
