@@ -13,6 +13,7 @@
     <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview1-34967</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>2.2.0-preview1-34967</MicrosoftExtensionsLoggingPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>2.2.0-preview1-34967</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>2.2.0-preview1-34967</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.2.0-preview1-34967</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
