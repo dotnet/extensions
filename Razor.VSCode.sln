@@ -38,6 +38,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Ra
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X", "modules\Razor\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.csproj", "{917E8383-55BB-44EB-BECF-4DDFD19174B4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{75400311-9729-4D9A-80D2-ADD5286DE405}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.LanguageServer.Test", "test\Microsoft.AspNetCore.Razor.LanguageServer.Test\Microsoft.AspNetCore.Razor.LanguageServer.Test.csproj", "{367BD0CB-B226-4105-B741-77A225722078}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -88,6 +92,10 @@ Global
 		{917E8383-55BB-44EB-BECF-4DDFD19174B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{917E8383-55BB-44EB-BECF-4DDFD19174B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{917E8383-55BB-44EB-BECF-4DDFD19174B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{367BD0CB-B226-4105-B741-77A225722078}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{367BD0CB-B226-4105-B741-77A225722078}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{367BD0CB-B226-4105-B741-77A225722078}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{367BD0CB-B226-4105-B741-77A225722078}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -106,6 +114,7 @@ Global
 		{F8FDEFA7-9574-4FF3-B854-44BD3F8F37C6} = {3C0D9AB8-562E-4736-A31D-839AF8C9D9FD}
 		{73F9F775-30E0-43DA-AA35-1F0D70130276} = {3C0D9AB8-562E-4736-A31D-839AF8C9D9FD}
 		{917E8383-55BB-44EB-BECF-4DDFD19174B4} = {3C0D9AB8-562E-4736-A31D-839AF8C9D9FD}
+		{367BD0CB-B226-4105-B741-77A225722078} = {75400311-9729-4D9A-80D2-ADD5286DE405}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ED1782EB-ABE7-4615-80E2-442006DF2826}
