@@ -4,8 +4,10 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "client-npm-watch",
             "type": "npm",
             "script": "watch",
+            "path": "client/",
             "problemMatcher": "$tsc-watch",
             "isBackground": true,
             "presentation": {
