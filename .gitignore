@@ -38,9 +38,7 @@ Microsoft.VisualStudio.RazorExtension.nuget.targets
 msbuild.binlog
 msbuild.log
 node_modules
-package-lock.json
 .vscode-test/**
 client/out/*
 .gitignore
-tsconfig.json
 tslint.json

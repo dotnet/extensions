@@ -5,7 +5,7 @@
     "version": "0.0.1",
     "publisher": "Microsoft",
     "engines": {
-        "vscode": "^1.24.0"
+        "vscode": "^1.25.0"
     },
     "categories": [
         "Other"
@@ -44,19 +44,19 @@
                     "type": [
                         "string",
                         "null"
-                      ],
-                      "default": null,
-                      "description": "Specifies the path to the Razor LanguageServer. This should be the absolute path to the language server dll."
+                    ],
+                    "default": null,
+                    "description": "Specifies the path to the Razor LanguageServer. This should be the absolute path to the language server dll."
                 },
                 "razor.languageServer.debug": {
                     "type": "boolean",
-                      "default": false,
-                      "description": "Specifies whether to wait for debug attach when launching the language server."
+                    "default": false,
+                    "description": "Specifies whether to wait for debug attach when launching the language server."
                 },
                 "razor.languageServer.trace": {
                     "type": "string",
-                      "default": "Messages",
-                      "description": "Specifies whether to output all messages [Verbose], some messages [Messages] or not at all [Off]."
+                    "default": "Messages",
+                    "description": "Specifies whether to output all messages [Verbose], some messages [Messages] or not at all [Off]."
                 }
             }
         }
