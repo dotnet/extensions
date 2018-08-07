@@ -8,7 +8,7 @@
   <Import Project="build\sources.props" />
 
   <PropertyGroup>
-    <Product>Microsoft ASP.NET Core</Product>
+    <Product>Microsoft ASP.NET Core VSCode</Product>
     <RepositoryUrl>https://github.com/aspnet/Razor.VSCode</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>

@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             var line = lineBuilder.ToString();
             var trimmedLine = line.Trim();
-            if (!trimmedLine.StartsWith('@'))
+            if (!trimmedLine.StartsWith("@"))
             {
                 return false;
             }

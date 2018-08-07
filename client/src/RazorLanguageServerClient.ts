@@ -30,16 +30,16 @@ export class RazorLanguageServerClient implements vscode.Disposable {
             outputChannel: options.outputChannel
         };
 
-        // TODO: Resolve dotnet path or self-host server executable
-        let args = [options.serverDllPath, '-lsp'];
+        const args = ['-lsp'];
+        let args = ['-lsp'];
 
         if (options.debug) {
             args[2] = "--debug";
         }
 
         this._serverOptions = {
-            run: { command: 'dotnet', args: args },
-            debug: { command: 'dotnet', args: args }
+            run: { command: options.serverDllPath, args },
+            debug: { command: options.serverDllPath, args },
         };
 
         this._client = new LanguageClient('razorLanguageServer', 'Razor Language Server', this._serverOptions, this._clientOptions);
