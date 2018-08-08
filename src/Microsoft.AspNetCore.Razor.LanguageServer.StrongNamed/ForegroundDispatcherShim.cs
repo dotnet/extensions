@@ -3,6 +3,7 @@
 
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
 {
@@ -17,5 +18,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
         public abstract void AssertForegroundThread([CallerMemberName] string caller = null);
 
         public abstract void AssertBackgroundThread([CallerMemberName] string caller = null);
+
+        public static ForegroundDispatcherShim AsDispatcher(object dispatcher)
+        {
+            var foregroundDispatcher = (ForegroundDispatcher)dispatcher;
+
+            return new DefaultForegroundDispatcherShim(foregroundDispatcher);
+        }
     }
 }

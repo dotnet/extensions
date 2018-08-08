@@ -3,14 +3,15 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 {
     internal class DefaultProjectResolver : ProjectResolver
     {
-        private readonly HostProjectShim _miscellaneousHostProject;
+        // Internal for testing
+        protected internal readonly HostProjectShim _miscellaneousHostProject;
+
         private readonly ForegroundDispatcherShim _foregroundDispatcher;
         private readonly FilePathNormalizer _filePathNormalizer;
         private readonly ProjectSnapshotManagerShimAccessor _projectSnapshotManagerAccessor;
@@ -80,9 +81,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
         public override ProjectSnapshotShim GetMiscellaneousProject()
         {
-            // If it's already added it'll be ignored.
-            _projectSnapshotManagerAccessor.Instance.HostProjectAdded(_miscellaneousHostProject);
+            _foregroundDispatcher.AssertForegroundThread();
+
             var miscellaneousProject = _projectSnapshotManagerAccessor.Instance.GetLoadedProject(_miscellaneousHostProject.FilePath);
+            if (miscellaneousProject == null)
+            {
+                _projectSnapshotManagerAccessor.Instance.HostProjectAdded(_miscellaneousHostProject);
+                miscellaneousProject = _projectSnapshotManagerAccessor.Instance.GetLoadedProject(_miscellaneousHostProject.FilePath);
+            }
 
             return miscellaneousProject;
         }

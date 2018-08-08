@@ -3,28 +3,28 @@
 
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
+using Microsoft.AspNetCore.Razor.LanguageServer.Test;
 using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    public class DocumentDocumentResolverTest
+    public class DocumentDocumentResolverTest : TestBase
     {
         [Fact]
         public void TryResolveDocument_AsksResolvedParentProjectForDocument_ReturnsTrue()
         {
             // Arrange
-            var documentPath = "C:\\path\\to\\document.cshtml";
-            var normalizedPath = "C:/path/to/document.cshtml";
-            var foregroundDispatcher = Mock.Of<ForegroundDispatcherShim>();
+            var documentFilePath = "C:\\path\\to\\document.cshtml";
+            var normalizedFilePath = "C:/path/to/document.cshtml";
             var filePathNormalizer = new FilePathNormalizer();
             var expectedDocument = Mock.Of<DocumentSnapshotShim>();
-            var project = Mock.Of<ProjectSnapshotShim>(shim => shim.GetDocument(normalizedPath) == expectedDocument);
-            var projectResolver = Mock.Of<ProjectResolver>(resolver => resolver.TryResolveProject(normalizedPath, out project) == true);
-            var documentResolver = new DefaultDocumentResolver(foregroundDispatcher, projectResolver, filePathNormalizer);
+            var project = Mock.Of<ProjectSnapshotShim>(shim => shim.GetDocument(normalizedFilePath) == expectedDocument);
+            var projectResolver = Mock.Of<ProjectResolver>(resolver => resolver.TryResolveProject(normalizedFilePath, out project) == true);
+            var documentResolver = new DefaultDocumentResolver(Dispatcher, projectResolver, filePathNormalizer);
 
             // Act
-            var result = documentResolver.TryResolveDocument(documentPath, out var document);
+            var result = documentResolver.TryResolveDocument(documentFilePath, out var document);
 
             // Assert
             Assert.True(result);
@@ -35,17 +35,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void TryResolveDocument_AsksMiscellaneousProjectForDocumentItIsTracking_ReturnsTrue()
         {
             // Arrange
-            var documentPath = "C:\\path\\to\\document.cshtml";
-            var normalizedPath = "C:/path/to/document.cshtml";
-            var foregroundDispatcher = Mock.Of<ForegroundDispatcherShim>();
+            var documentFilePath = "C:\\path\\to\\document.cshtml";
+            var normalizedFilePath = "C:/path/to/document.cshtml";
             var filePathNormalizer = new FilePathNormalizer();
             var expectedDocument = Mock.Of<DocumentSnapshotShim>();
-            var project = Mock.Of<ProjectSnapshotShim>(shim => shim.GetDocument(normalizedPath) == expectedDocument && shim.DocumentFilePaths == new[] { normalizedPath });
+            var project = Mock.Of<ProjectSnapshotShim>(shim => shim.GetDocument(normalizedFilePath) == expectedDocument && shim.DocumentFilePaths == new[] { normalizedFilePath });
             var projectResolver = Mock.Of<ProjectResolver>(resolver => resolver.GetMiscellaneousProject() == project);
-            var documentResolver = new DefaultDocumentResolver(foregroundDispatcher, projectResolver, filePathNormalizer);
+            var documentResolver = new DefaultDocumentResolver(Dispatcher, projectResolver, filePathNormalizer);
 
             // Act
-            var result = documentResolver.TryResolveDocument(documentPath, out var document);
+            var result = documentResolver.TryResolveDocument(documentFilePath, out var document);
 
             // Assert
             Assert.True(result);
@@ -56,15 +55,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void TryResolveDocument_AsksMiscellaneousProjectForDocumentItIsNotTracking_ReturnsFalse()
         {
             // Arrange
-            var documentPath = "C:\\path\\to\\document.cshtml";
-            var foregroundDispatcher = Mock.Of<ForegroundDispatcherShim>();
+            var documentFilePath = "C:\\path\\to\\document.cshtml";
             var filePathNormalizer = new FilePathNormalizer();
             var project = Mock.Of<ProjectSnapshotShim>(shim => shim.DocumentFilePaths == new string[0]);
             var projectResolver = Mock.Of<ProjectResolver>(resolver => resolver.GetMiscellaneousProject() == project);
-            var documentResolver = new DefaultDocumentResolver(foregroundDispatcher, projectResolver, filePathNormalizer);
+            var documentResolver = new DefaultDocumentResolver(Dispatcher, projectResolver, filePathNormalizer);
 
             // Act
-            var result = documentResolver.TryResolveDocument(documentPath, out var document);
+            var result = documentResolver.TryResolveDocument(documentFilePath, out var document);
 
             // Assert
             Assert.False(result);
