@@ -4,9 +4,6 @@
  * ------------------------------------------------------------------------------------------ */
 
 export class RemoveProjectRequest {
-    constructor (filePath: string) {
-        this.filePath = filePath;
+    constructor(public readonly filePath: string) {
     }
-
-    public readonly filePath:  string;
 }

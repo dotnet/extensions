@@ -5,42 +5,43 @@
 
 import * as vscode from 'vscode';
 import { ExtensionContext } from 'vscode';
-import { RazorLanguage } from './RazorLanguage';
-import { resolveRazorLanguageServerOptions } from './RazorLanguageServerOptionsResolver';
-import { RazorLanguageServerClient } from './RazorLanguageServerClient';
 import { RazorCSharpFeature } from './CSharp/RazorCSharpFeature';
 import { RazorHtmlFeature } from './Html/RazorHtmlFeature';
 import { RazorCompletionItemProvider } from './RazorCompletionItemProvider';
+import { RazorLanguage } from './RazorLanguage';
+import { RazorLanguageServerClient } from './RazorLanguageServerClient';
+import { resolveRazorLanguageServerOptions } from './RazorLanguageServerOptionsResolver';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { RazorProjectTracker } from './RazorProjectTracker';
 
 export async function activate(context: ExtensionContext) {
-    let languageServerOptions = resolveRazorLanguageServerOptions();
-    let languageServerClient = new RazorLanguageServerClient(languageServerOptions);
-    let languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
-    let csharpFeature = new RazorCSharpFeature();
-    let htmlFeature = new RazorHtmlFeature();
-    let projectTracker = new RazorProjectTracker(languageServiceClient);
-    let localRegistrations: vscode.Disposable[] = [];
+    const languageServerOptions = resolveRazorLanguageServerOptions();
+    const languageServerClient = new RazorLanguageServerClient(languageServerOptions);
+    const languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
+    const csharpFeature = new RazorCSharpFeature();
+    const htmlFeature = new RazorHtmlFeature();
+    const projectTracker = new RazorProjectTracker(languageServiceClient);
+    const localRegistrations: vscode.Disposable[] = [];
 
-    let onStartRegistration = languageServerClient.onStart(() => {
-        localRegistrations.push(vscode.languages.registerCompletionItemProvider(RazorLanguage.id, new RazorCompletionItemProvider(csharpFeature, htmlFeature, languageServiceClient)));
-        localRegistrations.push(projectTracker.register());
-        localRegistrations.push(csharpFeature.register());
-        localRegistrations.push(htmlFeature.register());
-
-        localRegistrations.push(vscode.workspace.onDidChangeTextDocument((args: vscode.TextDocumentChangeEvent) => {
-            if (vscode.window.activeTextEditor && args.document === vscode.window.activeTextEditor.document) {
-                csharpFeature.updateDocument(args.document.uri);
-                htmlFeature.updateDocument(args.document.uri);
-            }
-        }));
+    const onStartRegistration = languageServerClient.onStart(() => {
+        localRegistrations.push(
+            vscode.languages.registerCompletionItemProvider(
+                RazorLanguage.id,
+                new RazorCompletionItemProvider(csharpFeature, htmlFeature, languageServiceClient)),
+            projectTracker.register(),
+            csharpFeature.register(),
+            htmlFeature.register(),
+            vscode.workspace.onDidChangeTextDocument(args => {
+                const activeTextEditor = vscode.window.activeTextEditor;
+                if (activeTextEditor && activeTextEditor.document === args.document) {
+                    csharpFeature.updateDocument(args.document.uri);
+                    htmlFeature.updateDocument(args.document.uri);
+                }
+            }));
     });
 
-    let onStopRegistration = languageServerClient.onStop(() => {
-        for (let i = 0; i < localRegistrations.length; i++) {
-            localRegistrations[i].dispose();
-        }
+    const onStopRegistration = languageServerClient.onStop(() => {
+        localRegistrations.forEach(r => r.dispose());
         localRegistrations.length = 0;
     });
 

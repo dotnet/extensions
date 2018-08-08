@@ -6,11 +6,9 @@
 import * as vscode from 'vscode';
 
 export class LanguageQueryRequest {
-    constructor (position: vscode.Position, uri: vscode.Uri) {
-        this.position = position;
+    public readonly uri: string;
+
+    constructor(public readonly position: vscode.Position, uri: vscode.Uri) {
         this.uri = uri.fsPath;
     }
-
-    public readonly position: vscode.Position;
-    public readonly uri:  string;
 }

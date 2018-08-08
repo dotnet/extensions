@@ -3,93 +3,91 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
+import { EventEmitter } from 'events';
 import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient/lib/main';
 import { RazorLanguage } from './RazorLanguage';
 import { RazorLanguageServerOptions } from './RazorLanguageServerOptions';
-import { EventEmitter } from 'events';
+
+const events = {
+    ServerStart: 'ServerStart',
+    ServerStop: 'ServerStop',
+};
 
 export class RazorLanguageServerClient implements vscode.Disposable {
-    private static Events = 
-    {
-        ServerStart: "ServerStart",
-        ServerStop: "ServerStop"
-    };
-
-    private _clientOptions: LanguageClientOptions;
-    private _serverOptions: ServerOptions;
-    private _client: LanguageClient;
-    private _startDisposable: vscode.Disposable | undefined;
-    private _eventBus: EventEmitter;
-    private _isStarted: boolean;
+    private clientOptions: LanguageClientOptions;
+    private serverOptions: ServerOptions;
+    private client: LanguageClient;
+    private startDisposable: vscode.Disposable | undefined;
+    private eventBus: EventEmitter;
+    private isStarted: boolean;
 
     constructor(options: RazorLanguageServerOptions) {
-        this._isStarted = false;
-        this._clientOptions = {
-            documentSelector: <any>RazorLanguage.documentSelector, // No idea why I need to cast here.
-            outputChannel: options.outputChannel
+        this.isStarted = false;
+        this.clientOptions = {
+            documentSelector: RazorLanguage.documentSelector,
+            outputChannel: options.outputChannel,
         };
 
         const args = ['-lsp'];
-        let args = ['-lsp'];
 
         if (options.debug) {
-            args[2] = "--debug";
+            args.push('--debug');
         }
 
-        this._serverOptions = {
+        this.serverOptions = {
             run: { command: options.serverDllPath, args },
             debug: { command: options.serverDllPath, args },
         };
 
-        this._client = new LanguageClient('razorLanguageServer', 'Razor Language Server', this._serverOptions, this._clientOptions);
+        this.client = new LanguageClient(
+            'razorLanguageServer', 'Razor Language Server', this.serverOptions, this.clientOptions);
+
         if (options.trace) {
-            this._client.trace = options.trace;
+            this.client.trace = options.trace;
         }
-        
-        this._eventBus = new EventEmitter();
+
+        this.eventBus = new EventEmitter();
     }
 
-    public get isStarted(): boolean {
-        return this._isStarted;
-    }
+    public onStart(listener: () => any) {
+        this.eventBus.addListener(events.ServerStart, listener);
 
-    public onStart(listener: () => any): vscode.Disposable {
-        this._eventBus.addListener(RazorLanguageServerClient.Events.ServerStart, listener);
-
-        let disposable = new vscode.Disposable(() => this._eventBus.removeListener(RazorLanguageServerClient.Events.ServerStart, listener));
+        const disposable = new vscode.Disposable(() =>
+            this.eventBus.removeListener(events.ServerStart, listener));
         return disposable;
     }
 
-    public onStop(listener: () => any): vscode.Disposable {
-        this._eventBus.addListener(RazorLanguageServerClient.Events.ServerStop, listener);
+    public onStop(listener: () => any) {
+        this.eventBus.addListener(events.ServerStop, listener);
 
-        let disposable = new vscode.Disposable(() => this._eventBus.removeListener(RazorLanguageServerClient.Events.ServerStop, listener));
+        const disposable = new vscode.Disposable(() =>
+            this.eventBus.removeListener(events.ServerStop, listener));
         return disposable;
     }
 
-    public async start(): Promise<void> {
-        this._startDisposable = await this._client.start();
-        await this._client.onReady();
+    public async start() {
+        this.startDisposable = await this.client.start();
+        await this.client.onReady();
 
-        this._isStarted = true;
-        this._eventBus.emit(RazorLanguageServerClient.Events.ServerStart);
+        this.isStarted = true;
+        this.eventBus.emit(events.ServerStart);
     }
 
-    public async sendRequest<TResponseType>(method: string, param: any): Promise<TResponseType> {
-        if (!this._isStarted) {
-            throw new Error("Tried to send requests while server is not started.");
+    public async sendRequest<TResponseType>(method: string, param: any) {
+        if (!this.isStarted) {
+            throw new Error('Tried to send requests while server is not started.');
         }
 
-        return this._client.sendRequest<TResponseType>(method, param);
+        return this.client.sendRequest<TResponseType>(method, param);
     }
 
-    public dispose(): void {
-        if (this._startDisposable) {
-            this._startDisposable.dispose();
+    public dispose() {
+        if (this.startDisposable) {
+            this.startDisposable.dispose();
         }
 
-        this._isStarted = false;
-        this._eventBus.emit(RazorLanguageServerClient.Events.ServerStop);
+        this.isStarted = false;
+        this.eventBus.emit(events.ServerStop);
     }
 }

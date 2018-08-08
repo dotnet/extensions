@@ -8,41 +8,35 @@ import { CSharpProjectedDocument } from './CSharpProjectedDocument';
 import { CSharpProjectedDocumentContentProvider } from './CSharpProjectedDocumentContentProvider';
 
 export class CSharpPreviewDocumentContentProvider implements vscode.TextDocumentContentProvider {
-    public static readonly scheme: string = CSharpProjectedDocument.scheme + "-preview";
-    public static readonly previewUri: vscode.Uri = vscode.Uri.parse(CSharpPreviewDocumentContentProvider.scheme + "://razor/csharppreview");
+    public static readonly scheme = `${CSharpProjectedDocument.scheme}-preview`;
+    public static readonly previewUri
+        = vscode.Uri.parse(`${CSharpPreviewDocumentContentProvider.scheme}://razor/csharppreview`);
 
-    private _onDidChange: vscode.EventEmitter<vscode.Uri>;
-    private _csharpProjectionProvider: CSharpProjectedDocumentContentProvider;
+    private readonly onDidChangeEmitter = new vscode.EventEmitter<vscode.Uri>();
 
-    constructor (csharpContentProvider: CSharpProjectedDocumentContentProvider ) {
-        this._csharpProjectionProvider = csharpContentProvider;
-        this._onDidChange = new vscode.EventEmitter<vscode.Uri>();
+    constructor(private readonly csharpProjectionProvider: CSharpProjectedDocumentContentProvider ) {
     }
 
-    public get onDidChange(): vscode.Event<vscode.Uri> {
-        return this._onDidChange.event;
-    }
+    public get onDidChange() { return this.onDidChangeEmitter.event; }
 
     public update() {
-        let projectedDocument = this._csharpProjectionProvider.getActiveDocument();
+        const projectedDocument = this.csharpProjectionProvider.getActiveDocument();
 
-        if (!projectedDocument) {
-            return;
+        if (projectedDocument) {
+            this.onDidChangeEmitter.fire(CSharpPreviewDocumentContentProvider.previewUri);
         }
-
-        this._onDidChange.fire(CSharpPreviewDocumentContentProvider.previewUri);
     }
-    
-    public async provideTextDocumentContent(): Promise<string> {
-        let projectedDocument = await this._csharpProjectionProvider.getActiveDocument();
+
+    public async provideTextDocumentContent() {
+        const projectedDocument = await this.csharpProjectionProvider.getActiveDocument();
 
         if (!projectedDocument) {
-            vscode.window.showErrorMessage("For some reason the projected document isn't set.");
-            return "";
+            vscode.window.showErrorMessage('For some reason the projected document isn\'t set.');
+            return '';
         }
 
-        let projectedUriPath = projectedDocument.projectedUri.path;
-        let document = vscode.workspace.textDocuments.find((doc) => {
+        const projectedUriPath = projectedDocument.projectedUri.path;
+        const document = vscode.workspace.textDocuments.find(doc => {
             if (doc.uri.path.localeCompare(projectedUriPath, undefined, { sensitivity: 'base' }) === 0) {
                 return true;
             }
@@ -51,34 +45,34 @@ export class CSharpPreviewDocumentContentProvider implements vscode.TextDocument
         });
 
         if (document) {
-            let content = document.getText();
-            let htmlContent = `
+            const content = document.getText();
+            return `
                 <body>
                     <p>For host document: <strong>${projectedDocument.hostDocumentUri.path}</strong></p>
                     <hr />
                     <pre>${content}</pre>
                     <hr />
                 </body>`;
-
-            return htmlContent;
-        }
-        else {
-            return "";
+        } else {
+            return '';
         }
     }
 
-    public async showRazorCSharpWindow(): Promise<void> {
-        let activeProjectedDocument = this._csharpProjectionProvider.getActiveDocument();
-    
+    public async showRazorCSharpWindow() {
+        const activeProjectedDocument = this.csharpProjectionProvider.getActiveDocument();
+
         if (!activeProjectedDocument) {
-            vscode.window.showErrorMessage("No active text editor.");
+            vscode.window.showErrorMessage('No active text editor.');
             return;
         }
-    
+
         try {
-            await vscode.commands.executeCommand('vscode.previewHtml', CSharpPreviewDocumentContentProvider.previewUri, vscode.ViewColumn.Two, 'Razor CSharp Output');
-        }
-        catch (error) {
+            await vscode.commands.executeCommand(
+                'vscode.previewHtml',
+                CSharpPreviewDocumentContentProvider.previewUri,
+                vscode.ViewColumn.Two,
+                'Razor CSharp Output');
+        } catch (error) {
             vscode.window.showErrorMessage(error);
         }
     }

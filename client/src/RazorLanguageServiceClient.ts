@@ -6,35 +6,28 @@
 import * as vscode from 'vscode';
 import { RazorLanguageServerClient } from './RazorLanguageServerClient';
 import { AddProjectRequest } from './RPC/AddProjectRequest';
-import { RemoveProjectRequest } from './RPC/RemoveProjectRequest';
 import { LanguageQueryRequest } from './RPC/LanguageQueryRequest';
 import { LanguageQueryResponse } from './RPC/LanguageQueryResponse';
+import { RemoveProjectRequest } from './RPC/RemoveProjectRequest';
 
 export class RazorLanguageServiceClient {
-    private _serverClient: RazorLanguageServerClient;
-
-    constructor(serverClient: RazorLanguageServerClient) {
-        this._serverClient = serverClient;
+    constructor(private readonly serverClient: RazorLanguageServerClient) {
     }
 
-    public async addProject(projectFileUri: vscode.Uri, configurationName?: string): Promise<void> {
-        let request = new AddProjectRequest(projectFileUri.fsPath, configurationName);
-
-        await this._serverClient.sendRequest<AddProjectRequest>("projects/addProject", request);
+    public async addProject(projectFileUri: vscode.Uri, configurationName?: string) {
+        const request = new AddProjectRequest(projectFileUri.fsPath, configurationName);
+        await this.serverClient.sendRequest<AddProjectRequest>('projects/addProject', request);
     }
 
-    public async removeProject(projectFileUri: vscode.Uri): Promise<void> {
-        let request = new RemoveProjectRequest(projectFileUri.fsPath);
-
-        await this._serverClient.sendRequest<RemoveProjectRequest>("projects/removeProject", request);
+    public async removeProject(projectFileUri: vscode.Uri) {
+        const request = new RemoveProjectRequest(projectFileUri.fsPath);
+        await this.serverClient.sendRequest<RemoveProjectRequest>('projects/removeProject', request);
     }
 
-    public async languageQuery(position: vscode.Position, uri: vscode.Uri): Promise<LanguageQueryResponse> {
-        let request = new LanguageQueryRequest(position, uri);
-
-        let response = await this._serverClient.sendRequest<LanguageQueryResponse>("razor/languageQuery", request);
+    public async languageQuery(position: vscode.Position, uri: vscode.Uri) {
+        const request = new LanguageQueryRequest(position, uri);
+        const response = await this.serverClient.sendRequest<LanguageQueryResponse>('razor/languageQuery', request);
         response.position = new vscode.Position(response.position.line, response.position.character);
-
         return response;
     }
 }

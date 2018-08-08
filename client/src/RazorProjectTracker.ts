@@ -8,30 +8,27 @@ import * as vscode from 'vscode';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 
 export class RazorProjectTracker {
-    private _languageServiceClient: RazorLanguageServiceClient;
-
-    constructor(languageServiceClient: RazorLanguageServiceClient) {
-        this._languageServiceClient = languageServiceClient;
+    constructor(private readonly languageServiceClient: RazorLanguageServiceClient) {
     }
 
     public async initialize() {
         // Track current projects
-        var projectUris = await vscode.workspace.findFiles("**/*.csproj");
+        const projectUris = await vscode.workspace.findFiles('**/*.csproj');
 
-        for (let i = 0; i < projectUris.length; i++) {
-            await this._languageServiceClient.addProject(projectUris[i]);
+        for (const uri of projectUris) {
+            await this.languageServiceClient.addProject(uri);
         }
     }
 
-    public register(): vscode.Disposable {
+    public register() {
         // Track future projects
-        let watcher = vscode.workspace.createFileSystemWatcher('**/*.csproj*');
-        let createRegistration = watcher.onDidCreate(async (uri: vscode.Uri) => {
-            await this._languageServiceClient.addProject(uri);
+        const watcher = vscode.workspace.createFileSystemWatcher('**/*.csproj*');
+        const createRegistration = watcher.onDidCreate(async (uri: vscode.Uri) => {
+            await this.languageServiceClient.addProject(uri);
         });
 
-        let deleteRegistration = watcher.onDidDelete(async (uri: vscode.Uri) => {
-            await this._languageServiceClient.removeProject(uri);
+        const deleteRegistration = watcher.onDidDelete(async (uri: vscode.Uri) => {
+            await this.languageServiceClient.removeProject(uri);
         });
 
         return vscode.Disposable.from(watcher, createRegistration, deleteRegistration);

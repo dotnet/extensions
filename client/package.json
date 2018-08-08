@@ -63,16 +63,17 @@
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
-        "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./",
+        "compile": "npm run lint && tsc -p ./",
+        "watch": "npm run lint && tsc -watch -p ./",
         "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+        "test": "npm run compile && node ./node_modules/vscode/bin/test",
+        "lint": "tslint -p ./"
     },
     "devDependencies": {
-        "typescript": "2.6.1",
-        "tslint": "5.8.0",
+        "@types/mocha": "2.2.42",
         "@types/node": "7.0.43",
-        "@types/mocha": "2.2.42"
+        "tslint": "^5.8.0",
+        "typescript": "2.6.1"
     },
     "dependencies": {
         "vscode": "^1.1.18",

@@ -5,26 +5,20 @@
 
 import * as vscode from 'vscode';
 
+const cshtmlExtension = '.cshtml';
+
 export class CSharpProjectedDocument {
-    public static readonly scheme: string = "razor-csharp";
-    
-    private _projectedUri : vscode.Uri;
-    private _hostDocumentUri : vscode.Uri;
+    public static readonly scheme = 'razor-csharp';
 
-    private constructor (projectedUri: vscode.Uri, hostDocumentUri: vscode.Uri) {
-        this._projectedUri = projectedUri;
-        this._hostDocumentUri = hostDocumentUri;
-    }
-
-    public get projectedUri() : vscode.Uri { return this._projectedUri; }
-
-    public get hostDocumentUri() : vscode.Uri { return this._hostDocumentUri; }
-
-    public static create(hostDocumentUri: vscode.Uri): CSharpProjectedDocument {
-        let extensionlessPath = hostDocumentUri.path.substring(0, hostDocumentUri.path.length - 6);
-        let transformedPath =  extensionlessPath + ".cs";
-        let projectedUri = vscode.Uri.parse(this.scheme + "://" + transformedPath);
+    public static create(hostDocumentUri: vscode.Uri) {
+        const extensionlessPath = hostDocumentUri.path.substring(
+            0, hostDocumentUri.path.length - cshtmlExtension.length);
+        const transformedPath =  `${extensionlessPath}.cs`;
+        const projectedUri = vscode.Uri.parse(`${this.scheme}://${transformedPath}`);
 
         return new CSharpProjectedDocument(projectedUri, hostDocumentUri);
+    }
+
+    private constructor(readonly projectedUri: vscode.Uri, readonly hostDocumentUri: vscode.Uri) {
     }
 }

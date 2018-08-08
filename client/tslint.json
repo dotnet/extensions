@@ -1,0 +1,14 @@
+{
+    "extends": "tslint:recommended",
+    "rules": {
+        "arrow-parens": false,
+        "file-header": [true, "------"],
+        "interface-name": false,
+        "no-console": false,
+        "no-return-await": true,
+        "no-inferrable-types": true,
+        "prefer-template": true,
+        "quotemark": [true, "single"],
+        "variable-name": [true, "check-format"]
+    }
+}

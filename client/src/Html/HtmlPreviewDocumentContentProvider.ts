@@ -8,45 +8,34 @@ import { HtmlProjectedDocument } from './HtmlProjectedDocument';
 import { HtmlProjectedDocumentContentProvider } from './HtmlProjectedDocumentContentProvider';
 
 export class HtmlPreviewDocumentContentProvider implements vscode.TextDocumentContentProvider {
-    public static readonly scheme: string = HtmlProjectedDocument.scheme + "-preview";
-    public static readonly previewUri: vscode.Uri = vscode.Uri.parse(HtmlPreviewDocumentContentProvider.scheme + "://razor/Htmlpreview");
+    public static readonly scheme = `${HtmlProjectedDocument.scheme}-preview`;
+    public static readonly previewUri
+        = vscode.Uri.parse(`${HtmlPreviewDocumentContentProvider.scheme}://razor/Htmlpreview`);
 
-    private _onDidChange: vscode.EventEmitter<vscode.Uri>;
-    private _htmlProjectionProvider: HtmlProjectedDocumentContentProvider;
+    private onDidChangeEmitter = new vscode.EventEmitter<vscode.Uri>();
 
-    constructor (HtmlContentProvider: HtmlProjectedDocumentContentProvider ) {
-        this._htmlProjectionProvider = HtmlContentProvider;
-        this._onDidChange = new vscode.EventEmitter<vscode.Uri>();
+    constructor(private htmlProjectionProvider: HtmlProjectedDocumentContentProvider ) {
     }
 
-    public get onDidChange(): vscode.Event<vscode.Uri> {
-        return this._onDidChange.event;
-    }
+    public get onDidChange() { return this.onDidChangeEmitter.event; }
 
     public update() {
-        let projectedDocument = this._htmlProjectionProvider.getActiveDocument();
+        const projectedDocument = this.htmlProjectionProvider.getActiveDocument();
 
-        if (!projectedDocument) {
-            return;
+        if (projectedDocument) {
+            this.onDidChangeEmitter.fire(HtmlPreviewDocumentContentProvider.previewUri);
         }
-
-        this._onDidChange.fire(HtmlPreviewDocumentContentProvider.previewUri);
     }
 
-    public async provideTextDocumentContent(): Promise<string> {
-        let projectedDocument = await this._htmlProjectionProvider.getActiveDocument();
-        let projectedUriPath = projectedDocument.projectedUri.path;
-        let document = vscode.workspace.textDocuments.find((doc) => {
-            if (doc.uri.path.localeCompare(projectedUriPath, undefined, { sensitivity: 'base' }) === 0) {
-                return true;
-            }
-
-            return false;
-        });
+    public async provideTextDocumentContent() {
+        const projectedDocument = await this.htmlProjectionProvider.getActiveDocument();
+        const projectedUriPath = projectedDocument.projectedUri.path;
+        const document = vscode.workspace.textDocuments.find(
+            doc => doc.uri.path.localeCompare(projectedUriPath, undefined, { sensitivity: 'base' }) === 0);
 
         if (document) {
-            let content = document.getText();
-            let htmlContent = `
+            const content = document.getText();
+            const htmlContent = `
                 <body>
                     <p>For host document: <strong>${projectedDocument.hostDocumentUri.path}</strong></p>
                     <hr />
@@ -57,24 +46,26 @@ export class HtmlPreviewDocumentContentProvider implements vscode.TextDocumentCo
                 </body>`;
 
             return htmlContent;
-        }
-        else {
-            return "<body>No content...</body>";
+        } else {
+            return '<body>No content...</body>';
         }
     }
-    
-    public async showRazorHtmlWindow(): Promise<void> {
-        let activeProjectedDocument = this._htmlProjectionProvider.getActiveDocument();
-    
+
+    public async showRazorHtmlWindow() {
+        const activeProjectedDocument = this.htmlProjectionProvider.getActiveDocument();
+
         if (!activeProjectedDocument) {
-            vscode.window.showErrorMessage("No active text editor.");
+            vscode.window.showErrorMessage('No active text editor.');
             return;
         }
-    
+
         try {
-            await vscode.commands.executeCommand('vscode.previewHtml', HtmlPreviewDocumentContentProvider.previewUri, vscode.ViewColumn.Two, 'Razor Html Output');
-        }
-        catch (error) {
+            await vscode.commands.executeCommand(
+                'vscode.previewHtml',
+                HtmlPreviewDocumentContentProvider.previewUri,
+                vscode.ViewColumn.Two,
+                'Razor Html Output');
+        } catch (error) {
             vscode.window.showErrorMessage(error);
         }
     }

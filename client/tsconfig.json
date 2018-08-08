@@ -4,9 +4,10 @@
 		"target": "es5",
 		"outDir": "out",
 		"lib": [
-			"es6"
+			"es6", "es2017.object"
 		],
 		"sourceMap": true,
+		"strict": true,
 		"rootDir": "src"
 	},
 	"exclude": [
