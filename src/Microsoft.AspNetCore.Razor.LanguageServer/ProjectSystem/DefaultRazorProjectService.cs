@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
     internal class DefaultRazorProjectService : RazorProjectService
     {
         private readonly ProjectSnapshotManagerShimAccessor _projectSnapshotManagerAccessor;
-        private readonly RazorConfigurationResolver _configurationResolver;
         private readonly ForegroundDispatcherShim _foregroundDispatcher;
         private readonly ProjectResolver _projectResolver;
         private readonly FilePathNormalizer _filePathNormalizer;
@@ -24,7 +23,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             ProjectResolver projectResolver,
             FilePathNormalizer filePathNormalizer,
             ProjectSnapshotManagerShimAccessor projectSnapshotManagerAccessor,
-            RazorConfigurationResolver configurationResolver,
             VSCodeLogger logger)
         {
             if (foregroundDispatcher == null)
@@ -47,29 +45,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 throw new ArgumentNullException(nameof(projectSnapshotManagerAccessor));
             }
 
-            if (configurationResolver == null)
-            {
-                throw new ArgumentNullException(nameof(configurationResolver));
-            }
-
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
 
             _projectSnapshotManagerAccessor = projectSnapshotManagerAccessor;
-            _configurationResolver = configurationResolver;
             _foregroundDispatcher = foregroundDispatcher;
             _projectResolver = projectResolver;
             _filePathNormalizer = filePathNormalizer;
             _logger = logger;
         }
 
-        public override void AddDocument(string text, Uri uri)
+        public override void AddDocument(string text, string filePath)
         {
             _foregroundDispatcher.AssertForegroundThread();
 
-            var textDocumentPath = _filePathNormalizer.Normalize(uri.AbsolutePath);
+            var textDocumentPath = _filePathNormalizer.Normalize(filePath);
             if (!_projectResolver.TryResolveProject(textDocumentPath, out var projectSnapshot))
             {
                 projectSnapshot = _projectResolver.GetMiscellaneousProject();
@@ -84,11 +76,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _logger.Log($"Added document '{textDocumentPath}' to project '{projectSnapshot.FilePath}'.");
         }
 
-        public override void RemoveDocument(Uri textDocumentUri)
+        public override void RemoveDocument(string filePath)
         {
             _foregroundDispatcher.AssertForegroundThread();
 
-            var textDocumentPath = _filePathNormalizer.Normalize(textDocumentUri.AbsolutePath);
+            var textDocumentPath = _filePathNormalizer.Normalize(filePath);
             if (!_projectResolver.TryResolveProject(textDocumentPath, out var projectSnapshot))
             {
                 projectSnapshot = _projectResolver.GetMiscellaneousProject();
@@ -96,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
             if (!projectSnapshot.DocumentFilePaths.Contains(textDocumentPath, FilePathComparerShim.Instance))
             {
-                _logger.Log($"Containing project is not tracking document '{textDocumentUri.LocalPath}");
+                _logger.Log($"Containing project is not tracking document '{filePath}");
                 return;
             }
 
@@ -106,11 +98,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _logger.Log($"Removed document '{textDocumentPath}' from project '{projectSnapshot.FilePath}'.");
         }
 
-        public override void UpdateDocument(string text, Uri uri)
+        public override void UpdateDocument(string text, string filePath)
         {
             _foregroundDispatcher.AssertForegroundThread();
 
-            var textDocumentPath = _filePathNormalizer.Normalize(uri.AbsolutePath);
+            var textDocumentPath = _filePathNormalizer.Normalize(filePath);
             if (!_projectResolver.TryResolveProject(textDocumentPath, out var projectSnapshot))
             {
                 projectSnapshot = _projectResolver.GetMiscellaneousProject();
@@ -130,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _projectSnapshotManagerAccessor.Instance.HostProjectAdded(hostProject);
             _logger.Log($"Added project '{filePath}' to project system.");
 
-            TryMigrateMiscellaneousDocumentsToProjectAsync();
+            TryMigrateMiscellaneousDocumentsToProject();
         }
 
         public override void RemoveProject(string filePath)
@@ -152,8 +144,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             TryMigrateDocumentsFromRemovedProject(project);
         }
 
-        private void TryMigrateDocumentsFromRemovedProject(ProjectSnapshotShim project)
+        // Internal for testing
+        internal void TryMigrateDocumentsFromRemovedProject(ProjectSnapshotShim project)
         {
+            _foregroundDispatcher.AssertForegroundThread();
+
             var miscellaneousProject = _projectResolver.GetMiscellaneousProject();
 
             foreach (var documentFilePath in project.DocumentFilePaths)
@@ -172,8 +167,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             }
         }
 
-        private void TryMigrateMiscellaneousDocumentsToProjectAsync()
+        // Internal for testing
+        internal void TryMigrateMiscellaneousDocumentsToProject()
         {
+            _foregroundDispatcher.AssertForegroundThread();
+
             var miscellaneousProject = _projectResolver.GetMiscellaneousProject();
 
             foreach (var documentFilePath in miscellaneousProject.DocumentFilePaths)

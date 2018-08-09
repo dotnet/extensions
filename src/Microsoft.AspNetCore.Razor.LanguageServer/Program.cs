@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<RazorProjectEndpoint>()
                     .WithServices(services =>
                     {
-                        services.AddSingleton<VSCodeLogger>();
+                        services.AddSingleton<VSCodeLogger, DefaultVSCodeLogger>();
                         services.AddSingleton<ProjectResolver, DefaultProjectResolver>();
                         services.AddSingleton<DocumentResolver, DefaultDocumentResolver>();
                         services.AddSingleton<FilePathNormalizer>();

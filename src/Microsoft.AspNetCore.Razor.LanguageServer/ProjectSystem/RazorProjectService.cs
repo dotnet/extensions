@@ -8,11 +8,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 {
     internal abstract class RazorProjectService
     {
-        public abstract void AddDocument(string text, Uri uri);
+        public abstract void AddDocument(string text, string filePath);
 
-        public abstract void RemoveDocument(Uri textDocumentUri);
+        public abstract void RemoveDocument(string filePath);
 
-        public abstract void UpdateDocument(string text, Uri uri);
+        public abstract void UpdateDocument(string text, string filePath);
 
         public abstract void AddProject(string filePath, RazorConfiguration configuration);
 

@@ -89,6 +89,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
         {
             var loadedProject = InnerProjectSnapshotManager.GetLoadedProject(filePath);
 
+            if (loadedProject == null)
+            {
+                return null;
+            }
+
             return new DefaultProjectSnapshotShim(loadedProject);
         }
 

@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             var newContent = notification.ContentChanges.Single().Text;
             await Task.Factory.StartNew(
-                () => _projectService.UpdateDocument(newContent, notification.TextDocument.Uri),
+                () => _projectService.UpdateDocument(newContent, notification.TextDocument.Uri.AbsolutePath),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public async Task<Unit> Handle(DidOpenTextDocumentParams notification, CancellationToken token)
         {
             await Task.Factory.StartNew(
-                () => _projectService.AddDocument(notification.TextDocument.Text, notification.TextDocument.Uri),
+                () => _projectService.AddDocument(notification.TextDocument.Text, notification.TextDocument.Uri.AbsolutePath),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public async Task<Unit> Handle(DidCloseTextDocumentParams notification, CancellationToken token)
         {
             await Task.Factory.StartNew(
-                () => _projectService.RemoveDocument(notification.TextDocument.Uri),
+                () => _projectService.RemoveDocument(notification.TextDocument.Uri.AbsolutePath),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);
