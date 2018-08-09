@@ -9,13 +9,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
     {
         public string Normalize(string filePath)
         {
-            if (filePath[0] == '/')
+            if (string.IsNullOrEmpty(filePath))
             {
-                filePath = filePath.Substring(1);
+                return string.Empty;
             }
 
             var decodedPath = WebUtility.UrlDecode(filePath);
             var normalized = decodedPath.Replace('\\', '/');
+
+            if (normalized[0] == '/')
+            {
+                normalized = normalized.Substring(1);
+            }
+
             return normalized;
         }
     }
