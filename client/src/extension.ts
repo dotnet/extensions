@@ -6,7 +6,6 @@
 import * as vscode from 'vscode';
 import { ExtensionContext } from 'vscode';
 import { RazorCSharpFeature } from './CSharp/RazorCSharpFeature';
-import { RazorHtmlFeature } from './Html/RazorHtmlFeature';
 import { RazorCompletionItemProvider } from './RazorCompletionItemProvider';
 import { RazorLanguage } from './RazorLanguage';
 import { RazorLanguageServerClient } from './RazorLanguageServerClient';
@@ -24,7 +23,6 @@ export async function activate(context: ExtensionContext) {
     const languageServerClient = new RazorLanguageServerClient(languageServerOptions);
     const languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
     const csharpFeature = new RazorCSharpFeature();
-    const htmlFeature = new RazorHtmlFeature();
     const projectTracker = new RazorProjectTracker(languageServiceClient);
     const localRegistrations: vscode.Disposable[] = [];
 
@@ -32,15 +30,13 @@ export async function activate(context: ExtensionContext) {
         localRegistrations.push(
             vscode.languages.registerCompletionItemProvider(
                 RazorLanguage.id,
-                new RazorCompletionItemProvider(csharpFeature, htmlFeature, languageServiceClient)),
+                new RazorCompletionItemProvider(csharpFeature, languageServiceClient)),
             projectTracker.register(),
             csharpFeature.register(),
-            htmlFeature.register(),
             vscode.workspace.onDidChangeTextDocument(args => {
                 const activeTextEditor = vscode.window.activeTextEditor;
                 if (activeTextEditor && activeTextEditor.document === args.document) {
                     csharpFeature.updateDocument(args.document.uri);
-                    htmlFeature.updateDocument(args.document.uri);
                 }
             }));
     });
@@ -53,7 +49,6 @@ export async function activate(context: ExtensionContext) {
     await languageServerClient.start();
     await projectTracker.initialize();
     await csharpFeature.initialize();
-    await htmlFeature.initialize();
 
     context.subscriptions.push(languageServerClient, onStartRegistration, onStopRegistration);
 

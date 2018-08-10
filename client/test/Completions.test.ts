@@ -35,14 +35,7 @@ describe('Completions', () => {
             .filter(item => (typeof item.insertText === 'string') && item.insertText.startsWith('str'))
             .map(item => item.insertText as string);
 
-        // TODO: Why does the completion appear twice? Have we got the HTML completions
-        // provider registered twice?
-        assert.deepEqual(matchingCompletions, ['strong', 'strong']);
-
-        // TODO: Why does the HTML completions provider return *all* the HTML tag names,
-        // not just the ones that match the text at the specified position?
-        const divCompletions = completions!.items.filter(item => item.insertText === 'div');
-        assert.equal(divCompletions.length, 2); // As per comment above, should be zero
+        assert.deepEqual(matchingCompletions, ['strong']);
     });
 
     it('Can complete Razor directive', async () => {
