@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
@@ -16,8 +17,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
                 .GetValue(this);
 
             Dispatcher = ForegroundDispatcherShim.AsDispatcher(dispatcherObject);
+            Logger = Mock.Of<VSCodeLogger>();
         }
 
         public ForegroundDispatcherShim Dispatcher { get; }
+
+        public VSCodeLogger Logger { get; }
     }
 }

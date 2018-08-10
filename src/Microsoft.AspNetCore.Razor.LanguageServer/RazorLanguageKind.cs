@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    public enum LanguageKind
+    public enum RazorLanguageKind
     {
         CSharp = 1,
         Html = 2,

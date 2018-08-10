@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -74,48 +75,59 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
 
             var classifiedSpans = _syntaxFactsService.GetClassifiedSpans(syntaxTree);
+            var languageKind = GetLanguageKind(classifiedSpans, hostDocumentIndex);
+
+            _logger.Log($"Language query request for ({request.Position.Line}, {request.Position.Character}) = {languageKind}");
+
+            return new RazorLanguageQueryResponse()
+            {
+                Kind = languageKind,
+                // TODO: If C# remap to generated document position
+                Position = request.Position,
+            };
+        }
+
+        // Internal for testing
+        internal static RazorLanguageKind GetLanguageKind(IReadOnlyList<ClassifiedSpan> classifiedSpans, int absoluteIndex)
+        {
             for (var i = 0; i < classifiedSpans.Count; i++)
             {
                 var classifiedSpan = classifiedSpans[i];
                 var span = classifiedSpan.Span;
 
-                if (span.AbsoluteIndex <= hostDocumentIndex &&
-                    span.AbsoluteIndex + span.Length >= hostDocumentIndex)
+                if (span.AbsoluteIndex <= absoluteIndex)
                 {
-                    // Overlaps with request
-                    switch (classifiedSpan.SpanKind)
+                    var end = span.AbsoluteIndex + span.Length;
+                    if (end >= absoluteIndex)
                     {
-                        case SpanKind.Markup:
-                            _logger.Log($"Language query request for ({request.Position.Line}, {request.Position.Character}) = HTML");
+                        if (end == absoluteIndex)
+                        {
+                            // We're at an edge.
 
-                            // HTML
-                            return new RazorLanguageQueryResponse()
+                            if (classifiedSpan.AcceptedCharacters == AcceptedCharacters.None)
                             {
-                                Position = request.Position,
-                                Kind = LanguageKind.Html,
-                            };
-                        case SpanKind.Code:
-                            _logger.Log($"Language query request for ({request.Position.Line}, {request.Position.Character}) = C#");
-                            return new RazorLanguageQueryResponse()
-                            {
-                                // TODO: REMAP TO C# generated document position
-                                Position = request.Position,
-                                Kind = LanguageKind.CSharp,
-                            };
+                                // This span doesn't own the edge after it
+                                continue;
+                            }
+                        }
+
+                        // Overlaps with request
+                        switch (classifiedSpan.SpanKind)
+                        {
+                            case SpanKind.Markup:
+                                return RazorLanguageKind.Html;
+                            case SpanKind.Code:
+                                return RazorLanguageKind.CSharp;
+                        }
+
+                        break;
                     }
-                        
                 }
             }
 
-            // Couldn't find classified span overlapping request position
-
-
-            _logger.Log($"Language query request for ({request.Position.Line}, {request.Position.Character}) = Razor");
-            return new RazorLanguageQueryResponse()
-            {
-                Position = request.Position,
-                Kind = LanguageKind.Razor
-            };
+            // Content type was non-C# or Html or we couldn't find a classified span overlapping the request position.
+            // Default to Razor
+            return RazorLanguageKind.Razor;
         }
     }
 }

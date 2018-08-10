@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     public class RazorLanguageQueryResponse
     {
-        public LanguageKind Kind { get; set; }
+        public RazorLanguageKind Kind { get; set; }
 
         public Position Position { get; set; }
     }
