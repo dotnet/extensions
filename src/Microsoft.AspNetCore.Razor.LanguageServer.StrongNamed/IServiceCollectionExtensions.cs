@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             services.AddSingleton<ProjectSnapshotManagerShimAccessor, DefaultProjectSnapshotManagerShimAccessor>();
             services.AddSingleton<RazorConfigurationResolver, DefaultRazorConfigurationResolver>();
             services.AddSingleton<RazorSyntaxFactsService, DefaultRazorSyntaxFactsService>();
+            services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();
 
             return services;
         }

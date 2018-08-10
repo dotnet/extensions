@@ -62,17 +62,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             var codeDocument = await document.GetGeneratedOutputAsync();
             var syntaxTree = codeDocument.GetSyntaxTree();
-
-            var hostDocumentIndex = 0;
-            if (codeDocument.Source.Lines.Count == request.Position.Line)
-            {
-                // Empty newline at end of file, HACKKK
-                hostDocumentIndex = codeDocument.Source.Length;
-            }
-            else
-            {
-                hostDocumentIndex = codeDocument.Source.Lines.GetLineStart((int)request.Position.Line) + (int)request.Position.Character;
-            }
+            var hostDocumentIndex = codeDocument.Source.GetAbsoluteIndex(request.Position);
 
             var classifiedSpans = _syntaxFactsService.GetClassifiedSpans(syntaxTree);
             var languageKind = GetLanguageKind(classifiedSpans, hostDocumentIndex);

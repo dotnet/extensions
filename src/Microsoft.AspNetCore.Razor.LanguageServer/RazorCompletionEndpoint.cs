@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
+using Microsoft.VisualStudio.Editor.Razor;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
@@ -21,10 +21,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly VSCodeLogger _logger;
         private readonly ForegroundDispatcherShim _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
+        private readonly RazorCompletionFactsService _completionFactsService;
 
         public RazorCompletionEndpoint(
             ForegroundDispatcherShim foregroundDispatcher,
             DocumentResolver documentResolver,
+            RazorCompletionFactsService completionFactsService,
             VSCodeLogger logger)
         {
             if (foregroundDispatcher == null)
@@ -37,6 +39,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(documentResolver));
             }
 
+            if (completionFactsService == null)
+            {
+                throw new ArgumentNullException(nameof(completionFactsService));
+            }
+
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
@@ -44,6 +51,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             _foregroundDispatcher = foregroundDispatcher;
             _documentResolver = documentResolver;
+            _completionFactsService = completionFactsService;
             _logger = logger;
         }
 
@@ -56,6 +64,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public async Task<CompletionList> Handle(CompletionParams request, CancellationToken cancellationToken)
         {
+            _foregroundDispatcher.AssertBackgroundThread();
+
             var document = await Task.Factory.StartNew(() =>
             {
                 _documentResolver.TryResolveDocument(request.TextDocument.Uri.AbsolutePath, out var documentSnapshot);
@@ -65,27 +75,30 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             var codeDocument = await document.GetGeneratedOutputAsync();
             var syntaxTree = codeDocument.GetSyntaxTree();
+            var hostDocumentIndex = codeDocument.Source.GetAbsoluteIndex(request.Position);
+            var location = new SourceSpan(hostDocumentIndex, 0);
 
-            if (!AtDirectiveCompletionPoint(codeDocument.Source, request.Position))
-            {
-                return new CompletionList();
-            }
+            var razorCompletionItems = _completionFactsService.GetCompletionItems(syntaxTree, location);
 
-            var directives = syntaxTree.Options.Directives;
-            _logger.Log($"Found {directives.Count} directives. At a valid completion point, providing completion.");
+            _logger.Log($"Found {razorCompletionItems.Count} Razor completion items.");
 
             var completionItems = new List<CompletionItem>();
-            foreach (var directive in directives)
+            foreach (var razorCompletionItem in razorCompletionItems)
             {
-                var displayName = directive.DisplayName ?? directive.Directive;
+                if (razorCompletionItem.Kind != RazorCompletionItemKind.Directive)
+                {
+                    // Don't support any other types of completion kinds other than directives.
+                    continue;
+                }
+
                 var directiveCompletionItem = new CompletionItem()
                 {
-                    Label = displayName,
-                    InsertText = directive.Directive,
-                    Detail = directive.Description,
-                    Documentation = directive.Description,
-                    FilterText = displayName,
-                    SortText = displayName,
+                    Label = razorCompletionItem.DisplayText,
+                    InsertText = razorCompletionItem.InsertText,
+                    Detail = razorCompletionItem.Description,
+                    Documentation = razorCompletionItem.Description,
+                    FilterText = razorCompletionItem.DisplayText,
+                    SortText = razorCompletionItem.DisplayText,
                     Kind = CompletionItemKind.Struct,
                 };
 
@@ -104,48 +117,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 DocumentSelector = RazorDocument.Selector,
                 ResolveProvider = true,
             };
-        }
-
-        private bool AtDirectiveCompletionPoint(RazorSourceDocument sourceDocument, Position position)
-        {
-            // HACK, need to be able to go from SyntaxTree => usable line collection
-            var charArray = new char[sourceDocument.Length];
-            sourceDocument.CopyTo(0, charArray, 0, sourceDocument.Length);
-
-            var lineNumber = 0;
-            var lineBuilder = new StringBuilder();
-            for (var i = 0; i < charArray.Length; i++)
-            {
-                if (lineNumber == position.Line)
-                {
-                    lineBuilder.Append(charArray[i]);
-                }
-
-                if (charArray[i] == '\r' && i + 1 < charArray.Length && charArray[i + 1] == '\n')
-                {
-                    if (lineNumber == position.Line)
-                    {
-                        // Captured entire line
-                        break;
-                    }
-                    i++;
-                    lineNumber++;
-                }
-            }
-
-            var line = lineBuilder.ToString();
-            var trimmedLine = line.Trim();
-            if (!trimmedLine.StartsWith("@"))
-            {
-                return false;
-            }
-
-            if (trimmedLine.IndexOfAny(new[] { '(', '.', ')', '[', ']', ' ', '\t' }) >= 0)
-            {
-                return false;
-            }
-
-            return true;
         }
     }
 }
