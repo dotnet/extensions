@@ -13,7 +13,7 @@
     "activationEvents": [
         "onLanguage:razor"
     ],
-    "main": "./out/extension",
+    "main": "./out/src/extension",
     "contributes": {
         "commands": [
             {

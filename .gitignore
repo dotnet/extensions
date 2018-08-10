@@ -38,6 +38,6 @@ Microsoft.VisualStudio.RazorExtension.nuget.targets
 msbuild.binlog
 msbuild.log
 node_modules
-.vscode-test/**
+client/.vscode-test/**
 client/out/*
 .gitignore

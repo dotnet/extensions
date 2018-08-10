@@ -14,6 +14,11 @@ import { resolveRazorLanguageServerOptions } from './RazorLanguageServerOptionsR
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { RazorProjectTracker } from './RazorProjectTracker';
 
+let activationResolver: (value?: any) => void;
+export const extensionActivated = new Promise(resolve => {
+    activationResolver = resolve;
+});
+
 export async function activate(context: ExtensionContext) {
     const languageServerOptions = resolveRazorLanguageServerOptions();
     const languageServerClient = new RazorLanguageServerClient(languageServerOptions);
@@ -51,4 +56,6 @@ export async function activate(context: ExtensionContext) {
     await htmlFeature.initialize();
 
     context.subscriptions.push(languageServerClient, onStartRegistration, onStopRegistration);
+
+    activationResolver();
 }

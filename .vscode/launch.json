@@ -11,6 +11,7 @@
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             "args": [
+                "${workspaceFolder}/test/testapps/",
                 "--extensionDevelopmentPath=${workspaceFolder}"
             ],
             "outFiles": [
@@ -24,6 +25,7 @@
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             "args": [
+                "${workspaceFolder}/test/testapps/",
                 "--extensionDevelopmentPath=${workspaceFolder}",
                 "--extensionTestsPath=${workspaceFolder}/client/out/test"
             ],
