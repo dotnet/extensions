@@ -233,20 +233,20 @@ namespace Microsoft.Extensions.Http
             // whether we need to start the timer.
             StopCleanupTimer();
 
+            if (!Monitor.TryEnter(_cleanupActiveLock))
+            {
+                // We don't want to run a concurrent cleanup cycle. This can happen if the cleanup cycle takes
+                // a long time for some reason. Since we're running user code inside Dispose, it's definitely
+                // possible.
+                //
+                // If we end up in that position, just make sure the timer gets started again. It should be cheap
+                // to run a 'no-op' cleanup.
+                StartCleanupTimer();
+                return;
+            }
+
             try
             {
-                if (!Monitor.TryEnter(_cleanupActiveLock))
-                {
-                    // We don't want to run a concurrent cleanup cycle. This can happen if the cleanup cycle takes
-                    // a long time for some reason. Since we're running user code inside Dispose, it's definitely
-                    // possible.
-                    //
-                    // If we end up in that position, just make sure the timer gets started again. It should be cheap
-                    // to run a 'no-op' cleanup.
-                    StartCleanupTimer();
-                    return;
-                }
-
                 var initialCount = _expiredHandlers.Count;
                 Log.CleanupCycleStart(_logger, initialCount);
 
