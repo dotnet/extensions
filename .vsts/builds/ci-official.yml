@@ -39,7 +39,7 @@ phases:
     displayName: Upload artifacts
     condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
     inputs:
-      pathtoPublish: artifacts/$(BuildConfiguration)/
+      pathtoPublish: artifacts/build
       artifactName: artifacts-$(BuildConfiguration)
       artifactType: Container
 
