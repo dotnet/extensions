@@ -11,11 +11,11 @@ namespace Microsoft.Extensions.Http
     internal class DefaultTypedHttpClientFactory<TClient> : ITypedHttpClientFactory<TClient>
     {
         private readonly static Func<ObjectFactory> _createActivator = () => ActivatorUtilities.CreateFactory(typeof(TClient), new Type[] { typeof(HttpClient), });
-        private readonly IServiceProvider _services;
+        private static ObjectFactory _activator;
+        private static bool _initialized;
+        private static object _lock;
 
-        private ObjectFactory _activator;
-        private bool _initialized;
-        private object _lock;
+        private readonly IServiceProvider _services;
 
         public DefaultTypedHttpClientFactory(IServiceProvider services)
         {

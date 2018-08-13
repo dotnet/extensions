@@ -3,6 +3,8 @@
 
 using System;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Options;
@@ -516,12 +518,412 @@ namespace Microsoft.Extensions.DependencyInjection
             Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
         }
 
+        [Fact]
+        public async Task AddHttpClient_MessageHandler_SingletonDependency()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<SingletonService>();
+            serviceCollection.AddTransient<HandlerWithSingletonService>();
+            serviceCollection
+                .AddHttpClient<TypedClientWithSingletonService>("test")
+                .AddHttpMessageHandler<HandlerWithSingletonService>();
+
+            var services = serviceCollection.BuildServiceProvider(validateScopes: true);
+
+            // Act
+            var client = services.GetRequiredService<TypedClientWithSingletonService>();
+
+            // Assert
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://example.com/");
+            var response = await client.HttpClient.SendAsync(request);
+
+            Assert.Same(
+                services.GetRequiredService<SingletonService>(),
+                request.Properties[nameof(SingletonService)]);
+
+            Assert.Same(
+                client.Service,
+                request.Properties[nameof(SingletonService)]);
+        }
+
+        [Fact]
+        public async Task AddHttpClient_MessageHandler_Scope_SingletonDependency()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<SingletonService>();
+            serviceCollection.AddTransient<HandlerWithSingletonService>();
+            serviceCollection
+                .AddHttpClient<TypedClientWithSingletonService>("test")
+                .AddHttpMessageHandler<HandlerWithSingletonService>();
+
+            var services = serviceCollection.BuildServiceProvider(validateScopes: true);
+
+            using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                // Act
+                var client = scope.ServiceProvider.GetRequiredService<TypedClientWithSingletonService>();
+
+                // Assert
+                var request = new HttpRequestMessage(HttpMethod.Get, "http://example.com/");
+                var response = await client.HttpClient.SendAsync(request);
+
+                Assert.Same(
+                    services.GetRequiredService<SingletonService>(),
+                    request.Properties[nameof(SingletonService)]);
+
+                Assert.Same(
+                    scope.ServiceProvider.GetRequiredService<SingletonService>(),
+                    request.Properties[nameof(SingletonService)]);
+
+                Assert.Same(
+                    client.Service,
+                    request.Properties[nameof(SingletonService)]);
+            }
+        }
+
+        [Fact]
+        public void AddHttpClient_MessageHandler_ScopedDependency()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddScoped<ScopedService>();
+            serviceCollection.AddTransient<HandlerWithScopedService>();
+            serviceCollection
+                .AddHttpClient<TypedClientWithScopedService>("test")
+                .AddHttpMessageHandler<HandlerWithScopedService>();
+
+            var services = serviceCollection.BuildServiceProvider(validateScopes: true);
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                services.GetRequiredService<TypedClientWithScopedService>();
+            });
+        }
+
+        [Fact]
+        public async Task AddHttpClient_MessageHandler_Scope_ScopedDependency()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddScoped<ScopedService>();
+            serviceCollection.AddScoped<HandlerWithScopedService>();
+            serviceCollection
+                .AddHttpClient<TypedClientWithScopedService>("test")
+                .AddHttpMessageHandler<HandlerWithScopedService>();
+
+            var services = serviceCollection.BuildServiceProvider(validateScopes: true);
+
+            using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                // Act
+                var client = scope.ServiceProvider.GetRequiredService<TypedClientWithScopedService>();
+
+                // Assert
+                var request = new HttpRequestMessage(HttpMethod.Get, "http://example.com/");
+                var response = await client.HttpClient.SendAsync(request);
+
+                Assert.NotSame(
+                    scope.ServiceProvider.GetRequiredService<ScopedService>(),
+                    request.Properties[nameof(ScopedService)]);
+
+                Assert.Same(
+                    scope.ServiceProvider.GetRequiredService<ScopedService>(),
+                    client.Service);
+
+                Assert.NotSame(
+                    client.Service,
+                    request.Properties[nameof(ScopedService)]);
+            }
+        }
+
+        [Fact]
+        public async Task AddHttpClient_MessageHandler_TransientDependency()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient<TransientService>();
+            serviceCollection.AddTransient<HandlerWithTransientService>();
+            serviceCollection
+                .AddHttpClient<TypedClientWithTransientService>("test")
+                .AddHttpMessageHandler<HandlerWithTransientService>();
+
+            var services = serviceCollection.BuildServiceProvider(validateScopes: true);
+
+            // Act
+            var client = services.GetRequiredService<TypedClientWithTransientService>();
+
+            // Assert
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://example.com/");
+            var response = await client.HttpClient.SendAsync(request);
+
+            Assert.NotSame(
+                services.GetRequiredService<TransientService>(),
+                request.Properties[nameof(TransientService)]);
+
+            Assert.NotSame(
+                client.Service,
+                request.Properties[nameof(TransientService)]);
+        }
+
+        [Fact]
+        public async Task AddHttpClient_MessageHandler_Scope_TransientDependency()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient<TransientService>();
+            serviceCollection.AddTransient<HandlerWithTransientService>();
+            serviceCollection
+                .AddHttpClient<TypedClientWithTransientService>("test")
+                .AddHttpMessageHandler<HandlerWithTransientService>();
+
+            var services = serviceCollection.BuildServiceProvider(validateScopes: true);
+
+            using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                // Act
+                var client = scope.ServiceProvider.GetRequiredService<TypedClientWithTransientService>();
+
+                // Assert
+                var request = new HttpRequestMessage(HttpMethod.Get, "http://example.com/");
+                var response = await client.HttpClient.SendAsync(request);
+
+                Assert.NotSame(
+                    services.GetRequiredService<TransientService>(),
+                    request.Properties[nameof(TransientService)]);
+
+                Assert.NotSame(
+                    client.Service,
+                    request.Properties[nameof(TransientService)]);
+            }
+        }
+
+        [Fact]
+        public void SuppressScope_False_CreatesNewScope()
+        {
+            // Arrange
+            IServiceProvider capturedServices = null;
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection
+                .AddHttpClient<TestTypedClient>("test")
+                .AddHttpMessageHandler(s =>
+                {
+                    capturedServices = s;
+                    return Mock.Of<DelegatingHandler>();
+                });
+
+            serviceCollection.Configure<HttpClientFactoryOptions>("test", o =>
+            {
+                o.SuppressHandlerScope = false;
+            });
+
+            var services = serviceCollection.BuildServiceProvider(validateScopes: true);
+
+            // Act
+            services.GetRequiredService<TestTypedClient>();
+
+            Assert.NotSame(services, capturedServices);
+        }
+
+        [Fact]
+        public void SuppressScope_False_InScope_CreatesNewScope()
+        {
+            // Arrange
+            IServiceProvider capturedServices = null;
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection
+                .AddHttpClient<TestTypedClient>("test")
+                .AddHttpMessageHandler(s =>
+                {
+                    capturedServices = s;
+                    return Mock.Of<DelegatingHandler>();
+                });
+
+            serviceCollection.Configure<HttpClientFactoryOptions>("test", o =>
+            {
+                o.SuppressHandlerScope = false;
+            });
+
+            var services = serviceCollection.BuildServiceProvider(validateScopes: true);
+
+            using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                // Act
+                scope.ServiceProvider.GetRequiredService<TestTypedClient>();
+
+                Assert.NotSame(services, capturedServices);
+                Assert.NotSame(scope.ServiceProvider, capturedServices);
+            }
+        }
+
+        [Fact]
+        public void SuppressScope_True_DoesNotCreateScope()
+        {
+            // Arrange
+            IServiceProvider capturedServices = null;
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection
+                .AddHttpClient<TestTypedClient>("test")
+                .AddHttpMessageHandler(s =>
+                {
+                    capturedServices = s;
+                    return Mock.Of<DelegatingHandler>();
+                });
+
+            serviceCollection.Configure<HttpClientFactoryOptions>("test", o =>
+            {
+                o.SuppressHandlerScope = true;
+            });
+
+            var services = serviceCollection.BuildServiceProvider(validateScopes: true);
+
+            // Act
+            services.GetRequiredService<TestTypedClient>();
+
+            Assert.NotSame(services, capturedServices);
+        }
+
+        [Fact]
+        public void SuppressScope_True_InScope_DoesNotCreateScope()
+        {
+            // Arrange
+            IServiceProvider capturedServices = null;
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection
+                .AddHttpClient<TestTypedClient>("test")
+                .AddHttpMessageHandler(s =>
+                {
+                    capturedServices = s;
+                    return Mock.Of<DelegatingHandler>();
+                });
+
+            serviceCollection.Configure<HttpClientFactoryOptions>("test", o =>
+            {
+                o.SuppressHandlerScope = true;
+            });
+
+            var services = serviceCollection.BuildServiceProvider(validateScopes: true);
+
+            using (var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                // Act
+                scope.ServiceProvider.GetRequiredService<TestTypedClient>();
+
+                Assert.NotSame(scope.ServiceProvider, capturedServices);
+            }
+        }
+
         private class TestGenericTypedClient<T> : TestTypedClient
         {
             public TestGenericTypedClient(HttpClient httpClient)
                 : base(httpClient)
             {
             }
+        }
+
+        private class SingletonService
+        {
+        }
+
+        private class ScopedService
+        {
+        }
+
+        private class TransientService
+        {
+        }
+
+        private class HandlerWithSingletonService : DelegatingHandler
+        {
+            public HandlerWithSingletonService(SingletonService service)
+            {
+                Service = service;
+            }
+
+            public SingletonService Service { get; }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                request.Properties[nameof(SingletonService)] = Service;
+                return Task.FromResult(new HttpResponseMessage());
+            }
+        }
+
+        private class HandlerWithScopedService : DelegatingHandler
+        {
+            public HandlerWithScopedService(ScopedService service)
+            {
+                Service = service;
+            }
+
+            public ScopedService Service { get; }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                request.Properties[nameof(ScopedService)] = Service;
+                return Task.FromResult(new HttpResponseMessage());
+            }
+        }
+
+        private class HandlerWithTransientService : DelegatingHandler
+        {
+            public HandlerWithTransientService(TransientService service)
+            {
+                Service = service;
+            }
+
+            public TransientService Service { get; }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                request.Properties[nameof(TransientService)] = Service;
+                return Task.FromResult(new HttpResponseMessage());
+            }
+        }
+
+        private class TypedClientWithSingletonService
+        {
+            public TypedClientWithSingletonService(HttpClient httpClient, SingletonService service)
+            {
+                HttpClient = httpClient;
+                Service = service;
+            }
+
+            public HttpClient HttpClient { get; }
+
+            public SingletonService Service { get; }
+        }
+
+        private class TypedClientWithScopedService
+        {
+            public TypedClientWithScopedService(HttpClient httpClient, ScopedService service)
+            {
+                HttpClient = httpClient;
+                Service = service;
+            }
+
+            public HttpClient HttpClient { get; }
+
+            public ScopedService Service { get; }
+        }
+
+        private class TypedClientWithTransientService
+        {
+            public TypedClientWithTransientService(HttpClient httpClient, TransientService service)
+            {
+                HttpClient = httpClient;
+                Service = service;
+            }
+
+            public HttpClient HttpClient { get; }
+
+            public TransientService Service { get; }
         }
     }
 }

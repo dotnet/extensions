@@ -19,6 +19,7 @@ namespace Microsoft.Extensions.Http
     {
         private readonly ILogger _logger;
         private readonly IServiceProvider _services;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly IOptionsMonitor<HttpClientFactoryOptions> _optionsMonitor;
         private readonly IHttpMessageHandlerBuilderFilter[] _filters;
         private readonly Func<string, Lazy<ActiveHandlerTrackingEntry>> _entryFactory;
@@ -59,6 +60,7 @@ namespace Microsoft.Extensions.Http
 
         public DefaultHttpClientFactory(
             IServiceProvider services,
+            IServiceScopeFactory scopeFactory,
             ILoggerFactory loggerFactory,
             IOptionsMonitor<HttpClientFactoryOptions> optionsMonitor,
             IEnumerable<IHttpMessageHandlerBuilderFilter> filters)
@@ -66,6 +68,11 @@ namespace Microsoft.Extensions.Http
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
+            }
+
+            if (scopeFactory == null)
+            {
+                throw new ArgumentNullException(nameof(scopeFactory));
             }
 
             if (loggerFactory == null)
@@ -84,6 +91,7 @@ namespace Microsoft.Extensions.Http
             }
 
             _services = services;
+            _scopeFactory = scopeFactory;
             _optionsMonitor = optionsMonitor;
             _filters = filters.ToArray();
 
@@ -131,39 +139,56 @@ namespace Microsoft.Extensions.Http
         // Internal for tests
         internal ActiveHandlerTrackingEntry CreateHandlerEntry(string name)
         {
-            var builder = _services.GetRequiredService<HttpMessageHandlerBuilder>();
-            builder.Name = name;
+            var services = _services;
+            var scope = (IServiceScope)null;
 
             var options = _optionsMonitor.Get(name);
-
-            // This is similar to the initialization pattern in:
-            // https://github.com/aspnet/Hosting/blob/e892ed8bbdcd25a0dafc1850033398dc57f65fe1/src/Microsoft.AspNetCore.Hosting/Internal/WebHost.cs#L188
-            Action<HttpMessageHandlerBuilder> configure = Configure;
-            for (var i = _filters.Length -1; i >= 0; i--)
+            if (!options.SuppressHandlerScope)
             {
-                configure = _filters[i].Configure(configure);
+                scope = _scopeFactory.CreateScope();
+                services = scope.ServiceProvider;
             }
 
-            configure(builder);
-
-            // Wrap the handler so we can ensure the inner handler outlives the outer handler.
-            var handler = new LifetimeTrackingHttpMessageHandler(builder.Build());
-
-            // Note that we can't start the timer here. That would introduce a very very subtle race condition
-            // with very short expiry times. We need to wait until we've actually handed out the handler once
-            // to start the timer.
-            // 
-            // Otherwise it would be possible that we start the timer here, immediately expire it (very short
-            // timer) and then dispose it without ever creating a client. That would be bad. It's unlikely
-            // this would happen, but we want to be sure.
-            return new ActiveHandlerTrackingEntry(name, handler, options.HandlerLifetime);
-
-            void Configure(HttpMessageHandlerBuilder b)
+            try
             {
-                for (var i = 0; i < options.HttpMessageHandlerBuilderActions.Count; i++)
+                var builder = services.GetRequiredService<HttpMessageHandlerBuilder>();
+                builder.Name = name;
+
+                // This is similar to the initialization pattern in:
+                // https://github.com/aspnet/Hosting/blob/e892ed8bbdcd25a0dafc1850033398dc57f65fe1/src/Microsoft.AspNetCore.Hosting/Internal/WebHost.cs#L188
+                Action<HttpMessageHandlerBuilder> configure = Configure;
+                for (var i = _filters.Length - 1; i >= 0; i--)
                 {
-                    options.HttpMessageHandlerBuilderActions[i](b);
+                    configure = _filters[i].Configure(configure);
                 }
+
+                configure(builder);
+
+                // Wrap the handler so we can ensure the inner handler outlives the outer handler.
+                var handler = new LifetimeTrackingHttpMessageHandler(builder.Build());
+
+                // Note that we can't start the timer here. That would introduce a very very subtle race condition
+                // with very short expiry times. We need to wait until we've actually handed out the handler once
+                // to start the timer.
+                // 
+                // Otherwise it would be possible that we start the timer here, immediately expire it (very short
+                // timer) and then dispose it without ever creating a client. That would be bad. It's unlikely
+                // this would happen, but we want to be sure.
+                return new ActiveHandlerTrackingEntry(name, handler, scope, options.HandlerLifetime);
+
+                void Configure(HttpMessageHandlerBuilder b)
+                {
+                    for (var i = 0; i < options.HttpMessageHandlerBuilderActions.Count; i++)
+                    {
+                        options.HttpMessageHandlerBuilderActions[i](b);
+                    }
+                }
+            }
+            catch
+            {
+                // If something fails while creating the handler, dispose the services.
+                scope?.Dispose();
+                throw;
             }
         }
 
@@ -264,6 +289,7 @@ namespace Microsoft.Extensions.Http
                         try
                         {
                             entry.InnerHandler.Dispose();
+                            entry.Scope?.Dispose();
                             disposedCount++;
                         }
                         catch (Exception ex)
