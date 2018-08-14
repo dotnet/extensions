@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
 using Microsoft.AspNetCore.Razor.LanguageServer.Test;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using Moq;
 using Xunit;
 
@@ -36,9 +37,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     Assert.NotNull(textLoader);
                 });
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
+            var sourceText = SourceText.From("Hello World");
 
             // Act
-            projectService.AddDocument("Hello World", documentFilePath);
+            projectService.AddDocument(sourceText, documentFilePath);
 
             // Assert
             projectSnapshotManager.VerifyAll();
@@ -60,9 +62,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     Assert.NotNull(textLoader);
                 });
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
+            var sourceText = SourceText.From("Hello World");
 
             // Act
-            projectService.AddDocument("Hello World", documentFilePath);
+            projectService.AddDocument(sourceText, documentFilePath);
 
             // Assert
             projectSnapshotManager.VerifyAll();

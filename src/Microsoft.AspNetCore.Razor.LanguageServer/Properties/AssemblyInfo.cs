@@ -3,4 +3,5 @@
 
 using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 [assembly: InternalsVisibleTo("Microsoft.AspNetCore.Razor.LanguageServer.Test")]

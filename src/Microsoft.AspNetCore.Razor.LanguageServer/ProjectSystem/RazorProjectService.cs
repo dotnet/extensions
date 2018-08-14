@@ -3,16 +3,17 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 {
     internal abstract class RazorProjectService
     {
-        public abstract void AddDocument(string text, string filePath);
+        public abstract void AddDocument(SourceText sourceText, string filePath);
 
         public abstract void RemoveDocument(string filePath);
 
-        public abstract void UpdateDocument(string text, string filePath);
+        public abstract void UpdateDocument(SourceText sourceText, string filePath);
 
         public abstract void AddProject(string filePath, RazorConfiguration configuration);
 

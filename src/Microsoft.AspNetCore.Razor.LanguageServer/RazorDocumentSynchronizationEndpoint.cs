@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
 using Microsoft.CodeAnalysis.Text;
@@ -24,16 +22,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private SynchronizationCapability _capability;
         private readonly VSCodeLogger _logger;
         private readonly ForegroundDispatcherShim _foregroundDispatcher;
+        private readonly DocumentResolver _documentResolver;
         private readonly RazorProjectService _projectService;
 
         public RazorDocumentSynchronizationEndpoint(
             ForegroundDispatcherShim foregroundDispatcher,
+            DocumentResolver documentResolver,
             RazorProjectService projectService,
             VSCodeLogger logger)
         {
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
+            if (documentResolver == null)
+            {
+                throw new ArgumentNullException(nameof(documentResolver));
             }
 
             if (projectService == null)
@@ -47,12 +52,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
 
             _foregroundDispatcher = foregroundDispatcher;
+            _documentResolver = documentResolver;
             _projectService = projectService;
             _logger = logger;
         }
 
-        // TODO: GO INCREMENTAL
-        public TextDocumentSyncKind Change { get; } = TextDocumentSyncKind.Full;
+        public TextDocumentSyncKind Change { get; } = TextDocumentSyncKind.Incremental;
 
         public void SetCapability(SynchronizationCapability capability)
         {
@@ -63,9 +68,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public async Task<Unit> Handle(DidChangeTextDocumentParams notification, CancellationToken token)
         {
-            var newContent = notification.ContentChanges.Single().Text;
+            _foregroundDispatcher.AssertBackgroundThread();
+
+            var document = await Task.Factory.StartNew(() =>
+            {
+                _documentResolver.TryResolveDocument(notification.TextDocument.Uri.AbsolutePath, out var documentSnapshot);
+
+                return documentSnapshot;
+            }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
+
+            var sourceText = await document.GetTextAsync();
+            sourceText = ApplyContentChanges(notification.ContentChanges, sourceText);
+
             await Task.Factory.StartNew(
-                () => _projectService.UpdateDocument(newContent, notification.TextDocument.Uri.AbsolutePath),
+                () => _projectService.UpdateDocument(sourceText, document.FilePath),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);
@@ -73,10 +89,34 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return Unit.Value;
         }
 
+        // Internal for testing
+        internal SourceText ApplyContentChanges(IEnumerable<TextDocumentContentChangeEvent> contentChanges, SourceText sourceText)
+        {
+            foreach (var change in contentChanges)
+            {
+                var linePosition = new LinePosition((int)change.Range.Start.Line, (int)change.Range.Start.Character);
+                var position = sourceText.Lines.GetPosition(linePosition);
+                var textSpan = new TextSpan(position, change.RangeLength);
+                var textChange = new TextChange(textSpan, change.Text);
+
+                _logger.Log("Applying " + textChange);
+
+                // If there happens to be multiple text changes we generate a new source text for each one. Due to the
+                // differences in VSCode and Roslyn's representation we can't pass in all changes simultaneously because
+                // ordering may differ.
+                sourceText = sourceText.WithChanges(textChange);
+            }
+
+            return sourceText;
+        }
+
         public async Task<Unit> Handle(DidOpenTextDocumentParams notification, CancellationToken token)
         {
+            _foregroundDispatcher.AssertBackgroundThread();
+
+            var sourceText = SourceText.From(notification.TextDocument.Text);
             await Task.Factory.StartNew(
-                () => _projectService.AddDocument(notification.TextDocument.Text, notification.TextDocument.Uri.AbsolutePath),
+                () => _projectService.AddDocument(sourceText, notification.TextDocument.Uri.AbsolutePath),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);
@@ -86,6 +126,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public async Task<Unit> Handle(DidCloseTextDocumentParams notification, CancellationToken token)
         {
+            _foregroundDispatcher.AssertBackgroundThread();
+
             await Task.Factory.StartNew(
                 () => _projectService.RemoveDocument(notification.TextDocument.Uri.AbsolutePath),
                 CancellationToken.None,
@@ -104,8 +146,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public TextDocumentAttributes GetTextDocumentAttributes(Uri uri)
         {
-            _logger.Log("Asked for attributes");
-
             return new TextDocumentAttributes(uri, "razor");
         }
 

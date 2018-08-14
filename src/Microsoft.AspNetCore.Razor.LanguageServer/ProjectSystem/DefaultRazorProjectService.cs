@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _logger = logger;
         }
 
-        public override void AddDocument(string text, string filePath)
+        public override void AddDocument(SourceText sourceText, string filePath)
         {
             _foregroundDispatcher.AssertForegroundThread();
 
@@ -68,7 +68,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             }
 
             var hostDocument = HostDocumentShim.Create(textDocumentPath, textDocumentPath);
-            var sourceText = SourceText.From(text);
             var textAndVersion = TextAndVersion.Create(sourceText, VersionStamp.Default);
             var textLoader = TextLoader.From(textAndVersion);
             _projectSnapshotManagerAccessor.Instance.DocumentAdded(projectSnapshot.HostProject, hostDocument, textLoader);
@@ -98,7 +97,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _logger.Log($"Removed document '{textDocumentPath}' from project '{projectSnapshot.FilePath}'.");
         }
 
-        public override void UpdateDocument(string text, string filePath)
+        public override void UpdateDocument(SourceText sourceText, string filePath)
         {
             _foregroundDispatcher.AssertForegroundThread();
 
@@ -107,7 +106,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             {
                 projectSnapshot = _projectResolver.GetMiscellaneousProject();
             }
-            var sourceText = SourceText.From(text);
             _projectSnapshotManagerAccessor.Instance.DocumentChanged(projectSnapshot.HostProject.FilePath, textDocumentPath, sourceText);
 
             _logger.Log($"Updated document '{textDocumentPath}'.");
