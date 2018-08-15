@@ -5,6 +5,7 @@ using System;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -183,9 +184,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// can be retrieved from <see cref="IServiceProvider.GetService(Type)" /> (and related methods) by providing
         /// <typeparamref name="TClient"/> as the service type. 
         /// </para>
-        /// <para>
-        /// Use <see cref="Options.Options.DefaultName"/> as the name to configure the default client.
-        /// </para>
         /// </remarks>
         public static IHttpClientBuilder AddHttpClient<TClient>(this IServiceCollection services)
             where TClient : class
@@ -197,7 +195,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             AddHttpClient(services);
 
-            var builder = new DefaultHttpClientBuilder(services, typeof(TClient).Name);
+            var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
+            var builder = new DefaultHttpClientBuilder(services, name);
             builder.AddTypedClient<TClient>();
             return builder;
         }
@@ -239,7 +238,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             AddHttpClient(services);
 
-            var builder = new DefaultHttpClientBuilder(services, typeof(TClient).Name);
+            var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
+            var builder = new DefaultHttpClientBuilder(services, name);
             builder.AddTypedClient<TClient, TImplementation>();
             return builder;
         }
@@ -378,7 +378,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             AddHttpClient(services);
 
-            var builder = new DefaultHttpClientBuilder(services, typeof(TClient).Name);
+            var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
+            var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
             builder.AddTypedClient<TClient>();
             return builder;
@@ -422,7 +423,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             AddHttpClient(services);
 
-            var builder = new DefaultHttpClientBuilder(services, typeof(TClient).Name);
+            var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
+            var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
             builder.AddTypedClient<TClient>();
             return builder;
@@ -454,9 +456,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// can be retrieved from <see cref="IServiceProvider.GetService(Type)" /> (and related methods) by providing
         /// <typeparamref name="TClient"/> as the service type. 
         /// </para>
-        /// <para>
-        /// Use <see cref="Options.Options.DefaultName"/> as the name to configure the default client.
-        /// </para>
         /// </remarks>
         public static IHttpClientBuilder AddHttpClient<TClient, TImplementation>(this IServiceCollection services, Action<HttpClient> configureClient)
             where TClient : class
@@ -474,7 +473,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             AddHttpClient(services);
 
-            var builder = new DefaultHttpClientBuilder(services, typeof(TClient).Name);
+            var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
+            var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
             builder.AddTypedClient<TClient, TImplementation>();
             return builder;
@@ -506,9 +506,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// can be retrieved from <see cref="IServiceProvider.GetService(Type)" /> (and related methods) by providing
         /// <typeparamref name="TClient"/> as the service type. 
         /// </para>
-        /// <para>
-        /// Use <see cref="Options.Options.DefaultName"/> as the name to configure the default client.
-        /// </para>
         /// </remarks>
         public static IHttpClientBuilder AddHttpClient<TClient, TImplementation>(this IServiceCollection services, Action<IServiceProvider, HttpClient> configureClient)
             where TClient : class
@@ -526,7 +523,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             AddHttpClient(services);
 
-            var builder = new DefaultHttpClientBuilder(services, typeof(TClient).Name);
+            var name = TypeNameHelper.GetTypeDisplayName(typeof(TClient), fullName: false);
+            var builder = new DefaultHttpClientBuilder(services, name);
             builder.ConfigureHttpClient(configureClient);
             builder.AddTypedClient<TClient, TImplementation>();
             return builder;

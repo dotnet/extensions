@@ -100,6 +100,29 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
+        public void AddHttpClient_WithGenericTypedClient_ConfiguresNamedClient()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.Configure<HttpClientFactoryOptions>("TestGenericTypedClient<string>", options =>
+            {
+                options.HttpClientActions.Add((c) => c.BaseAddress = new Uri("http://example.com"));
+            });
+
+            // Act
+            serviceCollection.AddHttpClient<TestGenericTypedClient<string>>();
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            // Act2
+            var client = services.GetRequiredService<TestGenericTypedClient<string>>();
+
+            // Assert
+            Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
+        }
+
+        [Fact]
         public void AddHttpClient_WithTypedClientAndImplementation_ConfiguresNamedClient()
         {
             // Arrange
@@ -491,6 +514,14 @@ namespace Microsoft.Extensions.DependencyInjection
         
             // Assert
             Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
+        }
+
+        private class TestGenericTypedClient<T> : TestTypedClient
+        {
+            public TestGenericTypedClient(HttpClient httpClient)
+                : base(httpClient)
+            {
+            }
         }
     }
 }
