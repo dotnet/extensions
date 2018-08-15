@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Http
 {
@@ -16,10 +17,15 @@ namespace Microsoft.Extensions.Http
         private Timer _timer;
         private TimerCallback _callback;
 
-        public ActiveHandlerTrackingEntry(string name, LifetimeTrackingHttpMessageHandler handler, TimeSpan lifetime)
+        public ActiveHandlerTrackingEntry(
+            string name,
+            LifetimeTrackingHttpMessageHandler handler,
+            IServiceScope scope,
+            TimeSpan lifetime)
         {
             Name = name;
             Handler = handler;
+            Scope = scope;
             Lifetime = lifetime;
 
             _lock = new object();
@@ -30,6 +36,8 @@ namespace Microsoft.Extensions.Http
         public TimeSpan Lifetime { get; }
 
         public string Name { get; }
+
+        public IServiceScope Scope { get; }
 
         public void StartExpiryTimer(TimerCallback callback)
         {
