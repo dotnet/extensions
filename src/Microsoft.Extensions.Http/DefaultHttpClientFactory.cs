@@ -15,7 +15,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Http
 {
-    internal class DefaultHttpClientFactory : IHttpClientFactory
+    internal class DefaultHttpClientFactory : IHttpClientFactory, IHttpMessageHandlerFactory
     {
         private readonly ILogger _logger;
         private readonly IServiceProvider _services;
@@ -122,10 +122,8 @@ namespace Microsoft.Extensions.Http
                 throw new ArgumentNullException(nameof(name));
             }
 
-            var entry = _activeHandlers.GetOrAdd(name, _entryFactory).Value;
-            var client = new HttpClient(entry.Handler, disposeHandler: false);
-
-            StartHandlerEntryTimer(entry);
+            var handler = CreateHandler(name);
+            var client = new HttpClient(handler, disposeHandler: false);
 
             var options = _optionsMonitor.Get(name);
             for (var i = 0; i < options.HttpClientActions.Count; i++)
@@ -134,6 +132,20 @@ namespace Microsoft.Extensions.Http
             }
 
             return client;
+        }
+
+        public HttpMessageHandler CreateHandler(string name)
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            var entry = _activeHandlers.GetOrAdd(name, _entryFactory).Value;
+
+            StartHandlerEntryTimer(entry);
+
+            return entry.Handler;
         }
 
         // Internal for tests
