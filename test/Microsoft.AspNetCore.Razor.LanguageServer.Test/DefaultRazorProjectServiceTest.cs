@@ -30,17 +30,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 new TestProjectSnapshot("__MISC_PROJECT__"));
             var projectSnapshotManager = new Mock<ProjectSnapshotManagerShim>(MockBehavior.Strict);
             projectSnapshotManager.Setup(manager => manager.DocumentAdded(It.IsAny<HostProjectShim>(), It.IsAny<HostDocumentShim>(), It.IsAny<TextLoader>()))
-                .Callback<HostProjectShim, HostDocumentShim, TextLoader>((hostProject, hostDocumentShim, textLoader) =>
+                .Callback<HostProjectShim, HostDocumentShim, TextLoader>((hostProject, hostDocumentShim, loader) =>
                 {
                     Assert.Same(ownerProject.HostProject, hostProject);
                     Assert.Equal(documentFilePath, hostDocumentShim.FilePath);
-                    Assert.NotNull(textLoader);
+                    Assert.NotNull(loader);
                 });
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
-            var sourceText = SourceText.From("Hello World");
+            var textLoader = CreateTextLoader("Hello World");
 
             // Act
-            projectService.AddDocument(sourceText, documentFilePath);
+            projectService.AddDocument(documentFilePath, textLoader);
 
             // Assert
             projectSnapshotManager.VerifyAll();
@@ -55,17 +55,17 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectResolver = new TestProjectResolver(new Dictionary<string, ProjectSnapshotShim>(), miscellaneousProject);
             var projectSnapshotManager = new Mock<ProjectSnapshotManagerShim>(MockBehavior.Strict);
             projectSnapshotManager.Setup(manager => manager.DocumentAdded(It.IsAny<HostProjectShim>(), It.IsAny<HostDocumentShim>(), It.IsAny<TextLoader>()))
-                .Callback<HostProjectShim, HostDocumentShim, TextLoader>((hostProject, hostDocumentShim, textLoader) =>
+                .Callback<HostProjectShim, HostDocumentShim, TextLoader>((hostProject, hostDocumentShim, loader) =>
                 {
                     Assert.Same(miscellaneousProject.HostProject, hostProject);
                     Assert.Equal(documentFilePath, hostDocumentShim.FilePath);
-                    Assert.NotNull(textLoader);
+                    Assert.NotNull(loader);
                 });
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
-            var sourceText = SourceText.From("Hello World");
+            var textLoader = CreateTextLoader("Hello World");
 
             // Act
-            projectService.AddDocument(sourceText, documentFilePath);
+            projectService.AddDocument(documentFilePath, textLoader);
 
             // Assert
             projectSnapshotManager.VerifyAll();
@@ -355,6 +355,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Assert.Collection(migratedDocuments,
                 document => Assert.Equal(documentFilePath1, document.FilePath),
                 document => Assert.Equal(documentFilePath2, document.FilePath));
+        }
+
+        private static TextLoader CreateTextLoader(string content)
+        {
+            var sourceText = SourceText.From(content);
+            var textAndVersion = TextAndVersion.Create(sourceText, VersionStamp.Default);
+            var textLoader = TextLoader.From(textAndVersion);
+
+            return textLoader;
         }
 
         private DefaultRazorProjectService CreateProjectService(ProjectResolver projectResolver, ProjectSnapshotManagerShim projectSnapshotManager)

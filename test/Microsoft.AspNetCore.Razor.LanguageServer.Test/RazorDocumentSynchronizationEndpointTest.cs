@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
 using Microsoft.AspNetCore.Razor.LanguageServer.Test;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -92,8 +93,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var sourceText = SourceText.From("<p>");
             var documentResolver = CreateDocumentResolver(documentPath, sourceText);
             var projectService = new Mock<RazorProjectService>(MockBehavior.Strict);
-            projectService.Setup(service => service.UpdateDocument(It.IsAny<SourceText>(), It.IsAny<string>()))
-                .Callback<SourceText, string>((text, path) =>
+            projectService.Setup(service => service.UpdateDocument(It.IsAny<string>(), It.IsAny<SourceText>()))
+                .Callback<string, SourceText>((path, text) =>
                 {
                     var resultString = GetString(text);
                     Assert.Equal("<p></p>", resultString);
@@ -129,10 +130,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Arrange
             var documentPath = "C:/path/to/document.cshtml";
             var projectService = new Mock<RazorProjectService>(MockBehavior.Strict);
-            projectService.Setup(service => service.AddDocument(It.IsAny<SourceText>(), It.IsAny<string>()))
-                .Callback<SourceText, string>((sourceText, path) =>
+            projectService.Setup(service => service.AddDocument(It.IsAny<string>(), It.IsAny<TextLoader>()))
+                .Callback<string, TextLoader>((path, textLoader) =>
                 {
-                    var resultString = GetString(sourceText);
+                    var textAndVersion = textLoader.LoadTextAndVersionAsync(null, null, default).Result;
+                    var resultString = GetString(textAndVersion.Text);
                     Assert.Equal("hello", resultString);
                     Assert.Equal(documentPath, path);
                 });

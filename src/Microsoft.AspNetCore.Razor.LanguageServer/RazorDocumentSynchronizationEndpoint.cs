@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             sourceText = ApplyContentChanges(notification.ContentChanges, sourceText);
 
             await Task.Factory.StartNew(
-                () => _projectService.UpdateDocument(sourceText, document.FilePath),
+                () => _projectService.UpdateDocument(document.FilePath, sourceText),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);
@@ -115,8 +116,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _foregroundDispatcher.AssertBackgroundThread();
 
             var sourceText = SourceText.From(notification.TextDocument.Text);
+            var textAndVersion = TextAndVersion.Create(sourceText, VersionStamp.Default);
+            var textLoader = TextLoader.From(textAndVersion);
+
             await Task.Factory.StartNew(
-                () => _projectService.AddDocument(sourceText, notification.TextDocument.Uri.AbsolutePath),
+                () => _projectService.AddDocument(notification.TextDocument.Uri.AbsolutePath, textLoader),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);
