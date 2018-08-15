@@ -11,6 +11,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
     {
         public abstract void AddDocument(string filePath, TextLoader textLoader);
 
+        public abstract void OpenDocument(string filePath, SourceText sourceText);
+
+        public abstract void CloseDocument(string filePath, TextLoader textLoader);
+
         public abstract void RemoveDocument(string filePath);
 
         public abstract void UpdateDocument(string filePath, SourceText sourceText);

@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithHandler<RazorProjectEndpoint>()
                     .WithServices(services =>
                     {
+                        services.AddSingleton<RemoteTextLoaderFactory, DefaultRemoteTextLoaderFactory>();
                         services.AddSingleton<VSCodeLogger, DefaultVSCodeLogger>();
                         services.AddSingleton<ProjectResolver, DefaultProjectResolver>();
                         services.AddSingleton<DocumentResolver, DefaultDocumentResolver>();

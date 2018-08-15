@@ -8,7 +8,8 @@ import { DocumentSelector } from 'vscode-languageclient/lib/main';
 
 export class RazorLanguage {
     public static id = 'razor';
-    public static documentSelector: DocumentSelector =  [ { pattern: '**/*.cshtml' } ];
+    public static fileExtension = 'cshtml';
+    public static documentSelector: DocumentSelector =  [ { pattern: `**/*.${RazorLanguage.fileExtension}` } ];
     public static languageConfig = vscode.workspace.getConfiguration('razor');
     public static serverConfig = vscode.workspace.getConfiguration('razor.languageServer');
 }

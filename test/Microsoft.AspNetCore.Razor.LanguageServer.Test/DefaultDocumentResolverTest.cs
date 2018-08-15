@@ -12,14 +12,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     public class DocumentDocumentResolverTest : TestBase
     {
         [Fact]
-        public void TryResolveDocument_AsksResolvedParentProjectForDocument_ReturnsTrue()
+        public void TryResolveDocument_AsksPotentialParentProjectForDocumentItsTracking_ReturnsTrue()
         {
             // Arrange
             var documentFilePath = "C:\\path\\to\\document.cshtml";
             var normalizedFilePath = "C:/path/to/document.cshtml";
             var filePathNormalizer = new FilePathNormalizer();
             var expectedDocument = Mock.Of<DocumentSnapshotShim>();
-            var project = Mock.Of<ProjectSnapshotShim>(shim => shim.GetDocument(normalizedFilePath) == expectedDocument);
+            var project = Mock.Of<ProjectSnapshotShim>(shim => 
+                shim.GetDocument(normalizedFilePath) == expectedDocument && 
+                shim.DocumentFilePaths == new[] { normalizedFilePath });
             var projectResolver = Mock.Of<ProjectResolver>(resolver => resolver.TryResolveProject(normalizedFilePath, out project) == true);
             var documentResolver = new DefaultDocumentResolver(Dispatcher, projectResolver, filePathNormalizer);
 
@@ -28,7 +30,26 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Assert
             Assert.True(result);
-            Assert.Same(expectedDocument, document);
+            Assert.Equal(expectedDocument, document);
+        }
+
+        [Fact]
+        public void TryResolveDocument_AsksPotentialParentProjectForDocumentItsNotTracking_ReturnsFalse()
+        {
+            // Arrange
+            var documentFilePath = "C:\\path\\to\\document.cshtml";
+            var normalizedFilePath = "C:/path/to/document.cshtml";
+            var filePathNormalizer = new FilePathNormalizer();
+            var project = Mock.Of<ProjectSnapshotShim>(shim => shim.DocumentFilePaths == new string[0]);
+            var projectResolver = Mock.Of<ProjectResolver>(resolver => resolver.TryResolveProject(normalizedFilePath, out project) == true);
+            var documentResolver = new DefaultDocumentResolver(Dispatcher, projectResolver, filePathNormalizer);
+
+            // Act
+            var result = documentResolver.TryResolveDocument(documentFilePath, out var document);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(document);
         }
 
         [Fact]

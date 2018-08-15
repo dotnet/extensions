@@ -16,10 +16,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
         private readonly ForegroundDispatcherShim _foregroundDispatcher;
         private readonly ProjectResolver _projectResolver;
         private readonly FilePathNormalizer _filePathNormalizer;
+        private readonly DocumentResolver _documentResolver;
         private readonly VSCodeLogger _logger;
 
         public DefaultRazorProjectService(
             ForegroundDispatcherShim foregroundDispatcher,
+            DocumentResolver documentResolver,
             ProjectResolver projectResolver,
             FilePathNormalizer filePathNormalizer,
             ProjectSnapshotManagerShimAccessor projectSnapshotManagerAccessor,
@@ -28,6 +30,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
+            if (documentResolver == null)
+            {
+                throw new ArgumentNullException(nameof(documentResolver));
             }
 
             if (projectResolver == null)
@@ -50,10 +57,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            _projectSnapshotManagerAccessor = projectSnapshotManagerAccessor;
             _foregroundDispatcher = foregroundDispatcher;
+            _documentResolver = documentResolver;
             _projectResolver = projectResolver;
             _filePathNormalizer = filePathNormalizer;
+            _projectSnapshotManagerAccessor = projectSnapshotManagerAccessor;
             _logger = logger;
         }
 
@@ -62,6 +70,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _foregroundDispatcher.AssertForegroundThread();
 
             var textDocumentPath = _filePathNormalizer.Normalize(filePath);
+            if (_documentResolver.TryResolveDocument(textDocumentPath, out var _))
+            {
+                // Document already added. This usually occurs when VSCode has already pre-initialized
+                // open documents and then we try to manually add all known razor documents.
+                return;
+            }
+
             if (!_projectResolver.TryResolveProject(textDocumentPath, out var projectSnapshot))
             {
                 projectSnapshot = _projectResolver.GetMiscellaneousProject();
@@ -71,6 +86,43 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _projectSnapshotManagerAccessor.Instance.DocumentAdded(projectSnapshot.HostProject, hostDocument, textLoader);
 
             _logger.Log($"Added document '{textDocumentPath}' to project '{projectSnapshot.FilePath}'.");
+        }
+
+        public override void OpenDocument(string filePath, SourceText sourceText)
+        {
+            _foregroundDispatcher.AssertForegroundThread();
+
+            var textDocumentPath = _filePathNormalizer.Normalize(filePath);
+            if (!_documentResolver.TryResolveDocument(textDocumentPath, out var _))
+            {
+                // Document hasn't been added. This usually occurs when VSCode trumps all other initialization 
+                // processes and pre-initializes already open documents.
+                AddDocument(filePath, textLoader: null);
+            }
+
+            if (!_projectResolver.TryResolveProject(textDocumentPath, out var projectSnapshot))
+            {
+                projectSnapshot = _projectResolver.GetMiscellaneousProject();
+            }
+
+            _projectSnapshotManagerAccessor.Instance.DocumentOpened(projectSnapshot.HostProject.FilePath, textDocumentPath, sourceText);
+
+            _logger.Log($"Opening document '{textDocumentPath}' in project '{projectSnapshot.FilePath}'.");
+        }
+
+        public override void CloseDocument(string filePath, TextLoader textLoader)
+        {
+            _foregroundDispatcher.AssertForegroundThread();
+
+            var textDocumentPath = _filePathNormalizer.Normalize(filePath);
+            if (!_projectResolver.TryResolveProject(textDocumentPath, out var projectSnapshot))
+            {
+                projectSnapshot = _projectResolver.GetMiscellaneousProject();
+            }
+
+            _projectSnapshotManagerAccessor.Instance.DocumentClosed(projectSnapshot.HostProject.FilePath, textDocumentPath, textLoader);
+
+            _logger.Log($"Closing document '{textDocumentPath}' in project '{projectSnapshot.FilePath}'.");
         }
 
         public override void RemoveDocument(string filePath)

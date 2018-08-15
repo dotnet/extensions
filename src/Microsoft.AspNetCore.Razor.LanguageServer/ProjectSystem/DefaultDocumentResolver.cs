@@ -46,12 +46,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             if (!_projectResolver.TryResolveProject(normalizedPath, out var project))
             {
                 project = _projectResolver.GetMiscellaneousProject();
-                if (!project.DocumentFilePaths.Contains(normalizedPath, FilePathComparerShim.Instance))
-                {
-                    // Miscellaneous project and other tracked projects do not contain document.
-                    document = null;
-                    return false;
-                }
+            }
+
+            if (!project.DocumentFilePaths.Contains(normalizedPath, FilePathComparerShim.Instance))
+            {
+                // Miscellaneous project and other tracked projects do not contain document.
+                document = null;
+                return false;
             }
 
             document = project.GetDocument(normalizedPath);

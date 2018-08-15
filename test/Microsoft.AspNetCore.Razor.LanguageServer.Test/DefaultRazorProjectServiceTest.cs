@@ -17,6 +17,186 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     public class DefaultRazorProjectServiceTest : TestBase
     {
         [Fact]
+        public void CloseDocument_ClosesDocumentInOwnerProject()
+        {
+            // Arrange
+            var expectedDocumentFilePath = "C:/path/to/document.cshtml";
+            var ownerProject = new TestProjectSnapshot("C:/path/to/project.sproj");
+            var projectResolver = new TestProjectResolver(
+                new Dictionary<string, ProjectSnapshotShim>
+                {
+                    [expectedDocumentFilePath] = ownerProject
+                },
+                new TestProjectSnapshot("__MISC_PROJECT__"));
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerShim>(MockBehavior.Strict);
+            projectSnapshotManager.Setup(manager => manager.DocumentClosed(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TextLoader>()))
+                .Callback<string, string, TextLoader>((projectFilePath, documentFilePath, text) =>
+                {
+                    Assert.Equal(ownerProject.HostProject.FilePath, projectFilePath);
+                    Assert.Equal(expectedDocumentFilePath, documentFilePath);
+                    Assert.NotNull(text);
+                });
+            var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
+            var textLoader = CreateTextLoader("Hello World");
+
+            // Act
+            projectService.CloseDocument(expectedDocumentFilePath, textLoader);
+
+            // Assert
+            projectSnapshotManager.VerifyAll();
+        }
+
+        [Fact]
+        public void CloseDocument_ClosesDocumentInMiscellaneousProject()
+        {
+            // Arrange
+            var expectedDocumentFilePath = "C:/path/to/document.cshtml";
+            var miscellaneousProject = new TestProjectSnapshot("__MISC_PROJECT__");
+            var projectResolver = new TestProjectResolver(
+                new Dictionary<string, ProjectSnapshotShim>(),
+                miscellaneousProject);
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerShim>(MockBehavior.Strict);
+            projectSnapshotManager.Setup(manager => manager.DocumentClosed(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TextLoader>()))
+                .Callback<string, string, TextLoader>((projectFilePath, documentFilePath, text) =>
+                {
+                    Assert.Equal(miscellaneousProject.FilePath, projectFilePath);
+                    Assert.Equal(expectedDocumentFilePath, documentFilePath);
+                    Assert.NotNull(text);
+                });
+            var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
+            var textLoader = CreateTextLoader("Hello World");
+
+            // Act
+            projectService.CloseDocument(expectedDocumentFilePath, textLoader);
+
+            // Assert
+            projectSnapshotManager.VerifyAll();
+        }
+
+        [Fact]
+        public void OpenDocument_OpensAlreadyAddedDocumentInOwnerProject()
+        {
+            // Arrange
+            var expectedDocumentFilePath = "C:/path/to/document.cshtml";
+            var ownerProject = new TestProjectSnapshot("C:/path/to/project.sproj");
+            var projectResolver = new TestProjectResolver(
+                new Dictionary<string, ProjectSnapshotShim>
+                {
+                    [expectedDocumentFilePath] = ownerProject
+                },
+                new TestProjectSnapshot("__MISC_PROJECT__"));
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerShim>(MockBehavior.Strict);
+            projectSnapshotManager.Setup(manager => manager.DocumentAdded(It.IsAny<HostProjectShim>(), It.IsAny<HostDocumentShim>(), It.IsAny<TextLoader>()))
+                .Throws(new InvalidOperationException("This shouldn't have been called."));
+            projectSnapshotManager.Setup(manager => manager.DocumentOpened(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SourceText>()))
+                .Callback<string, string, SourceText>((projectFilePath, documentFilePath, text) =>
+                {
+                    Assert.Equal(ownerProject.HostProject.FilePath, projectFilePath);
+                    Assert.Equal(expectedDocumentFilePath, documentFilePath);
+                    Assert.NotNull(text);
+                });
+            var documentSnapshotShim = Mock.Of<DocumentSnapshotShim>();
+            var documentResolver = Mock.Of<DocumentResolver>(resolver => resolver.TryResolveDocument(It.IsAny<string>(), out documentSnapshotShim) == true);
+            var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object, documentResolver);
+            var sourceText = SourceText.From("Hello World");
+
+            // Act
+            projectService.OpenDocument(expectedDocumentFilePath, sourceText);
+
+            // Assert
+            projectSnapshotManager.Verify(manager => manager.DocumentOpened(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SourceText>()));
+        }
+
+        [Fact]
+        public void OpenDocument_OpensAlreadyAddedDocumentInMiscellaneousProject()
+        {
+            // Arrange
+            var expectedDocumentFilePath = "C:/path/to/document.cshtml";
+            var miscellaneousProject = new TestProjectSnapshot("__MISC_PROJECT__");
+            var projectResolver = new TestProjectResolver(
+                new Dictionary<string, ProjectSnapshotShim>(),
+                miscellaneousProject);
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerShim>(MockBehavior.Strict);
+            projectSnapshotManager.Setup(manager => manager.DocumentAdded(It.IsAny<HostProjectShim>(), It.IsAny<HostDocumentShim>(), It.IsAny<TextLoader>()))
+                .Throws(new InvalidOperationException("This shouldn't have been called."));
+            projectSnapshotManager.Setup(manager => manager.DocumentOpened(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SourceText>()))
+                .Callback<string, string, SourceText>((projectFilePath, documentFilePath, text) =>
+                {
+                    Assert.Equal(miscellaneousProject.FilePath, projectFilePath);
+                    Assert.Equal(expectedDocumentFilePath, documentFilePath);
+                    Assert.NotNull(text);
+                });
+            var documentSnapshotShim = Mock.Of<DocumentSnapshotShim>();
+            var documentResolver = Mock.Of<DocumentResolver>(resolver => resolver.TryResolveDocument(It.IsAny<string>(), out documentSnapshotShim) == true);
+            var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object, documentResolver);
+            var sourceText = SourceText.From("Hello World");
+
+            // Act
+            projectService.OpenDocument(expectedDocumentFilePath, sourceText);
+
+            // Assert
+            projectSnapshotManager.Verify(manager => manager.DocumentOpened(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SourceText>()));
+        }
+
+        [Fact]
+        public void OpenDocument_OpensAndAddsDocumentToOwnerProject()
+        {
+            // Arrange
+            var expectedDocumentFilePath = "C:/path/to/document.cshtml";
+            var ownerProject = new TestProjectSnapshot("C:/path/to/project.sproj");
+            var projectResolver = new TestProjectResolver(
+                new Dictionary<string, ProjectSnapshotShim>
+                {
+                    [expectedDocumentFilePath] = ownerProject
+                },
+                new TestProjectSnapshot("__MISC_PROJECT__"));
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerShim>(MockBehavior.Strict);
+            projectSnapshotManager.Setup(manager => manager.DocumentAdded(It.IsAny<HostProjectShim>(), It.IsAny<HostDocumentShim>(), It.IsAny<TextLoader>()))
+                .Callback<HostProjectShim, HostDocumentShim, TextLoader>((hostProject, hostDocumentShim, loader) =>
+                {
+                    Assert.Same(ownerProject.HostProject, hostProject);
+                    Assert.Equal(expectedDocumentFilePath, hostDocumentShim.FilePath);
+                    Assert.Null(loader);
+                });
+            projectSnapshotManager.Setup(manager => manager.DocumentOpened(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SourceText>()))
+                .Callback<string, string, SourceText>((projectFilePath, documentFilePath, text) =>
+                {
+                    Assert.Equal(ownerProject.HostProject.FilePath, projectFilePath);
+                    Assert.Equal(expectedDocumentFilePath, documentFilePath);
+                    Assert.NotNull(text);
+                });
+            var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
+            var sourceText = SourceText.From("Hello World");
+
+            // Act
+            projectService.OpenDocument(expectedDocumentFilePath, sourceText);
+
+            // Assert
+            projectSnapshotManager.VerifyAll();
+        }
+
+        [Fact]
+        public void AddDocument_NoopsIfDocumentIsAlreadyAdded()
+        {
+            // Arrange
+            var documentFilePath = "C:/path/to/document.cshtml";
+            var project = Mock.Of<ProjectSnapshotShim>();
+            var projectResolver = new Mock<ProjectResolver>();
+            projectResolver.Setup(resolver => resolver.TryResolveProject(It.IsAny<string>(), out project))
+                .Throws(new InvalidOperationException("This shouldn't have been called."));
+            var alreadyOpenDoc = Mock.Of<DocumentSnapshotShim>();
+            var documentResolver = Mock.Of<DocumentResolver>(resolver => resolver.TryResolveDocument(It.IsAny<string>(), out alreadyOpenDoc));
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerShim>(MockBehavior.Strict);
+            projectSnapshotManager.Setup(manager => manager.DocumentAdded(It.IsAny<HostProjectShim>(), It.IsAny<HostDocumentShim>(), It.IsAny<TextLoader>()))
+                .Throws(new InvalidOperationException("This should not have been called."));
+            var projectService = CreateProjectService(projectResolver.Object, projectSnapshotManager.Object, documentResolver);
+            var textLoader = CreateTextLoader("Hello World");
+
+            // Act & Assert
+            projectService.AddDocument(documentFilePath, textLoader);
+        }
+
+        [Fact]
         public void AddDocument_AddsDocumentToOwnerProject()
         {
             // Arrange
@@ -366,12 +546,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             return textLoader;
         }
 
-        private DefaultRazorProjectService CreateProjectService(ProjectResolver projectResolver, ProjectSnapshotManagerShim projectSnapshotManager)
+        private DefaultRazorProjectService CreateProjectService(
+            ProjectResolver projectResolver, 
+            ProjectSnapshotManagerShim projectSnapshotManager,
+            DocumentResolver documentResolver = null)
         {
             var logger = Mock.Of<VSCodeLogger>();
             var filePathNormalizer = new FilePathNormalizer();
             var accessor = Mock.Of<ProjectSnapshotManagerShimAccessor>(a => a.Instance == projectSnapshotManager);
-            var projectService = new DefaultRazorProjectService(Dispatcher, projectResolver, filePathNormalizer, accessor, logger);
+            documentResolver = documentResolver ?? Mock.Of<DocumentResolver>();
+            var projectService = new DefaultRazorProjectService(Dispatcher, documentResolver, projectResolver, filePathNormalizer, accessor, logger);
 
             return projectService;
         }

@@ -2,31 +2,26 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
-using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
-using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class RazorProjectEndpoint : IRazorAddProjectHandler, IRazorRemoveProjectHandler
+    internal class RazorProjectEndpoint : IRazorAddProjectHandler, IRazorRemoveProjectHandler, IRazorAddDocumentHandler, IRazorRemoveDocumentHandler
     {
         private readonly RazorProjectService _projectService;
         private readonly RazorConfigurationResolver _configurationResolver;
+        private readonly RemoteTextLoaderFactory _remoteTextLoaderFactory;
         private readonly ForegroundDispatcherShim _foregroundDispatcher;
         private readonly VSCodeLogger _logger;
 
         public RazorProjectEndpoint(
             ForegroundDispatcherShim foregroundDispatcher,
             RazorConfigurationResolver configurationResolver,
+            RemoteTextLoaderFactory remoteTextLoaderFactory,
             RazorProjectService projectService,
             VSCodeLogger logger)
         {
@@ -38,6 +33,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             if (configurationResolver == null)
             {
                 throw new ArgumentNullException(nameof(configurationResolver));
+            }
+
+            if (remoteTextLoaderFactory == null)
+            {
+                throw new ArgumentNullException(nameof(remoteTextLoaderFactory));
             }
 
             if (projectService == null)
@@ -52,6 +52,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             _foregroundDispatcher = foregroundDispatcher;
             _configurationResolver = configurationResolver;
+            _remoteTextLoaderFactory = remoteTextLoaderFactory;
             _projectService = projectService;
             _logger = logger;
         }
@@ -87,6 +88,33 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             await Task.Factory.StartNew(
                 () => _projectService.RemoveProject(request.FilePath),
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                _foregroundDispatcher.ForegroundScheduler);
+
+            return Unit.Value;
+        }
+
+        public async Task<Unit> Handle(AddDocumentParams request, CancellationToken cancellationToken)
+        {
+            _foregroundDispatcher.AssertBackgroundThread();
+
+            var textLoader = _remoteTextLoaderFactory.Create(request.FilePath);
+            await Task.Factory.StartNew(
+                () => _projectService.AddDocument(request.FilePath, textLoader),
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                _foregroundDispatcher.ForegroundScheduler);
+
+            return Unit.Value;
+        }
+
+        public async Task<Unit> Handle(RemoveDocumentParams request, CancellationToken cancellationToken)
+        {
+            _foregroundDispatcher.AssertBackgroundThread();
+
+            await Task.Factory.StartNew(
+                () => _projectService.RemoveDocument(request.FilePath),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);

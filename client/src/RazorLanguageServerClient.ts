@@ -5,7 +5,13 @@
 
 import { EventEmitter } from 'events';
 import * as vscode from 'vscode';
-import { LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient/lib/main';
+import {
+    GenericRequestHandler,
+    LanguageClient,
+    LanguageClientOptions,
+    ServerOptions,
+    State,
+} from 'vscode-languageclient/lib/main';
 import { RazorLanguage } from './RazorLanguage';
 import { RazorLanguageServerMiddleware } from './RazorLanguageServerMiddleware';
 import { RazorLanguageServerOptions } from './RazorLanguageServerOptions';
@@ -82,6 +88,14 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         }
 
         return this.client.sendRequest<TResponseType>(method, param);
+    }
+
+    public async onRequest<TRequest, TReturn>(method: string, handler: GenericRequestHandler<TRequest, TReturn>) {
+        if (!this.isStarted) {
+            throw new Error('Tried to bind on request logic while server is not started.');
+        }
+
+        this.client.onRequest(method, handler);
     }
 
     public dispose() {
