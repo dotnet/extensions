@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 {
     public abstract class ProjectResolver
     {
-        public abstract bool TryResolveProject(string documentFilePath, out ProjectSnapshotShim projectSnapshot);
+        public abstract bool TryResolvePotentialProject(string documentFilePath, out ProjectSnapshotShim projectSnapshot);
 
         public abstract ProjectSnapshotShim GetMiscellaneousProject();
     }

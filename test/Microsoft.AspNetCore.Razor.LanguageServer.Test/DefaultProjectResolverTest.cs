@@ -16,14 +16,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     public class DocumentProjectResolverTest : TestBase
     {
         [Fact]
-        public void TryResolveProject_NoProjects_ReturnsFalse()
+        public void TryResolvePotentialProject_NoProjects_ReturnsFalse()
         {
             // Arrange
             var documentFilePath = "C:/path/to/document.cshtml";
             var projectResolver = CreateProjectResolver(() => new ProjectSnapshotShim[0]);
 
             // Act
-            var result = projectResolver.TryResolveProject(documentFilePath, out var project);
+            var result = projectResolver.TryResolvePotentialProject(documentFilePath, out var project);
 
             // Assert
             Assert.False(result);
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         [Fact]
-        public void TryResolveProject_OnlyMiscellaneousProject_ReturnsFalse()
+        public void TryResolvePotentialProject_OnlyMiscellaneousProject_ReturnsFalse()
         {
             // Arrange
             var documentFilePath = "C:/path/to/document.cshtml";
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             projectResolver = CreateProjectResolver(() => new[] { miscProject.Object });
 
             // Act
-            var result = projectResolver.TryResolveProject(documentFilePath, out var project);
+            var result = projectResolver.TryResolvePotentialProject(documentFilePath, out var project);
 
             // Assert
             Assert.False(result);
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         [Fact]
-        public void TryResolveProject_UnrelatedProject_ReturnsFalse()
+        public void TryResolvePotentialProject_UnrelatedProject_ReturnsFalse()
         {
             // Arrange
             var documentFilePath = "C:/path/to/document.cshtml";
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectResolver = CreateProjectResolver(() => new[] { unrelatedProject });
 
             // Act
-            var result = projectResolver.TryResolveProject(documentFilePath, out var project);
+            var result = projectResolver.TryResolvePotentialProject(documentFilePath, out var project);
 
             // Assert
             Assert.False(result);
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         [Fact]
-        public void TryResolveProject_OwnerProjectWithOthers_ReturnsTrue()
+        public void TryResolvePotentialProject_OwnerProjectWithOthers_ReturnsTrue()
         {
             // Arrange
             var documentFilePath = "C:/path/to/document.cshtml";
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var projectResolver = CreateProjectResolver(() => new[] { unrelatedProject, ownerProject });
 
             // Act
-            var result = projectResolver.TryResolveProject(documentFilePath, out var project);
+            var result = projectResolver.TryResolvePotentialProject(documentFilePath, out var project);
 
             // Assert
             Assert.True(result);

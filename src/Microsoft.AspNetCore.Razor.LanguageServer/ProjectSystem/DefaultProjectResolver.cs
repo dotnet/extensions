@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _miscellaneousHostProject = HostProjectShim.Create("__MISC_RAZOR_PROJECT__", configurationResolver.Default);
         }
 
-        public override bool TryResolveProject(string documentFilePath, out ProjectSnapshotShim projectSnapshot)
+        public override bool TryResolvePotentialProject(string documentFilePath, out ProjectSnapshotShim projectSnapshot)
         {
             if (documentFilePath == null)
             {

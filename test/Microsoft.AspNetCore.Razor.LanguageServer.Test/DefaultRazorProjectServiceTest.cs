@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentFilePath = "C:/path/to/document.cshtml";
             var project = Mock.Of<ProjectSnapshotShim>();
             var projectResolver = new Mock<ProjectResolver>();
-            projectResolver.Setup(resolver => resolver.TryResolveProject(It.IsAny<string>(), out project))
+            projectResolver.Setup(resolver => resolver.TryResolvePotentialProject(It.IsAny<string>(), out project))
                 .Throws(new InvalidOperationException("This shouldn't have been called."));
             var alreadyOpenDoc = Mock.Of<DocumentSnapshotShim>();
             var documentResolver = Mock.Of<DocumentResolver>(resolver => resolver.TryResolveDocument(It.IsAny<string>(), out alreadyOpenDoc));
@@ -573,7 +573,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             public override ProjectSnapshotShim GetMiscellaneousProject() => _miscellaneousProject;
 
-            public override bool TryResolveProject(string documentFilePath, out ProjectSnapshotShim projectSnapshot)
+            public override bool TryResolvePotentialProject(string documentFilePath, out ProjectSnapshotShim projectSnapshot)
             {
                 return _projectMappings.TryGetValue(documentFilePath, out projectSnapshot);
             }

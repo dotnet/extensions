@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _foregroundDispatcher.AssertForegroundThread();
 
             var normalizedPath = _filePathNormalizer.Normalize(documentFilePath);
-            if (!_projectResolver.TryResolveProject(normalizedPath, out var project))
+            if (!_projectResolver.TryResolvePotentialProject(normalizedPath, out var project))
             {
                 project = _projectResolver.GetMiscellaneousProject();
             }
