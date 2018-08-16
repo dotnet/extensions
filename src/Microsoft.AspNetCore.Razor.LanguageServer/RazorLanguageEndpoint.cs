@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Editor.Razor;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -69,11 +71,29 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             _logger.Log($"Language query request for ({request.Position.Line}, {request.Position.Character}) = {languageKind}");
 
+            var responsePosition = request.Position;
+
+            if (languageKind == RazorLanguageKind.CSharp)
+            {
+                if (TryGetCSharpProjectedPosition(codeDocument, hostDocumentIndex, out var projectedPosition))
+                {
+                    // For C# locations, we attempt to return the corresponding position
+                    // within the projected document
+                    responsePosition = projectedPosition;
+                }
+                else
+                {
+                    // It no longer makes sense to think of this location as C#, since it doesn't
+                    // correspond to any position in the projected document. This should not happen
+                    // since there should be source mappings for all the C# spans.
+                    languageKind = RazorLanguageKind.Razor;
+                }
+            }
+
             return new RazorLanguageQueryResponse()
             {
                 Kind = languageKind,
-                // TODO: If C# remap to generated document position
-                Position = request.Position,
+                Position = responsePosition,
             };
         }
 
@@ -118,6 +138,34 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Content type was non-C# or Html or we couldn't find a classified span overlapping the request position.
             // Default to Razor
             return RazorLanguageKind.Razor;
+        }
+
+        // Internal for testing
+        internal static bool TryGetCSharpProjectedPosition(RazorCodeDocument codeDocument, int absoluteIndex, out Position projectedPosition)
+        {
+            var csharpDoc = codeDocument.GetCSharpDocument();
+            foreach (var mapping in csharpDoc.SourceMappings)
+            {
+                var originalSpan = mapping.OriginalSpan;
+                var originalAbsoluteIndex = originalSpan.AbsoluteIndex;
+                if (originalAbsoluteIndex <= absoluteIndex)
+                {
+                    // Treat the mapping as owning the edge at its end (hence <= originalSpan.Length),
+                    // otherwise we wouldn't handle the cursor being right after the final C# char
+                    var distanceIntoOriginalSpan = absoluteIndex - originalAbsoluteIndex;
+                    if (distanceIntoOriginalSpan <= originalSpan.Length)
+                    {
+                        var generatedSource = SourceText.From(csharpDoc.GeneratedCode);
+                        var generatedAbsoluteIndex = mapping.GeneratedSpan.AbsoluteIndex + distanceIntoOriginalSpan;
+                        var generatedLinePosition = generatedSource.Lines.GetLinePosition(generatedAbsoluteIndex);
+                        projectedPosition = new Position(generatedLinePosition.Line, generatedLinePosition.Character);
+                        return true;
+                    }
+                }
+            }
+
+            projectedPosition = default;
+            return false;
         }
     }
 }

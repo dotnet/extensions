@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -81,7 +82,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var documentPath = "C:/path/to/document.cshtml";
-            var codeDocument = CreateCodeDocument("@");
+            var codeDocument = CreateCodeDocumentWithCSharpProjection(
+                "@",
+                "/* CSharp */",
+                new[] { new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 12)) });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
             var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, SyntaxFactsService, Logger);
             var request = new RazorLanguageQueryParams()
@@ -95,9 +99,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Assert
             Assert.Equal(RazorLanguageKind.CSharp, response.Kind);
-
-            // NOTE: This will change once C# gets remapped.
-            Assert.Equal(request.Position, response.Position);
+            Assert.Equal(0, response.Position.Line);
+            Assert.Equal(1, response.Position.Character);
         }
 
         [Fact]
@@ -198,6 +201,89 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Assert.Equal(RazorLanguageKind.Html, languageKind);
         }
 
+        [Fact]
+        public void GetCSharpProjectedPosition_NotMatchingAnyMapping()
+        {
+            // Arrange
+            var codeDoc = CreateCodeDocumentWithCSharpProjection(
+                "test razor source",
+                "test C# source",
+                new[] { new SourceMapping(new SourceSpan(2, 100), new SourceSpan(0, 100)) });
+
+            // Act
+            var result = RazorLanguageEndpoint.TryGetCSharpProjectedPosition(codeDoc, 1, out var projectedPosition);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(default, projectedPosition);
+        }
+
+        [Fact]
+        public void GetCSharpProjectedPosition_CSharp_OnLeadingEdge()
+        {
+            // Arrange
+            var codeDoc = CreateCodeDocumentWithCSharpProjection(
+                "Line 1\nLine 2 @{ var abc;\nvar def; }",
+                "\n// Prefix\n var abc;\nvar def; \n// Suffix",
+                new[] {
+                    new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 1)),
+                    new SourceMapping(new SourceSpan(16, 19), new SourceSpan(11, 19))
+                });
+
+            // Act
+            var result = RazorLanguageEndpoint.TryGetCSharpProjectedPosition(
+                codeDoc, 16, out var projectedPosition);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(2, projectedPosition.Line);
+            Assert.Equal(0, projectedPosition.Character);
+        }
+
+        [Fact]
+        public void GetCSharpProjectedPosition_CSharp_InMiddle()
+        {
+            // Arrange
+            var codeDoc = CreateCodeDocumentWithCSharpProjection(
+                "Line 1\nLine 2 @{ var abc;\nvar def; }",
+                "\n// Prefix\n var abc;\nvar def; \n// Suffix",
+                new[] {
+                    new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 1)),
+                    new SourceMapping(new SourceSpan(16, 19), new SourceSpan(11, 19))
+                });
+
+            // Act
+            var result = RazorLanguageEndpoint.TryGetCSharpProjectedPosition(
+                codeDoc, 28, out var projectedPosition);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(3, projectedPosition.Line);
+            Assert.Equal(2, projectedPosition.Character);
+        }
+
+        [Fact]
+        public void GetCSharpProjectedPosition_CSharp_OnTrailingEdge()
+        {
+            // Arrange
+            var codeDoc = CreateCodeDocumentWithCSharpProjection(
+                "Line 1\nLine 2 @{ var abc;\nvar def; }",
+                "\n// Prefix\n var abc;\nvar def; \n// Suffix",
+                new[] {
+                    new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 1)),
+                    new SourceMapping(new SourceSpan(16, 19), new SourceSpan(11, 19))
+                });
+
+            // Act
+            var result = RazorLanguageEndpoint.TryGetCSharpProjectedPosition(
+                codeDoc, 35, out var projectedPosition);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(3, projectedPosition.Line);
+            Assert.Equal(9, projectedPosition.Character);
+        }
+
         public IReadOnlyList<ClassifiedSpan> GetClassifiedSpans(string text)
         {
             var codeDocument = CreateCodeDocument(text);
@@ -221,6 +307,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var sourceDocument = TestRazorSourceDocument.Create(text);
             var syntaxTree = RazorSyntaxTree.Parse(sourceDocument);
             codeDocument.SetSyntaxTree(syntaxTree);
+            return codeDocument;
+        }
+
+        private static RazorCodeDocument CreateCodeDocumentWithCSharpProjection(string razorSource, string projectedCSharpSource, IEnumerable<SourceMapping> sourceMappings)
+        {
+            var codeDocument = CreateCodeDocument(razorSource);
+            var csharpDocument = RazorCSharpDocument.Create(
+                    projectedCSharpSource,
+                    RazorCodeGenerationOptions.CreateDefault(),
+                    Enumerable.Empty<RazorDiagnostic>(),
+                    sourceMappings);
+            codeDocument.SetCSharpDocument(csharpDocument);
             return codeDocument;
         }
     }
