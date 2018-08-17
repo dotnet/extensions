@@ -33,7 +33,9 @@ namespace Microsoft.Extensions.DependencyInjection
             // Core abstractions
             //
             services.TryAddTransient<HttpMessageHandlerBuilder, DefaultHttpMessageHandlerBuilder>();
-            services.TryAddSingleton<IHttpClientFactory, DefaultHttpClientFactory>();
+            services.AddSingleton<DefaultHttpClientFactory>();
+            services.TryAddSingleton<IHttpClientFactory>(serviceProvider => serviceProvider.GetRequiredService<DefaultHttpClientFactory>());
+            services.TryAddSingleton<IHttpMessageHandlerFactory>(serviceProvider => serviceProvider.GetRequiredService<DefaultHttpClientFactory>());
 
             //
             // Typed Clients

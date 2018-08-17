@@ -107,6 +107,31 @@ namespace Microsoft.Extensions.Http
         }
 
         [Fact]
+        public void Factory_DisposeHandler_DoesNotDisposeInnerHandler()
+        {
+            // Arrange
+            Options.CurrentValue.HttpMessageHandlerBuilderActions.Add(b =>
+            {
+                var mockHandler = new Mock<HttpMessageHandler>();
+                mockHandler
+                    .Protected()
+                    .Setup("Dispose", true)
+                    .Throws(new Exception("Dispose should not be called"));
+
+                b.PrimaryHandler = mockHandler.Object;
+            });
+
+            var factory = new TestHttpClientFactory(Services, ScopeFactory, LoggerFactory, Options, EmptyFilters);
+
+            // Act 
+            using (factory.CreateHandler())
+            {
+            }
+
+            // Assert (does not throw)
+        }
+
+        [Fact]
         public void Factory_CreateClient_WithoutName_UsesDefaultOptions()
         {
             // Arrange

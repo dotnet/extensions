@@ -37,6 +37,26 @@ namespace Microsoft.Extensions.DependencyInjection
             Assert.NotNull(client);
         }
 
+        [Fact] // Verifies that AddHttpClient is enough to get the factory and make handlers.
+        public void AddHttpClient_IsSelfContained_CanCreateHandler()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+
+            // Act1
+            serviceCollection.AddHttpClient();
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            var factory = services.GetRequiredService<IHttpMessageHandlerFactory>();
+
+            // Act2
+            var handler = factory.CreateHandler();
+
+            // Assert
+            Assert.NotNull(handler);
+        }
+
         [Fact]
         public void AddHttpClient_WithDefaultName_ConfiguresDefaultClient()
         {
@@ -377,7 +397,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
-        public void AddHttpMessageHandler_WithName_NewHandlerIsSurroundedByLogging()
+        public void AddHttpMessageHandler_WithName_NewHandlerIsSurroundedByLogging_ForHttpClient()
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
@@ -516,6 +536,57 @@ namespace Microsoft.Extensions.DependencyInjection
         
             // Assert
             Assert.Equal("http://example.com/", client.HttpClient.BaseAddress.AbsoluteUri);
+        }
+
+        [Fact]
+        public void AddHttpMessageHandler_WithName_NewHandlerIsSurroundedByLogging_ForHttpMessageHandler()
+        {
+            var serviceCollection = new ServiceCollection();
+
+            HttpMessageHandlerBuilder builder = null;
+
+            // Act1
+            serviceCollection.AddHttpClient("example.com").ConfigureHttpMessageHandlerBuilder(b =>
+            {
+                builder = b;
+
+                b.AdditionalHandlers.Add(Mock.Of<DelegatingHandler>());
+            });
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            var factory = services.GetRequiredService<IHttpMessageHandlerFactory>();
+
+            // Act2
+            var handler = factory.CreateHandler("example.com");
+
+            // Assert
+            Assert.NotNull(handler);
+            Assert.IsNotType<LoggingScopeHttpMessageHandler>(handler);
+
+            Assert.Collection(
+                builder.AdditionalHandlers,
+                h => Assert.IsType<LoggingScopeHttpMessageHandler>(h),
+                h => Assert.NotNull(h),
+                h => Assert.IsType<LoggingHttpMessageHandler>(h));
+        }
+
+        [Fact] // Verifies IHttpClientFactory and IHttpMessageHandlerFactory are backed by the same internal handlers
+        public void AddHttpClient_ProvidesSameImplementationForClientsAndHandlers()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+
+            // Act
+            serviceCollection.AddHttpClient();
+
+            var services = serviceCollection.BuildServiceProvider();
+
+            var clientFactory = services.GetRequiredService<IHttpClientFactory>();
+            var handlerFactory = services.GetRequiredService<IHttpMessageHandlerFactory>();
+
+            // Assert
+            Assert.Same(clientFactory, handlerFactory);
         }
 
         [Fact]
