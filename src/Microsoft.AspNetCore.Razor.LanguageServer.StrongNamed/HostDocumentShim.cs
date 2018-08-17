@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
 
         public abstract string TargetPath { get; }
 
+        public abstract GeneratedCodeContainerShim GeneratedCodeContainer { get; }
+
         public static HostDocumentShim Create(string filePath, string targetPath)
         {
             var hostDocument = new HostDocument(filePath, targetPath);

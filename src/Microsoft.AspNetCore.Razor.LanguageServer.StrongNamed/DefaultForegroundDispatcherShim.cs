@@ -10,8 +10,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
 {
     internal class DefaultForegroundDispatcherShim : ForegroundDispatcherShim
     {
-        private readonly ForegroundDispatcher _foregroundDispatcher;
-
         public DefaultForegroundDispatcherShim(ForegroundDispatcher foregroundDispatcher)
         {
             if (foregroundDispatcher == null)
@@ -19,17 +17,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
             }
 
-            _foregroundDispatcher = foregroundDispatcher;
+            InnerForegroundDispatcher = foregroundDispatcher;
         }
 
-        public override bool IsForegroundThread => _foregroundDispatcher.IsForegroundThread;
+        public ForegroundDispatcher InnerForegroundDispatcher { get; }
 
-        public override TaskScheduler ForegroundScheduler => _foregroundDispatcher.ForegroundScheduler;
+        public override bool IsForegroundThread => InnerForegroundDispatcher.IsForegroundThread;
 
-        public override TaskScheduler BackgroundScheduler => _foregroundDispatcher.BackgroundScheduler;
+        public override TaskScheduler ForegroundScheduler => InnerForegroundDispatcher.ForegroundScheduler;
 
-        public override void AssertForegroundThread([CallerMemberName] string caller = null) => _foregroundDispatcher.AssertForegroundThread(caller);
+        public override TaskScheduler BackgroundScheduler => InnerForegroundDispatcher.BackgroundScheduler;
 
-        public override void AssertBackgroundThread([CallerMemberName] string caller = null) => _foregroundDispatcher.AssertBackgroundThread(caller);
+        public override void AssertForegroundThread([CallerMemberName] string caller = null) => InnerForegroundDispatcher.AssertForegroundThread(caller);
+
+        public override void AssertBackgroundThread([CallerMemberName] string caller = null) => InnerForegroundDispatcher.AssertBackgroundThread(caller);
     }
 }

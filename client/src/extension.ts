@@ -23,7 +23,7 @@ export async function activate(context: ExtensionContext) {
     const languageServerOptions = resolveRazorLanguageServerOptions();
     const languageServerClient = new RazorLanguageServerClient(languageServerOptions);
     const languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
-    const csharpFeature = new RazorCSharpFeature();
+    const csharpFeature = new RazorCSharpFeature(languageServerClient);
     const projectTracker = new RazorProjectTracker(languageServiceClient);
     const documentTracker = new RazorDocumentTracker(languageServiceClient);
     const localRegistrations: vscode.Disposable[] = [];
@@ -35,13 +35,7 @@ export async function activate(context: ExtensionContext) {
                 new RazorCompletionItemProvider(csharpFeature, languageServiceClient)),
             projectTracker.register(),
             documentTracker.register(),
-            csharpFeature.register(),
-            vscode.workspace.onDidChangeTextDocument(args => {
-                const activeTextEditor = vscode.window.activeTextEditor;
-                if (activeTextEditor && activeTextEditor.document === args.document) {
-                    csharpFeature.updateDocument(args.document.uri);
-                }
-            }));
+            csharpFeature.register());
     });
 
     const onStopRegistration = languageServerClient.onStop(() => {
@@ -52,7 +46,6 @@ export async function activate(context: ExtensionContext) {
     await languageServerClient.start();
     await projectTracker.initialize();
     await documentTracker.initialize();
-    await csharpFeature.initialize();
 
     context.subscriptions.push(languageServerClient, onStartRegistration, onStopRegistration);
 

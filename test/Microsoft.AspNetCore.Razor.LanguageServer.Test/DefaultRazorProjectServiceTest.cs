@@ -555,7 +555,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var filePathNormalizer = new FilePathNormalizer();
             var accessor = Mock.Of<ProjectSnapshotManagerShimAccessor>(a => a.Instance == projectSnapshotManager);
             documentResolver = documentResolver ?? Mock.Of<DocumentResolver>();
-            var projectService = new DefaultRazorProjectService(Dispatcher, documentResolver, projectResolver, filePathNormalizer, accessor, logger);
+            var hostDocumentFactory = new TestHostDocumentFactory();
+            var projectService = new DefaultRazorProjectService(Dispatcher, hostDocumentFactory, documentResolver, projectResolver, filePathNormalizer, accessor, logger);
 
             return projectService;
         }
@@ -576,6 +577,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             public override bool TryResolvePotentialProject(string documentFilePath, out ProjectSnapshotShim projectSnapshot)
             {
                 return _projectMappings.TryGetValue(documentFilePath, out projectSnapshot);
+            }
+        }
+
+        private class TestHostDocumentFactory : HostDocumentFactory
+        {
+            public override HostDocumentShim Create(string documentFilePath)
+            {
+                return HostDocumentShim.Create(documentFilePath, documentFilePath);
             }
         }
     }

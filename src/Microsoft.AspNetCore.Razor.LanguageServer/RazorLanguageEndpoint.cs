@@ -69,8 +69,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var classifiedSpans = _syntaxFactsService.GetClassifiedSpans(syntaxTree);
             var languageKind = GetLanguageKind(classifiedSpans, hostDocumentIndex);
 
-            _logger.Log($"Language query request for ({request.Position.Line}, {request.Position.Character}) = {languageKind}");
-
             var responsePosition = request.Position;
 
             if (languageKind == RazorLanguageKind.CSharp)
@@ -89,6 +87,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     languageKind = RazorLanguageKind.Razor;
                 }
             }
+
+            _logger.Log($"Language query request for ({request.Position.Line}, {request.Position.Character}) = {languageKind} at ({responsePosition.Line}, {responsePosition.Character})");
 
             return new RazorLanguageQueryResponse()
             {

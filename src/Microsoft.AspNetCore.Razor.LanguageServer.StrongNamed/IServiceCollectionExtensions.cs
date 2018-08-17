@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             services.AddSingleton<ForegroundDispatcher, VSCodeForegroundDispatcher>();
             services.AddSingleton<ForegroundDispatcherShim, DefaultForegroundDispatcherShim>();
-            services.AddSingleton<ErrorReporter, DefaultErrorReporter>();
             services.AddSingleton<ProjectSnapshotManagerShimAccessor, DefaultProjectSnapshotManagerShimAccessor>();
             services.AddSingleton<RazorConfigurationResolver, DefaultRazorConfigurationResolver>();
             services.AddSingleton<RazorSyntaxFactsService, DefaultRazorSyntaxFactsService>();

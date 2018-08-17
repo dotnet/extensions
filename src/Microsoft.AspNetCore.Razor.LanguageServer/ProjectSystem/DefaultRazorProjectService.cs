@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
     {
         private readonly ProjectSnapshotManagerShimAccessor _projectSnapshotManagerAccessor;
         private readonly ForegroundDispatcherShim _foregroundDispatcher;
+        private readonly HostDocumentFactory _hostDocumentFactory;
         private readonly ProjectResolver _projectResolver;
         private readonly FilePathNormalizer _filePathNormalizer;
         private readonly DocumentResolver _documentResolver;
@@ -21,6 +22,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
         public DefaultRazorProjectService(
             ForegroundDispatcherShim foregroundDispatcher,
+            HostDocumentFactory hostDocumentFactory,
             DocumentResolver documentResolver,
             ProjectResolver projectResolver,
             FilePathNormalizer filePathNormalizer,
@@ -30,6 +32,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
+            if (hostDocumentFactory == null)
+            {
+                throw new ArgumentNullException(nameof(hostDocumentFactory));
             }
 
             if (documentResolver == null)
@@ -58,6 +65,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             }
 
             _foregroundDispatcher = foregroundDispatcher;
+            _hostDocumentFactory = hostDocumentFactory;
             _documentResolver = documentResolver;
             _projectResolver = projectResolver;
             _filePathNormalizer = filePathNormalizer;
@@ -82,7 +90,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 projectSnapshot = _projectResolver.GetMiscellaneousProject();
             }
 
-            var hostDocument = HostDocumentShim.Create(textDocumentPath, textDocumentPath);
+            var hostDocument = _hostDocumentFactory.Create(textDocumentPath);
             _projectSnapshotManagerAccessor.Instance.DocumentAdded(projectSnapshot.HostProject, hostDocument, textLoader);
 
             _logger.Log($"Added document '{textDocumentPath}' to project '{projectSnapshot.FilePath}'.");

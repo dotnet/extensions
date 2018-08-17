@@ -4,23 +4,16 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
+import { RazorLanguage } from '../RazorLanguage';
 import { CSharpProjectedDocument } from './CSharpProjectedDocument';
 
 export class CSharpProjectedDocumentContentProvider implements vscode.TextDocumentContentProvider {
+    public static readonly scheme = 'razor-csharp';
+
     private onDidChangeEmitter = new vscode.EventEmitter<vscode.Uri>();
     private projectedDocuments: { [hostDocumentPath: string]: CSharpProjectedDocument } = {};
 
     public get onDidChange() { return this.onDidChangeEmitter.event; }
-
-    public update(uri: vscode.Uri) {
-        this.ensureProjectedDocument(uri)
-            .then(projectedDocument => {
-                this.onDidChangeEmitter.fire(projectedDocument.projectedUri);
-            })
-            .catch(reason => {
-                vscode.window.showErrorMessage(`For some reason we failed to open the projected document: ${reason}`);
-            });
-    }
 
     public provideTextDocumentContent(uri: vscode.Uri) {
         const projectedDocument = this.findProjectedDocument(uri);
@@ -29,15 +22,7 @@ export class CSharpProjectedDocumentContentProvider implements vscode.TextDocume
             return;
         }
 
-        const hostDocumentUriPath = projectedDocument.hostDocumentUri.path;
-        const hostDocument = vscode.workspace.textDocuments.find(
-            doc => doc.uri.path.localeCompare(hostDocumentUriPath, undefined, { sensitivity: 'base' }) === 0);
-
-        let content = `// ${uri}\r\n`;
-
-        if (hostDocument) {
-            content += `\r\n${hostDocument.getText()}\r\n`;
-        }
+        const content = projectedDocument.getContent();
 
         return content;
     }
@@ -58,7 +43,7 @@ export class CSharpProjectedDocumentContentProvider implements vscode.TextDocume
         let projectedDocument = this.projectedDocuments[hostDocumentUri.path];
 
         if (!projectedDocument) {
-            projectedDocument = CSharpProjectedDocument.create(hostDocumentUri);
+            projectedDocument = this.createProjectedDocument(hostDocumentUri);
             this.projectedDocuments[hostDocumentUri.path] = projectedDocument;
         }
 
@@ -70,5 +55,15 @@ export class CSharpProjectedDocumentContentProvider implements vscode.TextDocume
         return Object.values(this.projectedDocuments)
             .find(document => document.projectedUri.path.localeCompare(
                 uri.path, undefined, { sensitivity: 'base' }) === 0);
+    }
+
+    private createProjectedDocument(hostDocumentUri: vscode.Uri) {
+        const extensionlessPath = hostDocumentUri.path.substring(
+            0, hostDocumentUri.path.length - RazorLanguage.fileExtension.length - 1);
+        const transformedPath =  `${extensionlessPath}.cs`;
+        const projectedUri = vscode.Uri.parse(`${CSharpProjectedDocumentContentProvider.scheme}://${transformedPath}`);
+        const onChange = () => this.onDidChangeEmitter.fire(projectedUri);
+
+        return new CSharpProjectedDocument(projectedUri, hostDocumentUri, onChange);
     }
 }

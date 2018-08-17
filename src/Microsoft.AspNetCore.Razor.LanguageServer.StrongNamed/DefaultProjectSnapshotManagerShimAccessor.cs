@@ -11,32 +11,31 @@ using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Editor.Razor;
-using Microsoft.CodeAnalysis.Razor.Workspaces;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
 {
     internal class DefaultProjectSnapshotManagerShimAccessor : ProjectSnapshotManagerShimAccessor
     {
-        private readonly ForegroundDispatcher _foregroundDispatcher;
-        private readonly ErrorReporter _errorReporter;
+        private readonly ForegroundDispatcherShim _foregroundDispatcher;
+        private readonly IEnumerable<ProjectSnapshotChangeTriggerShim> _changeTriggers;
         private ProjectSnapshotManagerShim _instance;
 
         public DefaultProjectSnapshotManagerShimAccessor(
-            ForegroundDispatcher foregroundDispatcher,
-            ErrorReporter errorReporter)
+            ForegroundDispatcherShim foregroundDispatcher,
+            IEnumerable<ProjectSnapshotChangeTriggerShim> changeTriggers)
         {
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
             }
 
-            if (errorReporter == null)
+            if (changeTriggers == null)
             {
-                throw new ArgumentNullException(nameof(errorReporter));
+                throw new ArgumentNullException(nameof(changeTriggers));
             }
 
             _foregroundDispatcher = foregroundDispatcher;
-            _errorReporter = errorReporter;
+            _changeTriggers = changeTriggers;
         }
 
         public override ProjectSnapshotManagerShim Instance
@@ -48,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
                     var projectEngineFactories = new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[]
                     {
                         new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                            () => new LegacyProjectEngineFactory_1_0(), 
+                            () => new LegacyProjectEngineFactory_1_0(),
                             new ExportCustomProjectEngineFactoryAttribute("MVC-1.0") { SupportsSerialization = true }),
                         new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
                             () => new LegacyProjectEngineFactory_1_1(),
@@ -73,11 +72,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
                         });
                     var workspace = new AdhocWorkspace(services);
                     var projectSnapshotManager = new DefaultProjectSnapshotManager(
-                        _foregroundDispatcher,
-                        _errorReporter,
+                        ((DefaultForegroundDispatcherShim)_foregroundDispatcher).InnerForegroundDispatcher,
+                        new DefaultErrorReporter(),
                         Enumerable.Empty<ProjectSnapshotChangeTrigger>(),
                         workspace);
                     _instance = new DefaultProjectSnapshotManagerShim(projectSnapshotManager);
+
+                    foreach (var trigger in _changeTriggers)
+                    {
+                        trigger.Initialize(_instance);
+                    }
                 }
 
                 return _instance;

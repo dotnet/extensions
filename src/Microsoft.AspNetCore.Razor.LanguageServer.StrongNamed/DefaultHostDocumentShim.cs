@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
             }
 
             InnerHostDocument = hostDocument;
+            GeneratedCodeContainer = new GeneratedCodeContainerShim(hostDocument.GeneratedCodeContainer);
         }
 
         public HostDocument InnerHostDocument { get; }
@@ -23,5 +24,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
         public override string FilePath => InnerHostDocument.FilePath;
 
         public override string TargetPath => InnerHostDocument.TargetPath;
+
+        public override GeneratedCodeContainerShim GeneratedCodeContainer { get; }
     }
 }

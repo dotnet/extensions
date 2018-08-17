@@ -4,21 +4,33 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
-
-const cshtmlExtension = '.cshtml';
+import { ServerTextChange } from '../RPC/ServerTextChange';
 
 export class CSharpProjectedDocument {
-    public static readonly scheme = 'razor-csharp';
+    private content = '';
 
-    public static create(hostDocumentUri: vscode.Uri) {
-        const extensionlessPath = hostDocumentUri.path.substring(
-            0, hostDocumentUri.path.length - cshtmlExtension.length);
-        const transformedPath =  `${extensionlessPath}.cs`;
-        const projectedUri = vscode.Uri.parse(`${this.scheme}://${transformedPath}`);
-
-        return new CSharpProjectedDocument(projectedUri, hostDocumentUri);
+    public constructor(
+        readonly projectedUri: vscode.Uri,
+        readonly hostDocumentUri: vscode.Uri,
+        readonly onChange: () => void) {
     }
 
-    private constructor(readonly projectedUri: vscode.Uri, readonly hostDocumentUri: vscode.Uri) {
+    public applyEdits(edits: ServerTextChange[]) {
+        for (const edit of edits) {
+            // TODO: Use a better data structure to represent the content, string concats
+            // are slow.
+            const before = this.content.substr(0, edit.span.start);
+            const after = this.content.substr(edit.span.end);
+            this.setContent(`${before}${edit.newText}${after}`);
+        }
+    }
+
+    public getContent() {
+        return this.content;
+    }
+
+    private setContent(content: string) {
+        this.content = content;
+        this.onChange();
     }
 }

@@ -45,7 +45,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _foregroundDispatcher = foregroundDispatcher;
             _filePathNormalizer = filePathNormalizer;
             _projectSnapshotManagerAccessor = projectSnapshotManagerAccessor;
-            _miscellaneousHostProject = HostProjectShim.Create("__MISC_RAZOR_PROJECT__", configurationResolver.Default);
+
+            var miscellaneousProjectPath = Path.Combine(TempDirectory.Instance.DirectoryPath, "__MISC_RAZOR_PROJECT__");
+            _miscellaneousHostProject = HostProjectShim.Create(miscellaneousProjectPath, configurationResolver.Default);
         }
 
         public override bool TryResolvePotentialProject(string documentFilePath, out ProjectSnapshotShim projectSnapshot)

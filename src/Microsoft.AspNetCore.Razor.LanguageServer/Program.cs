@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Server;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
+using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -53,10 +54,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<DocumentResolver, DefaultDocumentResolver>();
                         services.AddSingleton<FilePathNormalizer>();
                         services.AddSingleton<RazorProjectService, DefaultRazorProjectService>();
+                        services.AddSingleton<ProjectSnapshotChangeTriggerShim, BackgroundDocumentGenerator>();
+                        services.AddSingleton<HostDocumentFactory, DefaultHostDocumentFactory>();
+
                         services.AddRazorShims();
                     }));
 
             await server.WaitForExit;
+
+            TempDirectory.Instance.Dispose();
         }
     }
 }

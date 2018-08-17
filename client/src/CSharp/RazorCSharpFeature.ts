@@ -4,34 +4,38 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
+import { RazorLanguageServerClient } from '../RazorLanguageServerClient';
+import { UpdateCSharpBufferRequest } from '../RPC/UpdateCSharpBufferRequest';
 import { CSharpPreviewDocumentContentProvider } from './CSharpPreviewDocumentContentProvider';
-import { CSharpProjectedDocument } from './CSharpProjectedDocument';
 import { CSharpProjectedDocumentContentProvider } from './CSharpProjectedDocumentContentProvider';
 
 export class RazorCSharpFeature {
     public readonly projectionProvider = new CSharpProjectedDocumentContentProvider();
     public readonly previewProvider = new CSharpPreviewDocumentContentProvider(this.projectionProvider);
 
-    public async initialize() {
-        const activeProjectedDocument = await this.projectionProvider.getActiveDocument();
-        this.updateDocument(activeProjectedDocument.hostDocumentUri);
-    }
-
-    public updateDocument(documentUri: vscode.Uri) {
-        this.projectionProvider.update(documentUri);
-        this.previewProvider.update();
+    constructor(private serverClient: RazorLanguageServerClient) {
     }
 
     public register() {
         const registrations = [
             vscode.workspace.registerTextDocumentContentProvider(
-                CSharpProjectedDocument.scheme, this.projectionProvider),
+                CSharpProjectedDocumentContentProvider.scheme, this.projectionProvider),
             vscode.workspace.registerTextDocumentContentProvider(
                 CSharpPreviewDocumentContentProvider.scheme, this.previewProvider),
             vscode.commands.registerCommand(
                 'extension.showRazorCSharpWindow', () => this.previewProvider.showRazorCSharpWindow()),
         ];
 
+        this.serverClient.onRequest(
+            'updateCSharpBuffer',
+            updateBufferRequest => this.updateCSharpBuffer(updateBufferRequest));
+
         return vscode.Disposable.from(...registrations);
+    }
+
+    private async updateCSharpBuffer(updateBufferRequest: UpdateCSharpBufferRequest) {
+        const hostDocumentUri = vscode.Uri.file(updateBufferRequest.hostDocumentFilePath);
+        const projectedDocument = await this.projectionProvider.getDocument(hostDocumentUri);
+        projectedDocument.applyEdits(updateBufferRequest.changes);
     }
 }
