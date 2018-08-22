@@ -11,10 +11,21 @@
         "Other"
     ],
     "activationEvents": [
-        "onLanguage:razor"
+        "onLanguage:aspnetcorerazor"
     ],
     "main": "./out/src/extension",
     "contributes": {
+        "languages": [{
+            "id": "aspnetcorerazor",
+            "extensions": [".cshtml"],
+            "mimetypes": ["text/x-cshtml"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "aspnetcorerazor",
+            "scopeName": "text.aspnetcorerazor",
+            "path": "./syntaxes/aspnetcorerazor.tmLanguage.json"
+        }],
         "commands": [
             {
                 "command": "extension.showRazorCSharpWindow",

@@ -6,6 +6,7 @@
 import * as vscode from 'vscode';
 import { ExtensionContext } from 'vscode';
 import { RazorCSharpFeature } from './CSharp/RazorCSharpFeature';
+import { RazorHtmlFeature } from './Html/RazorHtmlFeature';
 import { RazorCompletionItemProvider } from './RazorCompletionItemProvider';
 import { RazorDocumentTracker } from './RazorDocumentTracker';
 import { RazorLanguage } from './RazorLanguage';
@@ -24,6 +25,7 @@ export async function activate(context: ExtensionContext) {
     const languageServerClient = new RazorLanguageServerClient(languageServerOptions);
     const languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
     const csharpFeature = new RazorCSharpFeature(languageServerClient);
+    const htmlFeature = new RazorHtmlFeature();
     const projectTracker = new RazorProjectTracker(languageServiceClient);
     const documentTracker = new RazorDocumentTracker(languageServiceClient);
     const localRegistrations: vscode.Disposable[] = [];
@@ -32,10 +34,18 @@ export async function activate(context: ExtensionContext) {
         localRegistrations.push(
             vscode.languages.registerCompletionItemProvider(
                 RazorLanguage.id,
-                new RazorCompletionItemProvider(csharpFeature, languageServiceClient)),
+                new RazorCompletionItemProvider(csharpFeature, htmlFeature, languageServiceClient),
+                '.', '<'),
             projectTracker.register(),
             documentTracker.register(),
-            csharpFeature.register());
+            csharpFeature.register(),
+            htmlFeature.register(),
+            vscode.workspace.onDidChangeTextDocument(async args => {
+                const activeTextEditor = vscode.window.activeTextEditor;
+                if (activeTextEditor && activeTextEditor.document === args.document) {
+                    await htmlFeature.updateDocument(args.document.uri);
+                }
+            }));
     });
 
     const onStopRegistration = languageServerClient.onStop(() => {
@@ -46,6 +56,7 @@ export async function activate(context: ExtensionContext) {
     await languageServerClient.start();
     await projectTracker.initialize();
     await documentTracker.initialize();
+    await htmlFeature.initialize();
 
     context.subscriptions.push(languageServerClient, onStartRegistration, onStopRegistration);
 

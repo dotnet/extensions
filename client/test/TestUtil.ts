@@ -47,17 +47,22 @@ export async function dotnetRestore(cwd: string): Promise<void> {
     });
 }
 
-export async function csharpExtensionReady(): Promise<void> {
-    const csharpExtension = vscode.extensions.getExtension<CSharpExtensionExports>('ms-vscode.csharp');
+export async function extensionActivated<T>(identifier: string) {
+    const extension = vscode.extensions.getExtension<T>(identifier);
 
-    if (!csharpExtension) {
-        console.log('Could not find C# extension');
-        return;
+    if (!extension) {
+        throw new Error(`Could not find extension '${identifier}'`);
     }
 
-    if (!csharpExtension.isActive) {
-        await csharpExtension.activate();
+    if (!extension.isActive) {
+        await extension.activate();
     }
+
+    return extension;
+}
+
+export async function csharpExtensionReady() {
+    const csharpExtension = await extensionActivated<CSharpExtensionExports>('ms-vscode.csharp');
 
     try {
         await csharpExtension.exports.initializationFinished();
@@ -65,6 +70,10 @@ export async function csharpExtensionReady(): Promise<void> {
     } catch (error) {
         console.log(JSON.stringify(error));
     }
+}
+
+export async function htmlLanguageFeaturesExtensionReady() {
+    await extensionActivated<any>('vscode.html-language-features');
 }
 
 interface CSharpExtensionExports {

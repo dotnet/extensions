@@ -7,7 +7,8 @@ import * as assert from 'assert';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { extensionActivated } from '../src/extension';
-import { basicRazorAppRoot, csharpExtensionReady, dotnetRestore, pollUntil } from './TestUtil';
+import { basicRazorAppRoot, csharpExtensionReady, dotnetRestore, htmlLanguageFeaturesExtensionReady,
+    pollUntil } from './TestUtil';
 
 let doc: vscode.TextDocument;
 let editor: vscode.TextEditor;
@@ -15,6 +16,7 @@ let editor: vscode.TextEditor;
 describe('Completions', () => {
     before(async () => {
         await csharpExtensionReady();
+        await htmlLanguageFeaturesExtensionReady();
         await dotnetRestore(basicRazorAppRoot);
     });
 
