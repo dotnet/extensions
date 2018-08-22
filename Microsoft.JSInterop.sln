@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mono.WebAssembly.Interop", "src\Mono.WebAssembly.Interop\Mono.WebAssembly.Interop.csproj", "{10145E99-1B2D-40C5-9595-582BDAF3E024}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +38,10 @@ Global
 		{60BA5AAD-264A-437E-8319-577841C66CC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60BA5AAD-264A-437E-8319-577841C66CC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60BA5AAD-264A-437E-8319-577841C66CC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10145E99-1B2D-40C5-9595-582BDAF3E024}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10145E99-1B2D-40C5-9595-582BDAF3E024}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10145E99-1B2D-40C5-9595-582BDAF3E024}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10145E99-1B2D-40C5-9595-582BDAF3E024}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -44,6 +50,7 @@ Global
 		{CB4CD4A6-9BAA-46D1-944F-CE56DEC2663C} = {1290437E-A890-419E-A317-D0F7FEE185A5}
 		{7FF8B199-52C0-4DFE-A73B-0C9E18220C0E} = {B98D4F51-88FB-471C-B56F-752E8EE502E7}
 		{60BA5AAD-264A-437E-8319-577841C66CC6} = {1290437E-A890-419E-A317-D0F7FEE185A5}
+		{10145E99-1B2D-40C5-9595-582BDAF3E024} = {1290437E-A890-419E-A317-D0F7FEE185A5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7E07ABF2-427A-43FA-A6A4-82B21B96ACAF}

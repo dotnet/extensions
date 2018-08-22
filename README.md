@@ -4,9 +4,7 @@ This repo is for `Microsoft.JSInterop`, a package that provides abstractions and
 
 ## Usage
 
-The primary use case is for applications built with Mono WebAssembly or Blazor. It's not expected that developers will typically use this library separately from Mono WebAssembly, Blazor, or a similar technology.
-
-To use this library separately, you would need to implement your own subclass of `JSRuntimeBase` (or `JSInProcessRuntimeBase`) and override `BeginInvokeJS`/`InvokeJS` to provide your own mechanism to transport call information between .NET and JS runtimes.
+The primary use case is for applications built with Mono WebAssembly or Blazor. It's not expected that developers will typically use these libraries separately from Mono WebAssembly, Blazor, or a similar technology.
 
 ## How to build and test
 
