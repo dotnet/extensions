@@ -59,7 +59,7 @@ export class RazorCompletionItemProvider implements vscode.CompletionItemProvide
                 }
 
                 const isIncomplete = completions instanceof Array ? true
-                    : completions ? (<vscode.CompletionList>completions).isIncomplete 
+                    : completions ? completions.isIncomplete
                         : true;
                 return new vscode.CompletionList(completionItems, isIncomplete);
             }
