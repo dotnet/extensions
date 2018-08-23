@@ -13,7 +13,10 @@ export class RazorHtmlFeature {
 
     public async initialize() {
         const activeProjectedDocument = await this.projectionProvider.getActiveDocument();
-        this.updateDocument(activeProjectedDocument.hostDocumentUri);
+
+        if (activeProjectedDocument) {
+            this.updateDocument(activeProjectedDocument.hostDocumentUri);
+        }
     }
 
     public async updateDocument(documentUri: vscode.Uri) {

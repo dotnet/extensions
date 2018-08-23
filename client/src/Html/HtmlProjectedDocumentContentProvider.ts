@@ -47,7 +47,7 @@ export class HtmlProjectedDocumentContentProvider implements vscode.TextDocument
 
     public getActiveDocument() {
         if (!vscode.window.activeTextEditor) {
-            throw new Error('No active text document');
+            return null;
         }
 
         return this.ensureProjectedDocument(vscode.window.activeTextEditor.document.uri);

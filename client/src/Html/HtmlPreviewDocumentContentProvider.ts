@@ -23,7 +23,6 @@ export class HtmlPreviewDocumentContentProvider implements vscode.TextDocumentCo
         const projectedDocument = await this.htmlProjectionProvider.getActiveDocument();
 
         if (!projectedDocument) {
-            vscode.window.showErrorMessage('For some reason the projected document isn\'t set.');
             return '';
         }
 
@@ -60,7 +59,7 @@ export class HtmlPreviewDocumentContentProvider implements vscode.TextDocumentCo
     private async tryUpdate(uri: vscode.Uri) {
         const activeDocument = await this.htmlProjectionProvider.getActiveDocument();
 
-        if (activeDocument.projectedUri === uri) {
+        if (activeDocument && activeDocument.projectedUri === uri) {
             this.onDidChangeEmitter.fire(HtmlPreviewDocumentContentProvider.previewUri);
         }
     }
