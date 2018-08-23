@@ -28,6 +28,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var hostDocument = HostDocumentShim.Create(documentFilePath, documentFilePath);
             hostDocument.GeneratedCodeContainer.SourceTextContainer.TextChanged += (sender, args) =>
             {
+                if (args.NewText.ContentEquals(args.OldText))
+                {
+                    // If the content is equal then no need to update the underlying CSharp buffer.
+                    return;
+                }
+
                 var textChanges = args.NewText.GetTextChanges(args.OldText);
                 var request = new UpdateCSharpBufferRequest()
                 {
