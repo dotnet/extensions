@@ -22,6 +22,7 @@ Community projects adapt _Microsoft.Extensions.Logging_ for use with different b
  * [NLog](https://github.com/NLog/NLog.Extensions.Logging) - provider for the NLog library
  * [Graylog](https://github.com/mattwcole/gelf-extensions-logging) - provider for the Graylog service
  * [Sharpbrake](https://github.com/airbrake/sharpbrake#microsoftextensionslogging-integration) - provider for the Airbrake notifier
+ * [KissLog.net](https://github.com/catalingavan/KissLog-net) - provider for the KissLog.net service
 
 ## Building from source
 
