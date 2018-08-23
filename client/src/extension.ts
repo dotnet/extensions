@@ -7,6 +7,7 @@ import * as vscode from 'vscode';
 import { ExtensionContext } from 'vscode';
 import { RazorCSharpFeature } from './CSharp/RazorCSharpFeature';
 import { RazorHtmlFeature } from './Html/RazorHtmlFeature';
+import { ProvisionalCompletionOrchestrator } from './ProvisionalCompletionOrchestrator';
 import { RazorCompletionItemProvider } from './RazorCompletionItemProvider';
 import { RazorDocumentTracker } from './RazorDocumentTracker';
 import { RazorLanguage } from './RazorLanguage';
@@ -31,10 +32,20 @@ export async function activate(context: ExtensionContext) {
     const localRegistrations: vscode.Disposable[] = [];
 
     const onStartRegistration = languageServerClient.onStart(() => {
+        const provisionalCompletionOrchestrator = new ProvisionalCompletionOrchestrator(
+            csharpFeature,
+            languageServiceClient);
+        const completionItemProvider = new RazorCompletionItemProvider(
+            csharpFeature,
+            htmlFeature,
+            languageServiceClient,
+            provisionalCompletionOrchestrator);
+
         localRegistrations.push(
+            provisionalCompletionOrchestrator.register(),
             vscode.languages.registerCompletionItemProvider(
                 RazorLanguage.id,
-                new RazorCompletionItemProvider(csharpFeature, htmlFeature, languageServiceClient),
+                completionItemProvider,
                 '.', '<', '@'),
             projectTracker.register(),
             documentTracker.register(),

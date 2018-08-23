@@ -6,6 +6,7 @@
 import * as vscode from 'vscode';
 import { RazorCSharpFeature } from './CSharp/RazorCSharpFeature';
 import { RazorHtmlFeature } from './Html/RazorHtmlFeature';
+import { ProjectionResult } from './ProjectionResult';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { LanguageKind } from './RPC/LanguageKind';
 
@@ -28,15 +29,14 @@ export class RazorLanguageFeatureBase {
                 const projectedDocument = await projectionProvider.getDocument(document.uri);
                 const projectedUri = projectedDocument.projectedUri;
 
-                return { uri: projectedUri, position: languageResponse.position } as ProjectionResult;
+                return {
+                    uri: projectedUri,
+                    position: languageResponse.position,
+                    languageKind: languageResponse.kind,
+                } as ProjectionResult;
 
             default:
                 return null;
         }
     }
-}
-
-interface ProjectionResult {
-    uri: vscode.Uri;
-    position: vscode.Position;
 }

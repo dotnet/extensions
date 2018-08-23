@@ -60,7 +60,7 @@ export class CSharpPreviewDocumentContentProvider implements vscode.TextDocument
     private async tryUpdate(uri: vscode.Uri) {
         const activeDocument = await this.csharpProjectionProvider.getActiveDocument();
 
-        if (activeDocument.projectedUri === uri) {
+        if (activeDocument && activeDocument.projectedUri === uri) {
             this.onDidChangeEmitter.fire(CSharpPreviewDocumentContentProvider.previewUri);
         }
     }

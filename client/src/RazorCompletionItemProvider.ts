@@ -4,25 +4,28 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
+import { RazorCSharpFeature } from './CSharp/RazorCSharpFeature';
+import { RazorHtmlFeature } from './Html/RazorHtmlFeature';
+import { ProvisionalCompletionOrchestrator } from './ProvisionalCompletionOrchestrator';
 import { RazorLanguageFeatureBase } from './RazorLanguageFeatureBase';
+import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 
 export class RazorCompletionItemProvider
     extends RazorLanguageFeatureBase
     implements vscode.CompletionItemProvider {
 
-    public async provideCompletionItems(
-        document: vscode.TextDocument, position: vscode.Position,
-        token: vscode.CancellationToken, context: vscode.CompletionContext) {
-        const projection = await this.getProjection(document, position);
+    public static async getCompletions(
+        projectedUri: vscode.Uri, hostDocumentPosition: vscode.Position,
+        projectedPosition: vscode.Position, triggerCharacter: string | undefined) {
 
-        if (projection) {
+        if (projectedUri) {
             const completions = await vscode
                 .commands
                 .executeCommand<vscode.CompletionList | vscode.CompletionItem[]>(
                     'vscode.executeCompletionItemProvider',
-                    projection.uri,
-                    projection.position,
-                    context.triggerCharacter);
+                    projectedUri,
+                    projectedPosition,
+                    triggerCharacter);
 
             const completionItems =
                 completions instanceof Array ? completions  // was vscode.CompletionItem[]
@@ -33,14 +36,14 @@ export class RazorCompletionItemProvider
             // Therefore, we need to offset all completion items charactesr by a certain amount in order
             // to have proper completion. An example of this is typing @DateTime at the beginning of a line.
             // In the code behind it's represented as __o = DateTime.
-            const completionCharacterOffset = projection.position.character - position.character;
+            const completionCharacterOffset = projectedPosition.character - hostDocumentPosition.character;
             for (const completionItem of completionItems) {
                 if (completionItem.range) {
                     const rangeStart = new vscode.Position(
-                        position.line,
+                        hostDocumentPosition.line,
                         completionItem.range.start.character - completionCharacterOffset);
                     const rangeEnd = new vscode.Position(
-                        position.line,
+                        hostDocumentPosition.line,
                         completionItem.range.end.character - completionCharacterOffset);
                     completionItem.range = new vscode.Range(rangeStart, rangeEnd);
                 }
@@ -54,7 +57,40 @@ export class RazorCompletionItemProvider
                     : false;
             return new vscode.CompletionList(completionItems, isIncomplete);
         }
+    }
 
-        return { isIncomplete: true, items: [] } as vscode.CompletionList;
+    constructor(
+        csharpFeature: RazorCSharpFeature,
+        htmlFeature: RazorHtmlFeature,
+        serviceClient: RazorLanguageServiceClient,
+        private readonly provisionalCompletionOrchestrator: ProvisionalCompletionOrchestrator) {
+        super(csharpFeature, htmlFeature, serviceClient);
+    }
+
+    public async provideCompletionItems(
+        document: vscode.TextDocument, position: vscode.Position,
+        token: vscode.CancellationToken, context: vscode.CompletionContext) {
+        const projection = await this.getProjection(document, position);
+
+        if (!projection) {
+            return { isIncomplete: true, items: [] } as vscode.CompletionList;
+        }
+
+        const provisionalCompletions = await this.provisionalCompletionOrchestrator.tryGetProvisionalCompletions(
+            document.uri,
+            projection,
+            context);
+        if (provisionalCompletions) {
+            return provisionalCompletions;
+        }
+
+        // Not a provisional completion
+
+        const completionList = await RazorCompletionItemProvider.getCompletions(
+            projection.uri,
+            position,
+            projection.position,
+            context.triggerCharacter);
+        return completionList;
     }
 }

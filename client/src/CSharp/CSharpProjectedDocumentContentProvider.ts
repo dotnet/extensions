@@ -33,7 +33,7 @@ export class CSharpProjectedDocumentContentProvider implements vscode.TextDocume
 
     public getActiveDocument() {
         if (!vscode.window.activeTextEditor) {
-            throw new Error('No active text document');
+            return null;
         }
 
         return this.ensureProjectedDocument(vscode.window.activeTextEditor.document.uri);
@@ -60,7 +60,7 @@ export class CSharpProjectedDocumentContentProvider implements vscode.TextDocume
     private createProjectedDocument(hostDocumentUri: vscode.Uri) {
         const extensionlessPath = hostDocumentUri.path.substring(
             0, hostDocumentUri.path.length - RazorLanguage.fileExtension.length - 1);
-        const transformedPath =  `${extensionlessPath}.cs`;
+        const transformedPath = `${extensionlessPath}.cs`;
         const projectedUri = vscode.Uri.parse(`${CSharpProjectedDocumentContentProvider.scheme}://${transformedPath}`);
         const onChange = () => this.onDidChangeEmitter.fire(projectedUri);
 
