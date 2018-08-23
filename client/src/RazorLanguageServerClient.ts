@@ -12,8 +12,6 @@ import {
     ServerOptions,
     State,
 } from 'vscode-languageclient/lib/main';
-import { RazorLanguage } from './RazorLanguage';
-import { RazorLanguageServerMiddleware } from './RazorLanguageServerMiddleware';
 import { RazorLanguageServerOptions } from './RazorLanguageServerOptions';
 
 const events = {
@@ -32,9 +30,7 @@ export class RazorLanguageServerClient implements vscode.Disposable {
     constructor(options: RazorLanguageServerOptions) {
         this.isStarted = false;
         this.clientOptions = {
-            documentSelector: RazorLanguage.documentSelector,
             outputChannel: options.outputChannel,
-            middleware: new RazorLanguageServerMiddleware(),
         };
 
         const args = ['-lsp'];
