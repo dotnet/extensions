@@ -35,7 +35,7 @@ export async function activate(context: ExtensionContext) {
             vscode.languages.registerCompletionItemProvider(
                 RazorLanguage.id,
                 new RazorCompletionItemProvider(csharpFeature, htmlFeature, languageServiceClient),
-                '.', '<'),
+                '.', '<', '@'),
             projectTracker.register(),
             documentTracker.register(),
             csharpFeature.register(),
