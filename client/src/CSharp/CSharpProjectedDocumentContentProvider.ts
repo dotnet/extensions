@@ -58,10 +58,9 @@ export class CSharpProjectedDocumentContentProvider implements vscode.TextDocume
     }
 
     private createProjectedDocument(hostDocumentUri: vscode.Uri) {
-        const extensionlessPath = hostDocumentUri.path.substring(
-            0, hostDocumentUri.path.length - RazorLanguage.fileExtension.length - 1);
-        const transformedPath = `${extensionlessPath}.cs`;
-        const projectedUri = vscode.Uri.parse(`${CSharpProjectedDocumentContentProvider.scheme}://${transformedPath}`);
+        // Index.cshtml => __Index.cshtml.cs
+        const projectedPath =  `__${hostDocumentUri.path}.cs`;
+        const projectedUri = vscode.Uri.parse(`${CSharpProjectedDocumentContentProvider.scheme}://${projectedPath}`);
         const onChange = () => this.onDidChangeEmitter.fire(projectedUri);
 
         return new CSharpProjectedDocument(projectedUri, hostDocumentUri, onChange);
