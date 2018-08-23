@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -15,15 +16,24 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         private const string GetTextDocumentMethod = "getTextDocument";
         private readonly ILanguageServer _router;
+        private readonly FilePathNormalizer _filePathNormalizer;
 
-        public DefaultRemoteTextLoaderFactory(ILanguageServer router)
+        public DefaultRemoteTextLoaderFactory(
+            ILanguageServer router,
+            FilePathNormalizer filePathNormalizer)
         {
             if (router == null)
             {
                 throw new ArgumentNullException(nameof(router));
             }
 
+            if (filePathNormalizer == null)
+            {
+                throw new ArgumentNullException(nameof(filePathNormalizer));
+            }
+
             _router = router;
+            _filePathNormalizer = filePathNormalizer;
         }
 
         public override TextLoader Create(string filePath)
@@ -33,7 +43,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            return new RemoteTextLoader(filePath, _router);
+            var normalizedPath = _filePathNormalizer.Normalize(filePath);
+            return new RemoteTextLoader(normalizedPath, _router);
         }
 
         private class RemoteTextLoader : TextLoader
