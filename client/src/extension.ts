@@ -11,6 +11,7 @@ import { ProvisionalCompletionOrchestrator } from './ProvisionalCompletionOrches
 import { RazorCompletionItemProvider } from './RazorCompletionItemProvider';
 import { RazorDocumentTracker } from './RazorDocumentTracker';
 import { RazorLanguage } from './RazorLanguage';
+import { RazorLanguageConfiguration } from './RazorLanguageConfiguration';
 import { RazorLanguageServerClient } from './RazorLanguageServerClient';
 import { resolveRazorLanguageServerOptions } from './RazorLanguageServerOptionsResolver';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
@@ -23,6 +24,7 @@ export const extensionActivated = new Promise(resolve => {
 
 export async function activate(context: ExtensionContext) {
     const languageServerOptions = resolveRazorLanguageServerOptions();
+    const languageConfiguration = new RazorLanguageConfiguration();
     const languageServerClient = new RazorLanguageServerClient(languageServerOptions);
     const languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
     const csharpFeature = new RazorCSharpFeature(languageServerClient);
@@ -42,6 +44,7 @@ export async function activate(context: ExtensionContext) {
             provisionalCompletionOrchestrator);
 
         localRegistrations.push(
+            languageConfiguration.register(),
             provisionalCompletionOrchestrator.register(),
             vscode.languages.registerCompletionItemProvider(
                 RazorLanguage.id,
