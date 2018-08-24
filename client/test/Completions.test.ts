@@ -7,8 +7,14 @@ import * as assert from 'assert';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { extensionActivated } from '../src/extension';
-import { basicRazorAppRoot, csharpExtensionReady, dotnetRestore, htmlLanguageFeaturesExtensionReady,
-    pollUntil } from './TestUtil';
+import {
+    basicRazorAppRoot,
+    csharpExtensionReady,
+    dotnetRestore,
+    htmlLanguageFeaturesExtensionReady,
+    pollUntil,
+    waitForDocumentUpdate,
+} from './TestUtil';
 
 let doc: vscode.TextDocument;
 let editor: vscode.TextEditor;
@@ -35,6 +41,8 @@ describe('Completions', () => {
     it('Can complete C# code blocks', async () => {
         const lastLine = new vscode.Position(doc.lineCount - 1, 0);
         await editor.edit(edit => edit.insert(lastLine, '@{}'));
+        await waitForDocumentUpdate(doc.uri, document => document.getText().indexOf('@{}') >= 0);
+
         const completions = await vscode.commands.executeCommand<vscode.CompletionList>(
             'vscode.executeCompletionItemProvider',
             doc.uri,
@@ -49,6 +57,8 @@ describe('Completions', () => {
     it('Can complete C# implicit expressions', async () => {
         const lastLine = new vscode.Position(doc.lineCount - 1, 0);
         await editor.edit(edit => edit.insert(lastLine, '@'));
+        await waitForDocumentUpdate(doc.uri, document => document.lineAt(document.lineCount - 1).text === '@');
+
         const completions = await vscode.commands.executeCommand<vscode.CompletionList>(
             'vscode.executeCompletionItemProvider',
             doc.uri,

@@ -26,7 +26,7 @@ export async function activate(context: ExtensionContext) {
     const languageServerClient = new RazorLanguageServerClient(languageServerOptions);
     const languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
     const csharpFeature = new RazorCSharpFeature(languageServerClient);
-    const htmlFeature = new RazorHtmlFeature();
+    const htmlFeature = new RazorHtmlFeature(languageServiceClient);
     const projectTracker = new RazorProjectTracker(languageServiceClient);
     const documentTracker = new RazorDocumentTracker(languageServiceClient);
     const localRegistrations: vscode.Disposable[] = [];

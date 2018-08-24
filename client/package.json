@@ -94,6 +94,7 @@
     },
     "dependencies": {
         "vscode": "^1.1.21",
-        "vscode-languageclient": "^4.1.4"
+        "vscode-languageclient": "^4.1.4",
+        "vscode-html-languageservice": "^2.1.3"
     }
 }

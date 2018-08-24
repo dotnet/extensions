@@ -23,9 +23,64 @@ export async function pollUntil(fn: () => boolean, timeoutMs: number) {
     }
 }
 
+export async function ensureNoChangesFor(documentUri: vscode.Uri, durationMs: number) {
+    let changeOccured = false;
+    const registration = vscode.workspace.onDidChangeTextDocument(args => {
+        if (documentUri === args.document.uri) {
+            changeOccured = true;
+        }
+    });
+
+    await new Promise(r => setTimeout(r, durationMs));
+
+    registration.dispose();
+
+    if (changeOccured) {
+        throw new Error('Change occured while ensuring no changes.');
+    }
+}
+
+// In tests when we edit a document if our test expects to evaluate the output of that document
+// after an edit then we'll need to wait for all those edits to flush through the system. Otherwise
+// the edits remain in a cached version of the document resulting in our calls to `getText` failing.
+export async function waitForDocumentUpdate(
+    documentUri: vscode.Uri,
+    isUpdated: (document: vscode.TextDocument) => boolean) {
+    const updatedDocument = await vscode.workspace.openTextDocument(documentUri);
+    let updateError: any;
+    let documentUpdated = false;
+    const checkUpdated = (document: vscode.TextDocument) => {
+        try {
+            documentUpdated = isUpdated(document);
+        } catch (error) {
+            updateError = error;
+        }
+    };
+
+    checkUpdated(updatedDocument);
+
+    const registration = vscode.workspace.onDidChangeTextDocument(args => {
+        if (documentUri === args.document.uri) {
+            checkUpdated(args.document);
+        }
+    });
+
+    try {
+        await pollUntil(() => updateError !== undefined || documentUpdated === true, 500);
+    } finally {
+        registration.dispose();
+    }
+
+    if (updateError) {
+        throw updateError;
+    }
+
+    return updatedDocument;
+}
+
 export async function dotnetRestore(cwd: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-        const dotnet = cp.spawn('dotnet', [ 'restore' ], { cwd, env: process.env });
+        const dotnet = cp.spawn('dotnet', ['restore'], { cwd, env: process.env });
 
         dotnet.stdout.on('data', (data: any) => {
             console.log(data.toString());
