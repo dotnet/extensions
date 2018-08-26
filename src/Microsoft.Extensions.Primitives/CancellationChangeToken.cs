@@ -31,14 +31,28 @@ namespace Microsoft.Extensions.Primitives
         /// <inheritdoc />
         public IDisposable RegisterChangeCallback(Action<object> callback, object state)
         {
+            // Don't capture the current ExecutionContext and its AsyncLocals onto the token registration causing them to live forever
+            bool restoreFlow = false;
             try
             {
+                if (!ExecutionContext.IsFlowSuppressed())
+                {
+                    ExecutionContext.SuppressFlow();
+                    restoreFlow = true;
+                }
+
                 return Token.Register(callback, state);
             }
             catch (ObjectDisposedException)
             {
                 // Reset the flag so that we can indicate to future callers that this wouldn't work.
                 ActiveChangeCallbacks = false;
+            }
+            finally
+            {
+                // Restore the current ExecutionContext
+                if (restoreFlow)
+                    ExecutionContext.RestoreFlow();
             }
 
             return NullDisposable.Instance;
