@@ -118,7 +118,7 @@ namespace Microsoft.Extensions.Primitives
             ExecutionContext.Run(executionContext, cts => ((CancellationTokenSource)cts).Cancel(), cancellationTokenSource);
 
             // AsyncLocal should still be set
-            Assert.Equal(2, asyncLocal.Value);
+            Assert.Equal(1, asyncLocal.Value);
         }
     }
 }
