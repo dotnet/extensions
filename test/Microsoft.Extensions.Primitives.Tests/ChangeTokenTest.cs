@@ -103,22 +103,16 @@ namespace Microsoft.Extensions.Primitives
             var asyncLocal = new AsyncLocal<int>();
             asyncLocal.Value = 1;
 
-            // Register Callbacks
-            cancellationChangeToken.RegisterChangeCallback(
-                al => Assert.Equal(0, ((AsyncLocal<int>)al).Value), // AsyncLocal not set, when run on clean context
+            // Register Callback
+            cancellationChangeToken.RegisterChangeCallback(al =>
+            {
+                // AsyncLocal not set, when run on clean context
                 // A suppressed flow runs in current context, rather than restoring the captured context
-                asyncLocal);
-
-            cancellationToken.Register(
-                al => Assert.Equal(1, ((AsyncLocal<int>)al).Value), // AsyncLocal set, even when run on clean context
-                // Non-suppressed flow will restore the context at registration
-                asyncLocal);
+                Assert.Equal(0, ((AsyncLocal<int>) al).Value);
+            }, asyncLocal);
 
             // AsyncLocal should still be set
             Assert.Equal(1, asyncLocal.Value);
-
-            // Change AsyncLocal so it differs from value used at registration
-            asyncLocal.Value = 2;
 
             // Check AsyncLocal is not restored by running on clean context
             ExecutionContext.Run(executionContext, cts => ((CancellationTokenSource)cts).Cancel(), cancellationTokenSource);
