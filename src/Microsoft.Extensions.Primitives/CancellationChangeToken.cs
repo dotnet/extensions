@@ -33,14 +33,14 @@ namespace Microsoft.Extensions.Primitives
         {
             // Don't capture the current ExecutionContext and its AsyncLocals onto the token registration causing them to live forever
             var restoreFlow = false;
+            if (!ExecutionContext.IsFlowSuppressed())
+            {
+                ExecutionContext.SuppressFlow();
+                restoreFlow = true;
+            }
+
             try
             {
-                if (!ExecutionContext.IsFlowSuppressed())
-                {
-                    ExecutionContext.SuppressFlow();
-                    restoreFlow = true;
-                }
-
                 return Token.Register(callback, state);
             }
             catch (ObjectDisposedException)

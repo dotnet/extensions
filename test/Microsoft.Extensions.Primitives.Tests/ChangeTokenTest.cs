@@ -98,7 +98,8 @@ namespace Microsoft.Extensions.Primitives
             var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
             var cancellationChangeToken = new CancellationChangeToken(cancellationToken);
-            
+            var executed = false;
+
             // Set AsyncLocal
             var asyncLocal = new AsyncLocal<int>();
             asyncLocal.Value = 1;
@@ -109,6 +110,7 @@ namespace Microsoft.Extensions.Primitives
                 // AsyncLocal not set, when run on clean context
                 // A suppressed flow runs in current context, rather than restoring the captured context
                 Assert.Equal(0, ((AsyncLocal<int>) al).Value);
+                executed = true;
             }, asyncLocal);
 
             // AsyncLocal should still be set
@@ -119,6 +121,7 @@ namespace Microsoft.Extensions.Primitives
 
             // AsyncLocal should still be set
             Assert.Equal(1, asyncLocal.Value);
+            Assert.True(executed);
         }
     }
 }
