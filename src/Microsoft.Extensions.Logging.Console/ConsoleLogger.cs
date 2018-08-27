@@ -168,19 +168,16 @@ namespace Microsoft.Extensions.Logging.Console
                 logBuilder.AppendLine(exception.ToString());
             }
 
-            if (logBuilder.Length > 0)
+            var hasLevel = !string.IsNullOrEmpty(logLevelString);
+            // Queue log message
+            _queueProcessor.EnqueueMessage(new LogMessageEntry()
             {
-                var hasLevel = !string.IsNullOrEmpty(logLevelString);
-                // Queue log message
-                _queueProcessor.EnqueueMessage(new LogMessageEntry()
-                {
-                    Message = logBuilder.ToString(),
-                    MessageColor = DefaultConsoleColor,
-                    LevelString = hasLevel ? logLevelString : null,
-                    LevelBackground = hasLevel ? logLevelColors.Background : null,
-                    LevelForeground = hasLevel ? logLevelColors.Foreground : null
-                });
-            }
+                Message = logBuilder.ToString(),
+                MessageColor = DefaultConsoleColor,
+                LevelString = hasLevel ? logLevelString : null,
+                LevelBackground = hasLevel ? logLevelColors.Background : null,
+                LevelForeground = hasLevel ? logLevelColors.Foreground : null
+            });
 
             logBuilder.Clear();
             if (logBuilder.Capacity > 1024)
