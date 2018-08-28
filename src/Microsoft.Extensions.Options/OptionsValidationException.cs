@@ -24,8 +24,14 @@ namespace Microsoft.Extensions.Options
             OptionsName = optionsName ?? throw new ArgumentNullException(nameof(optionsName));
         }
 
+        /// <summary>
+        /// The name of the options instance that failed.
+        /// </summary>
         public string OptionsName { get; }
 
+        /// <summary>
+        /// The type of the options that failed.
+        /// </summary>
         public Type OptionsType { get; }
 
         /// <summary>

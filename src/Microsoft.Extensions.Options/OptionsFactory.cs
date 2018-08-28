@@ -36,6 +36,9 @@ namespace Microsoft.Extensions.Options
             _validations = validations;
         }
 
+        /// <summary>
+        /// Returns a configured TOptions instance with the given name.
+        /// </summary>
         public TOptions Create(string name)
         {
             var options = new TOptions();
