@@ -145,6 +145,43 @@ namespace Microsoft.JSInterop.Test
         }
 
         [Fact]
+        public void CanCreateInstanceOfClassWithPrivateConstructor()
+        {
+            // Arrange
+            var expectedName = "NameValue";
+            var json = $"{{\"Name\":\"{expectedName}\"}}";
+
+            // Act
+            var instance = Json.Deserialize<PrivateConstructor>(json);
+
+            // Assert
+            Assert.Equal(expectedName, instance.Name);
+        }
+
+        [Fact]
+        public void CanSetValueOfPublicPropertiesWithNonPublicSetters()
+        {
+            // Arrange
+            var expectedPrivateValue = "PrivateValue";
+            var expectedProtectedValue = "ProtectedValue";
+            var expectedInternalValue = "InternalValue";
+
+            var json = "{" +
+                $"\"PrivateSetter\":\"{expectedPrivateValue}\"," +
+                $"\"ProtectedSetter\":\"{expectedProtectedValue}\"," +
+                $"\"InternalSetter\":\"{expectedInternalValue}\"," +
+                "}";
+
+            // Act
+            var instance = Json.Deserialize<NonPublicSetterOnPublicProperty>(json);
+
+            // Assert
+            Assert.Equal(expectedPrivateValue, instance.PrivateSetter);
+            Assert.Equal(expectedProtectedValue, instance.ProtectedSetter);
+            Assert.Equal(expectedInternalValue, instance.InternalSetter);
+        }
+
+        [Fact]
         public void RejectsTypesWithAmbiguouslyNamedProperties()
         {
             var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -282,5 +319,26 @@ namespace Microsoft.JSInterop.Test
             public string Member1 { get; set; }
         }
 #pragma warning restore 0649
+
+        class PrivateConstructor
+        {
+            public string Name { get; set; }
+
+            private PrivateConstructor()
+            {
+            }
+
+            public PrivateConstructor(string name)
+            {
+                Name = name;
+            }
+        }
+
+        class NonPublicSetterOnPublicProperty
+        {
+            public string PrivateSetter { get; private set; }
+            public string ProtectedSetter { get; protected set; }
+            public string InternalSetter { get; internal set; }
+        }
     }
 }

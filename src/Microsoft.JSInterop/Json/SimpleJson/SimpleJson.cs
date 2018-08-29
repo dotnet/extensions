@@ -1332,7 +1332,7 @@ namespace SimpleJson
                 if (propertyInfo.CanWrite)
                 {
                     MethodInfo setMethod = ReflectionUtils.GetSetterMethodInfo(propertyInfo);
-                    if (setMethod.IsStatic || !setMethod.IsPublic)
+                    if (setMethod.IsStatic)
                         continue;
                     if (result.ContainsKey(propertyInfo.Name))
                     {
@@ -1799,7 +1799,8 @@ namespace SimpleJson
 #if SIMPLE_JSON_TYPEINFO
                 return type.GetTypeInfo().DeclaredConstructors;
 #else
-                return type.GetConstructors();
+                const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+                return type.GetConstructors(flags);
 #endif
             }
 
