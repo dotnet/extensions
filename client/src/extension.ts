@@ -16,6 +16,7 @@ import { RazorLanguageServerClient } from './RazorLanguageServerClient';
 import { resolveRazorLanguageServerOptions } from './RazorLanguageServerOptionsResolver';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { RazorProjectTracker } from './RazorProjectTracker';
+import { RazorSignatureHelpProvider } from './RazorSignatureHelpProvider';
 
 let activationResolver: (value?: any) => void;
 export const extensionActivated = new Promise(resolve => {
@@ -42,6 +43,10 @@ export async function activate(context: ExtensionContext) {
             htmlFeature,
             languageServiceClient,
             provisionalCompletionOrchestrator);
+        const signatureHelpProvider = new RazorSignatureHelpProvider(
+            csharpFeature,
+            htmlFeature,
+            languageServiceClient);
 
         localRegistrations.push(
             languageConfiguration.register(),
@@ -50,6 +55,10 @@ export async function activate(context: ExtensionContext) {
                 RazorLanguage.id,
                 completionItemProvider,
                 '.', '<', '@'),
+            vscode.languages.registerSignatureHelpProvider(
+                RazorLanguage.id,
+                signatureHelpProvider,
+                '(', ','),
             projectTracker.register(),
             documentTracker.register(),
             csharpFeature.register(),
