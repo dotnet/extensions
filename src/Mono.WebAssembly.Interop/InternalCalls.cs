@@ -3,7 +3,7 @@
 
 using System.Runtime.CompilerServices;
 
-namespace Mono.WebAssembly.Interop
+namespace WebAssembly.JSInterop
 {
     /// <summary>
     /// Methods that map to the functions compiled into the Mono WebAssembly runtime,
