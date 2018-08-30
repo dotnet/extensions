@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Options.ConfigurationExtensions\Microsoft.Extensions.Options.ConfigurationExtensions.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Extensions.Options.DataAnnotations\Microsoft.Extensions.Options.DataAnnotations.csproj" />
   </ItemGroup>
 
   <ItemGroup>

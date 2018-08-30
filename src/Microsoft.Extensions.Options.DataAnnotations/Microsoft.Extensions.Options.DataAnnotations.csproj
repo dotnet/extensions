@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Provides additional configuration specific functionality related to Options.</Description>
+    <Description>Provides additional DataAnnotations specific functionality related to Options.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn)</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>aspnetcore;configuration;options</PackageTags>
+    <PackageTags>aspnetcore;validation;options</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,9 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftExtensionsConfigurationBinderPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsPackageVersion)" />
   </ItemGroup>
 
 </Project>
