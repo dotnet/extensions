@@ -3,24 +3,25 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
+using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 {
     internal class DefaultProjectResolver : ProjectResolver
     {
         // Internal for testing
-        protected internal readonly HostProjectShim _miscellaneousHostProject;
+        protected internal readonly HostProject _miscellaneousHostProject;
 
-        private readonly ForegroundDispatcherShim _foregroundDispatcher;
+        private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly FilePathNormalizer _filePathNormalizer;
-        private readonly ProjectSnapshotManagerShimAccessor _projectSnapshotManagerAccessor;
+        private readonly ProjectSnapshotManagerAccessor _projectSnapshotManagerAccessor;
 
         public DefaultProjectResolver(
-            ForegroundDispatcherShim foregroundDispatcher,
+            ForegroundDispatcher foregroundDispatcher,
             FilePathNormalizer filePathNormalizer,
             RazorConfigurationResolver configurationResolver,
-            ProjectSnapshotManagerShimAccessor projectSnapshotManagerAccessor)
+            ProjectSnapshotManagerAccessor projectSnapshotManagerAccessor)
         {
             if (foregroundDispatcher == null)
             {
@@ -47,10 +48,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _projectSnapshotManagerAccessor = projectSnapshotManagerAccessor;
 
             var miscellaneousProjectPath = Path.Combine(TempDirectory.Instance.DirectoryPath, "__MISC_RAZOR_PROJECT__");
-            _miscellaneousHostProject = HostProjectShim.Create(miscellaneousProjectPath, configurationResolver.Default);
+            _miscellaneousHostProject = new HostProject(miscellaneousProjectPath, configurationResolver.Default);
         }
 
-        public override bool TryResolvePotentialProject(string documentFilePath, out ProjectSnapshotShim projectSnapshot)
+        public override bool TryResolvePotentialProject(string documentFilePath, out ProjectSnapshot projectSnapshot)
         {
             if (documentFilePath == null)
             {
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             return false;
         }
 
-        public override ProjectSnapshotShim GetMiscellaneousProject()
+        public override ProjectSnapshot GetMiscellaneousProject()
         {
             _foregroundDispatcher.AssertForegroundThread();
 

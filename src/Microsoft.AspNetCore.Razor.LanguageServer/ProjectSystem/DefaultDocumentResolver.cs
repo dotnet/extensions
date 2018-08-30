@@ -3,19 +3,20 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
+using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 {
     internal class DefaultDocumentResolver : DocumentResolver
     {
-        private readonly ForegroundDispatcherShim _foregroundDispatcher;
+        private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly ProjectResolver _projectResolver;
         private readonly FilePathNormalizer _filePathNormalizer;
 
         public DefaultDocumentResolver(
-            ForegroundDispatcherShim foregroundDispatcher,
-            ProjectResolver projectResolver, 
+            ForegroundDispatcher foregroundDispatcher,
+            ProjectResolver projectResolver,
             FilePathNormalizer filePathNormalizer)
         {
             if (foregroundDispatcher == null)
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _filePathNormalizer = filePathNormalizer;
         }
 
-        public override bool TryResolveDocument(string documentFilePath, out DocumentSnapshotShim document)
+        public override bool TryResolveDocument(string documentFilePath, out DocumentSnapshot document)
         {
             _foregroundDispatcher.AssertForegroundThread();
 
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 project = _projectResolver.GetMiscellaneousProject();
             }
 
-            if (!project.DocumentFilePaths.Contains(normalizedPath, FilePathComparerShim.Instance))
+            if (!project.DocumentFilePaths.Contains(normalizedPath, FilePathComparer.Instance))
             {
                 // Miscellaneous project and other tracked projects do not contain document.
                 document = null;

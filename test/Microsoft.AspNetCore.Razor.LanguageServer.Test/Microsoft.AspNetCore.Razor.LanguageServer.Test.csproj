@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>net461</TargetFrameworks>
-    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>

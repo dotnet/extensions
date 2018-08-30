@@ -8,21 +8,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{9AD3190E-86E4-419B-9D57-C6FFEF3A01F6}"
 	ProjectSection(SolutionItems) = preProject
 		build\dependencies.props = build\dependencies.props
+		build\sources.props = build\sources.props
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.LanguageServer", "src\Microsoft.AspNetCore.Razor.LanguageServer\Microsoft.AspNetCore.Razor.LanguageServer.csproj", "{AF5FB0D8-BACD-45DE-B4A2-4CA172DCAEB6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{BEAA2EDB-B257-4B34-9FA3-2AD973914528}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "modules\csharp-language-server-protocol\src\Server\Server.csproj", "{6659F686-E560-416C-9390-17F89C668A8D}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonRpc", "modules\csharp-language-server-protocol\src\JsonRpc\JsonRpc.csproj", "{C8CAF4AD-6AD1-4B8C-B1F3-15B0C5632CD9}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Protocol", "modules\csharp-language-server-protocol\src\Protocol\Protocol.csproj", "{AF14A869-234A-4874-8D97-9B28DDC89B6E}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "csharp-language-server-protocol", "csharp-language-server-protocol", "{27AB8254-F634-4D21-AFF1-E078CF3A2009}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed", "src\Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed\Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed.csproj", "{427A5FBB-09EF-49BA-9B00-F3A09892811F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Razor", "Razor", "{3C0D9AB8-562E-4736-A31D-839AF8C9D9FD}"
 EndProject
@@ -62,22 +53,6 @@ Global
 		{AF5FB0D8-BACD-45DE-B4A2-4CA172DCAEB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF5FB0D8-BACD-45DE-B4A2-4CA172DCAEB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF5FB0D8-BACD-45DE-B4A2-4CA172DCAEB6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6659F686-E560-416C-9390-17F89C668A8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6659F686-E560-416C-9390-17F89C668A8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6659F686-E560-416C-9390-17F89C668A8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6659F686-E560-416C-9390-17F89C668A8D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C8CAF4AD-6AD1-4B8C-B1F3-15B0C5632CD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C8CAF4AD-6AD1-4B8C-B1F3-15B0C5632CD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C8CAF4AD-6AD1-4B8C-B1F3-15B0C5632CD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C8CAF4AD-6AD1-4B8C-B1F3-15B0C5632CD9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AF14A869-234A-4874-8D97-9B28DDC89B6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AF14A869-234A-4874-8D97-9B28DDC89B6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AF14A869-234A-4874-8D97-9B28DDC89B6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AF14A869-234A-4874-8D97-9B28DDC89B6E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{427A5FBB-09EF-49BA-9B00-F3A09892811F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{427A5FBB-09EF-49BA-9B00-F3A09892811F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{427A5FBB-09EF-49BA-9B00-F3A09892811F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{427A5FBB-09EF-49BA-9B00-F3A09892811F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A3E388BC-F625-4A6A-AD31-04E8B1DD0D91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A3E388BC-F625-4A6A-AD31-04E8B1DD0D91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3E388BC-F625-4A6A-AD31-04E8B1DD0D91}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -124,11 +99,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{AF5FB0D8-BACD-45DE-B4A2-4CA172DCAEB6} = {2BBB2AB1-2AE4-4306-AA88-FD66A90AA101}
-		{6659F686-E560-416C-9390-17F89C668A8D} = {27AB8254-F634-4D21-AFF1-E078CF3A2009}
-		{C8CAF4AD-6AD1-4B8C-B1F3-15B0C5632CD9} = {27AB8254-F634-4D21-AFF1-E078CF3A2009}
-		{AF14A869-234A-4874-8D97-9B28DDC89B6E} = {27AB8254-F634-4D21-AFF1-E078CF3A2009}
-		{27AB8254-F634-4D21-AFF1-E078CF3A2009} = {BEAA2EDB-B257-4B34-9FA3-2AD973914528}
-		{427A5FBB-09EF-49BA-9B00-F3A09892811F} = {2BBB2AB1-2AE4-4306-AA88-FD66A90AA101}
 		{3C0D9AB8-562E-4736-A31D-839AF8C9D9FD} = {BEAA2EDB-B257-4B34-9FA3-2AD973914528}
 		{A3E388BC-F625-4A6A-AD31-04E8B1DD0D91} = {9BDFB459-02CA-45BB-AA57-FF4B6C07CC53}
 		{8CFC36F5-61B4-4F56-8311-750C2969B61D} = {9BDFB459-02CA-45BB-AA57-FF4B6C07CC53}

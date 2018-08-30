@@ -5,11 +5,12 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
+using Microsoft.AspNetCore.Razor.LanguageServer.Test;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
+namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     // These tests are really integration tests. There isn't a good way to unit test this functionality since
     // the only thing in here is threading.
@@ -17,24 +18,25 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
     {
         public BackgroundDocumentGeneratorTest()
         {
-            Documents = new HostDocumentShim[]
+            Documents = new HostDocument[]
             {
-                HostDocumentShim.Create("c:\\Test1\\Index.cshtml", "Index.cshtml"),
-                HostDocumentShim.Create("c:\\Test1\\Components\\Counter.cshtml", "Components\\Counter.cshtml"),
+                new HostDocument("c:\\Test1\\Index.cshtml", "Index.cshtml"),
+                new HostDocument("c:\\Test1\\Components\\Counter.cshtml", "Components\\Counter.cshtml"),
             };
 
-            HostProject1 = HostProjectShim.Create("c:\\Test1\\Test1.csproj", RazorConfiguration.Default);
-            HostProject2 = HostProjectShim.Create("c:\\Test2\\Test2.csproj", RazorConfiguration.Default);
+            HostProject1 = new HostProject("c:\\Test1\\Test1.csproj", RazorConfiguration.Default);
+            HostProject2 = new HostProject("c:\\Test2\\Test2.csproj", RazorConfiguration.Default);
 
             var projectId1 = ProjectId.CreateNewId("Test1");
             var projectId2 = ProjectId.CreateNewId("Test2");
         }
 
-        private HostDocumentShim[] Documents { get; }
+        private HostDocument[] Documents { get; }
 
-        private HostProjectShim HostProject1 { get; }
+        private HostProject HostProject1 { get; }
 
-        private HostProjectShim HostProject2 { get; }
+        private HostProject HostProject2 { get; }
+
         [ForegroundFact]
         public async Task Queue_ProcessesNotifications_AndGoesBackToSleep()
         {

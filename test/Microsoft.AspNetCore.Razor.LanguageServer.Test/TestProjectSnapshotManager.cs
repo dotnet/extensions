@@ -3,36 +3,42 @@
 
 using System;
 using System.Linq;
-using System.Reflection;
-using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
 {
-    public class TestProjectSnapshotManager
+    internal class TestProjectSnapshotManager : DefaultProjectSnapshotManager
     {
-        public static ProjectSnapshotManagerShim Create(ForegroundDispatcherShim dispatcher)
+        private TestProjectSnapshotManager(ForegroundDispatcher dispatcher, Workspace workspace)
+            : base(dispatcher, new DefaultErrorReporter(), Enumerable.Empty<ProjectSnapshotChangeTrigger>(), workspace)
+        {
+
+        }
+
+        public static ProjectSnapshotManagerBase Create(ForegroundDispatcher dispatcher)
         {
             if (dispatcher == null)
             {
                 throw new ArgumentNullException(nameof(dispatcher));
             }
 
-            // Need to rely on reflection to create a test project snapshot manager that can be controlled
-            // to not spit out excess notifications.
-            var assembly = Assembly.Load("Microsoft.AspnetCore.Razor.LanguageServer.StrongNamed");
-            var defaultAccessorType = assembly.GetType("Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed.DefaultProjectSnapshotManagerShimAccessor");
-            var accessor = (ProjectSnapshotManagerShimAccessor)Activator.CreateInstance(defaultAccessorType, dispatcher, Enumerable.Empty<ProjectSnapshotChangeTriggerShim>());
-            var workspace = accessor.Instance.Workspace;
-            var testProjectManagerType = assembly.GetType("Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed.TestProjectSnapshotManager");
-            var testProjectManager = Activator.CreateInstance(testProjectManagerType, dispatcher, workspace);
-            var defaultSnapshotManagerType = assembly.GetType("Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed.DefaultProjectSnapshotManagerShim");
-            var projectManager = (ProjectSnapshotManagerShim)Activator.CreateInstance(defaultSnapshotManagerType, testProjectManager);
+            var defaultAccessor = new DefaultProjectSnapshotManagerAccessor(dispatcher, Enumerable.Empty<ProjectSnapshotChangeTrigger>());
+            var workspace = defaultAccessor.Instance.Workspace;
+            var testProjectManager = new TestProjectSnapshotManager(dispatcher, workspace);
 
-            return projectManager;
+            return testProjectManager;
         }
 
-        private TestProjectSnapshotManager()
+        public bool AllowNotifyListeners { get; set; }
+
+        protected override void NotifyListeners(ProjectChangeEventArgs e)
         {
+            if (AllowNotifyListeners)
+            {
+                base.NotifyListeners(e);
+            }
         }
     }
 }

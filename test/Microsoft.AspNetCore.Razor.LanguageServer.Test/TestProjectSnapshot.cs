@@ -5,50 +5,40 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
 {
-    public class TestProjectSnapshot : ProjectSnapshotShim
+    internal class TestProjectSnapshot : DefaultProjectSnapshot
     {
-        private readonly Dictionary<string, DocumentSnapshotShim> _documents;
+        public static TestProjectSnapshot Create(string filePath) => Create(filePath, new string[0]);
 
-        public TestProjectSnapshot(string filePath) : this(filePath, new string[0])
+        public static TestProjectSnapshot Create(string filePath, string[] documentFilePaths)
         {
-        }
-
-        public TestProjectSnapshot(string filePath, string[] documentFilePaths)
-        {
-            if (filePath == null)
-            {
-                throw new ArgumentNullException(nameof(filePath));
-            }
-
-            if (documentFilePaths == null)
-            {
-                throw new ArgumentNullException(nameof(documentFilePaths));
-            }
-
-            FilePath = filePath;
-            HostProject = HostProjectShim.Create(filePath, RazorConfiguration.Default);
-            DocumentFilePaths = documentFilePaths;
-            Configuration = RazorConfiguration.Default;
-            _documents = new Dictionary<string, DocumentSnapshotShim>();
-
+            var workspace = TestWorkspace.Create();
+            var hostProject = new HostProject(filePath, RazorConfiguration.Default);
+            var state = ProjectState.Create(workspace.Services, hostProject);
             foreach (var documentFilePath in documentFilePaths)
             {
-                _documents[documentFilePath] = new TestDocumentSnapshot(documentFilePath);
+                var hostDocument = new HostDocument(documentFilePath, documentFilePath);
+                state = state.WithAddedHostDocument(hostDocument, () => Task.FromResult(TextAndVersion.Create(SourceText.From(string.Empty), VersionStamp.Default)));
             }
+            var testProject = new TestProjectSnapshot(state);
+
+            return testProject;
         }
 
-        public override HostProjectShim HostProject { get; }
 
-        public override RazorConfiguration Configuration { get; }
-
-        public override IEnumerable<string> DocumentFilePaths { get; }
-
-        public override string FilePath { get; }
+        private TestProjectSnapshot(ProjectState projectState)
+            : base(projectState)
+        {
+            if (projectState == null)
+            {
+                throw new ArgumentNullException(nameof(projectState));
+            }
+        }
 
         public override bool IsInitialized => throw new NotImplementedException();
 
@@ -56,14 +46,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
 
         public override Project WorkspaceProject => throw new NotImplementedException();
 
-        public override DocumentSnapshotShim GetDocument(string filePath)
+        public override DocumentSnapshot GetDocument(string filePath)
         {
-            if (!_documents.TryGetValue(filePath, out var documentSnapshot))
+            var document = base.GetDocument(filePath);
+
+            if (document == null)
             {
                 throw new InvalidOperationException("Test was not setup correctly. Could not locate document '" + filePath + "'.");
             }
 
-            return documentSnapshot;
+            return document;
         }
 
         public override RazorProjectEngine GetProjectEngine()

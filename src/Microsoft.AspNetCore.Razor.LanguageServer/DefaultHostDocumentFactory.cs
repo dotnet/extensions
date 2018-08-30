@@ -3,13 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    public class DefaultHostDocumentFactory : HostDocumentFactory
+    internal class DefaultHostDocumentFactory : HostDocumentFactory
     {
         private readonly ILanguageServer _router;
 
@@ -23,9 +23,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _router = router;
         }
 
-        public override HostDocumentShim Create(string documentFilePath)
+        public override HostDocument Create(string documentFilePath)
         {
-            var hostDocument = HostDocumentShim.Create(documentFilePath, documentFilePath);
+            var hostDocument = new HostDocument(documentFilePath, documentFilePath);
             hostDocument.GeneratedCodeContainer.SourceTextContainer.TextChanged += (sender, args) =>
             {
                 if (args.NewText.ContentEquals(args.OldText))

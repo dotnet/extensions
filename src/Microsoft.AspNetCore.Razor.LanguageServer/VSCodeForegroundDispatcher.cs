@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed
+namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class VSCodeForegroundDispatcher : ForegroundDispatcher
     {

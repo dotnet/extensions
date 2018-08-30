@@ -5,11 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
-using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
-using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Text;
+using OmniSharp.Extensions.Embedded.MediatR;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -22,13 +21,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         private SynchronizationCapability _capability;
         private readonly VSCodeLogger _logger;
-        private readonly ForegroundDispatcherShim _foregroundDispatcher;
+        private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly RemoteTextLoaderFactory _remoteTextLoaderFactory;
         private readonly RazorProjectService _projectService;
 
         public RazorDocumentSynchronizationEndpoint(
-            ForegroundDispatcherShim foregroundDispatcher,
+            ForegroundDispatcher foregroundDispatcher,
             DocumentResolver documentResolver,
             RemoteTextLoaderFactory remoteTextLoaderFactory,
             RazorProjectService projectService,

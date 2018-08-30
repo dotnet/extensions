@@ -4,9 +4,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
-using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
+using Microsoft.CodeAnalysis.Razor;
+using OmniSharp.Extensions.Embedded.MediatR;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -15,11 +15,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly RazorProjectService _projectService;
         private readonly RazorConfigurationResolver _configurationResolver;
         private readonly RemoteTextLoaderFactory _remoteTextLoaderFactory;
-        private readonly ForegroundDispatcherShim _foregroundDispatcher;
+        private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly VSCodeLogger _logger;
 
         public RazorProjectEndpoint(
-            ForegroundDispatcherShim foregroundDispatcher,
+            ForegroundDispatcher foregroundDispatcher,
             RazorConfigurationResolver configurationResolver,
             RemoteTextLoaderFactory remoteTextLoaderFactory,
             RazorProjectService projectService,

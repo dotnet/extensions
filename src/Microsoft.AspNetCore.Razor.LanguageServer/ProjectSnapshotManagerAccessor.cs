@@ -3,10 +3,10 @@
 
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
+namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal abstract class DocumentResolver
+    internal abstract class ProjectSnapshotManagerAccessor
     {
-        public abstract bool TryResolveDocument(string documentFilePath, out DocumentSnapshot document);
+        public abstract ProjectSnapshotManagerBase Instance { get; }
     }
 }

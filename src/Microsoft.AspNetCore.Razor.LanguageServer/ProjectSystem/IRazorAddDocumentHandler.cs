@@ -7,7 +7,7 @@ using OmniSharp.Extensions.JsonRpc;
 namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 {
     [Parallel, Method("projects/addDocument")]
-    public interface IRazorAddDocumentHandler : IJsonRpcRequestHandler<AddDocumentParams>
+    internal interface IRazorAddDocumentHandler : IJsonRpcRequestHandler<AddDocumentParams>
     {
     }
 }

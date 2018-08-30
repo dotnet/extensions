@@ -6,20 +6,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
+using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class BackgroundDocumentGenerator : ProjectSnapshotChangeTriggerShim
+    internal class BackgroundDocumentGenerator : ProjectSnapshotChangeTrigger
     {
-        private readonly ForegroundDispatcherShim _foregroundDispatcher;
+        private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly VSCodeLogger _logger;
-        private readonly Dictionary<string, DocumentSnapshotShim> _work;
-        private ProjectSnapshotManagerShim _projectManager;
+        private readonly Dictionary<string, DocumentSnapshot> _work;
+        private ProjectSnapshotManagerBase _projectManager;
         private Timer _timer;
 
         public BackgroundDocumentGenerator(
-            ForegroundDispatcherShim foregroundDispatcher,
+            ForegroundDispatcher foregroundDispatcher,
             VSCodeLogger logger)
         {
             if (foregroundDispatcher == null)
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             _foregroundDispatcher = foregroundDispatcher;
             _logger = logger;
-            _work = new Dictionary<string, DocumentSnapshotShim>(StringComparer.Ordinal);
+            _work = new Dictionary<string, DocumentSnapshot>(StringComparer.Ordinal);
         }
 
         public bool HasPendingNotifications
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         // Used in tests to ensure we can know when background work finishes.
         public ManualResetEventSlim NotifyBackgroundWorkCompleted { get; set; }
 
-        public override void Initialize(ProjectSnapshotManagerShim projectManager)
+        public override void Initialize(ProjectSnapshotManagerBase projectManager)
         {
             if (projectManager == null)
             {
@@ -119,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         // Internal for testing
-        internal void Enqueue(DocumentSnapshotShim document)
+        internal void Enqueue(DocumentSnapshot document)
         {
             _foregroundDispatcher.AssertForegroundThread();
 
@@ -154,7 +155,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                 OnStartingBackgroundWork();
 
-                KeyValuePair<string, DocumentSnapshotShim>[] work;
+                KeyValuePair<string, DocumentSnapshot>[] work;
                 lock (_work)
                 {
                     work = _work.ToArray();
@@ -207,13 +208,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
         }
 
-        private void ProjectSnapshotManager_Changed(object sender, ProjectChangeEventArgsShim args)
+        private void ProjectSnapshotManager_Changed(object sender, ProjectChangeEventArgs args)
         {
             _foregroundDispatcher.AssertForegroundThread();
 
             switch (args.Kind)
             {
-                case ProjectChangeKindShim.ProjectAdded:
+                case ProjectChangeKind.ProjectAdded:
                     {
                         var projectSnapshot = _projectManager.GetLoadedProject(args.ProjectFilePath);
                         foreach (var documentFilePath in projectSnapshot.DocumentFilePaths)
@@ -227,7 +228,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                         break;
                     }
-                case ProjectChangeKindShim.ProjectChanged:
+                case ProjectChangeKind.ProjectChanged:
                     {
                         var projectSnapshot = _projectManager.GetLoadedProject(args.ProjectFilePath);
                         foreach (var documentFilePath in projectSnapshot.DocumentFilePaths)
@@ -242,7 +243,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         break;
                     }
 
-                case ProjectChangeKindShim.DocumentAdded:
+                case ProjectChangeKind.DocumentAdded:
                     {
                         var project = _projectManager.GetLoadedProject(args.ProjectFilePath);
                         if (_projectManager.IsDocumentOpen(args.DocumentFilePath))
@@ -254,7 +255,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         break;
                     }
 
-                case ProjectChangeKindShim.DocumentChanged:
+                case ProjectChangeKind.DocumentChanged:
                     {
                         var project = _projectManager.GetLoadedProject(args.ProjectFilePath);
                         if (_projectManager.IsDocumentOpen(args.DocumentFilePath))
@@ -266,8 +267,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         break;
                     }
 
-                case ProjectChangeKindShim.ProjectRemoved:
-                case ProjectChangeKindShim.DocumentRemoved:
+                case ProjectChangeKind.ProjectRemoved:
+                case ProjectChangeKind.DocumentRemoved:
                     {
                         // ignore
                         break;
@@ -278,7 +279,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
         }
 
-        private void ReportUpdates(KeyValuePair<string, DocumentSnapshotShim>[] work)
+        private void ReportUpdates(KeyValuePair<string, DocumentSnapshot>[] work)
         {
             for (var i = 0; i < work.Length; i++)
             {
@@ -288,7 +289,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 if (document.TryGetText(out var source) &&
                     document.TryGetGeneratedOutput(out var output))
                 {
-                    var container = document.HostDocument.GeneratedCodeContainer;
+                    var defaultDocument = (DefaultDocumentSnapshot)document;
+                    var container = defaultDocument.State.HostDocument.GeneratedCodeContainer;
                     container.SetOutput(source, output);
                 }
             }

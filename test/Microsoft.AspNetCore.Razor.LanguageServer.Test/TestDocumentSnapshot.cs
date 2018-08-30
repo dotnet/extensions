@@ -5,64 +5,52 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
 {
-    public class TestDocumentSnapshot : DocumentSnapshotShim
+    internal class TestDocumentSnapshot : DefaultDocumentSnapshot
     {
-        private readonly SourceText _sourceText;
-        private readonly TextAndVersion _textVersion;
+        public static TestDocumentSnapshot Create(string filePath) => Create(filePath, string.Empty);
 
-        public TestDocumentSnapshot(string filePath) : this(filePath, string.Empty)
+        public static TestDocumentSnapshot Create(string filePath, string text)
         {
+            var testProject = TestProjectSnapshot.Create(filePath + ".csproj");
+            var testWorkspace = TestWorkspace.Create();
+            var hostDocument = new HostDocument(filePath, filePath);
+            var sourceText = SourceText.From(text);
+            var version = VersionStamp.Default;
+            var documentState = new DocumentState(
+                testWorkspace.Services, 
+                hostDocument, 
+                SourceText.From(text), 
+                version, 
+                () => Task.FromResult(TextAndVersion.Create(sourceText, version)));
+            var testDocument = new TestDocumentSnapshot(testProject, documentState);
+
+            return testDocument;
         }
 
-        public TestDocumentSnapshot(string filePath, string text)
+        private TestDocumentSnapshot(DefaultProjectSnapshot projectSnapshot, DocumentState documentState)
+            : base(projectSnapshot, documentState)
         {
-            HostDocument = HostDocumentShim.Create(filePath, filePath);
-
-            _sourceText = SourceText.From(text);
-            _textVersion = TextAndVersion.Create(_sourceText, VersionStamp.Default, FilePath);
         }
-
-        public override HostDocumentShim HostDocument { get; }
-
-        public override string FilePath => HostDocument.FilePath;
-
-        public override string TargetPath => HostDocument.TargetPath;
 
         public override Task<RazorCodeDocument> GetGeneratedOutputAsync()
         {
             throw new NotImplementedException();
         }
 
-        public override IReadOnlyList<DocumentSnapshotShim> GetImports()
+        public override IReadOnlyList<DocumentSnapshot> GetImports()
         {
             throw new NotImplementedException();
         }
-
-        public override Task<SourceText> GetTextAsync() => Task.FromResult(_sourceText);
-
-        public override Task<VersionStamp> GetTextVersionAsync() => Task.FromResult(_textVersion.Version);
 
         public override bool TryGetGeneratedOutput(out RazorCodeDocument result)
         {
             throw new NotImplementedException();
-        }
-
-        public override bool TryGetText(out SourceText result)
-        {
-            result = _sourceText;
-            return true;
-        }
-
-        public override bool TryGetTextVersion(out VersionStamp result)
-        {
-            result = _textVersion.Version;
-            return true;
         }
     }
 }

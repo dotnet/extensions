@@ -6,7 +6,7 @@ using OmniSharp.Extensions.JsonRpc;
 namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 {
     [Serial, Method("projects/addProject")]
-    public interface IRazorAddProjectHandler : IJsonRpcNotificationHandler<RazorAddProjectParams>
+    internal interface IRazorAddProjectHandler : IJsonRpcNotificationHandler<RazorAddProjectParams>
     {
     }
 }

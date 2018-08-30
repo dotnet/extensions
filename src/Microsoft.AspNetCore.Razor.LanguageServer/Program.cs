@@ -5,11 +5,14 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using OmniSharp.Extensions.LanguageServer.Server;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
+using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.Editor.Razor;
+using OmniSharp.Extensions.LanguageServer.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -54,10 +57,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<DocumentResolver, DefaultDocumentResolver>();
                         services.AddSingleton<FilePathNormalizer>();
                         services.AddSingleton<RazorProjectService, DefaultRazorProjectService>();
-                        services.AddSingleton<ProjectSnapshotChangeTriggerShim, BackgroundDocumentGenerator>();
+                        services.AddSingleton<ProjectSnapshotChangeTrigger, BackgroundDocumentGenerator>();
                         services.AddSingleton<HostDocumentFactory, DefaultHostDocumentFactory>();
-
-                        services.AddRazorShims();
+                        services.AddSingleton<ProjectSnapshotManagerAccessor, DefaultProjectSnapshotManagerAccessor>();
+                        services.AddSingleton<RazorConfigurationResolver, DefaultRazorConfigurationResolver>();
+                        services.AddSingleton<ForegroundDispatcher, VSCodeForegroundDispatcher>();
+                        services.AddSingleton<RazorSyntaxFactsService, DefaultRazorSyntaxFactsService>();
+                        services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();
                     }));
 
             await server.WaitForExit;

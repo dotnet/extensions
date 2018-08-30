@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
 using Microsoft.AspNetCore.Razor.LanguageServer.Test;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -200,7 +201,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         private static DocumentResolver CreateDocumentResolver(string documentPath, SourceText sourceText)
         {
-            var documentSnapshot = Mock.Of<DocumentSnapshotShim>(document => document.GetTextAsync() == Task.FromResult(sourceText) && document.FilePath == documentPath);
+            var documentSnapshot = Mock.Of<DocumentSnapshot>(document => document.GetTextAsync() == Task.FromResult(sourceText) && document.FilePath == documentPath);
             var documentResolver = new Mock<DocumentResolver>();
             documentResolver.Setup(resolver => resolver.TryResolveDocument(documentPath, out documentSnapshot))
                 .Returns(true);

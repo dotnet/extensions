@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Moq;
 using Xunit;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Arrange
             var expectedSourceText = SourceText.From("Hello World");
             var result = Task.FromResult(expectedSourceText);
-            var snapshot = Mock.Of<DocumentSnapshotShim>(doc => doc.GetTextAsync() == result);
+            var snapshot = Mock.Of<DocumentSnapshot>(doc => doc.GetTextAsync() == result);
             var textLoader = new DocumentSnapshotTextLoader(snapshot);
 
             // Act

@@ -7,7 +7,7 @@ using OmniSharp.Extensions.JsonRpc;
 namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 {
     [Parallel, Method("projects/removeDocument")]
-    public interface IRazorRemoveDocumentHandler : IJsonRpcRequestHandler<RemoveDocumentParams>
+    internal interface IRazorRemoveDocumentHandler : IJsonRpcRequestHandler<RemoveDocumentParams>
     {
     }
 }

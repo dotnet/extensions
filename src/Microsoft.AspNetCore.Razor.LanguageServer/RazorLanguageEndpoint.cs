@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
-using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Editor.Razor;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -16,13 +16,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class RazorLanguageEndpoint : IRazorLanguageQueryHandler
     {
-        private readonly ForegroundDispatcherShim _foregroundDispatcher;
+        private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly RazorSyntaxFactsService _syntaxFactsService;
         private readonly VSCodeLogger _logger;
 
         public RazorLanguageEndpoint(
-            ForegroundDispatcherShim foregroundDispatcher,
+            ForegroundDispatcher foregroundDispatcher,
             DocumentResolver documentResolver,
             RazorSyntaxFactsService syntaxFactsService,
             VSCodeLogger logger)

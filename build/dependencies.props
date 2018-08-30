@@ -3,6 +3,7 @@
 
   <PropertyGroup Label="Package Versions">
     <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.1.1</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <OmniSharpExtensionsLanguageServerPackageVersion>0.9.0-beta0008</OmniSharpExtensionsLanguageServerPackageVersion>
   </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />

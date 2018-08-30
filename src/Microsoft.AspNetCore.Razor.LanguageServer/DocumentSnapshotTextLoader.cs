@@ -4,16 +4,16 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class DocumentSnapshotTextLoader : TextLoader
     {
-        private readonly DocumentSnapshotShim _documentSnapshot;
+        private readonly DocumentSnapshot _documentSnapshot;
 
-        public DocumentSnapshotTextLoader(DocumentSnapshotShim documentSnapshot)
+        public DocumentSnapshotTextLoader(DocumentSnapshot documentSnapshot)
         {
             if (documentSnapshot == null)
             {

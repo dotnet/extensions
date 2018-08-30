@@ -6,7 +6,7 @@ using OmniSharp.Extensions.JsonRpc;
 namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 {
     [Serial, Method("projects/removeProject")]
-    public interface IRazorRemoveProjectHandler : IJsonRpcNotificationHandler<RazorRemoveProjectParams>
+    internal interface IRazorRemoveProjectHandler : IJsonRpcNotificationHandler<RazorRemoveProjectParams>
     {
     }
 }

@@ -6,7 +6,7 @@ using OmniSharp.Extensions.JsonRpc;
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     [Parallel, Method("razor/languageQuery")]
-    public interface IRazorLanguageQueryHandler : IJsonRpcRequestHandler<RazorLanguageQueryParams, RazorLanguageQueryResponse>
+    internal interface IRazorLanguageQueryHandler : IJsonRpcRequestHandler<RazorLanguageQueryParams, RazorLanguageQueryResponse>
     {
     }
 }
