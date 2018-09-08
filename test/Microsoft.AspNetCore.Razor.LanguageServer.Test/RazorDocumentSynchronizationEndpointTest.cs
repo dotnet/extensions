@@ -100,12 +100,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var sourceText = SourceText.From("<p>");
             var documentResolver = CreateDocumentResolver(documentPath, sourceText);
             var projectService = new Mock<RazorProjectService>(MockBehavior.Strict);
-            projectService.Setup(service => service.UpdateDocument(It.IsAny<string>(), It.IsAny<SourceText>()))
-                .Callback<string, SourceText>((path, text) =>
+            projectService.Setup(service => service.UpdateDocument(It.IsAny<string>(), It.IsAny<SourceText>(), It.IsAny<long>()))
+                .Callback<string, SourceText, long>((path, text, version) =>
                 {
                     var resultString = GetString(text);
                     Assert.Equal("<p></p>", resultString);
                     Assert.Equal(documentPath, path);
+                    Assert.Equal(1337, version);
                 });
             var endpoint = new RazorDocumentSynchronizationEndpoint(Dispatcher, documentResolver, TextLoaderFactory, projectService.Object, Logger);
             var change = new TextDocumentContentChangeEvent()
@@ -119,7 +120,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 ContentChanges = new Container<TextDocumentContentChangeEvent>(change),
                 TextDocument = new VersionedTextDocumentIdentifier()
                 {
-                    Uri = new Uri(documentPath)
+                    Uri = new Uri(documentPath),
+                    Version = 1337,
                 }
             };
 
@@ -137,12 +139,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Arrange
             var documentPath = "C:/path/to/document.cshtml";
             var projectService = new Mock<RazorProjectService>(MockBehavior.Strict);
-            projectService.Setup(service => service.OpenDocument(It.IsAny<string>(), It.IsAny<SourceText>()))
-                .Callback<string, SourceText>((path, text) =>
+            projectService.Setup(service => service.OpenDocument(It.IsAny<string>(), It.IsAny<SourceText>(), It.IsAny<long>()))
+                .Callback<string, SourceText, long>((path, text, version) =>
                 {
                     var resultString = GetString(text);
                     Assert.Equal("hello", resultString);
                     Assert.Equal(documentPath, path);
+                    Assert.Equal(1337, version);
                 });
             var endpoint = new RazorDocumentSynchronizationEndpoint(Dispatcher, DocumentResolver, TextLoaderFactory, projectService.Object, Logger);
             var request = new DidOpenTextDocumentParams()
@@ -150,7 +153,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 TextDocument = new TextDocumentItem()
                 {
                     Text = "hello",
-                    Uri = new Uri(documentPath)
+                    Uri = new Uri(documentPath),
+                    Version = 1337,
                 }
             };
 

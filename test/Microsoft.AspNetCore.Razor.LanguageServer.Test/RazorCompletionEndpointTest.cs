@@ -21,13 +21,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public RazorCompletionEndpointTest()
         {
             // Working around strong naming restriction.
-            var completionFactsType = Assembly
-                .Load("Microsoft.VisualStudio.Editor.Razor")
-                .GetType("Microsoft.VisualStudio.Editor.Razor.DefaultRazorCompletionFactsService");
-            CompletionFactsService = (RazorCompletionFactsService)Activator.CreateInstance(completionFactsType);
+            CompletionFactsService = new DefaultRazorCompletionFactsService();
         }
 
-        public RazorCompletionFactsService CompletionFactsService { get; set; }
+        private RazorCompletionFactsService CompletionFactsService { get; set; }
 
         // This is more of an integration test to validate that all the pieces work together
         [Fact]

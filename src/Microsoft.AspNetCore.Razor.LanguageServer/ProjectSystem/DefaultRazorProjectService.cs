@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
@@ -17,6 +18,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly HostDocumentFactory _hostDocumentFactory;
         private readonly ProjectResolver _projectResolver;
+        private readonly DocumentVersionCache _documentVersionCache;
         private readonly FilePathNormalizer _filePathNormalizer;
         private readonly DocumentResolver _documentResolver;
         private readonly VSCodeLogger _logger;
@@ -26,6 +28,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             HostDocumentFactory hostDocumentFactory,
             DocumentResolver documentResolver,
             ProjectResolver projectResolver,
+            DocumentVersionCache documentVersionCache,
             FilePathNormalizer filePathNormalizer,
             ProjectSnapshotManagerAccessor projectSnapshotManagerAccessor,
             VSCodeLogger logger)
@@ -50,6 +53,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 throw new ArgumentNullException(nameof(projectResolver));
             }
 
+            if (documentVersionCache == null)
+            {
+                throw new ArgumentNullException(nameof(documentVersionCache));
+            }
+
             if (filePathNormalizer == null)
             {
                 throw new ArgumentNullException(nameof(filePathNormalizer));
@@ -69,6 +77,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _hostDocumentFactory = hostDocumentFactory;
             _documentResolver = documentResolver;
             _projectResolver = projectResolver;
+            _documentVersionCache = documentVersionCache;
             _filePathNormalizer = filePathNormalizer;
             _projectSnapshotManagerAccessor = projectSnapshotManagerAccessor;
             _logger = logger;
@@ -98,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _logger.Log($"Added document '{textDocumentPath}' to project '{projectSnapshot.FilePath}'.");
         }
 
-        public override void OpenDocument(string filePath, SourceText sourceText)
+        public override void OpenDocument(string filePath, SourceText sourceText, long version)
         {
             _foregroundDispatcher.AssertForegroundThread();
 
@@ -117,6 +126,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
             var defaultProject = (DefaultProjectSnapshot)projectSnapshot;
             _projectSnapshotManagerAccessor.Instance.DocumentOpened(defaultProject.HostProject.FilePath, textDocumentPath, sourceText);
+
+            TrackDocumentVersion(textDocumentPath, version);
 
             _logger.Log($"Opening document '{textDocumentPath}' in project '{projectSnapshot.FilePath}'.");
         }
@@ -160,7 +171,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _logger.Log($"Removed document '{textDocumentPath}' from project '{projectSnapshot.FilePath}'.");
         }
 
-        public override void UpdateDocument(string filePath, SourceText sourceText)
+        public override void UpdateDocument(string filePath, SourceText sourceText, long version)
         {
             _foregroundDispatcher.AssertForegroundThread();
 
@@ -172,6 +183,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
             var defaultProject = (DefaultProjectSnapshot)projectSnapshot;
             _projectSnapshotManagerAccessor.Instance.DocumentChanged(defaultProject.HostProject.FilePath, textDocumentPath, sourceText);
+
+            TrackDocumentVersion(textDocumentPath, version);
 
             _logger.Log($"Updated document '{textDocumentPath}'.");
         }
@@ -259,6 +272,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
                 _logger.Log($"Migrated '{documentFilePath}' from the '{miscellaneousProject.FilePath}' project to '{projectSnapshot.FilePath}' project.");
             }
+        }
+
+        private void TrackDocumentVersion(string textDocumentPath, long version)
+        {
+            if (!_documentResolver.TryResolveDocument(textDocumentPath, out var documentSnapshot))
+            {
+                return;
+            }
+
+            _documentVersionCache.TrackDocumentVersion(documentSnapshot, version);
         }
     }
 }

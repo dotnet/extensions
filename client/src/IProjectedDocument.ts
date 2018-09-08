@@ -3,11 +3,6 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import * as vscode from 'vscode';
-import { LanguageKind } from './LanguageKind';
-
-export interface LanguageQueryResponse {
-    kind: LanguageKind;
-    position: vscode.Position;
-    hostDocumentVersion: number;
+export interface IProjectedDocument {
+    readonly hostDocumentSyncVersion: number | null;
 }

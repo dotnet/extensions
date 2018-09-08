@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.Embedded.MediatR;
 using OmniSharp.Extensions.LanguageServer.Protocol;
@@ -89,33 +91,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             sourceText = ApplyContentChanges(notification.ContentChanges, sourceText);
 
             await Task.Factory.StartNew(
-                () => _projectService.UpdateDocument(document.FilePath, sourceText),
+                () => _projectService.UpdateDocument(document.FilePath, sourceText, notification.TextDocument.Version),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);
 
             return Unit.Value;
-        }
-
-        // Internal for testing
-        internal SourceText ApplyContentChanges(IEnumerable<TextDocumentContentChangeEvent> contentChanges, SourceText sourceText)
-        {
-            foreach (var change in contentChanges)
-            {
-                var linePosition = new LinePosition((int)change.Range.Start.Line, (int)change.Range.Start.Character);
-                var position = sourceText.Lines.GetPosition(linePosition);
-                var textSpan = new TextSpan(position, change.RangeLength);
-                var textChange = new TextChange(textSpan, change.Text);
-
-                _logger.Log("Applying " + textChange);
-
-                // If there happens to be multiple text changes we generate a new source text for each one. Due to the
-                // differences in VSCode and Roslyn's representation we can't pass in all changes simultaneously because
-                // ordering may differ.
-                sourceText = sourceText.WithChanges(textChange);
-            }
-
-            return sourceText;
         }
 
         public async Task<Unit> Handle(DidOpenTextDocumentParams notification, CancellationToken token)
@@ -125,7 +106,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var sourceText = SourceText.From(notification.TextDocument.Text);
 
             await Task.Factory.StartNew(
-                () => _projectService.OpenDocument(notification.TextDocument.Uri.AbsolutePath, sourceText),
+                () => _projectService.OpenDocument(notification.TextDocument.Uri.AbsolutePath, sourceText, notification.TextDocument.Version),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);
@@ -183,6 +164,27 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 DocumentSelector = RazorDocument.Selector,
                 IncludeText = true
             };
+        }
+
+        // Internal for testing
+        internal SourceText ApplyContentChanges(IEnumerable<TextDocumentContentChangeEvent> contentChanges, SourceText sourceText)
+        {
+            foreach (var change in contentChanges)
+            {
+                var linePosition = new LinePosition((int)change.Range.Start.Line, (int)change.Range.Start.Character);
+                var position = sourceText.Lines.GetPosition(linePosition);
+                var textSpan = new TextSpan(position, change.RangeLength);
+                var textChange = new TextChange(textSpan, change.Text);
+
+                _logger.Log("Applying " + textChange);
+
+                // If there happens to be multiple text changes we generate a new source text for each one. Due to the
+                // differences in VSCode and Roslyn's representation we can't pass in all changes simultaneously because
+                // ordering may differ.
+                sourceText = sourceText.WithChanges(textChange);
+            }
+
+            return sourceText;
         }
     }
 }

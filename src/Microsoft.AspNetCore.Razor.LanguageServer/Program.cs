@@ -64,6 +64,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<ForegroundDispatcher, VSCodeForegroundDispatcher>();
                         services.AddSingleton<RazorSyntaxFactsService, DefaultRazorSyntaxFactsService>();
                         services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();
+                        services.AddSingleton<DocumentVersionCache, DefaultDocumentVersionCache>();
                     }));
 
             await server.WaitForExit;

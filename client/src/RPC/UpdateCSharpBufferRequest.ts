@@ -7,6 +7,7 @@ import { ServerTextChange } from './ServerTextChange';
 
 export class UpdateCSharpBufferRequest {
     constructor(
+        public readonly hostDocumentVersion: number,
         public readonly hostDocumentFilePath: string,
         public readonly changes: ServerTextChange[]) {
     }

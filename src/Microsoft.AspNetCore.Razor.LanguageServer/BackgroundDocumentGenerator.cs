@@ -8,12 +8,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Text;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class BackgroundDocumentGenerator : ProjectSnapshotChangeTrigger
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
+        private readonly DocumentVersionCache _documentVersionCache;
+        private readonly ILanguageServer _router;
         private readonly VSCodeLogger _logger;
         private readonly Dictionary<string, DocumentSnapshot> _work;
         private ProjectSnapshotManagerBase _projectManager;
@@ -21,6 +25,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public BackgroundDocumentGenerator(
             ForegroundDispatcher foregroundDispatcher,
+            DocumentVersionCache documentVersionCache,
+            ILanguageServer router,
             VSCodeLogger logger)
         {
             if (foregroundDispatcher == null)
@@ -28,11 +34,33 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
             }
 
+            if (documentVersionCache == null)
+            {
+                throw new ArgumentNullException(nameof(documentVersionCache));
+            }
+
+            if (router == null)
+            {
+                throw new ArgumentNullException(nameof(router));
+            }
+
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
 
+            _foregroundDispatcher = foregroundDispatcher;
+            _documentVersionCache = documentVersionCache;
+            _router = router;
+            _logger = logger;
+            _work = new Dictionary<string, DocumentSnapshot>(StringComparer.Ordinal);
+        }
+
+        // For testing only
+        protected BackgroundDocumentGenerator(
+            ForegroundDispatcher foregroundDispatcher,
+            VSCodeLogger logger)
+        {
             _foregroundDispatcher = foregroundDispatcher;
             _logger = logger;
             _work = new Dictionary<string, DocumentSnapshot>(StringComparer.Ordinal);
@@ -181,7 +209,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 OnCompletingBackgroundWork();
 
                 await Task.Factory.StartNew(
-                    () => ReportUpdates(work),
+                    () => ReportUnsynchronizableContent(work),
                     CancellationToken.None,
                     TaskCreationOptions.None,
                     _foregroundDispatcher.ForegroundScheduler);
@@ -279,21 +307,63 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
         }
 
-        private void ReportUpdates(KeyValuePair<string, DocumentSnapshot>[] work)
+        // Internal virtual for testing
+        internal virtual void ReportUnsynchronizableContent(KeyValuePair<string, DocumentSnapshot>[] work)
         {
+            _foregroundDispatcher.AssertForegroundThread();
+
+            // This method deals with reporting unsynchronized content. At this point we've force evaluation of each document
+            // in the work queue; however, some documents may be identical versions of the last synchronized document if
+            // one's content does not differ. In this case, the output of the two generated documents is the same but we still
+            // need to let the client know that we've processed its latest text change. This allows the client to understand
+            // when it's operating on out-of-date output.
+
             for (var i = 0; i < work.Length; i++)
             {
-                var key = work[i].Key;
                 var document = work[i].Value;
 
-                if (document.TryGetText(out var source) &&
-                    document.TryGetGeneratedOutput(out var output))
+                if (!(document is DefaultDocumentSnapshot defaultDocument))
                 {
-                    var defaultDocument = (DefaultDocumentSnapshot)document;
-                    var container = defaultDocument.State.HostDocument.GeneratedCodeContainer;
-                    container.SetOutput(source, output);
+                    continue;
+                }
+
+                if (!_documentVersionCache.TryGetDocumentVersion(document, out var syncVersion))
+                {
+                    // Document is no longer important.
+                    continue;
+                }
+
+                var latestSynchronizedDocument = defaultDocument.State.HostDocument.GeneratedCodeContainer.LatestDocument;
+                if (latestSynchronizedDocument == null || 
+                    latestSynchronizedDocument == document)
+                {
+                    // Already up-to-date
+                    continue;
+                }
+
+                if (IdenticalOutputAfterParse(document, latestSynchronizedDocument, syncVersion))
+                {
+                    // Documents are identical but we didn't synchronize them because they didn't need to be re-evaluated.
+
+                    var request = new UpdateCSharpBufferRequest()
+                    {
+                        HostDocumentFilePath = document.FilePath,
+                        Changes = Array.Empty<TextChange>(),
+                        HostDocumentVersion = syncVersion
+                    };
+
+                    _router.Client.SendRequest("updateCSharpBuffer", request);
                 }
             }
+        }
+
+        private bool IdenticalOutputAfterParse(DocumentSnapshot document, DocumentSnapshot latestSynchronizedDocument, long syncVersion)
+        {
+            return latestSynchronizedDocument.TryGetTextVersion(out var latestSourceVersion) &&
+                document.TryGetTextVersion(out var documentSourceVersion) &&
+                _documentVersionCache.TryGetDocumentVersion(latestSynchronizedDocument, out var lastSynchronizedVersion) &&
+                syncVersion > lastSynchronizedVersion &&
+                latestSourceVersion == documentSourceVersion;
         }
 
         private void ReportError(Exception ex)

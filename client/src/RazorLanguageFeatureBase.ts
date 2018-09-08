@@ -7,11 +7,13 @@ import * as vscode from 'vscode';
 import { RazorCSharpFeature } from './CSharp/RazorCSharpFeature';
 import { RazorHtmlFeature } from './Html/RazorHtmlFeature';
 import { ProjectionResult } from './ProjectionResult';
+import { RazorDocumentSynchronizer } from './RazorDocumentSynchronizer';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { LanguageKind } from './RPC/LanguageKind';
 
 export class RazorLanguageFeatureBase {
     constructor(
+        private readonly documentSynchronizer: RazorDocumentSynchronizer,
         protected readonly csharpFeature: RazorCSharpFeature,
         protected readonly htmlFeature: RazorHtmlFeature,
         protected readonly serviceClient: RazorLanguageServiceClient) {
@@ -27,8 +29,16 @@ export class RazorLanguageFeatureBase {
                     ? this.csharpFeature.projectionProvider
                     : this.htmlFeature.projectionProvider;
                 const projectedDocument = await projectionProvider.getDocument(document.uri);
-                const projectedUri = projectedDocument.projectedUri;
+                const synchronized = await this.documentSynchronizer.trySynchronize(
+                    document,
+                    projectedDocument,
+                    languageResponse.hostDocumentVersion);
+                if (!synchronized) {
+                    // Could not synchronize
+                    return null;
+                }
 
+                const projectedUri = projectedDocument.projectedUri;
                 return {
                     uri: projectedUri,
                     position: languageResponse.position,

@@ -7,6 +7,7 @@ import * as vscode from 'vscode';
 import { RazorCSharpFeature } from './CSharp/RazorCSharpFeature';
 import { RazorHtmlFeature } from './Html/RazorHtmlFeature';
 import { ProvisionalCompletionOrchestrator } from './ProvisionalCompletionOrchestrator';
+import { RazorDocumentSynchronizer } from './RazorDocumentSynchronizer';
 import { RazorLanguageFeatureBase } from './RazorLanguageFeatureBase';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 
@@ -60,11 +61,12 @@ export class RazorCompletionItemProvider
     }
 
     constructor(
+        documentSynchronizer: RazorDocumentSynchronizer,
         csharpFeature: RazorCSharpFeature,
         htmlFeature: RazorHtmlFeature,
         serviceClient: RazorLanguageServiceClient,
         private readonly provisionalCompletionOrchestrator: ProvisionalCompletionOrchestrator) {
-        super(csharpFeature, htmlFeature, serviceClient);
+        super(documentSynchronizer, csharpFeature, htmlFeature, serviceClient);
     }
 
     public async provideCompletionItems(

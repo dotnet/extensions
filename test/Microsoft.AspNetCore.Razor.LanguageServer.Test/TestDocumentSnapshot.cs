@@ -15,13 +15,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
     {
         public static TestDocumentSnapshot Create(string filePath) => Create(filePath, string.Empty);
 
-        public static TestDocumentSnapshot Create(string filePath, string text)
+        public static TestDocumentSnapshot Create(string filePath, VersionStamp version) => Create(filePath, string.Empty, version);
+
+        public static TestDocumentSnapshot Create(string filePath, string text) => Create(filePath, text, VersionStamp.Default);
+
+        public static TestDocumentSnapshot Create(string filePath, string text, VersionStamp version)
         {
             var testProject = TestProjectSnapshot.Create(filePath + ".csproj");
             var testWorkspace = TestWorkspace.Create();
             var hostDocument = new HostDocument(filePath, filePath);
             var sourceText = SourceText.From(text);
-            var version = VersionStamp.Default;
             var documentState = new DocumentState(
                 testWorkspace.Services, 
                 hostDocument, 

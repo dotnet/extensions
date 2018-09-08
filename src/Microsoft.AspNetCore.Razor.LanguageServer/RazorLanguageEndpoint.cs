@@ -3,11 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Editor.Razor;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
@@ -19,12 +21,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly RazorSyntaxFactsService _syntaxFactsService;
+        private readonly DocumentVersionCache _documentVersionCache;
         private readonly VSCodeLogger _logger;
 
         public RazorLanguageEndpoint(
             ForegroundDispatcher foregroundDispatcher,
             DocumentResolver documentResolver,
             RazorSyntaxFactsService syntaxFactsService,
+            DocumentVersionCache documentVersionCache,
             VSCodeLogger logger)
         {
             if (foregroundDispatcher == null)
@@ -42,6 +46,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(syntaxFactsService));
             }
 
+            if (documentVersionCache == null)
+            {
+                throw new ArgumentNullException(nameof(documentVersionCache));
+            }
+
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
@@ -50,19 +59,26 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             _foregroundDispatcher = foregroundDispatcher;
             _documentResolver = documentResolver;
             _syntaxFactsService = syntaxFactsService;
+            _documentVersionCache = documentVersionCache;
             _logger = logger;
         }
 
         public async Task<RazorLanguageQueryResponse> Handle(RazorLanguageQueryParams request, CancellationToken cancellationToken)
         {
-            var document = await Task.Factory.StartNew(() =>
+            long documentVersion = -1;
+            DocumentSnapshot documentSnapshot = null;
+            await Task.Factory.StartNew(() =>
             {
-                _documentResolver.TryResolveDocument(request.Uri.AbsolutePath, out var documentSnapshot);
+                _documentResolver.TryResolveDocument(request.Uri.AbsolutePath, out documentSnapshot);
+                if (!_documentVersionCache.TryGetDocumentVersion(documentSnapshot, out documentVersion))
+                {
+                    Debug.Fail("Document should always be available here.");
+                }
 
                 return documentSnapshot;
             }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
 
-            var codeDocument = await document.GetGeneratedOutputAsync();
+            var codeDocument = await documentSnapshot.GetGeneratedOutputAsync();
             var syntaxTree = codeDocument.GetSyntaxTree();
             var hostDocumentIndex = codeDocument.Source.GetAbsoluteIndex(request.Position);
 
@@ -94,6 +110,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 Kind = languageKind,
                 Position = responsePosition,
+                HostDocumentVersion = documentVersion
             };
         }
 

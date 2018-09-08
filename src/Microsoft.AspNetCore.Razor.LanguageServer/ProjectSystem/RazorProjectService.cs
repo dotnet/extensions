@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
@@ -11,13 +12,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
     {
         public abstract void AddDocument(string filePath, TextLoader textLoader);
 
-        public abstract void OpenDocument(string filePath, SourceText sourceText);
+        public abstract void OpenDocument(string filePath, SourceText sourceText, long version);
 
         public abstract void CloseDocument(string filePath, TextLoader textLoader);
 
         public abstract void RemoveDocument(string filePath);
 
-        public abstract void UpdateDocument(string filePath, SourceText sourceText);
+        public abstract void UpdateDocument(string filePath, SourceText sourceText, long version);
 
         public abstract void AddProject(string filePath, RazorConfiguration configuration);
 

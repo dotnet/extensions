@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var sourceText = SourceText.From("Hello World");
 
             // Act
-            projectService.OpenDocument(expectedDocumentFilePath, sourceText);
+            projectService.OpenDocument(expectedDocumentFilePath, sourceText, 1);
 
             // Assert
             projectSnapshotManager.Verify(manager => manager.DocumentOpened(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SourceText>()));
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var sourceText = SourceText.From("Hello World");
 
             // Act
-            projectService.OpenDocument(expectedDocumentFilePath, sourceText);
+            projectService.OpenDocument(expectedDocumentFilePath, sourceText, 1);
 
             // Assert
             projectSnapshotManager.Verify(manager => manager.DocumentOpened(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SourceText>()));
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var sourceText = SourceText.From("Hello World");
 
             // Act
-            projectService.OpenDocument(expectedDocumentFilePath, sourceText);
+            projectService.OpenDocument(expectedDocumentFilePath, sourceText, 1);
 
             // Assert
             projectSnapshotManager.VerifyAll();
@@ -552,11 +552,20 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             DocumentResolver documentResolver = null)
         {
             var logger = Mock.Of<VSCodeLogger>();
+            var documentVersionCache = Mock.Of<DocumentVersionCache>();
             var filePathNormalizer = new FilePathNormalizer();
             var accessor = Mock.Of<ProjectSnapshotManagerAccessor>(a => a.Instance == projectSnapshotManager);
             documentResolver = documentResolver ?? Mock.Of<DocumentResolver>();
             var hostDocumentFactory = new TestHostDocumentFactory();
-            var projectService = new DefaultRazorProjectService(Dispatcher, hostDocumentFactory, documentResolver, projectResolver, filePathNormalizer, accessor, logger);
+            var projectService = new DefaultRazorProjectService(
+                Dispatcher,
+                hostDocumentFactory,
+                documentResolver,
+                projectResolver,
+                documentVersionCache,
+                filePathNormalizer,
+                accessor,
+                logger);
 
             return projectService;
         }

@@ -24,7 +24,7 @@ export class HtmlProjectedDocumentContentProvider implements vscode.TextDocument
 
         if (hostDocument) {
             const hostDocumentText = hostDocument.getText();
-            projectedDocument.setContent(hostDocumentText);
+            projectedDocument.setContent(hostDocumentText, hostDocument.version);
         }
 
         this.onDidChangeEmitter.fire(projectedDocument.projectedUri);

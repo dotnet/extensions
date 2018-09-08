@@ -9,6 +9,7 @@ import { RazorCSharpFeature } from './CSharp/RazorCSharpFeature';
 import { RazorHtmlFeature } from './Html/RazorHtmlFeature';
 import { ProvisionalCompletionOrchestrator } from './ProvisionalCompletionOrchestrator';
 import { RazorCompletionItemProvider } from './RazorCompletionItemProvider';
+import { RazorDocumentSynchronizer } from './RazorDocumentSynchronizer';
 import { RazorDocumentTracker } from './RazorDocumentTracker';
 import { RazorLanguage } from './RazorLanguage';
 import { RazorLanguageConfiguration } from './RazorLanguageConfiguration';
@@ -35,15 +36,18 @@ export async function activate(context: ExtensionContext) {
     const localRegistrations: vscode.Disposable[] = [];
 
     const onStartRegistration = languageServerClient.onStart(() => {
+        const documentSynchronizer = new RazorDocumentSynchronizer();
         const provisionalCompletionOrchestrator = new ProvisionalCompletionOrchestrator(
             csharpFeature,
             languageServiceClient);
         const completionItemProvider = new RazorCompletionItemProvider(
+            documentSynchronizer,
             csharpFeature,
             htmlFeature,
             languageServiceClient,
             provisionalCompletionOrchestrator);
         const signatureHelpProvider = new RazorSignatureHelpProvider(
+            documentSynchronizer,
             csharpFeature,
             htmlFeature,
             languageServiceClient);
@@ -63,6 +67,7 @@ export async function activate(context: ExtensionContext) {
             documentTracker.register(),
             csharpFeature.register(),
             htmlFeature.register(),
+            documentSynchronizer.register(),
             vscode.workspace.onDidChangeTextDocument(async args => {
                 const activeTextEditor = vscode.window.activeTextEditor;
                 if (activeTextEditor && activeTextEditor.document === args.document) {

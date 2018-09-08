@@ -22,14 +22,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         public RazorLanguageEndpointTest()
         {
-            // Working around strong naming restriction.
-            var syntaxFactsType = Assembly
-                .Load("Microsoft.VisualStudio.Editor.Razor")
-                .GetType("Microsoft.VisualStudio.Editor.Razor.DefaultRazorSyntaxFactsService");
-            SyntaxFactsService = (RazorSyntaxFactsService)Activator.CreateInstance(syntaxFactsType);
+            var documentVersionCache = new Mock<DocumentVersionCache>();
+            long version = 1337;
+            documentVersionCache.Setup(cache => cache.TryGetDocumentVersion(It.IsAny<DocumentSnapshot>(), out version))
+                .Returns(true);
+
+            SyntaxFactsService = new DefaultRazorSyntaxFactsService();
+            DocumentVersionCache = documentVersionCache.Object;
         }
 
-        public RazorSyntaxFactsService SyntaxFactsService { get; }
+        private DocumentVersionCache DocumentVersionCache { get; }
+
+        private RazorSyntaxFactsService SyntaxFactsService { get; }
 
         // This is more of an integration test to validate that all the pieces work together
         [Fact]
@@ -39,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("@{}");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, SyntaxFactsService, Logger);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, SyntaxFactsService, DocumentVersionCache, Logger);
             var request = new RazorLanguageQueryParams()
             {
                 Uri = new Uri(documentPath),
@@ -52,6 +56,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Assert
             Assert.Equal(RazorLanguageKind.Razor, response.Kind);
             Assert.Equal(request.Position, response.Position);
+            Assert.Equal(1337, response.HostDocumentVersion);
         }
 
         // This is more of an integration test to validate that all the pieces work together
@@ -62,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("<s");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, SyntaxFactsService, Logger);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, SyntaxFactsService, DocumentVersionCache, Logger);
             var request = new RazorLanguageQueryParams()
             {
                 Uri = new Uri(documentPath),
@@ -75,6 +80,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Assert
             Assert.Equal(RazorLanguageKind.Html, response.Kind);
             Assert.Equal(request.Position, response.Position);
+            Assert.Equal(1337, response.HostDocumentVersion);
         }
 
         // This is more of an integration test to validate that all the pieces work together
@@ -88,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 "/* CSharp */",
                 new[] { new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 12)) });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, SyntaxFactsService, Logger);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, SyntaxFactsService, DocumentVersionCache, Logger);
             var request = new RazorLanguageQueryParams()
             {
                 Uri = new Uri(documentPath),
@@ -102,6 +108,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Assert.Equal(RazorLanguageKind.CSharp, response.Kind);
             Assert.Equal(0, response.Position.Line);
             Assert.Equal(1, response.Position.Character);
+            Assert.Equal(1337, response.HostDocumentVersion);
         }
 
         [Fact]

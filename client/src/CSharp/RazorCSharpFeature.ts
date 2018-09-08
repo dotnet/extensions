@@ -36,6 +36,9 @@ export class RazorCSharpFeature {
     private async updateCSharpBuffer(updateBufferRequest: UpdateCSharpBufferRequest) {
         const hostDocumentUri = vscode.Uri.file(updateBufferRequest.hostDocumentFilePath);
         const projectedDocument = await this.projectionProvider.getDocument(hostDocumentUri);
-        projectedDocument.applyEdits(updateBufferRequest.changes);
+        if (!projectedDocument.hostDocumentSyncVersion ||
+            projectedDocument.hostDocumentSyncVersion < updateBufferRequest.hostDocumentVersion) {
+            projectedDocument.update(updateBufferRequest.changes, updateBufferRequest.hostDocumentVersion);
+        }
     }
 }

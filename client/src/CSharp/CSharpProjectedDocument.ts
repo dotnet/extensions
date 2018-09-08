@@ -4,12 +4,14 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
+import { IProjectedDocument } from '../IProjectedDocument';
 import { ServerTextChange } from '../RPC/ServerTextChange';
 
-export class CSharpProjectedDocument {
+export class CSharpProjectedDocument implements IProjectedDocument {
     private content = '';
     private preProvisionalContent: string | undefined;
     private provisionalEditAt: number | undefined;
+    private hostDocumentVersion: number | null = null;
 
     public constructor(
         readonly projectedUri: vscode.Uri,
@@ -17,8 +19,14 @@ export class CSharpProjectedDocument {
         readonly onChange: () => void) {
     }
 
-    public applyEdits(edits: ServerTextChange[]) {
+    public get hostDocumentSyncVersion(): number | null {
+        return this.hostDocumentVersion;
+    }
+
+    public update(edits: ServerTextChange[], hostDocumentVersion: number) {
         this.removeProvisionalDot();
+
+        this.hostDocumentVersion = hostDocumentVersion;
 
         if (edits.length === 0) {
             return;
