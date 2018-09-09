@@ -9,6 +9,7 @@
       "Microsoft.Extensions.CommandLineUtils.Sources": {},
       "Microsoft.Extensions.CopyOnWriteDictionary.Sources": {},
       "Microsoft.Extensions.HashCodeCombiner.Sources": {},
+      "Microsoft.Extensions.NonCapturingTimer.Sources": {},
       "Microsoft.Extensions.ObjectMethodExecutor.Sources": {},
       "Microsoft.Extensions.Process.Sources": {},
       "Microsoft.Extensions.PropertyActivator.Sources": {},
