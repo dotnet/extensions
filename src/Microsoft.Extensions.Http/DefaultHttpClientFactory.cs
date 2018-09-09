@@ -17,6 +17,7 @@ namespace Microsoft.Extensions.Http
 {
     internal class DefaultHttpClientFactory : IHttpClientFactory, IHttpMessageHandlerFactory
     {
+        private static readonly TimerCallback _cleanupCallback = (s) => ((DefaultHttpClientFactory)s).CleanupTimer_Tick();
         private readonly ILogger _logger;
         private readonly IServiceProvider _services;
         private readonly IServiceScopeFactory _scopeFactory;
@@ -37,7 +38,6 @@ namespace Microsoft.Extensions.Http
         // There's no need for the factory itself to be disposable. If you stop using it, eventually everything will
         // get reclaimed.
         private Timer _cleanupTimer;
-        private TimerCallback _cleanupCallback;
         private readonly object _cleanupTimerLock;
         private readonly object _cleanupActiveLock;
 
@@ -110,7 +110,6 @@ namespace Microsoft.Extensions.Http
             _expiredHandlers = new ConcurrentQueue<ExpiredHandlerTrackingEntry>();
             _expiryCallback = ExpiryTimer_Tick;
 
-            _cleanupCallback = CleanupTimer_Tick;
             _cleanupTimerLock = new object();
             _cleanupActiveLock = new object();
         }
@@ -242,7 +241,26 @@ namespace Microsoft.Extensions.Http
             {
                 if (_cleanupTimer == null)
                 {
-                    _cleanupTimer = new Timer(_cleanupCallback, null, DefaultCleanupInterval, Timeout.InfiniteTimeSpan);
+                    // Don't capture the current ExecutionContext and its AsyncLocals onto the timer
+                    bool restoreFlow = false;
+                    try
+                    {
+                        if (!ExecutionContext.IsFlowSuppressed())
+                        {
+                            ExecutionContext.SuppressFlow();
+                            restoreFlow = true;
+                        }
+
+                        _cleanupTimer = new Timer(_cleanupCallback, this, DefaultCleanupInterval, Timeout.InfiniteTimeSpan);
+                    }
+                    finally
+                    {
+                        // Restore the current ExecutionContext
+                        if (restoreFlow)
+                        {
+                            ExecutionContext.RestoreFlow();
+                        }
+                    }
                 }
             }
         }
@@ -258,7 +276,7 @@ namespace Microsoft.Extensions.Http
         }
 
         // Internal for tests
-        internal void CleanupTimer_Tick(object state)
+        internal void CleanupTimer_Tick()
         {
             // Stop any pending timers, we'll restart the timer if there's anything left to process after cleanup.
             //
