@@ -13,6 +13,7 @@
     <Compile Include="..\..\shared\Microsoft.Extensions.CopyOnWriteDictionary.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.DotnetToolDispatcher.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.HashCodeCombiner.Sources\**\*.cs" />
+    <Compile Include="..\..\shared\Microsoft.Extensions.NonCapturingTimer.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.ObjectMethodExecutor.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.ParameterDefaultValue.Sources\**\*.cs" />
     <Compile Include="..\..\shared\Microsoft.Extensions.Process.Sources\**\*.cs" />
