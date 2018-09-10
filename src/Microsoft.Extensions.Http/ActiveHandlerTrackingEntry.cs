@@ -12,6 +12,7 @@ namespace Microsoft.Extensions.Http
     // for the 'expiry' pool simplifies the threading requirements significantly.
     internal class ActiveHandlerTrackingEntry
     {
+        private static readonly TimerCallback _timerCallback = (s) => ((ActiveHandlerTrackingEntry)s).Timer_Tick();
         private readonly object _lock;
         private bool _timerInitialized;
         private Timer _timer;
@@ -66,13 +67,31 @@ namespace Microsoft.Extensions.Http
                 }
 
                 _callback = callback;
-                _timer = new Timer(Timer_Tick, null, Lifetime, Timeout.InfiniteTimeSpan);
 
+                // Don't capture the current ExecutionContext and its AsyncLocals onto the timer
+                bool restoreFlow = false;
+                try
+                {
+                    if (!ExecutionContext.IsFlowSuppressed())
+                    {
+                        ExecutionContext.SuppressFlow();
+                        restoreFlow = true;
+                    }
+                    _timer = new Timer(_timerCallback, this, Lifetime, Timeout.InfiniteTimeSpan);
+                }
+                finally
+                {
+                    // Restore the current ExecutionContext
+                    if (restoreFlow)
+                    {
+                        ExecutionContext.RestoreFlow();
+                    }
+                }
                 Volatile.Write(ref _timerInitialized, true);
             }
         }
 
-        private void Timer_Tick(object state)
+        private void Timer_Tick()
         {
             Debug.Assert(_callback != null);
             Debug.Assert(_timer != null);

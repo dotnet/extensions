@@ -379,7 +379,7 @@ namespace Microsoft.Extensions.Http
             Assert.True(cleanupEntry.CanDispose, "Cleanup entry disposable");
 
             // Act
-            factory.CleanupTimer_Tick(null);
+            factory.CleanupTimer_Tick();
 
             // Assert
             Assert.Empty(factory._expiredHandlers);
@@ -424,7 +424,7 @@ namespace Microsoft.Extensions.Http
             Assert.True(cleanupEntry.CanDispose, "Cleanup entry disposable");
 
             // Act - 2
-            factory.CleanupTimer_Tick(null);
+            factory.CleanupTimer_Tick();
 
             // Assert
             Assert.Empty(factory._expiredHandlers);
@@ -456,7 +456,7 @@ namespace Microsoft.Extensions.Http
             }
 
             // Act - 1
-            factory.CleanupTimer_Tick(null);
+            factory.CleanupTimer_Tick();
 
             // Assert
             Assert.Same(cleanupEntry, Assert.Single(factory._expiredHandlers));
