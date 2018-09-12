@@ -4,10 +4,11 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
+import { IProjectedDocument } from './IProjectedDocument';
 
-export interface IProjectedDocument {
+export interface IRazorDocument {
     readonly path: string;
     readonly uri: vscode.Uri;
-    readonly hostDocumentSyncVersion: number | null;
-    getContent(): string;
+    readonly csharpDocument: IProjectedDocument;
+    readonly htmlDocument: IProjectedDocument;
 }

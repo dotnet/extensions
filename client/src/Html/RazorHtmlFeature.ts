@@ -4,30 +4,23 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
+import { RazorDocumentManager } from '../RazorDocumentManager';
 import { RazorLanguageServiceClient } from '../RazorLanguageServiceClient';
 import { HtmlPreviewDocumentContentProvider } from './HtmlPreviewDocumentContentProvider';
 import { HtmlProjectedDocumentContentProvider } from './HtmlProjectedDocumentContentProvider';
 import { HtmlTagCompletionProvider } from './HtmlTagCompletionProvider';
 
 export class RazorHtmlFeature {
-    public readonly projectionProvider = new HtmlProjectedDocumentContentProvider();
-    public readonly previewProvider = new HtmlPreviewDocumentContentProvider(this.projectionProvider);
+    public readonly projectionProvider: HtmlProjectedDocumentContentProvider;
+    public readonly previewProvider: HtmlPreviewDocumentContentProvider;
     private readonly htmlTagCompletionProvider: HtmlTagCompletionProvider;
 
-    constructor(serviceClient: RazorLanguageServiceClient) {
+    constructor(
+        documentManager: RazorDocumentManager,
+        serviceClient: RazorLanguageServiceClient) {
+        this.projectionProvider = new HtmlProjectedDocumentContentProvider(documentManager);
+        this.previewProvider = new HtmlPreviewDocumentContentProvider(documentManager);
         this.htmlTagCompletionProvider = new HtmlTagCompletionProvider(serviceClient);
-    }
-
-    public async initialize() {
-        const activeProjectedDocument = await this.projectionProvider.getActiveDocument();
-
-        if (activeProjectedDocument) {
-            this.updateDocument(activeProjectedDocument.hostDocumentUri);
-        }
-    }
-
-    public async updateDocument(documentUri: vscode.Uri) {
-        await this.projectionProvider.update(documentUri);
     }
 
     public register() {

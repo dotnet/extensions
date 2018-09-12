@@ -3,11 +3,9 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import * as vscode from 'vscode';
-
-export interface IProjectedDocument {
-    readonly path: string;
-    readonly uri: vscode.Uri;
-    readonly hostDocumentSyncVersion: number | null;
-    getContent(): string;
+export enum RazorDocumentChangeKind {
+    added,
+    removed,
+    csharpChanged,
+    htmlChanged,
 }

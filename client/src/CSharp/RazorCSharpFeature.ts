@@ -4,16 +4,17 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
-import { RazorLanguageServerClient } from '../RazorLanguageServerClient';
-import { UpdateCSharpBufferRequest } from '../RPC/UpdateCSharpBufferRequest';
+import { RazorDocumentManager } from '../RazorDocumentManager';
 import { CSharpPreviewDocumentContentProvider } from './CSharpPreviewDocumentContentProvider';
 import { CSharpProjectedDocumentContentProvider } from './CSharpProjectedDocumentContentProvider';
 
 export class RazorCSharpFeature {
-    public readonly projectionProvider = new CSharpProjectedDocumentContentProvider();
-    public readonly previewProvider = new CSharpPreviewDocumentContentProvider(this.projectionProvider);
+    public readonly projectionProvider: CSharpProjectedDocumentContentProvider;
+    public readonly previewProvider: CSharpPreviewDocumentContentProvider;
 
-    constructor(private serverClient: RazorLanguageServerClient) {
+    constructor(documentManager: RazorDocumentManager) {
+        this.projectionProvider = new CSharpProjectedDocumentContentProvider(documentManager);
+        this.previewProvider = new CSharpPreviewDocumentContentProvider(documentManager);
     }
 
     public register() {
@@ -26,19 +27,6 @@ export class RazorCSharpFeature {
                 'extension.showRazorCSharpWindow', () => this.previewProvider.showRazorCSharpWindow()),
         ];
 
-        this.serverClient.onRequest(
-            'updateCSharpBuffer',
-            updateBufferRequest => this.updateCSharpBuffer(updateBufferRequest));
-
         return vscode.Disposable.from(...registrations);
-    }
-
-    private async updateCSharpBuffer(updateBufferRequest: UpdateCSharpBufferRequest) {
-        const hostDocumentUri = vscode.Uri.file(updateBufferRequest.hostDocumentFilePath);
-        const projectedDocument = await this.projectionProvider.getDocument(hostDocumentUri);
-        if (!projectedDocument.hostDocumentSyncVersion ||
-            projectedDocument.hostDocumentSyncVersion < updateBufferRequest.hostDocumentVersion) {
-            projectedDocument.update(updateBufferRequest.changes, updateBufferRequest.hostDocumentVersion);
-        }
     }
 }

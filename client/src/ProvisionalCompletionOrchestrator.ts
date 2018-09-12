@@ -4,9 +4,11 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
-import { RazorCSharpFeature } from './CSharp/RazorCSharpFeature';
+import { CSharpProjectedDocument } from './CSharp/CSharpProjectedDocument';
+import { CSharpProjectedDocumentContentProvider } from './CSharp/CSharpProjectedDocumentContentProvider';
 import { ProjectionResult } from './ProjectionResult';
 import { RazorCompletionItemProvider } from './RazorCompletionItemProvider';
+import { RazorDocumentManager } from './RazorDocumentManager';
 import { RazorLanguage } from './RazorLanguage';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { LanguageKind } from './RPC/LanguageKind';
@@ -16,7 +18,8 @@ export class ProvisionalCompletionOrchestrator {
     private currentActiveDocument: vscode.TextDocument | undefined;
 
     constructor(
-        private readonly csharpFeature: RazorCSharpFeature,
+        private readonly documentManager: RazorDocumentManager,
+        private readonly projectedCSharpProvider: CSharpProjectedDocumentContentProvider,
         private readonly serviceClient: RazorLanguageServiceClient) {
     }
 
@@ -93,8 +96,9 @@ export class ProvisionalCompletionOrchestrator {
             return null;
         }
 
-        const projectedDocument = await this.csharpFeature.projectionProvider.getDocument(hostDocumentUri);
-        const projectedEditorDocument = await vscode.workspace.openTextDocument(projectedDocument.projectedUri);
+        const document = await this.documentManager.getDocument(hostDocumentUri);
+        const projectedDocument = document.csharpDocument as CSharpProjectedDocument;
+        const projectedEditorDocument = await vscode.workspace.openTextDocument(projectedDocument.uri);
         const absoluteIndex = projectedEditorDocument.offsetAt(previousCharacterQuery.position);
 
         // Edit the projected document to contain a '.'. This allows C# completion to provide valid completion items
@@ -105,17 +109,18 @@ export class ProvisionalCompletionOrchestrator {
         //  3. The user selects different content
         //  4. The projected document gets an update request
         projectedDocument.addProvisionalDotAt(absoluteIndex);
+        this.projectedCSharpProvider.ensureDocumentContent(projectedDocument.uri);
 
         // We open and then re-save because we're adding content to the text document within an event.
         // We need to allow the system to propogate this text document change.
-        const newDocument = await vscode.workspace.openTextDocument(projectedDocument.projectedUri);
+        const newDocument = await vscode.workspace.openTextDocument(projectedDocument.uri);
         await newDocument.save();
 
         const provisionalPosition = new vscode.Position(
             previousCharacterQuery.position.line,
             previousCharacterQuery.position.character + 1);
         const completionList = await RazorCompletionItemProvider.getCompletions(
-            projectedDocument.projectedUri,
+            projectedDocument.uri,
             htmlPosition,
             provisionalPosition,
             completionContext.triggerCharacter);
@@ -135,13 +140,15 @@ export class ProvisionalCompletionOrchestrator {
             return;
         }
 
-        const projectedDocument = await this.csharpFeature.projectionProvider.getActiveDocument();
-
-        if (!projectedDocument) {
+        const razorDocument = await this.documentManager.getActiveDocument();
+        if (!razorDocument) {
             return;
         }
 
-        projectedDocument.removeProvisionalDot();
+        const projectedDocument = razorDocument.csharpDocument as CSharpProjectedDocument;
+        if (projectedDocument.removeProvisionalDot()) {
+            this.projectedCSharpProvider.ensureDocumentContent(projectedDocument.uri);
+        }
 
         // Don't need to force the document to refresh here by saving because the user has already
         // moved onto a different action. We only want to re-save the projected document when we

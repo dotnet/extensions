@@ -4,6 +4,9 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
+import { IRazorDocumentChangeEvent } from '../IRazorDocumentChangeEvent';
+import { RazorDocumentChangeKind } from '../RazorDocumentChangeKind';
+import { RazorDocumentManager } from '../RazorDocumentManager';
 import { HtmlProjectedDocumentContentProvider } from './HtmlProjectedDocumentContentProvider';
 
 export class HtmlPreviewDocumentContentProvider implements vscode.TextDocumentContentProvider {
@@ -13,24 +16,24 @@ export class HtmlPreviewDocumentContentProvider implements vscode.TextDocumentCo
 
     private readonly onDidChangeEmitter = new vscode.EventEmitter<vscode.Uri>();
 
-    constructor(private readonly htmlProjectionProvider: HtmlProjectedDocumentContentProvider ) {
-        htmlProjectionProvider.onDidChange(uri => this.tryUpdate(uri));
+    constructor(private readonly documentManager: RazorDocumentManager) {
+        documentManager.onChange((event) => this.documentChanged(event));
     }
 
     public get onDidChange() { return this.onDidChangeEmitter.event; }
 
     public async provideTextDocumentContent() {
-        const projectedDocument = await this.htmlProjectionProvider.getActiveDocument();
+        const document = await this.documentManager.getActiveDocument();
 
-        if (!projectedDocument) {
+        if (!document) {
             return '';
         }
 
-        const content = projectedDocument.getContent();
+        const content = document.htmlDocument.getContent();
 
         return `
             <body>
-                <p>For host document: <strong>${projectedDocument.hostDocumentUri.path}</strong></p>
+                <p>For host document: <strong>${document.path}</strong></p>
                 <hr />
                 <pre>${content.replace(/\</g, '&lt;')}</pre>
                 <hr />
@@ -38,9 +41,9 @@ export class HtmlPreviewDocumentContentProvider implements vscode.TextDocumentCo
     }
 
     public async showRazorHtmlWindow() {
-        const activeProjectedDocument = await this.htmlProjectionProvider.getActiveDocument();
+        const document = await this.documentManager.getActiveDocument();
 
-        if (!activeProjectedDocument) {
+        if (!document) {
             vscode.window.showErrorMessage('No active text editor.');
             return;
         }
@@ -56,11 +59,13 @@ export class HtmlPreviewDocumentContentProvider implements vscode.TextDocumentCo
         }
     }
 
-    private async tryUpdate(uri: vscode.Uri) {
-        const activeDocument = await this.htmlProjectionProvider.getActiveDocument();
+    private async documentChanged(event: IRazorDocumentChangeEvent) {
+        if (event.kind === RazorDocumentChangeKind.htmlChanged) {
+            const document = await this.documentManager.getActiveDocument();
 
-        if (activeDocument && activeDocument.projectedUri === uri) {
-            this.onDidChangeEmitter.fire(HtmlPreviewDocumentContentProvider.previewUri);
+            if (document === event.document) {
+                this.onDidChangeEmitter.fire(HtmlPreviewDocumentContentProvider.previewUri);
+            }
         }
     }
 }

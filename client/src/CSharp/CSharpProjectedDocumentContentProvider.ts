@@ -4,65 +4,49 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
-import { RazorLanguage } from '../RazorLanguage';
-import { CSharpProjectedDocument } from './CSharpProjectedDocument';
+import { IRazorDocumentChangeEvent } from '../IRazorDocumentChangeEvent';
+import { RazorDocumentChangeKind } from '../RazorDocumentChangeKind';
+import { RazorDocumentManager } from '../RazorDocumentManager';
+import { getUriPath } from '../UriPaths';
 
 export class CSharpProjectedDocumentContentProvider implements vscode.TextDocumentContentProvider {
     public static readonly scheme = 'razor-csharp';
 
-    private onDidChangeEmitter = new vscode.EventEmitter<vscode.Uri>();
-    private projectedDocuments: { [hostDocumentPath: string]: CSharpProjectedDocument } = {};
+    private readonly onDidChangeEmitter = new vscode.EventEmitter<vscode.Uri>();
+
+    constructor(private readonly documentManager: RazorDocumentManager) {
+        documentManager.onChange((event) => this.documentChanged(event));
+    }
 
     public get onDidChange() { return this.onDidChangeEmitter.event; }
 
-    public provideTextDocumentContent(uri: vscode.Uri) {
-        const projectedDocument = this.findProjectedDocument(uri);
-        if (!projectedDocument) {
-            vscode.window.showErrorMessage('For some reason the projected document isn\'t set.');
+    public async provideTextDocumentContent(uri: vscode.Uri) {
+        const razorDocument = this.findRazorDocument(uri);
+        if (!razorDocument) {
+            vscode.window.showErrorMessage('For some reason the projected document isn\'t available.');
             return;
         }
 
-        const content = projectedDocument.getContent();
+        const content = razorDocument.csharpDocument.getContent();
 
         return content;
     }
 
-    public getDocument(hostDocumentUri: vscode.Uri) {
-        return this.ensureProjectedDocument(hostDocumentUri);
+    public ensureDocumentContent(uri: vscode.Uri) {
+        this.onDidChangeEmitter.fire(uri);
     }
 
-    public getActiveDocument() {
-        if (!vscode.window.activeTextEditor) {
-            return null;
+    private documentChanged(event: IRazorDocumentChangeEvent) {
+        if (event.kind === RazorDocumentChangeKind.csharpChanged) {
+            this.onDidChangeEmitter.fire(event.document.csharpDocument.uri);
         }
-
-        return this.ensureProjectedDocument(vscode.window.activeTextEditor.document.uri);
     }
 
-    private async ensureProjectedDocument(hostDocumentUri: vscode.Uri) {
-        let projectedDocument = this.projectedDocuments[hostDocumentUri.path];
+    private findRazorDocument(uri: vscode.Uri) {
+        const projectedPath = getUriPath(uri);
 
-        if (!projectedDocument) {
-            projectedDocument = this.createProjectedDocument(hostDocumentUri);
-            this.projectedDocuments[hostDocumentUri.path] = projectedDocument;
-        }
-
-        await vscode.workspace.openTextDocument(projectedDocument.projectedUri);
-        return projectedDocument;
-    }
-
-    private findProjectedDocument(uri: vscode.Uri) {
-        return Object.values(this.projectedDocuments)
-            .find(document => document.projectedUri.path.localeCompare(
-                uri.path, undefined, { sensitivity: 'base' }) === 0);
-    }
-
-    private createProjectedDocument(hostDocumentUri: vscode.Uri) {
-        // Index.cshtml => __Index.cshtml.cs
-        const projectedPath =  `__${hostDocumentUri.path}.cs`;
-        const projectedUri = vscode.Uri.parse(`${CSharpProjectedDocumentContentProvider.scheme}://${projectedPath}`);
-        const onChange = () => this.onDidChangeEmitter.fire(projectedUri);
-
-        return new CSharpProjectedDocument(projectedUri, hostDocumentUri, onChange);
+        return this.documentManager.documents.find(razorDocument =>
+            razorDocument.csharpDocument.path.localeCompare(
+                projectedPath, undefined, { sensitivity: 'base' }) === 0);
     }
 }

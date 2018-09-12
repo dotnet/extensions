@@ -3,38 +3,28 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import * as vscode from 'vscode';
-
-import { RazorLanguage } from './RazorLanguage';
+import { IRazorDocumentChangeEvent } from './IRazorDocumentChangeEvent';
+import { RazorDocumentChangeKind } from './RazorDocumentChangeKind';
+import { RazorDocumentManager } from './RazorDocumentManager';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 
-const globbingPath = `**/*.${RazorLanguage.fileExtension}`;
-
 export class RazorDocumentTracker {
-
-    constructor(private readonly languageServiceClient: RazorLanguageServiceClient) {
-    }
-
-    public async initialize() {
-        // Track current documents
-        const documentUris = await vscode.workspace.findFiles(globbingPath);
-
-        for (const uri of documentUris) {
-            await this.languageServiceClient.addDocument(uri);
-        }
+    constructor(
+        private readonly razorDocumentManager: RazorDocumentManager,
+        private readonly languageServiceClient: RazorLanguageServiceClient) {
     }
 
     public register() {
-        // Track future documents
-        const watcher = vscode.workspace.createFileSystemWatcher(globbingPath);
-        const createRegistration = watcher.onDidCreate(async (uri: vscode.Uri) => {
-            await this.languageServiceClient.addDocument(uri);
-        });
+        const registration = this.razorDocumentManager.onChange(event => this.onDocumentChange(event));
 
-        const deleteRegistration = watcher.onDidDelete(async (uri: vscode.Uri) => {
-            await this.languageServiceClient.removeDocument(uri);
-        });
+        return registration;
+    }
 
-        return vscode.Disposable.from(watcher, createRegistration, deleteRegistration);
+    private async onDocumentChange(event: IRazorDocumentChangeEvent) {
+        if (event.kind === RazorDocumentChangeKind.added) {
+            await this.languageServiceClient.addDocument(event.document.uri);
+        } else if (event.kind === RazorDocumentChangeKind.removed) {
+            await this.languageServiceClient.removeDocument(event.document.uri);
+        }
     }
 }

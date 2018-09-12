@@ -6,17 +6,18 @@
 import * as vscode from 'vscode';
 import { IProjectedDocument } from '../IProjectedDocument';
 import { ServerTextChange } from '../RPC/ServerTextChange';
+import { getUriPath } from '../UriPaths';
 
 export class CSharpProjectedDocument implements IProjectedDocument {
+    public readonly path: string;
+
     private content = '';
     private preProvisionalContent: string | undefined;
     private provisionalEditAt: number | undefined;
     private hostDocumentVersion: number | null = null;
 
-    public constructor(
-        readonly projectedUri: vscode.Uri,
-        readonly hostDocumentUri: vscode.Uri,
-        readonly onChange: () => void) {
+    public constructor(public readonly uri: vscode.Uri) {
+        this.path = getUriPath(uri);
     }
 
     public get hostDocumentSyncVersion(): number | null {
@@ -69,7 +70,10 @@ export class CSharpProjectedDocument implements IProjectedDocument {
             this.setContent(this.preProvisionalContent);
             this.provisionalEditAt = undefined;
             this.preProvisionalContent = undefined;
+            return true;
         }
+
+        return false;
     }
 
     private getEditedContent(newText: string, start: number, end: number, content: string) {
@@ -82,6 +86,5 @@ export class CSharpProjectedDocument implements IProjectedDocument {
 
     private setContent(content: string) {
         this.content = content;
-        this.onChange();
     }
 }

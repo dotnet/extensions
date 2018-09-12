@@ -5,9 +5,7 @@
 
 import * as vscode from 'vscode';
 
-export interface IProjectedDocument {
-    readonly path: string;
-    readonly uri: vscode.Uri;
-    readonly hostDocumentSyncVersion: number | null;
-    getContent(): string;
+export function getUriPath(uri: vscode.Uri) {
+    const uriPath = uri.fsPath || uri.path;
+    return uriPath;
 }

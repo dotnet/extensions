@@ -3,11 +3,10 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import * as vscode from 'vscode';
+import { IRazorDocument } from './IRazorDocument';
+import { RazorDocumentChangeKind } from './RazorDocumentChangeKind';
 
-export interface IProjectedDocument {
-    readonly path: string;
-    readonly uri: vscode.Uri;
-    readonly hostDocumentSyncVersion: number | null;
-    getContent(): string;
+export interface IRazorDocumentChangeEvent {
+    readonly document: IRazorDocument;
+    readonly kind: RazorDocumentChangeKind;
 }

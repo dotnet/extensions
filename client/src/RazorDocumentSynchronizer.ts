@@ -7,6 +7,7 @@ import * as vscode from 'vscode';
 
 import { IProjectedDocument } from './IProjectedDocument';
 import { RazorLanguage } from './RazorLanguage';
+import { getUriPath } from './UriPaths';
 
 export class RazorDocumentSynchronizer {
     private readonly synchronizations: { [uri: string]: SynchronizationContext } = {};
@@ -17,7 +18,7 @@ export class RazorDocumentSynchronizer {
                 return;
             }
 
-            const uriPath = this.getUriPath(args.document.uri);
+            const uriPath = getUriPath(args.document.uri);
             const context = this.synchronizations[uriPath];
 
             if (context && args.document.version >= context.documentVersion) {
@@ -30,7 +31,7 @@ export class RazorDocumentSynchronizer {
                 return;
             }
 
-            const uriPath = this.getUriPath(document.uri);
+            const uriPath = getUriPath(document.uri);
             const context = this.synchronizations[uriPath];
 
             if (context) {
@@ -56,7 +57,7 @@ export class RazorDocumentSynchronizer {
         }
 
         let synchronized: (success: boolean) => void;
-        const uriPath = this.getUriPath(hostDocument.uri);
+        const uriPath = getUriPath(hostDocument.uri);
 
         let synchronizationContext = this.synchronizations[uriPath];
         if (synchronizationContext) {
@@ -98,12 +99,6 @@ export class RazorDocumentSynchronizer {
         }
 
         return true;
-    }
-
-    private getUriPath(uri: vscode.Uri) {
-        const uriPath = uri.fsPath || uri.path;
-
-        return uriPath;
     }
 }
 

@@ -9,6 +9,7 @@ import { RazorCSharpFeature } from './CSharp/RazorCSharpFeature';
 import { RazorHtmlFeature } from './Html/RazorHtmlFeature';
 import { ProvisionalCompletionOrchestrator } from './ProvisionalCompletionOrchestrator';
 import { RazorCompletionItemProvider } from './RazorCompletionItemProvider';
+import { RazorDocumentManager } from './RazorDocumentManager';
 import { RazorDocumentSynchronizer } from './RazorDocumentSynchronizer';
 import { RazorDocumentTracker } from './RazorDocumentTracker';
 import { RazorLanguage } from './RazorLanguage';
@@ -29,27 +30,27 @@ export async function activate(context: ExtensionContext) {
     const languageConfiguration = new RazorLanguageConfiguration();
     const languageServerClient = new RazorLanguageServerClient(languageServerOptions);
     const languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
-    const csharpFeature = new RazorCSharpFeature(languageServerClient);
-    const htmlFeature = new RazorHtmlFeature(languageServiceClient);
+    const documentManager = new RazorDocumentManager(languageServerClient);
+    const csharpFeature = new RazorCSharpFeature(documentManager);
+    const htmlFeature = new RazorHtmlFeature(documentManager, languageServiceClient);
     const projectTracker = new RazorProjectTracker(languageServiceClient);
-    const documentTracker = new RazorDocumentTracker(languageServiceClient);
+    const documentTracker = new RazorDocumentTracker(documentManager, languageServiceClient);
     const localRegistrations: vscode.Disposable[] = [];
 
     const onStartRegistration = languageServerClient.onStart(() => {
         const documentSynchronizer = new RazorDocumentSynchronizer();
         const provisionalCompletionOrchestrator = new ProvisionalCompletionOrchestrator(
-            csharpFeature,
+            documentManager,
+            csharpFeature.projectionProvider,
             languageServiceClient);
         const completionItemProvider = new RazorCompletionItemProvider(
             documentSynchronizer,
-            csharpFeature,
-            htmlFeature,
+            documentManager,
             languageServiceClient,
             provisionalCompletionOrchestrator);
         const signatureHelpProvider = new RazorSignatureHelpProvider(
             documentSynchronizer,
-            csharpFeature,
-            htmlFeature,
+            documentManager,
             languageServiceClient);
 
         localRegistrations.push(
@@ -64,16 +65,11 @@ export async function activate(context: ExtensionContext) {
                 signatureHelpProvider,
                 '(', ','),
             projectTracker.register(),
+            documentManager.register(),
             documentTracker.register(),
             csharpFeature.register(),
             htmlFeature.register(),
-            documentSynchronizer.register(),
-            vscode.workspace.onDidChangeTextDocument(async args => {
-                const activeTextEditor = vscode.window.activeTextEditor;
-                if (activeTextEditor && activeTextEditor.document === args.document) {
-                    await htmlFeature.updateDocument(args.document.uri);
-                }
-            }));
+            documentSynchronizer.register());
     });
 
     const onStopRegistration = languageServerClient.onStop(() => {
@@ -83,8 +79,7 @@ export async function activate(context: ExtensionContext) {
 
     await languageServerClient.start();
     await projectTracker.initialize();
-    await documentTracker.initialize();
-    await htmlFeature.initialize();
+    await documentManager.initialize();
 
     context.subscriptions.push(languageServerClient, onStartRegistration, onStopRegistration);
 

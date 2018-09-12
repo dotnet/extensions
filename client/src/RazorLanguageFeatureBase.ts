@@ -4,9 +4,8 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
-import { RazorCSharpFeature } from './CSharp/RazorCSharpFeature';
-import { RazorHtmlFeature } from './Html/RazorHtmlFeature';
 import { ProjectionResult } from './ProjectionResult';
+import { RazorDocumentManager } from './RazorDocumentManager';
 import { RazorDocumentSynchronizer } from './RazorDocumentSynchronizer';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { LanguageKind } from './RPC/LanguageKind';
@@ -14,8 +13,7 @@ import { LanguageKind } from './RPC/LanguageKind';
 export class RazorLanguageFeatureBase {
     constructor(
         private readonly documentSynchronizer: RazorDocumentSynchronizer,
-        protected readonly csharpFeature: RazorCSharpFeature,
-        protected readonly htmlFeature: RazorHtmlFeature,
+        protected readonly documentManager: RazorDocumentManager,
         protected readonly serviceClient: RazorLanguageServiceClient) {
     }
 
@@ -25,10 +23,11 @@ export class RazorLanguageFeatureBase {
         switch (languageResponse.kind) {
             case LanguageKind.CSharp:
             case LanguageKind.Html:
-                const projectionProvider = languageResponse.kind === LanguageKind.CSharp
-                    ? this.csharpFeature.projectionProvider
-                    : this.htmlFeature.projectionProvider;
-                const projectedDocument = await projectionProvider.getDocument(document.uri);
+                const razorDocument = await this.documentManager.getDocument(document.uri);
+                const projectedDocument = languageResponse.kind === LanguageKind.CSharp
+                    ? razorDocument.csharpDocument
+                    : razorDocument.htmlDocument;
+
                 const synchronized = await this.documentSynchronizer.trySynchronize(
                     document,
                     projectedDocument,
@@ -38,7 +37,7 @@ export class RazorLanguageFeatureBase {
                     return null;
                 }
 
-                const projectedUri = projectedDocument.projectedUri;
+                const projectedUri = projectedDocument.uri;
                 return {
                     uri: projectedUri,
                     position: languageResponse.position,

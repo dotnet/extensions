@@ -4,6 +4,9 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
+import { IRazorDocumentChangeEvent } from '../IRazorDocumentChangeEvent';
+import { RazorDocumentChangeKind } from '../RazorDocumentChangeKind';
+import { RazorDocumentManager } from '../RazorDocumentManager';
 import { CSharpProjectedDocumentContentProvider } from './CSharpProjectedDocumentContentProvider';
 
 export class CSharpPreviewDocumentContentProvider implements vscode.TextDocumentContentProvider {
@@ -13,25 +16,24 @@ export class CSharpPreviewDocumentContentProvider implements vscode.TextDocument
 
     private readonly onDidChangeEmitter = new vscode.EventEmitter<vscode.Uri>();
 
-    constructor(private readonly csharpProjectionProvider: CSharpProjectedDocumentContentProvider ) {
-        csharpProjectionProvider.onDidChange(uri => this.tryUpdate(uri));
+    constructor(private readonly documentManager: RazorDocumentManager) {
+        documentManager.onChange((event) => this.documentChanged(event));
     }
 
     public get onDidChange() { return this.onDidChangeEmitter.event; }
 
     public async provideTextDocumentContent() {
-        const projectedDocument = await this.csharpProjectionProvider.getActiveDocument();
+        const document = await this.documentManager.getActiveDocument();
 
-        if (!projectedDocument) {
-            vscode.window.showErrorMessage('For some reason the projected document isn\'t set.');
+        if (!document) {
             return '';
         }
 
-        const content = projectedDocument.getContent();
+        const content = document.csharpDocument.getContent();
 
         return `
             <body>
-                <p>For host document: <strong>${projectedDocument.hostDocumentUri.path}</strong></p>
+                <p>For host document: <strong>${document.path}</strong></p>
                 <hr />
                 <pre>${content}</pre>
                 <hr />
@@ -39,9 +41,9 @@ export class CSharpPreviewDocumentContentProvider implements vscode.TextDocument
     }
 
     public async showRazorCSharpWindow() {
-        const activeProjectedDocument = await this.csharpProjectionProvider.getActiveDocument();
+        const document = await this.documentManager.getActiveDocument();
 
-        if (!activeProjectedDocument) {
+        if (!document) {
             vscode.window.showErrorMessage('No active text editor.');
             return;
         }
@@ -57,11 +59,13 @@ export class CSharpPreviewDocumentContentProvider implements vscode.TextDocument
         }
     }
 
-    private async tryUpdate(uri: vscode.Uri) {
-        const activeDocument = await this.csharpProjectionProvider.getActiveDocument();
+    private async documentChanged(event: IRazorDocumentChangeEvent) {
+        if (event.kind === RazorDocumentChangeKind.csharpChanged) {
+            const document = await this.documentManager.getActiveDocument();
 
-        if (activeDocument && activeDocument.projectedUri === uri) {
-            this.onDidChangeEmitter.fire(CSharpPreviewDocumentContentProvider.previewUri);
+            if (document === event.document) {
+                this.onDidChangeEmitter.fire(CSharpPreviewDocumentContentProvider.previewUri);
+            }
         }
     }
 }
