@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         // Internal for testing
         internal readonly Dictionary<string, List<DocumentEntry>> _documentLookup;
         private readonly ForegroundDispatcher _foregroundDispatcher;
+        private ProjectSnapshotManagerBase _projectSnapshotManager;
 
         public DefaultDocumentVersionCache(ForegroundDispatcher foregroundDispatcher)
         {
@@ -86,6 +87,30 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             version = entry.Version;
             return true;
+        }
+
+        public override void Initialize(ProjectSnapshotManagerBase projectManager)
+        {
+            _projectSnapshotManager = projectManager;
+            _projectSnapshotManager.Changed += ProjectSnapshotManager_Changed;
+        }
+
+        private void ProjectSnapshotManager_Changed(object sender, ProjectChangeEventArgs args)
+        {
+            _foregroundDispatcher.AssertForegroundThread();
+
+            switch (args.Kind)
+            {
+                case ProjectChangeKind.DocumentRemoved:
+                case ProjectChangeKind.DocumentChanged:
+                    if (_documentLookup.ContainsKey(args.DocumentFilePath) &&
+                        !_projectSnapshotManager.IsDocumentOpen(args.DocumentFilePath))
+                    {
+                        // Document closed or removed, evict entry.
+                        _documentLookup.Remove(args.DocumentFilePath);
+                    }
+                    break;
+            }
         }
 
         internal class DocumentEntry

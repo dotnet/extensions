@@ -66,6 +66,11 @@ export class CSharpPreviewDocumentContentProvider implements vscode.TextDocument
             if (document === event.document) {
                 this.onDidChangeEmitter.fire(CSharpPreviewDocumentContentProvider.previewUri);
             }
+        } else if (
+            event.kind === RazorDocumentChangeKind.opened ||
+            event.kind === RazorDocumentChangeKind.closed) {
+            // Force refresh on the preview when a Razor document opens/closes.
+            this.onDidChangeEmitter.fire(CSharpPreviewDocumentContentProvider.previewUri);
         }
     }
 }

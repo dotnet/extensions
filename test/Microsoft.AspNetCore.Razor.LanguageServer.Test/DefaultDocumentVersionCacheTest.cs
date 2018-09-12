@@ -1,18 +1,76 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.Test;
+using Microsoft.CodeAnalysis;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     public class DefaultDocumentVersionCacheTest : TestBase
     {
+        [Fact]
+        public void ProjectSnapshotManager_Changed_DocumentRemoved_EvictsDocument()
+        {
+            // Arrange
+            var documentVersionCache = new DefaultDocumentVersionCache(Dispatcher);
+            var projectSnapshotManager = TestProjectSnapshotManager.Create(Dispatcher);
+            projectSnapshotManager.AllowNotifyListeners = true;
+            documentVersionCache.Initialize(projectSnapshotManager);
+            var document = TestDocumentSnapshot.Create("C:/file.cshtml");
+            document.TryGetText(out var text);
+            document.TryGetTextVersion(out var textVersion);
+            var textAndVersion = TextAndVersion.Create(text, textVersion);
+            documentVersionCache.TrackDocumentVersion(document, 1337);
+            projectSnapshotManager.HostProjectAdded(document.Project.HostProject);
+            projectSnapshotManager.DocumentAdded(document.Project.HostProject, document.State.HostDocument, TextLoader.From(textAndVersion));
+
+            // Act - 1
+            var result = documentVersionCache.TryGetDocumentVersion(document, out var version);
+
+            // Assert - 1
+            Assert.True(result);
+
+            // Act - 2
+            projectSnapshotManager.DocumentRemoved(document.Project.HostProject, document.State.HostDocument);
+            result = documentVersionCache.TryGetDocumentVersion(document, out version);
+
+            // Assert - 2
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void ProjectSnapshotManager_Changed_DocumentClosed_EvictsDocument()
+        {
+            // Arrange
+            var documentVersionCache = new DefaultDocumentVersionCache(Dispatcher);
+            var projectSnapshotManager = TestProjectSnapshotManager.Create(Dispatcher);
+            projectSnapshotManager.AllowNotifyListeners = true;
+            documentVersionCache.Initialize(projectSnapshotManager);
+            var document = TestDocumentSnapshot.Create("C:/file.cshtml");
+            document.TryGetText(out var text);
+            document.TryGetTextVersion(out var textVersion);
+            var textAndVersion = TextAndVersion.Create(text, textVersion);
+            documentVersionCache.TrackDocumentVersion(document, 1337);
+            projectSnapshotManager.HostProjectAdded(document.Project.HostProject);
+            var textLoader = TextLoader.From(textAndVersion);
+            projectSnapshotManager.DocumentAdded(document.Project.HostProject, document.State.HostDocument, textLoader);
+
+            // Act - 1
+            var result = documentVersionCache.TryGetDocumentVersion(document, out var version);
+
+            // Assert - 1
+            Assert.True(result);
+
+            // Act - 2
+            projectSnapshotManager.DocumentClosed(document.Project.HostProject.FilePath, document.State.HostDocument.FilePath, textLoader);
+            result = documentVersionCache.TryGetDocumentVersion(document, out version);
+
+            // Assert - 2
+            Assert.False(result);
+        }
+
         [Fact]
         public void TrackDocumentVersion_AddsFirstEntry()
         {

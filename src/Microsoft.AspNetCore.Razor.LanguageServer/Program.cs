@@ -61,10 +61,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<HostDocumentFactory, DefaultHostDocumentFactory>();
                         services.AddSingleton<ProjectSnapshotManagerAccessor, DefaultProjectSnapshotManagerAccessor>();
                         services.AddSingleton<RazorConfigurationResolver, DefaultRazorConfigurationResolver>();
-                        services.AddSingleton<ForegroundDispatcher, VSCodeForegroundDispatcher>();
+
+                        var foregroundDispatcher = new VSCodeForegroundDispatcher();
+                        services.AddSingleton<ForegroundDispatcher>(foregroundDispatcher);
                         services.AddSingleton<RazorSyntaxFactsService, DefaultRazorSyntaxFactsService>();
                         services.AddSingleton<RazorCompletionFactsService, DefaultRazorCompletionFactsService>();
-                        services.AddSingleton<DocumentVersionCache, DefaultDocumentVersionCache>();
+                        var documentVersionCache = new DefaultDocumentVersionCache(foregroundDispatcher);
+                        services.AddSingleton<DocumentVersionCache>(documentVersionCache);
+                        services.AddSingleton<ProjectSnapshotChangeTrigger>(documentVersionCache);
                     }));
 
             await server.WaitForExit;

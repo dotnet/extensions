@@ -24,7 +24,7 @@ export class HtmlProjectedDocument implements IProjectedDocument {
         return this.content;
     }
 
-    public setContent(content: string, hostDocumentVersion: number) {
+    public setContent(content: string, hostDocumentVersion: number | null) {
         this.content = content;
         this.hostDocumentVersion = hostDocumentVersion;
     }

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
 
         }
 
-        public static ProjectSnapshotManagerBase Create(ForegroundDispatcher dispatcher)
+        public static TestProjectSnapshotManager Create(ForegroundDispatcher dispatcher)
         {
             if (dispatcher == null)
             {

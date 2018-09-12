@@ -44,6 +44,10 @@ export class RazorDocumentManager {
             return null;
         }
 
+        if (vscode.window.activeTextEditor.document.languageId !== RazorLanguage.id) {
+            return null;
+        }
+
         const activeDocument = await this.getDocument(vscode.window.activeTextEditor.document.uri);
         return activeDocument;
     }
@@ -65,10 +69,24 @@ export class RazorDocumentManager {
     public register() {
         // Track future documents
         const watcher = vscode.workspace.createFileSystemWatcher(globbingPath);
-        const createRegistration = watcher.onDidCreate(
+        const didCreateRegistration = watcher.onDidCreate(
             async (uri: vscode.Uri) => this.addDocument(uri));
-        const deleteRegistration = watcher.onDidDelete(
+        const didDeleteRegistration = watcher.onDidDelete(
             async (uri: vscode.Uri) => this.removeDocument(uri));
+        const didOpenRegistration = vscode.workspace.onDidOpenTextDocument(document => {
+            if (document.languageId !== RazorLanguage.id) {
+                return;
+            }
+
+            this.openDocument(document.uri);
+        });
+        const didCloseRegistration = vscode.workspace.onDidCloseTextDocument(document => {
+            if (document.languageId !== RazorLanguage.id) {
+                return;
+            }
+
+            this.closeDocument(document.uri);
+        });
         const didChangeRegistration = vscode.workspace.onDidChangeTextDocument(async args => {
             if (args.document.languageId !== RazorLanguage.id) {
                 return;
@@ -85,13 +103,15 @@ export class RazorDocumentManager {
 
         return vscode.Disposable.from(
             watcher,
-            createRegistration,
-            deleteRegistration,
+            didCreateRegistration,
+            didDeleteRegistration,
+            didOpenRegistration,
+            didCloseRegistration,
             didChangeRegistration);
     }
 
     private _getDocument(uri: vscode.Uri) {
-        const path = this.getUriPath(uri);
+        const path = getUriPath(uri);
         const document = this.razorDocuments[path];
 
         if (!document) {
@@ -99,6 +119,28 @@ export class RazorDocumentManager {
         }
 
         return document;
+    }
+
+    private openDocument(uri: vscode.Uri) {
+        const document = this._getDocument(uri);
+
+        this.notifyDocumentChange(document, RazorDocumentChangeKind.opened);
+    }
+
+    private closeDocument(uri: vscode.Uri) {
+        const document = this._getDocument(uri);
+
+        const csharpDocument = document.csharpDocument;
+        const csharpProjectedDocument = csharpDocument as CSharpProjectedDocument;
+        const htmlDocument = document.htmlDocument;
+        const htmlProjectedDocument = htmlDocument as HtmlProjectedDocument;
+        const currentHtmlContent = htmlProjectedDocument.getContent();
+
+        // Force the sync version back to null. VSCode resets all sync versions when a document closes.
+        csharpProjectedDocument.update([], null);
+        htmlProjectedDocument.setContent(currentHtmlContent, null);
+
+        this.notifyDocumentChange(document, RazorDocumentChangeKind.closed);
     }
 
     private addDocument(uri: vscode.Uri) {
@@ -160,9 +202,5 @@ export class RazorDocumentManager {
     private async ensureProjectedDocumentsOpen(document: IRazorDocument) {
         await vscode.workspace.openTextDocument(document.csharpDocument.uri);
         await vscode.workspace.openTextDocument(document.htmlDocument.uri);
-    }
-
-    private getUriPath(uri: vscode.Uri) {
-        return uri.fsPath ? uri.fsPath : uri.path;
     }
 }

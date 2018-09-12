@@ -299,6 +299,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
 
             public override void TrackDocumentVersion(DocumentSnapshot documentSnapshot, long version) => throw new NotImplementedException();
+
+            public override void Initialize(ProjectSnapshotManagerBase projectManager)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class TestRouter : ILanguageServer

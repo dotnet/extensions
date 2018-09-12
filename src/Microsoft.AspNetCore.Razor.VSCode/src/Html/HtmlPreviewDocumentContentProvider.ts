@@ -66,6 +66,11 @@ export class HtmlPreviewDocumentContentProvider implements vscode.TextDocumentCo
             if (document === event.document) {
                 this.onDidChangeEmitter.fire(HtmlPreviewDocumentContentProvider.previewUri);
             }
+        } else if (
+            event.kind === RazorDocumentChangeKind.opened ||
+            event.kind === RazorDocumentChangeKind.closed) {
+            // Force refresh on the preview when a Razor document opens/closes.
+            this.onDidChangeEmitter.fire(HtmlPreviewDocumentContentProvider.previewUri);
         }
     }
 }

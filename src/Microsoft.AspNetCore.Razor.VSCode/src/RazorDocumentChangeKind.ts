@@ -6,6 +6,8 @@
 export enum RazorDocumentChangeKind {
     added,
     removed,
+    opened,
+    closed,
     csharpChanged,
     htmlChanged,
 }

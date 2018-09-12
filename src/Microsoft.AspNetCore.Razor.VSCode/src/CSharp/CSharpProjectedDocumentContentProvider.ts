@@ -37,7 +37,8 @@ export class CSharpProjectedDocumentContentProvider implements vscode.TextDocume
     }
 
     private documentChanged(event: IRazorDocumentChangeEvent) {
-        if (event.kind === RazorDocumentChangeKind.csharpChanged) {
+        if (event.kind === RazorDocumentChangeKind.csharpChanged ||
+            event.kind === RazorDocumentChangeKind.opened) {
             this.onDidChangeEmitter.fire(event.document.csharpDocument.uri);
         }
     }

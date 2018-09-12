@@ -32,7 +32,8 @@ export class HtmlProjectedDocumentContentProvider implements vscode.TextDocument
     }
 
     private documentChanged(event: IRazorDocumentChangeEvent) {
-        if (event.kind === RazorDocumentChangeKind.htmlChanged) {
+        if (event.kind === RazorDocumentChangeKind.htmlChanged ||
+            event.kind === RazorDocumentChangeKind.opened) {
             this.onDidChangeEmitter.fire(event.document.htmlDocument.uri);
         }
     }

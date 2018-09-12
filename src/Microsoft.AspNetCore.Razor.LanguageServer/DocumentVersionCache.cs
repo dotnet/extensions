@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal abstract class DocumentVersionCache
+    internal abstract class DocumentVersionCache : ProjectSnapshotChangeTrigger
     {
         public abstract bool TryGetDocumentVersion(DocumentSnapshot documentSnapshot, out long version);
 
