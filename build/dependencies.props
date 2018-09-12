@@ -5,30 +5,31 @@
   <PropertyGroup Label="Package Versions">
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-20180907.8</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180907.9</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview2-26905-02</MicrosoftNETCoreApp22PackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview1-26907-04</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftNETCoreApp30PackageVersion>3.0.0-preview1-26907-04</MicrosoftNETCoreApp30PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
-    <MicrosoftWin32RegistryPackageVersion>4.5.0</MicrosoftWin32RegistryPackageVersion>
-    <MoqPackageVersion>4.7.49</MoqPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.6.0-preview1-26905-03</MicrosoftWin32RegistryPackageVersion>
+    <MoqPackageVersion>4.9.0</MoqPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.5.0</SystemIOPipelinesPackageVersion>
-    <SystemMemoryPackageVersion>4.5.1</SystemMemoryPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.6.0-preview1-26905-03</SystemIOPipelinesPackageVersion>
+    <SystemMemoryPackageVersion>4.6.0-preview1-26717-04</SystemMemoryPackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
-    <SystemReflectionMetadataPackageVersion>1.6.0</SystemReflectionMetadataPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.1</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.7.0-preview1-26905-03</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0-preview1-26905-03</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>4.5.0</SystemSecurityCryptographyCngPackageVersion>
-    <SystemThreadingTasksExtensionsPackageVersion>4.5.1</SystemThreadingTasksExtensionsPackageVersion>
-    <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.6.0-preview1-26905-03</SystemSecurityCryptographyCngPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.6.0-preview1-26905-03</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemValueTuplePackageVersion>4.6.0-preview1-26829-04</SystemValueTuplePackageVersion>
     <XunitAbstractionsPackageVersion>2.0.1</XunitAbstractionsPackageVersion>
     <XunitAnalyzersPackageVersion>0.10.0</XunitAnalyzersPackageVersion>
     <XunitAssertPackageVersion>2.3.1</XunitAssertPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualstudioPackageVersion>2.4.0</XunitRunnerVisualstudioPackageVersion>
   </PropertyGroup>
+  <PropertyGroup Label="Package Versions: Pinned" />
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
   <PropertyGroup Label="Package Versions: Pinned" />
 </Project>

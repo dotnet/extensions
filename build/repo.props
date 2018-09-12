@@ -7,11 +7,10 @@
 
   <PropertyGroup>
     <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
-    <LineupPackageVersion>2.2.0-*</LineupPackageVersion>
     <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp30PackageVersion)" />
   </ItemGroup>
 </Project>
