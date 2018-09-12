@@ -1,0 +1,33 @@
+<Project>
+  <!--
+    Technique for publishing multiple RIDs in parallel from
+    https://github.com/dotnet/cli/issues/9221#issuecomment-387512008
+
+    Example usage:
+     dotnet msbuild -restore -t:PublishAllRids -p:Configuration=Release   
+  -->
+
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+
+    <!-- Enable roll-forward to latest patch.  This allows one restore operation
+         to apply to all of the self-contained publish operations. -->
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+  </PropertyGroup>
+
+  <Target Name="PublishAllRids">
+    <ItemGroup>
+      <!-- Transform RuntimeIdentifiers property to item -->
+      <RuntimeIdentifierForPublish Include="$(RuntimeIdentifiers)" />
+
+      <!-- Transform RuntimeIdentifierForPublish items to project items to pass to MSBuild task -->
+      <ProjectToPublish Include="@(RuntimeIdentifierForPublish->'$(MSBuildProjectFullPath)')">
+        <AdditionalProperties>RuntimeIdentifier=%(RuntimeIdentifierForPublish.Identity);PublishDir=../../artifacts/build/$(Configuration)/%(RuntimeIdentifierForPublish.Identity)/</AdditionalProperties>
+      </ProjectToPublish>
+    </ItemGroup>
+
+    <MSBuild Projects="@(ProjectToPublish)"
+             Targets="Publish"
+             BuildInParallel="true" />
+  </Target>
+</Project>
