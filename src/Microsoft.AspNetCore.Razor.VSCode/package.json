@@ -1,0 +1,25 @@
+{
+  "name": "microsoft.aspnetcore.razor.vscode",
+  "version": "0.0.1",
+  "description": "Implements parts of a VS Code extension for Razor language support.",
+  "devDependencies": {
+    "@types/node": "^10.9.4",
+    "tslint": "^5.11.0",
+    "typescript": "^3.0.3"
+  },
+  "dependencies": {
+    "vscode": "^1.1.21",
+    "vscode-html-languageservice": "^2.1.7",
+    "vscode-languageclient": "^5.1.0"
+  },
+  "main": "./dist/extension.js",
+  "types": "./dist/extension.d.ts",
+  "engines": {
+    "vscode": "^1.25.0"
+  },
+  "scripts": {
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "lint": "tslint ./src/**/*.ts",
+    "watch": "tsc -watch -p ./"
+  }
+}

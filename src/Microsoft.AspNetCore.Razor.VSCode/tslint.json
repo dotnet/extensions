@@ -7,6 +7,7 @@
         "no-console": false,
         "no-return-await": true,
         "no-inferrable-types": true,
+        "object-literal-sort-keys": false,
         "prefer-template": true,
         "quotemark": [true, "single"],
         "variable-name": [true, "check-format"]

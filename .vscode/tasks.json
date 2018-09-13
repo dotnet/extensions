@@ -5,6 +5,19 @@
     "tasks": [
         {
             "label": "client-npm-watch",
+            "dependsOn": [
+                "client-npm-watch:shell",
+                "client-npm-watch:package"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "isBackground": true,
+            "problemMatcher": []
+        },
+        {
+            "label": "client-npm-watch:shell",
             "type": "npm",
             "script": "watch",
             "path": "client/",
@@ -12,10 +25,17 @@
             "isBackground": true,
             "presentation": {
                 "reveal": "never"
-            },
-            "group": {
-                "kind": "build",
-                "isDefault": true
+            }
+        },
+        {
+            "label": "client-npm-watch:package",
+            "type": "npm",
+            "script": "watch",
+            "path": "src/Microsoft.AspNetCore.Razor.VSCode/",
+            "problemMatcher": "$tsc-watch",
+            "isBackground": true,
+            "presentation": {
+                "reveal": "never"
             }
         }
     ]

@@ -40,4 +40,3 @@ msbuild.log
 node_modules
 client/.vscode-test/**
 client/out/*
-.gitignore

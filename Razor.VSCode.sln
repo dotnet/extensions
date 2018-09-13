@@ -43,6 +43,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.Razo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.Editor.Razor.Test.Common", "modules\Razor\test\Microsoft.VisualStudio.Editor.Razor.Test.Common\Microsoft.VisualStudio.Editor.Razor.Test.Common.csproj", "{92A80062-7895-403B-ABAB-5EADCC5440AA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.VSCode", "src\Microsoft.AspNetCore.Razor.VSCode\Microsoft.AspNetCore.Razor.VSCode.csproj", "{F8485BC8-E9B6-48BA-8F85-42CED28D51D7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,6 +95,10 @@ Global
 		{92A80062-7895-403B-ABAB-5EADCC5440AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92A80062-7895-403B-ABAB-5EADCC5440AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{92A80062-7895-403B-ABAB-5EADCC5440AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8485BC8-E9B6-48BA-8F85-42CED28D51D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8485BC8-E9B6-48BA-8F85-42CED28D51D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8485BC8-E9B6-48BA-8F85-42CED28D51D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8485BC8-E9B6-48BA-8F85-42CED28D51D7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -112,6 +118,7 @@ Global
 		{5CE61EF0-9B19-4FEF-BC48-5E09B774CBCE} = {B0F1BB2B-99A0-47AD-8D14-CEFBFF58F797}
 		{AF97C5AD-8576-406D-B114-8584D5ACD410} = {B0F1BB2B-99A0-47AD-8D14-CEFBFF58F797}
 		{92A80062-7895-403B-ABAB-5EADCC5440AA} = {B0F1BB2B-99A0-47AD-8D14-CEFBFF58F797}
+		{F8485BC8-E9B6-48BA-8F85-42CED28D51D7} = {2BBB2AB1-2AE4-4306-AA88-FD66A90AA101}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ED1782EB-ABE7-4615-80E2-442006DF2826}

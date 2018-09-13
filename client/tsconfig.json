@@ -1,5 +1,6 @@
 {
 	"compilerOptions": {
+		"baseUrl": ".",
 		"module": "commonjs",
 		"target": "es5",
 		"outDir": "out",
@@ -8,7 +9,10 @@
 		],
 		"sourceMap": true,
 		"strict": true,
-		"rootDir": "."
+		"rootDir": ".",
+		"paths": {
+			"vscode": ["node_modules/vscode"]
+		}
 	},
 	"exclude": [
 		"node_modules"
