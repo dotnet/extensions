@@ -1,6 +1,6 @@
 <Project>
   <!--
-    Technique for publishing multiple RIDs in parallel from
+    Technique for publishing multiple RIDs from
     https://github.com/dotnet/cli/issues/9221#issuecomment-387512008
 
     Example usage:
@@ -37,7 +37,7 @@
     -->
     <MSBuild Projects="@(ProjectToPublish)"
              Targets="Build;Publish"
-             BuildInParallel="true" />
+             BuildInParallel="false" />
 
     <!-- Now build a .zip file from each platform's directory and write it to 'artifacts' -->
     <PropertyGroup>
