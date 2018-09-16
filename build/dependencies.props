@@ -5,7 +5,7 @@
   <PropertyGroup Label="Package Versions">
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-20180907.8</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-20180911.1</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview2-26905-02</MicrosoftNETCoreApp22PackageVersion>
