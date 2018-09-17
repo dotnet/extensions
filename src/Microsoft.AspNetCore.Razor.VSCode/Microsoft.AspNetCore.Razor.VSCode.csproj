@@ -30,4 +30,17 @@
     <Exec Command="npm run lint" />
   </Target>
 
+  <Target Name="PublishNpmPackage" AfterTargets="Pack">
+    <PropertyGroup>
+      <_NpmPackageDir>$(RepositoryRoot)artifacts\build\npm</_NpmPackageDir>
+    </PropertyGroup>
+
+    <RemoveDir Directories="$(_NpmPackageDir)" />
+    <MakeDir Directories="$(_NpmPackageDir)" />
+
+    <Exec Command="npm version $(PackageVersion) --allow-same-version" />
+    <Exec Command="npm pack $(MSBuildThisFileDirectory)" WorkingDirectory="$(_NpmPackageDir)" />
+    <Exec Command="npm version 0.0.1" /> <!-- Revert the temporary change -->
+  </Target>
+
 </Project>
