@@ -4,13 +4,13 @@
       // Don't run any rules for packages the ADX team creates but doesn't ship.
     ],
     "packages": {
-      "Microsoft.AspNetCore.Razor.LanguageServer": {
+      "Microsoft.AspNetCore.Razor.OmniSharpPlugin": {
         "Exclusions": {
           "SIGN_STRONGNAME": {
-            "lib/net461/Microsoft.AspNetCore.Razor.LanguageServer.exe": "Underlying omnisharp server is not strong-named."
+            "lib/net461/Microsoft.AspNetCore.Razor.OmniSharpPlugin.dll": "Underlying omnisharp dependency is not strong-named."
           },
           "WRONG_PUBLICKEYTOKEN": {
-            "lib/net461/Microsoft.AspNetCore.Razor.LanguageServer.exe": "Underlying omnisharp server is not strong-named."
+            "lib/net461/Microsoft.AspNetCore.Razor.OmniSharpPlugin.dll": "Underlying omnisharp dependency is not strong-named."
           }
         }
       }
