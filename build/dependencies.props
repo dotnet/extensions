@@ -10,6 +10,7 @@
     <MicrosoftBuildTasksCorePackageVersion>15.6.82</MicrosoftBuildTasksCorePackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>15.6.82</MicrosoftBuildUtilitiesCorePackageVersion>
     <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>2.2.0-preview3-35252</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>2.2.0-preview3-35252</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>2.2.0-preview3-35252</MicrosoftExtensionsPrimitivesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
