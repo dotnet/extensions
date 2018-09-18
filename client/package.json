@@ -51,14 +51,6 @@
         "configuration": {
             "title": "Razor Configuration",
             "properties": {
-                "razor.languageServer.path": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "default": null,
-                    "description": "Specifies the path to the Razor LanguageServer. This should be the absolute path to the language server dll."
-                },
                 "razor.languageServer.debug": {
                     "type": "boolean",
                     "default": false,

@@ -20,8 +20,8 @@ import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { RazorProjectTracker } from './RazorProjectTracker';
 import { RazorSignatureHelpProvider } from './RazorSignatureHelpProvider';
 
-export async function activate(context: ExtensionContext) {
-    const languageServerOptions = resolveRazorLanguageServerOptions();
+export async function activate(context: ExtensionContext, languageServerDir: string) {
+    const languageServerOptions = resolveRazorLanguageServerOptions(languageServerDir);
     const languageConfiguration = new RazorLanguageConfiguration();
     const languageServerClient = new RazorLanguageServerClient(languageServerOptions);
     const languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
