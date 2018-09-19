@@ -7,11 +7,11 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.VisualStudio.Editor.Razor;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
@@ -20,14 +20,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
-        private readonly RazorSyntaxFactsService _syntaxFactsService;
         private readonly DocumentVersionCache _documentVersionCache;
         private readonly VSCodeLogger _logger;
 
         public RazorLanguageEndpoint(
             ForegroundDispatcher foregroundDispatcher,
             DocumentResolver documentResolver,
-            RazorSyntaxFactsService syntaxFactsService,
             DocumentVersionCache documentVersionCache,
             VSCodeLogger logger)
         {
@@ -39,11 +37,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             if (documentResolver == null)
             {
                 throw new ArgumentNullException(nameof(documentResolver));
-            }
-
-            if (syntaxFactsService == null)
-            {
-                throw new ArgumentNullException(nameof(syntaxFactsService));
             }
 
             if (documentVersionCache == null)
@@ -58,7 +51,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             _foregroundDispatcher = foregroundDispatcher;
             _documentResolver = documentResolver;
-            _syntaxFactsService = syntaxFactsService;
             _documentVersionCache = documentVersionCache;
             _logger = logger;
         }
@@ -82,7 +74,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var syntaxTree = codeDocument.GetSyntaxTree();
             var hostDocumentIndex = codeDocument.Source.GetAbsoluteIndex(request.Position);
 
-            var classifiedSpans = _syntaxFactsService.GetClassifiedSpans(syntaxTree);
+            var classifiedSpans = syntaxTree.GetClassifiedSpans();
             var languageKind = GetLanguageKind(classifiedSpans, hostDocumentIndex);
 
             var responsePosition = request.Position;
@@ -115,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         // Internal for testing
-        internal static RazorLanguageKind GetLanguageKind(IReadOnlyList<ClassifiedSpan> classifiedSpans, int absoluteIndex)
+        internal static RazorLanguageKind GetLanguageKind(IReadOnlyList<ClassifiedSpanInternal> classifiedSpans, int absoluteIndex)
         {
             for (var i = 0; i < classifiedSpans.Count; i++)
             {
@@ -131,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         {
                             // We're at an edge.
 
-                            if (classifiedSpan.AcceptedCharacters == AcceptedCharacters.None)
+                            if (classifiedSpan.AcceptedCharacters == AcceptedCharactersInternal.None)
                             {
                                 // This span doesn't own the edge after it
                                 continue;
@@ -141,9 +133,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         // Overlaps with request
                         switch (classifiedSpan.SpanKind)
                         {
-                            case SpanKind.Markup:
+                            case SpanKindInternal.Markup:
                                 return RazorLanguageKind.Html;
-                            case SpanKind.Code:
+                            case SpanKindInternal.Code:
                                 return RazorLanguageKind.CSharp;
                         }
 

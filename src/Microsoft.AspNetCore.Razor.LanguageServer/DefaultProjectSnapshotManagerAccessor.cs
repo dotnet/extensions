@@ -10,7 +10,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Microsoft.VisualStudio.Editor.Razor;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
@@ -47,16 +46,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     var projectEngineFactories = new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[]
                     {
                         new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                            () => new LegacyProjectEngineFactory_1_0(),
+                            () => new ProjectEngineFactory_1_0(),
                             new ExportCustomProjectEngineFactoryAttribute("MVC-1.0") { SupportsSerialization = true }),
                         new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                            () => new LegacyProjectEngineFactory_1_1(),
+                            () => new ProjectEngineFactory_1_1(),
                             new ExportCustomProjectEngineFactoryAttribute("MVC-1.1") { SupportsSerialization = true }),
                         new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                            () => new LegacyProjectEngineFactory_2_0(),
+                            () => new ProjectEngineFactory_2_0(),
                             new ExportCustomProjectEngineFactoryAttribute("MVC-2.0") { SupportsSerialization = true }),
                         new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
-                            () => new LegacyProjectEngineFactory_2_1(),
+                            () => new ProjectEngineFactory_2_1(),
                             new ExportCustomProjectEngineFactoryAttribute("MVC-2.1") { SupportsSerialization = true }),
                     };
                     var services = AdhocServices.Create(

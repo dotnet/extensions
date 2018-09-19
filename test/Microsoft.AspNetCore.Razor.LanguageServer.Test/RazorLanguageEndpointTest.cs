@@ -7,11 +7,11 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
 using Microsoft.AspNetCore.Razor.LanguageServer.Test;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Microsoft.VisualStudio.Editor.Razor;
 using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
@@ -27,13 +27,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             documentVersionCache.Setup(cache => cache.TryGetDocumentVersion(It.IsAny<DocumentSnapshot>(), out version))
                 .Returns(true);
 
-            SyntaxFactsService = new DefaultRazorSyntaxFactsService();
             DocumentVersionCache = documentVersionCache.Object;
         }
 
         private DocumentVersionCache DocumentVersionCache { get; }
-
-        private RazorSyntaxFactsService SyntaxFactsService { get; }
 
         // This is more of an integration test to validate that all the pieces work together
         [Fact]
@@ -43,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("@{}");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, SyntaxFactsService, DocumentVersionCache, Logger);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, Logger);
             var request = new RazorLanguageQueryParams()
             {
                 Uri = new Uri(documentPath),
@@ -67,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("<s");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, SyntaxFactsService, DocumentVersionCache, Logger);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, Logger);
             var request = new RazorLanguageQueryParams()
             {
                 Uri = new Uri(documentPath),
@@ -94,7 +91,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 "/* CSharp */",
                 new[] { new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 12)) });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, SyntaxFactsService, DocumentVersionCache, Logger);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, Logger);
             var request = new RazorLanguageQueryParams()
             {
                 Uri = new Uri(documentPath),
@@ -292,11 +289,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Assert.Equal(9, projectedPosition.Character);
         }
 
-        public IReadOnlyList<ClassifiedSpan> GetClassifiedSpans(string text)
+        private IReadOnlyList<ClassifiedSpanInternal> GetClassifiedSpans(string text)
         {
             var codeDocument = CreateCodeDocument(text);
             var syntaxTree = codeDocument.GetSyntaxTree();
-            var classifiedSpans = SyntaxFactsService.GetClassifiedSpans(syntaxTree);
+            var classifiedSpans = syntaxTree.GetClassifiedSpans();
             return classifiedSpans;
         }
 

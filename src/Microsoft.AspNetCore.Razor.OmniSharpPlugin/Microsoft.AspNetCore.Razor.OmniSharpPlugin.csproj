@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <Description>Razor is a markup syntax for adding logic to pages. This package contains the Omnisharp Razor plugin that extracts Razor configuration information from projects.</Description>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <EnableApiCheck>false</EnableApiCheck>
     
     <!-- These pieces are required in order to reference OmniSharp.MSBuild -->

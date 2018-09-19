@@ -23,8 +23,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.Razo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Language", "modules\Razor\src\Microsoft.AspNetCore.Razor.Language\Microsoft.AspNetCore.Razor.Language.csproj", "{487B924C-B52C-44B0-A10C-9CCE95138F14}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.Editor.Razor", "modules\Razor\src\Microsoft.VisualStudio.Editor.Razor\Microsoft.VisualStudio.Editor.Razor.csproj", "{F8FDEFA7-9574-4FF3-B854-44BD3F8F37C6}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions", "modules\Razor\src\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj", "{73F9F775-30E0-43DA-AA35-1F0D70130276}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X", "modules\Razor\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.csproj", "{917E8383-55BB-44EB-BECF-4DDFD19174B4}"
@@ -40,8 +38,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test.Common", "modules\Razor\test\Microsoft.AspNetCore.Razor.Test.Common\Microsoft.AspNetCore.Razor.Test.Common.csproj", "{5CE61EF0-9B19-4FEF-BC48-5E09B774CBCE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common", "modules\Razor\test\Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common\Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common.csproj", "{AF97C5AD-8576-406D-B114-8584D5ACD410}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.Editor.Razor.Test.Common", "modules\Razor\test\Microsoft.VisualStudio.Editor.Razor.Test.Common\Microsoft.VisualStudio.Editor.Razor.Test.Common.csproj", "{92A80062-7895-403B-ABAB-5EADCC5440AA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.VSCode", "src\Microsoft.AspNetCore.Razor.VSCode\Microsoft.AspNetCore.Razor.VSCode.csproj", "{F8485BC8-E9B6-48BA-8F85-42CED28D51D7}"
 EndProject
@@ -83,10 +79,6 @@ Global
 		{487B924C-B52C-44B0-A10C-9CCE95138F14}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{487B924C-B52C-44B0-A10C-9CCE95138F14}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{487B924C-B52C-44B0-A10C-9CCE95138F14}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F8FDEFA7-9574-4FF3-B854-44BD3F8F37C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F8FDEFA7-9574-4FF3-B854-44BD3F8F37C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F8FDEFA7-9574-4FF3-B854-44BD3F8F37C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F8FDEFA7-9574-4FF3-B854-44BD3F8F37C6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{73F9F775-30E0-43DA-AA35-1F0D70130276}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{73F9F775-30E0-43DA-AA35-1F0D70130276}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73F9F775-30E0-43DA-AA35-1F0D70130276}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -107,10 +99,6 @@ Global
 		{AF97C5AD-8576-406D-B114-8584D5ACD410}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF97C5AD-8576-406D-B114-8584D5ACD410}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF97C5AD-8576-406D-B114-8584D5ACD410}.Release|Any CPU.Build.0 = Release|Any CPU
-		{92A80062-7895-403B-ABAB-5EADCC5440AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{92A80062-7895-403B-ABAB-5EADCC5440AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{92A80062-7895-403B-ABAB-5EADCC5440AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{92A80062-7895-403B-ABAB-5EADCC5440AA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F8485BC8-E9B6-48BA-8F85-42CED28D51D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F8485BC8-E9B6-48BA-8F85-42CED28D51D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8485BC8-E9B6-48BA-8F85-42CED28D51D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -149,7 +137,6 @@ Global
 		{A3E388BC-F625-4A6A-AD31-04E8B1DD0D91} = {9BDFB459-02CA-45BB-AA57-FF4B6C07CC53}
 		{8CFC36F5-61B4-4F56-8311-750C2969B61D} = {9BDFB459-02CA-45BB-AA57-FF4B6C07CC53}
 		{487B924C-B52C-44B0-A10C-9CCE95138F14} = {9BDFB459-02CA-45BB-AA57-FF4B6C07CC53}
-		{F8FDEFA7-9574-4FF3-B854-44BD3F8F37C6} = {9BDFB459-02CA-45BB-AA57-FF4B6C07CC53}
 		{73F9F775-30E0-43DA-AA35-1F0D70130276} = {9BDFB459-02CA-45BB-AA57-FF4B6C07CC53}
 		{917E8383-55BB-44EB-BECF-4DDFD19174B4} = {9BDFB459-02CA-45BB-AA57-FF4B6C07CC53}
 		{367BD0CB-B226-4105-B741-77A225722078} = {75400311-9729-4D9A-80D2-ADD5286DE405}
@@ -157,7 +144,6 @@ Global
 		{B0F1BB2B-99A0-47AD-8D14-CEFBFF58F797} = {3C0D9AB8-562E-4736-A31D-839AF8C9D9FD}
 		{5CE61EF0-9B19-4FEF-BC48-5E09B774CBCE} = {B0F1BB2B-99A0-47AD-8D14-CEFBFF58F797}
 		{AF97C5AD-8576-406D-B114-8584D5ACD410} = {B0F1BB2B-99A0-47AD-8D14-CEFBFF58F797}
-		{92A80062-7895-403B-ABAB-5EADCC5440AA} = {B0F1BB2B-99A0-47AD-8D14-CEFBFF58F797}
 		{F8485BC8-E9B6-48BA-8F85-42CED28D51D7} = {2BBB2AB1-2AE4-4306-AA88-FD66A90AA101}
 		{56E75AE4-00F1-4D2F-AA29-B03CF8DF34E1} = {BEAA2EDB-B257-4B34-9FA3-2AD973914528}
 		{05FA40C7-7899-4050-B9CC-9B9A20852C31} = {56E75AE4-00F1-4D2F-AA29-B03CF8DF34E1}
