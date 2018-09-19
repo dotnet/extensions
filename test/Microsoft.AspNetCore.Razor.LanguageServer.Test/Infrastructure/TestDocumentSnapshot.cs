@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
+namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Infrastructure
 {
     internal class TestDocumentSnapshot : DefaultDocumentSnapshot
     {
@@ -26,10 +26,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
             var hostDocument = new HostDocument(filePath, filePath);
             var sourceText = SourceText.From(text);
             var documentState = new DocumentState(
-                testWorkspace.Services, 
-                hostDocument, 
-                SourceText.From(text), 
-                version, 
+                testWorkspace.Services,
+                hostDocument,
+                SourceText.From(text),
+                version,
                 () => Task.FromResult(TextAndVersion.Create(sourceText, version)));
             var testDocument = new TestDocumentSnapshot(testProject, documentState);
 

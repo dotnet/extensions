@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Text;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
@@ -74,7 +75,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             var codeDocument = await document.GetGeneratedOutputAsync();
             var syntaxTree = codeDocument.GetSyntaxTree();
-            var hostDocumentIndex = codeDocument.Source.GetAbsoluteIndex(request.Position);
+
+            var sourceText = await document.GetTextAsync();
+            var linePosition = new LinePosition((int)request.Position.Line, (int)request.Position.Character);
+            var hostDocumentIndex = sourceText.Lines.GetPosition(linePosition);
             var location = new SourceSpan(hostDocumentIndex, 0);
 
             var razorCompletionItems = _completionFactsService.GetCompletionItems(syntaxTree, location);

@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Microsoft.AspNetCore.Razor.LanguageServer.Test
+namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Infrastructure
 {
     internal class TestProjectSnapshot : DefaultProjectSnapshot
     {

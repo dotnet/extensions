@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
-using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
-using Microsoft.AspNetCore.Razor.LanguageServer.Test;
+using Microsoft.AspNetCore.Razor.LanguageServer.Test.Infrastructure;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.CodeAnalysis.Text;
 using Moq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using Xunit;
@@ -54,7 +53,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         private static DocumentResolver CreateDocumentResolver(string documentPath, RazorCodeDocument codeDocument)
         {
-            var documentSnapshot = Mock.Of<DocumentSnapshot>(document => document.GetGeneratedOutputAsync() == Task.FromResult(codeDocument));
+            var sourceTextChars = new char[codeDocument.Source.Length];
+            codeDocument.Source.CopyTo(0, sourceTextChars, 0, codeDocument.Source.Length);
+            var sourceText = SourceText.From(new string(sourceTextChars));
+            var documentSnapshot = Mock.Of<DocumentSnapshot>(document =>
+                document.GetGeneratedOutputAsync() == Task.FromResult(codeDocument) &&
+                document.GetTextAsync() == Task.FromResult(sourceText));
             var documentResolver = new Mock<DocumentResolver>();
             documentResolver.Setup(resolver => resolver.TryResolveDocument(documentPath, out documentSnapshot))
                 .Returns(true);

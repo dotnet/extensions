@@ -71,9 +71,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
 
             var codeDocument = await documentSnapshot.GetGeneratedOutputAsync();
+            var sourceText = await documentSnapshot.GetTextAsync();
+            var linePosition = new LinePosition((int)request.Position.Line, (int)request.Position.Character);
+            var hostDocumentIndex = sourceText.Lines.GetPosition(linePosition);
             var syntaxTree = codeDocument.GetSyntaxTree();
-            var hostDocumentIndex = codeDocument.Source.GetAbsoluteIndex(request.Position);
-
             var classifiedSpans = syntaxTree.GetClassifiedSpans();
             var languageKind = GetLanguageKind(classifiedSpans, hostDocumentIndex);
 

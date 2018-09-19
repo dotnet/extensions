@@ -1,6 +1,3 @@
-[submodule "modules/Razor"]
-	path = modules/Razor
-	url = https://github.com/aspnet/Razor.git
 [submodule "modules/omnisharp-roslyn"]
 	path = modules/omnisharp-roslyn
 	url = https://github.com/omnisharp/omnisharp-roslyn.git
