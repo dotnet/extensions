@@ -248,9 +248,9 @@ namespace Microsoft.Extensions.Options.Tests
                 .Validate(o => !o.Boolean, "named Boolean must be false.");
             var sp = services.BuildServiceProvider();
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
-            ValidateFailure<ComplexOptions>(error, Options.DefaultName, "Boolean must be true.");
+            ValidateFailure<ComplexOptions>(error, Options.DefaultName, 1, "Boolean must be true.");
             error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptionsMonitor<ComplexOptions>>().Get("named"));
-            ValidateFailure<ComplexOptions>(error, "named", "named Boolean must be false.");
+            ValidateFailure<ComplexOptions>(error, "named", 1, "named Boolean must be false.");
         }
 
 
@@ -281,7 +281,7 @@ namespace Microsoft.Extensions.Options.Tests
 
             var sp = services.BuildServiceProvider();
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
-            ValidateFailure<ComplexOptions>(error, Options.DefaultName, "A validation error has occured.", "A validation error has occured.");
+            ValidateFailure<ComplexOptions>(error, Options.DefaultName, 2, "A validation error has occured.");
         }
 
         [Fact]
@@ -301,7 +301,7 @@ namespace Microsoft.Extensions.Options.Tests
 
             var sp = services.BuildServiceProvider();
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
-            ValidateFailure<ComplexOptions>(error, Options.DefaultName, "A validation error has occured.", "Virtual", "Integer");
+            ValidateFailure<ComplexOptions>(error, Options.DefaultName, 3, "A validation error has occured.", "Virtual", "Integer");
         }
 
         public class BadValidator : IValidateOptions<FakeOptions>
@@ -360,10 +360,10 @@ namespace Microsoft.Extensions.Options.Tests
 
             var sp = services.BuildServiceProvider();
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
-            ValidateFailure<ComplexOptions>(error, Options.DefaultName, "Virtual != real");
+            ValidateFailure<ComplexOptions>(error, Options.DefaultName, 1, "Virtual != real");
 
             error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<FakeOptions>>().Value);
-            ValidateFailure<FakeOptions>(error, Options.DefaultName, "Message != real");
+            ValidateFailure<FakeOptions>(error, Options.DefaultName, 1, "Message != real");
 
             var fake = sp.GetRequiredService<IOptionsMonitor<FakeOptions>>().Get("fake");
             Assert.Equal("real", fake.Message);
@@ -387,15 +387,20 @@ namespace Microsoft.Extensions.Options.Tests
             }
         }
 
-        private void ValidateFailure<TOptions>(OptionsValidationException e, string name = "", params string[] errors)
+        private void ValidateFailure<TOptions>(OptionsValidationException e, string name = "", int count = 1, params string[] errorsToMatch)
         {
             Assert.Equal(typeof(TOptions), e.OptionsType);
             Assert.Equal(name, e.OptionsName);
-            if (errors.Length == 0)
+            if (errorsToMatch.Length == 0)
             {
-                errors = new string[] { "A validation error has occured." };
+                errorsToMatch = new string[] { "A validation error has occured." };
             }
-            Assert.True(errors.SequenceEqual(e.Failures), "Expected: " + String.Join(" - ", e.Failures));
+            Assert.Equal(count, e.Failures.Count());
+            // Check for the error in any of the failures
+            foreach (var error in errorsToMatch)
+            {
+                Assert.True(e.Failures.FirstOrDefault(f => f.Contains(error)) != null, "Did not find: "+error);
+            }
         }
 
         [Fact]
@@ -415,13 +420,13 @@ namespace Microsoft.Extensions.Options.Tests
             var sp = services.BuildServiceProvider();
 
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<ComplexOptions>>().Value);
-            ValidateFailure<ComplexOptions>(error, Options.DefaultName, "Virtual != target");
+            ValidateFailure<ComplexOptions>(error, Options.DefaultName, 1, "Virtual != target");
 
             error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptionsMonitor<ComplexOptions>>().Get(Options.DefaultName));
-            ValidateFailure<ComplexOptions>(error, Options.DefaultName, "Virtual != target");
+            ValidateFailure<ComplexOptions>(error, Options.DefaultName, 1, "Virtual != target");
 
             error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptionsMonitor<ComplexOptions>>().Get("no"));
-            ValidateFailure<ComplexOptions>(error, "no", "Virtual != target");
+            ValidateFailure<ComplexOptions>(error, "no", 1, "Virtual != target");
 
             var op = sp.GetRequiredService<IOptionsMonitor<ComplexOptions>>().Get("yes");
             Assert.Equal("target", op.Virtual);
@@ -513,7 +518,7 @@ namespace Microsoft.Extensions.Options.Tests
             var startupValidator = sp.GetRequiredService<IStartupValidator>();
 
             var error = Assert.Throws<OptionsValidationException>(() => startupValidator.Validate());
-            ValidateFailure<ComplexOptions>(error, Options.DefaultName, "A validation error has occured.", "Virtual", "Integer");
+            ValidateFailure<ComplexOptions>(error, Options.DefaultName, 3, "A validation error has occured.", "Virtual", "Integer");
         }
 
         [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
@@ -580,12 +585,12 @@ namespace Microsoft.Extensions.Options.Tests
             var sp = services.BuildServiceProvider();
 
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<AnnotatedOptions>>().Value);
-            ValidateFailure<AnnotatedOptions>(error, Options.DefaultName,
-                @"DataAnnotation validation failed for members Required with the error 'The Required field is required.'.
-DataAnnotation validation failed for members StringLength with the error 'Too long.'.
-DataAnnotation validation failed for members IntRange with the error 'Out of range.'.
-DataAnnotation validation failed for members Custom with the error 'The field Custom is invalid.'.
-DataAnnotation validation failed for members Dep1, Dep2 with the error 'Dep1 != Dep2'.");
+            ValidateFailure<AnnotatedOptions>(error, Options.DefaultName, 1,
+                "DataAnnotation validation failed for members Required with the error 'The Required field is required.'.",
+                "DataAnnotation validation failed for members StringLength with the error 'Too long.'.",
+                "DataAnnotation validation failed for members IntRange with the error 'Out of range.'.",
+                "DataAnnotation validation failed for members Custom with the error 'The field Custom is invalid.'.",
+                "DataAnnotation validation failed for members Dep1, Dep2 with the error 'Dep1 != Dep2'.");
         }
 
         [Fact]
@@ -606,15 +611,13 @@ DataAnnotation validation failed for members Dep1, Dep2 with the error 'Dep1 != 
             var sp = services.BuildServiceProvider();
 
             var error = Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<AnnotatedOptions>>().Value);
-            ValidateFailure<AnnotatedOptions>(error, Options.DefaultName, 
-                @"DataAnnotation validation failed for members Required with the error 'The Required field is required.'.
-DataAnnotation validation failed for members StringLength with the error 'Too long.'.
-DataAnnotation validation failed for members IntRange with the error 'Out of range.'.
-DataAnnotation validation failed for members Custom with the error 'The field Custom is invalid.'.
-DataAnnotation validation failed for members Dep1, Dep2 with the error 'Dep1 != Dep2'.",
+            ValidateFailure<AnnotatedOptions>(error, Options.DefaultName, 2,
+                "DataAnnotation validation failed for members Required with the error 'The Required field is required.'.",
+                "DataAnnotation validation failed for members StringLength with the error 'Too long.'.",
+                "DataAnnotation validation failed for members IntRange with the error 'Out of range.'.",
+                "DataAnnotation validation failed for members Custom with the error 'The field Custom is invalid.'.",
+                "DataAnnotation validation failed for members Dep1, Dep2 with the error 'Dep1 != Dep2'.",
                 "I don't want to go to nowhere!");
         }
-
-
     }
 }
