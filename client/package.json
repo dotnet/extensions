@@ -67,8 +67,9 @@
     "scripts": {
         "vscode:prepublish": "npm run compile",
         "clean": "rimraf out",
-        "compile": "npm run clean && tsc -p ./",
-        "watch": "npm run clean && tsc -watch -p ./",
+        "compile": "npm run clean && npm run lint && tsc -p ./",
+        "lint": "tslint --project ./",
+        "watch": "npm run clean && npm run lint && tsc -watch -p ./",
         "postinstall": "node ./node_modules/vscode/bin/install",
         "test": "npm run compile && npm run test:unit && npm run test:functional",
         "test:unit": "mocha --recursive out/unittest",
@@ -80,6 +81,7 @@
         "@types/node": "7.0.43",
         "cross-env": "^5.2.0",
         "ts-node": "^7.0.1",
+        "tslint": "^5.11.0",
         "typescript": "2.6.1"
     },
     "dependencies": {
