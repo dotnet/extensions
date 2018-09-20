@@ -36,15 +36,19 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 function getPlatformRidDir() {
-    if (!!os.platform().match(/^win/)) {
-        return 'win10-x64';
+    if (os.platform().match(/^win/)) {
+        if (process.env.PROCESSOR_ARCHITECTURE === 'x86' && process.env.PROCESSOR_ARCHITEW6432 === undefined) {
+            return 'win-x86';
+        } else {
+            return 'win-x64';
+        }
     }
 
-    if (!!os.platform().match(/^linux/)) {
+    if (os.platform().match(/^linux/)) {
         return 'linux-x64';
     }
 
-    if (!!os.platform().match(/^darwin/)) {
+    if (os.platform().match(/^darwin/)) {
         return 'osx-x64';
     }
 

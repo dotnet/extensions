@@ -15,17 +15,25 @@
     ],
     "main": "./out/src/extension",
     "contributes": {
-        "languages": [{
-            "id": "aspnetcorerazor",
-            "extensions": [".cshtml"],
-            "mimetypes": ["text/x-cshtml"],
-            "configuration": "./language-configuration.json"
-        }],
-        "grammars": [{
-            "language": "aspnetcorerazor",
-            "scopeName": "text.aspnetcorerazor",
-            "path": "./syntaxes/aspnetcorerazor.tmLanguage.json"
-        }],
+        "languages": [
+            {
+                "id": "aspnetcorerazor",
+                "extensions": [
+                    ".cshtml"
+                ],
+                "mimetypes": [
+                    "text/x-cshtml"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "aspnetcorerazor",
+                "scopeName": "text.aspnetcorerazor",
+                "path": "./syntaxes/aspnetcorerazor.tmLanguage.json"
+            }
+        ],
         "commands": [
             {
                 "command": "extension.showRazorCSharpWindow",
@@ -78,7 +86,7 @@
     },
     "devDependencies": {
         "@types/mocha": "2.2.42",
-        "@types/node": "7.0.43",
+        "@types/node": "9.4.7",
         "cross-env": "^5.2.0",
         "ts-node": "^7.0.1",
         "tslint": "^5.11.0",
