@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -356,6 +357,40 @@ namespace Microsoft.Extensions.Http
                 EnableCleanupTimer = true,
             };
 
+            var cleanupEntry = await SimulateClientUse_Factory_CleanupCycle_DisposesEligibleHandler(factory);
+
+            // Being pretty conservative here because we want this test to be reliable,
+            // and it depends on the GC and timing.
+            for (var i = 0; i < 3; i++)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+
+                if (cleanupEntry.CanDispose)
+                {
+                    break;
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(1));
+            }
+
+            Assert.True(cleanupEntry.CanDispose, "Cleanup entry disposable");
+
+            // Act
+            factory.CleanupTimer_Tick();
+
+            // Assert
+            Assert.Empty(factory._expiredHandlers);
+            Assert.Equal(1, disposeHandler.DisposeCount);
+            Assert.False(factory.CleanupTimerStarted.IsSet, "Cleanup timer not started");
+        }
+
+        // Seprate to avoid the HttpClient getting its lifetime extended by
+        // the state machine of the test.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private async Task<ExpiredHandlerTrackingEntry> SimulateClientUse_Factory_CleanupCycle_DisposesEligibleHandler(TestHttpClientFactory factory)
+        {
             // Create a handler and move it to the expired state
             var client1 = factory.CreateClient("github");
 
@@ -372,19 +407,8 @@ namespace Microsoft.Extensions.Http
             // the factory isn't keeping any references.
             kvp = default;
             client1 = null;
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
 
-            Assert.True(cleanupEntry.CanDispose, "Cleanup entry disposable");
-
-            // Act
-            factory.CleanupTimer_Tick();
-
-            // Assert
-            Assert.Empty(factory._expiredHandlers);
-            Assert.Equal(1, disposeHandler.DisposeCount);
-            Assert.False(factory.CleanupTimerStarted.IsSet, "Cleanup timer not started");
+            return cleanupEntry;
         }
 
         [Fact]
@@ -403,7 +427,7 @@ namespace Microsoft.Extensions.Http
                 EnableCleanupTimer = true,
             };
 
-            var cleanupEntry = await SimulateClientUse(factory, disposeHandler);
+            var cleanupEntry = await SimulateClientUse_Factory_CleanupCycle_DisposesLiveHandler(factory, disposeHandler);
 
             // Being pretty conservative here because we want this test to be reliable,
             // and it depends on the GC and timing.
@@ -432,7 +456,10 @@ namespace Microsoft.Extensions.Http
             Assert.False(factory.CleanupTimerStarted.IsSet, "Cleanup timer not started");
         }
 
-        private async Task<ExpiredHandlerTrackingEntry> SimulateClientUse(
+        // Seprate to avoid the HttpClient getting its lifetime extended by
+        // the state machine of the test.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private async Task<ExpiredHandlerTrackingEntry> SimulateClientUse_Factory_CleanupCycle_DisposesLiveHandler(
             TestHttpClientFactory factory,
             DisposeTrackingHandler disposeHandler)
         {
