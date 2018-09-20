@@ -241,26 +241,7 @@ namespace Microsoft.Extensions.Http
             {
                 if (_cleanupTimer == null)
                 {
-                    // Don't capture the current ExecutionContext and its AsyncLocals onto the timer
-                    bool restoreFlow = false;
-                    try
-                    {
-                        if (!ExecutionContext.IsFlowSuppressed())
-                        {
-                            ExecutionContext.SuppressFlow();
-                            restoreFlow = true;
-                        }
-
-                        _cleanupTimer = new Timer(_cleanupCallback, this, DefaultCleanupInterval, Timeout.InfiniteTimeSpan);
-                    }
-                    finally
-                    {
-                        // Restore the current ExecutionContext
-                        if (restoreFlow)
-                        {
-                            ExecutionContext.RestoreFlow();
-                        }
-                    }
+                    _cleanupTimer = NonCapturingTimer.Create(_cleanupCallback, this, DefaultCleanupInterval, Timeout.InfiniteTimeSpan);
                 }
             }
         }

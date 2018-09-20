@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.Http
 {
@@ -67,27 +68,7 @@ namespace Microsoft.Extensions.Http
                 }
 
                 _callback = callback;
-
-                // Don't capture the current ExecutionContext and its AsyncLocals onto the timer
-                bool restoreFlow = false;
-                try
-                {
-                    if (!ExecutionContext.IsFlowSuppressed())
-                    {
-                        ExecutionContext.SuppressFlow();
-                        restoreFlow = true;
-                    }
-                    _timer = new Timer(_timerCallback, this, Lifetime, Timeout.InfiniteTimeSpan);
-                }
-                finally
-                {
-                    // Restore the current ExecutionContext
-                    if (restoreFlow)
-                    {
-                        ExecutionContext.RestoreFlow();
-                    }
-                }
-                Volatile.Write(ref _timerInitialized, true);
+                _timer = NonCapturingTimer.Create(_timerCallback, this, Lifetime, Timeout.InfiniteTimeSpan);
             }
         }
 
