@@ -1,0 +1,17 @@
+{
+  "sign": [
+    {
+      "certificate": "MicrosoftSHA2",
+      "values": [
+        "*/Microsoft.AspNetCore.Razor.LanguageServer.dll",
+
+        // Specifying each of the RID-specific executables directly, not using
+        // a wildcard, so the build only passes if they are all found.
+        // The non-Windows binaries aren't signed because the Roslyn sign tool
+        // does not appear to support that presently.
+        "win-x64/Microsoft.AspNetCore.Razor.LanguageServer.exe",
+        "win-x86/Microsoft.AspNetCore.Razor.LanguageServer.exe"
+      ]
+    }
+  ]
+}

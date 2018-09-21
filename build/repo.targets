@@ -2,4 +2,32 @@
   <ItemGroup>
     <Solutions Update="$(RepositoryRoot)Razor.VSCode.sln" />
   </ItemGroup>
+
+  <Target Name="CodeSign" AfterTargets="Package" DependsOnTargets="GetToolsets" Condition=" '$(OS)' == 'Windows_NT' ">
+    <PropertyGroup>
+        <RidsPublishDir>$(RepositoryRoot)src\Microsoft.AspNetCore.Razor.LanguageServer\bin\$(Configuration)\netcoreapp2.0\publish\</RidsPublishDir>
+    </PropertyGroup>
+    <MSBuild Projects="$(MSBuildThisFileDirectory)sign.proj"
+             Targets="Restore;CodeSign"
+             Properties="VisualStudioMSBuildx86Path=$(VisualStudioMSBuildx86Path);Configuration=$(Configuration);RidsPublishDir=$(RidsPublishDir)" />
+  </Target>
+
+  <Target Name="ZipLanguageServerBinaries" AfterTargets="Package" DependsOnTargets="CodeSign">
+    <!-- Build a .zip file from each platform's directory and write it to 'artifacts' -->
+    <PropertyGroup>
+      <ZipOutputDir>$(RepositoryRoot)artifacts\build\languageserver\</ZipOutputDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <LanguageServiceBinaryDir Include="$([System.IO.Directory]::GetDirectories(&quot;$(RidsPublishDir)&quot;))" />
+      <LanguageServiceBinary Include="@(LanguageServiceBinaryDir)">
+        <SourceDir>%(LanguageServiceBinaryDir.Identity)</SourceDir>
+        <ZipFile>$(ZipOutputDir)RazorLanguageServer-%(LanguageServiceBinaryDir.Filename)-$(PackageVersion).zip</ZipFile>
+      </LanguageServiceBinary>
+    </ItemGroup>
+
+    <MakeDir Directories="$(ZipOutputDir)" />
+    <Delete Files="%(LanguageServiceBinary.ZipFile)" />
+    <Exec Command="powershell.exe -NonInteractive -command &quot;&amp;{ Write-Host &quot;Writing %(LanguageServiceBinary.ZipFile)...&quot; ; Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory('%(LanguageServiceBinary.SourceDir)', '%(LanguageServiceBinary.ZipFile)') }&quot;" />
+  </Target>
 </Project>
