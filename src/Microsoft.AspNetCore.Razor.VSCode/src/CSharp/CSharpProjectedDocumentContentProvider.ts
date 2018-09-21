@@ -10,7 +10,7 @@ import { RazorDocumentManager } from '../RazorDocumentManager';
 import { getUriPath } from '../UriPaths';
 
 export class CSharpProjectedDocumentContentProvider implements vscode.TextDocumentContentProvider {
-    public static readonly scheme = 'razor-csharp';
+    public static readonly scheme = 'virtualCSharp-razor';
 
     private readonly onDidChangeEmitter = new vscode.EventEmitter<vscode.Uri>();
 
