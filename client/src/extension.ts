@@ -15,16 +15,11 @@ export const extensionActivated = new Promise(resolve => {
 });
 
 export async function activate(context: vscode.ExtensionContext) {
-    const ridDir = getPlatformRidDir();
-    if (!ridDir) {
-        throw new Error('Unsupported Razor platform.');
-    }
-
     // Because this extension is only used for local development and tests in CI,
     // we know the Razor Language Server is at a specific path within this repo
     const languageServerDir = path.join(
         __dirname, '..', '..', '..', 'src', 'Microsoft.AspNetCore.Razor.LanguageServer',
-        'bin', 'Debug', 'netcoreapp2.0', ridDir);
+        'bin', 'Debug', 'netcoreapp2.0');
 
     if (!fs.existsSync(languageServerDir)) {
         throw new Error('The Razor Language Server project has not yet been built - '
@@ -33,24 +28,4 @@ export async function activate(context: vscode.ExtensionContext) {
 
     await razorExtensionPackage.activate(context, languageServerDir);
     activationResolver();
-}
-
-function getPlatformRidDir() {
-    if (os.platform().match(/^win/)) {
-        if (process.env.PROCESSOR_ARCHITECTURE === 'x86' && process.env.PROCESSOR_ARCHITEW6432 === undefined) {
-            return 'win-x86';
-        } else {
-            return 'win-x64';
-        }
-    }
-
-    if (os.platform().match(/^linux/)) {
-        return 'linux-x64';
-    }
-
-    if (os.platform().match(/^darwin/)) {
-        return 'osx-x64';
-    }
-
-    return undefined;
 }

@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 import { Trace } from 'vscode-jsonrpc';
 
 export interface RazorLanguageServerOptions {
-    serverDllPath: string;
+    serverPath: string;
     outputChannel?: vscode.OutputChannel;
     debug?: boolean;
     trace?: Trace;

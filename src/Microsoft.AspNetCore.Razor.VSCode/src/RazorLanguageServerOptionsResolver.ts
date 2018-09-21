@@ -18,7 +18,7 @@ export function resolveRazorLanguageServerOptions(languageServerDir: string) {
     const traceString = RazorLanguage.serverConfig.get<string>('trace');
 
     return {
-        serverDllPath: languageServerExecutablePath,
+        serverPath: languageServerExecutablePath,
         debug: debugLanguageServer,
         outputChannel,
         trace: parseTraceString(traceString),
@@ -41,12 +41,24 @@ function parseTraceString(traceString: string | undefined) {
 
 function findLanguageServerExecutable(withinDir: string) {
     const extension = isWindows() ? '.exe' : '';
-    const fullPath = path.join(
+    const executablePath = path.join(
         withinDir,
         `Microsoft.AspNetCore.Razor.LanguageServer${extension}`);
+    let fullPath = '';
 
-    if (!fs.existsSync(fullPath)) {
-        throw new Error(`Could not find Razor Language Server executable at ${fullPath}`);
+    if (fs.existsSync(executablePath)) {
+        fullPath = executablePath;
+    } else {
+        // Exe doesn't exist.
+        const dllPath = path.join(
+            withinDir,
+            'Microsoft.AspNetCore.Razor.LanguageServer.dll');
+
+        if (!fs.existsSync(dllPath)) {
+            throw new Error(`Could not find Razor Language Server executable within directory '${withinDir}'`);
+        }
+
+        fullPath = dllPath;
     }
 
     return fullPath;
