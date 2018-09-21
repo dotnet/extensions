@@ -2,6 +2,11 @@
   <ItemGroup>
     <Solutions Update="$(RepositoryRoot)Razor.VSCode.sln" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
+  </ItemGroup>
 
   <Target Name="CodeSign" AfterTargets="Package" DependsOnTargets="GetToolsets" Condition=" '$(OS)' == 'Windows_NT' ">
     <PropertyGroup>
