@@ -48,11 +48,11 @@
             "editor/title": [
                 {
                     "command": "extension.showRazorCSharpWindow",
-                    "when": "resourceLangId == razor"
+                    "when": "resourceLangId == aspnetcorerazor"
                 },
                 {
                     "command": "extension.showRazorHtmlWindow",
-                    "when": "resourceLangId == razor"
+                    "when": "resourceLangId == aspnetcorerazor"
                 }
             ]
         },
