@@ -8,6 +8,7 @@
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains a Razor language server.</Description>
     <EnableApiCheck>false</EnableApiCheck>
     <RuntimeIdentifiers>win-x64;win-x86;linux-x64;osx-x64;</RuntimeIdentifiers>
+    <AssemblyName>rzls</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

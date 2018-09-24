@@ -43,7 +43,7 @@ function findLanguageServerExecutable(withinDir: string) {
     const extension = isWindows() ? '.exe' : '';
     const executablePath = path.join(
         withinDir,
-        `Microsoft.AspNetCore.Razor.LanguageServer${extension}`);
+        `rzls${extension}`);
     let fullPath = '';
 
     if (fs.existsSync(executablePath)) {
@@ -52,7 +52,7 @@ function findLanguageServerExecutable(withinDir: string) {
         // Exe doesn't exist.
         const dllPath = path.join(
             withinDir,
-            'Microsoft.AspNetCore.Razor.LanguageServer.dll');
+            'rzls.dll');
 
         if (!fs.existsSync(dllPath)) {
             throw new Error(`Could not find Razor Language Server executable within directory '${withinDir}'`);
