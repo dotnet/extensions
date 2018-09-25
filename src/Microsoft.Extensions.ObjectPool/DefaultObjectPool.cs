@@ -56,19 +56,18 @@ namespace Microsoft.Extensions.ObjectPool
         private T GetViaScan()
         {
             ObjectWrapper[] items = _items;
-            T item = null;
 
             for (var i = 0; i < items.Length; i++)
             {
-                item = items[i];
+                T item = items[i];
 
                 if (item != null && Interlocked.CompareExchange(ref items[i].Element, null, item) == item)
                 {
-                    break;
+                    return item;
                 }
             }
 
-            return item ?? Create();
+            return Create();
         }
 
         // Non-inline to improve its code quality as uncommon path
