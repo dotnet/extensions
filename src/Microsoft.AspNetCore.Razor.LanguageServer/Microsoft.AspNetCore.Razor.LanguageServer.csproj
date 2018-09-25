@@ -17,9 +17,30 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Razor.Workspaces" Version="$(MicrosoftCodeAnalysisRazorWorkspacesPackageVersion)" />
   </ItemGroup>
 
-  <Target
-    Name="PublishLanguageServerNativeExecutables"
-    AfterTargets="Pack"
-    DependsOnTargets="PublishAllRids" />
+  <ItemGroup>
+    <!-- We need this to compile but don't want it referenced by the project. -->
+    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\Microsoft.AspNetCore.Razor.OmniSharpPlugin.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Targets>Publish</Targets>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Target Name="PublishLanguageServerNativeExecutables" AfterTargets="Pack" DependsOnTargets="PublishAllRids" />
+
+  <Target Name="IncludeOmniSharpPlugin" AfterTargets="Publish" Condition="Exists('$(PublishDir)')">
+    <PropertyGroup>
+      <PluginReferenceOutputPath>$(MSBuildProjectDirectory)\..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\bin\$(Configuration)\net461\publish</PluginReferenceOutputPath>
+      <TargetPluginOutputPath>$(PublishDir)\OmniSharpPlugin</TargetPluginOutputPath>
+    </PropertyGroup>
+
+    <RemoveDir Directories="$(TargetPluginOutputPath)" />
+    <MakeDir Directories="$(TargetPluginOutputPath)" /> 
+
+    <ItemGroup>
+      <PluginAssets Include="$(PluginReferenceOutputPath)\**\*.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(PluginAssets)" DestinationFiles="@(PluginAssets->'$(TargetPluginOutputPath)\%(RecursiveDir)%(Filename)%(Extension)')" /> 
+  </Target>
 
 </Project>
