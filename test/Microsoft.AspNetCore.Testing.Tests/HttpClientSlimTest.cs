@@ -69,10 +69,30 @@ namespace Microsoft.AspNetCore.Testing
         private HttpListener StartHost(out string address, int statusCode = 200, Func<HttpListenerContext, Task> handler = null)
         {
             var listener = new HttpListener();
+            var random = new Random();
+            address = null;
 
-            address = $"http://127.0.0.1:{FindFreePort()}/";
-            listener.Prefixes.Add(address);
-            listener.Start();
+            for (var i = 0; i < 10; i++)
+            {
+                try
+                {
+                    // HttpListener doesn't support requesting port 0 (dynamic).
+                    // Requesting port 0 from Sockets and then passing that to HttpListener is racy.
+                    // Just keep trying until we find a free one.
+                    address = $"http://127.0.0.1:{random.Next(1024, ushort.MaxValue)}/";
+                    listener.Prefixes.Add(address);
+                    listener.Start();
+                    break;
+                }
+                catch (HttpListenerException)
+                {
+                    // Address in use
+                    listener.Close();
+                    listener = new HttpListener();
+                }
+            }
+
+            Assert.True(listener.IsListening, "IsListening");
 
             _ = listener.GetContextAsync().ContinueWith(async task =>
             {
@@ -92,15 +112,6 @@ namespace Microsoft.AspNetCore.Testing
             });
 
             return listener;
-        }
-
-        private int FindFreePort()
-        {
-            using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
-            {
-                socket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
-                return ((IPEndPoint)socket.LocalEndPoint).Port;
-            }
         }
     }
 }
