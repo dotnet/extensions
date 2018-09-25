@@ -16,16 +16,20 @@ import { RazorLanguage } from './RazorLanguage';
 import { RazorLanguageConfiguration } from './RazorLanguageConfiguration';
 import { RazorLanguageServerClient } from './RazorLanguageServerClient';
 import { resolveRazorLanguageServerOptions } from './RazorLanguageServerOptionsResolver';
+import { resolveRazorLanguageServerTrace } from './RazorLanguageServerTraceResolver';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
+import { RazorLogger } from './RazorLogger';
 import { RazorProjectTracker } from './RazorProjectTracker';
 import { RazorSignatureHelpProvider } from './RazorSignatureHelpProvider';
 
 export async function activate(context: ExtensionContext, languageServerDir: string) {
-    const languageServerOptions = resolveRazorLanguageServerOptions(languageServerDir);
+    const languageServerTrace = resolveRazorLanguageServerTrace();
+    const logger = new RazorLogger(languageServerTrace);
+    const languageServerOptions = resolveRazorLanguageServerOptions(languageServerDir, languageServerTrace, logger);
     const languageConfiguration = new RazorLanguageConfiguration();
-    const languageServerClient = new RazorLanguageServerClient(languageServerOptions);
+    const languageServerClient = new RazorLanguageServerClient(languageServerOptions, logger);
     const languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
-    const documentManager = new RazorDocumentManager(languageServerClient);
+    const documentManager = new RazorDocumentManager(languageServerClient, logger);
     const csharpFeature = new RazorCSharpFeature(documentManager);
     const htmlFeature = new RazorHtmlFeature(documentManager, languageServiceClient);
     const projectTracker = new RazorProjectTracker(languageServiceClient);
@@ -33,16 +37,18 @@ export async function activate(context: ExtensionContext, languageServerDir: str
     const localRegistrations: vscode.Disposable[] = [];
 
     const onStartRegistration = languageServerClient.onStart(() => {
-        const documentSynchronizer = new RazorDocumentSynchronizer();
+        const documentSynchronizer = new RazorDocumentSynchronizer(logger);
         const provisionalCompletionOrchestrator = new ProvisionalCompletionOrchestrator(
             documentManager,
             csharpFeature.projectionProvider,
-            languageServiceClient);
+            languageServiceClient,
+            logger);
         const completionItemProvider = new RazorCompletionItemProvider(
             documentSynchronizer,
             documentManager,
             languageServiceClient,
-            provisionalCompletionOrchestrator);
+            provisionalCompletionOrchestrator,
+            logger);
         const signatureHelpProvider = new RazorSignatureHelpProvider(
             documentSynchronizer,
             documentManager,
@@ -76,5 +82,5 @@ export async function activate(context: ExtensionContext, languageServerDir: str
     await projectTracker.initialize();
     await documentManager.initialize();
 
-    context.subscriptions.push(languageServerClient, onStartRegistration, onStopRegistration);
+    context.subscriptions.push(languageServerClient, onStartRegistration, onStopRegistration, logger);
 }

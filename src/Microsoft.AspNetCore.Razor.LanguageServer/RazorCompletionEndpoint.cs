@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     internal class RazorCompletionEndpoint : ICompletionHandler
     {
         private CompletionCapability _capability;
-        private readonly VSCodeLogger _logger;
+        private readonly ILogger _logger;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly RazorCompletionFactsService _completionFactsService;
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             ForegroundDispatcher foregroundDispatcher,
             DocumentResolver documentResolver,
             RazorCompletionFactsService completionFactsService,
-            VSCodeLogger logger)
+            ILoggerFactory loggerFactory)
         {
             if (foregroundDispatcher == null)
             {
@@ -44,21 +45,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(completionFactsService));
             }
 
-            if (logger == null)
+            if (loggerFactory == null)
             {
-                throw new ArgumentNullException(nameof(logger));
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
             _foregroundDispatcher = foregroundDispatcher;
             _documentResolver = documentResolver;
             _completionFactsService = completionFactsService;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<RazorCompletionEndpoint>();
         }
 
         public void SetCapability(CompletionCapability capability)
         {
-            _logger.Log("Setting capability");
-
             _capability = capability;
         }
 
@@ -83,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             var razorCompletionItems = _completionFactsService.GetCompletionItems(syntaxTree, location);
 
-            _logger.Log($"Found {razorCompletionItems.Count} Razor completion items.");
+            _logger.LogTrace($"Found {razorCompletionItems.Count} Razor specific completion items.");
 
             var completionItems = new List<CompletionItem>();
             foreach (var razorCompletionItem in razorCompletionItems)

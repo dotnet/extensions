@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("@{}");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, Logger);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, LoggerFactory);
             var request = new RazorLanguageQueryParams()
             {
                 Uri = new Uri(documentPath),
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("<s");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, Logger);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, LoggerFactory);
             var request = new RazorLanguageQueryParams()
             {
                 Uri = new Uri(documentPath),
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 "/* CSharp */",
                 new[] { new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 12)) });
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, Logger);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, LoggerFactory);
             var request = new RazorLanguageQueryParams()
             {
                 Uri = new Uri(documentPath),

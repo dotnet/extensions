@@ -552,7 +552,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             ProjectSnapshotManagerBase projectSnapshotManager,
             DocumentResolver documentResolver = null)
         {
-            var logger = Mock.Of<VSCodeLogger>();
             var documentVersionCache = Mock.Of<DocumentVersionCache>();
             var filePathNormalizer = new FilePathNormalizer();
             var accessor = Mock.Of<ProjectSnapshotManagerAccessor>(a => a.Instance == projectSnapshotManager);
@@ -566,7 +565,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 documentVersionCache,
                 filePathNormalizer,
                 accessor,
-                logger);
+                LoggerFactory);
 
             return projectService;
         }

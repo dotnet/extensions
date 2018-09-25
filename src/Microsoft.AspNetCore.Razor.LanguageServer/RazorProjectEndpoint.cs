@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.Embedded.MediatR;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
@@ -16,14 +17,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly RazorConfigurationResolver _configurationResolver;
         private readonly RemoteTextLoaderFactory _remoteTextLoaderFactory;
         private readonly ForegroundDispatcher _foregroundDispatcher;
-        private readonly VSCodeLogger _logger;
+        private readonly ILogger _logger;
 
         public RazorProjectEndpoint(
             ForegroundDispatcher foregroundDispatcher,
             RazorConfigurationResolver configurationResolver,
             RemoteTextLoaderFactory remoteTextLoaderFactory,
             RazorProjectService projectService,
-            VSCodeLogger logger)
+            ILoggerFactory loggerFactory)
         {
             if (foregroundDispatcher == null)
             {
@@ -45,16 +46,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(projectService));
             }
 
-            if (logger == null)
+            if (loggerFactory == null)
             {
-                throw new ArgumentNullException(nameof(logger));
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
             _foregroundDispatcher = foregroundDispatcher;
             _configurationResolver = configurationResolver;
             _remoteTextLoaderFactory = remoteTextLoaderFactory;
             _projectService = projectService;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<RazorProjectEndpoint>();
         }
 
         public async Task<Unit> Handle(RazorAddProjectParams request, CancellationToken cancellationToken)
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             if (!_configurationResolver.TryResolve(request.ConfigurationName, out var razorConfiguration))
             {
                 razorConfiguration = _configurationResolver.Default;
-                _logger.Log($"Could not resolve Razor configuration '{request.ConfigurationName}'. Falling back to default configuration '{razorConfiguration.ConfigurationName}'.");
+                _logger.LogInformation($"Could not resolve Razor configuration '{request.ConfigurationName}'. Falling back to default configuration '{razorConfiguration.ConfigurationName}'.");
             }
 
             await Task.Factory.StartNew(

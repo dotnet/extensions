@@ -5,7 +5,6 @@
 
 import * as fs from 'fs';
 import * as razorExtensionPackage from 'microsoft.aspnetcore.razor.vscode';
-import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 

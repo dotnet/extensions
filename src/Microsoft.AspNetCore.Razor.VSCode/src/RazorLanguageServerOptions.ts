@@ -10,5 +10,5 @@ export interface RazorLanguageServerOptions {
     serverPath: string;
     outputChannel?: vscode.OutputChannel;
     debug?: boolean;
-    trace?: Trace;
+    trace: Trace;
 }

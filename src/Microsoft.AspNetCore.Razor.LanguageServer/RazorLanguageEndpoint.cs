@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
@@ -21,13 +22,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly DocumentVersionCache _documentVersionCache;
-        private readonly VSCodeLogger _logger;
+        private readonly ILogger _logger;
 
         public RazorLanguageEndpoint(
             ForegroundDispatcher foregroundDispatcher,
             DocumentResolver documentResolver,
             DocumentVersionCache documentVersionCache,
-            VSCodeLogger logger)
+            ILoggerFactory loggerFactory)
         {
             if (foregroundDispatcher == null)
             {
@@ -44,15 +45,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(documentVersionCache));
             }
 
-            if (logger == null)
+            if (loggerFactory == null)
             {
-                throw new ArgumentNullException(nameof(logger));
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
             _foregroundDispatcher = foregroundDispatcher;
             _documentResolver = documentResolver;
             _documentVersionCache = documentVersionCache;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<RazorLanguageEndpoint>();
         }
 
         public async Task<RazorLanguageQueryResponse> Handle(RazorLanguageQueryParams request, CancellationToken cancellationToken)
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 }
             }
 
-            _logger.Log($"Language query request for ({request.Position.Line}, {request.Position.Character}) = {languageKind} at ({responsePosition.Line}, {responsePosition.Character})");
+            _logger.LogTrace($"Language query request for ({request.Position.Line}, {request.Position.Character}) = {languageKind} at ({responsePosition.Line}, {responsePosition.Character})");
 
             return new RazorLanguageQueryResponse()
             {

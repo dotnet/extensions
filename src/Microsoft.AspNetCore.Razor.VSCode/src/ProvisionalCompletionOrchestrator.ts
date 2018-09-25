@@ -11,6 +11,7 @@ import { RazorCompletionItemProvider } from './RazorCompletionItemProvider';
 import { RazorDocumentManager } from './RazorDocumentManager';
 import { RazorLanguage } from './RazorLanguage';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
+import { RazorLogger } from './RazorLogger';
 import { LanguageKind } from './RPC/LanguageKind';
 
 export class ProvisionalCompletionOrchestrator {
@@ -20,7 +21,8 @@ export class ProvisionalCompletionOrchestrator {
     constructor(
         private readonly documentManager: RazorDocumentManager,
         private readonly projectedCSharpProvider: CSharpProjectedDocumentContentProvider,
-        private readonly serviceClient: RazorLanguageServiceClient) {
+        private readonly serviceClient: RazorLanguageServiceClient,
+        private readonly logger: RazorLogger) {
     }
 
     public register() {
@@ -101,6 +103,11 @@ export class ProvisionalCompletionOrchestrator {
         const projectedEditorDocument = await vscode.workspace.openTextDocument(projectedDocument.uri);
         const absoluteIndex = projectedEditorDocument.offsetAt(previousCharacterQuery.position);
 
+        if (this.logger.verboseEnabled) {
+            this.logger.logVerbose(`Applying provisional completion on ${projectedDocument.uri} ` +
+                `at (${previousCharacterQuery.position.line}, ${previousCharacterQuery.position.character})`);
+        }
+
         // Edit the projected document to contain a '.'. This allows C# completion to provide valid completion items
         // for moments when a user has typed a '.' that's typically interpreted as Html.
         // This provisional dot is removed when one of the following is true:
@@ -148,6 +155,10 @@ export class ProvisionalCompletionOrchestrator {
         const projectedDocument = razorDocument.csharpDocument as CSharpProjectedDocument;
         if (projectedDocument.removeProvisionalDot()) {
             this.projectedCSharpProvider.ensureDocumentContent(projectedDocument.uri);
+
+            if (this.logger.verboseEnabled) {
+                this.logger.logVerbose(`Ensured removalof provisional completion on ${projectedDocument.uri}.`);
+            }
         }
 
         // Don't need to force the document to refresh here by saving because the user has already

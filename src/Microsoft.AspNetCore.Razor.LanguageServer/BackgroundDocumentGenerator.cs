@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentVersionCache _documentVersionCache;
         private readonly ILanguageServer _router;
-        private readonly VSCodeLogger _logger;
+        private readonly ILogger _logger;
         private readonly Dictionary<string, DocumentSnapshot> _work;
         private ProjectSnapshotManagerBase _projectManager;
         private Timer _timer;
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             ForegroundDispatcher foregroundDispatcher,
             DocumentVersionCache documentVersionCache,
             ILanguageServer router,
-            VSCodeLogger logger)
+            ILoggerFactory loggerFactory)
         {
             if (foregroundDispatcher == null)
             {
@@ -44,25 +45,25 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(router));
             }
 
-            if (logger == null)
+            if (loggerFactory == null)
             {
-                throw new ArgumentNullException(nameof(logger));
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
             _foregroundDispatcher = foregroundDispatcher;
             _documentVersionCache = documentVersionCache;
             _router = router;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<BackgroundDocumentGenerator>();
             _work = new Dictionary<string, DocumentSnapshot>(StringComparer.Ordinal);
         }
 
         // For testing only
         protected BackgroundDocumentGenerator(
             ForegroundDispatcher foregroundDispatcher,
-            VSCodeLogger logger)
+            ILoggerFactory loggerFactory)
         {
             _foregroundDispatcher = foregroundDispatcher;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<BackgroundDocumentGenerator>();
             _work = new Dictionary<string, DocumentSnapshot>(StringComparer.Ordinal);
         }
 
@@ -202,7 +203,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     catch (Exception ex)
                     {
                         ReportError(ex);
-                        _logger.Log("Error when processing document: " + document.FilePath);
+                        _logger.LogError("Error when processing document: " + document.FilePath);
                     }
                 }
 

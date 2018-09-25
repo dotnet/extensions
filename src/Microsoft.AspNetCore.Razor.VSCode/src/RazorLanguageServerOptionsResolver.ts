@@ -6,37 +6,21 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import * as vscode from 'vscode';
 import { Trace } from 'vscode-jsonrpc';
 import { RazorLanguage } from './RazorLanguage';
 import { RazorLanguageServerOptions } from './RazorLanguageServerOptions';
+import { RazorLogger } from './RazorLogger';
 
-export function resolveRazorLanguageServerOptions(languageServerDir: string) {
+export function resolveRazorLanguageServerOptions(languageServerDir: string, trace: Trace, logger: RazorLogger) {
     const languageServerExecutablePath = findLanguageServerExecutable(languageServerDir);
     const debugLanguageServer = RazorLanguage.serverConfig.get<boolean>('debug');
-    const outputChannel = vscode.window.createOutputChannel('Razor Language Server');
-    const traceString = RazorLanguage.serverConfig.get<string>('trace');
 
     return {
         serverPath: languageServerExecutablePath,
         debug: debugLanguageServer,
-        outputChannel,
-        trace: parseTraceString(traceString),
+        trace,
+        outputChannel: logger.outputChannel,
     } as RazorLanguageServerOptions;
-}
-
-function parseTraceString(traceString: string | undefined) {
-    switch (traceString) {
-        case 'Off':
-            return Trace.Off;
-        case 'Messages':
-            return Trace.Messages;
-        case 'Verbose':
-            return Trace.Verbose;
-        default:
-            console.log('Invalid trace setting for Razor language server. Defaulting to \'Off\'');
-            return Trace.Off;
-    }
 }
 
 function findLanguageServerExecutable(withinDir: string) {

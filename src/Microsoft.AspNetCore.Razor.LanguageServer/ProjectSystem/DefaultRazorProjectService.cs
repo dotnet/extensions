@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 {
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
         private readonly DocumentVersionCache _documentVersionCache;
         private readonly FilePathNormalizer _filePathNormalizer;
         private readonly DocumentResolver _documentResolver;
-        private readonly VSCodeLogger _logger;
+        private readonly ILogger _logger;
 
         public DefaultRazorProjectService(
             ForegroundDispatcher foregroundDispatcher,
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             DocumentVersionCache documentVersionCache,
             FilePathNormalizer filePathNormalizer,
             ProjectSnapshotManagerAccessor projectSnapshotManagerAccessor,
-            VSCodeLogger logger)
+            ILoggerFactory loggerFactory)
         {
             if (foregroundDispatcher == null)
             {
@@ -68,9 +69,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 throw new ArgumentNullException(nameof(projectSnapshotManagerAccessor));
             }
 
-            if (logger == null)
+            if (loggerFactory == null)
             {
-                throw new ArgumentNullException(nameof(logger));
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
             _foregroundDispatcher = foregroundDispatcher;
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _documentVersionCache = documentVersionCache;
             _filePathNormalizer = filePathNormalizer;
             _projectSnapshotManagerAccessor = projectSnapshotManagerAccessor;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<DefaultRazorProjectService>();
         }
 
         public override void AddDocument(string filePath, TextLoader textLoader)
@@ -104,7 +105,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             var defaultProject = (DefaultProjectSnapshot)projectSnapshot;
             _projectSnapshotManagerAccessor.Instance.DocumentAdded(defaultProject.HostProject, hostDocument, textLoader);
 
-            _logger.Log($"Added document '{textDocumentPath}' to project '{projectSnapshot.FilePath}'.");
+            _logger.LogInformation($"Added document '{textDocumentPath}' to project '{projectSnapshot.FilePath}'.");
         }
 
         public override void OpenDocument(string filePath, SourceText sourceText, long version)
@@ -129,7 +130,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
             TrackDocumentVersion(textDocumentPath, version);
 
-            _logger.Log($"Opening document '{textDocumentPath}' in project '{projectSnapshot.FilePath}'.");
+            _logger.LogInformation($"Opening document '{textDocumentPath}' in project '{projectSnapshot.FilePath}'.");
         }
 
         public override void CloseDocument(string filePath, TextLoader textLoader)
@@ -145,7 +146,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             var defaultProject = (DefaultProjectSnapshot)projectSnapshot;
             _projectSnapshotManagerAccessor.Instance.DocumentClosed(defaultProject.HostProject.FilePath, textDocumentPath, textLoader);
 
-            _logger.Log($"Closing document '{textDocumentPath}' in project '{projectSnapshot.FilePath}'.");
+            _logger.LogInformation($"Closing document '{textDocumentPath}' in project '{projectSnapshot.FilePath}'.");
         }
 
         public override void RemoveDocument(string filePath)
@@ -160,7 +161,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
             if (!projectSnapshot.DocumentFilePaths.Contains(textDocumentPath, FilePathComparer.Instance))
             {
-                _logger.Log($"Containing project is not tracking document '{filePath}");
+                _logger.LogInformation($"Containing project is not tracking document '{filePath}");
                 return;
             }
 
@@ -168,7 +169,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             var defaultProject = (DefaultProjectSnapshot)projectSnapshot;
             _projectSnapshotManagerAccessor.Instance.DocumentRemoved(defaultProject.HostProject, document.State.HostDocument);
 
-            _logger.Log($"Removed document '{textDocumentPath}' from project '{projectSnapshot.FilePath}'.");
+            _logger.LogInformation($"Removed document '{textDocumentPath}' from project '{projectSnapshot.FilePath}'.");
         }
 
         public override void UpdateDocument(string filePath, SourceText sourceText, long version)
@@ -186,7 +187,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
             TrackDocumentVersion(textDocumentPath, version);
 
-            _logger.Log($"Updated document '{textDocumentPath}'.");
+            _logger.LogTrace($"Updated document '{textDocumentPath}'.");
         }
 
         public override void AddProject(string filePath, RazorConfiguration configuration)
@@ -196,7 +197,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             var normalizedPath = _filePathNormalizer.Normalize(filePath);
             var hostProject = new HostProject(normalizedPath, configuration);
             _projectSnapshotManagerAccessor.Instance.HostProjectAdded(hostProject);
-            _logger.Log($"Added project '{filePath}' to project system.");
+            _logger.LogInformation($"Added project '{filePath}' to project system.");
 
             TryMigrateMiscellaneousDocumentsToProject();
         }
@@ -215,7 +216,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             }
 
             _projectSnapshotManagerAccessor.Instance.HostProjectRemoved(project.HostProject);
-            _logger.Log($"Removing project '{filePath}' from project system.");
+            _logger.LogInformation($"Removing project '{filePath}' from project system.");
 
             TryMigrateDocumentsFromRemovedProject(project);
         }
@@ -240,7 +241,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 var textLoader = new DocumentSnapshotTextLoader(documentSnapshot);
                 var defaultToProject = (DefaultProjectSnapshot)toProject;
                 _projectSnapshotManagerAccessor.Instance.DocumentAdded(defaultToProject.HostProject, documentSnapshot.State.HostDocument, textLoader);
-                _logger.Log($"Migrated '{documentFilePath}' from the '{project.FilePath}' project to '{toProject.FilePath}' project.");
+                _logger.LogInformation($"Migrated '{documentFilePath}' from the '{project.FilePath}' project to '{toProject.FilePath}' project.");
             }
         }
 
@@ -270,7 +271,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 var defaultProject = (DefaultProjectSnapshot)projectSnapshot;
                 _projectSnapshotManagerAccessor.Instance.DocumentAdded(defaultProject.HostProject, documentSnapshot.State.HostDocument, textLoader);
 
-                _logger.Log($"Migrated '{documentFilePath}' from the '{miscellaneousProject.FilePath}' project to '{projectSnapshot.FilePath}' project.");
+                _logger.LogInformation($"Migrated '{documentFilePath}' from the '{miscellaneousProject.FilePath}' project to '{projectSnapshot.FilePath}' project.");
             }
         }
 

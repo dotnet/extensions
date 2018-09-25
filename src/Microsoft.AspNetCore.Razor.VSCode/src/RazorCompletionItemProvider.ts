@@ -9,6 +9,8 @@ import { RazorDocumentManager } from './RazorDocumentManager';
 import { RazorDocumentSynchronizer } from './RazorDocumentSynchronizer';
 import { RazorLanguageFeatureBase } from './RazorLanguageFeatureBase';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
+import { RazorLogger } from './RazorLogger';
+import { getUriPath } from './UriPaths';
 
 export class RazorCompletionItemProvider
     extends RazorLanguageFeatureBase
@@ -63,7 +65,8 @@ export class RazorCompletionItemProvider
         documentSynchronizer: RazorDocumentSynchronizer,
         documentManager: RazorDocumentManager,
         serviceClient: RazorLanguageServiceClient,
-        private readonly provisionalCompletionOrchestrator: ProvisionalCompletionOrchestrator) {
+        private readonly provisionalCompletionOrchestrator: ProvisionalCompletionOrchestrator,
+        private readonly logger: RazorLogger) {
         super(documentSynchronizer, documentManager, serviceClient);
     }
 
@@ -71,6 +74,11 @@ export class RazorCompletionItemProvider
         document: vscode.TextDocument, position: vscode.Position,
         token: vscode.CancellationToken, context: vscode.CompletionContext) {
         const projection = await this.getProjection(document, position);
+
+        if (this.logger.verboseEnabled) {
+            this.logger.logVerbose(`Providing completions for document ${getUriPath(document.uri)} ` +
+                `at location (${position.line}, ${position.character})`);
+        }
 
         if (!projection) {
             return { isIncomplete: true, items: [] } as vscode.CompletionList;

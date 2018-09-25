@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Razor.LanguageServer.Test.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using Xunit;
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             var project = projectManager.GetLoadedProject(HostProject1.FilePath);
 
-            var queue = new TestBackgroundDocumentGenerator(Dispatcher, Logger)
+            var queue = new TestBackgroundDocumentGenerator(Dispatcher, LoggerFactory)
             {
                 Delay = TimeSpan.FromMilliseconds(1),
                 BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false),
@@ -92,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             var project = projectManager.GetLoadedProject(HostProject1.FilePath);
 
-            var queue = new TestBackgroundDocumentGenerator(Dispatcher, Logger)
+            var queue = new TestBackgroundDocumentGenerator(Dispatcher, LoggerFactory)
             {
                 Delay = TimeSpan.FromMilliseconds(1),
                 BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false),
@@ -146,7 +147,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Arrange
             var router = new TestRouter();
             var cache = new TestDocumentVersionCache(new Dictionary<DocumentSnapshot, long>());
-            var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, router, Logger);
+            var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, router, LoggerFactory);
             var document = TestDocumentSnapshot.Create("C:/path/file.cshtml");
             var work = new[] { new KeyValuePair<string, DocumentSnapshot>(document.FilePath, document) };
 
@@ -172,7 +173,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Force the state to already be up-to-date
             document.State.HostDocument.GeneratedCodeContainer.SetOutput(csharpDocument, document);
 
-            var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, router, Logger);
+            var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, router, LoggerFactory);
             var work = new[] { new KeyValuePair<string, DocumentSnapshot>(document.FilePath, document) };
 
             // Act
@@ -200,7 +201,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Force the state to already be up-to-date
             oldDocument.State.HostDocument.GeneratedCodeContainer.SetOutput(csharpDocument, lastDocument);
 
-            var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, router, Logger);
+            var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, router, LoggerFactory);
             var work = new[] { new KeyValuePair<string, DocumentSnapshot>(oldDocument.FilePath, oldDocument) };
 
             // Act
@@ -228,7 +229,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Force the state to already be up-to-date
             document.State.HostDocument.GeneratedCodeContainer.SetOutput(csharpDocument, lastDocument);
 
-            var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, router, Logger);
+            var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, router, LoggerFactory);
             var work = new[] { new KeyValuePair<string, DocumentSnapshot>(document.FilePath, document) };
 
             // Act
@@ -256,7 +257,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             // Force the state to already be up-to-date
             document.State.HostDocument.GeneratedCodeContainer.SetOutput(csharpDocument, lastDocument);
 
-            var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, router, Logger);
+            var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, router, LoggerFactory);
             var work = new[] { new KeyValuePair<string, DocumentSnapshot>(document.FilePath, document) };
 
             // Act
@@ -269,7 +270,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         private class TestBackgroundDocumentGenerator : BackgroundDocumentGenerator
         {
-            public TestBackgroundDocumentGenerator(ForegroundDispatcher foregroundDispatcher, VSCodeLogger logger) : base(foregroundDispatcher, logger)
+            public TestBackgroundDocumentGenerator(ForegroundDispatcher foregroundDispatcher, ILoggerFactory loggerFactory) : base(foregroundDispatcher, loggerFactory)
             {
             }
 

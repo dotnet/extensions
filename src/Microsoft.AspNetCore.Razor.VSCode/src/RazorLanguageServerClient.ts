@@ -5,14 +5,15 @@
 
 import { EventEmitter } from 'events';
 import * as vscode from 'vscode';
+import { Trace } from 'vscode-jsonrpc';
 import {
     GenericRequestHandler,
     LanguageClient,
     LanguageClientOptions,
     ServerOptions,
-    State,
 } from 'vscode-languageclient/lib/main';
 import { RazorLanguageServerOptions } from './RazorLanguageServerOptions';
+import { RazorLogger } from './RazorLogger';
 
 const events = {
     ServerStart: 'ServerStart',
@@ -27,7 +28,9 @@ export class RazorLanguageServerClient implements vscode.Disposable {
     private eventBus: EventEmitter;
     private isStarted: boolean;
 
-    constructor(options: RazorLanguageServerOptions) {
+    constructor(
+        options: RazorLanguageServerOptions,
+        private readonly logger: RazorLogger) {
         this.isStarted = false;
         this.clientOptions = {
             outputChannel: options.outputChannel,
@@ -36,12 +39,20 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         const args: string[] = [];
         let command = options.serverPath;
         if (options.serverPath.endsWith('.dll')) {
+            this.logger.logMessage('Razor Language Server path is an assembly. ' +
+                'Using \'dotnet\' from the current path to start the server.');
+
             command = 'dotnet';
             args.push(options.serverPath);
         }
 
         args.push('-lsp');
+        args.push('--logLevel');
+        const logLevelString = this.getLogLevelString(options.trace);
+        args.push(logLevelString);
+
         if (options.debug) {
+            this.logger.logMessage('Debug flag set for Razor Language Server.');
             args.push('--debug');
         }
 
@@ -52,10 +63,6 @@ export class RazorLanguageServerClient implements vscode.Disposable {
 
         this.client = new LanguageClient(
             'razorLanguageServer', 'Razor Language Server', this.serverOptions, this.clientOptions);
-
-        if (options.trace) {
-            this.client.trace = options.trace;
-        }
 
         this.eventBus = new EventEmitter();
     }
@@ -77,8 +84,11 @@ export class RazorLanguageServerClient implements vscode.Disposable {
     }
 
     public async start() {
+        this.logger.logMessage('Starting Razor Language Server...');
         this.startDisposable = await this.client.start();
+        this.logger.logMessage('Server started, waiting for client to be ready...');
         await this.client.onReady();
+        this.logger.logMessage('Server started and ready!');
 
         this.isStarted = true;
         this.eventBus.emit(events.ServerStart);
@@ -101,11 +111,26 @@ export class RazorLanguageServerClient implements vscode.Disposable {
     }
 
     public dispose() {
+        this.logger.logMessage('Stopping Razor Language Server.');
+
         if (this.startDisposable) {
             this.startDisposable.dispose();
         }
 
         this.isStarted = false;
         this.eventBus.emit(events.ServerStop);
+    }
+
+    private getLogLevelString(trace: Trace) {
+        switch (trace) {
+            case Trace.Off:
+                return 'None';
+            case Trace.Messages:
+                return 'Information';
+            case Trace.Verbose:
+                return 'Trace';
+        }
+
+        throw new Error('Unexpected trace value.');
     }
 }

@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var documentPath = "C:/path/to/document.cshtml";
             var codeDocument = CreateCodeDocument("@");
             var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
-            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, documentResolver, CompletionFactsService, Logger);
+            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, documentResolver, CompletionFactsService, LoggerFactory);
             var request = new CompletionParams()
             {
                 TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),

@@ -12,6 +12,7 @@ import { RazorDocumentChangeKind } from './RazorDocumentChangeKind';
 import { createDocument } from './RazorDocumentFactory';
 import { RazorLanguage } from './RazorLanguage';
 import { RazorLanguageServerClient } from './RazorLanguageServerClient';
+import { RazorLogger } from './RazorLogger';
 import { UpdateCSharpBufferRequest } from './RPC/UpdateCSharpBufferRequest';
 import { getUriPath } from './UriPaths';
 
@@ -22,7 +23,8 @@ export class RazorDocumentManager {
     private onChangeEmitter = new vscode.EventEmitter<IRazorDocumentChangeEvent>();
 
     constructor(
-        private readonly serverClient: RazorLanguageServerClient) {
+        private readonly serverClient: RazorLanguageServerClient,
+        private readonly logger: RazorLogger) {
     }
 
     public get onChange() { return this.onChangeEmitter.event; }
@@ -160,6 +162,12 @@ export class RazorDocumentManager {
     }
 
     private async updateCSharpBuffer(updateBufferRequest: UpdateCSharpBufferRequest) {
+        if (this.logger.verboseEnabled) {
+            this.logger.logVerbose(
+                `Updating the C# document for Razor file '${updateBufferRequest.hostDocumentFilePath}' ` +
+                `(${updateBufferRequest.hostDocumentVersion})`);
+        }
+
         const hostDocumentUri = vscode.Uri.file(updateBufferRequest.hostDocumentFilePath);
         const document = this._getDocument(hostDocumentUri);
         const projectedDocument = document.csharpDocument;
@@ -191,6 +199,11 @@ export class RazorDocumentManager {
     }
 
     private notifyDocumentChange(document: IRazorDocument, kind: RazorDocumentChangeKind) {
+        if (this.logger.verboseEnabled) {
+            this.logger.logVerbose(
+                `Notifying docoument '${getUriPath(document.uri)}' changed '${RazorDocumentChangeKind[kind]}'`);
+        }
+
         const args: IRazorDocumentChangeEvent = {
             document,
             kind,

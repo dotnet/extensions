@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
@@ -24,6 +25,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public static async Task MainAsync(string[] args)
         {
+            var logLevel = LogLevel.Information;
             for (var i = 0; i < args.Length; i++)
             {
                 if (args[i].IndexOf("debug", StringComparison.OrdinalIgnoreCase) >= 0)
@@ -33,7 +35,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         Thread.Sleep(1000);
                     }
 
-                    break;
+                    Debugger.Break();
+                    continue;
+                }
+
+                if (args[i] == "--logLevel" && i + 1 < args.Length)
+                {
+                    var logLevelString = args[++i];
+                    if (!Enum.TryParse(logLevelString, out logLevel))
+                    {
+                        logLevel = LogLevel.Information;
+                        Console.WriteLine($"Invalid log level '{logLevelString}'. Defaulting to {logLevel.ToString()}.");
+                    }
                 }
             }
 
@@ -43,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithOutput(Console.OpenStandardOutput())
                     .WithLoggerFactory(new LoggerFactory())
                     .AddDefaultLoggingProvider()
-                    .WithMinimumLogLevel(LogLevel.Trace)
+                    .WithMinimumLogLevel(logLevel)
                     .WithHandler<RazorDocumentSynchronizationEndpoint>()
                     .WithHandler<RazorCompletionEndpoint>()
                     .WithHandler<RazorLanguageEndpoint>()
@@ -51,7 +64,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     .WithServices(services =>
                     {
                         services.AddSingleton<RemoteTextLoaderFactory, DefaultRemoteTextLoaderFactory>();
-                        services.AddSingleton<VSCodeLogger, DefaultVSCodeLogger>();
                         services.AddSingleton<ProjectResolver, DefaultProjectResolver>();
                         services.AddSingleton<DocumentResolver, DefaultDocumentResolver>();
                         services.AddSingleton<FilePathNormalizer>();
@@ -68,6 +80,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         services.AddSingleton<DocumentVersionCache>(documentVersionCache);
                         services.AddSingleton<ProjectSnapshotChangeTrigger>(documentVersionCache);
                     }));
+
+            // Workaround for https://github.com/OmniSharp/csharp-language-server-protocol/issues/106
+            var languageServer = (OmniSharp.Extensions.LanguageServer.Server.LanguageServer)server;
+            languageServer.MinimumLogLevel = logLevel;
 
             await server.WaitForExit;
 

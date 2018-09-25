@@ -3,13 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.Embedded.MediatR;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     internal class RazorDocumentSynchronizationEndpoint : ITextDocumentSyncHandler
     {
         private SynchronizationCapability _capability;
-        private readonly VSCodeLogger _logger;
+        private readonly ILogger _logger;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly DocumentResolver _documentResolver;
         private readonly RemoteTextLoaderFactory _remoteTextLoaderFactory;
@@ -33,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             DocumentResolver documentResolver,
             RemoteTextLoaderFactory remoteTextLoaderFactory,
             RazorProjectService projectService,
-            VSCodeLogger logger)
+            ILoggerFactory loggerFactory)
         {
             if (foregroundDispatcher == null)
             {
@@ -55,24 +54,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(projectService));
             }
 
-            if (logger == null)
+            if (loggerFactory == null)
             {
-                throw new ArgumentNullException(nameof(logger));
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
             _foregroundDispatcher = foregroundDispatcher;
             _documentResolver = documentResolver;
             _remoteTextLoaderFactory = remoteTextLoaderFactory;
             _projectService = projectService;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<RazorDocumentSynchronizationEndpoint>();
         }
 
         public TextDocumentSyncKind Change { get; } = TextDocumentSyncKind.Incremental;
 
         public void SetCapability(SynchronizationCapability capability)
         {
-            _logger.Log("Setting Capability");
-
             _capability = capability;
         }
 
@@ -130,7 +127,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public Task<Unit> Handle(DidSaveTextDocumentParams notification, CancellationToken token)
         {
-            _logger.Log("Saved Document");
+            _logger.LogInformation($"Saved Document {notification.TextDocument.Uri.AbsolutePath}");
 
             return Unit.Task;
         }
@@ -176,7 +173,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 var textSpan = new TextSpan(position, change.RangeLength);
                 var textChange = new TextChange(textSpan, change.Text);
 
-                _logger.Log("Applying " + textChange);
+                _logger.LogTrace("Applying " + textChange);
 
                 // If there happens to be multiple text changes we generate a new source text for each one. Due to the
                 // differences in VSCode and Roslyn's representation we can't pass in all changes simultaneously because

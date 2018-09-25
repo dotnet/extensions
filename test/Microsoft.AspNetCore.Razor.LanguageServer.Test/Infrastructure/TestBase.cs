@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Infrastructure
@@ -15,11 +16,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Infrastructure
     {
         public TestBase()
         {
-            Logger = Mock.Of<VSCodeLogger>();
+            LoggerFactory = Mock.Of<ILoggerFactory>(factory => factory.CreateLogger(It.IsAny<string>()) == Mock.Of<ILogger>());
             Dispatcher = new SingleThreadedForegroundDispatcher();
         }
 
-        public VSCodeLogger Logger { get; }
+        public ILoggerFactory LoggerFactory { get; }
 
         internal ForegroundDispatcher Dispatcher { get; }
 
