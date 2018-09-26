@@ -131,7 +131,7 @@ namespace Microsoft.Extensions.Primitives
         [MemberData(nameof(DefaultOrNullStringValues))]
         public void DefaultOrNull_ExpectedValues(StringValues stringValues)
         {
-            Assert.Null((string[])stringValues);
+            Assert.Empty((string[])stringValues);
         }
 
         [Theory]
@@ -165,7 +165,7 @@ namespace Microsoft.Extensions.Primitives
             StringValues stringValues = nullString;
             Assert.Empty(stringValues);
             Assert.Null((string)stringValues);
-            Assert.Null((string[])stringValues);
+            Assert.Empty((string[])stringValues);
 
             string aString = "abc";
             stringValues = aString;
@@ -183,7 +183,7 @@ namespace Microsoft.Extensions.Primitives
             StringValues stringValues = nullStringArray;
             Assert.Empty(stringValues);
             Assert.Null((string)stringValues);
-            Assert.Null((string[])stringValues);
+            Assert.Empty((string[])stringValues);
 
             string aString = "abc";
             string[] aStringArray = new[] { aString };
