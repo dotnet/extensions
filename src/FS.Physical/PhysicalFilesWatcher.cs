@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders.Physical.Internal;
 using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.FileProviders.Physical
@@ -90,7 +91,7 @@ namespace Microsoft.Extensions.FileProviders.Physical
             _filters = filters;
 
             PollingChangeTokens = new ConcurrentDictionary<IPollingChangeToken, IPollingChangeToken>();
-            _timerFactory = () => new Timer(RaiseChangeEvents, state: PollingChangeTokens, dueTime: TimeSpan.Zero, period: DefaultPollingInterval);
+            _timerFactory = () => NonCapturingTimer.Create(RaiseChangeEvents, state: PollingChangeTokens, dueTime: TimeSpan.Zero, period: DefaultPollingInterval);
         }
 
         internal bool PollForChanges { get; }
