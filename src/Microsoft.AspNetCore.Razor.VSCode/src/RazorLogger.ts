@@ -3,6 +3,8 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
+import * as fs from 'fs';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { Trace } from 'vscode-jsonrpc';
 
@@ -51,9 +53,13 @@ export class RazorLogger implements vscode.Disposable {
     }
 
     private logRazorInformation() {
+        const packageJsonContents = readOwnPackageJson();
+
         this.log(
-            '-----------------------------------------------------------------------' +
-            '------------------------------------------------------');
+            '--------------------------------------------------------------------------------');
+        this.log(`Razor.VSCode version ${packageJsonContents.version}`);
+        this.log(
+            '--------------------------------------------------------------------------------');
         this.log(`Razor's trace level is currently set to '${Trace[this.trace]}'`);
         this.log(
             ' - To log issues with the Razor experience in VSCode you can file issues ' +
@@ -66,5 +72,26 @@ export class RazorLogger implements vscode.Disposable {
             '-----------------------------------------------------------------------' +
             '------------------------------------------------------');
         this.log('');
+    }
+}
+
+function readOwnPackageJson() {
+    const packageJsonPath = findInDirectoryOrAncestor(__dirname, 'package.json');
+    return require(packageJsonPath);
+}
+
+function findInDirectoryOrAncestor(dir: string, filename: string) {
+    while (true) {
+        const candidate = path.join(dir, filename);
+        if (fs.existsSync(candidate)) {
+            return candidate;
+        }
+
+        const parentDir = path.dirname(dir);
+        if (parentDir === dir) {
+            throw new Error(`Could not find '${filename}' in or above '${dir}'.`);
+        }
+
+        dir = parentDir;
     }
 }
