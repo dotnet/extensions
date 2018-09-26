@@ -42,8 +42,8 @@ export class RazorLogger implements vscode.Disposable {
     }
 
     private logWithmarker(message: string) {
-        const date = new Date();
-        const markedMessage = `[Client - ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}] ${message}`;
+        const timeString = new Date().toLocaleTimeString();
+        const markedMessage = `[Client - ${timeString}] ${message}`;
 
         this.log(markedMessage);
     }
