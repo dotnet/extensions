@@ -36,8 +36,8 @@ function createProjectedHtmlDocument(hostDocumentUri: vscode.Uri) {
 }
 
 function createProjectedCSharpDocument(hostDocumentUri: vscode.Uri) {
-    // Index.cshtml => __Index.cshtml.cs
-    const projectedPath = `__${hostDocumentUri.path}.cs`;
+    // Index.cshtml => __Index.cshtml__virtual.cs
+    const projectedPath = `__${hostDocumentUri.path}__virtual.cs`;
     const projectedUri = vscode.Uri.parse(`${CSharpProjectedDocumentContentProvider.scheme}://${projectedPath}`);
     const projectedDocument = new CSharpProjectedDocument(projectedUri);
 

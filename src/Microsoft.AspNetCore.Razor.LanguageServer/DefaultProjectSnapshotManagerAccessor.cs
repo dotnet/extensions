@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Razor;
@@ -17,11 +19,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly IEnumerable<ProjectSnapshotChangeTrigger> _changeTriggers;
+        private readonly FilePathNormalizer _filePathNormalizer;
         private ProjectSnapshotManagerBase _instance;
 
         public DefaultProjectSnapshotManagerAccessor(
             ForegroundDispatcher foregroundDispatcher,
-            IEnumerable<ProjectSnapshotChangeTrigger> changeTriggers)
+            IEnumerable<ProjectSnapshotChangeTrigger> changeTriggers,
+            FilePathNormalizer filePathNormalizer)
         {
             if (foregroundDispatcher == null)
             {
@@ -33,8 +37,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(changeTriggers));
             }
 
+            if (filePathNormalizer == null)
+            {
+                throw new ArgumentNullException(nameof(filePathNormalizer));
+            }
+
             _foregroundDispatcher = foregroundDispatcher;
             _changeTriggers = changeTriggers;
+            _filePathNormalizer = filePathNormalizer;
         }
 
         public override ProjectSnapshotManagerBase Instance
@@ -61,9 +71,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     var services = AdhocServices.Create(
                         workspaceServices: new[]
                         {
-                            new DefaultProjectSnapshotProjectEngineFactory(
+                            new RemoteProjectSnapshotProjectEngineFactory(
                                 new FallbackProjectEngineFactory(),
-                                projectEngineFactories)
+                                projectEngineFactories,
+                                _filePathNormalizer)
                         },
                         razorLanguageServices: new[]
                         {

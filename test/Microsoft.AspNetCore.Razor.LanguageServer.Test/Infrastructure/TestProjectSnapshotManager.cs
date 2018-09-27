@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -24,7 +25,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Infrastructure
                 throw new ArgumentNullException(nameof(dispatcher));
             }
 
-            var defaultAccessor = new DefaultProjectSnapshotManagerAccessor(dispatcher, Enumerable.Empty<ProjectSnapshotChangeTrigger>());
+            var defaultAccessor = new DefaultProjectSnapshotManagerAccessor(
+                dispatcher,
+                Enumerable.Empty<ProjectSnapshotChangeTrigger>(),
+                new FilePathNormalizer());
             var workspace = defaultAccessor.Instance.Workspace;
             var testProjectManager = new TestProjectSnapshotManager(dispatcher, workspace);
 
