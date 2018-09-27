@@ -5,6 +5,7 @@
 
 import * as fs from 'fs';
 import * as razorExtensionPackage from 'microsoft.aspnetcore.razor.vscode';
+import { TelemetryEvent } from 'Microsoft.AspNetCore.Razor.VSCode/dist/HostEventStream';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
@@ -25,6 +26,20 @@ export async function activate(context: vscode.ExtensionContext) {
             + `could not find ${languageServerDir}`);
     }
 
-    await razorExtensionPackage.activate(context, languageServerDir);
+    const hostEventStream = {
+        post: (event: any) => {
+            if (event.constructor.name === TelemetryEvent.name) {
+                console.log(`Telemetry Event: ${event.eventName}.`);
+            } else {
+                console.log(`Unknown event: ${event.eventName}`);
+            }
+        },
+    };
+
+    await razorExtensionPackage.activate(
+        context,
+        languageServerDir,
+        hostEventStream);
+
     activationResolver();
 }

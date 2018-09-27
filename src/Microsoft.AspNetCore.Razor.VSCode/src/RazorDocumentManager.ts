@@ -64,7 +64,16 @@ export class RazorDocumentManager {
 
         const activeRazorDocument = await this.getActiveDocument();
         if (activeRazorDocument) {
-            this.updateHtmlBuffer(activeRazorDocument.uri);
+            // Initialize the html buffer for the current document
+            this.updateHtmlBuffer(activeRazorDocument);
+        }
+
+        for (const textDocument of vscode.workspace.textDocuments) {
+            if (textDocument.languageId !== RazorLanguage.id) {
+                continue;
+            }
+
+            this.openDocument(textDocument.uri);
         }
     }
 
@@ -94,10 +103,7 @@ export class RazorDocumentManager {
                 return;
             }
 
-            const activeTextEditor = vscode.window.activeTextEditor;
-            if (activeTextEditor && activeTextEditor.document === args.document) {
-                this.updateHtmlBuffer(args.document.uri);
-            }
+            this.documentChanged(args.document.uri);
         });
         this.serverClient.onRequest(
             'updateCSharpBuffer',
@@ -145,6 +151,15 @@ export class RazorDocumentManager {
         this.notifyDocumentChange(document, RazorDocumentChangeKind.closed);
     }
 
+    private async documentChanged(uri: vscode.Uri) {
+        const document = await this._getDocument(uri);
+
+        const activeTextEditor = vscode.window.activeTextEditor;
+        if (activeTextEditor && activeTextEditor.document.uri === uri) {
+            this.updateHtmlBuffer(document);
+        }
+    }
+
     private addDocument(uri: vscode.Uri) {
         const document = createDocument(uri);
         this.razorDocuments[document.path] = document;
@@ -182,8 +197,7 @@ export class RazorDocumentManager {
         }
     }
 
-    private async updateHtmlBuffer(uri: vscode.Uri) {
-        const document = await this._getDocument(uri);
+    private updateHtmlBuffer(document: IRazorDocument) {
         const projectedDocument = document.htmlDocument;
 
         const hostDocument = vscode.workspace.textDocuments.find(

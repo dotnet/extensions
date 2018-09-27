@@ -14,6 +14,7 @@ import {
 } from 'vscode-languageclient/lib/main';
 import { RazorLanguageServerOptions } from './RazorLanguageServerOptions';
 import { RazorLogger } from './RazorLogger';
+import { TelemetryReporter } from './TelemetryReporter';
 
 const events = {
     ServerStart: 'ServerStart',
@@ -30,6 +31,7 @@ export class RazorLanguageServerClient implements vscode.Disposable {
 
     constructor(
         options: RazorLanguageServerOptions,
+        private readonly telemetryReporter: TelemetryReporter,
         private readonly logger: RazorLogger) {
         this.isStarted = false;
         this.clientOptions = {
@@ -49,9 +51,13 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         args.push('-lsp');
         args.push('--logLevel');
         const logLevelString = this.getLogLevelString(options.trace);
+        this.telemetryReporter.reportTraceLevel(options.trace);
+
         args.push(logLevelString);
 
         if (options.debug) {
+            this.telemetryReporter.reportDebugLanguageServer();
+
             this.logger.logMessage('Debug flag set for Razor Language Server.');
             args.push('--debug');
         }
@@ -84,14 +90,22 @@ export class RazorLanguageServerClient implements vscode.Disposable {
     }
 
     public async start() {
-        this.logger.logMessage('Starting Razor Language Server...');
-        this.startDisposable = await this.client.start();
-        this.logger.logMessage('Server started, waiting for client to be ready...');
-        await this.client.onReady();
-        this.logger.logMessage('Server started and ready!');
+        try {
+            this.logger.logMessage('Starting Razor Language Server...');
+            this.startDisposable = await this.client.start();
+            this.logger.logMessage('Server started, waiting for client to be ready...');
+            await this.client.onReady();
+            this.logger.logMessage('Server started and ready!');
 
-        this.isStarted = true;
-        this.eventBus.emit(events.ServerStart);
+            this.isStarted = true;
+            this.eventBus.emit(events.ServerStart);
+        } catch (error) {
+            vscode.window.showErrorMessage(
+                'Razor Language Server failed to start unexpectedly, ' +
+                'please check the \'Razor Log\' and report an issue.');
+
+            this.telemetryReporter.reportErrorOnServerStart(error);
+        }
     }
 
     public async sendRequest<TResponseType>(method: string, param: any) {
@@ -131,6 +145,6 @@ export class RazorLanguageServerClient implements vscode.Disposable {
                 return 'Trace';
         }
 
-        throw new Error('Unexpected trace value.');
+        throw new Error(`Unexpected trace value: '${Trace[trace]}'`);
     }
 }
