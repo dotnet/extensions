@@ -14,6 +14,7 @@ namespace Microsoft.Extensions.Logging.Testing
     public class LoggedTestInvoker : XunitTestInvoker
     {
         private readonly ITestOutputHelper _output;
+        private readonly RetryContext _retryContext;
 
         public LoggedTestInvoker(
             ITest test,
@@ -25,22 +26,39 @@ namespace Microsoft.Extensions.Logging.Testing
             IReadOnlyList<BeforeAfterTestAttribute> beforeAfterAttributes,
             ExceptionAggregator aggregator,
             CancellationTokenSource cancellationTokenSource,
-            ITestOutputHelper output)
+            ITestOutputHelper output,
+            RetryContext retryContext)
             : base(test, messageBus, testClass, constructorArguments, testMethod, testMethodArguments, beforeAfterAttributes, aggregator, cancellationTokenSource)
         {
             _output = output;
+            _retryContext = retryContext;
         }
 
         protected override object CreateTestClass()
         {
             var testClass = base.CreateTestClass();
 
-            if (testClass is ILoggedTest loggedTest)
+            (testClass as ILoggedTest).Initialize(
+                TestMethod,
+                TestMethodArguments,
+                _output ?? ConstructorArguments.SingleOrDefault(a => typeof(ITestOutputHelper).IsAssignableFrom(a.GetType())) as ITestOutputHelper);
+
+            if (testClass is LoggedTestBase loggedTestBase)
             {
-                loggedTest.Initialize(
-                    TestMethod,
-                    TestMethodArguments,
-                    _output ?? ConstructorArguments.SingleOrDefault(a => typeof(ITestOutputHelper).IsAssignableFrom(a.GetType())) as ITestOutputHelper);
+                // Used for testing
+                loggedTestBase.RetryContext = _retryContext;
+
+                if (_retryContext != null)
+                {
+                    // Log retry attempt as warning
+                    if (_retryContext.CurrentIteration > 0)
+                    {
+                        loggedTestBase.Logger.LogWarning($"{TestMethod.Name} failed and retry conditions are met, re-executing. The reason for failure is {_retryContext.Reason}.");
+                    }
+
+                    // Save the test class instance for non-static predicates
+                    _retryContext.TestClassInstance = testClass;
+                }
             }
 
             return testClass;
