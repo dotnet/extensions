@@ -43,7 +43,7 @@ export async function activate(context: ExtensionContext, languageServerDir: str
         const localRegistrations: vscode.Disposable[] = [];
 
         const onStartRegistration = languageServerClient.onStart(() => {
-            const documentSynchronizer = new RazorDocumentSynchronizer(logger);
+            const documentSynchronizer = new RazorDocumentSynchronizer(documentManager, logger);
             const provisionalCompletionOrchestrator = new ProvisionalCompletionOrchestrator(
                 documentManager,
                 csharpFeature.projectionProvider,

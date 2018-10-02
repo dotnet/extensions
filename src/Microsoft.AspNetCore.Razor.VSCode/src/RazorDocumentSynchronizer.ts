@@ -6,6 +6,9 @@
 import * as vscode from 'vscode';
 
 import { IProjectedDocument } from './IProjectedDocument';
+import { IRazorDocumentChangeEvent } from './IRazorDocumentChangeEvent';
+import { RazorDocumentChangeKind } from './RazorDocumentChangeKind';
+import { RazorDocumentManager } from './RazorDocumentManager';
 import { RazorLanguage } from './RazorLanguage';
 import { RazorLogger } from './RazorLogger';
 import { getUriPath } from './UriPaths';
@@ -14,7 +17,10 @@ export class RazorDocumentSynchronizer {
     private readonly synchronizations: { [uri: string]: SynchronizationContext } = {};
     private synchronizationIdentifier = 0;
 
-    constructor(private readonly logger: RazorLogger) {
+    constructor(
+        documentManager: RazorDocumentManager,
+        private readonly logger: RazorLogger) {
+        documentManager.onChange((event) => this.documentChanged(event));
     }
 
     public register() {
@@ -35,25 +41,7 @@ export class RazorDocumentSynchronizer {
             }
         });
 
-        const closeRegistration = vscode.workspace.onDidCloseTextDocument((document) => {
-            if (document.languageId !== RazorLanguage.id) {
-                return;
-            }
-
-            const uriPath = getUriPath(document.uri);
-            const context = this.synchronizations[uriPath];
-
-            if (context) {
-                if (this.logger.verboseEnabled) {
-                    this.logger.logVerbose(
-                        `${context.logIdentifier} - Notify Failed: Document closed.`);
-                }
-
-                context.synchronized(false);
-            }
-        });
-
-        return vscode.Disposable.from(changeRegistration, closeRegistration);
+        return changeRegistration;
     }
 
     public async trySynchronize(
@@ -64,7 +52,8 @@ export class RazorDocumentSynchronizer {
 
         if (this.logger.verboseEnabled) {
             this.logger.logVerbose(`${logIdentifier} - Synchronizing '${getUriPath(projectedDocument.uri)}' ` +
-                `to version '${toVersion}'. Current host document version: '${hostDocument.version}'`);
+                `currently at ${projectedDocument.hostDocumentSyncVersion} to version '${toVersion}'. ` +
+                `Current host document version: '${hostDocument.version}'`);
         }
 
         if (projectedDocument.hostDocumentSyncVersion === hostDocument.version) {
@@ -140,11 +129,52 @@ export class RazorDocumentSynchronizer {
             return false;
         }
 
-        if (this.logger.verboseEnabled) {
-            this.logger.logVerbose(`${logIdentifier} - Success: Documents synchronized to version ${toVersion}.`);
-        }
+        if (success) {
+            if (this.logger.verboseEnabled) {
+                this.logger.logVerbose(`${logIdentifier} - Success: Documents synchronized to version ${toVersion}.`);
+            }
 
-        return true;
+            return true;
+        } else {
+            if (this.logger.verboseEnabled) {
+                this.logger.logVerbose(`${logIdentifier} - Failed: Documents not synchronized ${toVersion}.`);
+            }
+
+            return false;
+        }
+    }
+
+    private documentChanged(event: IRazorDocumentChangeEvent) {
+        if (event.kind === RazorDocumentChangeKind.csharpChanged) {
+            const uriPath = getUriPath(event.document.uri);
+            const context = this.synchronizations[uriPath];
+            const csharpDocument = event.document.csharpDocument;
+
+            if (csharpDocument.hostDocumentSyncVersion === null) {
+                return;
+            }
+
+            if (context && csharpDocument.hostDocumentSyncVersion >= context.documentVersion) {
+                if (this.logger.verboseEnabled) {
+                    this.logger.logVerbose(
+                        `${context.logIdentifier} - Notify Success: CSharp updated to ${context.documentVersion}.`);
+                }
+                context.synchronized(true);
+            }
+        } else if (event.kind === RazorDocumentChangeKind.closed) {
+            const uriPath = getUriPath(event.document.uri);
+            const context = this.synchronizations[uriPath];
+
+            if (context) {
+                if (this.logger.verboseEnabled) {
+                    this.logger.logVerbose(
+                        `${context.logIdentifier} - Notify Failed: Document closed.`);
+                }
+
+                context.synchronized(false);
+            }
+
+        }
     }
 }
 
