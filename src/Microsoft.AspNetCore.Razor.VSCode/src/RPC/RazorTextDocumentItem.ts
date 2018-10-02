@@ -15,6 +15,6 @@ export class RazorTextDocumentItem {
         this.languageId = document.languageId;
         this.version = document.version;
         this.text = document.getText();
-        this.uri = document.uri.fsPath || document.uri.path;
+        this.uri = document.uri.toString();
     }
 }

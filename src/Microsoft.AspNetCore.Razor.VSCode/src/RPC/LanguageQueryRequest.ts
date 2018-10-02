@@ -9,6 +9,6 @@ export class LanguageQueryRequest {
     public readonly uri: string;
 
     constructor(public readonly position: vscode.Position, uri: vscode.Uri) {
-        this.uri = uri.fsPath;
+        this.uri = uri.toString();
     }
 }
