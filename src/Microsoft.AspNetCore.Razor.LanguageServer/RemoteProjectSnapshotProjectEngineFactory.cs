@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             RazorProjectFileSystem fileSystem,
             Action<RazorProjectEngineBuilder> configure)
         {
-            var remoteFileSystem = new RemoteRazorProjectFileSystem(fileSystem, _filePathNormalizer);
+            var remoteFileSystem = new RemoteRazorProjectFileSystem(_filePathNormalizer);
 
             return base.Create(project, remoteFileSystem, configure);
         }

@@ -9,7 +9,35 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     public class FilePathNormalizerTest
     {
         [Fact]
-        public void Normalize_NullFilePath_ReturnsEmptyString()
+        public void GetDirectory_IncludesTrailingSlash()
+        {
+            // Arrange
+            var filePathNormalizer = new FilePathNormalizer();
+            var filePath = "path/to/document.cshtml";
+
+            // Act
+            var normalized = filePathNormalizer.GetDirectory(filePath);
+
+            // Assert
+            Assert.Equal("/path/to/", normalized);
+        }
+
+        [Fact]
+        public void GetDirectory_NoDirectory_ReturnsSlash()
+        {
+            // Arrange
+            var filePathNormalizer = new FilePathNormalizer();
+            var filePath = "document.cshtml";
+
+            // Act
+            var normalized = filePathNormalizer.GetDirectory(filePath);
+
+            // Assert
+            Assert.Equal("/", normalized);
+        }
+
+        [Fact]
+        public void Normalize_NullFilePath_ReturnsForwardSlash()
         {
             // Arrange
             var filePathNormalizer = new FilePathNormalizer();
@@ -18,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var normalized = filePathNormalizer.Normalize(null);
 
             // Assert
-            Assert.Equal(string.Empty, normalized);
+            Assert.Equal("/", normalized);
         }
 
         [Fact]
@@ -31,21 +59,21 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var normalized = filePathNormalizer.Normalize(null);
 
             // Assert
-            Assert.Equal(string.Empty, normalized);
+            Assert.Equal("/", normalized);
         }
 
         [Fact]
-        public void Normalize_RemovesLeadingForwardSlash()
+        public void Normalize_AddsLeadingForwardSlash()
         {
             // Arrange
             var filePathNormalizer = new FilePathNormalizer();
-            var filePath = "/path/to/document.cshtml";
+            var filePath = "path/to/document.cshtml";
 
             // Act
             var normalized = filePathNormalizer.Normalize(filePath);
 
             // Assert
-            Assert.Equal("path/to/document.cshtml", normalized);
+            Assert.Equal("/path/to/document.cshtml", normalized);
         }
 
         [Fact]
@@ -59,7 +87,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var normalized = filePathNormalizer.Normalize(filePath);
 
             // Assert
-            Assert.Equal("C:/path to/document.cshtml", normalized);
+            Assert.Equal("/C:/path to/document.cshtml", normalized);
         }
 
         [Fact]
@@ -73,7 +101,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var normalized = filePathNormalizer.Normalize(filePath);
 
             // Assert
-            Assert.Equal("path/to/document.cshtml", normalized);
+            Assert.Equal("/path/to/document.cshtml", normalized);
         }
     }
 }

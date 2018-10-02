@@ -21,14 +21,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void CloseDocument_ClosesDocumentInOwnerProject()
         {
             // Arrange
-            var expectedDocumentFilePath = "C:/path/to/document.cshtml";
-            var ownerProject = TestProjectSnapshot.Create("C:/path/to/project.sproj");
+            var expectedDocumentFilePath = "/C:/path/to/document.cshtml";
+            var ownerProject = TestProjectSnapshot.Create("/C:/path/to/project.sproj");
             var projectResolver = new TestProjectResolver(
                 new Dictionary<string, ProjectSnapshot>
                 {
                     [expectedDocumentFilePath] = ownerProject
                 },
-                TestProjectSnapshot.Create("__MISC_PROJECT__"));
+                TestProjectSnapshot.Create("/__MISC_PROJECT__"));
             var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             projectSnapshotManager.Setup(manager => manager.DocumentClosed(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<TextLoader>()))
                 .Callback<string, string, TextLoader>((projectFilePath, documentFilePath, text) =>
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void CloseDocument_ClosesDocumentInMiscellaneousProject()
         {
             // Arrange
-            var expectedDocumentFilePath = "C:/path/to/document.cshtml";
+            var expectedDocumentFilePath = "/C:/path/to/document.cshtml";
             var miscellaneousProject = TestProjectSnapshot.Create("__MISC_PROJECT__");
             var projectResolver = new TestProjectResolver(
                 new Dictionary<string, ProjectSnapshot>(),
@@ -78,8 +78,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void OpenDocument_OpensAlreadyAddedDocumentInOwnerProject()
         {
             // Arrange
-            var expectedDocumentFilePath = "C:/path/to/document.cshtml";
-            var ownerProject = TestProjectSnapshot.Create("C:/path/to/project.sproj");
+            var expectedDocumentFilePath = "/C:/path/to/document.cshtml";
+            var ownerProject = TestProjectSnapshot.Create("/C:/path/to/project.sproj");
             var projectResolver = new TestProjectResolver(
                 new Dictionary<string, ProjectSnapshot>
                 {
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void OpenDocument_OpensAlreadyAddedDocumentInMiscellaneousProject()
         {
             // Arrange
-            var expectedDocumentFilePath = "C:/path/to/document.cshtml";
+            var expectedDocumentFilePath = "/C:/path/to/document.cshtml";
             var miscellaneousProject = TestProjectSnapshot.Create("__MISC_PROJECT__");
             var projectResolver = new TestProjectResolver(
                 new Dictionary<string, ProjectSnapshot>(),
@@ -143,8 +143,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void OpenDocument_OpensAndAddsDocumentToOwnerProject()
         {
             // Arrange
-            var expectedDocumentFilePath = "C:/path/to/document.cshtml";
-            var ownerProject = TestProjectSnapshot.Create("C:/path/to/project.sproj");
+            var expectedDocumentFilePath = "/C:/path/to/document.cshtml";
+            var ownerProject = TestProjectSnapshot.Create("/C:/path/to/project.sproj");
             var projectResolver = new TestProjectResolver(
                 new Dictionary<string, ProjectSnapshot>
                 {
@@ -201,8 +201,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void AddDocument_AddsDocumentToOwnerProject()
         {
             // Arrange
-            var documentFilePath = "C:/path/to/document.cshtml";
-            var ownerProject = TestProjectSnapshot.Create("C:/path/to/project.sproj");
+            var documentFilePath = "/C:/path/to/document.cshtml";
+            var ownerProject = TestProjectSnapshot.Create("/C:/path/to/project.sproj");
             var projectResolver = new TestProjectResolver(
                 new Dictionary<string, ProjectSnapshot>
                 {
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void AddDocument_AddsDocumentToMiscellaneousProject()
         {
             // Arrange
-            var documentFilePath = "C:/path/to/document.cshtml";
+            var documentFilePath = "/C:/path/to/document.cshtml";
             var miscellaneousProject = TestProjectSnapshot.Create("__MISC_PROJECT__");
             var projectResolver = new TestProjectResolver(new Dictionary<string, ProjectSnapshot>(), miscellaneousProject);
             var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
@@ -256,8 +256,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void RemoveDocument_RemovesDocumentFromOwnerProject()
         {
             // Arrange
-            var documentFilePath = "C:/path/to/document.cshtml";
-            var ownerProject = TestProjectSnapshot.Create("C:/path/to/project.sproj", new[] { documentFilePath });
+            var documentFilePath = "/C:/path/to/document.cshtml";
+            var ownerProject = TestProjectSnapshot.Create("/C:/path/to/project.sproj", new[] { documentFilePath });
             var projectResolver = new TestProjectResolver(
                 new Dictionary<string, ProjectSnapshot>
                 {
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void RemoveDocument_RemovesDocumentFromMiscellaneousProject()
         {
             // Arrange
-            var documentFilePath = "C:/path/to/document.cshtml";
+            var documentFilePath = "/C:/path/to/document.cshtml";
             var miscellaneousProject = TestProjectSnapshot.Create("__MIS_PROJECT__", new[] { documentFilePath });
             var projectResolver = new TestProjectResolver(
                 new Dictionary<string, ProjectSnapshot>(),
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var projectConfiguration = RazorConfiguration.Create(RazorLanguageVersion.Version_1_0, "Test", Array.Empty<RazorExtension>());
-            var projectFilePath = "C:/path/to/document.cshtml";
+            var projectFilePath = "/C:/path/to/document.cshtml";
             var miscellaneousProject = TestProjectSnapshot.Create("__MISC_PROJECT__");
             var projectResolver = new TestProjectResolver(new Dictionary<string, ProjectSnapshot>(), miscellaneousProject);
             var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
@@ -374,7 +374,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void RemoveProject_RemovesProject()
         {
             // Arrange
-            var projectFilePath = "C:/path/to/document.cshtml";
+            var projectFilePath = "/C:/path/to/document.cshtml";
             var ownerProject = TestProjectSnapshot.Create(projectFilePath);
             var miscellaneousProject = TestProjectSnapshot.Create("__MISC_PROJECT__");
             var projectResolver = new TestProjectResolver(new Dictionary<string, ProjectSnapshot>(), miscellaneousProject);

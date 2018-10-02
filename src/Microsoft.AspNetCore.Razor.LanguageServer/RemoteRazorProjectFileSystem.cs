@@ -11,45 +11,28 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class RemoteRazorProjectFileSystem : RazorProjectFileSystem
     {
-        private readonly RazorProjectFileSystem _inner;
         private readonly FilePathNormalizer _filePathNormalizer;
 
-        public RemoteRazorProjectFileSystem(RazorProjectFileSystem inner, FilePathNormalizer filePathNormalizer)
+        public RemoteRazorProjectFileSystem(FilePathNormalizer filePathNormalizer)
         {
-            if (inner == null)
-            {
-                throw new ArgumentNullException(nameof(inner));
-            }
-
             if (filePathNormalizer == null)
             {
                 throw new ArgumentNullException(nameof(filePathNormalizer));
             }
 
-            _inner = inner;
             _filePathNormalizer = filePathNormalizer;
         }
 
         public override IEnumerable<RazorProjectItem> EnumerateItems(string basePath)
         {
-            var innerItems = _inner.EnumerateItems(basePath);
-            var normalizedItems = innerItems.Select(NormalizeItem);
-
-            return normalizedItems;
+            throw new NotImplementedException();
         }
 
         public override RazorProjectItem GetItem(string path)
         {
-            var innerItem = _inner.GetItem(path);
-            var normalizedItem = NormalizeItem(innerItem);
+            var physicalFilePath = _filePathNormalizer.Normalize(path);
 
-            return normalizedItem;
-        }
-
-        private RazorProjectItem NormalizeItem(RazorProjectItem item)
-        {
-            var normalizedPhysicalPath = _filePathNormalizer.Normalize(item.PhysicalPath);
-            return new RemoteProjectItem(item, normalizedPhysicalPath);
+            return new RemoteProjectItem(path, physicalFilePath);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using Microsoft.AspNetCore.Razor.Language;
 
@@ -8,22 +9,32 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class RemoteProjectItem : RazorProjectItem
     {
-        private readonly RazorProjectItem _from;
-
-        public RemoteProjectItem(RazorProjectItem from, string physicalPath)
+        public RemoteProjectItem(string filePath, string physicalPath)
         {
-            _from = from;
+            FilePath = filePath;
             PhysicalPath = physicalPath;
         }
 
-        public override string BasePath => _from.BasePath;
+        public override string BasePath => "/";
 
-        public override string FilePath => _from.FilePath;
+        public override string FilePath { get; }
 
         public override string PhysicalPath { get; }
 
-        public override bool Exists => _from.Exists;
+        public override bool Exists
+        {
+            get
+            {
+                var platformPath = PhysicalPath.Substring(1);
+                if (Path.IsPathRooted(platformPath))
+                {
+                    return File.Exists(platformPath);
+                }
 
-        public override Stream Read() => _from.Read();
+                return File.Exists(PhysicalPath);
+            }
+        }
+
+        public override Stream Read() => throw new NotImplementedException();
     }
 }

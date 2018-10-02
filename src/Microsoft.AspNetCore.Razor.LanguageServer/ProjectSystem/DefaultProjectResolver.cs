@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                     continue;
                 }
 
-                var projectDirectory = _filePathNormalizer.Normalize(new FileInfo(projects[i].FilePath).Directory.FullName);
+                var projectDirectory = _filePathNormalizer.GetDirectory(projects[i].FilePath);
                 if (normalizedDocumentPath.StartsWith(projectDirectory))
                 {
                     projectSnapshot = projects[i];

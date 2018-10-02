@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var documentFilePath = "C:\\path\\to\\document.cshtml";
-            var normalizedFilePath = "C:/path/to/document.cshtml";
+            var normalizedFilePath = "/C:/path/to/document.cshtml";
             var filePathNormalizer = new FilePathNormalizer();
             var expectedDocument = Mock.Of<DocumentSnapshot>();
             var project = Mock.Of<ProjectSnapshot>(shim =>
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var documentFilePath = "C:\\path\\to\\document.cshtml";
-            var normalizedFilePath = "C:/path/to/document.cshtml";
+            var normalizedFilePath = "/C:/path/to/document.cshtml";
             var filePathNormalizer = new FilePathNormalizer();
             var project = Mock.Of<ProjectSnapshot>(shim => shim.DocumentFilePaths == new string[0]);
             var projectResolver = Mock.Of<ProjectResolver>(resolver => resolver.TryResolvePotentialProject(normalizedFilePath, out project) == true);
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var documentFilePath = "C:\\path\\to\\document.cshtml";
-            var normalizedFilePath = "C:/path/to/document.cshtml";
+            var normalizedFilePath = "/C:/path/to/document.cshtml";
             var filePathNormalizer = new FilePathNormalizer();
             var expectedDocument = Mock.Of<DocumentSnapshot>();
             var project = Mock.Of<ProjectSnapshot>(shim => shim.GetDocument(normalizedFilePath) == expectedDocument && shim.DocumentFilePaths == new[] { normalizedFilePath });
