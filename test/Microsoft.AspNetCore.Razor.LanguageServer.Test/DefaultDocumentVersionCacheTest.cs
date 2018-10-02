@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
-using Microsoft.AspNetCore.Razor.LanguageServer.Test;
 using Microsoft.AspNetCore.Razor.LanguageServer.Test.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Xunit;
@@ -11,6 +10,73 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     public class DefaultDocumentVersionCacheTest : TestBase
     {
+        [Fact]
+        public void MarkAsLatestVersion_UntrackedDocument_Noops()
+        {
+            // Arrange
+            var documentVersionCache = new DefaultDocumentVersionCache(Dispatcher);
+            var document = TestDocumentSnapshot.Create("/C:/file.cshtml");
+            documentVersionCache.TrackDocumentVersion(document, 123);
+            var untrackedDocument = TestDocumentSnapshot.Create("/C:/other.cshtml");
+
+            // Act
+            documentVersionCache.MarkAsLatestVersion(untrackedDocument);
+
+            // Assert
+            Assert.False(documentVersionCache.TryGetDocumentVersion(untrackedDocument, out var version));
+            Assert.Equal(-1, version);
+        }
+
+        [Fact]
+        public void MarkAsLatestVersion_KnownDocument_TracksNewDocumentAsLatest()
+        {
+            // Arrange
+            var documentVersionCache = new DefaultDocumentVersionCache(Dispatcher);
+            var documentInitial = TestDocumentSnapshot.Create("/C:/file.cshtml");
+            documentVersionCache.TrackDocumentVersion(documentInitial, 123);
+            var documentLatest = TestDocumentSnapshot.Create(documentInitial.FilePath);
+
+            // Act
+            documentVersionCache.MarkAsLatestVersion(documentLatest);
+
+            // Assert
+            Assert.True(documentVersionCache.TryGetDocumentVersion(documentLatest, out var version));
+            Assert.Equal(123, version);
+        }
+
+        [Fact]
+        public void TryGetLatestVersionFromPath_TrackedDocument_ReturnsTrue()
+        {
+            // Arrange
+            var documentVersionCache = new DefaultDocumentVersionCache(Dispatcher);
+            var filePath = "/C:/file.cshtml";
+            var document1 = TestDocumentSnapshot.Create(filePath);
+            var document2 = TestDocumentSnapshot.Create(filePath);
+            documentVersionCache.TrackDocumentVersion(document1, 123);
+            documentVersionCache.TrackDocumentVersion(document2, 1337);
+
+            // Act
+            var result = documentVersionCache.TryGetLatestVersionFromPath(filePath, out var version);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(1337, version);
+        }
+
+        [Fact]
+        public void TryGetLatestVersionFromPath_UntrackedDocument_ReturnsFalse()
+        {
+            // Arrange
+            var documentVersionCache = new DefaultDocumentVersionCache(Dispatcher);
+
+            // Act
+            var result = documentVersionCache.TryGetLatestVersionFromPath("/C:/file.cshtml", out var version);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(-1, version);
+        }
+
         [Fact]
         public void ProjectSnapshotManager_Changed_DocumentRemoved_EvictsDocument()
         {

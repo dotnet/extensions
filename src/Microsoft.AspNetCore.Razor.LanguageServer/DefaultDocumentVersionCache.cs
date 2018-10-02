@@ -10,8 +10,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class DefaultDocumentVersionCache : DocumentVersionCache
     {
-        // Track the last 10 versions of the document
-        internal const int MaxDocumentTrackingCount = 10;
+        internal const int MaxDocumentTrackingCount = 20;
 
         // Internal for testing
         internal readonly Dictionary<string, List<DocumentEntry>> _documentLookup;
@@ -77,8 +76,18 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 return false;
             }
 
-            var entry = documentEntries.Find(e => 
-                e.Document.TryGetTarget(out var document) && document == documentSnapshot);
+            DocumentEntry entry = null;
+            for (var i = documentEntries.Count - 1; i >= 0; i--)
+            {
+                // We iterate backwards over the entries to prioritize newer entries.
+                if (documentEntries[i].Document.TryGetTarget(out var document) &&
+                    document == documentSnapshot)
+                {
+                    entry = documentEntries[i];
+                    break;
+                }
+            }
+
             if (entry == null)
             {
                 version = -1;
@@ -101,8 +110,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             switch (args.Kind)
             {
-                case ProjectChangeKind.DocumentRemoved:
                 case ProjectChangeKind.DocumentChanged:
+                case ProjectChangeKind.DocumentRemoved:
                     if (_documentLookup.ContainsKey(args.DocumentFilePath) &&
                         !_projectSnapshotManager.IsDocumentOpen(args.DocumentFilePath))
                     {
@@ -110,6 +119,61 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         _documentLookup.Remove(args.DocumentFilePath);
                     }
                     break;
+            }
+
+            // Any event that has a project may have changed the state of the documents
+            // and therefore requires us to mark all existing documents as latest.
+            if (args.ProjectFilePath == null)
+            {
+                return;
+            }
+
+            var project = _projectSnapshotManager.GetLoadedProject(args.ProjectFilePath);
+            if (project == null)
+            {
+                // Project no longer loaded, wait for document removed event.
+                return;
+            }
+
+            CaptureProjectDocumentsAsLatest(project);
+        }
+
+        // Internal for testing
+        internal void MarkAsLatestVersion(DocumentSnapshot document)
+        {
+            if (!TryGetLatestVersionFromPath(document.FilePath, out var latestVersion))
+            {
+                return;
+            }
+
+            // Update our internal tracking state to track the changed document as the latest document.
+            TrackDocumentVersion(document, latestVersion);
+        }
+
+        // Internal for testing
+        internal bool TryGetLatestVersionFromPath(string filePath, out long version)
+        {
+            if (!_documentLookup.TryGetValue(filePath, out var documentEntries))
+            {
+                version = -1;
+                return false;
+            }
+
+            var latestEntry = documentEntries[documentEntries.Count - 1];
+
+            version = latestEntry.Version;
+            return true;
+        }
+
+        private void CaptureProjectDocumentsAsLatest(ProjectSnapshot projectSnapshot)
+        {
+            foreach (var documentPath in projectSnapshot.DocumentFilePaths)
+            {
+                if (_documentLookup.ContainsKey(documentPath))
+                {
+                    var document = projectSnapshot.GetDocument(documentPath);
+                    MarkAsLatestVersion(document);
+                }
             }
         }
 
