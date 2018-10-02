@@ -80,14 +80,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var languageKind = GetLanguageKind(classifiedSpans, hostDocumentIndex);
 
             var responsePosition = request.Position;
+            var responsePositionIndex = hostDocumentIndex;
 
             if (languageKind == RazorLanguageKind.CSharp)
             {
-                if (TryGetCSharpProjectedPosition(codeDocument, hostDocumentIndex, out var projectedPosition))
+                if (TryGetCSharpProjectedPosition(codeDocument, hostDocumentIndex, out var projectedPosition, out var projectedIndex))
                 {
                     // For C# locations, we attempt to return the corresponding position
                     // within the projected document
                     responsePosition = projectedPosition;
+                    responsePositionIndex = projectedIndex;
                 }
                 else
                 {
@@ -95,6 +97,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     // correspond to any position in the projected document. This should not happen
                     // since there should be source mappings for all the C# spans.
                     languageKind = RazorLanguageKind.Razor;
+                    responsePositionIndex = hostDocumentIndex;
                 }
             }
 
@@ -104,6 +107,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 Kind = languageKind,
                 Position = responsePosition,
+                PositionIndex = responsePositionIndex,
                 HostDocumentVersion = documentVersion
             };
         }
@@ -152,7 +156,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         // Internal for testing
-        internal static bool TryGetCSharpProjectedPosition(RazorCodeDocument codeDocument, int absoluteIndex, out Position projectedPosition)
+        internal static bool TryGetCSharpProjectedPosition(RazorCodeDocument codeDocument, int absoluteIndex, out Position projectedPosition, out int projectedIndex)
         {
             var csharpDoc = codeDocument.GetCSharpDocument();
             foreach (var mapping in csharpDoc.SourceMappings)
@@ -167,8 +171,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     if (distanceIntoOriginalSpan <= originalSpan.Length)
                     {
                         var generatedSource = SourceText.From(csharpDoc.GeneratedCode);
-                        var generatedAbsoluteIndex = mapping.GeneratedSpan.AbsoluteIndex + distanceIntoOriginalSpan;
-                        var generatedLinePosition = generatedSource.Lines.GetLinePosition(generatedAbsoluteIndex);
+                        projectedIndex = mapping.GeneratedSpan.AbsoluteIndex + distanceIntoOriginalSpan;
+                        var generatedLinePosition = generatedSource.Lines.GetLinePosition(projectedIndex);
                         projectedPosition = new Position(generatedLinePosition.Line, generatedLinePosition.Character);
                         return true;
                     }
@@ -176,6 +180,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
 
             projectedPosition = default;
+            projectedIndex = default;
             return false;
         }
     }

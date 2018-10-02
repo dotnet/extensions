@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     {
         public RazorLanguageKind Kind { get; set; }
 
+        public int PositionIndex { get; set; }
+
         public Position Position { get; set; }
 
         public long HostDocumentVersion { get; set; }

@@ -4,13 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
-using Microsoft.AspNetCore.Razor.LanguageServer.StrongNamed;
-using Microsoft.AspNetCore.Razor.LanguageServer.Test;
 using Microsoft.AspNetCore.Razor.LanguageServer.Test.Infrastructure;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
@@ -218,11 +215,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 new[] { new SourceMapping(new SourceSpan(2, 100), new SourceSpan(0, 100)) });
 
             // Act
-            var result = RazorLanguageEndpoint.TryGetCSharpProjectedPosition(codeDoc, 1, out var projectedPosition);
+            var result = RazorLanguageEndpoint.TryGetCSharpProjectedPosition(
+                codeDoc,
+                1,
+                out var projectedPosition,
+                out var projectedPositionIndex);
 
             // Assert
             Assert.False(result);
             Assert.Equal(default, projectedPosition);
+            Assert.Equal(default, projectedPositionIndex);
         }
 
         [Fact]
@@ -239,12 +241,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Act
             var result = RazorLanguageEndpoint.TryGetCSharpProjectedPosition(
-                codeDoc, 16, out var projectedPosition);
+                codeDoc,
+                16,
+                out var projectedPosition,
+                out var projectedPositionIndex);
 
             // Assert
             Assert.True(result);
             Assert.Equal(2, projectedPosition.Line);
             Assert.Equal(0, projectedPosition.Character);
+            Assert.Equal(11, projectedPositionIndex);
         }
 
         [Fact]
@@ -261,12 +267,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Act
             var result = RazorLanguageEndpoint.TryGetCSharpProjectedPosition(
-                codeDoc, 28, out var projectedPosition);
+                codeDoc, 
+                28, 
+                out var projectedPosition,
+                out var projectedPositionIndex);
 
             // Assert
             Assert.True(result);
             Assert.Equal(3, projectedPosition.Line);
             Assert.Equal(2, projectedPosition.Character);
+            Assert.Equal(23, projectedPositionIndex);
         }
 
         [Fact]
@@ -283,12 +293,16 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Act
             var result = RazorLanguageEndpoint.TryGetCSharpProjectedPosition(
-                codeDoc, 35, out var projectedPosition);
+                codeDoc, 
+                35, 
+                out var projectedPosition,
+                out var projectedPositionIndex);
 
             // Assert
             Assert.True(result);
             Assert.Equal(3, projectedPosition.Line);
             Assert.Equal(9, projectedPosition.Character);
+            Assert.Equal(30, projectedPositionIndex);
         }
 
         private IReadOnlyList<ClassifiedSpanInternal> GetClassifiedSpans(string text)
@@ -304,7 +318,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var sourceTextChars = new char[codeDocument.Source.Length];
             codeDocument.Source.CopyTo(0, sourceTextChars, 0, codeDocument.Source.Length);
             var sourceText = SourceText.From(new string(sourceTextChars));
-            var documentSnapshot = Mock.Of<DocumentSnapshot>(document => 
+            var documentSnapshot = Mock.Of<DocumentSnapshot>(document =>
                 document.GetGeneratedOutputAsync() == Task.FromResult(codeDocument) &&
                 document.GetTextAsync() == Task.FromResult(sourceText));
             var documentResolver = new Mock<DocumentResolver>();

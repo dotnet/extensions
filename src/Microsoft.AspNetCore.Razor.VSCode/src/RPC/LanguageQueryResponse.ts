@@ -9,5 +9,6 @@ import { LanguageKind } from './LanguageKind';
 export interface LanguageQueryResponse {
     kind: LanguageKind;
     position: vscode.Position;
+    positionIndex: number;
     hostDocumentVersion: number;
 }

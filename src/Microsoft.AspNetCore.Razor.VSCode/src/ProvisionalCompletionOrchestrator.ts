@@ -100,8 +100,7 @@ export class ProvisionalCompletionOrchestrator {
 
         const document = await this.documentManager.getDocument(hostDocumentUri);
         const projectedDocument = document.csharpDocument as CSharpProjectedDocument;
-        const projectedEditorDocument = await vscode.workspace.openTextDocument(projectedDocument.uri);
-        const absoluteIndex = projectedEditorDocument.offsetAt(previousCharacterQuery.position);
+        const absoluteIndex = previousCharacterQuery.positionIndex;
 
         if (this.logger.verboseEnabled) {
             this.logger.logVerbose(`Applying provisional completion on ${projectedDocument.uri} ` +
