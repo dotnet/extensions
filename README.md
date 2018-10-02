@@ -16,6 +16,7 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 
 Community projects adapt _Microsoft.Extensions.Logging_ for use with different back-ends.
 
+ * [Sentry](https://github.com/getsentry/sentry-dotnet) - provider for the [Sentry](https://github.com/getsentry/sentry) service
  * [Serilog](https://github.com/serilog/serilog-framework-logging) - provider for the Serilog library
  * [elmah.io](https://github.com/elmahio/Elmah.Io.Extensions.Logging) - provider for the elmah.io service
  * [Loggr](https://github.com/imobile3/Loggr.Extensions.Logging) - provider for the Loggr service
