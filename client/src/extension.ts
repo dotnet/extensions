@@ -5,7 +5,7 @@
 
 import * as fs from 'fs';
 import * as razorExtensionPackage from 'microsoft.aspnetcore.razor.vscode';
-import { TelemetryEvent } from 'Microsoft.AspNetCore.Razor.VSCode/dist/HostEventStream';
+import { TelemetryEvent } from 'microsoft.aspnetcore.razor.vscode/dist/HostEventStream';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
