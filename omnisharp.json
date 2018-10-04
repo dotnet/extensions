@@ -1,0 +1,8 @@
+{
+    "script": {
+        "enabled": false
+     },
+     "cake": {
+         "enabled": false
+     }
+}
