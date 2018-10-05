@@ -5,18 +5,86 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
-using Microsoft.AspNetCore.Razor.LanguageServer.Test;
 using Microsoft.AspNetCore.Razor.LanguageServer.Test.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Moq;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     public class DefaultRazorProjectServiceTest : TestBase
     {
+        [Fact]
+        public void TryUpdateViewImportDependencies_OnlyUpdatesOpenDocuments()
+        {
+            // Arrange
+            var importFilePath = "/C:/path/to/_ViewImports.cshtml";
+            var documentFilePath = "/C:/path/to/Index.cshtml";
+            var closedDocumentFilePath = "/C:/path/to/About.cshtml";
+            var ownerProject = TestProjectSnapshot.Create(
+                "/C:/path/to/project.sproj",
+                new[]
+                {
+                    importFilePath,
+                    documentFilePath,
+                    closedDocumentFilePath,
+                });
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
+            projectSnapshotManager.Setup(manager => manager.DocumentChanged(ownerProject.FilePath, documentFilePath, It.IsAny<TextLoader>()));
+            projectSnapshotManager.Setup(manager => manager.IsDocumentOpen(documentFilePath)).Returns(true);
+            projectSnapshotManager.Setup(manager => manager.IsDocumentOpen(closedDocumentFilePath)).Returns(false);
+            var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
+
+            // Act
+            projectService.TryUpdateViewImportDependencies(importFilePath, ownerProject);
+
+            // Assert
+            projectSnapshotManager.VerifyAll();
+        }
+
+        [Fact]
+        public void TryUpdateViewImportDependencies_UpdatesOtherDocuments()
+        {
+            // Arrange
+            var importFilePath = "/C:/path/to/_ViewImports.cshtml";
+            var documentFilePath = "/C:/path/to/Index.cshtml";
+            var ownerProject = TestProjectSnapshot.Create(
+                "/C:/path/to/project.sproj",
+                new[]
+                {
+                    importFilePath,
+                    documentFilePath,
+                });
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
+            projectSnapshotManager.Setup(manager => manager.DocumentChanged(ownerProject.FilePath, documentFilePath, It.IsAny<TextLoader>()));
+            projectSnapshotManager.Setup(manager => manager.IsDocumentOpen(documentFilePath)).Returns(true);
+            var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
+
+            // Act
+            projectService.TryUpdateViewImportDependencies(importFilePath, ownerProject);
+
+            // Assert
+            projectSnapshotManager.VerifyAll();
+        }
+
+        [Fact]
+        public void TryUpdateViewImportDependencies_NoopsForNonViewImportFiles()
+        {
+            // Arrange
+            var documentFilePath = "/C:/path/to/document.cshtml";
+            var ownerProject = TestProjectSnapshot.Create("/C:/path/to/project.sproj");
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
+            projectSnapshotManager.Setup(manager => manager.DocumentChanged(ownerProject.FilePath, documentFilePath, It.IsAny<TextLoader>()))
+                .Throws(new XunitException("Should not have been called."));
+            var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
+
+            // Act & Assert
+            projectService.TryUpdateViewImportDependencies(documentFilePath, ownerProject);
+        }
+
         [Fact]
         public void CloseDocument_ClosesDocumentInOwnerProject()
         {

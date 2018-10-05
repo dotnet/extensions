@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
@@ -103,9 +105,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
             var hostDocument = _hostDocumentFactory.Create(textDocumentPath);
             var defaultProject = (DefaultProjectSnapshot)projectSnapshot;
+
+            _logger.LogInformation($"Adding document '{textDocumentPath}' to project '{projectSnapshot.FilePath}'.");
             _projectSnapshotManagerAccessor.Instance.DocumentAdded(defaultProject.HostProject, hostDocument, textLoader);
 
-            _logger.LogInformation($"Added document '{textDocumentPath}' to project '{projectSnapshot.FilePath}'.");
+            TryUpdateViewImportDependencies(filePath, defaultProject);
         }
 
         public override void OpenDocument(string filePath, SourceText sourceText, long version)
@@ -126,11 +130,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             }
 
             var defaultProject = (DefaultProjectSnapshot)projectSnapshot;
-            _projectSnapshotManagerAccessor.Instance.DocumentOpened(defaultProject.HostProject.FilePath, textDocumentPath, sourceText);
-
-            TrackDocumentVersion(textDocumentPath, version);
 
             _logger.LogInformation($"Opening document '{textDocumentPath}' in project '{projectSnapshot.FilePath}'.");
+            _projectSnapshotManagerAccessor.Instance.DocumentOpened(defaultProject.HostProject.FilePath, textDocumentPath, sourceText);
+            TrackDocumentVersion(textDocumentPath, version);
+
         }
 
         public override void CloseDocument(string filePath, TextLoader textLoader)
@@ -144,9 +148,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             }
 
             var defaultProject = (DefaultProjectSnapshot)projectSnapshot;
-            _projectSnapshotManagerAccessor.Instance.DocumentClosed(defaultProject.HostProject.FilePath, textDocumentPath, textLoader);
-
             _logger.LogInformation($"Closing document '{textDocumentPath}' in project '{projectSnapshot.FilePath}'.");
+            _projectSnapshotManagerAccessor.Instance.DocumentClosed(defaultProject.HostProject.FilePath, textDocumentPath, textLoader);
         }
 
         public override void RemoveDocument(string filePath)
@@ -167,9 +170,10 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
             var document = (DefaultDocumentSnapshot)projectSnapshot.GetDocument(textDocumentPath);
             var defaultProject = (DefaultProjectSnapshot)projectSnapshot;
+            _logger.LogInformation($"Removing document '{textDocumentPath}' from project '{projectSnapshot.FilePath}'.");
             _projectSnapshotManagerAccessor.Instance.DocumentRemoved(defaultProject.HostProject, document.State.HostDocument);
 
-            _logger.LogInformation($"Removed document '{textDocumentPath}' from project '{projectSnapshot.FilePath}'.");
+            TryUpdateViewImportDependencies(filePath, defaultProject);
         }
 
         public override void UpdateDocument(string filePath, SourceText sourceText, long version)
@@ -183,11 +187,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             }
 
             var defaultProject = (DefaultProjectSnapshot)projectSnapshot;
+            _logger.LogTrace($"Updating document '{textDocumentPath}'.");
             _projectSnapshotManagerAccessor.Instance.DocumentChanged(defaultProject.HostProject.FilePath, textDocumentPath, sourceText);
 
             TrackDocumentVersion(textDocumentPath, version);
 
-            _logger.LogTrace($"Updated document '{textDocumentPath}'.");
+            TryUpdateViewImportDependencies(filePath, projectSnapshot);
         }
 
         public override void AddProject(string filePath, RazorConfiguration configuration)
@@ -215,8 +220,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 return;
             }
 
-            _projectSnapshotManagerAccessor.Instance.HostProjectRemoved(project.HostProject);
             _logger.LogInformation($"Removing project '{filePath}' from project system.");
+            _projectSnapshotManagerAccessor.Instance.HostProjectRemoved(project.HostProject);
 
             TryMigrateDocumentsFromRemovedProject(project);
         }
@@ -240,8 +245,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
                 var textLoader = new DocumentSnapshotTextLoader(documentSnapshot);
                 var defaultToProject = (DefaultProjectSnapshot)toProject;
+                _logger.LogInformation($"Migrating '{documentFilePath}' from the '{project.FilePath}' project to '{toProject.FilePath}' project.");
                 _projectSnapshotManagerAccessor.Instance.DocumentAdded(defaultToProject.HostProject, documentSnapshot.State.HostDocument, textLoader);
-                _logger.LogInformation($"Migrated '{documentFilePath}' from the '{project.FilePath}' project to '{toProject.FilePath}' project.");
             }
         }
 
@@ -269,9 +274,44 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
                 var textLoader = new DocumentSnapshotTextLoader(documentSnapshot);
                 var defaultProject = (DefaultProjectSnapshot)projectSnapshot;
+                _logger.LogInformation($"Migrating '{documentFilePath}' from the '{miscellaneousProject.FilePath}' project to '{projectSnapshot.FilePath}' project.");
                 _projectSnapshotManagerAccessor.Instance.DocumentAdded(defaultProject.HostProject, documentSnapshot.State.HostDocument, textLoader);
+            }
+        }
 
-                _logger.LogInformation($"Migrated '{documentFilePath}' from the '{miscellaneousProject.FilePath}' project to '{projectSnapshot.FilePath}' project.");
+        // Internal for testing
+        internal void TryUpdateViewImportDependencies(string documentFilePath, ProjectSnapshot project)
+        {
+            // Upon the completion of https://github.com/aspnet/Razor/issues/2633 this will no longer be necessary.
+
+            if (!documentFilePath.EndsWith("_ViewImports.cshtml", StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            // Adding a _ViewImports, need to refresh all open documents.
+            var importAddedFilePath = documentFilePath;
+            var documentsToBeRefreshed = new List<DefaultDocumentSnapshot>();
+            foreach (var filePath in project.DocumentFilePaths)
+            {
+                if (string.Equals(filePath, importAddedFilePath, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                if (_projectSnapshotManagerAccessor.Instance.IsDocumentOpen(filePath))
+                {
+                    var document = (DefaultDocumentSnapshot)project.GetDocument(filePath);
+
+                    // This document cares about the import
+                    documentsToBeRefreshed.Add(document);
+                }
+            }
+
+            foreach (var document in documentsToBeRefreshed)
+            {
+                var delegatingTextLoader = new DelegatingTextLoader(document);
+                _projectSnapshotManagerAccessor.Instance.DocumentChanged(project.FilePath, document.FilePath, delegatingTextLoader);
             }
         }
 
@@ -284,5 +324,25 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
             _documentVersionCache.TrackDocumentVersion(documentSnapshot, version);
         }
+
+        private class DelegatingTextLoader : TextLoader
+        {
+            private readonly DocumentSnapshot _fromDocument;
+            public DelegatingTextLoader(DocumentSnapshot fromDocument)
+            {
+                _fromDocument = fromDocument ?? throw new ArgumentNullException(nameof(fromDocument));
+            }
+            public override async Task<TextAndVersion> LoadTextAndVersionAsync(
+               Workspace workspace,
+               DocumentId documentId,
+               CancellationToken cancellationToken)
+            {
+                var sourceText = await _fromDocument.GetTextAsync();
+                var version = await _fromDocument.GetTextVersionAsync();
+                var textAndVersion = TextAndVersion.Create(sourceText, version.GetNewerVersion());
+                return textAndVersion;
+            }
+        }
+
     }
 }

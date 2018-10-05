@@ -188,8 +188,9 @@ export class RazorDocumentManager {
         const projectedDocument = document.csharpDocument;
 
         if (!projectedDocument.hostDocumentSyncVersion ||
-            projectedDocument.hostDocumentSyncVersion < updateBufferRequest.hostDocumentVersion) {
-
+            projectedDocument.hostDocumentSyncVersion <= updateBufferRequest.hostDocumentVersion) {
+            // We allow re-setting of the updated content from the same doc sync version in the case
+            // of project or _ViewImport.cshtml changes.
             const csharpProjectedDocument = projectedDocument as CSharpProjectedDocument;
             csharpProjectedDocument.update(updateBufferRequest.changes, updateBufferRequest.hostDocumentVersion);
 
