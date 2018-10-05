@@ -258,7 +258,7 @@ namespace Microsoft.Extensions.Logging.Testing
                 .Enrich.FromLogContext()
                 .Enrich.With(new AssemblyLogTimestampOffsetEnricher(logStart))
                 .MinimumLevel.Verbose()
-                .WriteTo.File(fileName, outputTemplate: "[{TimestampOffset}] [{SourceContext}] [{Level}] {Message}{NewLine}{Exception}", flushToDiskInterval: TimeSpan.FromSeconds(1), shared: true)
+                .WriteTo.File(fileName, outputTemplate: "[{TimestampOffset}] [{SourceContext}] [{Level}] {Message:l}{NewLine}{Exception}", flushToDiskInterval: TimeSpan.FromSeconds(1), shared: true)
                 .CreateLogger();
             return new SerilogLoggerProvider(serilogger, dispose: true);
         }

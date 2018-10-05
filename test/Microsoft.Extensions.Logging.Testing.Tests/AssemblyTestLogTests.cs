@@ -101,15 +101,15 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 var testLogContent = MakeConsistent(File.ReadAllText(testLog));
 
                 Assert.Equal(
-@"[OFFSET] [GlobalTestLog] [Information] Global Test Logging initialized at ""TIMESTAMP"". Configure the output directory via 'LoggingTestingFileLoggingDirectory' MSBuild property or set 'LoggingTestingDisableFileLogging' to 'true' to disable file logging.
-[OFFSET] [GlobalTestLog] [Information] Starting test ""FakeTestName""
-[OFFSET] [GlobalTestLog] [Information] Finished test ""FakeTestName"" in DURATION
+@"[OFFSET] [GlobalTestLog] [Information] Global Test Logging initialized at TIMESTAMP. Configure the output directory via 'LoggingTestingFileLoggingDirectory' MSBuild property or set 'LoggingTestingDisableFileLogging' to 'true' to disable file logging.
+[OFFSET] [GlobalTestLog] [Information] Starting test FakeTestName
+[OFFSET] [GlobalTestLog] [Information] Finished test FakeTestName in DURATION
 ", globalLogContent, ignoreLineEndingDifferences: true);
                 Assert.Equal(
-@"[OFFSET] [TestLifetime] [Information] Starting test ""FakeTestName"" at ""TIMESTAMP""
+@"[OFFSET] [TestLifetime] [Information] Starting test FakeTestName at TIMESTAMP
 [OFFSET] [TestLogger] [Information] Information!
 [OFFSET] [TestLogger] [Verbose] Trace!
-[OFFSET] [TestLifetime] [Information] Finished test ""FakeTestName"" in DURATION
+[OFFSET] [TestLifetime] [Information] Finished test FakeTestName in DURATION
 ", testLogContent, ignoreLineEndingDifferences: true);
             });
 
