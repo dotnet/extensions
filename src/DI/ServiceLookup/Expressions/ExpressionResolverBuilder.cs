@@ -158,7 +158,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         protected override Expression VisitTransient(TransientCallSite callSite, CallSiteExpressionBuilderContext context)
         {
             var implType = callSite.ServiceCallSite.ImplementationType;
-            // Elide calls to GetCaptureDisposable if the implemenation type isn't disposable
+            // Elide calls to GetCaptureDisposable if the implementation type isn't disposable
             return TryCaptureDisposible(
                 implType,
                 context.ScopeParameter,
