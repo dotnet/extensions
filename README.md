@@ -24,7 +24,7 @@ To disable the Razor tooling in Visual Studio Code:
 Prerequisites:
 - [Visual Studio Code](https://code.visualstudio.com) + [latest C# extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp)
 - [Node.js](https://nodejs.org) (8.12.0 or later)
-- Clode the repo and restore Git submodules by running the following:
+- Clone the repo and restore Git submodules by running the following:
 
   ```
   git clone https://github.com/aspnet/Razor.VSCode.git
