@@ -56,6 +56,8 @@ namespace Microsoft.Extensions.Logging
                     var categoryName = logger.Key;
 
                     ApplyRules(loggerInformation, categoryName, 0, loggerInformation.Length);
+
+                    logger.Value.Loggers = loggerInformation;
                 }
             }
         }
