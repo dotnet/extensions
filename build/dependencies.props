@@ -4,10 +4,10 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180919.1</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-alpha1-10549</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10549</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>3.0.0-alpha1-10549</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20181004.7</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-alpha1-10584</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10584</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>3.0.0-alpha1-10584</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview2-26905-02</MicrosoftNETCoreApp22PackageVersion>
