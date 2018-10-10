@@ -19,6 +19,7 @@
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <StackExchangeRedisStrongNamePackageVersion>1.2.6</StackExchangeRedisStrongNamePackageVersion>
+    <StackExchangeRedisPackageVersion>2.0.513</StackExchangeRedisPackageVersion>
     <SystemDataSqlClientPackageVersion>4.6.0-preview3-27001-02</SystemDataSqlClientPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0</XunitRunnerVisualStudioPackageVersion>
