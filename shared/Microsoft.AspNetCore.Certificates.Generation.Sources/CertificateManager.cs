@@ -451,9 +451,9 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
         }
 
-        public void CleanupHttpsCertificates2(string subject = LocalhostHttpsDistinguishedName)
+        public DiagnosticInformation CleanupHttpsCertificates2(string subject = LocalhostHttpsDistinguishedName)
         {
-            CleanupCertificates2(CertificatePurpose.HTTPS, subject);
+            return CleanupCertificates2(CertificatePurpose.HTTPS, subject);
         }
 
         public DiagnosticInformation CleanupCertificates2(CertificatePurpose purpose, string subject)
