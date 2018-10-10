@@ -1382,9 +1382,6 @@ namespace SimpleJson
 
             if (value == null)
                 return null;
-            
-            if (ReflectionUtils.IsNullableType(type) && Nullable.GetUnderlyingType(type).IsEnum)
-                return Enum.ToObject(Nullable.GetUnderlyingType(type), value);
 
             object obj = null;
 
@@ -1517,7 +1514,16 @@ namespace SimpleJson
                 return obj;
             }
             if (ReflectionUtils.IsNullableType(type))
+            {
+                // For nullable enums serialized as numbers
+                if (Nullable.GetUnderlyingType(type).IsEnum)
+                {
+                    return Enum.ToObject(Nullable.GetUnderlyingType(type), value);
+                }
+
                 return ReflectionUtils.ToNullableType(obj, type);
+            }
+
             return obj;
         }
 
