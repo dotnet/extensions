@@ -105,12 +105,14 @@ namespace Microsoft.Extensions.Logging.EventSource
         /// </summary>
         internal static readonly LoggingEventSource Instance = new LoggingEventSource();
 
-        private LoggerFilterRule[] _filterSpec;
+        // It's important to have _filterSpec initialization here rather than in ctor
+        // base ctor might call OnEventCommand and set filter spec
+        // having assingment in ctor would overwrite the value
+        private LoggerFilterRule[] _filterSpec = new LoggerFilterRule[0];
         private CancellationTokenSource _cancellationTokenSource;
 
         private LoggingEventSource() : base(EventSourceSettings.EtwSelfDescribingEventFormat)
         {
-            _filterSpec = new LoggerFilterRule[0];
         }
 
         /// <summary>
@@ -207,7 +209,7 @@ namespace Microsoft.Extensions.Logging.EventSource
         private void FireChangeToken()
         {
             var tcs = Interlocked.Exchange(ref _cancellationTokenSource, null);
-            tcs.Cancel();
+            tcs?.Cancel();
         }
 
          /// <summary>
