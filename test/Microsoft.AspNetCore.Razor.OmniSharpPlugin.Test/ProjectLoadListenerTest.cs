@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Linq;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.OmniSharpPlugin;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Execution;
 using Microsoft.Extensions.Logging;
@@ -13,15 +16,73 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
     public class ProjectLoadListenerTest
     {
         [Fact]
-        public void TryResolveRazorConfigurationPath_NoIntermediateOutputPath_ReturnsFalse()
+        public void GetRazorConfiguration_ProvidersReturnsTrue_ReturnsConfig()
+        {
+            // Arrange
+            var projectInstance = new ProjectInstance(ProjectRootElement.Create());
+            projectInstance.AddItem(ProjectLoadListener.ProjectCapabilityItemType, CoreProjectConfigurationProvider.DotNetCoreRazorCapability);
+            var loggerFactory = Mock.Of<ILoggerFactory>();
+            var provider1 = new Mock<RazorConfigurationProvider>();
+            var configuration = RazorConfiguration.Default; // Setting to non-null to ensure the listener doesn't return the config verbatim.
+            provider1.Setup(p => p.TryResolveConfiguration(It.IsAny<RazorConfigurationProviderContext>(), out configuration))
+                .Returns(false);
+            var provider2 = new Mock<RazorConfigurationProvider>();
+            provider2.Setup(p => p.TryResolveConfiguration(It.IsAny<RazorConfigurationProviderContext>(), out configuration))
+                .Returns(true);
+            var projectLoadListener = new ProjectLoadListener(new[] { provider1.Object, provider2.Object }, loggerFactory);
+
+            // Act
+            var result = projectLoadListener.GetRazorConfiguration(projectInstance);
+
+            // Assert
+            Assert.Same(configuration, result);
+        }
+
+        [Fact]
+        public void GetRazorConfiguration_SingleProviderReturnsFalse_ReturnsNull()
+        {
+            // Arrange
+            var projectInstance = new ProjectInstance(ProjectRootElement.Create());
+            projectInstance.AddItem(ProjectLoadListener.ProjectCapabilityItemType, CoreProjectConfigurationProvider.DotNetCoreRazorCapability);
+            var loggerFactory = Mock.Of<ILoggerFactory>();
+            var provider = new Mock<RazorConfigurationProvider>();
+            var configuration = RazorConfiguration.Default; // Setting to non-null to ensure the listener doesn't return the config verbatim.
+            provider.Setup(p => p.TryResolveConfiguration(It.IsAny<RazorConfigurationProviderContext>(), out configuration))
+                .Returns(false);
+            var projectLoadListener = new ProjectLoadListener(Enumerable.Empty<RazorConfigurationProvider>(), loggerFactory);
+
+            // Act
+            var result = projectLoadListener.GetRazorConfiguration(projectInstance);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void GetRazorConfiguration_NoProviders_ReturnsNull()
+        {
+            // Arrange
+            var projectInstance = new ProjectInstance(ProjectRootElement.Create());
+            projectInstance.AddItem(ProjectLoadListener.ProjectCapabilityItemType, CoreProjectConfigurationProvider.DotNetCoreRazorCapability);
+            var loggerFactory = Mock.Of<ILoggerFactory>();
+            var projectLoadListener = new ProjectLoadListener(Enumerable.Empty<RazorConfigurationProvider>(), loggerFactory);
+
+            // Act
+            var result = projectLoadListener.GetRazorConfiguration(projectInstance);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void TryResolveConfigurationOutputPath_NoIntermediateOutputPath_ReturnsFalse()
         {
             // Arrange
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             var loggerFactory = Mock.Of<ILoggerFactory>();
-            var projectLoadListener = new ProjectLoadListener(loggerFactory);
 
             // Act
-            var result = ProjectLoadListener.TryResolveRazorConfigurationPath(projectInstance, out var path);
+            var result = ProjectLoadListener.TryResolveConfigurationOutputPath(projectInstance, out var path);
 
             // Assert
             Assert.False(result);
@@ -29,7 +90,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
         }
 
         [Fact]
-        public void TryResolveRazorConfigurationPath_RootedIntermediateOutputPath_ReturnsTrue()
+        public void TryResolveConfigurationOutputPath_RootedIntermediateOutputPath_ReturnsTrue()
         {
             // Arrange
             var projectRootElement = ProjectRootElement.Create();
@@ -39,7 +100,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var expectedPath = Path.Combine(intermediateOutputPath, ProjectLoadListener.RazorConfigurationFileName);
 
             // Act
-            var result = ProjectLoadListener.TryResolveRazorConfigurationPath(projectInstance, out var path);
+            var result = ProjectLoadListener.TryResolveConfigurationOutputPath(projectInstance, out var path);
 
             // Assert
             Assert.True(result);
@@ -47,7 +108,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
         }
 
         [Fact]
-        public void TryResolveRazorConfigurationPath_RelativeIntermediateOutputPath_ReturnsTrue()
+        public void TryResolveConfigurationOutputPath_RelativeIntermediateOutputPath_ReturnsTrue()
         {
             // Arrange
             var projectRootElement = ProjectRootElement.Create();
@@ -60,7 +121,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
             var expectedPath = Path.Combine(intermediateOutputPath, ProjectLoadListener.RazorConfigurationFileName);
 
             // Act
-            var result = ProjectLoadListener.TryResolveRazorConfigurationPath(projectInstance, out var path);
+            var result = ProjectLoadListener.TryResolveConfigurationOutputPath(projectInstance, out var path);
 
             // Assert
             Assert.True(result);

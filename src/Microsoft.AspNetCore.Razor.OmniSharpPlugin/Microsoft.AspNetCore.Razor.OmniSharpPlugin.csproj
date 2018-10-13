@@ -12,11 +12,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.LanguageServer\Serialization\*.cs">
+      <Link>Serialization\%(FileName)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\modules\omnisharp-roslyn\src\OmniSharp.MSBuild\OmniSharp.MSBuild.csproj" ExcludeAssets="Runtime" Private="True" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="$(MicrosoftAspNetCoreRazorLanguagePackageVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Razor.Workspaces" Version="$(MicrosoftCodeAnalysisRazorWorkspacesPackageVersion)" />
     <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" ExcludeAssets="Runtime" PrivateAssets="All" />
   </ItemGroup>
 

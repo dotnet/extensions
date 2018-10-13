@@ -5,11 +5,13 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 
-namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
+namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
     internal class RazorProjectConfiguration
     {
         public string ProjectFilePath { get; set; }
+
+        public string TargetFramework { get; set; }
 
         public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; set; } = Array.Empty<TagHelperDescriptor>();
 
