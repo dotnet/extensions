@@ -28,6 +28,7 @@ namespace BenchmarkDotNet.Attributes
                 { NamedConfiguration.Validation, typeof(DefaultCoreValidationConfig) },
                 { NamedConfiguration.Profile, typeof(DefaultCoreProfileConfig) },
                 { NamedConfiguration.Debug, typeof(DefaultCoreDebugConfig) },
+                { NamedConfiguration.PerfLab, typeof(DefaultCorePerfLabConfig) },
             };
 
             if (configType != null)
@@ -66,6 +67,7 @@ namespace BenchmarkDotNet.Attributes
             public static readonly string Validation = "validation";
             public static readonly string Profile = "profile";
             public static readonly string Debug = "debug";
+            public static readonly string PerfLab = "perflab";
         }
     }
 }
