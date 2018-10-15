@@ -1,12 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using OmniSharp.Extensions.Embedded.MediatR;
+using OmniSharp.Extensions.JsonRpc;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 {
-    internal class RazorAddProjectParams : IRequest
+    [Serial, Method("projects/updateProject")]
+    internal interface IRazorUpdateProjectHandler : IJsonRpcNotificationHandler<RazorUpdateProjectParams>
     {
-        public string FilePath { get; set; }
     }
 }

@@ -3,34 +3,36 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import * as vscode from 'vscode';
-
+import { IRazorProjectChangeEvent } from './IRazorProjectChangeEvent';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
+import { RazorProjectChangeKind } from './RazorProjectChangeKind';
+import { RazorProjectManager } from './RazorProjectManager';
 
 export class RazorProjectTracker {
-    constructor(private readonly languageServiceClient: RazorLanguageServiceClient) {
-    }
-
-    public async initialize() {
-        // Track current projects
-        const projectUris = await vscode.workspace.findFiles('**/*.csproj');
-
-        for (const uri of projectUris) {
-            await this.languageServiceClient.addProject(uri);
-        }
+    constructor(
+        private readonly razorProjectManager: RazorProjectManager,
+        private readonly languageServiceClient: RazorLanguageServiceClient) {
     }
 
     public register() {
-        // Track future projects
-        const watcher = vscode.workspace.createFileSystemWatcher('**/*.csproj*');
-        const createRegistration = watcher.onDidCreate(async (uri: vscode.Uri) => {
-            await this.languageServiceClient.addProject(uri);
-        });
+        const registration = this.razorProjectManager.onChange(event => this.onProjectChange(event));
 
-        const deleteRegistration = watcher.onDidDelete(async (uri: vscode.Uri) => {
-            await this.languageServiceClient.removeProject(uri);
-        });
+        return registration;
+    }
 
-        return vscode.Disposable.from(watcher, createRegistration, deleteRegistration);
+    private async onProjectChange(event: IRazorProjectChangeEvent) {
+        if (event.kind === RazorProjectChangeKind.added) {
+            await this.languageServiceClient.addProject(event.project.uri);
+        } else if (event.kind === RazorProjectChangeKind.removed) {
+            await this.languageServiceClient.removeProject(event.project.uri);
+        } else if (event.kind === RazorProjectChangeKind.changed) {
+            const projectConfiguration = event.project.configuration;
+
+            if (!projectConfiguration) {
+                return;
+            }
+
+            await this.languageServiceClient.updateProject(projectConfiguration);
+        }
     }
 }

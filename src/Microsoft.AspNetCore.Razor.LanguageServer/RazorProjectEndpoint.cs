@@ -11,17 +11,20 @@ using OmniSharp.Extensions.Embedded.MediatR;
 
 namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
-    internal class RazorProjectEndpoint : IRazorAddProjectHandler, IRazorRemoveProjectHandler, IRazorAddDocumentHandler, IRazorRemoveDocumentHandler
+    internal class RazorProjectEndpoint :
+        IRazorAddProjectHandler,
+        IRazorRemoveProjectHandler,
+        IRazorUpdateProjectHandler,
+        IRazorAddDocumentHandler,
+        IRazorRemoveDocumentHandler
     {
         private readonly RazorProjectService _projectService;
-        private readonly RazorConfigurationResolver _configurationResolver;
         private readonly RemoteTextLoaderFactory _remoteTextLoaderFactory;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly ILogger _logger;
 
         public RazorProjectEndpoint(
             ForegroundDispatcher foregroundDispatcher,
-            RazorConfigurationResolver configurationResolver,
             RemoteTextLoaderFactory remoteTextLoaderFactory,
             RazorProjectService projectService,
             ILoggerFactory loggerFactory)
@@ -29,11 +32,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
-            }
-
-            if (configurationResolver == null)
-            {
-                throw new ArgumentNullException(nameof(configurationResolver));
             }
 
             if (remoteTextLoaderFactory == null)
@@ -52,7 +50,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }
 
             _foregroundDispatcher = foregroundDispatcher;
-            _configurationResolver = configurationResolver;
             _remoteTextLoaderFactory = remoteTextLoaderFactory;
             _projectService = projectService;
             _logger = loggerFactory.CreateLogger<RazorProjectEndpoint>();
@@ -65,14 +62,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (!_configurationResolver.TryResolve(request.ConfigurationName, out var razorConfiguration))
-            {
-                razorConfiguration = _configurationResolver.Default;
-                _logger.LogInformation($"Could not resolve Razor configuration '{request.ConfigurationName}'. Falling back to default configuration '{razorConfiguration.ConfigurationName}'.");
-            }
-
             await Task.Factory.StartNew(
-                () => _projectService.AddProject(request.FilePath, razorConfiguration),
+                () => _projectService.AddProject(request.FilePath),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);
@@ -89,6 +80,22 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             await Task.Factory.StartNew(
                 () => _projectService.RemoveProject(request.FilePath),
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                _foregroundDispatcher.ForegroundScheduler);
+
+            return Unit.Value;
+        }
+
+        public async Task<Unit> Handle(RazorUpdateProjectParams request, CancellationToken cancellationToken)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            await Task.Factory.StartNew(
+                () => _projectService.UpdateProject(request.ProjectFilePath, request.Configuration),
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _foregroundDispatcher.ForegroundScheduler);

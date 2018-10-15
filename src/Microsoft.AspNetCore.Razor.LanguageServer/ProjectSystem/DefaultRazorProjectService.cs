@@ -195,12 +195,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             TryUpdateViewImportDependencies(filePath, projectSnapshot);
         }
 
-        public override void AddProject(string filePath, RazorConfiguration configuration)
+        public override void AddProject(string filePath)
         {
             _foregroundDispatcher.AssertForegroundThread();
 
             var normalizedPath = _filePathNormalizer.Normalize(filePath);
-            var hostProject = new HostProject(normalizedPath, configuration);
+            var hostProject = new HostProject(normalizedPath, RazorDefaults.Configuration);
             _projectSnapshotManagerAccessor.Instance.HostProjectAdded(hostProject);
             _logger.LogInformation($"Added project '{filePath}' to project system.");
 
@@ -224,6 +224,34 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _projectSnapshotManagerAccessor.Instance.HostProjectRemoved(project.HostProject);
 
             TryMigrateDocumentsFromRemovedProject(project);
+        }
+
+        public override void UpdateProject(string filePath, RazorConfiguration configuration)
+        {
+            _foregroundDispatcher.AssertForegroundThread();
+
+            var normalizedPath = _filePathNormalizer.Normalize(filePath);
+            var project = (DefaultProjectSnapshot)_projectSnapshotManagerAccessor.Instance.GetLoadedProject(normalizedPath);
+
+            if (project == null)
+            {
+                // Never tracked the project to begin with, noop.
+                _logger.LogInformation($"Failed to update untracked project '{filePath}'.");
+                return;
+            }
+
+            if (configuration == null)
+            {
+                configuration = RazorDefaults.Configuration;
+                _logger.LogInformation($"Updating project '{filePath}' to use Razor's default configuration ('{configuration.ConfigurationName}')'.");
+            }
+            else
+            {
+                _logger.LogInformation($"Updating project '{filePath}' to Razor configuration '{configuration.ConfigurationName}' with language version '{configuration.LanguageVersion}'.");
+            }
+
+            var hostProject = new HostProject(project.FilePath, configuration);
+            _projectSnapshotManagerAccessor.Instance.HostProjectChanged(hostProject);
         }
 
         // Internal for testing

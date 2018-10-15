@@ -4,6 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
+import { IRazorProjectConfiguration } from './IRazorProjectConfiguration';
 import { RazorLanguageServerClient } from './RazorLanguageServerClient';
 import { AddDocumentRequest } from './RPC/AddDocumentRequest';
 import { AddProjectRequest } from './RPC/AddProjectRequest';
@@ -12,6 +13,7 @@ import { LanguageQueryResponse } from './RPC/LanguageQueryResponse';
 import { RazorTextDocumentItem } from './RPC/RazorTextDocumentItem';
 import { RemoveDocumentRequest } from './RPC/RemoveDocumentRequest';
 import { RemoveProjectRequest } from './RPC/RemoveProjectRequest';
+import { UpdateProjectRequest } from './RPC/UpdateProjectRequest';
 
 export class RazorLanguageServiceClient {
     constructor(private readonly serverClient: RazorLanguageServerClient) {
@@ -32,14 +34,24 @@ export class RazorLanguageServiceClient {
         await this.serverClient.sendRequest<RemoveDocumentRequest>('projects/removeDocument', request);
     }
 
-    public async addProject(projectFileUri: vscode.Uri, configurationName?: string) {
-        const request = new AddProjectRequest(projectFileUri.fsPath, configurationName);
+    public async addProject(projectFileUri: vscode.Uri) {
+        const request = new AddProjectRequest(projectFileUri.fsPath);
         await this.serverClient.sendRequest<AddProjectRequest>('projects/addProject', request);
     }
 
     public async removeProject(projectFileUri: vscode.Uri) {
         const request = new RemoveProjectRequest(projectFileUri.fsPath);
         await this.serverClient.sendRequest<RemoveProjectRequest>('projects/removeProject', request);
+    }
+
+    public async updateProject(projectData: IRazorProjectConfiguration) {
+        const request: UpdateProjectRequest = {
+            projectFilePath: projectData.projectPath,
+            tagHelpers: projectData.tagHelpers,
+            targetFramework: projectData.targetFramework,
+            configuration: projectData.configuration,
+        };
+        await this.serverClient.sendRequest<UpdateProjectRequest>('projects/updateProject', request);
     }
 
     public async languageQuery(position: vscode.Position, uri: vscode.Uri) {

@@ -21,6 +21,7 @@ import { resolveRazorLanguageServerOptions } from './RazorLanguageServerOptionsR
 import { resolveRazorLanguageServerTrace } from './RazorLanguageServerTraceResolver';
 import { RazorLanguageServiceClient } from './RazorLanguageServiceClient';
 import { RazorLogger } from './RazorLogger';
+import { RazorProjectManager } from './RazorProjectManager';
 import { RazorProjectTracker } from './RazorProjectTracker';
 import { RazorSignatureHelpProvider } from './RazorSignatureHelpProvider';
 import { TelemetryReporter } from './TelemetryReporter';
@@ -34,11 +35,12 @@ export async function activate(context: ExtensionContext, languageServerDir: str
         const languageServerClient = new RazorLanguageServerClient(languageServerOptions, telemetryReporter, logger);
         const languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
         const documentManager = new RazorDocumentManager(languageServerClient, logger);
+        const projectManager = new RazorProjectManager(logger);
         reportTelemetryForDocuments(documentManager, telemetryReporter);
         const languageConfiguration = new RazorLanguageConfiguration();
         const csharpFeature = new RazorCSharpFeature(documentManager);
         const htmlFeature = new RazorHtmlFeature(documentManager, languageServiceClient);
-        const projectTracker = new RazorProjectTracker(languageServiceClient);
+        const projectTracker = new RazorProjectTracker(projectManager, languageServiceClient);
         const documentTracker = new RazorDocumentTracker(documentManager, languageServiceClient);
         const localRegistrations: vscode.Disposable[] = [];
 
@@ -72,6 +74,7 @@ export async function activate(context: ExtensionContext, languageServerDir: str
                     signatureHelpProvider,
                     '(', ','),
                 projectTracker.register(),
+                projectManager.register(),
                 documentManager.register(),
                 documentTracker.register(),
                 csharpFeature.register(),
@@ -85,7 +88,7 @@ export async function activate(context: ExtensionContext, languageServerDir: str
         });
 
         await languageServerClient.start();
-        await projectTracker.initialize();
+        await projectManager.initialize();
         await documentManager.initialize();
 
         context.subscriptions.push(languageServerClient, onStartRegistration, onStopRegistration, logger);

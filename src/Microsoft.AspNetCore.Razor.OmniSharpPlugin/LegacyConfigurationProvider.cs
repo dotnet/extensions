@@ -39,11 +39,20 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             string mvcReferenceFullPath = null;
             foreach (var compilationReference in compilationReferences)
             {
-                var assemblyPath = compilationReference.EvaluatedInclude;
-                if (compilationReference.EvaluatedInclude.EndsWith(MvcAssemblyFileName, StringComparison.OrdinalIgnoreCase))
+                var assemblyFullPath = compilationReference.EvaluatedInclude;
+                if (assemblyFullPath.EndsWith(MvcAssemblyFileName, StringComparison.OrdinalIgnoreCase))
                 {
-                    mvcReferenceFullPath = compilationReference.EvaluatedInclude;
-                    break;
+                    if (assemblyFullPath.Length == MvcAssemblyFileName.Length)
+                    {
+                        continue;
+                    }
+
+                    var potentialPathSeparator = assemblyFullPath[assemblyFullPath.Length - MvcAssemblyFileName.Length - 1];
+                    if (potentialPathSeparator == '/' || potentialPathSeparator == '\\')
+                    {
+                        mvcReferenceFullPath = assemblyFullPath;
+                        break;
+                    }
                 }
             }
 

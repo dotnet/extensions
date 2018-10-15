@@ -18,6 +18,70 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     public class DefaultRazorProjectServiceTest : TestBase
     {
         [Fact]
+        public void UpdateProject_NullConfigurationUsesDefault()
+        {
+            // Arrange
+            var projectFilePath = "/C:/path/to/project.csproj";
+            var ownerProject = TestProjectSnapshot.Create(projectFilePath);
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
+            projectSnapshotManager.Setup(manager => manager.GetLoadedProject(projectFilePath))
+                .Returns(ownerProject);
+            projectSnapshotManager.Setup(manager => manager.HostProjectChanged(It.IsAny<HostProject>()))
+                .Callback<HostProject>((hostProject) =>
+                {
+                    Assert.Same(RazorDefaults.Configuration, hostProject.Configuration);
+                    Assert.Equal(projectFilePath, hostProject.FilePath);
+                });
+            var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
+
+            // Act
+            projectService.UpdateProject(projectFilePath, configuration: null);
+
+            // Assert
+            projectSnapshotManager.VerifyAll();
+        }
+
+        [Fact]
+        public void UpdateProject_ChangesProjectToUseProvidedConfiguration()
+        {
+            // Arrange
+            var projectFilePath = "/C:/path/to/project.csproj";
+            var ownerProject = TestProjectSnapshot.Create(projectFilePath);
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
+            projectSnapshotManager.Setup(manager => manager.GetLoadedProject(projectFilePath))
+                .Returns(ownerProject);
+            projectSnapshotManager.Setup(manager => manager.HostProjectChanged(It.IsAny<HostProject>()))
+                .Callback<HostProject>((hostProject) =>
+                {
+                    Assert.Same(FallbackRazorConfiguration.MVC_1_1, hostProject.Configuration);
+                    Assert.Equal(projectFilePath, hostProject.FilePath);
+                });
+            var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
+
+            // Act
+            projectService.UpdateProject(projectFilePath, FallbackRazorConfiguration.MVC_1_1);
+
+            // Assert
+            projectSnapshotManager.VerifyAll();
+        }
+
+        [Fact]
+        public void UpdateProject_UntrackedProjectNoops()
+        {
+            // Arrange
+            var projectFilePath = "/C:/path/to/project.csproj";
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
+            projectSnapshotManager.Setup(manager => manager.GetLoadedProject(projectFilePath))
+                .Returns<ProjectSnapshot>(null);
+            projectSnapshotManager.Setup(manager => manager.HostProjectChanged(It.IsAny<HostProject>()))
+                .Throws(new XunitException("Should not have been called."));
+            var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
+
+            // Act & Assert
+            projectService.UpdateProject(projectFilePath, FallbackRazorConfiguration.MVC_1_1);
+        }
+
+        [Fact]
         public void TryUpdateViewImportDependencies_OnlyUpdatesOpenDocuments()
         {
             // Arrange
@@ -412,14 +476,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             projectService.RemoveDocument(documentFilePath);
         }
 
-        // TODO: Add UpdateDocument tests. This API will change significantly when we start consuming incremental changes.
-
         [Fact]
-        public void AddProject_AddsProjectWithProvidedConfiguration()
+        public void AddProject_AddsProjectWithDefaultConfiguration()
         {
             // Arrange
-            var projectConfiguration = RazorConfiguration.Create(RazorLanguageVersion.Version_1_0, "Test", Array.Empty<RazorExtension>());
-            var projectFilePath = "/C:/path/to/document.cshtml";
+            var projectFilePath = "/C:/path/to/project.csproj";
             var miscellaneousProject = TestProjectSnapshot.Create("__MISC_PROJECT__");
             var projectResolver = new TestProjectResolver(new Dictionary<string, ProjectSnapshot>(), miscellaneousProject);
             var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
@@ -427,12 +488,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 .Callback<HostProject>((hostProject) =>
                 {
                     Assert.Equal(projectFilePath, hostProject.FilePath);
-                    Assert.Same(projectConfiguration, hostProject.Configuration);
+                    Assert.Same(RazorDefaults.Configuration, hostProject.Configuration);
                 });
             var projectService = CreateProjectService(projectResolver, projectSnapshotManager.Object);
 
             // Act
-            projectService.AddProject(projectFilePath, projectConfiguration);
+            projectService.AddProject(projectFilePath);
 
             // Assert
             projectSnapshotManager.VerifyAll();
@@ -442,7 +503,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void RemoveProject_RemovesProject()
         {
             // Arrange
-            var projectFilePath = "/C:/path/to/document.cshtml";
+            var projectFilePath = "/C:/path/to/project.csproj";
             var ownerProject = TestProjectSnapshot.Create(projectFilePath);
             var miscellaneousProject = TestProjectSnapshot.Create("__MISC_PROJECT__");
             var projectResolver = new TestProjectResolver(new Dictionary<string, ProjectSnapshot>(), miscellaneousProject);
@@ -467,7 +528,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         public void RemoveProject_NoopsIfProjectIsNotLoaded()
         {
             // Arrange
-            var projectFilePath = "C:/path/to/document.cshtml";
+            var projectFilePath = "C:/path/to/project.csproj";
             var miscellaneousProject = TestProjectSnapshot.Create("__MISC_PROJECT__");
             var projectResolver = new TestProjectResolver(new Dictionary<string, ProjectSnapshot>(), miscellaneousProject);
             var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>();

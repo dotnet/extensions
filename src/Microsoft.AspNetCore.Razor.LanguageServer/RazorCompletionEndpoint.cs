@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             return new CompletionRegistrationOptions()
             {
-                DocumentSelector = RazorDocument.Selector,
+                DocumentSelector = RazorDefaults.Selector,
                 ResolveProvider = true,
                 TriggerCharacters = new Container<string>("@"),
             };

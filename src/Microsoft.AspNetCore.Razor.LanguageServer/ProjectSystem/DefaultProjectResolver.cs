@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
         public DefaultProjectResolver(
             ForegroundDispatcher foregroundDispatcher,
             FilePathNormalizer filePathNormalizer,
-            RazorConfigurationResolver configurationResolver,
             ProjectSnapshotManagerAccessor projectSnapshotManagerAccessor)
         {
             if (foregroundDispatcher == null)
@@ -33,11 +32,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 throw new ArgumentNullException(nameof(filePathNormalizer));
             }
 
-            if (configurationResolver == null)
-            {
-                throw new ArgumentNullException(nameof(configurationResolver));
-            }
-
             if (projectSnapshotManagerAccessor == null)
             {
                 throw new ArgumentNullException(nameof(projectSnapshotManagerAccessor));
@@ -48,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _projectSnapshotManagerAccessor = projectSnapshotManagerAccessor;
 
             var miscellaneousProjectPath = Path.Combine(TempDirectory.Instance.DirectoryPath, "__MISC_RAZOR_PROJECT__");
-            _miscellaneousHostProject = new HostProject(miscellaneousProjectPath, configurationResolver.Default);
+            _miscellaneousHostProject = new HostProject(miscellaneousProjectPath, RazorDefaults.Configuration);
         }
 
         public override bool TryResolvePotentialProject(string documentFilePath, out ProjectSnapshot projectSnapshot)

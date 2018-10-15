@@ -3,7 +3,6 @@
     <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180911.2</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
     <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreRazorLanguagePackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreRazorLanguagePackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftCodeAnalysisRazorWorkspacesPackageVersion>3.0.0-alpha1-10495</MicrosoftCodeAnalysisRazorWorkspacesPackageVersion>
     <MicrosoftBuildPackageVersion>15.8.166</MicrosoftBuildPackageVersion>

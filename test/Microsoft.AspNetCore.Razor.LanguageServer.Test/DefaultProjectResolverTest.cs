@@ -107,7 +107,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             DefaultProjectResolver projectResolver = null;
             var projects = new List<ProjectSnapshot>();
             var filePathNormalizer = new FilePathNormalizer();
-            var configurationResolver = Mock.Of<RazorConfigurationResolver>(resolver => resolver.Default == RazorConfiguration.Default);
             var snapshotManager = new Mock<ProjectSnapshotManagerBase>();
             snapshotManager.Setup(manager => manager.Projects)
                 .Returns(() => projects);
@@ -116,7 +115,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             snapshotManager.Setup(manager => manager.HostProjectAdded(It.IsAny<HostProject>()))
                 .Callback<HostProject>(hostProject => projects.Add(Mock.Of<ProjectSnapshot>(p => p.FilePath == hostProject.FilePath)));
             var snapshotManagerAccessor = Mock.Of<ProjectSnapshotManagerAccessor>(accessor => accessor.Instance == snapshotManager.Object);
-            projectResolver = new DefaultProjectResolver(Dispatcher, filePathNormalizer, configurationResolver, snapshotManagerAccessor);
+            projectResolver = new DefaultProjectResolver(Dispatcher, filePathNormalizer, snapshotManagerAccessor);
 
             // Act
             var project = projectResolver.GetMiscellaneousProject();
@@ -129,14 +128,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         private DefaultProjectResolver CreateProjectResolver(Func<ProjectSnapshot[]> projectFactory)
         {
             var filePathNormalizer = new FilePathNormalizer();
-            var configurationResolver = Mock.Of<RazorConfigurationResolver>(resolver => resolver.Default == RazorConfiguration.Default);
             var snapshotManager = new Mock<ProjectSnapshotManagerBase>();
             snapshotManager.Setup(manager => manager.Projects)
                 .Returns(projectFactory);
             snapshotManager.Setup(manager => manager.GetLoadedProject(It.IsAny<string>()))
                 .Returns<string>(filePath => projectFactory().FirstOrDefault(project => project.FilePath == filePath));
             var snapshotManagerAccessor = Mock.Of<ProjectSnapshotManagerAccessor>(accessor => accessor.Instance == snapshotManager.Object);
-            var projectResolver = new DefaultProjectResolver(Dispatcher, filePathNormalizer, configurationResolver, snapshotManagerAccessor);
+            var projectResolver = new DefaultProjectResolver(Dispatcher, filePathNormalizer, snapshotManagerAccessor);
 
             return projectResolver;
         }

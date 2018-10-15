@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             return new TextDocumentChangeRegistrationOptions()
             {
-                DocumentSelector = RazorDocument.Selector,
+                DocumentSelector = RazorDefaults.Selector,
                 SyncKind = Change
             };
         }
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             return new TextDocumentRegistrationOptions()
             {
-                DocumentSelector = RazorDocument.Selector,
+                DocumentSelector = RazorDefaults.Selector,
             };
         }
 
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             return new TextDocumentSaveRegistrationOptions()
             {
-                DocumentSelector = RazorDocument.Selector,
+                DocumentSelector = RazorDefaults.Selector,
                 IncludeText = true
             };
         }
