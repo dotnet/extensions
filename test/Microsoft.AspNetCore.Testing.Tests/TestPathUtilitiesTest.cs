@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Testing
             // Testing\test\Microsoft.AspNetCore.Testing.Tests\bin\Debug\net46
             var expectedPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", ".."));
 
-            Assert.Equal(expectedPath, TestPathUtilities.GetSolutionRootDirectory("Common"));
+            Assert.Equal(expectedPath, TestPathUtilities.GetSolutionRootDirectory("Extensions"));
         }
 
         [Fact]

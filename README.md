@@ -1,39 +1,41 @@
-Common
-======
+.NET Extensions
+===============
 
-[![Travis build status][travis-badge]](https://travis-ci.org/aspnet/Common/branches)
-[![AppVeyor build status][appveyor-badge]](https://ci.appveyor.com/project/aspnetci/Common/branch/dev)
+.NET Extensions is an open-source, cross-platform set of APIs for commonly used programming patterns and utilities, such as dependency injection, logging, and app configuration. Most of the API in this project is meant to work on many .NET platforms, such as .NET Core, .NET Framework, Xamarin, and others. While commonly used in ASP.NET Core applications, these APIs are not coupled to the ASP.NET Core application model. They can be used in console apps, WinForms and WPF, and others.
 
-[travis-badge]: https://img.shields.io/travis/aspnet/Common.svg?label=travis-ci&branch=dev&style=flat-square
-[appveyor-badge]: https://img.shields.io/appveyor/ci/aspnetci/Common/dev.svg?label=appveyor&style=flat-square
+## Get Started
 
-The Common repository includes projects containing commonly used primitives and utility types.
+Follow the [Get Started](https://www.microsoft.com/net) guide for .NET to setup an initial .NET application.
+Microsoft.Extensions APIs can then be added to the project using the [NuGet Package Manager](https://nuget.org).
 
-This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
+## How to Engage, Contribute, and Give Feedback
 
-## Packages
+Some of the best ways to contribute are to try things out, file issues, join in design conversations,
+and make pull-requests.
 
- Package name                            | Stable                                      | Nightly (`dev` branch)
------------------------------------------|---------------------------------------------|------------------------------------------
-`Microsoft.Extensions.ObjectPool`        | [![NuGet][obj-nuget-badge]][obj-nuget]      | [![MyGet][obj-myget-badge]][obj-myget]
-`Microsoft.Extensions.Primitives`        | [![NuGet][prim-nuget-badge]][prim-nuget]    | [![MyGet][prim-myget-badge]][prim-myget]
-`Microsoft.Extensions.CommandLineUtils`  | [![NuGet][cli-nuget-badge]][cli-nuget]      | Not under active development. See below.
+* [Download our latest daily builds](./docs/daily-builds.md)
+* [Build .NET Extensions from source code](./docs/build-from-source.md)
+* Check out the [contributing](CONTRIBUTING.md) page to see the best places to log issues and start discussions.
 
+## Reporting security issues and bugs
 
-[obj-nuget]: https://www.nuget.org/packages/Microsoft.Extensions.ObjectPool/
-[obj-nuget-badge]: https://img.shields.io/nuget/v/Microsoft.Extensions.ObjectPool.svg?style=flat-square&label=nuget
-[obj-myget]: https://dotnet.myget.org/feed/aspnetcore-dev/package/nuget/Microsoft.Extensions.ObjectPool
-[obj-myget-badge]: https://img.shields.io/dotnet.myget/aspnetcore-dev/vpre/Microsoft.Extensions.ObjectPool.svg?style=flat-square&label=myget
+Security issues and bugs should be reported privately, via email, to the Microsoft Security Response Center (MSRC)  secure@microsoft.com. You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Further information, including the MSRC PGP key, can be found in the [Security TechCenter](https://technet.microsoft.com/en-us/security/ff852094.aspx).
 
-[prim-nuget]: https://www.nuget.org/packages/Microsoft.Extensions.Primitives/
-[prim-nuget-badge]: https://img.shields.io/nuget/v/Microsoft.Extensions.Primitives.svg?style=flat-square&label=nuget
-[prim-myget]: https://dotnet.myget.org/feed/aspnetcore-dev/package/nuget/Microsoft.Extensions.Primitives
-[prim-myget-badge]: https://img.shields.io/dotnet.myget/aspnetcore-dev/vpre/Microsoft.Extensions.Primitives.svg?style=flat-square&label=myget
+## Related projects
 
-[cli-nuget]: https://www.nuget.org/packages/Microsoft.Extensions.CommandLineUtils/
-[cli-nuget-badge]: https://img.shields.io/nuget/v/Microsoft.Extensions.CommandLineUtils.svg?style=flat-square&label=nuget
+These are some other repos for related projects:
+
+* [.NET Core](https://github.com/dotnet/core) - a cross-platform, open-source .NET platform
+* [ASP.NET Core](https://github.com/aspnet/AspNetCore) - a .NET Core framework for building web apps
+* [Entity Framework Core](https://github.com/aspnet/EntityFrameworkCore) - data access technology
+
+## Code of conduct
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).  For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
 ## Community forks
+
+Some parts of this project have been forked by the community to add additional functionality:
 
 #### [McMaster.Extensions.CommandLineUtils](https://github.com/natemcmaster/CommandLineUtils)
 
