@@ -9,6 +9,7 @@ import { RazorCSharpFeature } from './CSharp/RazorCSharpFeature';
 import { reportTelemetryForDocuments } from './DocumentTelemetryListener';
 import { HostEventStream } from './HostEventStream';
 import { RazorHtmlFeature } from './Html/RazorHtmlFeature';
+import { reportTelemetryForProjects } from './ProjectTelemetryListener';
 import { ProvisionalCompletionOrchestrator } from './ProvisionalCompletionOrchestrator';
 import { RazorCompletionItemProvider } from './RazorCompletionItemProvider';
 import { RazorDocumentManager } from './RazorDocumentManager';
@@ -35,8 +36,9 @@ export async function activate(context: ExtensionContext, languageServerDir: str
         const languageServerClient = new RazorLanguageServerClient(languageServerOptions, telemetryReporter, logger);
         const languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
         const documentManager = new RazorDocumentManager(languageServerClient, logger);
-        const projectManager = new RazorProjectManager(logger);
         reportTelemetryForDocuments(documentManager, telemetryReporter);
+        const projectManager = new RazorProjectManager(logger);
+        reportTelemetryForProjects(projectManager, telemetryReporter);
         const languageConfiguration = new RazorLanguageConfiguration();
         const csharpFeature = new RazorCSharpFeature(documentManager);
         const htmlFeature = new RazorHtmlFeature(documentManager, languageServiceClient);

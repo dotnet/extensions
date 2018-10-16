@@ -30,6 +30,10 @@ export async function activate(context: vscode.ExtensionContext) {
         post: (event: any) => {
             if (event.constructor.name === TelemetryEvent.name) {
                 console.log(`Telemetry Event: ${event.eventName}.`);
+                if (event.properties) {
+                    const propertiesString = JSON.stringify(event.properties, null, 2);
+                    console.log(propertiesString);
+                }
             } else {
                 console.log(`Unknown event: ${event.eventName}`);
             }

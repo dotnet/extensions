@@ -5,9 +5,11 @@
 
 import { Trace } from 'vscode-jsonrpc';
 import { HostEventStream, TelemetryEvent } from './HostEventStream';
+import { IRazorProject } from './IRazorProject';
 
 export class TelemetryReporter {
     private readonly razorDocuments: { [hostDocumentPath: string]: boolean } = {};
+    private readonly razorProjects: { [projectPath: string]: string } = {};
     private readonly documentOpenedEvent = new TelemetryEvent('VSCode.Razor.DocumentOpened');
     private readonly documentClosedEvent = new TelemetryEvent('VSCode.Razor.DocumentClosed');
     private readonly documentEditedAfterOpenEvent = new TelemetryEvent('VSCode.Razor.DocumentEditedAfterOpen');
@@ -37,6 +39,45 @@ export class TelemetryReporter {
 
     public reportErrorOnActivation(error: Error) {
         this.reportError('VSCode.Razor.ErrorOnActivation', error);
+    }
+
+    public reportProjectInfo(project: IRazorProject) {
+        const projectConfiguration = project.configuration;
+        if (!projectConfiguration) {
+            // A project.razor.json file hasn't been created for the project yet.
+            return;
+        }
+
+        let configurationName: string;
+        let languageVersion: string;
+        if (projectConfiguration.configuration) {
+            configurationName = projectConfiguration.configuration.ConfigurationName;
+            languageVersion = projectConfiguration.configuration.LanguageVersion;
+        } else {
+            configurationName = 'Default';
+            languageVersion = 'Default';
+        }
+
+        const targetFramework = projectConfiguration.targetFramework;
+        const projectIdentifier = this.razorProjects[project.path];
+        const newIdentifier = `${configurationName},${languageVersion},${targetFramework}`;
+
+        if (projectIdentifier === newIdentifier) {
+            // We've already reported this project data.
+            return;
+        } else {
+            this.razorProjects[project.path] = newIdentifier;
+        }
+
+        const projectInfoEvent = new TelemetryEvent(
+            'VSCode.Razor.ProjectInfo',
+            {
+                path: project.path,
+                configurationName,
+                targetFramework,
+                languageVersion,
+            });
+        this.eventStream.post(projectInfoEvent);
     }
 
     public reportDebugLanguageServer() {
