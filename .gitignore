@@ -35,3 +35,4 @@ node_modules/
 .vscode/
 global.json
 BenchmarkDotNet.Artifacts/
+*.binlog
