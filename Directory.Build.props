@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <Product>Microsoft .NET Extensions</Product>
-    <RepositoryUrl>https://github.com/aspnet/Common</RepositoryUrl>
+    <RepositoryUrl>https://github.com/aspnet/Extensions</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
