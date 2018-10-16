@@ -52,8 +52,8 @@ in the file are overridden by command line parameters.
 Example config file:
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/dev/tools/korebuild.schema.json",
-  "channel": "dev",
+  "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/master/tools/korebuild.schema.json",
+  "channel": "master",
   "toolsSource": "https://aspnetcore.blob.core.windows.net/buildtools"
 }
 ```
@@ -179,8 +179,9 @@ if (Test-Path $ConfigFile) {
         }
     }
     catch {
-        Write-Warning "$ConfigFile could not be read. Its settings will be ignored."
-        Write-Warning $Error[0]
+        Write-Host -ForegroundColor Red $Error[0]
+        Write-Error "$ConfigFile contains invalid JSON."
+        exit 1
     }
 }
 
