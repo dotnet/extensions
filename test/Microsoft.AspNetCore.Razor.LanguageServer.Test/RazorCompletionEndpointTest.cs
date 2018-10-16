@@ -27,6 +27,29 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         // This is more of an integration test to validate that all the pieces work together
         [Fact]
+        public async Task Handle_Unsupported_NoCompletionItems()
+        {
+            // Arrange
+            var documentPath = "C:/path/to/document.cshtml";
+            var codeDocument = CreateCodeDocument("@");
+            codeDocument.SetUnsupported();
+            var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
+            var completionEndpoint = new RazorCompletionEndpoint(Dispatcher, documentResolver, CompletionFactsService, LoggerFactory);
+            var request = new CompletionParams()
+            {
+                TextDocument = new TextDocumentIdentifier(new Uri(documentPath)),
+                Position = new Position(0, 1)
+            };
+
+            // Act
+            var completionList = await Task.Run(() => completionEndpoint.Handle(request, default));
+
+            // Assert
+            Assert.Empty(completionList);
+        }
+
+        // This is more of an integration test to validate that all the pieces work together
+        [Fact]
         public async Task Handle_ResolvesDirectiveCompletionItems()
         {
             // Arrange

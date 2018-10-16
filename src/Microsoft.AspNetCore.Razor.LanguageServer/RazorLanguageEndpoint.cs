@@ -75,11 +75,24 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var sourceText = await documentSnapshot.GetTextAsync();
             var linePosition = new LinePosition((int)request.Position.Line, (int)request.Position.Character);
             var hostDocumentIndex = sourceText.Lines.GetPosition(linePosition);
+            var responsePosition = request.Position;
+
+            if (codeDocument.IsUnsupported())
+            {
+                // All language queries on unsupported documents return Html. This is equivalent to what pre-VSCode Razor was capable of.
+                return new RazorLanguageQueryResponse()
+                {
+                    Kind = RazorLanguageKind.Html,
+                    Position = responsePosition,
+                    PositionIndex = hostDocumentIndex,
+                    HostDocumentVersion = documentVersion,
+                };
+            }
+
             var syntaxTree = codeDocument.GetSyntaxTree();
             var classifiedSpans = syntaxTree.GetClassifiedSpans();
             var languageKind = GetLanguageKind(classifiedSpans, hostDocumentIndex);
 
-            var responsePosition = request.Position;
             var responsePositionIndex = hostDocumentIndex;
 
             if (languageKind == RazorLanguageKind.CSharp)

@@ -26,13 +26,7 @@ export class RazorProjectTracker {
         } else if (event.kind === RazorProjectChangeKind.removed) {
             await this.languageServiceClient.removeProject(event.project.uri);
         } else if (event.kind === RazorProjectChangeKind.changed) {
-            const projectConfiguration = event.project.configuration;
-
-            if (!projectConfiguration) {
-                return;
-            }
-
-            await this.languageServiceClient.updateProject(projectConfiguration);
+            await this.languageServiceClient.updateProject(event.project);
         }
     }
 }

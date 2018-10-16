@@ -73,6 +73,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             }, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.ForegroundScheduler);
 
             var codeDocument = await document.GetGeneratedOutputAsync();
+
+            if (codeDocument.IsUnsupported())
+            {
+                return new CompletionList(isIncomplete: false);
+            }
+
             var syntaxTree = codeDocument.GetSyntaxTree();
 
             var sourceText = await document.GetTextAsync();

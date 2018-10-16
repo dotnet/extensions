@@ -87,7 +87,26 @@ export class RazorProjectManager {
     }
 
     private removeProjectConfiguration(uri: vscode.Uri) {
-        const newProject = this.createDefaultProject(uri);
+        const projectDataPath = getUriPath(uri);
+        const projects = Object.values(this.razorProjects);
+        let containingProject: IRazorProject | undefined;
+
+        for (const project of projects) {
+            if (project.configuration && project.configuration.path === projectDataPath) {
+                containingProject = project;
+                break;
+            }
+        }
+
+        if (!containingProject) {
+            // Deleted an untracked project.razor.json file, noop.
+            return;
+        }
+
+        const newProject: IRazorProject = {
+            uri: containingProject.uri,
+            path: containingProject.path,
+        };
         this.razorProjects[newProject.path] = newProject;
 
         this.notifyProjectChange(newProject, RazorProjectChangeKind.changed);

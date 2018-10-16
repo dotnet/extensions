@@ -4,7 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
-import { IRazorProjectConfiguration } from './IRazorProjectConfiguration';
+import { IRazorProject } from './IRazorProject';
 import { RazorLanguageServerClient } from './RazorLanguageServerClient';
 import { AddDocumentRequest } from './RPC/AddDocumentRequest';
 import { AddProjectRequest } from './RPC/AddProjectRequest';
@@ -44,12 +44,12 @@ export class RazorLanguageServiceClient {
         await this.serverClient.sendRequest<RemoveProjectRequest>('projects/removeProject', request);
     }
 
-    public async updateProject(projectData: IRazorProjectConfiguration) {
+    public async updateProject(project: IRazorProject) {
         const request: UpdateProjectRequest = {
-            projectFilePath: projectData.projectPath,
-            tagHelpers: projectData.tagHelpers,
-            targetFramework: projectData.targetFramework,
-            configuration: projectData.configuration,
+            projectFilePath: project.uri.fsPath,
+            tagHelpers: project.configuration ? project.configuration.tagHelpers : [],
+            targetFramework: project.configuration ? project.configuration.targetFramework : undefined,
+            configuration: project.configuration ? project.configuration.configuration : undefined,
         };
         await this.serverClient.sendRequest<UpdateProjectRequest>('projects/updateProject', request);
     }

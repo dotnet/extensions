@@ -26,10 +26,11 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
         internal const string MSBuildProjectDirectoryPropertyName = "MSBuildProjectDirectory";
         internal const string RazorConfigurationFileName = "project.razor.json";
         internal const string ProjectCapabilityItemType = "ProjectCapability";
+        internal const string TargetFrameworkPropertyName = "TargetFramework";
+        internal const string TargetFrameworkVersionPropertyName = "TargetFrameworkVersion";
 
         private const string MSBuildProjectFullPathPropertyName = "MSBuildProjectFullPath";
         private const string DebugRazorOmnisharpPluginPropertyName = "_DebugRazorOmnisharpPlugin_";
-        private const string TargetFrameworkPropertyName = "TargetFramework";
         private readonly ILogger _logger;
         private readonly IEnumerable<RazorConfigurationProvider> _projectConfigurationProviders;
 
@@ -70,8 +71,8 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
                     return;
                 }
 
-                var targetFramework = args.ProjectInstance.GetPropertyValue(TargetFrameworkPropertyName);
-                if (string.IsNullOrEmpty(projectFilePath))
+                var targetFramework = GetTargetFramework(args.ProjectInstance);
+                if (string.IsNullOrEmpty(targetFramework))
                 {
                     // This should never be true but we're being extra careful.
                     return;
@@ -165,6 +166,18 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
 
             path = Path.Combine(intermediateOutputPath, RazorConfigurationFileName);
             return true;
+        }
+
+        // Internal for testing
+        internal static string GetTargetFramework(ProjectInstance projectInstance)
+        {
+            var targetFramework = projectInstance.GetPropertyValue(TargetFrameworkPropertyName);
+            if (string.IsNullOrEmpty(targetFramework))
+            {
+                targetFramework = projectInstance.GetPropertyValue(TargetFrameworkVersionPropertyName);
+            }
+
+            return targetFramework;
         }
     }
 }

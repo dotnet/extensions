@@ -16,6 +16,65 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
     public class ProjectLoadListenerTest
     {
         [Fact]
+        public void GetTargetFramework_ReturnsTargetFramework()
+        {
+            // Arrange
+            var expectedTFM = "net461";
+            var projectInstance = new ProjectInstance(ProjectRootElement.Create());
+            projectInstance.SetProperty(ProjectLoadListener.TargetFrameworkPropertyName, expectedTFM);
+
+            // Act
+            var tfm = ProjectLoadListener.GetTargetFramework(projectInstance);
+
+            // Assert
+            Assert.Equal(expectedTFM, tfm);
+        }
+
+        [Fact]
+        public void GetTargetFramework_NoTFM_ReturnsTargetFrameworkVersion()
+        {
+            // Arrange
+            var expectedTFM = "v4.6.1";
+            var projectInstance = new ProjectInstance(ProjectRootElement.Create());
+            projectInstance.SetProperty(ProjectLoadListener.TargetFrameworkVersionPropertyName, expectedTFM);
+
+            // Act
+            var tfm = ProjectLoadListener.GetTargetFramework(projectInstance);
+
+            // Assert
+            Assert.Equal(expectedTFM, tfm);
+        }
+
+        [Fact]
+        public void GetTargetFramework_PrioritizesTargetFrameworkOverVersion()
+        {
+            // Arrange
+            var expectedTFM = "v4.6.1";
+            var projectInstance = new ProjectInstance(ProjectRootElement.Create());
+            projectInstance.SetProperty(ProjectLoadListener.TargetFrameworkPropertyName, expectedTFM);
+            projectInstance.SetProperty(ProjectLoadListener.TargetFrameworkVersionPropertyName, "Unexpected");
+
+            // Act
+            var tfm = ProjectLoadListener.GetTargetFramework(projectInstance);
+
+            // Assert
+            Assert.Equal(expectedTFM, tfm);
+        }
+
+        [Fact]
+        public void GetTargetFramework_NoTFM_ReturnsEmpty()
+        {
+            // Arrange
+            var projectInstance = new ProjectInstance(ProjectRootElement.Create());
+
+            // Act
+            var tfm = ProjectLoadListener.GetTargetFramework(projectInstance);
+
+            // Assert
+            Assert.Empty(tfm);
+        }
+
+        [Fact]
         public void GetRazorConfiguration_ProvidersReturnsTrue_ReturnsConfig()
         {
             // Arrange

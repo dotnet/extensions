@@ -107,6 +107,35 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             Assert.Equal(1337, response.HostDocumentVersion);
         }
 
+        // This is more of an integration test to validate that all the pieces work together
+        [Fact]
+        public async Task Handle_Unsupported_ResolvesLanguageRequest_Html()
+        {
+            // Arrange
+            var documentPath = "C:/path/to/document.cshtml";
+            var codeDocument = CreateCodeDocumentWithCSharpProjection(
+                "@",
+                "/* CSharp */",
+                new[] { new SourceMapping(new SourceSpan(0, 1), new SourceSpan(0, 12)) });
+            codeDocument.SetUnsupported();
+            var documentResolver = CreateDocumentResolver(documentPath, codeDocument);
+            var languageEndpoint = new RazorLanguageEndpoint(Dispatcher, documentResolver, DocumentVersionCache, LoggerFactory);
+            var request = new RazorLanguageQueryParams()
+            {
+                Uri = new Uri(documentPath),
+                Position = new Position(0, 1),
+            };
+
+            // Act
+            var response = await Task.Run(() => languageEndpoint.Handle(request, default));
+
+            // Assert
+            Assert.Equal(RazorLanguageKind.Html, response.Kind);
+            Assert.Equal(0, response.Position.Line);
+            Assert.Equal(1, response.Position.Character);
+            Assert.Equal(1337, response.HostDocumentVersion);
+        }
+
         [Fact]
         public void GetLanguageKind_CSharp()
         {
@@ -267,8 +296,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Act
             var result = RazorLanguageEndpoint.TryGetCSharpProjectedPosition(
-                codeDoc, 
-                28, 
+                codeDoc,
+                28,
                 out var projectedPosition,
                 out var projectedPositionIndex);
 
@@ -293,8 +322,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
             // Act
             var result = RazorLanguageEndpoint.TryGetCSharpProjectedPosition(
-                codeDoc, 
-                35, 
+                codeDoc,
+                35,
                 out var projectedPosition,
                 out var projectedPositionIndex);
 
