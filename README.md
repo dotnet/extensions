@@ -33,10 +33,6 @@ These are some other repos for related projects:
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).  For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
-## License
-
-.NET Extensions are available under the Apache License, Version 2.0. See [the license](./LICENSE.txt) for details.
-
 ## Community forks
 
 Some parts of this project are no longer under active development, but are maintained as community forks.
