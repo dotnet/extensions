@@ -35,7 +35,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 ## Community forks
 
-Some parts of this project are no longer under active development, but are maintained as community forks.
+Some parts of this project have been forked by the community to add additional functionality:
 
 #### [McMaster.Extensions.CommandLineUtils](https://github.com/natemcmaster/CommandLineUtils)
 
