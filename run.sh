@@ -11,13 +11,14 @@ RED="\033[0;31m"
 YELLOW="\033[0;33m"
 MAGENTA="\033[0;95m"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-[ -z "${DOTNET_HOME:-}" ] && DOTNET_HOME="$HOME/.dotnet"
 verbose=false
 update=false
+reinstall=false
 repo_path="$DIR"
 channel=''
 tools_source=''
 tools_source_suffix=''
+ci=false
 
 #
 # Functions
@@ -38,6 +39,8 @@ __usage() {
     echo "    -s|--tools-source|-ToolsSource <URL>                  The base url where build tools can be downloaded. Overrides the value from the config file."
     echo "    --tools-source-suffix|-ToolsSourceSuffix <SUFFIX>     The suffix to append to tools-source. Useful for query strings."
     echo "    -u|--update                                           Update to the latest KoreBuild even if the lock file is present."
+    echo "    --reinstall                                           Reinstall KoreBuild."
+    echo "    --ci                                                  Apply CI specific settings and environment variables."
     echo ""
     echo "Description:"
     echo "    This function will create a file \$DIR/korebuild-lock.txt. This lock file can be committed to source, but does not have to be."
@@ -61,6 +64,10 @@ get_korebuild() {
     fi
     version="$(echo "${version#version:}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
     local korebuild_path="$DOTNET_HOME/buildtools/korebuild/$version"
+
+    if [ "$reinstall" = true ] && [ -d "$korebuild_path" ]; then
+        rm -rf "$korebuild_path"
+    fi
 
     {
         if [ ! -d "$korebuild_path" ]; then
@@ -175,6 +182,15 @@ while [[ $# -gt 0 ]]; do
         -u|--update|-Update)
             update=true
             ;;
+        --reinstall|-[Rr]einstall)
+            reinstall=true
+            ;;
+        --ci|-[Cc][Ii])
+            ci=true
+            if [[ -z "${DOTNET_HOME:-}" ]]; then
+                DOTNET_HOME="$DIR/.dotnet"
+            fi
+            ;;
         --verbose|-Verbose)
             verbose=true
             ;;
@@ -223,9 +239,10 @@ if [ -f "$config_file" ]; then
     [ ! -z "${config_tools_source:-}" ] && tools_source="$config_tools_source"
 fi
 
-[ -z "$channel" ] && channel='dev'
+[ -z "${DOTNET_HOME:-}" ] && DOTNET_HOME="$HOME/.dotnet"
+[ -z "$channel" ] && channel='master'
 [ -z "$tools_source" ] && tools_source='https://aspnetcore.blob.core.windows.net/buildtools'
 
 get_korebuild
-set_korebuildsettings "$tools_source" "$DOTNET_HOME" "$repo_path" "$config_file"
+set_korebuildsettings "$tools_source" "$DOTNET_HOME" "$repo_path" "$config_file" "$ci"
 invoke_korebuild_command "$command" "$@"
