@@ -64,9 +64,19 @@
                     "default": false,
                     "description": "Specifies whether to wait for debug attach when launching the language server."
                 },
-                "razor.languageServer.trace": {
+                "razor.trace": {
                     "type": "string",
                     "default": "Messages",
+                    "enum": [
+                        "Off",
+                        "Messages",
+                        "Verbose"
+                    ],
+                    "enumDescriptions": [
+                        "Does not log messages from the Razor extension",
+                        "Logs only some messages from the Razor extension",
+                        "Logs all messages from the Razor extension"
+                    ],
                     "description": "Specifies whether to output all messages [Verbose], some messages [Messages] or not at all [Off]."
                 }
             }

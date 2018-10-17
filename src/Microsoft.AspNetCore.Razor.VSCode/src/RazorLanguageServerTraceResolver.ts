@@ -7,7 +7,7 @@ import { Trace } from 'vscode-jsonrpc';
 import { RazorLanguage } from './RazorLanguage';
 
 export function resolveRazorLanguageServerTrace() {
-    const traceString = RazorLanguage.serverConfig.get<string>('trace');
+    const traceString = RazorLanguage.languageConfig.get<string>('trace');
     const trace = parseTraceString(traceString);
 
     return trace;

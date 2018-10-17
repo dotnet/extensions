@@ -71,7 +71,7 @@ export class RazorLogger implements vscode.Disposable {
             ' - To log issues with the Razor experience in VSCode you can file issues ' +
             'at https://github.com/aspnet/Razor.VSCode');
         this.log(
-            ' - To change Razor\'s trace level set \'razor.languageServer.trace\' to ' +
+            ' - To change Razor\'s trace level set \'razor.trace\' to ' +
             '\'Off\', \'Messages\' or \'Verbose\' and then restart VSCode.');
 
         this.log(
