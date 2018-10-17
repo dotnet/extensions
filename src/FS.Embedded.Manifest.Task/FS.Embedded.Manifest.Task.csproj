@@ -5,7 +5,7 @@
     <AssemblyName>Microsoft.Extensions.FileProviders.Embedded.Manifest.Task</AssemblyName>
     <Description>MSBuild task to generate a manifest that can be used by Microsoft.Extensions.FileProviders.Embedded to preserve
     metadata of the files embedded in the assembly at compilation time.</Description>
-    <TargetFrameworks>netstandard1.5;net461</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <EnableApiCheck>false</EnableApiCheck>
     <IsPackable>false</IsPackable>
