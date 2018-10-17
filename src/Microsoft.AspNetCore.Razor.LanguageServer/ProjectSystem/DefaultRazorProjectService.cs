@@ -240,6 +240,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 return;
             }
 
+            var currentConfiguration = project.HostProject.Configuration;
+            if (currentConfiguration.ConfigurationName == configuration?.ConfigurationName)
+            {
+                _logger.LogTrace($"Updating project '{filePath}' ignored. The project is already using configuration '{configuration.ConfigurationName}'.");
+                return;
+            }
+
             if (configuration == null)
             {
                 configuration = RazorDefaults.Configuration;

@@ -18,6 +18,23 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
     public class DefaultRazorProjectServiceTest : TestBase
     {
         [Fact]
+        public void UpdateProject_SameConfigurationNoops()
+        {
+            // Arrange
+            var projectFilePath = "/C:/path/to/project.csproj";
+            var ownerProject = TestProjectSnapshot.Create(projectFilePath);
+            var projectSnapshotManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
+            projectSnapshotManager.Setup(manager => manager.GetLoadedProject(projectFilePath))
+                .Returns(ownerProject);
+            projectSnapshotManager.Setup(manager => manager.HostProjectChanged(It.IsAny<HostProject>()))
+                .Throws(new XunitException("Should not have been called."));
+            var projectService = CreateProjectService(Mock.Of<ProjectResolver>(), projectSnapshotManager.Object);
+
+            // Act & Assert
+            projectService.UpdateProject(projectFilePath, ownerProject.Configuration);
+        }
+
+        [Fact]
         public void UpdateProject_NullConfigurationUsesDefault()
         {
             // Arrange
