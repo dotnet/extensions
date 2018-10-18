@@ -26,7 +26,7 @@ namespace Microsoft.JSInterop
         /// it as an argument to subsequent calls.
         /// </summary>
         /// <param name="dotNetObjectRef">The reference to stop tracking.</param>
-        /// <remarks>This method is called automaticallly by <see cref="DotNetObjectRef.Dispose"/>.</remarks>
+        /// <remarks>This method is called automatically by <see cref="DotNetObjectRef.Dispose"/>.</remarks>
         void UntrackObjectRef(DotNetObjectRef dotNetObjectRef);
     }
 }
