@@ -164,6 +164,9 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
                 intermediateOutputPath = Path.Combine(projectDirectory, intermediateOutputPath);
             }
 
+            intermediateOutputPath = intermediateOutputPath
+                .Replace('\\', Path.DirectorySeparatorChar)
+                .Replace('/', Path.DirectorySeparatorChar);
             path = Path.Combine(intermediateOutputPath, RazorConfigurationFileName);
             return true;
         }

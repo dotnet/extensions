@@ -134,6 +134,26 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
         }
 
         [Fact]
+        public void TryResolveConfigurationOutputPath_MSBuildIntermediateOutputPath_Normalizes()
+        {
+            // Arrange
+            var projectRootElement = ProjectRootElement.Create();
+
+            // Note the ending \ here that gets normalized away.
+            var intermediateOutputPath = "C:/project\\obj";
+            projectRootElement.AddProperty(ProjectLoadListener.IntermediateOutputPathPropertyName, intermediateOutputPath);
+            var projectInstance = new ProjectInstance(projectRootElement);
+            var expectedPath = string.Format("C:{0}project{0}obj{0}{1}", Path.DirectorySeparatorChar, ProjectLoadListener.RazorConfigurationFileName);
+
+            // Act
+            var result = ProjectLoadListener.TryResolveConfigurationOutputPath(projectInstance, out var path);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(expectedPath, path);
+        }
+
+        [Fact]
         public void TryResolveConfigurationOutputPath_NoIntermediateOutputPath_ReturnsFalse()
         {
             // Arrange
@@ -153,7 +173,7 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
         {
             // Arrange
             var projectRootElement = ProjectRootElement.Create();
-            var intermediateOutputPath = "C:\\project\\obj";
+            var intermediateOutputPath = string.Format("C:{0}project{0}obj", Path.DirectorySeparatorChar);
             projectRootElement.AddProperty(ProjectLoadListener.IntermediateOutputPathPropertyName, intermediateOutputPath);
             var projectInstance = new ProjectInstance(projectRootElement);
             var expectedPath = Path.Combine(intermediateOutputPath, ProjectLoadListener.RazorConfigurationFileName);
