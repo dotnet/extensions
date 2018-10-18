@@ -1,6 +1,7 @@
 ﻿<Project>
   <PropertyGroup Label="Package Versions">
     <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20180911.2</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreBlazorExtensionsPackageVersion>0.6.0</MicrosoftAspNetCoreBlazorExtensionsPackageVersion>
     <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
     <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10495</MicrosoftAspNetCoreTestingPackageVersion>

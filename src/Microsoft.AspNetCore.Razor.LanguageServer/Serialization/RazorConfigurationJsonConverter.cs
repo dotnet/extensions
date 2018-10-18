@@ -28,10 +28,15 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Serialization
 
             var obj = JObject.Load(reader);
             var configurationName = obj[nameof(RazorConfiguration.ConfigurationName)].Value<string>();
-            var languageVersion = obj[nameof(RazorConfiguration.LanguageVersion)].Value<string>();
+            var languageVersionValue = obj[nameof(RazorConfiguration.LanguageVersion)].Value<string>();
             var extensions = obj[nameof(RazorConfiguration.Extensions)].ToObject<RazorExtension[]>(serializer);
 
-            return RazorConfiguration.Create(RazorLanguageVersion.Parse(languageVersion), configurationName, extensions);
+            if (!RazorLanguageVersion.TryParse(languageVersionValue, out var languageVersion))
+            {
+                languageVersion = RazorLanguageVersion.Version_2_1;
+            }
+
+            return RazorConfiguration.Create(languageVersion, configurationName, extensions);
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -44,7 +49,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Serialization
             writer.WriteValue(configuration.ConfigurationName);
 
             writer.WritePropertyName(nameof(RazorConfiguration.LanguageVersion));
-            writer.WriteValue(configuration.LanguageVersion.ToString());
+            if (configuration.LanguageVersion == RazorLanguageVersion.Experimental)
+            {
+                writer.WriteValue("Experimental");
+            }
+            else
+            {
+                writer.WriteValue(configuration.LanguageVersion.ToString());
+            }
 
             writer.WritePropertyName(nameof(RazorConfiguration.Extensions));
             serializer.Serialize(writer, configuration.Extensions);

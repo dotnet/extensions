@@ -69,6 +69,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                         new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
                             () => new ProjectEngineFactory_Unsupported(),
                             new ExportCustomProjectEngineFactoryAttribute(UnsupportedRazorConfiguration.Instance.ConfigurationName) { SupportsSerialization = true }),
+                        new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
+                            () => new ProjectEngineFactory_Blazor(),
+                            new ExportCustomProjectEngineFactoryAttribute("Blazor-0.1") { SupportsSerialization = false }),
                     };
                     var services = AdhocServices.Create(
                         workspaceServices: new[]
