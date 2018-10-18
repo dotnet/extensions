@@ -1,0 +1,56 @@
+<Project DefaultTargets="Publish">
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <Import Project="artifacts.props" />
+
+  <PropertyGroup>
+    <!-- This is just a dummy project to publish files. It doesn't actually compile a netcoreapp2.1 project, but this properties are necessary to make /t:Restore work. -->
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <!-- We don't actually need all the implicit package references -->
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="2.2.0-preview1-03124-01" />
+    <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <Target Name="GetFilesToPublish">
+    <ItemGroup>
+      <_SymbolsPackagesToPublish Include="$(PackageOutputPath)%(PackageArtifact.Identity).*.symbols.nupkg" />
+      <PackagesToPublish
+        Include="$(PackageOutputPath)%(PackageArtifact.Identity).*.nupkg"
+        Exclude="@(_SymbolsPackagesToPublish)">
+        <ManifestArtifactData Condition=" '%(PackageArtifact.Category)' != 'ship' ">NonShipping=true</ManifestArtifactData>
+      </PackagesToPublish>
+      <PackagesToPublish Include="@(SymbolsPackagesToPublish)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_MissingArtifactFile Include="@(PackagesToPublish)" Condition="!Exists(%(PackagesToPublish.Identity))" />
+    </ItemGroup>
+
+    <Error Text="Did not find any packages to publish in $(PackageOutputPath)" Condition="@(PackagesToPublish->Count()) == 0" />
+    <Error Text="Missing expected files:%0A - @(_MissingArtifactFile, '%0A - ')" Condition="@(_MissingArtifactFile->Count()) != 0" />
+  </Target>
+
+  <Target Name="SetPublishProperties" DependsOnTargets="ResolveCommitHash;GetFilesToPublish" BeforeTargets="PublishPackagesToBlobFeed">
+
+    <Error Text="Missing required property: PublishBlobFeedUrl"  Condition=" '$(PublishBlobFeedUrl)' == '' "/>
+    <Error Text="Missing required property: PublishBlobFeedKey"  Condition=" '$(PublishBlobFeedKey)' == '' "/>
+
+    <PropertyGroup>
+      <ManifestName>aspnet-extensions</ManifestName>
+      <ManifestBranch>$(RepositoryBranch)</ManifestBranch>
+      <ManifestBuildId>$(Version)</ManifestBuildId>
+      <ManifestBuildData>ProductVersion=$(PackageVersion)</ManifestBuildData>
+      <ExpectedFeedUrl>$(PublishBlobFeedUrl)</ExpectedFeedUrl>
+      <AccountKey>$(PublishBlobFeedKey)</AccountKey>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="Publish" DependsOnTargets="PublishPackagesToBlobFeed" />
+
+</Project>

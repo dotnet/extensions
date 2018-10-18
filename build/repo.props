@@ -3,16 +3,17 @@
 
   <PropertyGroup>
     <EnableBenchmarkValidation>true</EnableBenchmarkValidation>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
-    <LineupPackageVersion>2.1.0-rc1-*</LineupPackageVersion>
-    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
+    <SolutionProperties>$(SolutionProperties);DotNetPackageVersionPropsPath=$(DotNetPackageVersionPropsPath)</SolutionProperties>
+    <SolutionProperties>$(SolutionProperties);DotNetAdditionalRestoreSources=$(DotNetAdditionalRestoreSources)</SolutionProperties>
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)"
+      Feed="$(DotNetAssetRootUrl)"
+      FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
+
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppPackageVersion)"
+      Feed="$(DotNetAssetRootUrl)"
+      FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
   </ItemGroup>
 </Project>
