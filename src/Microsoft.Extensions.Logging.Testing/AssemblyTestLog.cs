@@ -20,8 +20,9 @@ namespace Microsoft.Extensions.Logging.Testing
     public class AssemblyTestLog : IDisposable
     {
         public static readonly string OutputDirectoryEnvironmentVariableName = "ASPNETCORE_TEST_LOG_DIR";
+        private static readonly string MaxPathLengthEnvironmentVariableName = "ASPNETCORE_TEST_LOG_MAXPATH";
         private static readonly string LogFileExtension = ".log";
-        private static readonly int MaxPathLength = 245;
+        private static readonly int MaxPathLength = GetMaxPathLength();
         private static char[] InvalidFileChars = new char[]
         {
             '\"', '<', '>', '|', '\0',
@@ -39,6 +40,13 @@ namespace Microsoft.Extensions.Logging.Testing
         private readonly string _baseDirectory;
         private readonly string _assemblyName;
         private readonly IServiceProvider _serviceProvider;
+
+        private static int GetMaxPathLength()
+        {
+            var maxPathString = Environment.GetEnvironmentVariable(MaxPathLengthEnvironmentVariableName);
+            var defaultMaxPath = 245;
+            return string.IsNullOrEmpty(maxPathString) ? defaultMaxPath : int.Parse(maxPathString);
+        }
 
         private AssemblyTestLog(ILoggerFactory globalLoggerFactory, ILogger globalLogger, string baseDirectory, string assemblyName, IServiceProvider serviceProvider)
         {
