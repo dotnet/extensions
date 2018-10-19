@@ -69,6 +69,7 @@ namespace Microsoft.Extensions.Http
 
                 _callback = callback;
                 _timer = NonCapturingTimer.Create(_timerCallback, this, Lifetime, Timeout.InfiniteTimeSpan);
+                _timerInitialized = true;
             }
         }
 
@@ -79,10 +80,13 @@ namespace Microsoft.Extensions.Http
 
             lock (_lock)
             {
-                _timer.Dispose();
-                _timer = null;
+                if (_timer != null)
+                {
+                    _timer.Dispose();
+                    _timer = null;
 
-                _callback(this);
+                    _callback(this);
+                }
             }
         }
     }
