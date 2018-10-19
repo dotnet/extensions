@@ -21,6 +21,7 @@ namespace BenchmarkDotNet.Attributes
 
             Add(MemoryDiagnoser.Default);
             Add(StatisticColumn.OperationsPerSecond);
+            Add(new ParamsSummaryColumn());
             Add(DefaultColumnProviders.Statistics, DefaultColumnProviders.Diagnosers, DefaultColumnProviders.Target);
 
             // TODO: When upgrading to BDN 0.11.1, use Add(DefaultColumnProviders.Descriptor); 
