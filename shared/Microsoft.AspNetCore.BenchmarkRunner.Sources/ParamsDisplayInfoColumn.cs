@@ -12,11 +12,7 @@ namespace BenchmarkDotNet.Attributes
         public string Id => nameof(ParamsSummaryColumn);
         public string ColumnName { get; } = "Params";
         public bool IsDefault(Summary summary, Benchmark benchmark) => false;
-        public string GetValue(Summary summary, Benchmark benchmark)
-        {
-            return benchmark.Parameters.DisplayInfo;
-        }            
-
+        public string GetValue(Summary summary, Benchmark benchmark) => benchmark.Parameters.DisplayInfo;
         public bool IsAvailable(Summary summary) => true;
         public bool AlwaysShow => true;
         public ColumnCategory Category => ColumnCategory.Params;
