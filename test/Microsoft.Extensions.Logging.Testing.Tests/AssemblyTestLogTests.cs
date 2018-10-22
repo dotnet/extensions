@@ -63,7 +63,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 var illegalTestName = "Testing-https://localhost:5000";
                 var escapedTestName = "Testing-https_localhost_5000";
                 using (var testAssemblyLog = AssemblyTestLog.Create(ThisAssemblyName, baseDirectory: tempDir))
-                using (testAssemblyLog.StartTestLog(output: null, className: "FakeTestAssembly.FakeTestClass", loggerFactory: out var testLoggerFactory, minLogLevel: LogLevel.Trace, resolvedTestName: out var resolvedTestname, testName: illegalTestName))
+                using (testAssemblyLog.StartTestLog(output: null, className: "FakeTestAssembly.FakeTestClass", loggerFactory: out var testLoggerFactory, minLogLevel: LogLevel.Trace, resolvedTestName: out var resolvedTestname, out var _, testName: illegalTestName))
                 {
                     Assert.Equal(escapedTestName, resolvedTestname);
                 }
