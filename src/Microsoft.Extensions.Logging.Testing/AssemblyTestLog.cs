@@ -61,12 +61,12 @@ namespace Microsoft.Extensions.Logging.Testing
             StartTestLog(output, className, out loggerFactory, LogLevel.Debug, testName);
 
         public IDisposable StartTestLog(ITestOutputHelper output, string className, out ILoggerFactory loggerFactory, LogLevel minLogLevel, [CallerMemberName] string testName = null) =>
-            StartTestLog(output, className, out loggerFactory, minLogLevel, out var _, testName);
+            StartTestLog(output, className, out loggerFactory, minLogLevel, out var _, out var _, testName);
 
-        internal IDisposable StartTestLog(ITestOutputHelper output, string className, out ILoggerFactory loggerFactory, LogLevel minLogLevel, out string resolvedTestName, [CallerMemberName] string testName = null)
+        internal IDisposable StartTestLog(ITestOutputHelper output, string className, out ILoggerFactory loggerFactory, LogLevel minLogLevel, out string resolvedTestName, out string logOutputDirectory, [CallerMemberName] string testName = null)
         {
             var logStart = DateTimeOffset.UtcNow;
-            var serviceProvider = CreateLoggerServices(output, className, minLogLevel, out resolvedTestName, testName, logStart);
+            var serviceProvider = CreateLoggerServices(output, className, minLogLevel, out resolvedTestName, out logOutputDirectory, testName, logStart);
             var factory = serviceProvider.GetRequiredService<ILoggerFactory>();
             loggerFactory = factory;
             var logger = loggerFactory.CreateLogger("TestLifetime");
@@ -93,11 +93,15 @@ namespace Microsoft.Extensions.Logging.Testing
             => CreateLoggerFactory(output, className, LogLevel.Trace, testName, logStart);
 
         public ILoggerFactory CreateLoggerFactory(ITestOutputHelper output, string className, LogLevel minLogLevel, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
-            => CreateLoggerServices(output, className, minLogLevel, out var _, testName, logStart).GetRequiredService<ILoggerFactory>();
+            => CreateLoggerServices(output, className, minLogLevel, out var _, out var _, testName, logStart).GetRequiredService<ILoggerFactory>();
 
         public IServiceProvider CreateLoggerServices(ITestOutputHelper output, string className, LogLevel minLogLevel, out string normalizedTestName, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
+            => CreateLoggerServices(output, className, minLogLevel, out normalizedTestName, out var _, testName, logStart);
+
+        public IServiceProvider CreateLoggerServices(ITestOutputHelper output, string className, LogLevel minLogLevel, out string normalizedTestName, out string logOutputDirectory, [CallerMemberName] string testName = null, DateTimeOffset? logStart = null)
         {
             normalizedTestName = string.Empty;
+            logOutputDirectory = string.Empty;
             var assemblyName = _assembly.GetName().Name;
 
             // Try to shorten the class name using the assembly name
@@ -109,15 +113,15 @@ namespace Microsoft.Extensions.Logging.Testing
             SerilogLoggerProvider serilogLoggerProvider = null;
             if (!string.IsNullOrEmpty(_baseDirectory))
             {
-                var testOutputDirectory = Path.Combine(GetAssemblyBaseDirectory(_baseDirectory, _assembly), className);
+                logOutputDirectory = Path.Combine(GetAssemblyBaseDirectory(_baseDirectory, _assembly), className);
                 testName = RemoveIllegalFileChars(testName);
 
-                if (testOutputDirectory.Length + testName.Length + LogFileExtension.Length >= MaxPathLength)
+                if (logOutputDirectory.Length + testName.Length + LogFileExtension.Length >= MaxPathLength)
                 {
                     _globalLogger.LogWarning($"Test name {testName} is too long. Please shorten test name.");
 
                     // Shorten the test name by removing the middle portion of the testname
-                    var testNameLength = MaxPathLength - testOutputDirectory.Length - LogFileExtension.Length;
+                    var testNameLength = MaxPathLength - logOutputDirectory.Length - LogFileExtension.Length;
 
                     if (testNameLength <= 0)
                     {
@@ -129,7 +133,7 @@ namespace Microsoft.Extensions.Logging.Testing
                     _globalLogger.LogWarning($"To prevent long paths test name was shortened to {testName}.");
                 }
 
-                var testOutputFile = Path.Combine(testOutputDirectory, $"{testName}{LogFileExtension}");
+                var testOutputFile = Path.Combine(logOutputDirectory, $"{testName}{LogFileExtension}");
 
                 if (File.Exists(testOutputFile))
                 {
@@ -137,7 +141,7 @@ namespace Microsoft.Extensions.Logging.Testing
 
                     for (var i = 0; i < 1000; i++)
                     {
-                        testOutputFile = Path.Combine(testOutputDirectory, $"{testName}.{i}{LogFileExtension}");
+                        testOutputFile = Path.Combine(logOutputDirectory, $"{testName}.{i}{LogFileExtension}");
 
                         if (!File.Exists(testOutputFile))
                         {

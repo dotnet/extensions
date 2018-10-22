@@ -21,12 +21,13 @@ namespace Microsoft.Extensions.Logging.Testing
         }
 
         // Internal for testing
-        internal string ResolvedTestMethodName { get; set; }
-
-        // Internal for testing
         internal string ResolvedTestClassName { get; set; }
 
         internal RetryContext RetryContext { get; set; }
+
+        public string ResolvedLogOutputDirectory { get; set; }
+
+        public string ResolvedTestMethodName { get; set; }
 
         public ILogger Logger { get; set; }
 
@@ -55,21 +56,22 @@ namespace Microsoft.Extensions.Logging.Testing
 
             var useShortClassName = methodInfo.DeclaringType.GetCustomAttribute<ShortClassNameAttribute>()
                 ?? methodInfo.DeclaringType.Assembly.GetCustomAttribute<ShortClassNameAttribute>();
-            var resolvedClassName = useShortClassName == null ? classType.FullName : classType.Name;
+            // internal for testing
+            ResolvedTestClassName = useShortClassName == null ? classType.FullName : classType.Name;
 
             _testLog = AssemblyTestLog
                 .ForAssembly(classType.GetTypeInfo().Assembly)
                 .StartTestLog(
                     TestOutputHelper,
-                    resolvedClassName,
+                    ResolvedTestClassName,
                     out var loggerFactory,
                     logLevelAttribute?.LogLevel ?? LogLevel.Trace,
                     out var resolvedTestName,
+                    out var logOutputDirectory,
                     testName);
 
-            // internal for testing
+            ResolvedLogOutputDirectory = logOutputDirectory;
             ResolvedTestMethodName = resolvedTestName;
-            ResolvedTestClassName = resolvedClassName;
 
             LoggerFactory = loggerFactory;
             Logger = loggerFactory.CreateLogger(classType);
