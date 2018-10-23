@@ -82,17 +82,25 @@ namespace Microsoft.AspNetCore.Testing.xunit
             // currently not used on other OS's
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // Environment.OSVersion doesn't work past Win8.
+                // Win10+
                 var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
                 var major = key.GetValue("CurrentMajorVersionNumber") as int?;
                 var minor = key.GetValue("CurrentMinorVersionNumber") as int?;
 
-                if (!major.HasValue || !minor.HasValue)
+                if (major.HasValue && minor.HasValue)
                 {
-                    return Environment.OSVersion.Version;
+                    return new Version(major.Value, minor.Value);
                 }
 
-                return new Version(major.Value, minor.Value);
+                // CurrentVersion doesn't work past Win8.1
+                var current = key.GetValue("CurrentVersion") as string;
+                if (!string.IsNullOrEmpty(current) && Version.TryParse(current, out var currentVersion))
+                {
+                    return currentVersion;
+                }
+
+                // Environment.OSVersion doesn't work past Win8.
+                return Environment.OSVersion.Version;
             }
             else
             {
