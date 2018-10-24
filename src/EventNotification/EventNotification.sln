@@ -1,0 +1,63 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26815.3
+MinimumVisualStudioVersion = 15.0.26730.03
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8B66E199-1AFE-4B68-AC71-4521C46EC4CD}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D75011A4-DEEE-48DE-BB83-CE042F2AC05B}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.DiagnosticAdapter", "src\Microsoft.Extensions.DiagnosticAdapter\Microsoft.Extensions.DiagnosticAdapter.csproj", "{87808F3C-362E-4261-AA4A-EE40BA39D64E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.DiagnosticAdapter.Test", "test\Microsoft.Extensions.DiagnosticAdapter.Test\Microsoft.Extensions.DiagnosticAdapter.Test.csproj", "{02754747-C385-4662-AD58-49CE54C3D7AF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3000A721-AF6D-46D5-839C-60A2EC4A9693}"
+	ProjectSection(SolutionItems) = preProject
+		.appveyor.yml = .appveyor.yml
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		.travis.yml = .travis.yml
+		build.cmd = build.cmd
+		build.ps1 = build.ps1
+		build.sh = build.sh
+		CONTRIBUTING.md = CONTRIBUTING.md
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
+		LICENSE.txt = LICENSE.txt
+		NuGet.config = NuGet.config
+		NuGetPackageVerifier.json = NuGetPackageVerifier.json
+		README.md = README.md
+		version.xml = version.xml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{87808F3C-362E-4261-AA4A-EE40BA39D64E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87808F3C-362E-4261-AA4A-EE40BA39D64E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87808F3C-362E-4261-AA4A-EE40BA39D64E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87808F3C-362E-4261-AA4A-EE40BA39D64E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02754747-C385-4662-AD58-49CE54C3D7AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02754747-C385-4662-AD58-49CE54C3D7AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02754747-C385-4662-AD58-49CE54C3D7AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02754747-C385-4662-AD58-49CE54C3D7AF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{87808F3C-362E-4261-AA4A-EE40BA39D64E} = {8B66E199-1AFE-4B68-AC71-4521C46EC4CD}
+		{02754747-C385-4662-AD58-49CE54C3D7AF} = {D75011A4-DEEE-48DE-BB83-CE042F2AC05B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AB0EDBB3-E00B-4334-A17A-054D3771E912}
+	EndGlobalSection
+EndGlobal
