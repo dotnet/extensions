@@ -1,4 +1,4 @@
-#!/usr/bin/env powershell
+#!/usr/bin/env pwsh -c
 #requires -version 4
 
 <#
@@ -7,9 +7,6 @@ Executes KoreBuild commands.
 
 .DESCRIPTION
 Downloads korebuild if required. Then executes the KoreBuild command. To see available commands, execute with `-Command help`.
-
-.PARAMETER Command
-The KoreBuild command to run.
 
 .PARAMETER Path
 The folder to build. Defaults to the folder containing this script.
@@ -38,8 +35,11 @@ The Suffix to append to the end of the ToolsSource. Useful for query strings in 
 .PARAMETER CI
 Sets up CI specific settings and variables.
 
-.PARAMETER Arguments
-Arguments to be passed to the command
+.PARAMETER PackageVersionPropsUrl
+(optional) the url of the package versions props path containing dependency versions.
+
+.PARAMETER MSBuildArguments
+Additional MSBuild arguments to be passed through.
 
 .NOTES
 This function will create a file $PSScriptRoot/korebuild-lock.txt. This lock file can be committed to source, but does not have to be.
@@ -60,8 +60,6 @@ Example config file:
 #>
 [CmdletBinding(PositionalBinding = $false)]
 param(
-    [Parameter(Mandatory = $true, Position = 0)]
-    [string]$Command,
     [string]$Path = $PSScriptRoot,
     [Alias('c')]
     [string]$Channel,
@@ -75,8 +73,9 @@ param(
     [string]$ToolsSourceSuffix,
     [string]$ConfigFile = $null,
     [switch]$CI,
+    [string]$PackageVersionPropsUrl = $env:PB_PackageVersionPropsUrl,
     [Parameter(ValueFromRemainingArguments = $true)]
-    [string[]]$Arguments
+    [string[]]$MSBuildArguments
 )
 
 Set-StrictMode -Version 2
@@ -99,7 +98,7 @@ function Get-KoreBuild {
         Write-Error "Failed to parse version from $lockFile. Expected a line that begins with 'version:'"
     }
     $version = $version.TrimStart('version:').Trim()
-    $korebuildPath = Join-Paths $DotNetHome ('buildtools', 'korebuild', $version)
+    $korebuildPath = "$DotNetHome/buildtools/korebuild/$version"
 
     if ($Reinstall -and (Test-Path $korebuildPath)) {
         Remove-Item -Force -Recurse $korebuildPath
@@ -133,11 +132,6 @@ function Get-KoreBuild {
     }
 
     return $korebuildPath
-}
-
-function Join-Paths([string]$path, [string[]]$childPaths) {
-    $childPaths | ForEach-Object { $path = Join-Path $path $_ }
-    return $path
 }
 
 function Get-RemoteFile([string]$RemotePath, [string]$LocalPath, [string]$RemoteSuffix) {
@@ -196,14 +190,31 @@ if (!$DotNetHome) {
 if (!$Channel) { $Channel = 'master' }
 if (!$ToolsSource) { $ToolsSource = 'https://aspnetcore.blob.core.windows.net/buildtools' }
 
+if ($PackageVersionPropsUrl) {
+    $IntermediateDir = Join-Path $PSScriptRoot 'obj'
+    $PropsFilePath = Join-Path $IntermediateDir 'PackageVersions.props'
+    New-Item -ItemType Directory $IntermediateDir -ErrorAction Ignore | Out-Null
+    Get-RemoteFile "${PackageVersionPropsUrl}${AccessTokenSuffix}" $PropsFilePath
+    $MSBuildArguments += "-p:DotNetPackageVersionPropsPath=$PropsFilePath"
+}
+
 # Execute
 
 $korebuildPath = Get-KoreBuild
 Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
+# PipeBuild parameters
+$MSBuildArguments += "/p:DotNetAssetRootUrl=${env:PB_AssetRootUrl}"
+$MSBuildArguments += "/p:DotNetProductBuildId=${env:ProductBuildId}"
+$MSBuildArguments += "/p:PublishBlobFeedUrl=${env:PB_PublishBlobFeedUrl}"
+$MSBuildArguments += "/p:PublishType=${env:PB_PublishType}"
+$MSBuildArguments += "/p:SkipTests=${env:PB_SkipTests}"
+$MSBuildArguments += "/p:IsFinalBuild=${env:PB_IsFinalBuild}"
+$MSBuildArguments += "/p:SignType=${env:PB_SignType}"
+
 try {
     Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $Path -ConfigFile $ConfigFile -CI:$CI
-    Invoke-KoreBuildCommand $Command @Arguments
+    Invoke-KoreBuildCommand 'default-build' @MSBuildArguments
 }
 finally {
     Remove-Module 'KoreBuild' -ErrorAction Ignore
