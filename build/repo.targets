@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <BuildDependsOn Condition="'$(Configuration)' == 'Release' AND '$(OS)' == 'Windows_NT' AND $(PublishType.Contains('blob'))" >$(BuildDependsOn);PublishToProdCon</BuildDependsOn>
+  </PropertyGroup>
+
+  <Target Name="PublishToProdCon">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\ProdConPublish.csproj"
+             Targets="Restore"
+             Properties="_Dummy=Restore" />
+
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\ProdConPublish.csproj"
+             Targets="Publish"
+             Properties="$(SolutionBuildProperties)" />
+  </Target>
+</Project>
