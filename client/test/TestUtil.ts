@@ -66,7 +66,7 @@ export async function waitForDocumentUpdate(
     });
 
     try {
-        await pollUntil(() => updateError !== undefined || documentUpdated === true, 500);
+        await pollUntil(() => updateError !== undefined || documentUpdated === true, 3000);
     } finally {
         registration.dispose();
     }

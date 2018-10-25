@@ -39,7 +39,7 @@ describe('Signature help', () => {
     });
 
     it('Can get signature help for JavaScript', async () => {
-        const lastLine = new vscode.Position(doc.lineCount - 1, 0);
+        const lastLine = new vscode.Position(0, 0);
         const codeToInsert = '<script>console.log(</script>';
         await editor.edit(edit => edit.insert(lastLine, codeToInsert));
         await waitForDocumentUpdate(doc.uri, document => document.getText().indexOf(codeToInsert) >= 0);
@@ -47,7 +47,7 @@ describe('Signature help', () => {
         const signatureHelp = await vscode.commands.executeCommand<vscode.SignatureHelp>(
             'vscode.executeSignatureHelpProvider',
             doc.uri,
-            new vscode.Position(doc.lineCount - 1, 20));
+            new vscode.Position(0, 20));
         const signatures = signatureHelp!.signatures;
 
         assert.equal(signatures.length, 1);
@@ -55,7 +55,7 @@ describe('Signature help', () => {
     });
 
     it('Can get signature help for C#', async () => {
-        const csharpLine = new vscode.Position(2, 0);
+        const csharpLine = new vscode.Position(3, 0);
         const codeToInsert = 'System.Console.WriteLine(';
         await editor.edit(edit => edit.insert(csharpLine, codeToInsert));
         await waitForDocumentUpdate(doc.uri, document => document.getText().indexOf(codeToInsert) >= 0);
@@ -63,7 +63,7 @@ describe('Signature help', () => {
         const signatureHelp = await vscode.commands.executeCommand<vscode.SignatureHelp>(
             'vscode.executeSignatureHelpProvider',
             doc.uri,
-            new vscode.Position(2, codeToInsert.length),
+            new vscode.Position(3, codeToInsert.length),
             '(');
         const signatures = signatureHelp!.signatures;
         assert.ok(signatures.some(s => s.label === 'void Console.WriteLine(bool value)'));

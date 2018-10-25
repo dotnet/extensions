@@ -86,12 +86,12 @@ describe('Completions', () => {
     });
 
     it('Can complete HTML tag', async () => {
-        const lastLine = new vscode.Position(doc.lineCount - 1, 0);
+        const lastLine = new vscode.Position(0, 0);
         await editor.edit(edit => edit.insert(lastLine, '<str'));
         const completions = await vscode.commands.executeCommand<vscode.CompletionList>(
             'vscode.executeCompletionItemProvider',
             doc.uri,
-            new vscode.Position(doc.lineCount - 1, 4));
+            new vscode.Position(0, 4));
         const matchingCompletions = completions!.items
             .filter(item => (typeof item.insertText === 'string') && item.insertText.startsWith('str'))
             .map(item => item.insertText as string);
