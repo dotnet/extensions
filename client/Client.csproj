@@ -15,7 +15,7 @@
     <Exec Command="npm install" />
   </Target>
 
-  <Target Name="RunNpmCompile" BeforeTargets="Build" DependsOnTargets="EnsureNpmRestored">
+  <Target Name="RunNpmCompile" AfterTargets="Build" DependsOnTargets="EnsureNpmRestored">
     <Exec Command="npm run compile" />
   </Target>
 
