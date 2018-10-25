@@ -7,8 +7,6 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <EnableApiCheck>false</EnableApiCheck>
     <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
-    <!-- Do not code sign this package. It is internal only. -->
-    <DisableCodeSigning>false</DisableCodeSigning>
   </PropertyGroup>
 
   <ItemGroup>
