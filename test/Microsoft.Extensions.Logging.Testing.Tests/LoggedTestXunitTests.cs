@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
@@ -128,6 +129,24 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         public void AdditionalSetupInvoked()
         {
             Assert.True(SetupInvoked);
+        }
+
+        [Fact]
+        public void MessageWrittenEventInvoked()
+        {
+            WriteContext context = null;
+            TestSink.MessageLogged += ctx => context = ctx;
+            Logger.LogInformation("Information");
+            Assert.Equal(TestSink.Writes.Single(), context);
+        }
+
+        [Fact]
+        public void ScopeStartedEventInvoked()
+        {
+            BeginScopeContext context = null;
+            TestSink.ScopeStarted += ctx => context = ctx;
+            using (Logger.BeginScope("Scope")) {}
+            Assert.Equal(TestSink.Scopes.Single(), context);
         }
     }
 
