@@ -1,0 +1,37 @@
+﻿<!-- Auto generated. Do not edit manually, use eng/tools/DependencyBaselineGenerator/ to recreate. -->
+<Project>
+  <!-- Package: Microsoft.Extensions.DiagnosticAdapter-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' ">
+    <BaselinePackageVersion>2.1.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' AND '$(TargetFramework)' == 'net461' ">
+    <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.5.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.DiagnosticAdapter-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' ">
+    <BaselinePackageVersion>2.1.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' AND '$(TargetFramework)' == 'netcoreapp2.0' ">
+    <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.5.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.DiagnosticAdapter-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' ">
+    <BaselinePackageVersion>2.1.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.5.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.ObjectPool-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.ObjectPool' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.ObjectPool' AND '$(TargetFramework)' == 'netstandard2.0' " />
+  <!-- Package: Microsoft.Extensions.Primitives-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Primitives' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Primitives' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="System.Memory" Version="[4.5.1, )" />
+    <BaselinePackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="[4.5.1, )" />
+  </ItemGroup>
+</Project>

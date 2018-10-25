@@ -5,7 +5,8 @@
 
   <Import Project="version.props" />
   <Import Project="build\dependencies.props" />
-  <Import Project="build\sources.props" />
+  <Import Project="eng\Sources.props" />
+  <Import Project="eng\Baseline.props" />
 
   <PropertyGroup>
     <Product>Microsoft .NET Extensions</Product>
@@ -18,6 +19,11 @@
 
     <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts\</ArtifactsDir>
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\build\</PackageOutputPath>
+
+    <IsPerfProject Condition="$(MSBuildProjectName.EndsWith('.Performance'))">true</IsPerfProject>
+    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests')) OR $(MSBuildProjectName.EndsWith('.Test'))">true</IsTestProject>
+
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
   </PropertyGroup>
 
 </Project>

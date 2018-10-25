@@ -1,0 +1,5 @@
+<Baseline>
+  <Package Id="Microsoft.Extensions.DiagnosticAdapter" Version="2.1.0" />
+  <Package Id="Microsoft.Extensions.ObjectPool" Version="2.1.1" />
+  <Package Id="Microsoft.Extensions.Primitives" Version="2.1.1" />
+</Baseline>
