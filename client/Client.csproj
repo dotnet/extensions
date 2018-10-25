@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <DefaultItemExcludes>${DefaultItemExcludes};node_modules\**</DefaultItemExcludes>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <Target Name="ClearDistDir" BeforeTargets="Clean">
+    <RemoveDir Directories="out" />
+  </Target>
+
+  <Target Name="EnsureNpmRestored" Condition="!Exists('node_modules')">
+    <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
+    <Exec Command="npm install" />
+  </Target>
+
+  <Target Name="RunNpmCompile" BeforeTargets="Build" DependsOnTargets="EnsureNpmRestored">
+    <Exec Command="npm run compile" />
+  </Target>
+
+</Project>

@@ -37,6 +37,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.OmniSharpPlugin.Test", "test\Microsoft.AspNetCore.Razor.OmniSharpPlugin.Test\Microsoft.AspNetCore.Razor.OmniSharpPlugin.Test.csproj", "{35E074E5-D87F-43D8-9CAE-4F15536CED9C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client", "client\Client.csproj", "{32E6733E-B8C0-4D60-9C90-890C52425726}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -79,6 +81,10 @@ Global
 		{35E074E5-D87F-43D8-9CAE-4F15536CED9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35E074E5-D87F-43D8-9CAE-4F15536CED9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35E074E5-D87F-43D8-9CAE-4F15536CED9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32E6733E-B8C0-4D60-9C90-890C52425726}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32E6733E-B8C0-4D60-9C90-890C52425726}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32E6733E-B8C0-4D60-9C90-890C52425726}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32E6733E-B8C0-4D60-9C90-890C52425726}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -95,6 +101,7 @@ Global
 		{6D2F83F2-9E51-4143-8964-2D3E1D9B46A1} = {05FA40C7-7899-4050-B9CC-9B9A20852C31}
 		{01150B4B-2CB3-44BF-AFFB-6686D5AF9DF3} = {2BBB2AB1-2AE4-4306-AA88-FD66A90AA101}
 		{35E074E5-D87F-43D8-9CAE-4F15536CED9C} = {75400311-9729-4D9A-80D2-ADD5286DE405}
+		{32E6733E-B8C0-4D60-9C90-890C52425726} = {2BBB2AB1-2AE4-4306-AA88-FD66A90AA101}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ED1782EB-ABE7-4615-80E2-442006DF2826}
