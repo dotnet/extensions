@@ -210,7 +210,9 @@ $MSBuildArguments += "/p:PublishBlobFeedUrl=${env:PB_PublishBlobFeedUrl}"
 $MSBuildArguments += "/p:PublishType=${env:PB_PublishType}"
 $MSBuildArguments += "/p:SkipTests=${env:PB_SkipTests}"
 $MSBuildArguments += "/p:IsFinalBuild=${env:PB_IsFinalBuild}"
-$MSBuildArguments += "/p:SignType=${env:PB_SignType}"
+if ($env:PB_SignType) {
+    $MSBuildArguments += "/p:SignType=${env:PB_SignType}"
+}
 
 try {
     Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $Path -ConfigFile $ConfigFile -CI:$CI
