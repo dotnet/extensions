@@ -8,6 +8,9 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <!-- We don't actually need all the implicit package references -->
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <!-- Detect branch and commit from the build environment -->
+    <RepositoryBranch Condition=" '$(RepositoryBranch)' == '' ">$(BUILD_SOURCEBRANCH)</RepositoryBranch>
+    <RepositoryCommit Condition=" '$(RepositoryCommit)' == '' ">$(BUILD_SOURCEVERSION)</RepositoryCommit>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,10 +22,10 @@
 
   <Target Name="GetFilesToPublish">
     <ItemGroup>
-      <_SymbolsPackagesToPublish Include="$(PackageOutputPath)%(PackageArtifact.Identity).*.symbols.nupkg" />
+      <SymbolsPackagesToPublish Include="$(PackageOutputPath)%(PackageArtifact.Identity).*.symbols.nupkg" />
       <PackagesToPublish
         Include="$(PackageOutputPath)%(PackageArtifact.Identity).*.nupkg"
-        Exclude="@(_SymbolsPackagesToPublish)">
+        Exclude="@(SymbolsPackagesToPublish)">
         <ManifestArtifactData Condition=" '%(PackageArtifact.Category)' != 'ship' ">NonShipping=true</ManifestArtifactData>
       </PackagesToPublish>
       <PackagesToPublish Include="@(SymbolsPackagesToPublish)" />
@@ -44,6 +47,7 @@
     <PropertyGroup>
       <ManifestName>aspnet-extensions</ManifestName>
       <ManifestBranch>$(RepositoryBranch)</ManifestBranch>
+      <ManifestCommit>$(RepositoryCommit)</ManifestCommit>
       <ManifestBuildId>$(Version)</ManifestBuildId>
       <ManifestBuildData>ProductVersion=$(PackageVersion)</ManifestBuildData>
       <ExpectedFeedUrl>$(PublishBlobFeedUrl)</ExpectedFeedUrl>
