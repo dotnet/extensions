@@ -5,6 +5,7 @@
     <PatchVersion>0</PatchVersion>
     <PreReleaseLabel>rtm</PreReleaseLabel>
     <PreReleaseBrandingLabel></PreReleaseBrandingLabel>
+    <BuildNumber Condition="'$(BuildNumber)' == ''">$(BUILD_BUILDNUMBER)</BuildNumber>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
     <VersionSuffix>$(PreReleaseLabel)-$(BuildNumber)</VersionSuffix>
