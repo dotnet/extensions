@@ -22,6 +22,10 @@ phases:
   
   - ${{ parameters.beforeBuild }}
 
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '8.4.0'
+
   - script: .\build.cmd -ci /p:Configuration=$(BuildConfiguration)
     displayName: Run build.cmd
 
