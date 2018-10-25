@@ -260,18 +260,18 @@ if [ ! -z "$package_version_props_url" ]; then
     intermediate_dir="$repo_path/obj"
     props_file_path="$intermediate_dir/PackageVersions.props"
     mkdir -p "$intermediate_dir"
-    __get_remote_file "${package_version_props_url}${PB_ACCESSTOKENSUFFIX:-}" "$props_file_path"
+    __get_remote_file "${package_version_props_url}" "$props_file_path" "${PB_ACCESSTOKENSUFFIX:-}"
     msbuild_args[${#msbuild_args[*]}]="-p:DotNetPackageVersionPropsPath=$props_file_path"
 fi
 
 # PipeBuild parameters
-msbuild_args[${#msbuild_args[*]}]="-p:DotNetPackageVersionPropsPath=$props_file_path"
-msbuild_args[${#msbuild_args[*]}]="/p:DotNetAssetRootUrl=${PB_ASSETROOTURL:-}"
-msbuild_args[${#msbuild_args[*]}]="/p:DotNetProductBuildId=${PRODUCTBUILDID:-}"
-msbuild_args[${#msbuild_args[*]}]="/p:PublishBlobFeedUrl=${PB_PUBLISHBLOBFEEDURL:-}"
-msbuild_args[${#msbuild_args[*]}]="/p:PublishType=${PB_PUBLISHTYPE:-}"
-msbuild_args[${#msbuild_args[*]}]="/p:SkipTests=${PB_SKIPTESTS:-}"
-msbuild_args[${#msbuild_args[*]}]="/p:IsFinalBuild=${PB_ISFINALBUILD:-}"
+msbuild_args[${#msbuild_args[*]}]="-p:DotNetAssetRootUrl=${PB_ASSETROOTURL:-}"
+msbuild_args[${#msbuild_args[*]}]="-p:DotNetRestoreSources=${PB_RESTORESOURCE:-}"
+msbuild_args[${#msbuild_args[*]}]="-p:DotNetProductBuildId=${PRODUCTBUILDID:-}"
+msbuild_args[${#msbuild_args[*]}]="-p:PublishBlobFeedUrl=${PB_PUBLISHBLOBFEEDURL:-}"
+msbuild_args[${#msbuild_args[*]}]="-p:PublishType=${PB_PUBLISHTYPE:-}"
+msbuild_args[${#msbuild_args[*]}]="-p:SkipTests=${PB_SKIPTESTS:-}"
+msbuild_args[${#msbuild_args[*]}]="-p:IsFinalBuild=${PB_ISFINALBUILD:-}"
 
 get_korebuild
 set_korebuildsettings "$tools_source" "$DOTNET_HOME" "$repo_path" "$config_file" "$ci"
