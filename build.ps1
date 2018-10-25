@@ -194,7 +194,7 @@ if ($PackageVersionPropsUrl) {
     $IntermediateDir = Join-Path $PSScriptRoot 'obj'
     $PropsFilePath = Join-Path $IntermediateDir 'PackageVersions.props'
     New-Item -ItemType Directory $IntermediateDir -ErrorAction Ignore | Out-Null
-    Get-RemoteFile "${PackageVersionPropsUrl}${AccessTokenSuffix}" $PropsFilePath
+    Get-RemoteFile "${PackageVersionPropsUrl}${env:PB_AccessTokenSuffix}" $PropsFilePath
     $MSBuildArguments += "-p:DotNetPackageVersionPropsPath=$PropsFilePath"
 }
 
