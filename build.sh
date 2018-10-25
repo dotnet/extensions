@@ -266,7 +266,7 @@ fi
 
 # PipeBuild parameters
 msbuild_args[${#msbuild_args[*]}]="-p:DotNetAssetRootUrl=${PB_ASSETROOTURL:-}"
-msbuild_args[${#msbuild_args[*]}]="-p:DotNetRestoreSources==${PB_RESTORESOURCE:-}"
+msbuild_args[${#msbuild_args[*]}]="-p:DotNetRestoreSources=${PB_RESTORESOURCE:-}"
 msbuild_args[${#msbuild_args[*]}]="-p:DotNetProductBuildId=${PRODUCTBUILDID:-}"
 msbuild_args[${#msbuild_args[*]}]="-p:PublishBlobFeedUrl=${PB_PUBLISHBLOBFEEDURL:-}"
 msbuild_args[${#msbuild_args[*]}]="-p:PublishType=${PB_PUBLISHTYPE:-}"
