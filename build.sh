@@ -260,7 +260,7 @@ if [ ! -z "$package_version_props_url" ]; then
     intermediate_dir="$repo_path/obj"
     props_file_path="$intermediate_dir/PackageVersions.props"
     mkdir -p "$intermediate_dir"
-    __get_remote_file "${package_version_props_url}${PB_ACCESSTOKENSUFFIX:-}" "$props_file_path"
+    __get_remote_file "${package_version_props_url}" "$props_file_path" "${PB_ACCESSTOKENSUFFIX:-}"
     msbuild_args[${#msbuild_args[*]}]="-p:DotNetPackageVersionPropsPath=$props_file_path"
 fi
 
