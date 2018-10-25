@@ -28,12 +28,20 @@
         Exclude="@(SymbolsPackagesToPublish)">
         <ManifestArtifactData Condition=" '%(PackageArtifact.Category)' != 'ship' ">NonShipping=true</ManifestArtifactData>
       </PackagesToPublish>
-      <PackagesToPublish Include="@(SymbolsPackagesToPublish)" />
+      <UnlistedPackagesToPublish
+        Include="$(PackageOutputPath)*.nupkg"
+        Exclude="@(SymbolsPackagesToPublish);@(PackagesToPublish)">
+        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
+      </UnlistedPackagesToPublish>
+      <PackagesToPublish Include="@(SymbolsPackagesToPublish);@(UnlistedPackagesToPublish)" />
     </ItemGroup>
 
     <ItemGroup>
       <_MissingArtifactFile Include="@(PackagesToPublish)" Condition="!Exists(%(PackagesToPublish.Identity))" />
     </ItemGroup>
+
+    <Warning Condition="@(UnlistedPackagesToPublish->Count()) != 0"
+      Text="The following packages were in $(PackageOutputPath), but were not given a shipping category. These will be considered 'noship' packages:%0A - @(UnlistedPackagesToPublish, '%0A - ')" />
 
     <Error Text="Did not find any packages to publish in $(PackageOutputPath)" Condition="@(PackagesToPublish->Count()) == 0" />
     <Error Text="Missing expected files:%0A - @(_MissingArtifactFile, '%0A - ')" Condition="@(_MissingArtifactFile->Count()) != 0" />
