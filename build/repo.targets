@@ -1,4 +1,6 @@
 <Project>
+  <Import Project="..\eng\artifacts.props" />
+
   <PropertyGroup>
     <BuildDependsOn Condition="'$(Configuration)' == 'Release' AND '$(OS)' == 'Windows_NT' AND $(PublishType.Contains('blob'))" >$(BuildDependsOn);PublishToProdCon</BuildDependsOn>
   </PropertyGroup>
@@ -11,5 +13,15 @@
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\ProdConPublish.csproj"
              Targets="Publish"
              Properties="$(SolutionBuildProperties)" />
+  </Target>
+
+  <Target Name="CheckPackageConfig" DependsOnTargets="GetArtifactInfo" BeforeTargets="Compile">
+    <ItemGroup>
+      <UnlistedPackage Include="@(ArtifactInfo->WithMetadataValue('ArtifactType', 'NuGetPackage')->'%(PackageId)')"
+                       Exclude="@(PackageArtifact)" />
+    </ItemGroup>
+
+    <Error Condition="@(UnlistedPackage->Count()) != 0"
+           Text="This project will produce the following packages, but the are not listed in $(RepositoryRoot)eng\artifacts.props:%0A - @(UnlistedPackage,'%0A - ')" />
   </Target>
 </Project>
