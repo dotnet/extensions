@@ -204,14 +204,15 @@ $korebuildPath = Get-KoreBuild
 Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 # PipeBuild parameters
-$MSBuildArguments += "/p:DotNetAssetRootUrl=${env:PB_AssetRootUrl}"
-$MSBuildArguments += "/p:DotNetProductBuildId=${env:ProductBuildId}"
-$MSBuildArguments += "/p:PublishBlobFeedUrl=${env:PB_PublishBlobFeedUrl}"
-$MSBuildArguments += "/p:PublishType=${env:PB_PublishType}"
-$MSBuildArguments += "/p:SkipTests=${env:PB_SkipTests}"
-$MSBuildArguments += "/p:IsFinalBuild=${env:PB_IsFinalBuild}"
+$MSBuildArguments += "-p:DotNetAssetRootUrl=${env:PB_AssetRootUrl}"
+$MSBuildArguments += "-p:DotNetRestoreSources=${env:PB_RestoreSource}"
+$MSBuildArguments += "-p:DotNetProductBuildId=${env:ProductBuildId}"
+$MSBuildArguments += "-p:PublishBlobFeedUrl=${env:PB_PublishBlobFeedUrl}"
+$MSBuildArguments += "-p:PublishType=${env:PB_PublishType}"
+$MSBuildArguments += "-p:SkipTests=${env:PB_SkipTests}"
+$MSBuildArguments += "-p:IsFinalBuild=${env:PB_IsFinalBuild}"
 if ($env:PB_SignType) {
-    $MSBuildArguments += "/p:SignType=${env:PB_SignType}"
+    $MSBuildArguments += "-p:SignType=${env:PB_SignType}"
 }
 
 try {
