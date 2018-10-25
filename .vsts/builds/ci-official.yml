@@ -3,54 +3,20 @@ trigger:
 - release/*
 
 phases:
-- phase: Windows
-  queue:
-    name: VSEng-MicroBuildVS2017
-    parallel: 2
-    matrix:
-      Release:
-        BuildConfiguration: Release
-      Debug:
-        BuildConfiguration: Debug
-  variables:
-    SignType: real
-    TeamName: AspNetCore
-  steps:
-  - checkout: self
-    clean: true
+- template: ../templates/build.yml
+  parameters:
+    queueName: VSEng-MicroBuildVS2017
+    variables:
+      SignType: real
+      TeamName: AspNetCore
+    beforeBuild:
+    - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
+      displayName: Install CodeSigning plugin
+      inputs:
+        signType: $(SignType)
+      condition: and(succeeded(), in(variables['SignType'], 'test', 'real'))
 
-  - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
-    displayName: Install CodeSigning plugin
-    inputs:
-      signType: $(SignType)
-    condition: and(succeeded(), in(variables['SignType'], 'test', 'real'))
-
-  - script: .\build.cmd -ci /p:Configuration=$(BuildConfiguration)
-    displayName: Run build.cmd
-
-  - task: PublishTestResults@2
-    displayName: Publish test results
-    condition: always()
-    inputs:
-      testRunner: vstest
-      testResultsFiles: 'artifacts/logs/**/*.trx'
-
-  - task: PublishBuildArtifacts@1
-    displayName: Upload artifacts
-    condition: and(succeeded(), eq(variables['system.pullrequest.isfork'], false))
-    inputs:
-      pathtoPublish: artifacts/build
-      artifactName: artifacts-$(BuildConfiguration)
-      artifactType: Container
-
-  - task: PublishBuildArtifacts@1
-    displayName: Upload logs
-    condition: and(failed(), eq(variables['system.pullrequest.isfork'], false))
-    inputs:
-      pathtoPublish: artifacts/logs/
-      artifactName: logs-$(BuildConfiguration)
-      artifactType: Container
-
-  - task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1
-    displayName: Perform Cleanup Tasks
-    condition: succeededOrFailed()
+    afterBuild:
+    - task: ms-vseng.MicroBuildTasks.521a94ea-9e68-468a-8167-6dcf361ea776.MicroBuildCleanup@1
+      displayName: Perform Cleanup Tasks
+      condition: succeededOrFailed()
