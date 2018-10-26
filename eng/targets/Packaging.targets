@@ -1,0 +1,17 @@
+<Project>
+
+  <PropertyGroup>
+    <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(PatchVersion)' != '0' ">
+    <IsPackable>$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(IsPackable)' == 'false' AND '$(BaselinePackageVersion)' != '' ">
+    <Version>$(BaselinePackageVersion).0</Version>
+    <AssemblyVersion>$(BaselinePackageVersion).0</AssemblyVersion>
+    <PackageVersion>$(BaselinePackageVersion)</PackageVersion>
+  </PropertyGroup>
+
+</Project>

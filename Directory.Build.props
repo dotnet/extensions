@@ -25,8 +25,12 @@
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
   </PropertyGroup>
 
-  <Import Project="eng\Sources.props" />
   <Import Project="eng\Baseline.props" />
   <Import Project="eng\Dependencies.props" />
+  <Import Project="eng\PatchConfig.props" />
+  <Import Project="eng\Sources.props" />
 
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+  </ItemGroup>
 </Project>
