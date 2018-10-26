@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Options
         /// <summary>
         /// Validation was successful.
         /// </summary>
-        public static readonly ValidateOptionsResult Success = new ValidateOptionsResult() { Skipped = true };
+        public static readonly ValidateOptionsResult Success = new ValidateOptionsResult() { Succeeded = true };
 
         /// <summary>
         /// True if validation was successful.
