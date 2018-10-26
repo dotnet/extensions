@@ -5,8 +5,6 @@
 
   <Import Project="version.props" />
   <Import Project="build\dependencies.props" />
-  <Import Project="eng\Sources.props" />
-  <Import Project="eng\Baseline.props" />
 
   <PropertyGroup>
     <Product>Microsoft .NET Extensions</Product>
@@ -22,8 +20,13 @@
 
     <IsPerfProject Condition="$(MSBuildProjectName.EndsWith('.Performance'))">true</IsPerfProject>
     <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests')) OR $(MSBuildProjectName.EndsWith('.Test'))">true</IsTestProject>
+    <UseLatestPackageReferences Condition=" '$(IsTestProject)' == 'true' OR '$(IsPerfProject)' == 'true'">true</UseLatestPackageReferences>
 
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
   </PropertyGroup>
+
+  <Import Project="eng\Sources.props" />
+  <Import Project="eng\Baseline.props" />
+  <Import Project="eng\Dependencies.props" />
 
 </Project>

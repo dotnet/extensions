@@ -14,12 +14,23 @@
       <_ExplicitPackageReference Remove="Internal.AspNetCore.Sdk" />
     </ItemGroup>
 
-    <Error Condition="@(_ExplicitPackageReference->Count()) != 0 AND '$(IsTestProject)' != 'true' AND '$(IsPerfProject)' != 'true' "
+    <Error Condition="@(_ExplicitPackageReference->Count()) != 0"
            Text="PackageReference items are not allowed. Use &lt;Reference&gt; instead. " />
 
     <ItemGroup>
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference)" />
-      <PackageReference Include="@(BaselinePackageReference)" Exclude="@(UnusedBaselinePackageReference)" IsImplicitlyDefined="true" />
+      <UnusedLatestPackageReference Include="@(LatestPackageReference)" Exclude="@(Reference)" />
+
+      <PackageReference Condition="'$(UseLatestPackageReferences)' != 'true'"
+        Include="@(BaselinePackageReference)"
+        Exclude="@(UnusedBaselinePackageReference)"
+        IsImplicitlyDefined="true" />
+
+      <PackageReference Condition="'$(UseLatestPackageReferences)' == 'true'"
+        Include="@(LatestPackageReference)"
+        Exclude="@(UnusedLatestPackageReference)"
+        IsImplicitlyDefined="true" />
+
       <Reference Remove="@(PackageReference)" />
     </ItemGroup>
 

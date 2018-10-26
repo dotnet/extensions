@@ -30,12 +30,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="$(FSharpCorePackageVersion)" />
-    <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataPackageVersion)" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" />
-    <PackageReference Include="System.Security.Cryptography.Cng" Version="$(SystemSecurityCryptographyCngPackageVersion)" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
-    <PackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
+    <Reference Include="FSharp.Core" />
+    <Reference Include="System.Reflection.Metadata" />
+    <Reference Include="System.Threading.Tasks.Extensions" />
+    <Reference Include="System.Security.Cryptography.Cng" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe" />
+    <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
 </Project>
