@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.Logging.Internal
 
         public FormattedLogValues(string format, params object[] values)
         {
-            if (values?.Length != 0 && format != null)
+            if (values != null && values.Length != 0 && format != null)
             {
                 if (_count >= MaxCachedFormatters)
                 {
