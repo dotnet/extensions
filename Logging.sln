@@ -60,6 +60,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Loggin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Analyzer.Test", "test\Microsoft.Extensions.Logging.Analyzer.Test\Microsoft.Extensions.Logging.Analyzer.Test.csproj", "{C0391E46-FD04-4D52-BE40-1F21CE83E037}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{0BE8FABE-0FE7-4DF1-ABDE-27BB0D86F881}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logging.Performance", "benchmarks\Logging.Performance\Logging.Performance.csproj", "{67B77ED1-8827-4088-8724-4A0AF4351FB7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -134,6 +138,10 @@ Global
 		{C0391E46-FD04-4D52-BE40-1F21CE83E037}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0391E46-FD04-4D52-BE40-1F21CE83E037}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0391E46-FD04-4D52-BE40-1F21CE83E037}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67B77ED1-8827-4088-8724-4A0AF4351FB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67B77ED1-8827-4088-8724-4A0AF4351FB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67B77ED1-8827-4088-8724-4A0AF4351FB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67B77ED1-8827-4088-8724-4A0AF4351FB7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -156,6 +164,7 @@ Global
 		{6D921637-507E-4CDC-8C5F-C3D6B62D118C} = {699DB330-0095-4266-B7B0-3EAB3710CA49}
 		{99DF369F-40A4-4088-8308-1C361B59DF4E} = {699DB330-0095-4266-B7B0-3EAB3710CA49}
 		{C0391E46-FD04-4D52-BE40-1F21CE83E037} = {09920C51-6220-4D8D-94DC-E70C13446187}
+		{67B77ED1-8827-4088-8724-4A0AF4351FB7} = {0BE8FABE-0FE7-4DF1-ABDE-27BB0D86F881}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BA58E3CA-3A01-46A7-B57F-FD7A188EDC79}
