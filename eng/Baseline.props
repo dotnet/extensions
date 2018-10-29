@@ -7,17 +7,9 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.5.0, )" />
   </ItemGroup>
-  <!-- Package: Microsoft.Extensions.DiagnosticAdapter-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' ">
-    <BaselinePackageVersion>2.1.0</BaselinePackageVersion>
-  </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' AND '$(TargetFramework)' == 'netcoreapp2.0' ">
     <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.5.0, )" />
   </ItemGroup>
-  <!-- Package: Microsoft.Extensions.DiagnosticAdapter-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' ">
-    <BaselinePackageVersion>2.1.0</BaselinePackageVersion>
-  </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.5.0, )" />
   </ItemGroup>

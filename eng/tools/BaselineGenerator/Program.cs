@@ -85,14 +85,19 @@ namespace PackageBaselineGenerator
 
                 using (var reader = new PackageArchiveReader(nupkgPath))
                 {
+                    var first = true;
                     foreach (var group in reader.NuspecReader.GetDependencyGroups())
                     {
-                        doc.Root.Add(new XComment($" Package: {id}"));
+                        if (first)
+                        {
+                            first = false;
+                            doc.Root.Add(new XComment($" Package: {id}"));
 
-                        var propertyGroup = new XElement("PropertyGroup",
-                            new XAttribute("Condition", $" '$(PackageId)' == '{id}' "),
-                            new XElement("BaselinePackageVersion", version));
-                        doc.Root.Add(propertyGroup);
+                            var propertyGroup = new XElement("PropertyGroup",
+                                new XAttribute("Condition", $" '$(PackageId)' == '{id}' "),
+                                new XElement("BaselinePackageVersion", version));
+                            doc.Root.Add(propertyGroup);
+                        }
 
                         var itemGroup = new XElement("ItemGroup", new XAttribute("Condition", $" '$(PackageId)' == '{id}' AND '$(TargetFramework)' == '{group.TargetFramework.GetShortFolderName()}' "));
                         doc.Root.Add(itemGroup);
