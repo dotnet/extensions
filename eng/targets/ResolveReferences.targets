@@ -7,7 +7,7 @@
     </ResolveReferencesDependsOn>
   </PropertyGroup>
 
-  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences">
+  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences" Condition=" '$(TargetFramework)' != '' ">
 
     <ItemGroup>
       <_ExplicitPackageReference Include="@(PackageReference)" Condition=" '%(PackageReference.IsImplicitlyDefined)' != 'true' " />
