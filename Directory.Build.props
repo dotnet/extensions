@@ -18,9 +18,9 @@
     <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts\</ArtifactsDir>
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\build\</PackageOutputPath>
 
-    <IsPerfProject Condition="$(MSBuildProjectName.EndsWith('.Performance'))">true</IsPerfProject>
+    <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance'))">true</IsBenchmarkProject>
     <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests')) OR $(MSBuildProjectName.EndsWith('.Test'))">true</IsTestProject>
-    <UseLatestPackageReferences Condition=" '$(IsTestProject)' == 'true' OR '$(IsPerfProject)' == 'true'">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences Condition=" '$(IsTestProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true'">true</UseLatestPackageReferences>
 
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
   </PropertyGroup>
