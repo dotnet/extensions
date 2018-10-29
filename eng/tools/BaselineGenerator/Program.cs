@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.IO;
 using System.Net.Http;
@@ -49,10 +52,10 @@ namespace PackageBaselineGenerator
 
             var output = _output.HasValue()
                 ? _output.Value()
-                : Path.Combine(Directory.GetCurrentDirectory(), "DependencyBaseline.props");
+                : Path.Combine(Directory.GetCurrentDirectory(), "Baseline.props");
 
             var doc = new XDocument(
-                new XComment(" Auto generated. Do not edit manually, use eng/tools/DependencyBaselineGenerator/ to recreate. "),
+                new XComment(" Auto generated. Do not edit manually, use eng/tools/BaselineGenerator/ to recreate. "),
                 new XElement("Project"));
 
             var client = new HttpClient();

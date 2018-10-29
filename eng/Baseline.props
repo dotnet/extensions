@@ -1,4 +1,4 @@
-﻿<!-- Auto generated. Do not edit manually, use eng/tools/DependencyBaselineGenerator/ to recreate. -->
+﻿<!-- Auto generated. Do not edit manually, use eng/tools/BaselineGenerator/ to recreate. -->
 <Project>
   <!-- Package: Microsoft.Extensions.DiagnosticAdapter-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' ">
