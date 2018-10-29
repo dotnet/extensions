@@ -437,6 +437,27 @@ namespace Microsoft.Extensions.Logging.Test
 
         [Theory]
         [MemberData(nameof(LevelsWithPrefixes))]
+        public void WriteCore_LogsCorrectTimestamp(LogLevel level, string prefix)
+        {
+            // Arrange
+            var t = SetUp(null);
+            var logger = t.Logger;
+            logger.TimestampFormat = "yyyyMMddHHmmss ";
+            var sink = t.Sink;
+            var ex = new Exception("Exception message" + Environment.NewLine + "with a second line");
+
+            // Act
+            logger.Log(level, 0, _state, ex, _defaultFormatter);
+
+            // Assert
+            Assert.Equal(3, sink.Writes.Count);
+            Assert.Matches("^\\d{14}\\s$", sink.Writes[0].Message);
+            Assert.StartsWith(prefix, sink.Writes[1].Message);
+        }
+
+
+        [Theory]
+        [MemberData(nameof(LevelsWithPrefixes))]
         public void WriteCore_LogsCorrectMessages(LogLevel level, string prefix)
         {
             // Arrange
@@ -968,6 +989,37 @@ namespace Microsoft.Extensions.Logging.Test
             var consoleLoggerProvider = Assert.IsType<ConsoleLoggerProvider>(loggerProvider);
             var logger = (ConsoleLogger)consoleLoggerProvider.CreateLogger("Category");
             Assert.True(logger.DisableColors);
+        }
+
+        [Fact]
+        public void ConsoleLoggerOptions_DisableColors_IsReloaded()
+        {
+            // Arrange
+            var monitor = new TestOptionsMonitor(new ConsoleLoggerOptions());
+            var loggerProvider = new ConsoleLoggerProvider(monitor);
+            var logger = (ConsoleLogger)loggerProvider.CreateLogger("Name");
+
+            // Act & Assert
+            Assert.Null(logger.TimestampFormat);
+            monitor.Set(new ConsoleLoggerOptions() { TimestampFormat = "yyyyMMddHHmmss"});
+            Assert.Equal("yyyyMMddHHmmss", logger.TimestampFormat);
+        }
+
+        [Fact]
+        public void ConsoleLoggerOptions_TimeStampFormat_IsReadFromLoggingConfiguration()
+        {
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new[] { new KeyValuePair<string, string>("Console:TimeStampFormat", "yyyyMMddHHmmss") }).Build();
+
+            var loggerProvider = new ServiceCollection()
+                .AddLogging(builder => builder
+                    .AddConfiguration(configuration)
+                    .AddConsole())
+                .BuildServiceProvider()
+                .GetRequiredService<ILoggerProvider>();
+
+            var consoleLoggerProvider = Assert.IsType<ConsoleLoggerProvider>(loggerProvider);
+            var logger = (ConsoleLogger)consoleLoggerProvider.CreateLogger("Category");
+            Assert.Equal("yyyyMMddHHmmss", logger.TimestampFormat);
         }
 
         [Fact]

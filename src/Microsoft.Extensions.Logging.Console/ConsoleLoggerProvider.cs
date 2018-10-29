@@ -24,6 +24,7 @@ namespace Microsoft.Extensions.Logging.Console
         private bool _includeScopes;
         private bool _disableColors;
         private IExternalScopeProvider _scopeProvider;
+        private string _timestampFormat;
 
         public ConsoleLoggerProvider(Func<string, LogLevel, bool> filter, bool includeScopes)
             : this(filter, includeScopes, false)
@@ -54,11 +55,13 @@ namespace Microsoft.Extensions.Logging.Console
         {
             _includeScopes = options.IncludeScopes;
             _disableColors = options.DisableColors;
+            _timestampFormat = options.TimestampFormat;
             var scopeProvider = GetScopeProvider();
             foreach (var logger in _loggers.Values)
             {
                 logger.ScopeProvider = scopeProvider;
                 logger.DisableColors = options.DisableColors;
+                logger.TimestampFormat = options.TimestampFormat;
             }
         }
 
@@ -120,7 +123,8 @@ namespace Microsoft.Extensions.Logging.Console
 
             return new ConsoleLogger(name, GetFilter(name, _settings), includeScopes? _scopeProvider: null, _messageQueue)
                 {
-                    DisableColors = disableColors
+                    DisableColors = disableColors,
+                    TimestampFormat = _timestampFormat
                 };
         }
 

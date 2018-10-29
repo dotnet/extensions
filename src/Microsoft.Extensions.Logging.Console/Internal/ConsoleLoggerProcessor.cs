@@ -46,6 +46,11 @@ namespace Microsoft.Extensions.Logging.Console.Internal
         // for testing
         internal virtual void WriteMessage(LogMessageEntry message)
         {
+            if (message.TimeStamp != null)
+            {
+                Console.Write(message.TimeStamp, message.MessageColor, message.MessageColor);
+            }
+
             if (message.LevelString != null)
             {
                 Console.Write(message.LevelString, message.LevelBackground, message.LevelForeground);

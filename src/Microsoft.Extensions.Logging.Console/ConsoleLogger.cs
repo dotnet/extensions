@@ -100,6 +100,8 @@ namespace Microsoft.Extensions.Logging.Console
 
         public bool DisableColors { get; set; }
 
+        internal string TimestampFormat { get; set; }
+
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             if (!IsEnabled(logLevel))
@@ -169,9 +171,11 @@ namespace Microsoft.Extensions.Logging.Console
             }
 
             var hasLevel = !string.IsNullOrEmpty(logLevelString);
+            var timestampFormat = TimestampFormat;
             // Queue log message
             _queueProcessor.EnqueueMessage(new LogMessageEntry()
             {
+                TimeStamp = timestampFormat != null ? DateTime.Now.ToString(timestampFormat) : null,
                 Message = logBuilder.ToString(),
                 MessageColor = DefaultConsoleColor,
                 LevelString = hasLevel ? logLevelString : null,
