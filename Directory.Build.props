@@ -11,7 +11,7 @@
     <RepositoryUrl>https://github.com/aspnet/Extensions</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)eng\AspNetCore.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
@@ -23,6 +23,13 @@
     <UseLatestPackageReferences Condition=" '$(IsTestProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true'">true</UseLatestPackageReferences>
 
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DeveloperBuildTestTfms>netcoreapp2.1</DeveloperBuildTestTfms>
+    <StandardTestTfms>$(DeveloperBuildTestTfms)</StandardTestTfms>
+    <StandardTestTfms Condition=" '$(DeveloperBuild)' != 'true' ">netcoreapp2.1;netcoreapp2.0</StandardTestTfms>
+    <StandardTestTfms Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(StandardTestTfms);net461</StandardTestTfms>
   </PropertyGroup>
 
   <Import Project="eng\Baseline.props" />

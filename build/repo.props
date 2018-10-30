@@ -4,8 +4,11 @@
   <PropertyGroup>
     <EnableBenchmarkValidation>true</EnableBenchmarkValidation>
     <SkipArtifactVerification>true</SkipArtifactVerification>
+    <BuildSolutions>false</BuildSolutions>
+    <SharedSourcesFolder>$(RepositoryRoot)src\Shared\src\</SharedSourcesFolder>
     <SolutionProperties>$(SolutionProperties);DotNetPackageVersionPropsPath=$(DotNetPackageVersionPropsPath)</SolutionProperties>
     <SolutionProperties>$(SolutionProperties);DotNetAdditionalRestoreSources=$(DotNetAdditionalRestoreSources)</SolutionProperties>
+    <Projects>$(RepositoryRoot)src\**\*.csproj</Projects>
   </PropertyGroup>
 
   <ItemGroup>

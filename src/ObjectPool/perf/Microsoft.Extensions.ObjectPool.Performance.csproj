@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\Microsoft.Extensions.ObjectPool.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Shared\src\BenchmarkRunner\**\*.cs">
+      <Link>Shared\%(FileName)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="BenchmarkDotNet" />
+    <Reference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+</Project>

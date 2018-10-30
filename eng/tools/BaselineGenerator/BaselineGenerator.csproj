@@ -11,6 +11,6 @@
     <PackageReference Include="NuGet.Packaging" Version="4.8.0" />
   </ItemGroup>
 
-  <Import Project="..\..\..\shared\Microsoft.Extensions.CommandLineUtils.Sources\Microsoft.Extensions.CommandLineUtils.Sources.projitems" Label="Shared" />
+  <Import Project="..\..\..\src\Shared\src\CommandLineUtils\Microsoft.Extensions.CommandLineUtils.Sources.projitems" Label="Shared" />
 
 </Project>
