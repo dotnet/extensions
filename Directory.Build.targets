@@ -3,4 +3,7 @@
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.2' ">$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
     <NETStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(NETStandardLibrary20PackageVersion)</NETStandardImplicitPackageVersion>
   </PropertyGroup>
+
+  <Import Project="eng\targets\Packaging.targets" Condition=" '$(MSBuildProjectExtension)' == '.csproj' " />
+  <Import Project="eng\targets\ResolveReferences.targets" Condition=" '$(MSBuildProjectExtension)' == '.csproj' " />
 </Project>

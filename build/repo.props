@@ -1,17 +1,22 @@
 <Project>
-  <Import Project="dependencies.props" />
+  <Import Project="..\eng\Dependencies.props" />
 
   <PropertyGroup>
     <EnableBenchmarkValidation>true</EnableBenchmarkValidation>
+    <SkipArtifactVerification>true</SkipArtifactVerification>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <BuildSolutions>false</BuildSolutions>
+    <SharedSourcesFolder>$(RepositoryRoot)src\Shared\src\</SharedSourcesFolder>
     <SolutionProperties>$(SolutionProperties);DotNetPackageVersionPropsPath=$(DotNetPackageVersionPropsPath)</SolutionProperties>
     <SolutionProperties>$(SolutionProperties);DotNetAdditionalRestoreSources=$(DotNetAdditionalRestoreSources)</SolutionProperties>
+    <Projects>$(RepositoryRoot)src\**\*.csproj</Projects>
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)"
-      Feed="$(DotNetAssetRootUrl)"
-      FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
+    <SharedSourceDirectories Include="$([System.IO.Directory]::GetDirectories($(SharedSourcesFolder)))" />
+  </ItemGroup>
 
+  <ItemGroup>
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppPackageVersion)"
       Feed="$(DotNetAssetRootUrl)"
       FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
