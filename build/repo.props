@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <EnableBenchmarkValidation>true</EnableBenchmarkValidation>
+    <SkipArtifactVerification>true</SkipArtifactVerification>
     <SolutionProperties>$(SolutionProperties);DotNetPackageVersionPropsPath=$(DotNetPackageVersionPropsPath)</SolutionProperties>
     <SolutionProperties>$(SolutionProperties);DotNetAdditionalRestoreSources=$(DotNetAdditionalRestoreSources)</SolutionProperties>
   </PropertyGroup>

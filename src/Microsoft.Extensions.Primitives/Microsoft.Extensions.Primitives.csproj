@@ -17,8 +17,8 @@ Microsoft.Extensions.Primitives.StringSegment</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Memory" Version="$(SystemMemoryPackageVersion)" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
+    <Reference Include="System.Memory" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe" />
   </ItemGroup>
 
 </Project>

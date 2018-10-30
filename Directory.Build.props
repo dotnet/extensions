@@ -5,7 +5,6 @@
 
   <Import Project="version.props" />
   <Import Project="build\dependencies.props" />
-  <Import Project="build\sources.props" />
 
   <PropertyGroup>
     <Product>Microsoft .NET Extensions</Product>
@@ -18,6 +17,20 @@
 
     <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts\</ArtifactsDir>
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\build\</PackageOutputPath>
+
+    <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance'))">true</IsBenchmarkProject>
+    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests')) OR $(MSBuildProjectName.EndsWith('.Test'))">true</IsTestProject>
+    <UseLatestPackageReferences Condition=" '$(IsTestProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true'">true</UseLatestPackageReferences>
+
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
   </PropertyGroup>
 
+  <Import Project="eng\Baseline.props" />
+  <Import Project="eng\Dependencies.props" />
+  <Import Project="eng\PatchConfig.props" />
+  <Import Project="eng\Sources.props" />
+
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+  </ItemGroup>
 </Project>

@@ -1,0 +1,18 @@
+<Project>
+
+  <PropertyGroup>
+    <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(PatchVersion)' != '0' ">
+    <IsPackable>$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(IsPackable)' == 'false' AND '$(BaselinePackageVersion)' != '' ">
+    <!-- This keeps assembly and package versions consistent across patches. If a package is not included in a patch, its version should stay at the baseline. -->
+    <Version>$(BaselinePackageVersion).0</Version>
+    <AssemblyVersion>$(BaselinePackageVersion).0</AssemblyVersion>
+    <PackageVersion>$(BaselinePackageVersion)</PackageVersion>
+  </PropertyGroup>
+
+</Project>
