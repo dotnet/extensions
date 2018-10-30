@@ -832,6 +832,19 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(LogLevel.Information, logLevel);
         }
 
+        [Fact]
+        public void ConsoleLogger_Settings_DisableColors()
+        {
+            var settings = new ConsoleLoggerSettings()
+            {
+                DisableColors = true
+            };
+
+            var consoleLoggerProvider = new ConsoleLoggerProvider(settings);
+            var logger = (ConsoleLogger)consoleLoggerProvider.CreateLogger("Test");
+            Assert.True(logger.DisableColors);
+        }
+
         [Theory]
         [MemberData(nameof(LevelsWithPrefixes))]
         public void WriteCore_NullMessageWithException(LogLevel level, string prefix)

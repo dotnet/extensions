@@ -119,7 +119,7 @@ namespace Microsoft.Extensions.Logging.Console
         private ConsoleLogger CreateLoggerImplementation(string name)
         {
             var includeScopes = _settings?.IncludeScopes ?? _includeScopes;
-            var disableColors = _disableColors;
+            var disableColors = _settings is ConsoleLoggerSettings settings ? settings.DisableColors : _disableColors;
 
             return new ConsoleLogger(name, GetFilter(name, _settings), includeScopes? _scopeProvider: null, _messageQueue)
                 {
