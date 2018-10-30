@@ -38,6 +38,8 @@ namespace Microsoft.Extensions.Logging
             }
         }
 
+        public bool CaptureScopes { get; set; }
+
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             var loggers = Loggers;
@@ -124,7 +126,7 @@ namespace Microsoft.Extensions.Logging
         {
             var loggers = Loggers;
 
-            if (loggers == null)
+            if (loggers == null || !CaptureScopes)
             {
                 return NullScope.Instance;
             }

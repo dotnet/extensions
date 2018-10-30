@@ -58,6 +58,7 @@ namespace Microsoft.Extensions.Logging
                     ApplyRules(loggerInformation, categoryName, 0, loggerInformation.Length);
 
                     logger.Value.Loggers = loggerInformation;
+                    logger.Value.CaptureScopes = filterOptions.CaptureScopes;
                 }
             }
         }
@@ -75,7 +76,8 @@ namespace Microsoft.Extensions.Logging
                 {
                     logger = new Logger(this)
                     {
-                        Loggers = CreateLoggers(categoryName)
+                        Loggers = CreateLoggers(categoryName),
+                        CaptureScopes = _filterOptions.CaptureScopes
                     };
                     _loggers[categoryName] = logger;
                 }

@@ -1,12 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
@@ -28,7 +25,7 @@ namespace Microsoft.Extensions.Logging.Test
     }
   }
 }";
-            var config = CreateConfiguration(() => json);
+            var config = TestConfiguration.Create(() => json);
             var loggerProvider = new TestLoggerProvider(new TestSink(), isEnabled: true);
 
             var factory = TestLoggerBuilder.Create(builder => builder
@@ -74,7 +71,7 @@ namespace Microsoft.Extensions.Logging.Test
     }
   }
 }";
-            var config = CreateConfiguration(() => json);
+            var config = TestConfiguration.Create(() => json);
             var loggerProvider = new TestLoggerProvider(new TestSink(), isEnabled: true);
             var factory = TestLoggerBuilder.Create(builder => builder
                 .AddConfiguration(config.GetSection("Logging"))
@@ -121,7 +118,7 @@ namespace Microsoft.Extensions.Logging.Test
     }
   }
 }";
-            var config = CreateConfiguration(() => json);
+            var config = TestConfiguration.Create(() => json);
 
             var loggerProvider = new TestLoggerProvider(new TestSink(), isEnabled: true);
             var factory = TestLoggerBuilder.Create(builder => builder
@@ -155,7 +152,7 @@ namespace Microsoft.Extensions.Logging.Test
     }
   }
 }";
-            var config = CreateConfiguration(() => json);
+            var config = TestConfiguration.Create(() => json);
 
             var loggerProvider = new TestLoggerProvider(new TestSink(), isEnabled: true);
             var factory = TestLoggerBuilder.Create(builder => builder
@@ -187,7 +184,7 @@ namespace Microsoft.Extensions.Logging.Test
     }
   }
 }";
-            var config = CreateConfiguration(() => json);
+            var config = TestConfiguration.Create(() => json);
 
             var loggerProvider = new TestLoggerProvider(new TestSink(), isEnabled: true);
             var factory = TestLoggerBuilder.Create(builder => builder
@@ -315,7 +312,7 @@ namespace Microsoft.Extensions.Logging.Test
     }
   }
 }";
-            var config = CreateConfiguration(() => json);
+            var config = TestConfiguration.Create(() => json);
             var loggerProvider = new TestLoggerProvider(new TestSink(), isEnabled: true);
 
             var factory = TestLoggerBuilder.Create(builder => builder
@@ -426,7 +423,7 @@ namespace Microsoft.Extensions.Logging.Test
                                                             .Build())
                 )
                 .BuildServiceProvider();
-            
+
             var options = serviceProvider.GetRequiredService<IOptions<LoggerFilterOptions>>();
 
             Assert.Null(options.Value.Rules.Single().CategoryName);
@@ -584,32 +581,5 @@ namespace Microsoft.Extensions.Logging.Test
                     ("Category.Sub", LogLevel.Trace, true, false)
                 },
             };
-
-
-        internal ConfigurationRoot CreateConfiguration(Func<string> getJson)
-        {
-            var provider = new TestConfiguration(new JsonConfigurationSource { Optional = true }, getJson);
-            return new ConfigurationRoot(new List<IConfigurationProvider> { provider });
-        }
-
-        private class TestConfiguration : JsonConfigurationProvider
-        {
-            private Func<string> _json;
-            public TestConfiguration(JsonConfigurationSource source, Func<string> json)
-                : base(source)
-            {
-                _json = json;
-            }
-
-            public override void Load()
-            {
-                var stream = new MemoryStream();
-                var writer = new StreamWriter(stream);
-                writer.Write(_json());
-                writer.Flush();
-                stream.Seek(0, SeekOrigin.Begin);
-                Load(stream);
-            }
-        }
     }
 }
