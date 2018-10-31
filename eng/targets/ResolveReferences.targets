@@ -1,0 +1,44 @@
+<Project>
+
+  <PropertyGroup>
+    <ResolveReferencesDependsOn>
+      ResolveCustomReferences;
+      $(ResolveReferencesDependsOn);
+    </ResolveReferencesDependsOn>
+  </PropertyGroup>
+
+  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences" Condition=" '$(DisableCustomReferenceResolution)' != 'true' AND '$(TargetFramework)' != '' ">
+
+    <ItemGroup>
+      <_ExplicitPackageReference Include="@(PackageReference)" Condition=" '%(PackageReference.IsImplicitlyDefined)' != 'true' " />
+      <_ExplicitPackageReference Remove="Internal.AspNetCore.Sdk" />
+    </ItemGroup>
+
+    <Error Condition="@(_ExplicitPackageReference->Count()) != 0"
+           Text="PackageReference items are not allowed. Use &lt;Reference&gt; instead. " />
+
+    <ItemGroup>
+      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference)" />
+      <UnusedLatestPackageReference Include="@(LatestPackageReference)" Exclude="@(Reference)" />
+
+      <PackageReference Condition="'$(UseLatestPackageReferences)' != 'true'"
+        Include="@(BaselinePackageReference)"
+        Exclude="@(UnusedBaselinePackageReference)"
+        IsImplicitlyDefined="true" />
+
+      <PackageReference Condition="'$(UseLatestPackageReferences)' == 'true'"
+        Include="@(LatestPackageReference)"
+        Exclude="@(UnusedLatestPackageReference)"
+        IsImplicitlyDefined="true" />
+
+      <Reference Remove="@(PackageReference)" />
+    </ItemGroup>
+
+    <Warning Condition="@(UnusedBaselinePackageReference->Count()) != 0"
+             Text="Package references changed since the last release. This could be a breaking change." />
+
+    <Error Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)')"
+           Code="MSB3245"
+           Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;" />
+  </Target>
+</Project>

@@ -8,6 +8,7 @@
     <PackageArtifact Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.CommandLineUtils.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" Category="noship" />
+    <PackageArtifact Include="Microsoft.Extensions.DiagnosticAdapter" />
     <PackageArtifact Include="Microsoft.Extensions.HashCodeCombiner.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.NonCapturingTimer.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.ObjectMethodExecutor.Sources" Category="noship" />

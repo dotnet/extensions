@@ -1,0 +1,65 @@
+<Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <!-- These package versions may be overridden or updated by automation. -->
+  <PropertyGroup Label="Package Versions: Auto">
+    <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20181030.4</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview1-26907-05</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.6.0-preview1-26907-04</MicrosoftWin32RegistryPackageVersion>
+    <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview1-26907-04</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemIOPipelinesPackageVersion>4.6.0-preview1-26907-04</SystemIOPipelinesPackageVersion>
+    <SystemMemoryPackageVersion>4.6.0-preview1-26717-04</SystemMemoryPackageVersion>
+    <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.7.0-preview1-26907-04</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0-preview1-26907-04</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.6.0-preview1-26907-04</SystemSecurityCryptographyCngPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.6.0-preview1-26907-04</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemValueTuplePackageVersion>4.6.0-preview1-26829-04</SystemValueTuplePackageVersion>
+  </PropertyGroup>
+
+  <!-- This may import a generated file which may override the variables above. -->
+  <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
+
+  <ItemGroup Label=".NET Core dependencies">
+    <LatestPackageReference Include="FSharp.Core" Version="$(FSharpCorePackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
+    <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
+    <LatestPackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
+    <LatestPackageReference Include="System.Memory" Version="$(SystemMemoryPackageVersion)" />
+    <LatestPackageReference Include="System.Net.Http" Version="$(SystemNetHttpPackageVersion)" />
+    <LatestPackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataPackageVersion)" />
+    <LatestPackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
+    <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="$(SystemRuntimeInteropServicesRuntimeInformationPackageVersion)" />
+    <LatestPackageReference Include="System.Security.Cryptography.Cng" Version="$(SystemSecurityCryptographyCngPackageVersion)" />
+    <LatestPackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" />
+    <LatestPackageReference Include="System.ValueTuple" Version="$(SystemValueTuplePackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Label="External dependencies">
+    <LatestPackageReference Include="BenchmarkDotNet" Version="0.10.13" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.8.0" />
+    <LatestPackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
+    <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
+    <LatestPackageReference Include="Moq" Version="4.10.0" />
+    <LatestPackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <LatestPackageReference Include="xunit.abstractions" Version="2.0.1" />
+    <LatestPackageReference Include="xunit.analyzers" Version="0.10.0" />
+    <LatestPackageReference Include="xunit.assert" Version="2.3.0" />
+    <LatestPackageReference Include="xunit.extensibility.execution" Version="2.3.0" />
+    <LatestPackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
+    <LatestPackageReference Include="xunit" Version="2.4.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
+    <Reference Include="Microsoft.NET.Test.Sdk" />
+    <Reference Include="Moq" />
+    <Reference Include="xunit" />
+    <Reference Include="xunit.analyzers" />
+    <Reference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+</Project>
