@@ -3,8 +3,10 @@
     <MajorVersion>3</MajorVersion>
     <MinorVersion>0</MinorVersion>
     <PatchVersion>0</PatchVersion>
-    <PreReleaseLabel>alpha1</PreReleaseLabel>
-    <PreReleaseBrandingLabel>Alpha 1</PreReleaseBrandingLabel>
+    <!-- This is used for versioning files and packages, e.g. "3.0.0-preview-181031-01". -->
+    <PreReleaseLabel>preview</PreReleaseLabel>
+    <!-- This is used for 'human friendly' branding, e.g. "3.0.0 Preview Build 181031-01". -->
+    <PreReleaseBrandingLabel>Preview</PreReleaseBrandingLabel>
     <BuildNumber Condition="'$(BuildNumber)' == ''">$(BUILD_BUILDNUMBER)</BuildNumber>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
