@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis" PrivateAssets="All" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="All" Version="$(MicrosoftCodeAnalysisCommonPackageVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" Version="$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" />
     <PackageReference Update="NETStandard.Library" PrivateAssets="All" />

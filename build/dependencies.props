@@ -8,9 +8,9 @@
     <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>3.0.0-alpha1-10657</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-alpha1-10657</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10657</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftCodeAnalysisPackageVersion>2.11.0-beta1-63430-03</MicrosoftCodeAnalysisPackageVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>2.11.0-beta1-63430-03</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.11.0-beta1-63430-03</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftCodeAnalysisCommonPackageVersion>2.8.0</MicrosoftCodeAnalysisCommonPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>3.0.0-alpha1-10670</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
     <MicrosoftExtensionsConfigurationBinderPackageVersion>3.0.0-alpha1-10670</MicrosoftExtensionsConfigurationBinderPackageVersion>
     <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>3.0.0-alpha1-10670</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
