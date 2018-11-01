@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
@@ -429,6 +430,23 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Null(options.Value.Rules.Single().CategoryName);
         }
 
+        [Fact]
+        public void MultipleWildcardsAreNotAllowed()
+        {
+            var options = new LoggerFilterOptions()
+            {
+                Rules = { new LoggerFilterRule(providerName: null, categoryName: "*A*", logLevel: null, filter: null)}
+            };
+            var testSink1 = new TestSink();
+            var loggerFactory = new LoggerFactory(new[]
+            {
+                new TestLoggerProvider2(testSink1)
+            }, options);
+
+            var exception = Assert.Throws<InvalidOperationException>(() => loggerFactory.CreateLogger("Category"));
+            Assert.Equal("Only one wildcard character is allowed in category name.", exception.Message);
+        }
+
         [Theory]
         [MemberData(nameof(FilterTestData))]
         public void FilterTest(LoggerFilterOptions options, (string category, LogLevel level, bool expectInProvider1, bool expectInProvider2) message)
@@ -449,7 +467,6 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.Equal(message.expectInProvider1 ? 1 : 0, testSink1.Writes.Count);
             Assert.Equal(message.expectInProvider2 ? 1 : 0, testSink2.Writes.Count);
         }
-
 
         public static TheoryData<LoggerFilterOptions, (string, LogLevel, bool, bool)> FilterTestData =
             new TheoryData<LoggerFilterOptions, (string, LogLevel, bool, bool)>()
@@ -580,6 +597,40 @@ namespace Microsoft.Extensions.Logging.Test
                     },
                     ("Category.Sub", LogLevel.Trace, true, false)
                 },
+                { // Wildcards allowed in category names
+                    new LoggerFilterOptions()
+                    {
+                        MinLevel = LogLevel.Critical,
+                        Rules =
+                        {
+                            new LoggerFilterRule(typeof(TestLoggerProvider).FullName, "Category.*.Sub", LogLevel.Trace, null),
+                            new LoggerFilterRule(null, null, LogLevel.Critical, null)
+                        }
+                    },
+                    ("Category.B.Sub", LogLevel.Trace, true, false)
+                },
+                { // Wildcards allowed in the beginning of category names
+                    new LoggerFilterOptions()
+                    {
+                        MinLevel = LogLevel.Critical,
+                        Rules =
+                        {
+                            new LoggerFilterRule(typeof(TestLoggerProvider).FullName, "*.Sub", LogLevel.Trace, null),
+                        }
+                    },
+                    ("Category.B.Sub", LogLevel.Trace, true, false)
+                },
+                { // Wildcards allowed in the end of category names
+                    new LoggerFilterOptions()
+                    {
+                        MinLevel = LogLevel.Critical,
+                        Rules =
+                        {
+                            new LoggerFilterRule(typeof(TestLoggerProvider).FullName, "Cat*", LogLevel.Trace, null),
+                        }
+                    },
+                    ("Category.B.Sub", LogLevel.Trace, true, false)
+                }
             };
     }
 }
