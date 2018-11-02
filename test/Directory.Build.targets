@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <!-- Projects in this directory are test-related, and shouldn't participate in source-build. -->
+  <PropertyGroup>
+    <_SuppressAllTargets>false</_SuppressAllTargets>
+    <_SuppressAllTargets Condition="'$(DotNetBuildFromSource)' == 'true'">true</_SuppressAllTargets>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\build\Empty.targets" Condition="$(_SuppressAllTargets)"/>
+</Project>
