@@ -41,6 +41,7 @@
     <LatestPackageReference Include="Moq" Version="4.10.0" />
     <LatestPackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <LatestPackageReference Include="xunit.analyzers" Version="0.10.0" />
+    <LatestPackageReference Include="xunit.assert" Version="2.3.1" />
     <LatestPackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
     <LatestPackageReference Include="xunit" Version="2.4.0" />
   </ItemGroup>

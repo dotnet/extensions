@@ -4,11 +4,13 @@
     "packages": {
       "Microsoft.AspNetCore.BenchmarkRunner.Sources": {},
       "Microsoft.AspNetCore.Certificates.Generation.Sources": {},
+      "Microsoft.Extensions.ActivatorUtilities.Sources": {},
       "Microsoft.Extensions.ClosedGenericMatcher.Sources": {},
       "Microsoft.Extensions.CommandLineUtils.Sources": {},
       "Microsoft.Extensions.CopyOnWriteDictionary.Sources": {},
       "Microsoft.Extensions.HashCodeCombiner.Sources": {},
       "Microsoft.Extensions.ObjectMethodExecutor.Sources": {},
+      "Microsoft.Extensions.ParameterDefaultValue.Sources": {},
       "Microsoft.Extensions.Process.Sources": {},
       "Microsoft.Extensions.PropertyActivator.Sources": {},
       "Microsoft.Extensions.PropertyHelper.Sources": {},
@@ -16,8 +18,8 @@
       "Microsoft.Extensions.SecurityHelper.Sources": {},
       "Microsoft.Extensions.StackTrace.Sources": {},
       "Microsoft.Extensions.TypeNameHelper.Sources": {},
-      "Microsoft.Extensions.WebEncoders.Sources": {},
-      "Microsoft.Extensions.ValueStopwatch.Sources": {}
+      "Microsoft.Extensions.ValueStopwatch.Sources": {},
+      "Microsoft.Extensions.WebEncoders.Sources": {}
     }
   },
   "Default": {

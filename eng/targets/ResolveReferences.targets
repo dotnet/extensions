@@ -7,17 +7,25 @@
     </ResolveReferencesDependsOn>
   </PropertyGroup>
 
-  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences" Condition=" '$(TargetFramework)' != '' ">
+  <ItemGroup>
+    <_ImplicitPackageReference Include="@(PackageReference->WithMetadataValue('IsImplicitlyDefined', 'true'))" />
+    <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference)" />
+    <_ExplicitPackageReference Remove="Internal.AspNetCore.Sdk" />
 
-    <ItemGroup>
-      <_ImplicitPackageReference Include="@(PackageReference->WithMetadataValue('IsImplicitlyDefined', 'true'))" />
-      <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference)" />
-      <_ExplicitPackageReference Remove="Internal.AspNetCore.Sdk" />
-    </ItemGroup>
+    <UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
 
-    <Error Condition="@(_ExplicitPackageReference->Count()) != 0"
-           Text="PackageReference items are not allowed. Use &lt;Reference&gt; instead. " />
+    <!-- Order matters. Projects should be used when possible instead of packages. -->
+    <_ProjectReferenceByAssemblyName Condition="'$(UseProjectReferences)' == 'true'"
+      Include="@(ProjectReferenceProvider)"
+      Exclude="@(UnusedProjectReferenceProvider)" />
 
+    <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" />
+
+    <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
+    <_ProjectReferenceByAssemblyName Remove="@(_ProjectReferenceByAssemblyName)" />
+  </ItemGroup>
+
+  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveReferences" Condition=" '$(TargetFramework)' != '' ">
     <ItemGroup>
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference)" />
 
@@ -48,11 +56,36 @@
       <_ImplicitPackageReference Remove="@(_ImplicitPackageReference)" />
     </ItemGroup>
 
+    <Error Condition="@(_ExplicitPackageReference->Count()) != 0"
+           Text="PackageReference items are not allowed. Use &lt;Reference&gt; instead. " />
+
     <Warning Condition="@(UnusedBaselinePackageReference->Count()) != 0"
              Text="Package references changed since the last release. This could be a breaking change. References removed:%0A - @(UnusedBaselinePackageReference, '%0A -')" />
 
     <Error Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)')"
            Code="MSB3245"
            Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;" />
+  </Target>
+
+  <Target Name="GetReferencesProvided" Returns="@(ProvidesReference)">
+    <ItemGroup>
+      <_TargetFramework Remove="@(_TargetFramework)" />
+      <_TargetFramework Include="$(TargetFramework)" Condition="'$(TargetFramework)' != '' "/>
+      <_TargetFramework Include="$(TargetFrameworks)" Condition="'$(TargetFramework)' == '' "/>
+    </ItemGroup>
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="_GetReferencesProvided"
+             Properties="TargetFramework=%(_TargetFramework.Identity)">
+      <Output TaskParameter="TargetOutputs" ItemName="ProvidesReference" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="_GetReferencesProvided" Returns="@(ProvidesReference)">
+    <ItemGroup Condition=" '$(IsImplementationProject)' == 'true' ">
+      <ProvidesReference Include="$(AssemblyName)">
+        <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
+      </ProvidesReference>
+    </ItemGroup>
   </Target>
 </Project>
