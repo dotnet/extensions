@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="BenchmarkDotNet" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\Shared\src\BenchmarkRunner\**\*.cs">
+      <Link>Shared\%(FileName)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+
+</Project>

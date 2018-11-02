@@ -22,12 +22,11 @@
     <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" />
 
     <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
-    <_ProjectReferenceByAssemblyName Remove="@(_ProjectReferenceByAssemblyName)" />
   </ItemGroup>
 
-  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveReferences" Condition=" '$(TargetFramework)' != '' ">
+  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences" Condition=" '$(TargetFramework)' != '' ">
     <ItemGroup>
-      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference)" />
+      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName)" />
 
       <!--
         MSBuild does not provide a way to join on matching identities in a Condition,
