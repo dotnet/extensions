@@ -12,7 +12,7 @@
     <PackageArtifact Include="Microsoft.Extensions.DependencyInjection.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.DependencyInjection.Specification.Tests" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.DependencyInjection" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.DiagnosticAdapter" />
+    <PackageArtifact Include="Microsoft.Extensions.DiagnosticAdapter" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.HashCodeCombiner.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.NonCapturingTimer.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.ObjectMethodExecutor.Sources" Category="noship" />
