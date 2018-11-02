@@ -1,5 +1,32 @@
 ﻿<!-- Auto generated. Do not edit manually, use eng/tools/BaselineGenerator/ to recreate. -->
 <Project>
+  <!-- Package: Microsoft.Extensions.DependencyInjection-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' AND '$(TargetFramework)' == 'net461' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' AND '$(TargetFramework)' == 'netcoreapp2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.DependencyInjection.Abstractions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection.Abstractions' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' " />
+  <!-- Package: Microsoft.Extensions.DependencyInjection.Specification.Tests-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection.Specification.Tests' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection.Specification.Tests' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="xunit.assert" Version="[2.3.1, )" />
+    <BaselinePackageReference Include="xunit.extensibility.core" Version="[2.3.1, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.Extensions.DiagnosticAdapter-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' ">
     <BaselinePackageVersion>2.1.0</BaselinePackageVersion>

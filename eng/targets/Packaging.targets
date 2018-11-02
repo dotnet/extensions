@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
+    <IsPackable Condition="'$(IsPackable)' == '' AND ( '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' ) ">false</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(PatchVersion)' != '0' ">
@@ -13,6 +14,33 @@
     <Version>$(BaselinePackageVersion).0</Version>
     <AssemblyVersion>$(BaselinePackageVersion).0</AssemblyVersion>
     <PackageVersion>$(BaselinePackageVersion)</PackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Implementation projects are the projects which produce nuget packages ans shipping assemblies. These need to carefully control for versions to ensure our patching rules are followed. -->
+    <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsTestAssetProject)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</IsImplementationProject>
+
+    <!--
+      Projects should only use the latest package references when:
+        * preparing a new major or minor release (i.e. a non-servicing builds)
+        * when a project is a test or sample project
+        * when a package is releasing a new patch (we like to update external dependencies in patches when possible)
+    -->
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsServicingBuild)' != 'true'  ">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' == 'true' AND ( '$(IsServicingBuild)' != 'true' OR '$(IsPackable)' == 'true' ) ">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' ">false</UseLatestPackageReferences>
+
+    <!--
+      Projects should only use the project references instead of baseline package references when:
+        * preparing a new major or minor release (i.e. a non-servicing builds)
+        * when a project is a test or sample project
+
+      We don't use project references between components in servicing builds between compontents to preserve the baseline as much as possible.
+    -->
+    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsServicingBuild)' != 'true'  ">true</UseProjectReferences>
+    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseProjectReferences>
+    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">false</UseProjectReferences>
   </PropertyGroup>
 
 </Project>
