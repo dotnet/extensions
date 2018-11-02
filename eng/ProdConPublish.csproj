@@ -6,6 +6,8 @@
   <PropertyGroup>
     <!-- This is just a dummy project to publish files. It doesn't actually compile a netcoreapp2.1 project, but this properties are necessary to make /t:Restore work. -->
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <!-- This project doesn't actually compile anything, so we don't care about reference restrictions. -->
+    <DisableReferenceRestrictions>true</DisableReferenceRestrictions>
     <!-- We don't actually need all the implicit package references -->
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <!-- Detect branch and commit from the build environment -->
