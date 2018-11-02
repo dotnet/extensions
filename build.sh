@@ -256,26 +256,28 @@ fi
 [ -z "$channel" ] && channel='master'
 [ -z "$tools_source" ] && tools_source='https://aspnetcore.blob.core.windows.net/buildtools'
 
+prodcon_args=()
+
 if [ ! -z "$package_version_props_url" ]; then
     intermediate_dir="$repo_path/obj"
     props_file_path="$intermediate_dir/PackageVersions.props"
     mkdir -p "$intermediate_dir"
     __get_remote_file "${package_version_props_url}" "$props_file_path" "${PB_ACCESSTOKENSUFFIX:-}"
-    msbuild_args[${#msbuild_args[*]}]="-p:DotNetPackageVersionPropsPath=$props_file_path"
+    prodcon_args[${#prodcon_args[*]}]="-p:DotNetPackageVersionPropsPath=$props_file_path"
 fi
 
 # PipeBuild parameters
-msbuild_args[${#msbuild_args[*]}]="-p:DotNetAssetRootUrl=${PB_ASSETROOTURL:-}"
-msbuild_args[${#msbuild_args[*]}]="-p:DotNetRestoreSources=${PB_RESTORESOURCE:-}"
-msbuild_args[${#msbuild_args[*]}]="-p:DotNetProductBuildId=${PRODUCTBUILDID:-}"
-msbuild_args[${#msbuild_args[*]}]="-p:PublishBlobFeedUrl=${PB_PUBLISHBLOBFEEDURL:-}"
-msbuild_args[${#msbuild_args[*]}]="-p:PublishType=${PB_PUBLISHTYPE:-}"
-msbuild_args[${#msbuild_args[*]}]="-p:SkipTests=${PB_SKIPTESTS:-}"
-msbuild_args[${#msbuild_args[*]}]="-p:IsFinalBuild=${PB_ISFINALBUILD:-}"
+prodcon_args[${#prodcon_args[*]}]="-p:DotNetAssetRootUrl=${PB_ASSETROOTURL:-}"
+prodcon_args[${#prodcon_args[*]}]="-p:DotNetRestoreSources=${PB_RESTORESOURCE:-}"
+prodcon_args[${#prodcon_args[*]}]="-p:DotNetProductBuildId=${PRODUCTBUILDID:-}"
+prodcon_args[${#prodcon_args[*]}]="-p:PublishBlobFeedUrl=${PB_PUBLISHBLOBFEEDURL:-}"
+prodcon_args[${#prodcon_args[*]}]="-p:PublishType=${PB_PUBLISHTYPE:-}"
+prodcon_args[${#prodcon_args[*]}]="-p:SkipTests=${PB_SKIPTESTS:-}"
+prodcon_args[${#prodcon_args[*]}]="-p:IsFinalBuild=${PB_ISFINALBUILD:-}"
 
 get_korebuild
 set_korebuildsettings "$tools_source" "$DOTNET_HOME" "$repo_path" "$config_file" "$ci"
 
 # This incantation avoids unbound variable issues if msbuild_args is empty
 # https://stackoverflow.com/questions/7577052/bash-empty-array-expansion-with-set-u
-invoke_korebuild_command default-build ${msbuild_args[@]+"${msbuild_args[@]}"}
+invoke_korebuild_command default-build "${prodcon_args[@]}" ${msbuild_args[@]+"${msbuild_args[@]}"}

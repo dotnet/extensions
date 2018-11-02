@@ -190,12 +190,14 @@ if (!$DotNetHome) {
 if (!$Channel) { $Channel = 'master' }
 if (!$ToolsSource) { $ToolsSource = 'https://aspnetcore.blob.core.windows.net/buildtools' }
 
+[string[]] $ProdConArgs = @()
+
 if ($PackageVersionPropsUrl) {
     $IntermediateDir = Join-Path $PSScriptRoot 'obj'
     $PropsFilePath = Join-Path $IntermediateDir 'PackageVersions.props'
     New-Item -ItemType Directory $IntermediateDir -ErrorAction Ignore | Out-Null
     Get-RemoteFile "${PackageVersionPropsUrl}${env:PB_AccessTokenSuffix}" $PropsFilePath
-    $MSBuildArguments += "-p:DotNetPackageVersionPropsPath=$PropsFilePath"
+    $ProdConArgs += "-p:DotNetPackageVersionPropsPath=$PropsFilePath"
 }
 
 # Execute
@@ -204,20 +206,18 @@ $korebuildPath = Get-KoreBuild
 Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 # PipeBuild parameters
-$MSBuildArguments += "-p:DotNetAssetRootUrl=${env:PB_AssetRootUrl}"
-$MSBuildArguments += "-p:DotNetRestoreSources=${env:PB_RestoreSource}"
-$MSBuildArguments += "-p:DotNetProductBuildId=${env:ProductBuildId}"
-$MSBuildArguments += "-p:PublishBlobFeedUrl=${env:PB_PublishBlobFeedUrl}"
-$MSBuildArguments += "-p:PublishType=${env:PB_PublishType}"
-$MSBuildArguments += "-p:SkipTests=${env:PB_SkipTests}"
-$MSBuildArguments += "-p:IsFinalBuild=${env:PB_IsFinalBuild}"
-if ($env:PB_SignType) {
-    $MSBuildArguments += "-p:SignType=${env:PB_SignType}"
-}
+$ProdConArgs += "-p:DotNetAssetRootUrl=${env:PB_AssetRootUrl}"
+$ProdConArgs += "-p:DotNetRestoreSources=${env:PB_RestoreSource}"
+$ProdConArgs += "-p:DotNetProductBuildId=${env:ProductBuildId}"
+$ProdConArgs += "-p:PublishBlobFeedUrl=${env:PB_PublishBlobFeedUrl}"
+$ProdConArgs += "-p:PublishType=${env:PB_PublishType}"
+$ProdConArgs += "-p:SkipTests=${env:PB_SkipTests}"
+$ProdConArgs += "-p:IsFinalBuild=${env:PB_IsFinalBuild}"
+$ProdConArgs += "-p:SignType=${env:PB_SignType}"
 
 try {
     Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $Path -ConfigFile $ConfigFile -CI:$CI
-    Invoke-KoreBuildCommand 'default-build' @MSBuildArguments
+    Invoke-KoreBuildCommand 'default-build' @ProdConArgs @MSBuildArguments
 }
 finally {
     Remove-Module 'KoreBuild' -ErrorAction Ignore

@@ -10,7 +10,8 @@
   <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences" Condition=" '$(DisableCustomReferenceResolution)' != 'true' AND '$(TargetFramework)' != '' ">
 
     <ItemGroup>
-      <_ExplicitPackageReference Include="@(PackageReference)" Condition=" '%(PackageReference.IsImplicitlyDefined)' != 'true' " />
+      <_ImplicitPackageReference Include="@(PackageReference->WithMetadataValue('IsImplicitlyDefined', 'true'))" />
+      <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference)" />
       <_ExplicitPackageReference Remove="Internal.AspNetCore.Sdk" />
     </ItemGroup>
 
@@ -19,23 +20,36 @@
 
     <ItemGroup>
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference)" />
-      <UnusedLatestPackageReference Include="@(LatestPackageReference)" Exclude="@(Reference)" />
 
-      <PackageReference Condition="'$(UseLatestPackageReferences)' != 'true'"
-        Include="@(BaselinePackageReference)"
-        Exclude="@(UnusedBaselinePackageReference)"
-        IsImplicitlyDefined="true" />
+      <!--
+        MSBuild does not provide a way to join on matching identities in a Condition,
+        but you can do a cartesian product of two item groups and filter out mismatched id's in a second pass.
+      -->
+      <_PackageReferenceWithVersion Include="@(Reference)" Condition=" '$(UseLatestPackageReferences)' == 'true' ">
+        <Id>%(LatestPackageReference.Identity)</Id>
+        <Version>%(LatestPackageReference.Version)</Version>
+      </_PackageReferenceWithVersion>
 
-      <PackageReference Condition="'$(UseLatestPackageReferences)' == 'true'"
-        Include="@(LatestPackageReference)"
-        Exclude="@(UnusedLatestPackageReference)"
-        IsImplicitlyDefined="true" />
+      <_PackageReferenceWithVersion Include="@(Reference)" Condition=" '$(UseLatestPackageReferences)' != 'true' ">
+        <Id>%(BaselinePackageReference.Identity)</Id>
+        <Version>%(BaselinePackageReference.Version)</Version>
+      </_PackageReferenceWithVersion>
 
+      <_PackageReferenceWithVersion Remove="@(_PackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
+
+      <PackageReference Include="@(_PackageReferenceWithVersion)" IsImplicitlyDefined="true" />
+
+      <!-- Remove reference items that have been resolved to a PackageReference. -->
       <Reference Remove="@(PackageReference)" />
+
+      <!-- Free up memory for unnecessary items -->
+      <_PackageReferenceWithVersion Remove="@(_PackageReferenceWithVersion)" />
+      <_ExplicitPackageReference Remove="@(_ExplicitPackageReference)" />
+      <_ImplicitPackageReference Remove="@(_ImplicitPackageReference)" />
     </ItemGroup>
 
     <Warning Condition="@(UnusedBaselinePackageReference->Count()) != 0"
-             Text="Package references changed since the last release. This could be a breaking change." />
+             Text="Package references changed since the last release. This could be a breaking change. References removed:%0A - @(UnusedBaselinePackageReference, '%0A -')" />
 
     <Error Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)')"
            Code="MSB3245"
