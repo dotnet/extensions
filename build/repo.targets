@@ -1,10 +1,11 @@
-<Project InitialTargets="TagDailyBuild">
+<Project InitialTargets="TagCiBuilds">
   <PropertyGroup>
     <BuildDependsOn Condition="'$(Configuration)' == 'Release' AND '$(OS)' == 'Windows_NT' AND $(PublishType.Contains('blob'))" >$(BuildDependsOn);PublishToProdCon</BuildDependsOn>
   </PropertyGroup>
 
-  <Target Name="TagDailyBuild" Condition=" '$(IsFinalBuild)' != 'true' AND '$(CI)' == 'true' ">
-    <Message Importance="high" Text="##vso[build.addbuildtag]daily-build" />
+  <Target Name="TagCiBuilds" Condition=" '$(CI)' == 'true' ">
+    <Message Importance="high" Text="##vso[build.addbuildtag]daily-build" Condition=" '$(IsFinalBuild)' != 'true' " />
+    <Message Importance="high" Text="##vso[build.addbuildtag]release-candidate" Condition=" '$(IsFinalBuild)' == 'true' " />
   </Target>
 
   <Target Name="PublishToProdCon">

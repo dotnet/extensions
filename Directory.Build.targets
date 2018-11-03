@@ -1,6 +1,9 @@
 ﻿<Project>
   <!-- Properties which should be set after the project has been evaluated -->
   <PropertyGroup>
+    <PackageOutputPath Condition="'$(IsProductComponent)' == 'true' ">$(ProductPackageOutputPath)</PackageOutputPath>
+    <PackageOutputPath Condition="'$(IsProductComponent)' != 'true' ">$(InternalPackageOutputPath)</PackageOutputPath>
+
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">$(MicrosoftNETCoreApp20PackageVersion)</RuntimeFrameworkVersion>
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
     <NETStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(NETStandardLibrary20PackageVersion)</NETStandardImplicitPackageVersion>
