@@ -11,11 +11,11 @@
   <Target Name="PublishToProdCon">
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\ProdConPublish.csproj"
              Targets="Restore"
-             Properties="_Dummy=Restore" />
+             Properties="$(BuildProperties);_Dummy=Restore" />
 
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\ProdConPublish.csproj"
              Targets="Publish"
-             Properties="$(SolutionBuildProperties)" />
+             Properties="$(BuildProperties)" />
   </Target>
 
   <Target Name="GenerateProjectList" DependsOnTargets="ResolveProjects">
