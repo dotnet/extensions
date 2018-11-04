@@ -15,9 +15,18 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
     <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts\</ArtifactsDir>
-    <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\build\</PackageOutputPath>
+    <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
+    <BasePackageOutputPath>$(ArtifactsConfigurationDir)packages\</BasePackageOutputPath>
+    <ProductPackageOutputPath>$(BasePackageOutputPath)product\</ProductPackageOutputPath>
+    <InternalPackageOutputPath>$(BasePackageOutputPath)internal\</InternalPackageOutputPath>
 
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
+
+    <!--
+      By default, all projects which produce packages are not intended to ship to NuGet.org as a product package.
+      Packages which are intended to ship to NuGet.org must opt-in by setting this to true in their project file.
+    -->
+    <IsProductComponent>false</IsProductComponent>
 
     <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance'))">true</IsBenchmarkProject>
     <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests')) OR $(MSBuildProjectName.EndsWith('.Test'))">true</IsTestProject>

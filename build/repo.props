@@ -5,14 +5,18 @@
     <EnableBenchmarkValidation>true</EnableBenchmarkValidation>
     <SkipArtifactVerification>true</SkipArtifactVerification>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <OverridePackageOutputPath>false</OverridePackageOutputPath>
     <BuildSolutions>false</BuildSolutions>
     <SharedSourcesFolder>$(RepositoryRoot)src\Shared\src\</SharedSourcesFolder>
     <SolutionProperties>$(SolutionProperties);DotNetPackageVersionPropsPath=$(DotNetPackageVersionPropsPath)</SolutionProperties>
     <SolutionProperties>$(SolutionProperties);DotNetAdditionalRestoreSources=$(DotNetAdditionalRestoreSources)</SolutionProperties>
     <Projects>$(RepositoryRoot)src\**\*.csproj</Projects>
+    <NuGetVerifierRuleFile>$(RepositoryRoot)eng\NuGetPackageVerifier.json</NuGetVerifierRuleFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageVerifierDirectory Include="$(ArtifactsDir)$(Configuration)\packages\product\" />
+    <PackageVerifierDirectory Include="$(ArtifactsDir)$(Configuration)\packages\internal\" />
     <SharedSourceDirectories Include="$([System.IO.Directory]::GetDirectories($(SharedSourcesFolder)))" />
   </ItemGroup>
 

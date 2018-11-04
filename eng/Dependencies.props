@@ -6,8 +6,8 @@
   <!-- These package versions may be overridden or updated by automation. -->
   <PropertyGroup Label="Package Versions: Auto">
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview2-20181019.5</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftNETCoreAppPackageVersion>2.2.0-preview3-26927-02</MicrosoftNETCoreAppPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview2-20181104.4</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>2.2.0-rtm-27029-02</MicrosoftNETCoreAppPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.5.0</MicrosoftWin32RegistryPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0</SystemDiagnosticsDiagnosticSourcePackageVersion>

@@ -1,32 +1,21 @@
-<Project InitialTargets="TagDailyBuild">
-  <Import Project="..\eng\artifacts.props" />
-
+<Project InitialTargets="TagCiBuilds">
   <PropertyGroup>
     <BuildDependsOn Condition="'$(Configuration)' == 'Release' AND '$(OS)' == 'Windows_NT' AND $(PublishType.Contains('blob'))" >$(BuildDependsOn);PublishToProdCon</BuildDependsOn>
   </PropertyGroup>
 
-  <Target Name="TagDailyBuild" Condition=" '$(IsFinalBuild)' != 'true' AND '$(CI)' == 'true' ">
-    <Message Importance="high" Text="##vso[build.addbuildtag]daily-build" />
+  <Target Name="TagCiBuilds" Condition=" '$(CI)' == 'true' ">
+    <Message Importance="high" Text="##vso[build.addbuildtag]daily-build" Condition=" '$(IsFinalBuild)' != 'true' " />
+    <Message Importance="high" Text="##vso[build.addbuildtag]release-candidate" Condition=" '$(IsFinalBuild)' == 'true' " />
   </Target>
 
   <Target Name="PublishToProdCon">
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\ProdConPublish.csproj"
              Targets="Restore"
-             Properties="_Dummy=Restore" />
+             Properties="$(BuildProperties);_Dummy=Restore" />
 
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\ProdConPublish.csproj"
              Targets="Publish"
-             Properties="$(SolutionBuildProperties)" />
-  </Target>
-
-  <Target Name="CheckPackageConfig" DependsOnTargets="GetArtifactInfo" BeforeTargets="Compile">
-    <ItemGroup>
-      <UnlistedPackage Include="@(ArtifactInfo->WithMetadataValue('ArtifactType', 'NuGetPackage')->'%(PackageId)')"
-                       Exclude="@(PackageArtifact)" />
-    </ItemGroup>
-
-    <Error Condition="@(UnlistedPackage->Count()) != 0"
-           Text="This project will produce the following packages, but the are not listed in $(RepositoryRoot)eng\artifacts.props:%0A - @(UnlistedPackage,'%0A - ')" />
+             Properties="$(BuildProperties)" />
   </Target>
 
   <Target Name="GenerateProjectList" DependsOnTargets="ResolveProjects">

@@ -1,8 +1,6 @@
 <Project DefaultTargets="Publish">
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
-  <Import Project="artifacts.props" />
-
   <PropertyGroup>
     <!-- This is just a dummy project to publish files. It doesn't actually compile a netcoreapp2.1 project, but this properties are necessary to make /t:Restore work. -->
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -24,29 +22,11 @@
 
   <Target Name="GetFilesToPublish">
     <ItemGroup>
-      <SymbolsPackagesToPublish Include="$(PackageOutputPath)%(PackageArtifact.Identity).*.symbols.nupkg" />
-      <PackagesToPublish
-        Include="$(PackageOutputPath)%(PackageArtifact.Identity).*.nupkg"
-        Exclude="@(SymbolsPackagesToPublish)">
-        <ManifestArtifactData Condition=" '%(PackageArtifact.Category)' != 'ship' ">NonShipping=true</ManifestArtifactData>
-      </PackagesToPublish>
-      <UnlistedPackagesToPublish
-        Include="$(PackageOutputPath)*.nupkg"
-        Exclude="@(SymbolsPackagesToPublish);@(PackagesToPublish)">
+      <PackagesToPublish Include="$(ProductPackageOutputPath)*.nupkg" />
+      <PackagesToPublish Include="$(InternalPackageOutputPath)*.nupkg">
         <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
-      </UnlistedPackagesToPublish>
-      <PackagesToPublish Include="@(SymbolsPackagesToPublish);@(UnlistedPackagesToPublish)" />
+      </PackagesToPublish>
     </ItemGroup>
-
-    <ItemGroup>
-      <_MissingArtifactFile Include="@(PackagesToPublish)" Condition="!Exists(%(PackagesToPublish.Identity))" />
-    </ItemGroup>
-
-    <Warning Condition="@(UnlistedPackagesToPublish->Count()) != 0"
-      Text="The following packages were in $(PackageOutputPath), but were not given a shipping category. These will be considered 'noship' packages:%0A - @(UnlistedPackagesToPublish, '%0A - ')" />
-
-    <Error Text="Did not find any packages to publish in $(PackageOutputPath)" Condition="@(PackagesToPublish->Count()) == 0" />
-    <Error Text="Missing expected files:%0A - @(_MissingArtifactFile, '%0A - ')" Condition="@(_MissingArtifactFile->Count()) != 0" />
   </Target>
 
   <Target Name="SetPublishProperties" DependsOnTargets="ResolveCommitHash;GetFilesToPublish" BeforeTargets="PublishPackagesToBlobFeed">
