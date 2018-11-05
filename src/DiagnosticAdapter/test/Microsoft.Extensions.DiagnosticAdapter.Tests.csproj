@@ -8,8 +8,4 @@
     <ProjectReference Include="..\src\Microsoft.Extensions.DiagnosticAdapter.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
-  </ItemGroup>
-
 </Project>

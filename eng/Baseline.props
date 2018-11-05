@@ -40,6 +40,40 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.5.0, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.Extensions.FileProviders.Abstractions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Abstractions' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.FileProviders.Composite-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Composite' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Composite' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.FileProviders.Embedded-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Embedded' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Embedded' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.FileProviders.Physical-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Physical' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Physical' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.FileSystemGlobbing-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileSystemGlobbing' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileSystemGlobbing' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.Extensions.ObjectPool-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.ObjectPool' ">
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
