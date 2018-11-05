@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.FileProviders</RootNamespace>
+    <Description>File provider for files in embedded resources for Microsoft.Extensions.FileProviders.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
+    <ProjectReference Include="..\..\Manifest.MSBuildTask\src\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SignedPackageFile Include="$(TargetPath)" PackagePath="lib/$(TargetFramework)/$(TargetFileName)" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="$(MSBuildThisFileDirectory)..\FS.Embedded.Manifest.Task\bin\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.dll" PackagePath="tasks/netstandard2.0/Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="$(MSBuildThisFileDirectory)..\FS.Embedded.Manifest.Task\bin\$(Configuration)\net461\$(AssemblyName).Manifest.Task.dll" PackagePath="tasks/net461/Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll" Certificate="$(AssemblySigningCertName)" />
+  </ItemGroup>
+
+  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup;DebugSymbolsProjectOutputGroup;">
+
+    <PropertyGroup>
+      <NuspecProperties>
+        id=$(PackageId);
+        version=$(PackageVersion);
+        authors=$(Authors);
+        description=$(Description);
+        tags=$(PackageTags.Replace(';', ' '));
+        licenseUrl=$(PackageLicenseUrl);
+        projectUrl=$(PackageProjectUrl);
+        iconUrl=$(PackageIconUrl);
+        repositoryUrl=$(RepositoryUrl);
+        repositoryCommit=$(RepositoryCommit);
+        copyright=$(Copyright);
+        targetframework=$(TargetFramework);
+        AssemblyName=$(AssemblyName);
+
+        OutputBinary=@(BuiltProjectOutputGroupOutput);
+        OutputSymbol=@(DebugSymbolsProjectOutputGroupOutput);
+        OutputDocumentation=@(DocumentationProjectOutputGroupOutput);
+
+        <!-- Include the assembly and symbols from the tasks project -->
+<<<<<<< HEAD:src/FS.Embedded/FS.Embedded.csproj
+        TaskAssemblyNetStandard=..\FS.Embedded.Manifest.Task\bin\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.dll;
+        TaskSymbolNetStandard=..\FS.Embedded.Manifest.Task\bin\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.pdb;
+        TaskAssemblyNet461=..\FS.Embedded.Manifest.Task\bin\$(Configuration)\net461\$(AssemblyName).Manifest.Task.dll;
+        TaskSymbolNet461=..\FS.Embedded.Manifest.Task\bin\$(Configuration)\net461\$(AssemblyName).Manifest.Task.pdb;
+=======
+        TaskAssemblyNetStandard=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\netstandard1.5\$(AssemblyName).Manifest.Task.dll;
+        TaskSymbolNetStandard=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\netstandard1.5\$(AssemblyName).Manifest.Task.pdb;
+        TaskAssemblyNet461=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\net461\$(AssemblyName).Manifest.Task.dll;
+        TaskSymbolNet461=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\net461\$(AssemblyName).Manifest.Task.pdb;
+>>>>>>> m22:src/FileProviders/Embedded/src/Microsoft.Extensions.FileProviders.Embedded.csproj
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
+
+</Project>
