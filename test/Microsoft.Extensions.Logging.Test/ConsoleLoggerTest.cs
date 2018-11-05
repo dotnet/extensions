@@ -27,15 +27,18 @@ namespace Microsoft.Extensions.Logging.Test
         private const string _state = "This is a test, and {curly braces} are just fine!";
         private Func<object, Exception, string> _defaultFormatter = (state, exception) => state.ToString();
 
-        private static (ConsoleLogger Logger, ConsoleSink Sink) SetUp(Func<string, LogLevel, bool> filter, bool includeScopes = false, bool disableColors = false)
+        private static (ConsoleLogger Logger, ConsoleSink Sink, ConsoleSink ErrorSink) SetUp(Func<string, LogLevel, bool> filter, bool includeScopes = false, bool disableColors = false)
         {
             // Arrange
             var sink = new ConsoleSink();
+            var errorSink = new ConsoleSink();
             var console = new TestConsole(sink);
+            var errorConsole = new TestConsole(errorSink);
             var logger = new ConsoleLogger(_loggerName, filter, includeScopes ? new LoggerExternalScopeProvider() : null, new TestLoggerProcessor());
             logger.Console = console;
+            logger.ErrorConsole = errorConsole;
             logger.DisableColors = disableColors;
-            return (logger, sink);
+            return (logger, sink, errorSink);
         }
 
         public ConsoleLoggerTest()
@@ -845,6 +848,32 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.True(logger.DisableColors);
         }
 
+        [Fact]
+        public void ConsoleLoggerLogsToError_WhenOverErrorLevel()
+        {
+            // Arrange
+            var (logger, sink, errorSink) = SetUp(null);
+
+            logger.LogToStandardErrorThreshold = LogLevel.Warning;
+
+            // Act
+            logger.LogInformation("Info");
+            logger.LogWarning("Warn");
+
+            // Assert
+            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(
+                "info: test[0]" + Environment.NewLine +
+                "      Info" + Environment.NewLine,
+                GetMessage(sink.Writes));
+
+            Assert.Equal(2, errorSink.Writes.Count);
+            Assert.Equal(
+                "warn: test[0]" + Environment.NewLine +
+                "      Warn" + Environment.NewLine,
+                GetMessage(errorSink.Writes));
+        }
+
         [Theory]
         [MemberData(nameof(LevelsWithPrefixes))]
         public void WriteCore_NullMessageWithException(LogLevel level, string prefix)
@@ -1047,6 +1076,37 @@ namespace Microsoft.Extensions.Logging.Test
             Assert.NotNull(logger.ScopeProvider);
             monitor.Set(new ConsoleLoggerOptions() { IncludeScopes = false });
             Assert.Null(logger.ScopeProvider);
+        }
+
+        [Fact]
+        public void ConsoleLoggerOptions_LogAsErrorLevel_IsReadFromLoggingConfiguration()
+        {
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new[] { new KeyValuePair<string, string>("Console:LogToStandardErrorThreshold", "Warning") }).Build();
+
+            var loggerProvider = new ServiceCollection()
+                .AddLogging(builder => builder
+                    .AddConfiguration(configuration)
+                    .AddConsole())
+                .BuildServiceProvider()
+                .GetRequiredService<ILoggerProvider>();
+
+            var consoleLoggerProvider = Assert.IsType<ConsoleLoggerProvider>(loggerProvider);
+            var logger = (ConsoleLogger)consoleLoggerProvider.CreateLogger("Category");
+            Assert.Equal(LogLevel.Warning, logger.LogToStandardErrorThreshold);
+        }
+
+        [Fact]
+        public void ConsoleLoggerOptions_LogAsErrorLevel_IsAppliedToLoggers()
+        {
+            // Arrange
+            var monitor = new TestOptionsMonitor(new ConsoleLoggerOptions());
+            var loggerProvider = new ConsoleLoggerProvider(monitor);
+            var logger = (ConsoleLogger)loggerProvider.CreateLogger("Name");
+
+            // Act & Assert
+            Assert.Equal(LogLevel.None, logger.LogToStandardErrorThreshold);
+            monitor.Set(new ConsoleLoggerOptions() { LogToStandardErrorThreshold = LogLevel.Error});
+            Assert.Equal(LogLevel.Error, logger.LogToStandardErrorThreshold);
         }
 
         [Fact]

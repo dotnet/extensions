@@ -8,7 +8,8 @@
     "Console":
     {
       "IncludeScopes": "true",
-      "TimestampFormat": "[HH:mm:ss] "
+      "TimestampFormat": "[HH:mm:ss] ",
+      "LogToStandardErrorThreshold": "Warning"
     }
   }
 }

@@ -2,11 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 
 namespace Microsoft.Extensions.Logging.Console.Internal
 {
     public class WindowsLogConsole : IConsole
     {
+        private readonly TextWriter _textWriter;
+
+        /// <inheritdoc />
+        public WindowsLogConsole(bool stdErr = false)
+        {
+            _textWriter = stdErr? System.Console.Error : System.Console.Out;
+        }
+
         private bool SetColor(ConsoleColor? background, ConsoleColor? foreground)
         {
             if (background.HasValue)
@@ -30,7 +39,7 @@ namespace Microsoft.Extensions.Logging.Console.Internal
         public void Write(string message, ConsoleColor? background, ConsoleColor? foreground)
         {
             var colorChanged = SetColor(background, foreground);
-            System.Console.Out.Write(message);
+            _textWriter.Write(message);
             if (colorChanged)
             {
                 ResetColor();
@@ -40,7 +49,7 @@ namespace Microsoft.Extensions.Logging.Console.Internal
         public void WriteLine(string message, ConsoleColor? background, ConsoleColor? foreground)
         {
             var colorChanged = SetColor(background, foreground);
-            System.Console.Out.WriteLine(message);
+            _textWriter.WriteLine(message);
             if (colorChanged)
             {
                 ResetColor();
