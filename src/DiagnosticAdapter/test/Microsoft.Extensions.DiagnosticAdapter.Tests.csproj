@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\src\Microsoft.Extensions.DiagnosticAdapter.csproj" />
-    <ProjectReference Include="..\..\TestingUtils\Microsoft.AspNetCore.Testing\src\Microsoft.AspNetCore.Testing.csproj" />
   </ItemGroup>
 
 </Project>

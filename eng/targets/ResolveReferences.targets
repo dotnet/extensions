@@ -24,7 +24,7 @@
     <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
   </ItemGroup>
 
-  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences" Condition=" '$(TargetFramework)' != '' ">
+  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences" Condition=" '$(TargetFramework)' != '' ">
     <ItemGroup>
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName)" />
 
@@ -36,8 +36,12 @@
         <Id>%(LatestPackageReference.Identity)</Id>
         <Version>%(LatestPackageReference.Version)</Version>
       </_PackageReferenceWithVersion>
+      <_PackageReferenceWithVersion Remove="@(_PackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
 
-      <_PackageReferenceWithVersion Include="@(Reference)" Condition=" '$(UseLatestPackageReferences)' != 'true' ">
+      <!-- Remove reference items that have been resolved to a PackageReference. -->
+      <Reference Remove="@(_PackageReferenceWithVersion)" />
+
+      <_PackageReferenceWithVersion Include="@(Reference)" Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
         <Id>%(BaselinePackageReference.Identity)</Id>
         <Version>%(BaselinePackageReference.Version)</Version>
       </_PackageReferenceWithVersion>
@@ -46,8 +50,7 @@
 
       <PackageReference Include="@(_PackageReferenceWithVersion)" IsImplicitlyDefined="true" />
 
-      <!-- Remove reference items that have been resolved to a PackageReference. -->
-      <Reference Remove="@(PackageReference)" />
+      <Reference Remove="@(_PackageReferenceWithVersion)" />
 
       <!-- Free up memory for unnecessary items -->
       <_PackageReferenceWithVersion Remove="@(_PackageReferenceWithVersion)" />
