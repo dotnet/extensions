@@ -40,6 +40,13 @@
     <LatestPackageReference Include="System.ValueTuple" Version="$(SystemValueTuplePackageVersion)" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' " Label="MSBuild">
+    <LatestPackageReference Include="Microsoft.Build" Version="15.8.166" />
+    <LatestPackageReference Include="Microsoft.Build.Framework" Version="15.8.166" />
+    <LatestPackageReference Include="Microsoft.Build.Tasks.Core" Version="15.8.166" />
+    <LatestPackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" />
+  </ItemGroup>
+
   <ItemGroup Label="External dependencies">
     <LatestPackageReference Include="BenchmarkDotNet" Version="0.10.13" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.8.0" />
@@ -57,6 +64,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
+    <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Microsoft.NET.Test.Sdk" />
     <Reference Include="Moq" />
     <Reference Include="xunit" />

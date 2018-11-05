@@ -20,9 +20,6 @@ project.lock.json
 *.docstates
 _ReSharper.*
 *.exe
-*net45.csproj
-*net451.csproj
-*k10.csproj
 *.psess
 *.vsp
 *.pidb
