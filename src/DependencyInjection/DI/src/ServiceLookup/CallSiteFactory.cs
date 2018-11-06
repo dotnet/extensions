@@ -87,19 +87,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 return _stackGuard.RunOnEmptyStack((type, chain) => CreateCallSite(type, chain), serviceType, callSiteChain);
             }
 
-            ServiceCallSite callSite;
-            try
-            {
-                callSiteChain.CheckCircularDependency(serviceType);
+            callSiteChain.CheckCircularDependency(serviceType);
 
-                callSite = TryCreateExact(serviceType, callSiteChain) ??
-                           TryCreateOpenGeneric(serviceType, callSiteChain) ??
-                           TryCreateEnumerable(serviceType, callSiteChain);
-            }
-            finally
-            {
-                callSiteChain.Remove(serviceType);
-            }
+            var callSite = TryCreateExact(serviceType, callSiteChain) ??
+                                       TryCreateOpenGeneric(serviceType, callSiteChain) ??
+                                       TryCreateEnumerable(serviceType, callSiteChain);
 
             _callSiteCache[serviceType] = callSite;
 
