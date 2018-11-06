@@ -10,6 +10,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Logging.Testing.Tests
 {
+    [LogLevel(LogLevel.Debug)]
     [ShortClassName]
     public class LoggedTestXunitTests : TestLoggedTest
     {
@@ -76,7 +77,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
 
         [Fact]
         [LogLevel(LogLevel.Information)]
-        public void LoggedFactFilteredByLogLevel()
+        public void LoggedFactFilteredByMethodLogLevel()
         {
             Logger.LogInformation("Information");
             Logger.LogDebug("Debug");
@@ -84,6 +85,17 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             var message = Assert.Single(TestSink.Writes);
             Assert.Equal(LogLevel.Information, message.LogLevel);
             Assert.Equal("Information", message.Formatter(message.State, null));
+        }
+
+        [Fact]
+        public void LoggedFactFilteredByClassLogLevel()
+        {
+            Logger.LogDebug("Debug");
+            Logger.LogTrace("Trace");
+
+            var message = Assert.Single(TestSink.Writes);
+            Assert.Equal(LogLevel.Debug, message.LogLevel);
+            Assert.Equal("Debug", message.Formatter(message.State, null));
         }
 
         [Theory]
@@ -147,6 +159,19 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             TestSink.ScopeStarted += ctx => context = ctx;
             using (Logger.BeginScope("Scope")) {}
             Assert.Equal(TestSink.Scopes.Single(), context);
+        }
+    }
+
+    public class LoggedTestXunitLogLevelTests : LoggedTest
+    {
+        [Fact]
+        public void LoggedFactFilteredByAssemblyLogLevel()
+        {
+            Logger.LogTrace("Trace");
+
+            var message = Assert.Single(TestSink.Writes);
+            Assert.Equal(LogLevel.Trace, message.LogLevel);
+            Assert.Equal("Trace", message.Formatter(message.State, null));
         }
     }
 
