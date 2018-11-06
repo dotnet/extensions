@@ -173,6 +173,24 @@
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.ObjectPool' AND '$(TargetFramework)' == 'netstandard2.0' " />
+  <!-- Package: Microsoft.Extensions.Options.ConfigurationExtensions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Options.ConfigurationExtensions' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Options.ConfigurationExtensions' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Options-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Options' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Options' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[2.1.1, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.Extensions.Primitives-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Primitives' ">
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>

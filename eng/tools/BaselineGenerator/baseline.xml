@@ -21,5 +21,7 @@
   <Package Id="Microsoft.Extensions.FileProviders.Physical" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.FileSystemGlobbing" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.ObjectPool" Version="2.1.1" />
+  <Package Id="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.1.1" />
+  <Package Id="Microsoft.Extensions.Options" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.Primitives" Version="2.1.1" />
 </Baseline>

@@ -24,6 +24,9 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.FileProviders.Physical" ProjectPath="$(RepositoryRoot)src/FileProviders/Physical/src/Microsoft.Extensions.FileProviders.Physical.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.FileSystemGlobbing" ProjectPath="$(RepositoryRoot)src/FileSystemGlobbing/src/Microsoft.Extensions.FileSystemGlobbing.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.ObjectPool" ProjectPath="$(RepositoryRoot)src/ObjectPool/src/Microsoft.Extensions.ObjectPool.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Options.ConfigurationExtensions" ProjectPath="$(RepositoryRoot)src/Options/ConfigurationExtensions/src/Microsoft.Extensions.Options.ConfigurationExtensions.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Options.DataAnnotations" ProjectPath="$(RepositoryRoot)src/Options/DataAnnotations/src/Microsoft.Extensions.Options.DataAnnotations.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Options" ProjectPath="$(RepositoryRoot)src/Options/Options/src/Microsoft.Extensions.Options.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Primitives" ProjectPath="$(RepositoryRoot)src/Primitives/src/Microsoft.Extensions.Primitives.csproj" />
     <ProjectReferenceProvider Include="Internal.AspNetCore.Analyzers" ProjectPath="$(RepositoryRoot)src/TestingUtils/Internal.AspNetCore.Analyzers/src/Internal.AspNetCore.Analyzers.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Analyzer.Testing" ProjectPath="$(RepositoryRoot)src/TestingUtils/Microsoft.AspNetCore.Analyzer.Testing/src/Microsoft.AspNetCore.Analyzer.Testing.csproj" />
