@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Configuration.AzureKeyVault" />
+    <Reference Include="Microsoft.Extensions.Configuration.Test.Common" />
+  </ItemGroup>
+
+</Project>
