@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Analyzer package for Microsoft.Extensions.Logging.</Description>
+    <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
+    <VersionSuffix>$(ExperimentalVersionSuffix)</VersionSuffix>
+    <PackageVersion>$(ExperimentalPackageVersion)</PackageVersion>
+    <VerifyVersion>false</VerifyVersion>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <EnableApiCheck>false</EnableApiCheck>
+    <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
+    <UseLatestPackageReferences>true</UseLatestPackageReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Logging.Abstractions\src\Internal\LogValuesFormatter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
+    <PackageReference Update="NETStandard.Library" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>
