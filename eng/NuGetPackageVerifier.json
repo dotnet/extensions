@@ -25,6 +25,15 @@
   "Default": {
     "rules": [
       "DefaultCompositeRule"
-    ]
+    ],
+    "packages": {
+      "Microsoft.Extensions.Logging.Testing": {
+        "Exclusions": {
+          "BUILD_ITEMS_FRAMEWORK": {
+            "*": "Props file intentionally targets any framework since the content is the same for both netstandard2.0 and net461."
+          }
+        }
+      }
+    }
   }
 }
