@@ -1,5 +1,99 @@
 ﻿<!-- Auto generated. Do not edit manually, use eng/tools/BaselineGenerator/ to recreate. -->
 <Project>
+  <!-- Package: Microsoft.Extensions.Configuration.Abstractions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Abstractions' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Configuration.AzureKeyVault-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.AzureKeyVault' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.AzureKeyVault' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Azure.KeyVault" Version="[2.3.2, )" />
+    <BaselinePackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="[1.0.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Configuration.Binder-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Binder' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Binder' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Configuration.CommandLine-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.CommandLine' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.CommandLine' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Configuration.EnvironmentVariables-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.EnvironmentVariables' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.EnvironmentVariables' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Configuration.FileExtensions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.FileExtensions' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.FileExtensions' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Configuration.Ini-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Ini' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Ini' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Configuration.Json-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Json' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Json' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Configuration.KeyPerFile-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.KeyPerFile' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.KeyPerFile' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Configuration.UserSecrets-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.UserSecrets' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.UserSecrets' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Configuration.Xml-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Xml' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Xml' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[4.5.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Configuration-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[2.1.1, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.Extensions.DependencyInjection-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' ">
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>

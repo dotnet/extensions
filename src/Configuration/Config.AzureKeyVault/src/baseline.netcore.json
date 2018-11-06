@@ -1,0 +1,284 @@
+{
+  "AssemblyIdentity": "Microsoft.Extensions.Configuration.AzureKeyVault, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.Extensions.Configuration.AzureKeyVaultConfigurationExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddAzureKeyVault",
+          "Parameters": [
+            {
+              "Name": "configurationBuilder",
+              "Type": "Microsoft.Extensions.Configuration.IConfigurationBuilder"
+            },
+            {
+              "Name": "vault",
+              "Type": "System.String"
+            },
+            {
+              "Name": "clientId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "clientSecret",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddAzureKeyVault",
+          "Parameters": [
+            {
+              "Name": "configurationBuilder",
+              "Type": "Microsoft.Extensions.Configuration.IConfigurationBuilder"
+            },
+            {
+              "Name": "vault",
+              "Type": "System.String"
+            },
+            {
+              "Name": "clientId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "clientSecret",
+              "Type": "System.String"
+            },
+            {
+              "Name": "manager",
+              "Type": "Microsoft.Extensions.Configuration.AzureKeyVault.IKeyVaultSecretManager"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddAzureKeyVault",
+          "Parameters": [
+            {
+              "Name": "configurationBuilder",
+              "Type": "Microsoft.Extensions.Configuration.IConfigurationBuilder"
+            },
+            {
+              "Name": "vault",
+              "Type": "System.String"
+            },
+            {
+              "Name": "clientId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "certificate",
+              "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddAzureKeyVault",
+          "Parameters": [
+            {
+              "Name": "configurationBuilder",
+              "Type": "Microsoft.Extensions.Configuration.IConfigurationBuilder"
+            },
+            {
+              "Name": "vault",
+              "Type": "System.String"
+            },
+            {
+              "Name": "clientId",
+              "Type": "System.String"
+            },
+            {
+              "Name": "certificate",
+              "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2"
+            },
+            {
+              "Name": "manager",
+              "Type": "Microsoft.Extensions.Configuration.AzureKeyVault.IKeyVaultSecretManager"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddAzureKeyVault",
+          "Parameters": [
+            {
+              "Name": "configurationBuilder",
+              "Type": "Microsoft.Extensions.Configuration.IConfigurationBuilder"
+            },
+            {
+              "Name": "vault",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddAzureKeyVault",
+          "Parameters": [
+            {
+              "Name": "configurationBuilder",
+              "Type": "Microsoft.Extensions.Configuration.IConfigurationBuilder"
+            },
+            {
+              "Name": "vault",
+              "Type": "System.String"
+            },
+            {
+              "Name": "manager",
+              "Type": "Microsoft.Extensions.Configuration.AzureKeyVault.IKeyVaultSecretManager"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddAzureKeyVault",
+          "Parameters": [
+            {
+              "Name": "configurationBuilder",
+              "Type": "Microsoft.Extensions.Configuration.IConfigurationBuilder"
+            },
+            {
+              "Name": "vault",
+              "Type": "System.String"
+            },
+            {
+              "Name": "client",
+              "Type": "Microsoft.Azure.KeyVault.KeyVaultClient"
+            },
+            {
+              "Name": "manager",
+              "Type": "Microsoft.Extensions.Configuration.AzureKeyVault.IKeyVaultSecretManager"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Configuration.AzureKeyVault.DefaultKeyVaultSecretManager",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Configuration.AzureKeyVault.IKeyVaultSecretManager"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetKey",
+          "Parameters": [
+            {
+              "Name": "secret",
+              "Type": "Microsoft.Azure.KeyVault.Models.SecretBundle"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Configuration.AzureKeyVault.IKeyVaultSecretManager",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Load",
+          "Parameters": [
+            {
+              "Name": "secret",
+              "Type": "Microsoft.Azure.KeyVault.Models.SecretItem"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Configuration.AzureKeyVault.IKeyVaultSecretManager",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Configuration.AzureKeyVault.IKeyVaultSecretManager",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Load",
+          "Parameters": [
+            {
+              "Name": "secret",
+              "Type": "Microsoft.Azure.KeyVault.Models.SecretItem"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetKey",
+          "Parameters": [
+            {
+              "Name": "secret",
+              "Type": "Microsoft.Azure.KeyVault.Models.SecretBundle"
+            }
+          ],
+          "ReturnType": "System.String",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}
