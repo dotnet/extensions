@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging.Console.Internal;
 
 namespace Microsoft.Extensions.Logging.Console
 {
+    [Obsolete("This type is obsolete and will be removed in a future version. The recommended alternative is ConsoleLoggerProvider.")]
     public class ConsoleLogger : ILogger
     {
         private static readonly string _loglevelPadding = ": ";

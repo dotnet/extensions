@@ -36,6 +36,7 @@ namespace Microsoft.Extensions.Logging
         /// Adds an event logger that is enabled for <see cref="LogLevel"/>.Information or higher.
         /// </summary>
         /// <param name="factory">The extension method argument.</param>
+        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is AddEventSourceLogger(this ILoggingBuilder builder).")]
         public static ILoggerFactory AddEventSourceLogger(this ILoggerFactory factory)
         {
             if (factory == null)

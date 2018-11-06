@@ -11,6 +11,9 @@ using Newtonsoft.Json;
 using Xunit;
 using Microsoft.Extensions.DependencyInjection;
 
+// AddEventSourceLogger(ILoggerProvider) overload is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
+
 namespace Microsoft.Extensions.Logging.Test
 {
     public abstract class EventSourceLoggerTest: IDisposable
