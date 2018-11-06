@@ -7,6 +7,7 @@
       So these manual settings are required.
     -->
     <IsImplementationProject>false</IsImplementationProject>
+    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
     <UseProjectReferences>true</UseProjectReferences>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <IsPackable>false</IsPackable>
