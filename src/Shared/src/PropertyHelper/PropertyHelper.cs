@@ -144,7 +144,7 @@ namespace Microsoft.Extensions.Internal
         /// </returns>
         public static PropertyHelper[] GetProperties(Type type)
         {
-            return GetProperties(type, (p) => CreateInstance(p), PropertiesCache);
+            return GetProperties(type, p => CreateInstance(p), PropertiesCache);
         }
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace Microsoft.Extensions.Internal
         /// </returns>
         public static PropertyHelper[] GetVisibleProperties(TypeInfo typeInfo)
         {
-            return GetVisibleProperties(typeInfo.AsType(), (p) => CreateInstance(p), PropertiesCache, VisiblePropertiesCache);
+            return GetVisibleProperties(typeInfo.AsType(), p => CreateInstance(p), PropertiesCache, VisiblePropertiesCache);
         }
 
         /// <summary>
@@ -182,7 +182,7 @@ namespace Microsoft.Extensions.Internal
         /// </returns>
         public static PropertyHelper[] GetVisibleProperties(Type type)
         {
-            return GetVisibleProperties(type, (p) => CreateInstance(p), PropertiesCache, VisiblePropertiesCache);
+            return GetVisibleProperties(type, p => CreateInstance(p), PropertiesCache, VisiblePropertiesCache);
         }
 
         /// <summary>
@@ -347,10 +347,8 @@ namespace Microsoft.Extensions.Internal
 
             if (value != null)
             {
-                var properties = GetProperties(value.GetType());
-                for (var i = 0; i < properties.Length; i++)
+                foreach (var helper in GetProperties(value.GetType()))
                 {
-                    var helper = properties[i];
                     dictionary[helper.Name] = helper.GetValue(value);
                 }
             }
