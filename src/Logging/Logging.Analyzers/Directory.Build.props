@@ -1,0 +1,8 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <!-- Analyzers for logging are still experimental. -->
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+</Project>
