@@ -1,4 +1,8 @@
 <Baseline>
+  <Package Id="Microsoft.Extensions.Caching.Abstractions" Version="2.1.2" />
+  <Package Id="Microsoft.Extensions.Caching.Memory" Version="2.1.2" />
+  <Package Id="Microsoft.Extensions.Caching.Redis" Version="2.1.2" />
+  <Package Id="Microsoft.Extensions.Caching.SqlServer" Version="2.1.2" />
   <Package Id="Microsoft.Extensions.Configuration.Abstractions" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.Configuration.AzureKeyVault" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.Configuration.Binder" Version="2.1.1" />
