@@ -427,9 +427,9 @@ namespace Microsoft.Extensions.Internal
             // The simple and common case, this is normal POCO object - no need to allocate.
             var allPropertiesDefinedOnType = true;
             var allProperties = GetProperties(type, createPropertyHelper, allPropertiesCache);
-            for (var i = 0; i < allProperties.Length; i++)
+            foreach (var propertyHelper in allProperties)
             {
-                if (allProperties[i].Property.DeclaringType != type)
+                if (propertyHelper.Property.DeclaringType != type)
                 {
                     allPropertiesDefinedOnType = false;
                     break;
@@ -514,7 +514,6 @@ namespace Microsoft.Extensions.Internal
 
             return helpers;
         }
-
 
         private static bool IsInterestingProperty(PropertyInfo property)
         {
