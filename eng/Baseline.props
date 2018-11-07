@@ -1,5 +1,39 @@
 ﻿<!-- Auto generated. Do not edit manually, use eng/tools/BaselineGenerator/ to recreate. -->
 <Project>
+  <!-- Package: Microsoft.Extensions.Caching.Abstractions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.Abstractions' ">
+    <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Caching.Memory-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.Memory' ">
+    <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.Memory' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[2.1.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Caching.Redis-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.Redis' ">
+    <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.Redis' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[2.1.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="StackExchange.Redis.StrongName" Version="[1.2.6, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Caching.SqlServer-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.SqlServer' ">
+    <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.SqlServer' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[2.1.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="System.Data.SqlClient" Version="[4.5.1, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Abstractions' ">
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
