@@ -12,6 +12,7 @@
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.5.0</SystemComponentModelAnnotationsPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>4.5.0</SystemDiagnosticsEventLogPackageVersion>
     <SystemIOPipelinesPackageVersion>4.5.2</SystemIOPipelinesPackageVersion>
     <SystemMemoryPackageVersion>4.5.1</SystemMemoryPackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
@@ -32,6 +33,7 @@
     <LatestPackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
     <LatestPackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsPackageVersion)" />
     <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
+    <LatestPackageReference Include="System.Diagnostics.EventLog" Version="$(SystemDiagnosticsEventLogPackageVersion)" />
     <LatestPackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
     <LatestPackageReference Include="System.Memory" Version="$(SystemMemoryPackageVersion)" />
     <LatestPackageReference Include="System.Net.Http" Version="$(SystemNetHttpPackageVersion)" />
@@ -60,6 +62,8 @@
     <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
     <LatestPackageReference Include="Moq" Version="4.10.0" />
     <LatestPackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <LatestPackageReference Include="Serilog.Extensions.Logging" Version="1.4.0" />
+    <LatestPackageReference Include="Serilog.Sinks.File" Version="4.0.0" />
     <LatestPackageReference Include="xunit.abstractions" Version="2.0.1" />
     <LatestPackageReference Include="xunit.analyzers" Version="0.10.0" />
     <LatestPackageReference Include="xunit.assert" Version="2.3.1" />

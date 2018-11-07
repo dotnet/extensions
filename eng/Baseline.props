@@ -94,19 +94,6 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[2.1.1, )" />
   </ItemGroup>
-  <!-- Package: Microsoft.Extensions.DependencyInjection-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' AND '$(TargetFramework)' == 'netcoreapp2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
-  </ItemGroup>
   <!-- Package: Microsoft.Extensions.DependencyInjection.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection.Abstractions' ">
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
@@ -120,6 +107,19 @@
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="xunit.assert" Version="[2.3.1, )" />
     <BaselinePackageReference Include="xunit.extensibility.core" Version="[2.3.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.DependencyInjection-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' AND '$(TargetFramework)' == 'net461' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' AND '$(TargetFramework)' == 'netcoreapp2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.DiagnosticAdapter-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' ">
@@ -168,6 +168,110 @@
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileSystemGlobbing' AND '$(TargetFramework)' == 'netstandard2.0' " />
+  <!-- Package: Microsoft.Extensions.Logging.Abstractions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Abstractions' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' " />
+  <!-- Package: Microsoft.Extensions.Logging.AzureAppServices-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.AzureAppServices' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.AzureAppServices' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="System.ValueTuple" Version="[4.5.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Logging.Configuration-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Configuration' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Configuration' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Logging.Console-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Console' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Console' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Logging.Debug-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Debug' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Debug' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Logging.EventLog-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.EventLog' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.EventLog' AND '$(TargetFramework)' == 'net461' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="System.Diagnostics.EventLog" Version="[4.5.0, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.EventLog' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="System.Diagnostics.EventLog" Version="[4.5.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Logging.EventSource-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.EventSource' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.EventSource' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Logging.Testing-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Testing' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Testing' AND '$(TargetFramework)' == 'net461' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Console" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Testing" Version="[2.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Serilog.Extensions.Logging" Version="[1.4.0, )" />
+    <BaselinePackageReference Include="Serilog.Sinks.File" Version="[3.2.0, )" />
+    <BaselinePackageReference Include="xunit.abstractions" Version="[2.0.1, )" />
+    <BaselinePackageReference Include="xunit.assert" Version="[2.3.1, )" />
+    <BaselinePackageReference Include="xunit.extensibility.execution" Version="[2.3.1, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Testing' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Console" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Testing" Version="[2.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Serilog.Extensions.Logging" Version="[1.4.0, )" />
+    <BaselinePackageReference Include="Serilog.Sinks.File" Version="[3.2.0, )" />
+    <BaselinePackageReference Include="xunit.abstractions" Version="[2.0.1, )" />
+    <BaselinePackageReference Include="xunit.assert" Version="[2.3.1, )" />
+    <BaselinePackageReference Include="xunit.extensibility.execution" Version="[2.3.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Logging.TraceSource-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.TraceSource' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.TraceSource' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Logging-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.Extensions.ObjectPool-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.ObjectPool' ">
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>

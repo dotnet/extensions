@@ -23,6 +23,18 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.FileProviders.Embedded" ProjectPath="$(RepositoryRoot)src/FileProviders/Embedded/src/Microsoft.Extensions.FileProviders.Embedded.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.FileProviders.Physical" ProjectPath="$(RepositoryRoot)src/FileProviders/Physical/src/Microsoft.Extensions.FileProviders.Physical.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.FileSystemGlobbing" ProjectPath="$(RepositoryRoot)src/FileSystemGlobbing/src/Microsoft.Extensions.FileSystemGlobbing.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.Abstractions" ProjectPath="$(RepositoryRoot)src/Logging/Logging.Abstractions/src/Microsoft.Extensions.Logging.Abstractions.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.Analyzers" ProjectPath="$(RepositoryRoot)src/Logging/Logging.Analyzers/src/Microsoft.Extensions.Logging.Analyzers.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.AzureAppServices" ProjectPath="$(RepositoryRoot)src/Logging/Logging.AzureAppServices/src/Microsoft.Extensions.Logging.AzureAppServices.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.Configuration" ProjectPath="$(RepositoryRoot)src/Logging/Logging.Configuration/src/Microsoft.Extensions.Logging.Configuration.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.Console" ProjectPath="$(RepositoryRoot)src/Logging/Logging.Console/src/Microsoft.Extensions.Logging.Console.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.Debug" ProjectPath="$(RepositoryRoot)src/Logging/Logging.Debug/src/Microsoft.Extensions.Logging.Debug.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.EventLog" ProjectPath="$(RepositoryRoot)src/Logging/Logging.EventLog/src/Microsoft.Extensions.Logging.EventLog.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.EventSource" ProjectPath="$(RepositoryRoot)src/Logging/Logging.EventSource/src/Microsoft.Extensions.Logging.EventSource.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.Testing" ProjectPath="$(RepositoryRoot)src/Logging/Logging.Testing/src/Microsoft.Extensions.Logging.Testing.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.TraceSource" ProjectPath="$(RepositoryRoot)src/Logging/Logging.TraceSource/src/Microsoft.Extensions.Logging.TraceSource.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Logging" ProjectPath="$(RepositoryRoot)src/Logging/Logging/src/Microsoft.Extensions.Logging.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.Tests" ProjectPath="$(RepositoryRoot)src/Logging/test/Microsoft.Extensions.Logging.Tests.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.ObjectPool" ProjectPath="$(RepositoryRoot)src/ObjectPool/src/Microsoft.Extensions.ObjectPool.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Options.ConfigurationExtensions" ProjectPath="$(RepositoryRoot)src/Options/ConfigurationExtensions/src/Microsoft.Extensions.Options.ConfigurationExtensions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Options.DataAnnotations" ProjectPath="$(RepositoryRoot)src/Options/DataAnnotations/src/Microsoft.Extensions.Options.DataAnnotations.csproj" />

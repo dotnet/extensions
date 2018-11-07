@@ -11,15 +11,25 @@
   <Package Id="Microsoft.Extensions.Configuration.UserSecrets" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.Configuration.Xml" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.Configuration" Version="2.1.1" />
-  <Package Id="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.DependencyInjection.Specification.Tests" Version="2.1.1" />
+  <Package Id="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.DiagnosticAdapter" Version="2.1.0" />
   <Package Id="Microsoft.Extensions.FileProviders.Abstractions" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.FileProviders.Composite" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.FileProviders.Embedded" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.FileProviders.Physical" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.FileSystemGlobbing" Version="2.1.1" />
+  <Package Id="Microsoft.Extensions.Logging.Abstractions" Version="2.1.1" />
+  <Package Id="Microsoft.Extensions.Logging.AzureAppServices" Version="2.1.1" />
+  <Package Id="Microsoft.Extensions.Logging.Configuration" Version="2.1.1" />
+  <Package Id="Microsoft.Extensions.Logging.Console" Version="2.1.1" />
+  <Package Id="Microsoft.Extensions.Logging.Debug" Version="2.1.1" />
+  <Package Id="Microsoft.Extensions.Logging.EventLog" Version="2.1.1" />
+  <Package Id="Microsoft.Extensions.Logging.EventSource" Version="2.1.1" />
+  <Package Id="Microsoft.Extensions.Logging.Testing" Version="2.1.1" />
+  <Package Id="Microsoft.Extensions.Logging.TraceSource" Version="2.1.1" />
+  <Package Id="Microsoft.Extensions.Logging" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.ObjectPool" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.Options" Version="2.1.1" />
