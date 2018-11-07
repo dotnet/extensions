@@ -4,9 +4,9 @@
 using System;
 using System.IO;
 
-namespace Microsoft.Extensions.Logging.Console.Internal
+namespace Microsoft.Extensions.Logging.Console
 {
-    public class WindowsLogConsole : IConsole
+    internal class WindowsLogConsole : IConsole
     {
         private readonly TextWriter _textWriter;
 
