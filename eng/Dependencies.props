@@ -7,10 +7,11 @@
   <PropertyGroup Label="Package Versions: Auto">
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
     <InternalAspNetCoreSdkPackageVersion>2.2.0-preview2-20181105.3</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftNETCoreAppPackageVersion>2.2.0-rtm-27029-02</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>2.2.0-rtm-27105-02</MicrosoftNETCoreAppPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.5.0</MicrosoftWin32RegistryPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.5.0</SystemComponentModelAnnotationsPackageVersion>
+    <SystemDataSqlClientPackageVersion>4.6.0-rtm-27105-02</SystemDataSqlClientPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>4.5.0</SystemDiagnosticsEventLogPackageVersion>
     <SystemIOPipelinesPackageVersion>4.5.2</SystemIOPipelinesPackageVersion>
@@ -32,6 +33,7 @@
     <LatestPackageReference Include="FSharp.Core" Version="$(FSharpCorePackageVersion)" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
     <LatestPackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsPackageVersion)" />
+    <LatestPackageReference Include="System.Data.SqlClient" Version="$(SystemDataSqlClientPackageVersion)" />
     <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" Version="$(SystemDiagnosticsEventLogPackageVersion)" />
     <LatestPackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
@@ -64,6 +66,8 @@
     <LatestPackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <LatestPackageReference Include="Serilog.Extensions.Logging" Version="1.4.0" />
     <LatestPackageReference Include="Serilog.Sinks.File" Version="4.0.0" />
+    <LatestPackageReference Include="StackExchange.Redis.StrongName" Version="1.2.6" />
+    <LatestPackageReference Include="StackExchange.Redis" Version="2.0.513" />
     <LatestPackageReference Include="xunit.abstractions" Version="2.0.1" />
     <LatestPackageReference Include="xunit.analyzers" Version="0.10.0" />
     <LatestPackageReference Include="xunit.assert" Version="2.3.1" />
