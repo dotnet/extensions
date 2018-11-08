@@ -1,5 +1,7 @@
 # default-build.yml
+#
 # Description: Defines a build phase for invoking build.sh/cmd
+#
 # Parameters:
 #   configuration: string
 #       Release or Debug
@@ -30,6 +32,7 @@ parameters:
   codeSign: false
   artifacts:
     publish: false
+    name: ''
     path: 'artifacts/'
 
 jobs:
@@ -37,6 +40,7 @@ jobs:
   workspace:
     clean: all
   # Map friendly OS names to the right queue
+  # See https://github.com/dotnet/arcade/blob/master/Documentation/ChoosingAMachinePool.md
   pool:
     ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'macOS')) }}:
       name: Hosted macOS
@@ -49,7 +53,7 @@ jobs:
         name: Hosted VS2017
         vmImage: vs2017-win2016
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-        name: DotNetCore-Windows
+        name: dotnet-internal-temp
   variables:
     AgentOsName: ${{ parameters.agentOs }}
     ASPNETCORE_TEST_LOG_MAXPATH: "200" # Keep test log file name length low enough for artifact zipping
@@ -72,6 +76,7 @@ jobs:
       inputs:
         signType: $(_SignType)
         zipSources: false
+        feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
   - ${{ if eq(parameters.agentOs, 'Windows') }}:
     - script: .\build.cmd -ci /p:SignType=$(_SignType) /p:Configuration=$(BuildConfiguration) $(BuildScriptArgs)
       displayName: Run build.cmd
