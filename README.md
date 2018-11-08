@@ -1,6 +1,8 @@
 .NET Extensions
 ===============
 
+[![Build Status](https://dev.azure.com/dnceng/public/_apis/build/status/aspnet/Extensions/Extensions-ci)](https://dev.azure.com/dnceng/public/_build/latest?definitionId=23)
+
 .NET Extensions is an open-source, cross-platform set of APIs for commonly used programming patterns and utilities, such as dependency injection, logging, and app configuration. Most of the API in this project is meant to work on many .NET platforms, such as .NET Core, .NET Framework, Xamarin, and others. While commonly used in ASP.NET Core applications, these APIs are not coupled to the ASP.NET Core application model. They can be used in console apps, WinForms and WPF, and others.
 
 ## Get Started
