@@ -6,7 +6,6 @@
 
   <PropertyGroup>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
-    <DependencyVersionsFile>$(RepositoryRoot)modules\Razor\build\dependencies.props</DependencyVersionsFile>
 
     <!-- These properties are use by the automation that updates dependencies.props -->
     <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>

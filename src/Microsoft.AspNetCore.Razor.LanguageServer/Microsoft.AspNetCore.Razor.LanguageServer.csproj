@@ -19,17 +19,14 @@
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Razor.Extensions" Version="$(MicrosoftAspNetCoreBlazorExtensionsPackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- We need this to compile but don't want it referenced by the project. -->
-    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\Microsoft.AspNetCore.Razor.OmniSharpPlugin.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <Targets>Publish</Targets>
-    </ProjectReference>
-  </ItemGroup>
-
   <Target Name="PublishLanguageServerNativeExecutables" AfterTargets="Pack" DependsOnTargets="PublishAllRids" />
 
   <Target Name="IncludeOmniSharpPlugin" AfterTargets="Publish" Condition="Exists('$(PublishDir)')">
+    <MSBuild
+      Projects="..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\Microsoft.AspNetCore.Razor.OmniSharpPlugin.csproj"
+      Properties="PublishDir=$(MSBuildProjectDirectory)\..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\bin\$(Configuration)\net461\publish;RuntimeIdentifier="
+      Targets="Publish" />
+
     <PropertyGroup>
       <PluginReferenceOutputPath>$(MSBuildProjectDirectory)\..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\bin\$(Configuration)\net461\publish</PluginReferenceOutputPath>
       <TargetPluginOutputPath>$(PublishDir)\OmniSharpPlugin</TargetPluginOutputPath>
