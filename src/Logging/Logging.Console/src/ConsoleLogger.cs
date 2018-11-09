@@ -109,19 +109,17 @@ namespace Microsoft.Extensions.Logging.Console
                 logBuilder.AppendLine(exception.ToString());
             }
 
-            var hasLevel = !string.IsNullOrEmpty(logLevelString);
             var timestampFormat = Options.TimestampFormat;
             // Queue log message
-            _queueProcessor.EnqueueMessage(new LogMessageEntry()
-            {
-                TimeStamp = timestampFormat != null ? DateTime.Now.ToString(timestampFormat) : null,
-                Message = logBuilder.ToString(),
-                MessageColor = DefaultConsoleColor,
-                LevelString = hasLevel ? logLevelString : null,
-                LevelBackground = hasLevel ? logLevelColors.Background : null,
-                LevelForeground = hasLevel ? logLevelColors.Foreground : null,
-                LogAsError = logLevel >= Options.LogToStandardErrorThreshold
-            });
+            _queueProcessor.EnqueueMessage(new LogMessageEntry(
+                timeStamp: timestampFormat != null ? DateTime.Now.ToString(timestampFormat) : null,
+                levelString: logLevelString,
+                levelBackground: DefaultConsoleColor,
+                levelForeground: logLevelColors.Background,
+                messageColor: logLevelColors.Foreground,
+                message: logBuilder.ToString(),
+                logAsError: logLevel >= Options.LogToStandardErrorThreshold
+            ));
 
             logBuilder.Clear();
             if (logBuilder.Capacity > 1024)

@@ -5,14 +5,25 @@ using System;
 
 namespace Microsoft.Extensions.Logging.Console
 {
-    internal struct LogMessageEntry
+    internal readonly struct LogMessageEntry
     {
-        public string TimeStamp;
-        public string LevelString;
-        public ConsoleColor? LevelBackground;
-        public ConsoleColor? LevelForeground;
-        public ConsoleColor? MessageColor;
-        public string Message;
-        public bool LogAsError;
+        public LogMessageEntry(string timeStamp, string levelString, ConsoleColor? levelBackground, ConsoleColor? levelForeground, ConsoleColor? messageColor, string message, bool logAsError)
+        {
+            TimeStamp = timeStamp;
+            LevelString = levelString;
+            LevelBackground = levelBackground;
+            LevelForeground = levelForeground;
+            MessageColor = messageColor;
+            Message = message;
+            LogAsError = logAsError;
+        }
+
+        public readonly string TimeStamp;
+        public readonly string LevelString;
+        public readonly ConsoleColor? LevelBackground;
+        public readonly ConsoleColor? LevelForeground;
+        public readonly ConsoleColor? MessageColor;
+        public readonly string Message;
+        public readonly bool LogAsError;
     }
 }
