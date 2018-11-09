@@ -15,6 +15,7 @@ export class CSharpProjectedDocument implements IProjectedDocument {
     private preProvisionalContent: string | undefined;
     private provisionalEditAt: number | undefined;
     private hostDocumentVersion: number | null = null;
+    private projectedDocumentVersion = 0;
 
     public constructor(public readonly uri: vscode.Uri) {
         this.path = getUriPath(uri);
@@ -22,6 +23,10 @@ export class CSharpProjectedDocument implements IProjectedDocument {
 
     public get hostDocumentSyncVersion(): number | null {
         return this.hostDocumentVersion;
+    }
+
+    public get projectedDocumentSyncVersion(): number {
+        return this.projectedDocumentVersion;
     }
 
     public update(edits: ServerTextChange[], hostDocumentVersion: number | null) {
@@ -85,6 +90,7 @@ export class CSharpProjectedDocument implements IProjectedDocument {
     }
 
     private setContent(content: string) {
+        this.projectedDocumentVersion++;
         this.content = content;
     }
 }

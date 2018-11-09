@@ -73,7 +73,7 @@ export class RazorCompletionItemProvider
     public async provideCompletionItems(
         document: vscode.TextDocument, position: vscode.Position,
         token: vscode.CancellationToken, context: vscode.CompletionContext) {
-        const projection = await this.getProjection(document, position);
+        const projection = await this.getProjection(document, position, token);
 
         if (this.logger.verboseEnabled) {
             this.logger.logVerbose(`Providing completions for document ${getUriPath(document.uri)} ` +

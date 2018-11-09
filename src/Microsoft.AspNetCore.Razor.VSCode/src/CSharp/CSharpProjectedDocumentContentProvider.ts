@@ -27,7 +27,8 @@ export class CSharpProjectedDocumentContentProvider implements vscode.TextDocume
             return;
         }
 
-        const content = razorDocument.csharpDocument.getContent();
+        const content = `${razorDocument.csharpDocument.getContent()}
+// ${razorDocument.csharpDocument.projectedDocumentSyncVersion}`;
 
         return content;
     }

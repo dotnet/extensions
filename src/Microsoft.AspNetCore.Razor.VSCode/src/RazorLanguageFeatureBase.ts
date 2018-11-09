@@ -17,7 +17,10 @@ export class RazorLanguageFeatureBase {
         protected readonly serviceClient: RazorLanguageServiceClient) {
     }
 
-    protected async getProjection(document: vscode.TextDocument, position: vscode.Position) {
+    protected async getProjection(
+        document: vscode.TextDocument,
+        position: vscode.Position,
+        token: vscode.CancellationToken) {
         const languageResponse = await this.serviceClient.languageQuery(position, document.uri);
 
         switch (languageResponse.kind) {
@@ -28,10 +31,11 @@ export class RazorLanguageFeatureBase {
                     ? razorDocument.csharpDocument
                     : razorDocument.htmlDocument;
 
-                const synchronized = await this.documentSynchronizer.trySynchronize(
+                const synchronized = await this.documentSynchronizer.trySynchronizeProjectedDocument(
                     document,
                     projectedDocument,
-                    languageResponse.hostDocumentVersion);
+                    languageResponse.hostDocumentVersion,
+                    token);
                 if (!synchronized) {
                     // Could not synchronize
                     return null;

@@ -11,6 +11,7 @@ export class HtmlProjectedDocument implements IProjectedDocument {
     public readonly path: string;
     private content = '';
     private hostDocumentVersion: number | null = null;
+    private projectedDocumentVersion = 0;
 
     public constructor(public readonly uri: vscode.Uri) {
         this.path = getUriPath(uri);
@@ -20,12 +21,17 @@ export class HtmlProjectedDocument implements IProjectedDocument {
         return this.hostDocumentVersion;
     }
 
+    public get projectedDocumentSyncVersion(): number {
+        return this.projectedDocumentVersion;
+    }
+
     public getContent() {
         return this.content;
     }
 
     public setContent(content: string, hostDocumentVersion: number | null) {
-        this.content = content;
+        this.projectedDocumentVersion++;
         this.hostDocumentVersion = hostDocumentVersion;
+        this.content = content;
     }
 }

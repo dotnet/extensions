@@ -14,7 +14,7 @@ export class RazorSignatureHelpProvider
         document: vscode.TextDocument, position: vscode.Position,
         token: vscode.CancellationToken) {
 
-        const projection = await this.getProjection(document, position);
+        const projection = await this.getProjection(document, position, token);
         if (projection) {
             const result = await vscode.commands.executeCommand<vscode.SignatureHelp>(
                     'vscode.executeSignatureHelpProvider',
