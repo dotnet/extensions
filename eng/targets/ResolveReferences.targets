@@ -48,6 +48,11 @@
     <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
   </ItemGroup>
 
+  <!-- Ensure package output paths are available. -->
+  <Target Name="CreatePackageOutputPath" BeforeTargets="BeforeBuild">
+    <MakeDir Directories="$(PackageOutputPath)" />
+  </Target>
+
   <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences" Condition=" '$(TargetFramework)' != '' ">
     <ItemGroup>
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName)" />
