@@ -38,4 +38,5 @@
   <Package Id="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.Options" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.Primitives" Version="2.1.6" />
+  <Package Id="Microsoft.Extensions.WebEncoders" Version="2.1.1" />
 </Baseline>
