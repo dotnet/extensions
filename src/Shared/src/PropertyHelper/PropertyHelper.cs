@@ -419,7 +419,7 @@ namespace Microsoft.Extensions.Internal
             ConcurrentDictionary<Type, PropertyHelper[]> allPropertiesCache,
             ConcurrentDictionary<Type, PropertyHelper[]> visiblePropertiesCache)
         {
-            if (visiblePropertiesCache.TryGetValue(type, out PropertyHelper[] result))
+            if (visiblePropertiesCache.TryGetValue(type, out var result))
             {
                 return result;
             }
@@ -495,7 +495,7 @@ namespace Microsoft.Extensions.Internal
             // part of the sequence of properties returned by this method.
             type = Nullable.GetUnderlyingType(type) ?? type;
 
-            if (!cache.TryGetValue(type, out PropertyHelper[] helpers))
+            if (!cache.TryGetValue(type, out var helpers))
             {
                 // We avoid loading indexed properties using the Where statement.
                 var properties = type.GetRuntimeProperties().Where(p => IsInterestingProperty(p));
