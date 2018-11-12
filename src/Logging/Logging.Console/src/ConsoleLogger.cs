@@ -114,9 +114,9 @@ namespace Microsoft.Extensions.Logging.Console
             _queueProcessor.EnqueueMessage(new LogMessageEntry(
                 timeStamp: timestampFormat != null ? DateTime.Now.ToString(timestampFormat) : null,
                 levelString: logLevelString,
-                levelBackground: DefaultConsoleColor,
-                levelForeground: logLevelColors.Background,
-                messageColor: logLevelColors.Foreground,
+                levelBackground: logLevelColors.Background,
+                levelForeground: logLevelColors.Foreground,
+                messageColor: DefaultConsoleColor,
                 message: logBuilder.ToString(),
                 logAsError: logLevel >= Options.LogToStandardErrorThreshold
             ));
