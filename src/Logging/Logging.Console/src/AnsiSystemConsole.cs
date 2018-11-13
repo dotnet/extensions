@@ -12,17 +12,12 @@ namespace Microsoft.Extensions.Logging.Console
         /// <inheritdoc />
         public AnsiSystemConsole(bool stdErr = false)
         {
-            _textWriter = stdErr? System.Console.Error : System.Console.Out;
+            _textWriter = stdErr ? System.Console.Error : System.Console.Out;
         }
 
         public void Write(string message)
         {
             _textWriter.Write(message);
-        }
-
-        public void WriteLine(string message)
-        {
-            _textWriter.WriteLine(message);
         }
     }
 }

@@ -146,12 +146,6 @@ namespace Microsoft.Extensions.Logging
             {
                 Message = message;
             }
-
-            public void WriteLine(string message)
-            {
-                Message = message;
-                Message += Environment.NewLine;
-            }
         }
 
         private static string GetForegroundColorEscapeCode(ConsoleColor color)

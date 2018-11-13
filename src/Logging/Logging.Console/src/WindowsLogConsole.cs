@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Logging.Console
         /// <inheritdoc />
         public WindowsLogConsole(bool stdErr = false)
         {
-            _textWriter = stdErr? System.Console.Error : System.Console.Out;
+            _textWriter = stdErr ? System.Console.Error : System.Console.Out;
         }
 
         private bool SetColor(ConsoleColor? background, ConsoleColor? foreground)

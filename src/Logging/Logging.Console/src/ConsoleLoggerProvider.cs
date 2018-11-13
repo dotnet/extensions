@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.Logging.Console
         {
             _options = options;
             _loggers = new ConcurrentDictionary<string, ConsoleLogger>();
-            _optionsReloadToken = options.OnChange(ReloadLoggerOptions);
+
             ReloadLoggerOptions(options.CurrentValue);
 
             _messageQueue = new ConsoleLoggerProcessor();
@@ -78,5 +78,4 @@ namespace Microsoft.Extensions.Logging.Console
 
         }
     }
-
 }
