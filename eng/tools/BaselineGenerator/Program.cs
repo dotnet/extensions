@@ -54,9 +54,14 @@ namespace PackageBaselineGenerator
                 ? _output.Value()
                 : Path.Combine(Directory.GetCurrentDirectory(), "Baseline.props");
 
+            var baselineVersion = input.Root.Attribute("Version").Value;
+
             var doc = new XDocument(
                 new XComment(" Auto generated. Do not edit manually, use eng/tools/BaselineGenerator/ to recreate. "),
-                new XElement("Project"));
+                new XElement("Project",
+                    new XElement("PropertyGroup",
+                        new XElement("MSBuildAllProjects", "$(MSBuildAllProjects);$(MSBuildThisFileFullPath)"),
+                        new XElement("ExtensionsBaselineVersion", baselineVersion))));
 
             var client = new HttpClient();
 

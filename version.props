@@ -36,6 +36,9 @@
     <ExperimentalVersionSuffix>$(VersionSuffix)</ExperimentalVersionSuffix>
 
     <InformationalVersion>$(VersionPrefix)-$(VersionSuffix)</InformationalVersion>
+
+    <!-- This is used for error checking to ensure generated code and baselines are up to date when we increment the patch. -->
+    <PreviousExtensionsReleaseVersion Condition=" '$(PatchVersion)' != '0' ">$(MajorVersion).$(MinorVersion).$([MSBuild]::Subtract($(PatchVersion), 1))</PreviousExtensionsReleaseVersion>
   </PropertyGroup>
 
   <!-- Run 'dotnet msbuild version.props' to test changes to this file. -->
