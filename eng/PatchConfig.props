@@ -1,5 +1,10 @@
 <Project>
 
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.7' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.6' ">
     <PackagesInPatch>
       Microsoft.Extensions.ObjectPool;

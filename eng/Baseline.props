@@ -1,5 +1,9 @@
 ﻿<!-- Auto generated. Do not edit manually, use eng/tools/BaselineGenerator/ to recreate. -->
 <Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <ExtensionsBaselineVersion>2.1.6</ExtensionsBaselineVersion>
+  </PropertyGroup>
   <!-- Package: Microsoft.Extensions.Caching.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.Abstractions' ">
     <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
@@ -308,7 +312,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.ObjectPool-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.ObjectPool' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.6</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.ObjectPool' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.Extensions.Options.ConfigurationExtensions-->
@@ -331,10 +335,19 @@
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Primitives-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Primitives' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.6</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Primitives' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="System.Memory" Version="[4.5.1, )" />
-    <BaselinePackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="[4.5.1, )" />
+    <BaselinePackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="[4.5.2, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.WebEncoders-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.WebEncoders' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.WebEncoders' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[4.5.0, )" />
   </ItemGroup>
 </Project>

@@ -8,6 +8,40 @@
     <NETStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(NETStandardLibrary20PackageVersion)</NETStandardImplicitPackageVersion>
   </PropertyGroup>
 
+  <!-- Properties which should be set after the project has been evaluated -->
+  <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
+    <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
+    <IsPackable Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' ) ">false</IsPackable>
+    <IsPackable Condition="'$(IsPackable)' == '' ">true</IsPackable>
+  </PropertyGroup>
+
+  <Import Project="eng\Baseline.props" />
+
+  <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">
+    <IsPackable>$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(IsPackable)' == 'true' AND '$(BaselinePackageVersion)' != '' AND '$(IsServicingBuild)' == 'true' ">
+    <!-- This keeps assembly versions consistent across patches. If a package is not included in a patch, its assembly version should stay at the baseline. -->
+    <AssemblyVersion>$(BaselinePackageVersion).0</AssemblyVersion>
+    <!--
+      Ideally, we would also set the project version to match the baseline in case NuGet turns a ProjectReference into a nuspec depenendency, but
+      NuGet does not currently handle conflicts between packages and projects which have the same package id/version.
+
+      See https://github.com/NuGet/Home/issues/6795
+    -->
+    <!-- <Version>$(BaselinePackageVersion)</Version> -->
+    <!-- <PackageVersion>$(BaselinePackageVersion)</PackageVersion> -->
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Implementation projects are the projects which produce nuget packages or shipping assemblies. -->
+    <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsTestAssetProject)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</IsImplementationProject>
+
+    <!-- Suppress KoreBuild warnings about the mismatch of repo version and local project version. The versioning in this mega repo is sufficiently complicated that KoreBuild's validation isn't helpful. -->
+    <VerifyVersion>false</VerifyVersion>
+  </PropertyGroup>
+
   <Import Project="eng\targets\Packaging.targets" Condition=" '$(MSBuildProjectExtension)' == '.csproj' " />
   <Import Project="eng\targets\ResolveReferences.targets" Condition=" '$(DisableReferenceRestrictions)' != 'true' AND '$(MSBuildProjectExtension)' == '.csproj' " />
 </Project>
