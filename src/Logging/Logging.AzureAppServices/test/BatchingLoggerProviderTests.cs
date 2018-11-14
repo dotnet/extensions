@@ -101,7 +101,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
 
             Assert.Equal(2, provider.Batches[0].Length);
             Assert.Equal("2016-05-04 03:02:01.000 +00:00 [Information] Cat: Info message" + _nl, provider.Batches[0][0].Message);
-            Assert.Equal("1 message(s) were dropped because of queue size limit. Increase the queue size or decrease logging verbosity to avoid this." + _nl, provider.Batches[0][1].Message);
+            Assert.Equal("1 message(s) dropped because of queue size limit. Increase the queue size or decrease logging verbosity to avoid this." + _nl, provider.Batches[0][1].Message);
         }
 
         private class TestBatchingLoggingProvider: BatchingLoggerProvider

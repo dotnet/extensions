@@ -92,7 +92,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
                 {
                     _currentBatch.Add(new LogMessage()
                     {
-                        Message = $"{messagesDropped} message(s) were dropped because of queue size limit. Increase the queue size or decrease logging verbosity to avoid this.{Environment.NewLine}",
+                        Message = $"{messagesDropped} message(s) dropped because of queue size limit. Increase the queue size or decrease logging verbosity to avoid this.{Environment.NewLine}",
                         Timestamp = DateTimeOffset.Now
                     });
                 }
