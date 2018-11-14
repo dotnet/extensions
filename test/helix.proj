@@ -1,0 +1,48 @@
+<Project DefaultTargets="Test">
+
+  <!-- Version included until we get global.json generation to support this SDK. -->
+  <Sdk Name="Microsoft.DotNet.Helix.Sdk" Version="1.0.0-beta.18575.1" />
+
+
+  <Target Name="Gather" BeforeTargets="Test">
+    <ItemGroup>
+      <ProjectsToTest Include="$(ProjectsToTest)" />
+    </ItemGroup>
+    <MSBuild Projects="@(ProjectsToTest)"
+              Targets="CreateTestPayload"
+              BuildInParallel="true">
+      <Output TaskParameter="TargetOutputs" ItemName="TestPayload" />
+    </MSBuild>
+    <ItemGroup>
+      <HelixCorrelationPayload Include="$(ArtifactsDir)\Helix">
+        <PayloadDirectory>$(ArtifactsDir)\Helix</PayloadDirectory>
+      </HelixCorrelationPayload>
+      <HelixWorkItem Include="%(TestPayload.TestName)">
+        <Command>%(TestPayload.Command)</Command>
+        <!-- <PayloadDirectory>%(TestPayload.Identity)</PayloadDirectory> -->
+        <Timeout>%(TestPayload.TestTimeout)</Timeout>
+      </HelixWorkItem>
+    </ItemGroup>
+  </Target>
+
+  <PropertyGroup>
+    <HelixSource>pr/aspnet/extensions</HelixSource>
+    <HelixType>ci</HelixType>
+    <!-- TODO: use package version -->
+    <HelixBuild Condition=" '$(CI)' == 'true' ">$(BUILD_BUILDNUMBER)</HelixBuild>
+    <HelixBuild>haok-11-29-2</HelixBuild>
+    <WaitForWorkItemCompletion>false</WaitForWorkItemCompletion>
+
+    <HelixTargetQueues>Windows.10.Amd64.Open;Ubuntu.1604.Amd64.Open;RedHat.73.Amd64;OSX.1012.Amd64.Open</HelixTargetQueues>
+    
+    <!--
+      xml file found in the work item working directory.
+      The following file names are accepted:
+        testResults.xml
+        test-results.xml
+        test_results.xml
+    -->
+    <EnableXUnitReporter>false</EnableXUnitReporter>
+
+  </PropertyGroup>
+</Project>

@@ -1,6 +1,7 @@
 <Project InitialTargets="TagCiBuilds">
   <PropertyGroup>
     <BuildDependsOn Condition="'$(Configuration)' == 'Release' AND '$(OS)' == 'Windows_NT' AND $(PublishType.Contains('blob'))" >$(BuildDependsOn);PublishToProdCon</BuildDependsOn>
+    <TestDependsOn Condition="'$(UseHelix)' == 'true'">$(TestDependsOn);Helix</TestDependsOn>
   </PropertyGroup>
 
   <Target Name="TagCiBuilds" Condition=" '$(CI)' == 'true' AND '$(BUILD_REASON)' != 'PullRequest' ">
@@ -44,4 +45,18 @@
 
     <WriteLinesToFile File="$(ProjectListFile)" Lines="$(ProjectListContent)" Overwrite="true" />
   </Target>
+
+<!-- will move into korebuild -->
+  <PropertyGroup>
+    <DefaultHelixTestTimeout>00:30:00</DefaultHelixTestTimeout>
+  </PropertyGroup>
+
+  <!-- TODO: What should this depend on? Fails after clean build -->
+  <Target Name="Helix" DependsOnTargets="ResolveProjects">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\test\helix.proj"
+             Targets="Test"
+             Properties="ProjectsToTest=$(ProjectToBuildList)"
+             BuildInParallel="true" />
+  </Target>
+
 </Project>
