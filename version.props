@@ -2,14 +2,12 @@
   <PropertyGroup>
     <MajorVersion>2</MajorVersion>
     <MinorVersion>2</MinorVersion>
-    <PatchVersion>0</PatchVersion>
-    <PreReleaseLabel>rtm</PreReleaseLabel>
-    <PreReleaseBrandingLabel></PreReleaseBrandingLabel>
+    <PatchVersion>1</PatchVersion>
+    <PreReleaseLabel>servicing</PreReleaseLabel>
     <BuildNumber Condition="'$(BuildNumber)' == ''">$(BUILD_BUILDNUMBER)</BuildNumber>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
     <VersionSuffix>$(PreReleaseLabel)-$(BuildNumber)</VersionSuffix>
-    <BrandingVersionSuffix>$(PreReleaseBrandingLabel) Build $(BuildNumber)</BrandingVersionSuffix>
 
     <ExperimentalVersionPrefix>0.1.$(PatchVersion)</ExperimentalVersionPrefix>
 
@@ -19,10 +17,6 @@
     <IsFinalBuild Condition=" '$(IsFinalBuild)' == '' ">false</IsFinalBuild>
     <IncludePreReleaseLabelInPackageVersion>true</IncludePreReleaseLabelInPackageVersion>
     <IncludePreReleaseLabelInPackageVersion Condition=" '$(IsFinalBuild)' == 'true' AND ('$(PreReleaseLabel)' == 'servicing' OR '$(PreReleaseLabel)' == 'rtm')">false</IncludePreReleaseLabelInPackageVersion>
-
-    <!-- The 'human friendly' version to display in installers. In pre-release builds, this might be "2.0.7 Preview 2 Build 12356". In final builds, it should be "2.0.7" -->
-    <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
-    <PackageBrandingVersion Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(PackageBrandingVersion) $(BrandingVersionSuffix.Trim())</PackageBrandingVersion>
 
     <!-- The version in files -->
     <PackageVersion>$(VersionPrefix)</PackageVersion>
@@ -45,7 +39,6 @@
   <Target Name="InspectVersionNumbers">
     <Message Importance="High" Text="InformationalVersion    = '$(InformationalVersion)'" />
     <Message Importance="High" Text="PackageVersion          = '$(PackageVersion)'" />
-    <Message Importance="High" Text="PackageBrandingVersion  = '$(PackageBrandingVersion)'" />
   </Target>
 
 </Project>

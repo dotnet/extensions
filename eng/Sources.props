@@ -3,6 +3,13 @@
 
   <PropertyGroup Label="RestoreSources">
     <RestoreSources>$(DotNetRestoreSources)</RestoreSources>
+
+    <!-- This feed contains the 2.2.0 RTM runtime. This can be removed after it is released to nuget.org. -->
+    <RestoreSources>
+      $(RestoreSources);
+      https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-2/20181110-02/final/index.json
+    </RestoreSources>
+
     <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true' ">
       $(RestoreSources);
       https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
