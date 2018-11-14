@@ -121,7 +121,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
             {
             }
 
-            protected override Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken token)
+            internal override Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken token)
             {
                 Batches.Add(messages.ToArray());
                 return Task.CompletedTask;

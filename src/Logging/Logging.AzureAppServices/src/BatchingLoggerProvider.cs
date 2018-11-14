@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
+namespace Microsoft.Extensions.Logging.AzureAppServices
 {
     public abstract class BatchingLoggerProvider: ILoggerProvider, ISupportExternalScope
     {
@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
 
         internal IExternalScopeProvider ScopeProvider => _includeScopes ? _scopeProvider : null;
 
-        protected BatchingLoggerProvider(IOptionsMonitor<BatchingLoggerOptions> options)
+        internal BatchingLoggerProvider(IOptionsMonitor<BatchingLoggerOptions> options)
         {
             // NOTE: Only IsEnabled is monitored
 
@@ -73,7 +73,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
 
         }
 
-        protected abstract Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken token);
+        internal abstract Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken token);
 
         private async Task ProcessLogQueue(object state)
         {
