@@ -4,7 +4,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
+namespace Microsoft.Extensions.Logging.AzureAppServices
 {
     internal class BlobLoggerConfigureOptions : BatchLoggerConfigureOptions, IConfigureOptions<AzureBlobLoggerOptions>
     {

@@ -90,11 +90,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
                 var messagesDropped = Interlocked.Exchange(ref _messagesDropped, 0);
                 if (messagesDropped != 0)
                 {
-                    _currentBatch.Add(new LogMessage()
-                    {
-                        Message = $"{messagesDropped} message(s) dropped because of queue size limit. Increase the queue size or decrease logging verbosity to avoid this.{Environment.NewLine}",
-                        Timestamp = DateTimeOffset.Now
-                    });
+                    _currentBatch.Add(new LogMessage(DateTimeOffset.Now, $"{messagesDropped} message(s) dropped because of queue size limit. Increase the queue size or decrease logging verbosity to avoid this.{Environment.NewLine}"));
                 }
 
                 if (_currentBatch.Count > 0)
@@ -128,7 +124,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             {
                 try
                 {
-                    if (!_messageQueue.TryAdd(new LogMessage { Message = message, Timestamp = timestamp }, millisecondsTimeout: 0, cancellationToken: _cancellationTokenSource.Token))
+                    if (!_messageQueue.TryAdd(new LogMessage(timestamp, message), millisecondsTimeout: 0, cancellationToken: _cancellationTokenSource.Token))
                     {
                         Interlocked.Increment(ref _messagesDropped);
                     }
