@@ -11,10 +11,13 @@
     <!-- Detect branch and commit from the build environment -->
     <RepositoryBranch Condition=" '$(RepositoryBranch)' == '' ">$(BUILD_SOURCEBRANCH)</RepositoryBranch>
     <RepositoryCommit Condition=" '$(RepositoryCommit)' == '' ">$(BUILD_SOURCEVERSION)</RepositoryCommit>
+    
+    <!-- Servicing builds might not produce packages -->
+    <PushToBlobFeed_AllowEmptyItems>$(IsServicingBuild)</PushToBlobFeed_AllowEmptyItems>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="2.2.0-preview1-03124-01" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="3.0.0-preview1-03415-01" />
     <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" />
   </ItemGroup>
 
