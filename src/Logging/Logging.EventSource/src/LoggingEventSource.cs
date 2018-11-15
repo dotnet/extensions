@@ -79,7 +79,7 @@ namespace Microsoft.Extensions.Logging.EventSource
         /// This is public from an EventSource consumer point of view, but since these defintions
         /// are not needed outside this class
         /// </summary>
-        public class Keywords
+        public static class Keywords
         {
             /// <summary>
             /// Meta events are evnets about the LoggingEventSource itself (that is they did not come from ILogger
