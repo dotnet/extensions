@@ -116,9 +116,7 @@ namespace Microsoft.Extensions.Caching.Memory
             var cache = new MemoryCache(new MemoryCacheOptions
             {
                 SizeLimit = long.MaxValue
-            });
-
-            cache.Logger = Logger;
+            }, LoggerFactory);
 
             var entryOptions = new MemoryCacheEntryOptions { Size = long.MaxValue };
             var sem = new SemaphoreSlim(0, 1);
