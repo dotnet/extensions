@@ -5,9 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Xunit;
 using Microsoft.Extensions.DependencyInjection;
-
+using Xunit;
 
 namespace Microsoft.Extensions.Logging.Test
 {

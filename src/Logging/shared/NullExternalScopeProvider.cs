@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Logging
     /// <summary>
     /// Scope provider that does nothing.
     /// </summary>
-    public class NullExternalScopeProvider : IExternalScopeProvider
+    internal class NullExternalScopeProvider : IExternalScopeProvider
     {
         private NullExternalScopeProvider()
         {
