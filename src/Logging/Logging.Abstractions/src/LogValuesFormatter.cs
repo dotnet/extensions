@@ -8,12 +8,12 @@ using System.Linq;
 using System.Globalization;
 using System.Text;
 
-namespace Microsoft.Extensions.Logging.Internal
+namespace Microsoft.Extensions.Logging
 {
     /// <summary>
     /// Formatter to convert the named format items like {NamedformatItem} to <see cref="M:string.Format"/> format.
     /// </summary>
-    public class LogValuesFormatter
+    internal class LogValuesFormatter
     {
         private const string NullValue = "(null)";
         private static readonly object[] EmptyArray = new object[0];
