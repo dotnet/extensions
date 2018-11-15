@@ -80,6 +80,20 @@ jobs:
   - ${{ if eq(parameters.agentOs, 'Windows') }}:
     - script: .\build.cmd -ci /p:SignType=$(_SignType) /p:Configuration=$(BuildConfiguration) $(BuildScriptArgs)
       displayName: Run build.cmd
+    - task: DotNetCoreInstaller@0
+      inputs:
+        packageType: 'sdk'
+        version: 2.1.403
+    - template: /eng/common/templates/steps/helix-publish.yml
+      parameters:
+        HelixSource: pr/Extensions # sources must start with pr/, official/, prodcon/, or agent/
+        HelixType: type/haok
+      # HelixBuild: $(Build.BuildNumber) -- This property is set by default
+        HelixTargetQueues: Windows.10.Amd64.Open
+        HelixAccessToken: $(BotAccount-dotnet-github-anon-kaonashi-bot-helix-token)
+        XUnitProjects: './src/Options/test/bin/Debug/net461'
+        EnableXUnitReporter: true # required for reporting out XUnit test results
+      # WaitForWorkItemCompletion: true -- defaults to true
   - ${{ if ne(parameters.agentOs, 'Windows') }}:
     - script: ./build.sh -ci -p:Configuration=$(BuildConfiguration) $(BuildScriptArgs)
       displayName: Run build.sh
