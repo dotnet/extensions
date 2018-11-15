@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Threading;
-using Microsoft.Extensions.Logging.Abstractions.Internal;
 using Newtonsoft.Json;
 
 namespace Microsoft.Extensions.Logging.EventSource
@@ -28,8 +27,8 @@ namespace Microsoft.Extensions.Logging.EventSource
         {
             CategoryName = categoryName;
 
-            // Default is to turn off logging
-            Level = LogLevel.None;
+            // Default is to turn on all the logging
+            Level = LogLevel.Trace;
 
             _factoryID = factoryID;
             _eventSource = eventSource;
