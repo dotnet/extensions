@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Threading;
+using Microsoft.Extensions.Logging.Abstractions.Internal;
 using Newtonsoft.Json;
 
 namespace Microsoft.Extensions.Logging.EventSource
@@ -112,7 +113,7 @@ namespace Microsoft.Extensions.Logging.EventSource
         {
             if (!IsEnabled(LogLevel.Critical))
             {
-                return NoopDisposable.Instance;
+                return NullScope.Instance;
             }
 
             var id = Interlocked.Increment(ref _activityIds);
@@ -163,15 +164,6 @@ namespace Microsoft.Extensions.Logging.EventSource
                 {
                     _eventSource.ActivityStop(_activityID, _factoryID, _categoryName);
                 }
-            }
-        }
-
-        private class NoopDisposable : IDisposable
-        {
-            public static readonly NoopDisposable Instance = new NoopDisposable();
-
-            public void Dispose()
-            {
             }
         }
 

@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if NET461
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.Extensions.Logging.TraceSource;
 using Xunit;
 
 namespace Microsoft.Extensions.Logging.Test
@@ -20,14 +20,18 @@ namespace Microsoft.Extensions.Logging.Test
             testSwitch.Level = SourceLevels.Warning;
             var listener = new BufferedConsoleTraceListener();
 
-            TraceSourceLoggerProvider provider = new TraceSourceLoggerProvider(testSwitch, listener);
-            var logger1 = provider.CreateLogger("FirstLogger");
-            var logger2 = provider.CreateLogger("SecondLogger");
+            var serviceProvider = new ServiceCollection()
+                .AddLogging(builder => builder.AddTraceSource(testSwitch, listener))
+                .BuildServiceProvider();
+
+            var factory = serviceProvider.GetRequiredService<ILoggerFactory>();
+            var logger1 = factory.CreateLogger("FirstLogger");
+            var logger2 = factory.CreateLogger("SecondLogger");
             logger1.LogError("message1");
             logger2.LogError("message2");
 
             // Act
-            provider.Dispose();
+            serviceProvider.Dispose();
 
             // Assert
             Assert.Equal(1, listener.FlushCount);
