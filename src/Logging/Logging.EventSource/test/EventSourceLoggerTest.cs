@@ -219,7 +219,7 @@ namespace Microsoft.Extensions.Logging.Test
                     "E5MSG",
                     "InnerScopeStart",
                     "E6MSG",
-                    "InnerScopeStop", 
+                    "InnerScopeStop",
                     "E7MSG",
                     "OuterScopeStop",
                     "E8MSG");
