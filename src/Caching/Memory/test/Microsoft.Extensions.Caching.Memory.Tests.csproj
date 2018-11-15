@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\Logging\Logging.Testing\src\build\Microsoft.Extensions.Logging.Testing.props" />
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
@@ -7,6 +8,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
-
 </Project>
