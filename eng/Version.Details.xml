@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Dependencies>
+  <ProductDependencies>
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="2.2.0-beta.18564.20">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>069237d9a7e83bed62c9f664228125b95ddf91f6</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Maestro.Tasks" Version="1.0.0-beta.18564.20">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>069237d9a7e83bed62c9f664228125b95ddf91f6</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="1.0.0-beta.18564.20">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>069237d9a7e83bed62c9f664228125b95ddf91f6</Sha>
+    </Dependency>
+  </ProductDependencies>
+  <ToolsetDependencies>
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.18564.20">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>069237d9a7e83bed62c9f664228125b95ddf91f6</Sha>
+    </Dependency>
+  </ToolsetDependencies>
+</Dependencies>
