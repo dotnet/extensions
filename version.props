@@ -4,10 +4,32 @@
     <MinorVersion>2</MinorVersion>
     <PatchVersion>1</PatchVersion>
     <PreReleaseLabel>servicing</PreReleaseLabel>
-    <BuildNumber Condition="'$(BuildNumber)' == ''">$(BUILD_BUILDNUMBER)</BuildNumber>
-    <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
+    <OfficialBuildId Condition="'$(OfficialBuildId)' == ''">$(BUILD_BUILDNUMBER)</OfficialBuildId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(OfficialBuildId)' != '' ">
+    <!-- This implements core versioning. Spec: https://github.com/dotnet/arcade/blob/master/Documentation/CorePackages/Versioning.md -->
+    <_BuildNumber>$(OfficialBuildId)</_BuildNumber>
+
+    <!-- _BuildNumber from CI is assumed to have format "yyyyMMdd.r". -->
+    <_BuildNumberYY>$(_BuildNumber.Substring(2, 2))</_BuildNumberYY>
+    <_BuildNumberMM>$(_BuildNumber.Substring(4, 2))</_BuildNumberMM>
+    <_BuildNumberDD>$(_BuildNumber.Substring(6, 2))</_BuildNumberDD>
+    <_BuildNumberR>$(_BuildNumber.Substring(9))</_BuildNumberR>
+
+    <!-- yy * 1000 + mm * 50 + dd -->
+    <_BuildNumberShortDate>$([MSBuild]::Add($([MSBuild]::Add($([MSBuild]::Multiply($(_BuildNumberYY), 1000)), $([MSBuild]::Multiply($(_BuildNumberMM), 50)))), $(_BuildNumberDD)))</_BuildNumberShortDate>
+
+    <VersionSuffixBuildOfTheDay>$([System.Convert]::ToInt32($(_BuildNumberR)))</VersionSuffixBuildOfTheDay>
+    <VersionSuffixBuildOfTheDayPadded>$(VersionSuffixBuildOfTheDay.PadLeft($([System.Convert]::ToInt32(2)), '0'))</VersionSuffixBuildOfTheDayPadded>
+
+    <_BuildNumberSuffix>$(_BuildNumberShortDate)-$(VersionSuffixBuildOfTheDayPadded)</_BuildNumberSuffix>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_BuildNumberSuffix Condition=" '$(_BuildNumberSuffix)' == '' ">t000</_BuildNumberSuffix>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
-    <VersionSuffix>$(PreReleaseLabel)-$(BuildNumber)</VersionSuffix>
+    <VersionSuffix>$(PreReleaseLabel)-$(_BuildNumberSuffix)</VersionSuffix>
 
     <ExperimentalVersionPrefix>0.1.$(PatchVersion)</ExperimentalVersionPrefix>
 
