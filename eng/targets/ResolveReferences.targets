@@ -82,6 +82,18 @@
       <PackageReference Include="@(_BaselinePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
       <Reference Remove="@(_BaselinePackageReferenceWithVersion)" />
 
+      <!-- For PrivateAssets=All references, fallback to LatestPackageReferences. -->
+      <_PrivatePackageReferenceWithVersion Include="@(Reference->WithMetadataValue('PrivateAssets', 'All'))">
+        <Id>%(LatestPackageReference.Identity)</Id>
+        <Version>%(LatestPackageReference.Version)</Version>
+      </_PrivatePackageReferenceWithVersion>
+
+      <_PrivatePackageReferenceWithVersion Remove="@(_PrivatePackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
+
+      <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
+      <PackageReference Include="@(_PrivatePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
+      <Reference Remove="@(_PrivatePackageReferenceWithVersion)" />
+
       <!-- Free up memory for unnecessary items -->
       <_BaselinePackageReferenceWithVersion Remove="@(_BaselinePackageReferenceWithVersion)" />
       <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)" />
