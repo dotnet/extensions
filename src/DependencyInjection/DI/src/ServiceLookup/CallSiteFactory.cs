@@ -85,8 +85,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 return TryCreateExact(serviceDescriptor, serviceDescriptor.ServiceType, callSiteChain, descriptor.GetSlot(serviceDescriptor));
             }
 
-            // This should never happen
-            Debug.Assert(false);
+            Debug.Fail("_descriptorLookup didn't contain requested serviceDescriptor");
             return null;
         }
 
