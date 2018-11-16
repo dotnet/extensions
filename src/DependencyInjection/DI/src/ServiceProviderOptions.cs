@@ -20,6 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         /// <summary>
         /// <c>true</c> to perform check verifying that all services can be created during <code>BuildServiceProvider</code> call; otherwise <c>false</c>. Defaults to <c>false</c>.
+        /// NOTE: this check doesn't verify open generics services.
         /// </summary>
         public bool ValidateOnBuild { get; set; }
 
