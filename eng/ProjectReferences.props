@@ -27,6 +27,8 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.FileProviders.Embedded" ProjectPath="$(RepositoryRoot)src\FileProviders\Embedded\src\Microsoft.Extensions.FileProviders.Embedded.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.FileProviders.Physical" ProjectPath="$(RepositoryRoot)src\FileProviders\Physical\src\Microsoft.Extensions.FileProviders.Physical.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.FileSystemGlobbing" ProjectPath="$(RepositoryRoot)src\FileSystemGlobbing\src\Microsoft.Extensions.FileSystemGlobbing.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Http" ProjectPath="$(RepositoryRoot)src\HttpClientFactory\Http\src\Microsoft.Extensions.Http.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Http.Polly" ProjectPath="$(RepositoryRoot)src\HttpClientFactory\Polly\src\Microsoft.Extensions.Http.Polly.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.Abstractions" ProjectPath="$(RepositoryRoot)src\Logging\Logging.Abstractions\src\Microsoft.Extensions.Logging.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.Analyzers" ProjectPath="$(RepositoryRoot)src\Logging\Logging.Analyzers\src\Microsoft.Extensions.Logging.Analyzers.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.AzureAppServices" ProjectPath="$(RepositoryRoot)src\Logging\Logging.AzureAppServices\src\Microsoft.Extensions.Logging.AzureAppServices.csproj" />
