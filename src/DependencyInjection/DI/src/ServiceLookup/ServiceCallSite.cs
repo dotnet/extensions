@@ -19,5 +19,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public abstract Type ImplementationType { get; }
         public abstract CallSiteKind Kind { get; }
         public ResultCache Cache { get; }
+
+        public override string ToString()
+        {
+            return CallSiteFormatter.Instance.Format(this);
+        }
     }
 }

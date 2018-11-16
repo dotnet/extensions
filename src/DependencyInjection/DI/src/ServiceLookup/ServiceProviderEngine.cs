@@ -74,6 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var callSite = CallSiteFactory.GetCallSite(serviceType, new CallSiteChain());
             if (callSite != null)
             {
+                DependencyInjectionEventSource.Instance.CallSiteBuilt(callSite);
                 _callback?.OnCreate(callSite);
                 return RealizeService(callSite);
             }
