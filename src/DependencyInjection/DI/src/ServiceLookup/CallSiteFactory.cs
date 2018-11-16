@@ -7,8 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
@@ -26,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             _stackGuard = new StackGuard();
             _descriptors = descriptors.ToList();
-            Populate(descriptors);
+            Populate(_descriptors);
         }
 
         private void Populate(IEnumerable<ServiceDescriptor> descriptors)
@@ -78,6 +76,18 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 #else
             return _callSiteCache.GetOrAdd(serviceType, type => CreateCallSite(type, callSiteChain));
 #endif
+        }
+
+        internal ServiceCallSite GetCallSite(ServiceDescriptor serviceDescriptor, CallSiteChain callSiteChain)
+        {
+            if (_descriptorLookup.TryGetValue(serviceDescriptor.ServiceType, out var descriptor))
+            {
+                return TryCreateExact(serviceDescriptor, serviceDescriptor.ServiceType, callSiteChain, descriptor.GetSlot(serviceDescriptor));
+            }
+
+            // This should never happen
+            Debug.Assert(false);
+            return null;
         }
 
         private ServiceCallSite CreateCallSite(Type serviceType, CallSiteChain callSiteChain)
@@ -367,6 +377,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         private struct ServiceDescriptorCacheItem
         {
             private ServiceDescriptor _item;
+
             private List<ServiceDescriptor> _items;
 
             public ServiceDescriptor Last
@@ -413,6 +424,25 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
                     return _items[index - 1];
                 }
+            }
+
+            public int GetSlot(ServiceDescriptor descriptor)
+            {
+                if (descriptor == _item)
+                {
+                    return 0;
+                }
+
+                if (_items != null)
+                {
+                    var index = _items.IndexOf(descriptor);
+                    if (index != -1)
+                    {
+                        return index + 1;
+                    }
+                }
+
+                throw new InvalidOperationException("Requested service descriptor doesn't exist.");
             }
 
             public ServiceDescriptorCacheItem Add(ServiceDescriptor descriptor)

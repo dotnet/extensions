@@ -8,6 +8,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     internal interface IServiceProviderEngine : IDisposable, IServiceProvider
     {
         IServiceScope RootScope { get; }
-        void ValidateService(Type serviceType);
+        void ValidateService(ServiceDescriptor descriptor);
     }
 }

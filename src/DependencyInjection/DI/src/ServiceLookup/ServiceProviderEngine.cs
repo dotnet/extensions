@@ -37,11 +37,16 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public IServiceScope RootScope => Root;
 
-        public void ValidateService(Type serviceType)
+        public void ValidateService(ServiceDescriptor descriptor)
         {
+            if (descriptor.ServiceType.IsGenericType && !descriptor.ServiceType.IsConstructedGenericType)
+            {
+                return;
+            }
+
             try
             {
-                var callSite = CallSiteFactory.GetCallSite(serviceType, new CallSiteChain());
+                var callSite = CallSiteFactory.GetCallSite(descriptor, new CallSiteChain());
                 if (callSite != null)
                 {
                     _callback?.OnCreate(callSite);
@@ -49,7 +54,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             }
             catch (Exception e)
             {
-                throw new InvalidOperationException($"Error while validating service type '{serviceType}': {e.Message}", e);
+                throw new InvalidOperationException($"Error while validating the service descriptor '{descriptor}': {e.Message}", e);
             }
         }
 

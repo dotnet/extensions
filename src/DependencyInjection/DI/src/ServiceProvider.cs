@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 {
                     try
                     {
-                        _engine.ValidateService(serviceDescriptor.ServiceType);
+                        _engine.ValidateService(serviceDescriptor);
                     }
                     catch (Exception e)
                     {

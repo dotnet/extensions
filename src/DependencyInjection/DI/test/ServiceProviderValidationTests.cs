@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection.Tests
@@ -110,7 +111,7 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
         }
 
         [Fact]
-        public void BuildServiceProvider_ThrowsForUnresolvableServices()
+        public void BuildServiceProvider_ValidateOnBuild_ThrowsForUnresolvableServices()
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
@@ -121,16 +122,47 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
             var aggregateException = Assert.Throws<AggregateException>(() => serviceCollection.BuildServiceProvider(new ServiceProviderOptions() { ValidateOnBuild = true }));
             Assert.StartsWith("Some services are not able to be constructed", aggregateException.Message);
             Assert.Equal(2, aggregateException.InnerExceptions.Count);
-            Assert.Equal("Error while validating service type 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IFoo': " +
-                "Unable to resolve service for type 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBar' while attempting to activate" +
-                " 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+Foo'.",
+            Assert.Equal("Error while validating the service descriptor 'ServiceType: Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IFoo Lifetime: Transient ImplementationType: Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+Foo': " +
+                         "Unable to resolve service for type 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBar' while attempting to activate" +
+                         " 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+Foo'.",
                 aggregateException.InnerExceptions[0].Message);
 
-            Assert.Equal("Error while validating service type 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz': " +
-                "A circular dependency was detected for the service of type 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz'." + Environment.NewLine +
-                "Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz(Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+BazRecursive) ->" +
-                " Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz",
+            Assert.Equal("Error while validating the service descriptor 'ServiceType: Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz Lifetime: Transient ImplementationType: Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+BazRecursive': " +
+                         "A circular dependency was detected for the service of type 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz'." + Environment.NewLine +
+                         "Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz(Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+BazRecursive) ->" +
+                         " Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz",
                 aggregateException.InnerExceptions[1].Message);
+        }
+
+        [Fact]
+        public void BuildServiceProvider_ValidateOnBuild_SkipsOpenGenerics()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>));
+
+            // Act + Assert
+            serviceCollection.BuildServiceProvider(new ServiceProviderOptions() { ValidateOnBuild = true });
+        }
+
+        [Fact]
+        public void BuildServiceProvider_ValidateOnBuild_ValidatesAllDescriptors()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient<IBaz, BazRecursive>();
+            serviceCollection.AddTransient<IBaz, Baz>();
+
+            // Act + Assert
+            var aggregateException = Assert.Throws<AggregateException>(() => serviceCollection.BuildServiceProvider(new ServiceProviderOptions() { ValidateOnBuild = true }));
+            Assert.StartsWith("Some services are not able to be constructed", aggregateException.Message);
+            Assert.Single(aggregateException.InnerExceptions);
+
+            Assert.Equal("Error while validating the service descriptor 'ServiceType: Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz Lifetime: Transient ImplementationType: Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+BazRecursive': " +
+                         "A circular dependency was detected for the service of type 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz'." + Environment.NewLine +
+                         "Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz(Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+BazRecursive) ->" +
+                         " Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz",
+                aggregateException.InnerExceptions[0].Message);
         }
 
         private interface IFoo
