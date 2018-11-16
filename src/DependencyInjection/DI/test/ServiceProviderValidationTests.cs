@@ -119,16 +119,18 @@ namespace Microsoft.Extensions.DependencyInjection.Tests
 
             // Act + Assert
             var aggregateException = Assert.Throws<AggregateException>(() => serviceCollection.BuildServiceProvider(new ServiceProviderOptions() { ValidateOnBuild = true }));
-            Assert.Equal("Some services are not able to be constructed " +
-                         "(Error while validating service type 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IFoo': " +
-                         "Unable to resolve service for type 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBar' while attempting to activate" +
-                         " 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+Foo'.) " +
-
-                         "(Error while validating service type 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz': " +
-                         "A circular dependency was detected for the service of type 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz'." + Environment.NewLine +
-                         "Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz(Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+BazRecursive) ->" +
-                         " Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz)", aggregateException.Message);
+            Assert.StartsWith("Some services are not able to be constructed", aggregateException.Message);
             Assert.Equal(2, aggregateException.InnerExceptions.Count);
+            Assert.Equal("Error while validating service type 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IFoo': " +
+                "Unable to resolve service for type 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBar' while attempting to activate" +
+                " 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+Foo'.",
+                aggregateException.InnerExceptions[0].Message);
+
+            Assert.Equal("Error while validating service type 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz': " +
+                "A circular dependency was detected for the service of type 'Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz'." + Environment.NewLine +
+                "Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz(Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+BazRecursive) ->" +
+                " Microsoft.Extensions.DependencyInjection.Tests.ServiceProviderValidationTests+IBaz",
+                aggregateException.InnerExceptions[1].Message);
         }
 
         private interface IFoo
