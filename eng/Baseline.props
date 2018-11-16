@@ -215,6 +215,24 @@
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileSystemGlobbing' AND '$(TargetFramework)' == 'netstandard2.0' " />
+  <!-- Package: Microsoft.Extensions.Http.Polly-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Http.Polly' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Http.Polly' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Http" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Polly" Version="[6.0.1, )" />
+    <BaselinePackageReference Include="Polly.Extensions.Http" Version="[2.0.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Http-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Http' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Http' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.Extensions.Logging.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Abstractions' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
