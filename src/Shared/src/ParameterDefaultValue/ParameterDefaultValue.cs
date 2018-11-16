@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Internal
 {
     internal class ParameterDefaultValue
     {
-        private static Type _nullable = typeof(Nullable<>);
+        private static readonly Type _nullable = typeof(Nullable<>);
 
         public static bool TryGetDefaultValue(ParameterInfo parameter, out object defaultValue)
         {
