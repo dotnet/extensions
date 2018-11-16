@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Logging.Abstractions\src\Internal\LogValuesFormatter.cs" />
+    <Compile Include="..\..\Logging.Abstractions\src\LogValuesFormatter.cs" />
   </ItemGroup>
 
   <ItemGroup>
