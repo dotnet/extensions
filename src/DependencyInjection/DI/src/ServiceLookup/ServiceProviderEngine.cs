@@ -37,6 +37,22 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public IServiceScope RootScope => Root;
 
+        public void ValidateService(Type serviceType)
+        {
+            try
+            {
+                var callSite = CallSiteFactory.GetCallSite(serviceType, new CallSiteChain());
+                if (callSite != null)
+                {
+                    _callback?.OnCreate(callSite);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new InvalidOperationException($"Error while validating service type '{serviceType}': {e.Message}", e);
+            }
+        }
+
         public object GetService(Type serviceType) => GetService(serviceType, Root);
 
         protected abstract Func<ServiceProviderEngineScope, object> RealizeService(ServiceCallSite callSite);
