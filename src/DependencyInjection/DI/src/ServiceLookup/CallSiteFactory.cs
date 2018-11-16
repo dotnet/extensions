@@ -24,12 +24,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             _stackGuard = new StackGuard();
             _descriptors = descriptors.ToList();
-            Populate(_descriptors);
+            Populate();
         }
 
-        private void Populate(IEnumerable<ServiceDescriptor> descriptors)
+        private void Populate()
         {
-            foreach (var descriptor in descriptors)
+            foreach (var descriptor in _descriptors)
             {
                 var serviceTypeInfo = descriptor.ServiceType.GetTypeInfo();
                 if (serviceTypeInfo.IsGenericTypeDefinition)
@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     {
                         throw new ArgumentException(
                             Resources.FormatOpenGenericServiceRequiresOpenGenericImplementation(descriptor.ServiceType),
-                            nameof(descriptors));
+                            "descriptors");
                     }
 
                     if (implementationTypeInfo.IsAbstract || implementationTypeInfo.IsInterface)

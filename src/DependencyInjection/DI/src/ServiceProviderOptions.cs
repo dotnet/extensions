@@ -14,12 +14,12 @@ namespace Microsoft.Extensions.DependencyInjection
         internal static readonly ServiceProviderOptions Default = new ServiceProviderOptions();
 
         /// <summary>
-        /// <c>true</c> to perform check verifying that scoped services never gets resolved from root provider; otherwise <c>false</c>.
+        /// <c>true</c> to perform check verifying that scoped services never gets resolved from root provider; otherwise <c>false</c>. Defaults to <c>false</c>.
         /// </summary>
         public bool ValidateScopes { get; set; }
 
         /// <summary>
-        /// <c>true</c> to perform check verifying that all services can be created during <code>BuildServiceProvider</code> call; otherwise <c>false</c>.
+        /// <c>true</c> to perform check verifying that all services can be created during <code>BuildServiceProvider</code> call; otherwise <c>false</c>. Defaults to <c>false</c>.
         /// </summary>
         public bool ValidateOnBuild { get; set; }
 

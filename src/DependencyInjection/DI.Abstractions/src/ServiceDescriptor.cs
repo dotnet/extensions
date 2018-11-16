@@ -119,10 +119,10 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (ImplementationFactory != null)
             {
-                return lifetime + $"{nameof(ImplementationFactory)}: {ImplementationFactory}";
+                return lifetime + $"{nameof(ImplementationFactory)}: {ImplementationFactory.Method}";
             }
 
-            return lifetime + $"{ nameof(ImplementationInstance)}: { ImplementationInstance}";
+            return lifetime + $"{nameof(ImplementationInstance)}: {ImplementationInstance}";
         }
 
         internal Type GetImplementationType()
