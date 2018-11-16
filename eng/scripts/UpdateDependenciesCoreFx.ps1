@@ -1,4 +1,4 @@
-
+#!/usr/bin/env pwsh
 [CmdletBinding()]
 param(
     [switch]$NoCommit,
@@ -24,7 +24,7 @@ $coreSetupVersions = "$githubRaw/$versionsRepo/$versionsBranch/build-info/$coreS
 
 $tempDir = "$PSScriptRoot/../obj"
 
-mkdir -Path $tempDir -ErrorAction Ignore
+New-Item -Type Directory -Path $tempDir -ErrorAction Ignore
 
 $localCoreSetupVersions = "$tempDir/coresetup.packages"
 Write-Host "Downloading $coreSetupVersions to $localCoreSetupVersions"
