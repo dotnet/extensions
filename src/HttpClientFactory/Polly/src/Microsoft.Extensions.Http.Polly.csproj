@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>
@@ -14,13 +14,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.Http\Microsoft.Extensions.Http.csproj" />
+    <Compile Include="$(SharedSourceRoot)ValueStopwatch\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Polly" Version="$(PollyPackageVersion)" />
-    <PackageReference Include="Polly.Extensions.Http" Version="$(PollyExtensionsHttpPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.ValueStopwatch.Sources" Version="$(MicrosoftExtensionsValueStopwatchSourcesPackageVersion)" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.Http" />
+    <Reference Include="Polly.Extensions.Http" />
+    <Reference Include="Polly" />
   </ItemGroup>
 
 </Project>
