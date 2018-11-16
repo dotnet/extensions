@@ -72,7 +72,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         protected override object VisitFactory(FactoryCallSite factoryCallSite, CallSiteFormatterContext argument)
         {
-            argument.ContinueLine("Factory ({0})", factoryCallSite.Factory);
+            argument.ContinueLine("Factory ({0})", factoryCallSite.Factory.Method);
 
             return null;
         }
