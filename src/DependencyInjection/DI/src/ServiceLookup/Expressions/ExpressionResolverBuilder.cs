@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -41,6 +42,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private readonly ServiceProviderEngineScope _rootScope;
 
+        private ConcurrentDictionary<Type, MethodInfo> _scopeResolverCache;
+
         public ExpressionResolverBuilder(CallSiteRuntimeResolver runtimeResolver, IServiceScopeFactory serviceScopeFactory, ServiceProviderEngineScope rootScope):
             base()
         {
@@ -48,6 +51,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             {
                 throw new ArgumentNullException(nameof(runtimeResolver));
             }
+
+            _scopeResolverCache = new ConcurrentDictionary<Type, MethodInfo>();
             _runtimeResolver = runtimeResolver;
             _serviceScopeFactory = serviceScopeFactory;
             _rootScope = rootScope;
@@ -57,25 +62,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             if (callSite.Cache.Location == CallSiteResultCacheLocation.Root)
             {
-                // If root call site is singleton we can return Func calling
-                // _runtimeResolver.Resolve directly and avoid Expression generation
-                if (TryResolveSingletonValue(callSite, out var value))
-                {
-                    return scope => value;
-                }
+                var value = _runtimeResolver.Resolve(callSite, _rootScope);
 
-                return scope => _runtimeResolver.Resolve(callSite, scope);
+                return scope => value;
             }
 
             return BuildExpression(callSite).Compile();
-        }
-
-        private bool TryResolveSingletonValue(ServiceCallSite singletonCallSite, out object value)
-        {
-            lock (_rootScope.ResolvedServices)
-            {
-                return _rootScope.ResolvedServices.TryGetValue(singletonCallSite.Cache.Key, out value);
-            }
         }
 
         private Expression<Func<ServiceProviderEngineScope, object>> BuildExpression(ServiceCallSite callSite)
@@ -102,16 +94,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override Expression VisitRootCache(ServiceCallSite singletonCallSite, CallSiteExpressionBuilderContext context)
         {
-            if (TryResolveSingletonValue(singletonCallSite, out var value))
-            {
-                return Expression.Constant(value);
-            }
-
-            return Expression.Call(
-                Expression.Constant(_runtimeResolver),
-                CallSiteRuntimeResolverResolve,
-                Expression.Constant(singletonCallSite, typeof(ServiceCallSite)),
-                context.ScopeParameter);
+            return Expression.Constant(_runtimeResolver.Resolve(singletonCallSite, _rootScope));
         }
 
         protected override Expression VisitConstant(ConstantCallSite constantCallSite, CallSiteExpressionBuilderContext context)
