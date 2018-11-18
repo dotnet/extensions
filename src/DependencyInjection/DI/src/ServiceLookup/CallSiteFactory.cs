@@ -211,7 +211,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         private ServiceCallSite TryCreateOpenGeneric(ServiceDescriptor descriptor, Type serviceType, CallSiteChain callSiteChain, int slot)
         {
             if (serviceType.IsConstructedGenericType &&
-                serviceType.GetGenericTypeDefinition() == descriptor.ServiceType)
+                serviceType.GetGenericTypeDefinition() == descriptor.ServiceType &&
+                IsCompatibleWithGenericParameterConstraints(descriptor.ImplementationType, serviceType.GenericTypeArguments))
             {
                 Debug.Assert(descriptor.ImplementationType != null, "descriptor.ImplementationType != null");
                 var lifetime = new ResultCache(descriptor.Lifetime, serviceType, slot);
@@ -358,6 +359,103 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return parameterCallSites;
         }
 
+        private static bool IsCompatibleWithGenericParameterConstraints(Type genericTypeDefinition, Type[] parameters)
+        {
+            var genericArgumentDefinitions = genericTypeDefinition.GetTypeInfo().GenericTypeParameters;
+            for (var i = 0; i < genericArgumentDefinitions.Length; ++i)
+            {
+                var argumentDefinitionTypeInfo = genericArgumentDefinitions[i].GetTypeInfo();
+                var parameter = parameters[i];
+                var parameterTypeInfo = parameter.GetTypeInfo();
+                if (argumentDefinitionTypeInfo.GetGenericParameterConstraints()
+                   .Select(constraint => SubstituteGenericParameterConstraint(parameters, constraint))
+                   .Any(constraint => !ParameterCompatibleWithTypeConstraint(parameter, constraint)))
+                {
+                    return false;
+                }
+                var specialConstraints = argumentDefinitionTypeInfo.GenericParameterAttributes;
+                if ((specialConstraints & GenericParameterAttributes.DefaultConstructorConstraint)
+                   == GenericParameterAttributes.DefaultConstructorConstraint)
+                {
+                    if (!parameterTypeInfo.IsValueType && parameterTypeInfo.DeclaredConstructors.Where(c => c.IsPublic).All(c => c.GetParameters().Length != 0))
+                    {
+                        return false;
+                    }
+                }
+                if ((specialConstraints & GenericParameterAttributes.ReferenceTypeConstraint)
+                   == GenericParameterAttributes.ReferenceTypeConstraint)
+                {
+                    if (parameterTypeInfo.IsValueType)
+                    {
+                        return false;
+                    }
+                }
+                if ((specialConstraints & GenericParameterAttributes.NotNullableValueTypeConstraint)
+                   == GenericParameterAttributes.NotNullableValueTypeConstraint)
+                {
+                    if (!parameterTypeInfo.IsValueType ||
+                        parameterTypeInfo.IsGenericType && IsGenericTypeDefinedBy(parameter, typeof(Nullable<>)))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        private static bool IsGenericTypeDefinedBy(Type type, Type openGeneric)
+        {
+            return !type.ContainsGenericParameters
+                       && type.IsGenericType
+                       && type.GetGenericTypeDefinition() == openGeneric;
+        }
+
+        private static Type SubstituteGenericParameterConstraint(Type[] parameters, Type constraint)
+        {
+            if (!constraint.IsGenericParameter) return constraint;
+            return parameters[constraint.GenericParameterPosition];
+        }
+
+        private static bool ParameterCompatibleWithTypeConstraint(Type parameter, Type constraint)
+        {
+            return constraint.IsAssignableFrom(parameter) ||
+                   new[] { parameter, parameter.BaseType }
+                       .Concat(parameter.GetTypeInfo().ImplementedInterfaces)
+                       .Where(p => p != null)
+                       .Any(p => ParameterEqualsConstraint(p, constraint));
+        }
+
+        private static bool ParameterEqualsConstraint(Type parameter, Type constraint)
+        {
+            var genericArguments = parameter.GenericTypeArguments;
+            if (genericArguments.Length > 0 && constraint.IsGenericType)
+            {
+                var typeDefinition = constraint.GetGenericTypeDefinition();
+                if (typeDefinition.GetTypeInfo().GenericTypeParameters.Length == genericArguments.Length)
+                {
+                    var constraintArguments = constraint.GetTypeInfo().GenericTypeArguments;
+                    for (var i = 0; i < constraintArguments.Length; i++)
+                    {
+                        var constraintArgument = constraintArguments[i];
+                        if (!constraintArgument.IsGenericParameter && !constraintArgument.IsAssignableFrom(genericArguments[i]))
+                        {
+                            return false;
+                        }
+                    }
+                    Type genericType;
+                    try
+                    {
+                        genericType = typeDefinition.MakeGenericType(genericArguments);
+                    }
+                    catch (ArgumentException)
+                    {
+                        return false;
+                    }
+                    return genericType == parameter;
+                }
+            }
+            return false;
+        }
 
         public void Add(Type type, ServiceCallSite serviceCallSite)
         {

@@ -546,6 +546,29 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         }
 
         [Fact]
+        public void ConstrainedOpenGenericServicesCanBeResolved()
+        {
+            // Arrange
+            var collection = new TestServiceCollection();
+            collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>));
+            collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(ConstrainedFakeOpenGenericService<>));
+            var poco = new PocoClass();
+            collection.AddSingleton(poco);
+            collection.AddSingleton<IFakeSingletonService, FakeService>();
+            var provider = CreateServiceProvider(collection);
+            // Act
+            var allServices = provider.GetServices<IFakeOpenGenericService<PocoClass>>().ToList();
+            var constrainedServices = provider.GetServices<IFakeOpenGenericService<IFakeSingletonService>>().ToList();
+            var singletonService = provider.GetService<IFakeSingletonService>();
+            // Assert
+            Assert.Equal(2, allServices.Count);
+            Assert.Same(poco, allServices[0].Value);
+            Assert.Same(poco, allServices[1].Value);
+            Assert.Equal(1, constrainedServices.Count);
+            Assert.Same(singletonService, constrainedServices[0].Value);
+        }
+
+        [Fact]
         public void ClosedServicesPreferredOverOpenGenericServices()
         {
             // Arrange
