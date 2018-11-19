@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private readonly ServiceProviderEngineScope _rootScope;
 
-        private ConcurrentDictionary<Type, MethodInfo> _scopeResolverCache;
+        private ConcurrentDictionary<ServiceCacheKey, Func<ServiceProviderEngineScope, object>> _scopeResolverCache;
 
         public ExpressionResolverBuilder(CallSiteRuntimeResolver runtimeResolver, IServiceScopeFactory serviceScopeFactory, ServiceProviderEngineScope rootScope):
             base()
@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 throw new ArgumentNullException(nameof(runtimeResolver));
             }
 
-            _scopeResolverCache = new ConcurrentDictionary<Type, MethodInfo>();
+            _scopeResolverCache = new ConcurrentDictionary<ServiceCacheKey, Func<ServiceProviderEngineScope, object>>();
             _runtimeResolver = runtimeResolver;
             _serviceScopeFactory = serviceScopeFactory;
             _rootScope = rootScope;
@@ -72,12 +72,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private Expression<Func<ServiceProviderEngineScope, object>> BuildExpression(ServiceCallSite callSite)
         {
-            var context = new CallSiteExpressionBuilderContext
-            {
-                ScopeParameter = ScopeParameter
-            };
-
-            var serviceExpression = VisitCallSite(callSite, context);
+            var context = new CallSiteExpressionBuilderContext();
 
             if (callSite.Cache.Location == CallSiteResultCacheLocation.Scope)
             {
@@ -85,11 +80,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     Expression.Block(
                         new [] { ResolvedServices },
                         ResolvedServicesVariableAssignment,
-                        Lock(serviceExpression, ResolvedServices)),
+                        Lock(BuildScopedExpression(callSite, VisitCallSiteMain(callSite, context)), ResolvedServices)),
                     ScopeParameter);
             }
 
-            return Expression.Lambda<Func<ServiceProviderEngineScope, object>>(serviceExpression, ScopeParameter);
+            return Expression.Lambda<Func<ServiceProviderEngineScope, object>>(VisitCallSite(callSite, context), ScopeParameter);
         }
 
         protected override Expression VisitRootCache(ServiceCallSite singletonCallSite, CallSiteExpressionBuilderContext context)
@@ -104,7 +99,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override Expression VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, CallSiteExpressionBuilderContext context)
         {
-            return context.ScopeParameter;
+            return ScopeParameter;
         }
 
         protected override Expression VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, CallSiteExpressionBuilderContext context)
@@ -114,7 +109,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override Expression VisitFactory(FactoryCallSite factoryCallSite, CallSiteExpressionBuilderContext context)
         {
-            return Expression.Invoke(Expression.Constant(factoryCallSite.Factory), context.ScopeParameter);
+            return Expression.Invoke(Expression.Constant(factoryCallSite.Factory), ScopeParameter);
         }
 
         protected override Expression VisitIEnumerable(IEnumerableCallSite callSite, CallSiteExpressionBuilderContext context)
@@ -140,7 +135,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Elide calls to GetCaptureDisposable if the implementation type isn't disposable
             return TryCaptureDisposible(
                 implType,
-                context.ScopeParameter,
+                ScopeParameter,
                 VisitCallSiteMain(callSite, context));
         }
 
@@ -188,11 +183,16 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override Expression VisitScopeCache(ServiceCallSite callSite, CallSiteExpressionBuilderContext context)
         {
-            return BuildScopedExpression(callSite, context, VisitCallSiteMain(callSite, context));
+#if NETCOREAPP
+            var mi = _scopeResolverCache.GetOrAdd(callSite.Cache.Key, (key, cs) => Build(cs), callSite);
+#else
+            var mi = _scopeResolverCache.GetOrAdd(callSite.Cache.Key, (key) => Build(callSite));
+#endif
+            return Expression.Invoke(Expression.Constant(mi), ScopeParameter);
         }
 
         // Move off the main stack
-        private Expression BuildScopedExpression(ServiceCallSite callSite, CallSiteExpressionBuilderContext context, Expression service)
+        private Expression BuildScopedExpression(ServiceCallSite callSite, Expression service)
         {
             var keyExpression = Expression.Constant(
                 callSite.Cache.Key,
@@ -200,7 +200,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             var resolvedVariable = Expression.Variable(typeof(object), "resolved");
 
-            var resolvedServices = GetResolvedServices(context);
+            var resolvedServices = ResolvedServices;
 
             var tryGetValueExpression = Expression.Call(
                 resolvedServices,
@@ -208,7 +208,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 keyExpression,
                 resolvedVariable);
 
-            var captureDisposible = TryCaptureDisposible(callSite.ImplementationType, context.ScopeParameter, service);
+            var captureDisposible = TryCaptureDisposible(callSite.ImplementationType, ScopeParameter, service);
 
             var assignExpression = Expression.Assign(
                 resolvedVariable,
@@ -249,16 +249,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 throw new NotSupportedException("GetCaptureDisposable call is supported only for main scope");
             }
             return CaptureDisposable;
-        }
-
-        public Expression GetResolvedServices(CallSiteExpressionBuilderContext context)
-        {
-            if (context.ScopeParameter != ScopeParameter)
-            {
-                throw new NotSupportedException("GetResolvedServices call is supported only for main scope");
-            }
-            context.RequiresResolvedServices = true;
-            return ResolvedServices;
         }
 
         private static Expression Lock(Expression body, Expression syncVariable)

@@ -7,6 +7,5 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
     internal class CallSiteExpressionBuilderContext
     {
-        public ParameterExpression ScopeParameter { get; set; }
     }
 }
