@@ -110,8 +110,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private ServiceCallSite TryCreateOpenGeneric(Type serviceType, CallSiteChain callSiteChain)
         {
-            if (serviceType.IsConstructedGenericType
-                && _descriptorLookup.TryGetValue(serviceType.GetGenericTypeDefinition(), out var descriptor))
+            if (serviceType.IsConstructedGenericType && _descriptorLookup.TryGetValue(serviceType.GetGenericTypeDefinition(), out var descriptor))
             {
                 return TryCreateOpenGeneric(descriptor.Last, serviceType, callSiteChain, DefaultSlot);
             }
@@ -367,34 +366,33 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 var argumentDefinitionTypeInfo = genericArgumentDefinitions[i].GetTypeInfo();
                 var parameter = parameters[i];
                 var parameterTypeInfo = parameter.GetTypeInfo();
-                if (argumentDefinitionTypeInfo.GetGenericParameterConstraints()
-                   .Select(constraint => SubstituteGenericParameterConstraint(parameters, constraint))
-                   .Any(constraint => !ParameterCompatibleWithTypeConstraint(parameter, constraint)))
+                foreach (var constraint in argumentDefinitionTypeInfo.GetGenericParameterConstraints())
                 {
-                    return false;
+                    var substituteGenericParameterConstraint = SubstituteGenericParameterConstraint(parameters, constraint);
+                    if (!ParameterCompatibleWithTypeConstraint(parameter, substituteGenericParameterConstraint))
+                    {
+                        return false;
+                    }
                 }
+
                 var specialConstraints = argumentDefinitionTypeInfo.GenericParameterAttributes;
-                if ((specialConstraints & GenericParameterAttributes.DefaultConstructorConstraint)
-                   == GenericParameterAttributes.DefaultConstructorConstraint)
+                if ((specialConstraints & GenericParameterAttributes.DefaultConstructorConstraint) == GenericParameterAttributes.DefaultConstructorConstraint)
                 {
                     if (!parameterTypeInfo.IsValueType && parameterTypeInfo.DeclaredConstructors.Where(c => c.IsPublic).All(c => c.GetParameters().Length != 0))
                     {
                         return false;
                     }
                 }
-                if ((specialConstraints & GenericParameterAttributes.ReferenceTypeConstraint)
-                   == GenericParameterAttributes.ReferenceTypeConstraint)
+                if ((specialConstraints & GenericParameterAttributes.ReferenceTypeConstraint) == GenericParameterAttributes.ReferenceTypeConstraint)
                 {
                     if (parameterTypeInfo.IsValueType)
                     {
                         return false;
                     }
                 }
-                if ((specialConstraints & GenericParameterAttributes.NotNullableValueTypeConstraint)
-                   == GenericParameterAttributes.NotNullableValueTypeConstraint)
+                if ((specialConstraints & GenericParameterAttributes.NotNullableValueTypeConstraint) == GenericParameterAttributes.NotNullableValueTypeConstraint)
                 {
-                    if (!parameterTypeInfo.IsValueType ||
-                        parameterTypeInfo.IsGenericType && IsGenericTypeDefinedBy(parameter, typeof(Nullable<>)))
+                    if (!parameterTypeInfo.IsValueType || parameterTypeInfo.IsGenericType && IsGenericTypeDefinedBy(parameter, typeof(Nullable<>)))
                     {
                         return false;
                     }
@@ -405,9 +403,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private static bool IsGenericTypeDefinedBy(Type type, Type openGeneric)
         {
-            return !type.ContainsGenericParameters
-                       && type.IsGenericType
-                       && type.GetGenericTypeDefinition() == openGeneric;
+            return !type.ContainsGenericParameters && type.IsGenericType && type.GetGenericTypeDefinition() == openGeneric;
         }
 
         private static Type SubstituteGenericParameterConstraint(Type[] parameters, Type constraint)
@@ -418,11 +414,20 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private static bool ParameterCompatibleWithTypeConstraint(Type parameter, Type constraint)
         {
-            return constraint.IsAssignableFrom(parameter) ||
-                   new[] { parameter, parameter.BaseType }
-                       .Concat(parameter.GetTypeInfo().ImplementedInterfaces)
-                       .Where(p => p != null)
-                       .Any(p => ParameterEqualsConstraint(p, constraint));
+            bool hasAnyCompatibleType = false;
+            foreach (var p in new[] {parameter, parameter.BaseType}.Concat(parameter.GetTypeInfo().ImplementedInterfaces))
+            {
+                if (p != null)
+                {
+                    if (ParameterEqualsConstraint(p, constraint))
+                    {
+                        hasAnyCompatibleType = true;
+                        break;
+                    }
+                }
+            }
+
+            return constraint.IsAssignableFrom(parameter) || hasAnyCompatibleType;
         }
 
         private static bool ParameterEqualsConstraint(Type parameter, Type constraint)
