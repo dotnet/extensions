@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
         [NonEvent]
         public void ServiceResolved(Type serviceType)
         {
-            if (IsEnabled())
+            if (IsEnabled(EventLevel.Verbose, EventKeywords.All))
             {
                 ServiceResolved(serviceType.ToString());
             }
@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection
         [NonEvent]
         public void CallSiteBuilt(Type serviceType, ServiceCallSite callSite)
         {
-            if (IsEnabled())
+            if (IsEnabled(EventLevel.Verbose, EventKeywords.All))
             {
                 CallSiteBuilt(serviceType.ToString(), CallSiteJsonFormatter.Instance.Format(callSite));
             }
