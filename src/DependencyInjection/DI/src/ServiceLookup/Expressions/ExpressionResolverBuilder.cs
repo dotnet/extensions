@@ -79,7 +79,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
             var serviceExpression = VisitCallSite(callSite, context);
 
-            if (context.RequiresResolvedServices)
+            if (callSite.Cache.Location == CallSiteResultCacheLocation.Scope)
             {
                 return Expression.Lambda<Func<ServiceProviderEngineScope, object>>(
                     Expression.Block(
