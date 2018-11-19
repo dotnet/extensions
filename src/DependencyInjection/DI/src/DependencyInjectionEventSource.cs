@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics.Tracing;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection.ServiceLookup;
@@ -10,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection
     [EventSource(Name = "Microsoft-Extensions-DependencyInjection")]
     internal sealed class DependencyInjectionEventSource : EventSource
     {
-        public static readonly DependencyInjectionEventSource Instance = new DependencyInjectionEventSource();
+        public static readonly DependencyInjectionEventSource Log = new DependencyInjectionEventSource();
 
         private DependencyInjectionEventSource()
         {
@@ -24,19 +25,33 @@ namespace Microsoft.Extensions.DependencyInjection
         // - A stop event's event id must be next one after its start event.
         // - Avoid renaming methods or parameters marked with EventAttribute. EventSource uses these to form the event object.
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
         [Event(1, Level = EventLevel.Verbose)]
-        private void CallSiteBuilt(string callSite)
+        private void CallSiteBuilt(string serviceType, string callSite)
         {
-            WriteEvent(1,  callSite);
+            WriteEvent(1, serviceType, callSite);
+        }
+
+        [Event(2, Level = EventLevel.Verbose)]
+        public void ServiceResolved(string serviceType)
+        {
+            WriteEvent(2, serviceType);
         }
 
         [NonEvent]
-        public void CallSiteBuilt(ServiceCallSite callSite)
+        public void ServiceResolved(Type serviceType)
         {
             if (IsEnabled())
             {
-                CallSiteBuilt(callSite.ToString());
+                ServiceResolved(serviceType.ToString());
+            }
+        }
+
+        [NonEvent]
+        public void CallSiteBuilt(Type serviceType, ServiceCallSite callSite)
+        {
+            if (IsEnabled())
+            {
+                CallSiteBuilt(serviceType.ToString(), CallSiteJsonFormatter.Instance.Format(callSite));
             }
         }
     }
