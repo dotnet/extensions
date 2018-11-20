@@ -67,7 +67,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 return scope => value;
             }
 
-            return BuildExpression(callSite).Compile();
+            var expression = BuildExpression(callSite);
+            DependencyInjectionEventSource.Log.ExpressionTreeGenerated(callSite.ServiceType, expression);
+            return expression.Compile();
         }
 
         private Expression<Func<ServiceProviderEngineScope, object>> BuildExpression(ServiceCallSite callSite)
