@@ -52,6 +52,14 @@ export class RazorCompletionItemProvider
 
                 // textEdit is deprecated in favor of .range. Clear out its value to avoid any unexpected behavior.
                 completionItem.textEdit = undefined;
+
+                if (triggerCharacter === '@' &&
+                    completionItem.commitCharacters) {
+                    // We remove `{` from the commit characters to prevent auto-completing the first completion item
+                    // with a curly brace when a user intended to type `@{}`.
+                    completionItem.commitCharacters = completionItem.commitCharacters.filter(
+                        commitChar => commitChar !== '{');
+                }
             }
 
             const isIncomplete = completions instanceof Array ? false
