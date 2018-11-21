@@ -20,6 +20,8 @@
   <Package Id="Microsoft.Extensions.DependencyInjection.Specification.Tests" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.DiagnosticAdapter" Version="2.2.0" />
+  <Package Id="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="2.2.0" />
+  <Package Id="Microsoft.Extensions.Diagnostics.HealthChecks" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.FileProviders.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.FileProviders.Composite" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.FileProviders.Embedded" Version="2.2.0" />
