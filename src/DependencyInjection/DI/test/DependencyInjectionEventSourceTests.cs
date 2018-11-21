@@ -142,11 +142,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 "    }",
                 "  ]",
                 "}"),
-                JObject.Parse(GetProperty(callsiteBuiltEvent, "callSite")).ToString());
+                JObject.Parse(GetProperty<string>(callsiteBuiltEvent, "callSite")).ToString());
 
-            Assert.Equal("System.Collections.Generic.IEnumerable`1[Microsoft.Extensions.DependencyInjection.Specification.Fakes.IFakeOuterService]", GetProperty(callsiteBuiltEvent, "serviceType"));
-            Assert.Equal("0", GetProperty(callsiteBuiltEvent, "chunkIndex"));
-            Assert.Equal("1", GetProperty(callsiteBuiltEvent, "chunkCount"));
+            Assert.Equal("System.Collections.Generic.IEnumerable`1[Microsoft.Extensions.DependencyInjection.Specification.Fakes.IFakeOuterService]", GetProperty<string>(callsiteBuiltEvent, "serviceType"));
+            Assert.Equal(0, GetProperty<int>(callsiteBuiltEvent, "chunkIndex"));
+            Assert.Equal(1, GetProperty<int>(callsiteBuiltEvent, "chunkCount"));
             Assert.Equal(1, callsiteBuiltEvent.EventId);
         }
 
@@ -168,13 +168,13 @@ namespace Microsoft.Extensions.DependencyInjection
             Assert.Equal(3, serviceResolvedEvents.Length);
             foreach (var serviceResolvedEvent in serviceResolvedEvents)
             {
-                Assert.Equal("Microsoft.Extensions.DependencyInjection.Specification.Fakes.IFakeService", GetProperty(serviceResolvedEvent, "serviceType"));
+                Assert.Equal("Microsoft.Extensions.DependencyInjection.Specification.Fakes.IFakeService", GetProperty<string>(serviceResolvedEvent, "serviceType"));
                 Assert.Equal(2, serviceResolvedEvent.EventId);
             }
         }
 
-        private string GetProperty(EventWrittenEventArgs data, string propName)
-            => data.Payload[data.PayloadNames.IndexOf(propName)] as string;
+        private T GetProperty<T>(EventWrittenEventArgs data, string propName)
+            => (T)data.Payload[data.PayloadNames.IndexOf(propName)];
 
         private class TestEventListener : EventListener
         {

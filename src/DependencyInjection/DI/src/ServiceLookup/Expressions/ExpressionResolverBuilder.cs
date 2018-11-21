@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private readonly ServiceProviderEngineScope _rootScope;
 
-        private ConcurrentDictionary<ServiceCacheKey, Func<ServiceProviderEngineScope, object>> _scopeResolverCache;
+        private readonly ConcurrentDictionary<ServiceCacheKey, Func<ServiceProviderEngineScope, object>> _scopeResolverCache;
 
         public ExpressionResolverBuilder(CallSiteRuntimeResolver runtimeResolver, IServiceScopeFactory serviceScopeFactory, ServiceProviderEngineScope rootScope):
             base()
