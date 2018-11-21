@@ -28,6 +28,8 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.FileProviders.Embedded" ProjectPath="$(RepositoryRoot)src\FileProviders\Embedded\src\Microsoft.Extensions.FileProviders.Embedded.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.FileProviders.Physical" ProjectPath="$(RepositoryRoot)src\FileProviders\Physical\src\Microsoft.Extensions.FileProviders.Physical.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.FileSystemGlobbing" ProjectPath="$(RepositoryRoot)src\FileSystemGlobbing\src\Microsoft.Extensions.FileSystemGlobbing.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" ProjectPath="$(RepositoryRoot)src\HealthChecks\Abstractions\src\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks" ProjectPath="$(RepositoryRoot)src\HealthChecks\HealthChecks\src\Microsoft.Extensions.Diagnostics.HealthChecks.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Hosting.Abstractions" ProjectPath="$(RepositoryRoot)src\Hosting\Abstractions\src\Microsoft.Extensions.Hosting.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Hosting" ProjectPath="$(RepositoryRoot)src\Hosting\Hosting\src\Microsoft.Extensions.Hosting.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Http" ProjectPath="$(RepositoryRoot)src\HttpClientFactory\Http\src\Microsoft.Extensions.Http.csproj" />
