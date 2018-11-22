@@ -61,14 +61,65 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public Func<ServiceProviderEngineScope, object> Build(ServiceCallSite callSite)
         {
-            if (callSite.Cache.Location == CallSiteResultCacheLocation.Root)
-            {
-                var value = _runtimeResolver.Resolve(callSite, _rootScope);
-                return scope => value;
-            }
-
             return BuildType(callSite).Lambda;
         }
+
+        private GeneratedMethod BuildType(ServiceCallSite callSite)
+        {
+            // Only scope methods are cached
+            if (callSite.Cache.Location == CallSiteResultCacheLocation.Scope)
+            {
+#if NETCOREAPP
+                return _scopeResolverCache.GetOrAdd(callSite.Cache.Key, (key, cs) => BuildTypeNoCache(cs), callSite);
+#else
+                return _scopeResolverCache.GetOrAdd(callSite.Cache.Key, (key) => BuildTypeNoCache(callSite));
+#endif
+            }
+
+            return BuildTypeNoCache(callSite);
+        }
+
+        private GeneratedMethod BuildTypeNoCache(ServiceCallSite callSite)
+        {
+            // We need to skip visibility checks because services/constructors might be private
+            var dynamicMethod = new DynamicMethod("ResolveService",
+                attributes: MethodAttributes.Public | MethodAttributes.Static,
+                callingConvention: CallingConventions.Standard,
+                returnType: typeof(object),
+                parameterTypes: new[] { typeof(ILEmitResolverBuilderRuntimeContext), typeof(ServiceProviderEngineScope) },
+                owner: GetType(),
+                skipVisibility: true);
+
+            var info = ILEmitCallSiteAnalyzer.Instance.CollectGenerationInfo(callSite);
+            var ilGenerator = dynamicMethod.GetILGenerator(info.Size);
+            var runtimeContext = GenerateMethodBody(callSite, ilGenerator);
+
+#if SAVE_ASSEMBLIES
+            var assemblyName = "Test" + DateTime.Now.Ticks;
+
+            var fileName = "Test" + DateTime.Now.Ticks;
+            var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(assemblyName), AssemblyBuilderAccess.RunAndSave);
+            var module = assembly.DefineDynamicModule(assemblyName, assemblyName+".dll");
+            var type = module.DefineType("Resolver");
+
+            var method = type.DefineMethod(
+                "ResolveService", MethodAttributes.Public | MethodAttributes.Static, CallingConventions.Standard, typeof(object),
+                new[] { typeof(ILEmitResolverBuilderRuntimeContext), typeof(ServiceProviderEngineScope) });
+
+            GenerateMethodBody(callSite, method.GetILGenerator(), info);
+            type.CreateTypeInfo();
+            assembly.Save(assemblyName + ".dll");
+#endif
+            DependencyInjectionEventSource.Log.DynamicMethodBuilt(callSite.ServiceType, ilGenerator.ILOffset);
+
+            return new GeneratedMethod()
+            {
+                Lambda = (Func<ServiceProviderEngineScope, object>)dynamicMethod.CreateDelegate(typeof(Func<ServiceProviderEngineScope, object>), runtimeContext),
+                Context = runtimeContext,
+                DynamicMethod = dynamicMethod
+            };
+        }
+
 
         protected override Expression VisitDisposeCache(ServiceCallSite transientCallSite, ILEmitResolverBuilderContext argument)
         {
@@ -103,23 +154,19 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override Expression VisitScopeCache(ServiceCallSite scopedCallSite, ILEmitResolverBuilderContext argument)
         {
-#if NETCOREAPP
-            var mi = _scopeResolverCache.GetOrAdd(scopedCallSite.Cache.Key, (key, cs) => BuildType(cs), scopedCallSite);
-#else
-            var mi = _scopeResolverCache.GetOrAdd(scopedCallSite.Cache.Key, (key) => BuildType(scopedCallSite));
-#endif
+            var generatedMethod = BuildType(scopedCallSite);
 
             // Type builder doesn't support invoking dynamic methods, replace them with delegate.Invoke calls
 #if SAVE_ASSEMBLIES
-            AddConstant(argument, mi.Lambda);
+            AddConstant(argument, generatedMethod.Lambda);
             // ProviderScope
             argument.Generator.Emit(OpCodes.Ldarg_1);
-            argument.Generator.Emit(OpCodes.Call, mi.Lambda.GetType().GetMethod("Invoke"));
+            argument.Generator.Emit(OpCodes.Call, generatedMethod.Lambda.GetType().GetMethod("Invoke"));
 #else
-            AddConstant(argument, mi.Context);
+            AddConstant(argument, generatedMethod.Context);
             // ProviderScope
             argument.Generator.Emit(OpCodes.Ldarg_1);
-            argument.Generator.Emit(OpCodes.Call, mi.DynamicMethod);
+            argument.Generator.Emit(OpCodes.Call, generatedMethod.DynamicMethod);
 #endif
 
             return null;
@@ -223,46 +270,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             argument.Generator.Emit(OpCodes.Newobj, CacheKeyCtor);
         }
 
-
-        private GeneratedMethod BuildType(ServiceCallSite callSite)
-        {
-            // We need to skip visibility checks because services/constructors might be private
-            var dynamicMethod = new DynamicMethod("ResolveService",
-                attributes: MethodAttributes.Public | MethodAttributes.Static,
-                callingConvention: CallingConventions.Standard,
-                returnType: typeof(object),
-                parameterTypes: new [] {typeof(ILEmitResolverBuilderRuntimeContext), typeof(ServiceProviderEngineScope) },
-                owner: GetType(),
-                skipVisibility: true);
-
-            var info = ILEmitCallSiteAnalyzer.Instance.CollectGenerationInfo(callSite);
-            var runtimeContext = GenerateMethodBody(callSite, dynamicMethod.GetILGenerator(info.Size), info);
-
-#if SAVE_ASSEMBLIES
-            var assemblyName = "Test" + DateTime.Now.Ticks;
-
-            var fileName = "Test" + DateTime.Now.Ticks;
-            var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(assemblyName), AssemblyBuilderAccess.RunAndSave);
-            var module = assembly.DefineDynamicModule(assemblyName, assemblyName+".dll");
-            var type = module.DefineType("Resolver");
-
-            var method = type.DefineMethod(
-                "ResolveService", MethodAttributes.Public | MethodAttributes.Static, CallingConventions.Standard, typeof(object),
-                new[] { typeof(ILEmitResolverBuilderRuntimeContext), typeof(ServiceProviderEngineScope) });
-
-            GenerateMethodBody(callSite, method.GetILGenerator(), info);
-            type.CreateTypeInfo();
-            assembly.Save(assemblyName + ".dll");
-#endif
-
-            return new GeneratedMethod() {
-                Lambda = (Func<ServiceProviderEngineScope, object>)dynamicMethod.CreateDelegate(typeof(Func<ServiceProviderEngineScope, object>), runtimeContext),
-                Context = runtimeContext,
-                DynamicMethod = dynamicMethod
-            };
-        }
-
-        private ILEmitResolverBuilderRuntimeContext GenerateMethodBody(ServiceCallSite callSite, ILGenerator generator, ILEmitCallSiteAnalysisResult info)
+        private ILEmitResolverBuilderRuntimeContext GenerateMethodBody(ServiceCallSite callSite, ILGenerator generator)
         {
             var context = new ILEmitResolverBuilderContext()
             {
@@ -271,23 +279,23 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 Factories = null
             };
 
-            // 0:  var cacheKey = scopedCallSite.CacheKey;
-            // 1:  try
-            // 2:  {
-            // 3:    var resolvedServices = scope.ResolvedServices;
-            // 4:    Monitor.Enter(resolvedServices, out var lockTaken);
-            // 5:    if (!resolvedServices.TryGetValue(cacheKey, out value)
-            // 6:    {
-            // 7:       value = [createvalue];
-            // 8        CaptureDisposeable(value);
-            // 9:       resolvedServices.Add(cacheKey, value);
-            // 10:    }
-            // 11: }
-            // 12: finally
-            // 13: {
-            // 14:   if (lockTaken) Monitor.Exit(scope.ResolvedServices);
-            // 15: }
-            // 16: return value;
+            //  var cacheKey = scopedCallSite.CacheKey;
+            //  try
+            //  {
+            //    var resolvedServices = scope.ResolvedServices;
+            //    Monitor.Enter(resolvedServices, out var lockTaken);
+            //    if (!resolvedServices.TryGetValue(cacheKey, out value)
+            //    {
+            //       value = [createvalue];
+            //       CaptureDisposable(value);
+            //       resolvedServices.Add(cacheKey, value);
+            //    }
+            // }
+            // finally
+            // {
+            //   if (lockTaken) Monitor.Exit(scope.ResolvedServices);
+            // }
+            // return value;
 
             if (callSite.Cache.Location == CallSiteResultCacheLocation.Scope)
             {

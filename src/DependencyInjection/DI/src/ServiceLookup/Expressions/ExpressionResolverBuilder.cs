@@ -19,8 +19,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         internal static readonly MethodInfo AddMethodInfo = GetMethodInfo<Action<IDictionary<ServiceCacheKey, object>, ServiceCacheKey, object>>((a, b, c) => a.Add(b, c));
         internal static readonly MethodInfo MonitorEnterMethodInfo = GetMethodInfo<Action<object, bool>>((lockObj, lockTaken) => Monitor.Enter(lockObj, ref lockTaken));
         internal static readonly MethodInfo MonitorExitMethodInfo = GetMethodInfo<Action<object>>(lockObj => Monitor.Exit(lockObj));
-        internal static readonly MethodInfo CallSiteRuntimeResolverResolve =
-            GetMethodInfo<Func<CallSiteRuntimeResolver, ServiceCallSite, ServiceProviderEngineScope, object>>((r, c, p) => r.Resolve(c, p));
 
         internal static readonly MethodInfo ArrayEmptyMethodInfo = typeof(Array).GetMethod(nameof(Array.Empty));
 
@@ -44,8 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private readonly ConcurrentDictionary<ServiceCacheKey, Func<ServiceProviderEngineScope, object>> _scopeResolverCache;
 
-        public ExpressionResolverBuilder(CallSiteRuntimeResolver runtimeResolver, IServiceScopeFactory serviceScopeFactory, ServiceProviderEngineScope rootScope):
-            base()
+        public ExpressionResolverBuilder(CallSiteRuntimeResolver runtimeResolver, IServiceScopeFactory serviceScopeFactory, ServiceProviderEngineScope rootScope)
         {
             if (runtimeResolver == null)
             {
@@ -60,13 +57,21 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         public Func<ServiceProviderEngineScope, object> Build(ServiceCallSite callSite)
         {
-            if (callSite.Cache.Location == CallSiteResultCacheLocation.Root)
+            // Only scope methods are cached
+            if (callSite.Cache.Location == CallSiteResultCacheLocation.Scope)
             {
-                var value = _runtimeResolver.Resolve(callSite, _rootScope);
-
-                return scope => value;
+#if NETCOREAPP
+                return _scopeResolverCache.GetOrAdd(callSite.Cache.Key, (key, cs) => BuildNoCache(cs), callSite);
+#else
+                return _scopeResolverCache.GetOrAdd(callSite.Cache.Key, (key) => BuildNoCache(callSite));
+#endif
             }
 
+            return BuildNoCache(callSite);
+        }
+
+        public Func<ServiceProviderEngineScope, object> BuildNoCache(ServiceCallSite callSite)
+        {
             var expression = BuildExpression(callSite);
             DependencyInjectionEventSource.Log.ExpressionTreeGenerated(callSite.ServiceType, expression);
             return expression.Compile();
@@ -82,7 +87,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     Expression.Block(
                         new [] { ResolvedServices },
                         ResolvedServicesVariableAssignment,
-                        Lock(BuildScopedExpression(callSite, VisitCallSiteMain(callSite, context)), ResolvedServices)),
+                        BuildScopedExpression(callSite, context)),
                     ScopeParameter);
             }
 
@@ -135,13 +140,13 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             var implType = callSite.ImplementationType;
             // Elide calls to GetCaptureDisposable if the implementation type isn't disposable
-            return TryCaptureDisposible(
+            return TryCaptureDisposable(
                 implType,
                 ScopeParameter,
                 VisitCallSiteMain(callSite, context));
         }
 
-        private Expression TryCaptureDisposible(Type implType, ParameterExpression scope, Expression service)
+        private Expression TryCaptureDisposable(Type implType, ParameterExpression scope, Expression service)
         {
             if (implType != null &&
                 !typeof(IDisposable).GetTypeInfo().IsAssignableFrom(implType.GetTypeInfo()))
@@ -185,17 +190,14 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override Expression VisitScopeCache(ServiceCallSite callSite, CallSiteExpressionBuilderContext context)
         {
-#if NETCOREAPP
-            var mi = _scopeResolverCache.GetOrAdd(callSite.Cache.Key, (key, cs) => Build(cs), callSite);
-#else
-            var mi = _scopeResolverCache.GetOrAdd(callSite.Cache.Key, (key) => Build(callSite));
-#endif
-            return Expression.Invoke(Expression.Constant(mi), ScopeParameter);
+            var lambda = Build(callSite);
+            return Expression.Invoke(Expression.Constant(lambda), ScopeParameter);
         }
 
         // Move off the main stack
-        private Expression BuildScopedExpression(ServiceCallSite callSite, Expression service)
+        private Expression BuildScopedExpression(ServiceCallSite callSite, CallSiteExpressionBuilderContext context)
         {
+
             var keyExpression = Expression.Constant(
                 callSite.Cache.Key,
                 typeof(ServiceCacheKey));
@@ -210,7 +212,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 keyExpression,
                 resolvedVariable);
 
-            var captureDisposible = TryCaptureDisposible(callSite.ImplementationType, ScopeParameter, service);
+            var captureDisposible = TryCaptureDisposable(callSite.ImplementationType, ScopeParameter, VisitCallSiteMain(callSite, context));
 
             var assignExpression = Expression.Assign(
                 resolvedVariable,
@@ -235,7 +237,21 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                         addValueExpression)),
                 resolvedVariable);
 
-            return blockExpression;
+
+            // The C# compiler would copy the lock object to guard against mutation.
+            // We don't, since we know the lock object is readonly.
+            var lockWasTaken = Expression.Variable(typeof(bool), "lockWasTaken");
+
+            var monitorEnter = Expression.Call(MonitorEnterMethodInfo, resolvedServices, lockWasTaken);
+            var monitorExit = Expression.Call(MonitorExitMethodInfo, resolvedServices);
+
+            var tryBody = Expression.Block(monitorEnter, blockExpression);
+            var finallyBody = Expression.IfThen(lockWasTaken, monitorExit);
+
+            return Expression.Block(
+                typeof(object),
+                new[] { lockWasTaken },
+                Expression.TryFinally(tryBody, finallyBody));
         }
 
         private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
@@ -251,24 +267,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 throw new NotSupportedException("GetCaptureDisposable call is supported only for main scope");
             }
             return CaptureDisposable;
-        }
-
-        private static Expression Lock(Expression body, Expression syncVariable)
-        {
-            // The C# compiler would copy the lock object to guard against mutation.
-            // We don't, since we know the lock object is readonly.
-            var lockWasTaken = Expression.Variable(typeof(bool), "lockWasTaken");
-
-            var monitorEnter = Expression.Call(MonitorEnterMethodInfo, syncVariable, lockWasTaken);
-            var monitorExit = Expression.Call(MonitorExitMethodInfo, syncVariable);
-
-            var tryBody = Expression.Block(monitorEnter, body);
-            var finallyBody = Expression.IfThen(lockWasTaken, monitorExit);
-
-            return Expression.Block(
-                typeof(object),
-                new[] { lockWasTaken },
-                Expression.TryFinally(tryBody, finallyBody));
         }
     }
 }

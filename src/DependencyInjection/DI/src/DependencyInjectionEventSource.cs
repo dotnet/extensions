@@ -46,6 +46,12 @@ namespace Microsoft.Extensions.DependencyInjection
             WriteEvent(3, serviceType, nodeCount);
         }
 
+        [Event(4, Level = EventLevel.Verbose)]
+        public void DynamicMethodBuilt(string serviceType, int methodSize)
+        {
+            WriteEvent(4, serviceType, methodSize);
+        }
+
         [NonEvent]
         public void ServiceResolved(Type serviceType)
         {
@@ -80,6 +86,15 @@ namespace Microsoft.Extensions.DependencyInjection
                 var visitor = new NodeCountingVisitor();
                 visitor.Visit(expression);
                 ExpressionTreeGenerated(serviceType.ToString(), visitor.NodeCount);
+            }
+        }
+
+        [NonEvent]
+        public void DynamicMethodBuilt(Type serviceType, int methodSize)
+        {
+            if (IsEnabled(EventLevel.Verbose, EventKeywords.All))
+            {
+                DynamicMethodBuilt(serviceType.ToString(), methodSize);
             }
         }
 
