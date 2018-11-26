@@ -408,26 +408,35 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private static Type SubstituteGenericParameterConstraint(Type[] parameters, Type constraint)
         {
-            if (!constraint.IsGenericParameter) return constraint;
-            return parameters[constraint.GenericParameterPosition];
+            return !constraint.IsGenericParameter ? constraint : parameters[constraint.GenericParameterPosition];
         }
 
         private static bool ParameterCompatibleWithTypeConstraint(Type parameter, Type constraint)
         {
-            bool hasAnyCompatibleType = false;
-            foreach (var p in new[] {parameter, parameter.BaseType}.Concat(parameter.GetTypeInfo().ImplementedInterfaces))
+            if (constraint.IsAssignableFrom(parameter))
             {
-                if (p != null)
+                return true;
+            }
+
+            if (ParameterEqualsConstraint(parameter, constraint))
+            {
+                return true;
+            }
+
+            if (parameter.BaseType != null && ParameterEqualsConstraint(parameter.BaseType, constraint))
+            {
+                return true;
+            }
+
+            foreach (var interfaceType in parameter.GetTypeInfo().ImplementedInterfaces)
+            {
+                if (ParameterEqualsConstraint(interfaceType, constraint))
                 {
-                    if (ParameterEqualsConstraint(p, constraint))
-                    {
-                        hasAnyCompatibleType = true;
-                        break;
-                    }
+                    return true;
                 }
             }
 
-            return constraint.IsAssignableFrom(parameter) || hasAnyCompatibleType;
+            return false;
         }
 
         private static bool ParameterEqualsConstraint(Type parameter, Type constraint)
