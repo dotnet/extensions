@@ -127,6 +127,21 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         [Fact]
+        public void CreateCallSite_ReturnsService_IfClosedTypeSatisfiesStructGenericConstraint()
+        {
+            // Arrange
+            var serviceType = typeof(IFakeOpenGenericService<>);
+            var implementationType = typeof(TypeWithStructConstraint<>);
+            var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
+            var callSiteFactory = GetCallSiteFactory(descriptor);
+            // Act
+            var matchingType = typeof(IFakeOpenGenericService<int>);
+            var matchingCallSite = callSiteFactory(matchingType);
+            // Assert
+            Assert.NotNull(matchingCallSite);
+        }
+
+        [Fact]
         public void CreateCallSite_ReturnsNull_IfClosedTypeDoesNotSatisfyClassGenericConstraint()
         {
             // Arrange
@@ -139,6 +154,21 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var nonMatchingCallSite = callSiteFactory(nonMatchingType);
             // Assert
             Assert.Null(nonMatchingCallSite);
+        }
+
+        [Fact]
+        public void CreateCallSite_ReturnsService_IfClosedTypeSatisfiesClassGenericConstraint()
+        {
+            // Arrange
+            var serviceType = typeof(IFakeOpenGenericService<>);
+            var implementationType = typeof(TypeWithClassConstraint<>);
+            var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
+            var callSiteFactory = GetCallSiteFactory(descriptor);
+            // Act
+            var matchingType = typeof(IFakeOpenGenericService<object>);
+            var matchingCallSite = callSiteFactory(matchingType);
+            // Assert
+            Assert.NotNull(matchingCallSite);
         }
 
         [Fact]
@@ -157,6 +187,21 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         [Fact]
+        public void CreateCallSite_ReturnsService_IfClosedTypeSatisfiesNewGenericConstraint()
+        {
+            // Arrange
+            var serviceType = typeof(IFakeOpenGenericService<>);
+            var implementationType = typeof(TypeWithNewConstraint<>);
+            var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
+            var callSiteFactory = GetCallSiteFactory(descriptor);
+            // Act
+            var matchingType = typeof(IFakeOpenGenericService<TypeWithParameterlessPublicConstructor>);
+            var matchingCallSite = callSiteFactory(matchingType);
+            // Assert
+            Assert.NotNull(matchingCallSite);
+        }
+
+        [Fact]
         public void CreateCallSite_ReturnsNull_IfClosedTypeDoesNotSatisfyInterfaceGenericConstraint()
         {
             // Arrange
@@ -169,6 +214,21 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var nonMatchingCallSite = callSiteFactory(nonMatchingType);
             // Assert
             Assert.Null(nonMatchingCallSite);
+        }
+
+        [Fact]
+        public void CreateCallSite_ReturnsService_IfClosedTypSatisfiesInterfaceGenericConstraint()
+        {
+            // Arrange
+            var serviceType = typeof(IFakeOpenGenericService<>);
+            var implementationType = typeof(TypeWithInterfaceConstraint<>);
+            var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
+            var callSiteFactory = GetCallSiteFactory(descriptor);
+            // Act
+            var matchingType = typeof(IFakeOpenGenericService<string>);
+            var matchingCallSite = callSiteFactory(matchingType);
+            // Assert
+            Assert.NotNull(matchingCallSite);
         }
 
         [Theory]
