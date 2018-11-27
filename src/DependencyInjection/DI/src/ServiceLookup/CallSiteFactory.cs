@@ -7,8 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
@@ -378,7 +376,20 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 var specialConstraints = argumentDefinitionTypeInfo.GenericParameterAttributes;
                 if ((specialConstraints & GenericParameterAttributes.DefaultConstructorConstraint) == GenericParameterAttributes.DefaultConstructorConstraint)
                 {
-                    if (!parameterTypeInfo.IsValueType && parameterTypeInfo.DeclaredConstructors.Where(c => c.IsPublic).All(c => c.GetParameters().Length != 0))
+                    var hasPublicNoArgCtor = false;
+                    foreach (var c in parameterTypeInfo.DeclaredConstructors)
+                    {
+                        if (c.IsPublic)
+                        {
+                            if (c.GetParameters().Length == 0)
+                            {
+                                hasPublicNoArgCtor = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!parameterTypeInfo.IsValueType && !hasPublicNoArgCtor)
                     {
                         return false;
                     }
