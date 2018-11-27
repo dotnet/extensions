@@ -263,6 +263,51 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         [Fact]
+        public void CreateCallSite_ReturnsNull_IfClosedTypeDoesNotSatisfySelfReferencingConstraint()
+        {
+            // Arrange
+            var serviceType = typeof(IFakeOpenGenericService<>);
+            var implementationType = typeof(TypeWithSelfReferencingConstraint<>);
+            var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
+            var callSiteFactory = GetCallSiteFactory(descriptor);
+            // Act
+            var nonMatchingType = typeof(IFakeOpenGenericService<object>);
+            var nonMatchingCallSite = callSiteFactory(nonMatchingType);
+            // Assert
+            Assert.Null(nonMatchingCallSite);
+        }
+
+        [Fact]
+        public void CreateCallSite_ReturnsNull_IfComplexClosedTypeDoesNotSatisfySelfReferencingConstraint()
+        {
+            // Arrange
+            var serviceType = typeof(IFakeOpenGenericService<>);
+            var implementationType = typeof(TypeWithSelfReferencingConstraint<>);
+            var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
+            var callSiteFactory = GetCallSiteFactory(descriptor);
+            // Act
+            var nonMatchingType = typeof(IFakeOpenGenericService<int[]>);
+            var nonMatchingCallSite = callSiteFactory(nonMatchingType);
+            // Assert
+            Assert.Null(nonMatchingCallSite);
+        }
+
+        [Fact]
+        public void CreateCallSite_ReturnsService_IfClosedTypeSatisfiesSelfReferencing()
+        {
+            // Arrange
+            var serviceType = typeof(IFakeOpenGenericService<>);
+            var implementationType = typeof(TypeWithSelfReferencingConstraint<>);
+            var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
+            var callSiteFactory = GetCallSiteFactory(descriptor);
+            // Act
+            var matchingType = typeof(IFakeOpenGenericService<string>);
+            var matchingCallSite = callSiteFactory(matchingType);
+            // Assert
+            Assert.NotNull(matchingCallSite);
+        }
+
+        [Fact]
         public void CreateCallSite_ReturnsEmpty_IfClosedTypeSatisfiesBaseClassConstraintButRegisteredTypeNotExactMatch()
         {
             // Arrange
@@ -319,8 +364,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         [Theory]
-        [InlineData(typeof(IFakeOpenGenericService<int>), default(int), new[] { typeof(FakeOpenGenericService<int>), typeof(TypeWithStructConstraint<int>), typeof(TypeWithNewConstraint<int>) })]
-        [InlineData(typeof(IFakeOpenGenericService<string>), "", new[] { typeof(FakeOpenGenericService<string>), typeof(TypeWithClassConstraint<string>), typeof(TypeWithInterfaceConstraint<string>) })]
+        [InlineData(typeof(IFakeOpenGenericService<int>), default(int), new[] { typeof(FakeOpenGenericService<int>), typeof(TypeWithStructConstraint<int>), typeof(TypeWithNewConstraint<int>), typeof(TypeWithSelfReferencingConstraint<int>) })]
+        [InlineData(typeof(IFakeOpenGenericService<string>), "", new[] { typeof(FakeOpenGenericService<string>), typeof(TypeWithClassConstraint<string>), typeof(TypeWithInterfaceConstraint<string>), typeof(TypeWithSelfReferencingConstraint<string>) })]
+        [InlineData(typeof(IFakeOpenGenericService<int[]>), new[] {1, 2, 3}, new[] { typeof(FakeOpenGenericService<int[]>), typeof(TypeWithClassConstraint<int[]>), typeof(TypeWithInterfaceConstraint<int[]>) })]
         public void CreateCallSite_ReturnsMatchingTypesThatMatchCorrectConstraints(Type closedServiceType, object value, Type[] matchingImplementationTypes)
         {
             // Arrange
@@ -335,9 +381,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var newDescriptor = new ServiceDescriptor(serviceType, newImplementationType, ServiceLifetime.Transient);
             var interfaceImplementationType = typeof(TypeWithInterfaceConstraint<>);
             var interfaceDescriptor = new ServiceDescriptor(serviceType, interfaceImplementationType, ServiceLifetime.Transient);
+            var selfConstraintImplementationType = typeof(TypeWithSelfReferencingConstraint<>);
+            var selfConstraintDescriptor = new ServiceDescriptor(serviceType, selfConstraintImplementationType, ServiceLifetime.Transient);
             var serviceValueType = closedServiceType.GenericTypeArguments[0];
             var serviceValueDescriptor = new ServiceDescriptor(serviceValueType, value);
-            var callSiteFactory = GetCallSiteFactory(noConstraintDescriptor, structDescriptor, classDescriptor, newDescriptor, interfaceDescriptor, serviceValueDescriptor);
+            var callSiteFactory = GetCallSiteFactory(noConstraintDescriptor, structDescriptor, classDescriptor, newDescriptor, interfaceDescriptor, selfConstraintDescriptor, serviceValueDescriptor);
             var collectionType = typeof(IEnumerable<>).MakeGenericType(closedServiceType);
             // Act
             var callSite = callSiteFactory(collectionType);

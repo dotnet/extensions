@@ -456,6 +456,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                             return false;
                         }
                     }
+
                     Type genericType;
                     try
                     {
