@@ -89,12 +89,43 @@ export async function activate(context: ExtensionContext, languageServerDir: str
             localRegistrations.length = 0;
         });
 
-        await languageServerClient.start();
-        await projectManager.initialize();
-        await documentManager.initialize();
+        languageServerClient.onStarted(async () => {
+            await projectManager.initialize();
+            await documentManager.initialize();
+        });
+
+        await startLanguageServer(languageServerClient, logger, context);
 
         context.subscriptions.push(languageServerClient, onStartRegistration, onStopRegistration, logger);
     } catch (error) {
         telemetryReporter.reportErrorOnActivation(error);
+    }
+}
+
+async function startLanguageServer(
+    languageServerClient: RazorLanguageServerClient,
+    logger: RazorLogger,
+    context: vscode.ExtensionContext) {
+
+    const razorFiles = await vscode.workspace.findFiles(RazorLanguage.globbingPattern);
+    if (razorFiles.length === 0) {
+        // No Razor files in workspace, language server should stay off until one is added or opened.
+        logger.logAlways('No Razor files detected in workspace, delaying language server start.');
+
+        const watcher = vscode.workspace.createFileSystemWatcher(RazorLanguage.globbingPattern);
+        const delayedLanguageServerStart = async () => {
+            razorFileCreatedRegistration.dispose();
+            razorFileOpenedRegistration.dispose();
+            await languageServerClient.start();
+        };
+        const razorFileCreatedRegistration = watcher.onDidCreate(() => delayedLanguageServerStart());
+        const razorFileOpenedRegistration = vscode.workspace.onDidOpenTextDocument(async (event) => {
+            if (event.languageId === RazorLanguage.id) {
+                await delayedLanguageServerStart();
+            }
+        });
+        context.subscriptions.push(razorFileCreatedRegistration, razorFileOpenedRegistration);
+    } else {
+        await languageServerClient.start();
     }
 }

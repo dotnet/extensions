@@ -25,26 +25,36 @@ export class RazorLanguageServiceClient {
     }
 
     public async addDocument(documentUri: vscode.Uri) {
+        await this.ensureStarted();
+
         const request = new AddDocumentRequest(documentUri.fsPath);
         await this.serverClient.sendRequest<AddDocumentRequest>('projects/addDocument', request);
     }
 
     public async removeDocument(documentUri: vscode.Uri) {
+        await this.ensureStarted();
+
         const request = new RemoveDocumentRequest(documentUri.fsPath);
         await this.serverClient.sendRequest<RemoveDocumentRequest>('projects/removeDocument', request);
     }
 
     public async addProject(projectFileUri: vscode.Uri) {
+        await this.ensureStarted();
+
         const request = new AddProjectRequest(projectFileUri.fsPath);
         await this.serverClient.sendRequest<AddProjectRequest>('projects/addProject', request);
     }
 
     public async removeProject(projectFileUri: vscode.Uri) {
+        await this.ensureStarted();
+
         const request = new RemoveProjectRequest(projectFileUri.fsPath);
         await this.serverClient.sendRequest<RemoveProjectRequest>('projects/removeProject', request);
     }
 
     public async updateProject(project: IRazorProject) {
+        await this.ensureStarted();
+
         const request: UpdateProjectRequest = {
             projectFilePath: project.uri.fsPath,
             tagHelpers: project.configuration ? project.configuration.tagHelpers : [],
@@ -55,6 +65,8 @@ export class RazorLanguageServiceClient {
     }
 
     public async languageQuery(position: vscode.Position, uri: vscode.Uri) {
+        await this.ensureStarted();
+
         const request = new LanguageQueryRequest(position, uri);
         const response = await this.serverClient.sendRequest<LanguageQueryResponse>('razor/languageQuery', request);
         response.position = new vscode.Position(response.position.line, response.position.character);
@@ -66,5 +78,10 @@ export class RazorLanguageServiceClient {
         const document = await vscode.workspace.openTextDocument(clientUri);
 
         return new RazorTextDocumentItem(document);
+    }
+
+    private async ensureStarted() {
+        // If the server is already started this will instantly return.
+        await this.serverClient.start();
     }
 }

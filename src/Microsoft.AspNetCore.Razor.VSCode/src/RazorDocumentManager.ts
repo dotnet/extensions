@@ -16,8 +16,6 @@ import { RazorLogger } from './RazorLogger';
 import { UpdateCSharpBufferRequest } from './RPC/UpdateCSharpBufferRequest';
 import { getUriPath } from './UriPaths';
 
-const globbingPath = `**/*.${RazorLanguage.fileExtension}`;
-
 export class RazorDocumentManager {
     private readonly razorDocuments: { [hostDocumentPath: string]: IRazorDocument } = {};
     private onChangeEmitter = new vscode.EventEmitter<IRazorDocumentChangeEvent>();
@@ -56,7 +54,7 @@ export class RazorDocumentManager {
 
     public async initialize() {
         // Track current documents
-        const documentUris = await vscode.workspace.findFiles(globbingPath);
+        const documentUris = await vscode.workspace.findFiles(RazorLanguage.globbingPattern);
 
         for (const uri of documentUris) {
             this.addDocument(uri);
@@ -79,7 +77,7 @@ export class RazorDocumentManager {
 
     public register() {
         // Track future documents
-        const watcher = vscode.workspace.createFileSystemWatcher(globbingPath);
+        const watcher = vscode.workspace.createFileSystemWatcher(RazorLanguage.globbingPattern);
         const didCreateRegistration = watcher.onDidCreate(
             async (uri: vscode.Uri) => this.addDocument(uri));
         const didDeleteRegistration = watcher.onDidDelete(

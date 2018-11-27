@@ -26,8 +26,10 @@ export class RazorLanguageServerClient implements vscode.Disposable {
     private serverOptions: ServerOptions;
     private client: LanguageClient;
     private startDisposable: vscode.Disposable | undefined;
+    private onStartedListeners: Array<() => Promise<any>> = [];
     private eventBus: EventEmitter;
     private isStarted: boolean;
+    private startHandle: Promise<void> | undefined;
 
     constructor(
         options: RazorLanguageServerOptions,
@@ -73,6 +75,10 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         this.eventBus = new EventEmitter();
     }
 
+    public onStarted(listener: () => Promise<any>) {
+        this.onStartedListeners.push(listener);
+    }
+
     public onStart(listener: () => any) {
         this.eventBus.addListener(events.ServerStart, listener);
 
@@ -90,22 +96,42 @@ export class RazorLanguageServerClient implements vscode.Disposable {
     }
 
     public async start() {
+        if (this.startHandle) {
+            return this.startHandle;
+        }
+
+        let resolve: () => void = Function;
+        let reject: () => void = Function;
+        this.startHandle = new Promise<void>((resolver, rejecter) => {
+            resolve = resolver;
+            reject = rejecter;
+        });
+
         try {
             this.logger.logMessage('Starting Razor Language Server...');
             this.startDisposable = await this.client.start();
             this.logger.logMessage('Server started, waiting for client to be ready...');
             await this.client.onReady();
-            this.logger.logMessage('Server started and ready!');
 
             this.isStarted = true;
+            this.logger.logMessage('Server started and ready!');
             this.eventBus.emit(events.ServerStart);
+
+            for (const listener of this.onStartedListeners) {
+                await listener();
+            }
+
+            resolve();
         } catch (error) {
             vscode.window.showErrorMessage(
                 'Razor Language Server failed to start unexpectedly, ' +
                 'please check the \'Razor Log\' and report an issue.');
 
             this.telemetryReporter.reportErrorOnServerStart(error);
+            reject();
         }
+
+        return this.startHandle;
     }
 
     public async sendRequest<TResponseType>(method: string, param: any) {
@@ -132,6 +158,7 @@ export class RazorLanguageServerClient implements vscode.Disposable {
         }
 
         this.isStarted = false;
+        this.startHandle = undefined;
         this.eventBus.emit(events.ServerStop);
     }
 
