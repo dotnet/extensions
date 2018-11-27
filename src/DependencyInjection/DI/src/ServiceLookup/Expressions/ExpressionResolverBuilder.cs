@@ -67,9 +67,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 #endif
             }
 
-            var expression = BuildNoCache(callSite);
-            DependencyInjectionEventSource.Log.ExpressionTreeGenerated(callSite.ServiceType, expression);
-            return expression.Compile();
+            return BuildNoCache(callSite);
         }
 
         public Func<ServiceProviderEngineScope, object> BuildNoCache(ServiceCallSite callSite)
