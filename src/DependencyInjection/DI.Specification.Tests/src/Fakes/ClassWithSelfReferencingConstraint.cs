@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
 
-namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
+namespace Microsoft.Extensions.DependencyInjection.Specification.Fakes
 {
-    public class TypeWithSelfReferencingConstraint<T> : IFakeOpenGenericService<T>
+    public class ClassWithSelfReferencingConstraint<T> : IFakeOpenGenericService<T>
         where T : IComparable<T>
     {
         public T Value { get; } = default;

@@ -7,7 +7,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.DependencyInjection.Specification.Fakes;
-using Microsoft.Extensions.DependencyInjection.Tests.Fakes;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
@@ -117,7 +116,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
-            var implementationType = typeof(TypeWithStructConstraint<>);
+            var implementationType = typeof(ClassWithStructConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
@@ -132,7 +131,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
-            var implementationType = typeof(TypeWithStructConstraint<>);
+            var implementationType = typeof(ClassWithStructConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
@@ -147,7 +146,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
-            var implementationType = typeof(TypeWithClassConstraint<>);
+            var implementationType = typeof(ClassWithClassConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
@@ -162,7 +161,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
-            var implementationType = typeof(TypeWithClassConstraint<>);
+            var implementationType = typeof(ClassWithClassConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
@@ -177,7 +176,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
-            var implementationType = typeof(TypeWithNewConstraint<>);
+            var implementationType = typeof(ClassWithNewConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
@@ -192,7 +191,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
-            var implementationType = typeof(TypeWithNewConstraint<>);
+            var implementationType = typeof(ClassWithNewConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
@@ -207,7 +206,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
-            var implementationType = typeof(TypeWithInterfaceConstraint<>);
+            var implementationType = typeof(ClassWithInterfaceConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
@@ -222,7 +221,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
-            var implementationType = typeof(TypeWithInterfaceConstraint<>);
+            var implementationType = typeof(ClassWithInterfaceConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
@@ -237,7 +236,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
-            var implementationType = typeof(TypeWithAbstractClassConstraint<>);
+            var implementationType = typeof(ClassWithAbstractClassConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
@@ -252,7 +251,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
-            var implementationType = typeof(TypeWithAbstractClassConstraint<>);
+            var implementationType = typeof(ClassWithAbstractClassConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
@@ -267,7 +266,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
-            var implementationType = typeof(TypeWithSelfReferencingConstraint<>);
+            var implementationType = typeof(ClassWithSelfReferencingConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
@@ -282,7 +281,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
-            var implementationType = typeof(TypeWithSelfReferencingConstraint<>);
+            var implementationType = typeof(ClassWithSelfReferencingConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
@@ -297,7 +296,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
-            var implementationType = typeof(TypeWithSelfReferencingConstraint<>);
+            var implementationType = typeof(ClassWithSelfReferencingConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
@@ -311,11 +310,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         public void CreateCallSite_ReturnsEmpty_IfClosedTypeSatisfiesBaseClassConstraintButRegisteredTypeNotExactMatch()
         {
             // Arrange
-            var classInheritingAbstractClassImplementationType = typeof(TypeWithAbstractClassConstraint<ClassInheritingAbstractClass>);
+            var classInheritingAbstractClassImplementationType = typeof(ClassWithAbstractClassConstraint<ClassInheritingAbstractClass>);
             var classInheritingAbstractClassDescriptor = new ServiceDescriptor(typeof(IFakeOpenGenericService<ClassInheritingAbstractClass>), classInheritingAbstractClassImplementationType, ServiceLifetime.Transient);
-            var classAlsoInheritingAbstractClassImplementationType = typeof(TypeWithAbstractClassConstraint<ClassAlsoInheritingAbstractClass>);
+            var classAlsoInheritingAbstractClassImplementationType = typeof(ClassWithAbstractClassConstraint<ClassAlsoInheritingAbstractClass>);
             var classAlsoInheritingAbstractClassDescriptor = new ServiceDescriptor(typeof(IFakeOpenGenericService<ClassAlsoInheritingAbstractClass>), classAlsoInheritingAbstractClassImplementationType, ServiceLifetime.Transient);
-            var classInheritingClassInheritingAbstractClassImplementationType = typeof(TypeWithAbstractClassConstraint<ClassInheritingClassInheritingAbstractClass>);
+            var classInheritingClassInheritingAbstractClassImplementationType = typeof(ClassWithAbstractClassConstraint<ClassInheritingClassInheritingAbstractClass>);
             var classInheritingClassInheritingAbstractClassDescriptor = new ServiceDescriptor(typeof(IFakeOpenGenericService<ClassInheritingClassInheritingAbstractClass>), classInheritingClassInheritingAbstractClassImplementationType, ServiceLifetime.Transient);
             var notMatchingServiceType = typeof(IFakeOpenGenericService<PocoClass>);
             var notMatchingType = typeof(FakeService);
@@ -336,11 +335,11 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<AbstractClass>);
-            var classInheritingAbstractClassImplementationType = typeof(TypeWithAbstractClassConstraint<ClassInheritingAbstractClass>);
+            var classInheritingAbstractClassImplementationType = typeof(ClassWithAbstractClassConstraint<ClassInheritingAbstractClass>);
             var classInheritingAbstractClassDescriptor = new ServiceDescriptor(serviceType, classInheritingAbstractClassImplementationType, ServiceLifetime.Transient);
-            var classAlsoInheritingAbstractClassImplementationType = typeof(TypeWithAbstractClassConstraint<ClassAlsoInheritingAbstractClass>);
+            var classAlsoInheritingAbstractClassImplementationType = typeof(ClassWithAbstractClassConstraint<ClassAlsoInheritingAbstractClass>);
             var classAlsoInheritingAbstractClassDescriptor = new ServiceDescriptor(serviceType, classAlsoInheritingAbstractClassImplementationType, ServiceLifetime.Transient);
-            var classInheritingClassInheritingAbstractClassImplementationType = typeof(TypeWithAbstractClassConstraint<ClassInheritingClassInheritingAbstractClass>);
+            var classInheritingClassInheritingAbstractClassImplementationType = typeof(ClassWithAbstractClassConstraint<ClassInheritingClassInheritingAbstractClass>);
             var classInheritingClassInheritingAbstractClassDescriptor = new ServiceDescriptor(serviceType, classInheritingClassInheritingAbstractClassImplementationType, ServiceLifetime.Transient);
             var notMatchingServiceType = typeof(IFakeOpenGenericService<PocoClass>);
             var notMatchingType = typeof(FakeService);
@@ -364,24 +363,24 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         [Theory]
-        [InlineData(typeof(IFakeOpenGenericService<int>), default(int), new[] { typeof(FakeOpenGenericService<int>), typeof(TypeWithStructConstraint<int>), typeof(TypeWithNewConstraint<int>), typeof(TypeWithSelfReferencingConstraint<int>) })]
-        [InlineData(typeof(IFakeOpenGenericService<string>), "", new[] { typeof(FakeOpenGenericService<string>), typeof(TypeWithClassConstraint<string>), typeof(TypeWithInterfaceConstraint<string>), typeof(TypeWithSelfReferencingConstraint<string>) })]
-        [InlineData(typeof(IFakeOpenGenericService<int[]>), new[] {1, 2, 3}, new[] { typeof(FakeOpenGenericService<int[]>), typeof(TypeWithClassConstraint<int[]>), typeof(TypeWithInterfaceConstraint<int[]>) })]
+        [InlineData(typeof(IFakeOpenGenericService<int>), default(int), new[] { typeof(FakeOpenGenericService<int>), typeof(ClassWithStructConstraint<int>), typeof(ClassWithNewConstraint<int>), typeof(ClassWithSelfReferencingConstraint<int>) })]
+        [InlineData(typeof(IFakeOpenGenericService<string>), "", new[] { typeof(FakeOpenGenericService<string>), typeof(ClassWithClassConstraint<string>), typeof(ClassWithInterfaceConstraint<string>), typeof(ClassWithSelfReferencingConstraint<string>) })]
+        [InlineData(typeof(IFakeOpenGenericService<int[]>), new[] {1, 2, 3}, new[] { typeof(FakeOpenGenericService<int[]>), typeof(ClassWithClassConstraint<int[]>), typeof(ClassWithInterfaceConstraint<int[]>) })]
         public void CreateCallSite_ReturnsMatchingTypesThatMatchCorrectConstraints(Type closedServiceType, object value, Type[] matchingImplementationTypes)
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
             var noConstraintImplementationType = typeof(FakeOpenGenericService<>);
             var noConstraintDescriptor = new ServiceDescriptor(serviceType, noConstraintImplementationType, ServiceLifetime.Transient);
-            var structImplementationType = typeof(TypeWithStructConstraint<>);
+            var structImplementationType = typeof(ClassWithStructConstraint<>);
             var structDescriptor = new ServiceDescriptor(serviceType, structImplementationType, ServiceLifetime.Transient);
-            var classImplementationType = typeof(TypeWithClassConstraint<>);
+            var classImplementationType = typeof(ClassWithClassConstraint<>);
             var classDescriptor = new ServiceDescriptor(serviceType, classImplementationType, ServiceLifetime.Transient);
-            var newImplementationType = typeof(TypeWithNewConstraint<>);
+            var newImplementationType = typeof(ClassWithNewConstraint<>);
             var newDescriptor = new ServiceDescriptor(serviceType, newImplementationType, ServiceLifetime.Transient);
-            var interfaceImplementationType = typeof(TypeWithInterfaceConstraint<>);
+            var interfaceImplementationType = typeof(ClassWithInterfaceConstraint<>);
             var interfaceDescriptor = new ServiceDescriptor(serviceType, interfaceImplementationType, ServiceLifetime.Transient);
-            var selfConstraintImplementationType = typeof(TypeWithSelfReferencingConstraint<>);
+            var selfConstraintImplementationType = typeof(ClassWithSelfReferencingConstraint<>);
             var selfConstraintDescriptor = new ServiceDescriptor(serviceType, selfConstraintImplementationType, ServiceLifetime.Transient);
             var serviceValueType = closedServiceType.GenericTypeArguments[0];
             var serviceValueDescriptor = new ServiceDescriptor(serviceValueType, value);
