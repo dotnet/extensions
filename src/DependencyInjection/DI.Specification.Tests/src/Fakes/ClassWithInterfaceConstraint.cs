@@ -6,6 +6,8 @@ namespace Microsoft.Extensions.DependencyInjection.Specification.Fakes
     public class ClassWithInterfaceConstraint<T> : IFakeOpenGenericService<T>
         where T : IEnumerable
     {
-        public T Value { get; set; }
+        public ClassWithInterfaceConstraint(T value) => Value = value;
+
+        public T Value { get; }
     }
 }

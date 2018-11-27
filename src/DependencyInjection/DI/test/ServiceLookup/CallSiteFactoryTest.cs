@@ -133,7 +133,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var serviceType = typeof(IFakeOpenGenericService<>);
             var implementationType = typeof(ClassWithStructConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
-            var callSiteFactory = GetCallSiteFactory(descriptor);
+            var callSiteFactory = GetCallSiteFactory(descriptor, new ServiceDescriptor(typeof(int), 5));
             // Act
             var matchingType = typeof(IFakeOpenGenericService<int>);
             var matchingCallSite = callSiteFactory(matchingType);
@@ -163,7 +163,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var serviceType = typeof(IFakeOpenGenericService<>);
             var implementationType = typeof(ClassWithClassConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
-            var callSiteFactory = GetCallSiteFactory(descriptor);
+            var callSiteFactory = GetCallSiteFactory(descriptor, new ServiceDescriptor(typeof(object), new object()));
             // Act
             var matchingType = typeof(IFakeOpenGenericService<object>);
             var matchingCallSite = callSiteFactory(matchingType);
@@ -193,7 +193,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var serviceType = typeof(IFakeOpenGenericService<>);
             var implementationType = typeof(ClassWithNewConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
-            var callSiteFactory = GetCallSiteFactory(descriptor);
+            var callSiteFactory = GetCallSiteFactory(descriptor, new ServiceDescriptor(typeof(TypeWithParameterlessPublicConstructor), new TypeWithParameterlessPublicConstructor()));
             // Act
             var matchingType = typeof(IFakeOpenGenericService<TypeWithParameterlessPublicConstructor>);
             var matchingCallSite = callSiteFactory(matchingType);
@@ -223,7 +223,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var serviceType = typeof(IFakeOpenGenericService<>);
             var implementationType = typeof(ClassWithInterfaceConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
-            var callSiteFactory = GetCallSiteFactory(descriptor);
+            var callSiteFactory = GetCallSiteFactory(descriptor, new ServiceDescriptor(typeof(string), ""));
             // Act
             var matchingType = typeof(IFakeOpenGenericService<string>);
             var matchingCallSite = callSiteFactory(matchingType);
@@ -253,7 +253,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var serviceType = typeof(IFakeOpenGenericService<>);
             var implementationType = typeof(ClassWithAbstractClassConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
-            var callSiteFactory = GetCallSiteFactory(descriptor);
+            var callSiteFactory = GetCallSiteFactory(descriptor, new ServiceDescriptor(typeof(ClassInheritingAbstractClass), new ClassInheritingAbstractClass()));
             // Act
             var matchingType = typeof(IFakeOpenGenericService<ClassInheritingAbstractClass>);
             var matchingCallSite = callSiteFactory(matchingType);
@@ -298,7 +298,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var serviceType = typeof(IFakeOpenGenericService<>);
             var implementationType = typeof(ClassWithSelfReferencingConstraint<>);
             var descriptor = new ServiceDescriptor(serviceType, implementationType, ServiceLifetime.Transient);
-            var callSiteFactory = GetCallSiteFactory(descriptor);
+            var callSiteFactory = GetCallSiteFactory(descriptor, new ServiceDescriptor(typeof(string), ""));
             // Act
             var matchingType = typeof(IFakeOpenGenericService<string>);
             var matchingCallSite = callSiteFactory(matchingType);
@@ -345,7 +345,17 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var notMatchingType = typeof(FakeService);
             var notMatchingDescriptor = new ServiceDescriptor(notMatchingServiceType, notMatchingType, ServiceLifetime.Transient);
 
-            var callSiteFactory = GetCallSiteFactory(classInheritingAbstractClassDescriptor, classAlsoInheritingAbstractClassDescriptor, classInheritingClassInheritingAbstractClassDescriptor, notMatchingDescriptor);
+            var descriptors = new[]
+            {
+                classInheritingAbstractClassDescriptor,
+                new ServiceDescriptor(typeof(ClassInheritingAbstractClass), new ClassInheritingAbstractClass()),
+                classAlsoInheritingAbstractClassDescriptor,
+                new ServiceDescriptor(typeof(ClassAlsoInheritingAbstractClass), new ClassAlsoInheritingAbstractClass()),
+                classInheritingClassInheritingAbstractClassDescriptor,
+                new ServiceDescriptor(typeof(ClassInheritingClassInheritingAbstractClass), new ClassInheritingClassInheritingAbstractClass()), 
+                notMatchingDescriptor
+            };
+            var callSiteFactory = GetCallSiteFactory(descriptors);
             // Act
             var matchingType = typeof(IEnumerable<>).MakeGenericType(serviceType);
             var matchingCallSite = callSiteFactory(matchingType);

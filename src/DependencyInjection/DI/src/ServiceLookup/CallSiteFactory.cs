@@ -379,13 +379,10 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     var hasPublicNoArgCtor = false;
                     foreach (var c in parameterTypeInfo.DeclaredConstructors)
                     {
-                        if (c.IsPublic)
+                        if (c.IsPublic && c.GetParameters().Length == 0)
                         {
-                            if (c.GetParameters().Length == 0)
-                            {
-                                hasPublicNoArgCtor = true;
-                                break;
-                            }
+                            hasPublicNoArgCtor = true;
+                            break;
                         }
                     }
 
