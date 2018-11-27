@@ -419,7 +419,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private static Type SubstituteGenericParameterConstraint(Type[] parameters, Type constraint)
         {
-            return !constraint.IsGenericParameter ? constraint : parameters[constraint.GenericParameterPosition];
+            return constraint.IsGenericParameter ? parameters[constraint.GenericParameterPosition] : constraint;
         }
 
         private static bool ParameterCompatibleWithTypeConstraint(Type parameter, Type constraint)
