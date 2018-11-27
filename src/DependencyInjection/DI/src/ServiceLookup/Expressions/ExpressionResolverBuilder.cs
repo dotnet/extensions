@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal class ExpressionResolverBuilder : CallSiteVisitor<CallSiteExpressionBuilderContext, Expression>
+    internal class ExpressionResolverBuilder : CallSiteVisitor<object, Expression>
     {
         internal static readonly MethodInfo InvokeFactoryMethodInfo = GetMethodInfo<Action<Func<IServiceProvider, object>, IServiceProvider>>((a, b) => a.Invoke(b));
         internal static readonly MethodInfo CaptureDisposableMethodInfo = GetMethodInfo<Func<ServiceProviderEngineScope, object, object>>((a, b) => a.CaptureDisposable(b));
@@ -79,47 +79,45 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private Expression<Func<ServiceProviderEngineScope, object>> BuildExpression(ServiceCallSite callSite)
         {
-            var context = new CallSiteExpressionBuilderContext();
-
             if (callSite.Cache.Location == CallSiteResultCacheLocation.Scope)
             {
                 return Expression.Lambda<Func<ServiceProviderEngineScope, object>>(
                     Expression.Block(
                         new [] { ResolvedServices },
                         ResolvedServicesVariableAssignment,
-                        BuildScopedExpression(callSite, context)),
+                        BuildScopedExpression(callSite, null)),
                     ScopeParameter);
             }
 
-            return Expression.Lambda<Func<ServiceProviderEngineScope, object>>(VisitCallSite(callSite, context), ScopeParameter);
+            return Expression.Lambda<Func<ServiceProviderEngineScope, object>>(VisitCallSite(callSite, null), ScopeParameter);
         }
 
-        protected override Expression VisitRootCache(ServiceCallSite singletonCallSite, CallSiteExpressionBuilderContext context)
+        protected override Expression VisitRootCache(ServiceCallSite singletonCallSite, object context)
         {
             return Expression.Constant(_runtimeResolver.Resolve(singletonCallSite, _rootScope));
         }
 
-        protected override Expression VisitConstant(ConstantCallSite constantCallSite, CallSiteExpressionBuilderContext context)
+        protected override Expression VisitConstant(ConstantCallSite constantCallSite, object context)
         {
             return Expression.Constant(constantCallSite.DefaultValue);
         }
 
-        protected override Expression VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, CallSiteExpressionBuilderContext context)
+        protected override Expression VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, object context)
         {
             return ScopeParameter;
         }
 
-        protected override Expression VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, CallSiteExpressionBuilderContext context)
+        protected override Expression VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, object context)
         {
             return Expression.Constant(_serviceScopeFactory);
         }
 
-        protected override Expression VisitFactory(FactoryCallSite factoryCallSite, CallSiteExpressionBuilderContext context)
+        protected override Expression VisitFactory(FactoryCallSite factoryCallSite, object context)
         {
             return Expression.Invoke(Expression.Constant(factoryCallSite.Factory), ScopeParameter);
         }
 
-        protected override Expression VisitIEnumerable(IEnumerableCallSite callSite, CallSiteExpressionBuilderContext context)
+        protected override Expression VisitIEnumerable(IEnumerableCallSite callSite, object context)
         {
             if (callSite.ServiceCallSites.Length == 0)
             {
@@ -136,7 +134,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                         callSite.ItemType)));
         }
 
-        protected override Expression VisitDisposeCache(ServiceCallSite callSite, CallSiteExpressionBuilderContext context)
+        protected override Expression VisitDisposeCache(ServiceCallSite callSite, object context)
         {
             var implType = callSite.ImplementationType;
             // Elide calls to GetCaptureDisposable if the implementation type isn't disposable
@@ -158,7 +156,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 service);
         }
 
-        protected override Expression VisitConstructor(ConstructorCallSite callSite, CallSiteExpressionBuilderContext context)
+        protected override Expression VisitConstructor(ConstructorCallSite callSite, object context)
         {
             var parameters = callSite.ConstructorInfo.GetParameters();
             Expression[] parameterExpressions;
@@ -188,14 +186,14 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return Expression.Convert(expression, type);
         }
 
-        protected override Expression VisitScopeCache(ServiceCallSite callSite, CallSiteExpressionBuilderContext context)
+        protected override Expression VisitScopeCache(ServiceCallSite callSite, object context)
         {
             var lambda = Build(callSite);
             return Expression.Invoke(Expression.Constant(lambda), ScopeParameter);
         }
 
         // Move off the main stack
-        private Expression BuildScopedExpression(ServiceCallSite callSite, CallSiteExpressionBuilderContext context)
+        private Expression BuildScopedExpression(ServiceCallSite callSite, object context)
         {
 
             var keyExpression = Expression.Constant(
