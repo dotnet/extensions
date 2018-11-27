@@ -181,6 +181,20 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.5.0, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' " />
+  <!-- Package: Microsoft.Extensions.Diagnostics.HealthChecks-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.Extensions.FileProviders.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Abstractions' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
@@ -215,6 +229,27 @@
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileSystemGlobbing' AND '$(TargetFramework)' == 'netstandard2.0' " />
+  <!-- Package: Microsoft.Extensions.Hosting.Abstractions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting.Abstractions' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Hosting-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.2.0, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.Extensions.Http.Polly-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Http.Polly' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>

@@ -7,23 +7,23 @@
   <PropertyGroup Label="Package Versions: Auto">
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
     <InternalAspNetCoreSdkPackageVersion>3.0.0-build-20181114.5</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview-27117-01</MicrosoftNETCoreAppPackageVersion>
-    <MicrosoftWin32RegistryPackageVersion>4.6.0-preview.18566.8</MicrosoftWin32RegistryPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview-27122-01</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.6.0-preview.18571.3</MicrosoftWin32RegistryPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
-    <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview.18566.8</SystemComponentModelAnnotationsPackageVersion>
-    <SystemDataSqlClientPackageVersion>4.7.0-preview.18566.8</SystemDataSqlClientPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview.18566.8</SystemDiagnosticsDiagnosticSourcePackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>4.6.0-preview.18566.8</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.6.0-preview.18566.8</SystemIOPipelinesPackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview.18571.3</SystemComponentModelAnnotationsPackageVersion>
+    <SystemDataSqlClientPackageVersion>4.7.0-preview.18571.3</SystemDataSqlClientPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview.18571.3</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>4.6.0-preview.18571.3</SystemDiagnosticsEventLogPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.6.0-preview.18571.3</SystemIOPipelinesPackageVersion>
     <SystemMemoryPackageVersion>4.5.2-servicing-27114-05</SystemMemoryPackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
-    <SystemReflectionMetadataPackageVersion>1.7.0-preview.18566.8</SystemReflectionMetadataPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0-preview.18566.8</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.7.0-preview.18571.3</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0-preview.18571.3</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>4.6.0-preview.18566.8</SystemSecurityCryptographyCngPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>4.6.0-preview.18566.8</SystemSecurityCryptographyXmlPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>4.6.0-preview.18566.8</SystemTextEncodingsWebPackageVersion>
-    <SystemThreadingTasksExtensionsPackageVersion>4.6.0-preview.18566.8</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.6.0-preview.18571.3</SystemSecurityCryptographyCngPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>4.6.0-preview.18571.3</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>4.6.0-preview.18571.3</SystemTextEncodingsWebPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.6.0-preview.18571.3</SystemThreadingTasksExtensionsPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
   </PropertyGroup>
 
@@ -61,7 +61,7 @@
     <LatestPackageReference Include="BenchmarkDotNet" Version="0.10.13" />
     <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.6" />
     <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="2.3.2" />
-    <LatestPackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.0.1" />
+    <LatestPackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.0.3" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" Version="2.8.0" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.8.0" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.8.0" />

@@ -173,6 +173,24 @@ namespace Microsoft.Extensions.DependencyInjection
             }
         }
 
+        [Fact]
+        public void EmitsExpressionTreeBuiltEvent()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddTransient<IFakeService, FakeService>();
+
+            var serviceProvider = serviceCollection.BuildServiceProvider(new ServiceProviderOptions { Mode = ServiceProviderMode.Expressions });
+
+            serviceProvider.GetService<IFakeService>();
+
+            var expressionTreeGeneratedEvent = _listener.EventData.Single(e => e.EventName == "ExpressionTreeGenerated");
+
+            Assert.Equal("Microsoft.Extensions.DependencyInjection.Specification.Fakes.IFakeService", GetProperty<string>(expressionTreeGeneratedEvent, "serviceType"));
+            Assert.Equal(9, GetProperty<int>(expressionTreeGeneratedEvent, "nodeCount"));
+            Assert.Equal(3, expressionTreeGeneratedEvent.EventId);
+        }
+
         private T GetProperty<T>(EventWrittenEventArgs data, string propName)
             => (T)data.Payload[data.PayloadNames.IndexOf(propName)];
 

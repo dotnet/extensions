@@ -14,7 +14,9 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public static readonly DependencyInjectionEventSource Log = new DependencyInjectionEventSource();
 
+        // Event source doesn't support large payloads so we chunk formatted call site tree
         private int MaxChunkSize = 10 * 1024;
+
 
         private DependencyInjectionEventSource():base(EventSourceSettings.EtwSelfDescribingEventFormat)
         {
