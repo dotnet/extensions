@@ -11,7 +11,29 @@
         "Other"
     ],
     "activationEvents": [
-        "onLanguage:aspnetcorerazor"
+        "onDebugInitialConfigurations",
+        "onDebugResolve:coreclr",
+        "onDebugResolve:clr",
+        "onLanguage:csharp",
+        "onLanguage:aspnetcorerazor",
+        "onCommand:o.restart",
+        "onCommand:o.pickProjectAndStart",
+        "onCommand:o.showOutput",
+        "onCommand:dotnet.restore.project",
+        "onCommand:dotnet.restore.all",
+        "onCommand:dotnet.generateAssets",
+        "onCommand:csharp.downloadDebugger",
+        "onCommand:csharp.listProcess",
+        "onCommand:csharp.listRemoteProcess",
+        "workspaceContains:project.json",
+        "workspaceContains:*.csproj",
+        "workspaceContains:*.sln",
+        "workspaceContains:*.csx",
+        "workspaceContains:*.cake",
+        "workspaceContains:**/*.csproj",
+        "workspaceContains:**/*.sln",
+        "workspaceContains:**/*.csx",
+        "workspaceContains:**/*.cake"
     ],
     "main": "./out/src/extension",
     "contributes": {
