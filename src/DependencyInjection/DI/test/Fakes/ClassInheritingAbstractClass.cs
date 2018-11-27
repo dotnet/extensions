@@ -7,4 +7,14 @@ namespace Microsoft.Extensions.DependencyInjection.Tests.Fakes
     {
         
     }
+
+    public class ClassAlsoInheritingAbstractClass : AbstractClass
+    {
+        
+    }
+
+    public class ClassInheritingClassInheritingAbstractClass : AbstractClass
+    {
+        
+    }
 }
