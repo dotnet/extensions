@@ -359,7 +359,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         private static bool IsCompatibleWithGenericParameterConstraints(Type genericTypeDefinition, Type[] parameters)
         {
             var genericArgumentDefinitions = genericTypeDefinition.GetTypeInfo().GenericTypeParameters;
-            for (var i = 0; i < genericArgumentDefinitions.Length; ++i)
+            for (var i = 0; i < genericArgumentDefinitions.Length; i++)
             {
                 var argumentDefinitionTypeInfo = genericArgumentDefinitions[i].GetTypeInfo();
                 var parameter = parameters[i];
