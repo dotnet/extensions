@@ -180,13 +180,13 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                         callSites.Reverse();
                     }
 
-                    // We know implementation type won't be disposable so don't try to capture it
-                    if (cacheLocation == CallSiteResultCacheLocation.Dispose)
+
+                    var resultCache = ResultCache.None;
+                    if (cacheLocation == CallSiteResultCacheLocation.Scope || cacheLocation == CallSiteResultCacheLocation.Root)
                     {
-                        cacheLocation = CallSiteResultCacheLocation.None;
+                        resultCache = new ResultCache(cacheLocation, new ServiceCacheKey(serviceType, DefaultSlot));
                     }
 
-                    var resultCache = new ResultCache(cacheLocation, new ServiceCacheKey(serviceType, DefaultSlot));
                     return new IEnumerableCallSite(resultCache, itemType, callSites.ToArray());
                 }
 
