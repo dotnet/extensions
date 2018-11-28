@@ -583,6 +583,20 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         }
 
         [Fact]
+        public void SingleOpenGenericServicesReturnsNullWithNoMatches()
+        {
+            // Arrange
+            var collection = new TestServiceCollection();
+            collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(ConstrainedFakeOpenGenericService<>));
+            collection.AddSingleton<IFakeSingletonService, FakeService>();
+            var provider = CreateServiceProvider(collection);
+            // Act
+            var constrainedService = provider.GetService<IFakeOpenGenericService<IFakeSingletonService>>();
+            // Assert
+            Assert.Null(constrainedService);
+        }
+
+        [Fact]
         public void InterfaceConstrainedOpenGenericServicesCanBeResolved()
         {
             // Arrange
