@@ -8,7 +8,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { extensionActivated } from '../src/extension';
 import {
-    basicRazorAppRoot,
+    basicRazorApp21Root,
     ensureNoChangesFor,
     htmlLanguageFeaturesExtensionReady,
     pollUntil,
@@ -24,7 +24,7 @@ describe('Html Typing', () => {
     });
 
     beforeEach(async () => {
-        const filePath = path.join(basicRazorAppRoot, 'Pages', 'Index.cshtml');
+        const filePath = path.join(basicRazorApp21Root, 'Pages', 'Index.cshtml');
         doc = await vscode.workspace.openTextDocument(filePath);
         editor = await vscode.window.showTextDocument(doc);
         await extensionActivated;

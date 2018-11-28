@@ -8,7 +8,8 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 export const repoRoot = path.join(__dirname, '..', '..', '..');
-export const basicRazorAppRoot = path.join(repoRoot, 'test', 'testapps', 'BasicRazorApp2_1');
+export const basicRazorApp21Root = path.join(repoRoot, 'test', 'testapps', 'BasicRazorApp2_1');
+export const basicRazorApp10Root = path.join(repoRoot, 'test', 'testapps', 'BasicRazorApp1_0');
 
 export async function pollUntil(fn: () => boolean, timeoutMs: number) {
     const pollInterval = 50;

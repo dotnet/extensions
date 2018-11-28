@@ -8,7 +8,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { extensionActivated } from '../src/extension';
 import {
-    basicRazorAppRoot,
+    basicRazorApp21Root,
     csharpExtensionReady,
     dotnetRestore,
     htmlLanguageFeaturesExtensionReady,
@@ -23,11 +23,11 @@ describe('Completions', () => {
     before(async () => {
         await csharpExtensionReady();
         await htmlLanguageFeaturesExtensionReady();
-        await dotnetRestore(basicRazorAppRoot);
+        await dotnetRestore(basicRazorApp21Root);
     });
 
     beforeEach(async () => {
-        const filePath = path.join(basicRazorAppRoot, 'Pages', 'Index.cshtml');
+        const filePath = path.join(basicRazorApp21Root, 'Pages', 'Index.cshtml');
         doc = await vscode.workspace.openTextDocument(filePath);
         editor = await vscode.window.showTextDocument(doc);
         await extensionActivated;
