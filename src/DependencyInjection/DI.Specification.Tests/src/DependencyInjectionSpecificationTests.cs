@@ -569,6 +569,20 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
         }
 
         [Fact]
+        public void ConstrainedOpenGenericServicesReturnsEmptyWithNoMatches()
+        {
+            // Arrange
+            var collection = new TestServiceCollection();
+            collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(ConstrainedFakeOpenGenericService<>));
+            collection.AddSingleton<IFakeSingletonService, FakeService>();
+            var provider = CreateServiceProvider(collection);
+            // Act
+            var constrainedServices = provider.GetServices<IFakeOpenGenericService<IFakeSingletonService>>().ToList();
+            // Assert
+            Assert.Equal(0, constrainedServices.Count);
+        }
+
+        [Fact]
         public void InterfaceConstrainedOpenGenericServicesCanBeResolved()
         {
             // Arrange
@@ -589,6 +603,54 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             Assert.Same(enumerableVal, allServices[1].Value);
             Assert.Equal(1, constrainedServices.Count);
             Assert.Same(singletonService, constrainedServices[0].Value);
+        }
+
+        [Fact]
+        public void PublicNoArgCtorConstrainedOpenGenericServicesCanBeResolved()
+        {
+            // Arrange
+            var collection = new TestServiceCollection();
+            collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(ClassWithNoConstraints<>));
+            collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(ClassWithNewConstraint<>));
+            var provider = CreateServiceProvider(collection);
+            // Act
+            var allServices = provider.GetServices<IFakeOpenGenericService<PocoClass>>().ToList();
+            var constrainedServices = provider.GetServices<IFakeOpenGenericService<ClassWithPrivateCtor>>().ToList();
+            // Assert
+            Assert.Equal(2, allServices.Count);
+            Assert.Equal(1, constrainedServices.Count);
+        }
+
+        [Fact]
+        public void ClassConstrainedOpenGenericServicesCanBeResolved()
+        {
+            // Arrange
+            var collection = new TestServiceCollection();
+            collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(ClassWithNoConstraints<>));
+            collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(ClassWithClassConstraint<>));
+            var provider = CreateServiceProvider(collection);
+            // Act
+            var allServices = provider.GetServices<IFakeOpenGenericService<PocoClass>>().ToList();
+            var constrainedServices = provider.GetServices<IFakeOpenGenericService<int>>().ToList();
+            // Assert
+            Assert.Equal(2, allServices.Count);
+            Assert.Equal(1, constrainedServices.Count);
+        }
+
+        [Fact]
+        public void StructConstrainedOpenGenericServicesCanBeResolved()
+        {
+            // Arrange
+            var collection = new TestServiceCollection();
+            collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(ClassWithNoConstraints<>));
+            collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(ClassWithStructConstraint<>));
+            var provider = CreateServiceProvider(collection);
+            // Act
+            var allServices = provider.GetServices<IFakeOpenGenericService<int>>().ToList();
+            var constrainedServices = provider.GetServices<IFakeOpenGenericService<PocoClass>>().ToList();
+            // Assert
+            Assert.Equal(2, allServices.Count);
+            Assert.Equal(1, constrainedServices.Count);
         }
 
         [Fact]

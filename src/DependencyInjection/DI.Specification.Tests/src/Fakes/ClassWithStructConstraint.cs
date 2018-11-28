@@ -6,8 +6,6 @@ namespace Microsoft.Extensions.DependencyInjection.Specification.Fakes
     public class ClassWithStructConstraint<T> : IFakeOpenGenericService<T>
         where T : struct
     {
-        public ClassWithStructConstraint(T value) => Value = value;
-
-        public T Value { get; }
+        public T Value { get; } = default;
     }
 }
