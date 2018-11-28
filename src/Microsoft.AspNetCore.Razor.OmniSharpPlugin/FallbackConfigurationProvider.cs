@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Composition;
 using System.IO;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
@@ -10,27 +9,18 @@ using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
-    [Shared]
-    [Export(typeof(RazorConfigurationProvider))]
-    internal class LegacyConfigurationProvider : CoreProjectConfigurationProvider
+    internal class FallbackConfigurationProvider : CoreProjectConfigurationProvider
     {
+        public static FallbackConfigurationProvider Instance = new FallbackConfigurationProvider();
+
         // Internal for testing
         internal const string ReferencePathWithRefAssembliesItemType = "ReferencePathWithRefAssemblies";
         internal const string MvcAssemblyFileName = "Microsoft.AspNetCore.Mvc.Razor.dll";
-
-        private const string MvcAssemblyName = "Microsoft.AspNetCore.Mvc.Razor";
 
         public override bool TryResolveConfiguration(RazorConfigurationProviderContext context, out RazorConfiguration configuration)
         {
             if (!HasRazorCoreCapability(context))
             {
-                configuration = null;
-                return false;
-            }
-
-            if (HasRazorCoreConfigurationCapability(context))
-            {
-                // Razor project is >= 2.1, we don't handle that.
                 configuration = null;
                 return false;
             }

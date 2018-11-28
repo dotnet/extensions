@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
 {
-    public class LegacyConfigurationProviderTest
+    public class FallbackConfigurationProviderTest
     {
         public Version MvcAssemblyVersion { get; } = Version.Parse("2.1.0");
 
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         public void TryResolveConfiguration_NoMvcVersion_ReturnsFalse()
         {
             // Arrange
-            var context = BuildContext("/some/path/to/some.dll", "/another/path/to/" + LegacyConfigurationProvider.MvcAssemblyFileName);
+            var context = BuildContext("/some/path/to/some.dll", "/another/path/to/" + FallbackConfigurationProvider.MvcAssemblyFileName);
             var provider = new TestLegacyConfigurationProvider(mvcAssemblyVersion: null);
 
             // Act
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
         public void TryResolveConfiguration_MvcWithVersion_ReturnsTrue()
         {
             // Arrange
-            var context = BuildContext("/some/path/to/some.dll", "/another/path/to/" + LegacyConfigurationProvider.MvcAssemblyFileName);
+            var context = BuildContext("/some/path/to/some.dll", "/another/path/to/" + FallbackConfigurationProvider.MvcAssemblyFileName);
             var provider = new TestLegacyConfigurationProvider(MvcAssemblyVersion);
             var expectedConfiguration = FallbackRazorConfiguration.SelectConfiguration(MvcAssemblyVersion);
 
@@ -102,13 +102,13 @@ namespace Microsoft.AspNetCore.Razor.OmniSharpPlugin
             var projectInstance = new ProjectInstance(ProjectRootElement.Create());
             foreach (var path in referencePaths)
             {
-                projectInstance.AddItem(LegacyConfigurationProvider.ReferencePathWithRefAssembliesItemType, path);
+                projectInstance.AddItem(FallbackConfigurationProvider.ReferencePathWithRefAssembliesItemType, path);
             }
             var context = new RazorConfigurationProviderContext(projectCapabilities, projectInstance);
             return context;
         }
 
-        private class TestLegacyConfigurationProvider : LegacyConfigurationProvider
+        private class TestLegacyConfigurationProvider : FallbackConfigurationProvider
         {
             private readonly Version _mvcAssemblyVersion;
 

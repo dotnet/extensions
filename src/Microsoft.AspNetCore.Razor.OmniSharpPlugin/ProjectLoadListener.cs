@@ -123,6 +123,11 @@ namespace Microsoft.AspNetCore.Razor.OmnisharpPlugin
                 }
             }
 
+            if (FallbackConfigurationProvider.Instance.TryResolveConfiguration(context, out var fallbackConfiguration))
+            {
+                return fallbackConfiguration;
+            }
+
             return null;
         }
 
