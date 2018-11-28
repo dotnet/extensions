@@ -400,6 +400,49 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             Assert.StartsWith(expectedMessage, ex.Message);
         }
 
+        public static TheoryData<ServiceDescriptor[], object> EnumberableCachedAtLowestLevelData = new TheoryData<ServiceDescriptor[], object>()
+        {
+            {
+                new []
+                {
+                    new ServiceDescriptor(typeof(FakeService), typeof(FakeService), ServiceLifetime.Transient),
+                    new ServiceDescriptor(typeof(FakeService), typeof(FakeService), ServiceLifetime.Singleton),
+                    new ServiceDescriptor(typeof(FakeService), typeof(FakeService), ServiceLifetime.Scoped),
+                },
+                CallSiteResultCacheLocation.None
+            },
+            {
+                new []
+                {
+                    new ServiceDescriptor(typeof(FakeService), typeof(FakeService), ServiceLifetime.Scoped),
+                    new ServiceDescriptor(typeof(FakeService), typeof(FakeService), ServiceLifetime.Singleton),
+                    new ServiceDescriptor(typeof(FakeService), typeof(FakeService), ServiceLifetime.Scoped),
+                },
+                CallSiteResultCacheLocation.Scope
+            },
+            {
+                new []
+                {
+                    new ServiceDescriptor(typeof(FakeService), typeof(FakeService), ServiceLifetime.Singleton),
+                    new ServiceDescriptor(typeof(FakeService), typeof(FakeService), ServiceLifetime.Singleton),
+                    new ServiceDescriptor(typeof(FakeService), typeof(FakeService), ServiceLifetime.Singleton),
+                },
+                CallSiteResultCacheLocation.Root
+            }
+        };
+
+        [Theory]
+        [MemberData(nameof(EnumberableCachedAtLowestLevelData))]
+        public void CreateCallSite_EnumberableCachedAtLowestLevel(ServiceDescriptor[] descriptors, object expectedCacheLocation)
+        {
+            var factory = GetCallSiteFactory(descriptors);
+            var callSite = factory(typeof(IEnumerable<FakeService>));
+
+            Assert.Equal((CallSiteResultCacheLocation)expectedCacheLocation, callSite.Cache.Location);
+            Assert.Equal(0, callSite.Cache.Key.Slot);
+            Assert.Equal(typeof(IEnumerable<FakeService>), callSite.Cache.Key.Type);
+        }
+
         private static Func<Type, ServiceCallSite> GetCallSiteFactory(params ServiceDescriptor[] descriptors)
         {
             var collection = new ServiceCollection();
