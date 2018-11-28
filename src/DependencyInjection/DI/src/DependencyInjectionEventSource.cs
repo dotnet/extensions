@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
         private int MaxChunkSize = 10 * 1024;
 
 
-        private DependencyInjectionEventSource():base(EventSourceSettings.EtwSelfDescribingEventFormat)
+        private DependencyInjectionEventSource() : base(EventSourceSettings.EtwSelfDescribingEventFormat)
         {
         }
 
