@@ -22,7 +22,7 @@
 
   <Target Name="EnsureNpmRestored" BeforeTargets="CompileTypeScript" Condition="!Exists('node_modules')">
     <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
-    <Exec Command="npm install" />
+    <Exec Command="npm ci" />
   </Target>
 
   <Target Name="TsLint" BeforeTargets="CompileTypeScript" DependsOnTargets="EnsureNpmRestored"
