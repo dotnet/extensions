@@ -21,7 +21,10 @@ namespace GenericHostSample
                     services.AddHostedService<MyServiceB>();
                 });
 
-            await builder.RunConsoleAsync();
+            await builder.RunConsoleAsync(options =>
+            {
+                options.SuppressStatusMessages = false;
+            });
         }
     }
 }
