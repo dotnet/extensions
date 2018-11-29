@@ -6,6 +6,11 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- TypeScript code in this project relies on TypeScript code being built first in that project -->
+    <ProjectReference Include="../src/Microsoft.AspNetCore.Razor.VSCode/Microsoft.AspNetCore.Razor.VSCode.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
   <Target Name="ClearDistDir" BeforeTargets="Clean">
     <RemoveDir Directories="out" />
   </Target>
