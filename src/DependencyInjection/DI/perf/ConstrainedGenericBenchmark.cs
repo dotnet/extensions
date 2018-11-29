@@ -34,7 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
             };
         }
 
-        [Benchmark]
+        [Benchmark(Baseline = true)]
         public void NoConstraints()
         {
             var csf = new CallSiteFactory(_noConstraintSds);
