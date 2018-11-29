@@ -112,7 +112,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         [Fact]
-        public void CreateCallSite_ReturnsNull_IfClosedTypeDoesNotSatisfyStructGenericConstraint()
+        public void CreateCallSite_Throws_IfClosedTypeDoesNotSatisfyStructGenericConstraint()
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
@@ -121,9 +121,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
             var nonMatchingType = typeof(IFakeOpenGenericService<object>);
-            var nonMatchingCallSite = callSiteFactory(nonMatchingType);
             // Assert
-            Assert.Null(nonMatchingCallSite);
+            Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
         }
 
         [Fact]
@@ -142,7 +141,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         [Fact]
-        public void CreateCallSite_ReturnsNull_IfClosedTypeDoesNotSatisfyClassGenericConstraint()
+        public void CreateCallSite_Throws_IfClosedTypeDoesNotSatisfyClassGenericConstraint()
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
@@ -151,9 +150,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
             var nonMatchingType = typeof(IFakeOpenGenericService<int>);
-            var nonMatchingCallSite = callSiteFactory(nonMatchingType);
             // Assert
-            Assert.Null(nonMatchingCallSite);
+            Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
         }
 
         [Fact]
@@ -172,7 +170,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         [Fact]
-        public void CreateCallSite_ReturnsNull_IfClosedTypeDoesNotSatisfyNewGenericConstraint()
+        public void CreateCallSite_Throws_IfClosedTypeDoesNotSatisfyNewGenericConstraint()
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
@@ -181,9 +179,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
             var nonMatchingType = typeof(IFakeOpenGenericService<TypeWithNoPublicConstructors>);
-            var nonMatchingCallSite = callSiteFactory(nonMatchingType);
             // Assert
-            Assert.Null(nonMatchingCallSite);
+            Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
         }
 
         [Fact]
@@ -202,7 +199,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         [Fact]
-        public void CreateCallSite_ReturnsNull_IfClosedTypeDoesNotSatisfyInterfaceGenericConstraint()
+        public void CreateCallSite_Throws_IfClosedTypeDoesNotSatisfyInterfaceGenericConstraint()
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
@@ -211,9 +208,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
             var nonMatchingType = typeof(IFakeOpenGenericService<int>);
-            var nonMatchingCallSite = callSiteFactory(nonMatchingType);
             // Assert
-            Assert.Null(nonMatchingCallSite);
+            Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
         }
 
         [Fact]
@@ -232,7 +228,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         [Fact]
-        public void CreateCallSite_ReturnsNull_IfClosedTypeDoesNotSatisfyAbstractClassGenericConstraint()
+        public void CreateCallSite_Throws_IfClosedTypeDoesNotSatisfyAbstractClassGenericConstraint()
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
@@ -241,9 +237,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
             var nonMatchingType = typeof(IFakeOpenGenericService<object>);
-            var nonMatchingCallSite = callSiteFactory(nonMatchingType);
             // Assert
-            Assert.Null(nonMatchingCallSite);
+            Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
         }
 
         [Fact]
@@ -262,7 +257,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         [Fact]
-        public void CreateCallSite_ReturnsNull_IfClosedTypeDoesNotSatisfySelfReferencingConstraint()
+        public void CreateCallSite_Throws_IfClosedTypeDoesNotSatisfySelfReferencingConstraint()
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
@@ -271,13 +266,12 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
             var nonMatchingType = typeof(IFakeOpenGenericService<object>);
-            var nonMatchingCallSite = callSiteFactory(nonMatchingType);
             // Assert
-            Assert.Null(nonMatchingCallSite);
+            Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
         }
 
         [Fact]
-        public void CreateCallSite_ReturnsNull_IfComplexClosedTypeDoesNotSatisfySelfReferencingConstraint()
+        public void CreateCallSite_Throws_IfComplexClosedTypeDoesNotSatisfySelfReferencingConstraint()
         {
             // Arrange
             var serviceType = typeof(IFakeOpenGenericService<>);
@@ -286,9 +280,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             var callSiteFactory = GetCallSiteFactory(descriptor);
             // Act
             var nonMatchingType = typeof(IFakeOpenGenericService<int[]>);
-            var nonMatchingCallSite = callSiteFactory(nonMatchingType);
             // Assert
-            Assert.Null(nonMatchingCallSite);
+            Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
         }
 
         [Fact]

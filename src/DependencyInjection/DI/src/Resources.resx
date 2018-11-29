@@ -150,4 +150,7 @@
   <data name="DirectScopedResolvedFromRootException" xml:space="preserve">
     <value>Cannot resolve {1} service '{0}' from root provider.</value>
   </data>
+  <data name="GenericConstraintViolation" xml:space="preserve">
+    <value>Generic constraints violated for type '{0}' while attempting to activate '{1}'.</value>
+  </data>
 </root>

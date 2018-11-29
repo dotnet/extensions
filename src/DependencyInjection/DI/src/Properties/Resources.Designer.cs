@@ -39,6 +39,12 @@ namespace Microsoft.Extensions.DependencyInjection
             => string.Format(CultureInfo.CurrentCulture, GetString("CannotResolveService"), p0, p1);
 
         /// <summary>
+        /// Generic constraints violated for type '{0}' while attempting to activate '{1}'.
+        /// </summary>
+        internal static string FormatGenericConstraintViolation(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("GenericConstraintViolation"), p0, p1);
+
+        /// <summary>
         /// A circular dependency was detected for the service of type '{0}'.
         /// </summary>
         internal static string CircularDependencyException
