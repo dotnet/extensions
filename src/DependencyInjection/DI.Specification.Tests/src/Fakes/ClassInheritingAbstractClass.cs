@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification.Fakes
         
     }
 
-    public class ClassInheritingClassInheritingAbstractClass : AbstractClass
+    public class ClassInheritingClassInheritingAbstractClass : ClassInheritingAbstractClass
     {
         
     }

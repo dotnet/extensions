@@ -46,14 +46,14 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         {
             _newConstraintSds = new[]
             {
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
                 new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NewConstraintOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NewConstraintOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NewConstraintOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NewConstraintOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NewConstraintOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NewConstraintOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NewConstraintOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NewConstraintOpenGenericService<>), ServiceLifetime.Transient),
             };
         }
 
@@ -69,14 +69,14 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         {
             _notMatchingNewConstraintSds = new[]
             {
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
                 new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NewConstraintOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NewConstraintOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NewConstraintOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NewConstraintOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NewConstraintOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NewConstraintOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NewConstraintOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NewConstraintOpenGenericService<>), ServiceLifetime.Transient),
             };
         }
 
@@ -92,14 +92,14 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         {
             _simpleTypeConstraintSds = new[]
             {
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
                 new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(AbstractClassOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(AbstractClassOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(AbstractClassOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(AbstractClassOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(AbstractClassOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(AbstractClassOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(AbstractClassOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(AbstractClassOpenGenericService<>), ServiceLifetime.Transient),
             };
         }
 
@@ -115,14 +115,14 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         {
             _complexInterfaceConstraintSds = new[]
             {
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
                 new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(SelfReferencingOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(SelfReferencingOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(SelfReferencingOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(SelfReferencingOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(SelfReferencingOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(SelfReferencingOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(SelfReferencingOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(SelfReferencingOpenGenericService<>), ServiceLifetime.Transient),
             };
         }
 
@@ -138,14 +138,14 @@ namespace Microsoft.Extensions.DependencyInjection.Performance
         {
             _complexNotMatchingInterfaceConstraintSds = new[]
             {
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
                 new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(SelfReferencingOpenGenericService<>), ServiceLifetime.Transient),
-                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(NoConstraintsOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(SelfReferencingOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(SelfReferencingOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(SelfReferencingOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(SelfReferencingOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(SelfReferencingOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(SelfReferencingOpenGenericService<>), ServiceLifetime.Transient),
+                new ServiceDescriptor(typeof(IFakeGeneric<>), typeof(SelfReferencingOpenGenericService<>), ServiceLifetime.Transient),
             };
         }
 
