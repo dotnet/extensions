@@ -17,13 +17,6 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         protected override Func<ServiceProviderEngineScope, object> RealizeService(ServiceCallSite callSite)
         {
-            // Optimize singleton case
-            if (callSite.Cache.Location == CallSiteResultCacheLocation.Root)
-            {
-                var value = RuntimeResolver.Resolve(callSite, Root);
-                return scope => value;
-            }
-
             var realizedService = ExpressionResolverBuilder.Build(callSite);
             RealizedServices[callSite.ServiceType] = realizedService;
             return realizedService;

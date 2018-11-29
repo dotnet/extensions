@@ -6,13 +6,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 
 namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 {
-    internal sealed class ILEmitResolverBuilder : CallSiteVisitor<ILEmitResolverBuilderContext, Expression>
+    internal sealed class ILEmitResolverBuilder : CallSiteVisitor<ILEmitResolverBuilderContext, object>
     {
         private static readonly MethodInfo ResolvedServicesGetter = typeof(ServiceProviderEngineScope).GetProperty(
             nameof(ServiceProviderEngineScope.ResolvedServices), BindingFlags.Instance | BindingFlags.NonPublic).GetMethod;
@@ -46,6 +45,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private readonly ConcurrentDictionary<ServiceCacheKey, GeneratedMethod> _scopeResolverCache;
 
+        private readonly Func<ServiceCacheKey, ServiceCallSite, GeneratedMethod> _buildTypeDelegate;
+
         public ILEmitResolverBuilder(CallSiteRuntimeResolver runtimeResolver, IServiceScopeFactory serviceScopeFactory, ServiceProviderEngineScope rootScope) :
             base()
         {
@@ -57,10 +58,18 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             _serviceScopeFactory = serviceScopeFactory;
             _rootScope = rootScope;
             _scopeResolverCache = new ConcurrentDictionary<ServiceCacheKey, GeneratedMethod>();
+            _buildTypeDelegate = (key, cs) => BuildTypeNoCache(cs);
         }
 
         public Func<ServiceProviderEngineScope, object> Build(ServiceCallSite callSite)
         {
+            // Optimize singleton case
+            if (callSite.Cache.Location == CallSiteResultCacheLocation.Root)
+            {
+                var value = _runtimeResolver.Resolve(callSite, _rootScope);
+                return scope => value;
+            }
+
             return BuildType(callSite).Lambda;
         }
 
@@ -70,9 +79,9 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             if (callSite.Cache.Location == CallSiteResultCacheLocation.Scope)
             {
 #if NETCOREAPP
-                return _scopeResolverCache.GetOrAdd(callSite.Cache.Key, (key, cs) => BuildTypeNoCache(cs), callSite);
+                return _scopeResolverCache.GetOrAdd(callSite.Cache.Key, _buildTypeDelegate, callSite);
 #else
-                return _scopeResolverCache.GetOrAdd(callSite.Cache.Key, (key) => BuildTypeNoCache(callSite));
+                return _scopeResolverCache.GetOrAdd(callSite.Cache.Key, key => _buildTypeDelegate(key, callSite));
 #endif
             }
 
@@ -121,7 +130,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
 
-        protected override Expression VisitDisposeCache(ServiceCallSite transientCallSite, ILEmitResolverBuilderContext argument)
+        protected override object VisitDisposeCache(ServiceCallSite transientCallSite, ILEmitResolverBuilderContext argument)
         {
             // RuntimeScope.CaptureDisposables([create value])
             var shouldCapture = BeginCaptureDisposable(transientCallSite.ImplementationType, argument);
@@ -135,7 +144,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return null;
         }
 
-        protected override Expression VisitConstructor(ConstructorCallSite constructorCallSite, ILEmitResolverBuilderContext argument)
+        protected override object VisitConstructor(ConstructorCallSite constructorCallSite, ILEmitResolverBuilderContext argument)
         {
             // new T([create arguments])
             foreach (var parameterCallSite in constructorCallSite.ParameterCallSites)
@@ -146,13 +155,13 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return null;
         }
 
-        protected override Expression VisitRootCache(ServiceCallSite callSite, ILEmitResolverBuilderContext argument)
+        protected override object VisitRootCache(ServiceCallSite callSite, ILEmitResolverBuilderContext argument)
         {
             AddConstant(argument, _runtimeResolver.Resolve(callSite, _rootScope));
             return null;
         }
 
-        protected override Expression VisitScopeCache(ServiceCallSite scopedCallSite, ILEmitResolverBuilderContext argument)
+        protected override object VisitScopeCache(ServiceCallSite scopedCallSite, ILEmitResolverBuilderContext argument)
         {
             var generatedMethod = BuildType(scopedCallSite);
 
@@ -172,20 +181,20 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return null;
         }
 
-        protected override Expression VisitConstant(ConstantCallSite constantCallSite, ILEmitResolverBuilderContext argument)
+        protected override object VisitConstant(ConstantCallSite constantCallSite, ILEmitResolverBuilderContext argument)
         {
             AddConstant(argument, constantCallSite.DefaultValue);
             return null;
         }
 
-        protected override Expression VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, ILEmitResolverBuilderContext argument)
+        protected override object VisitServiceProvider(ServiceProviderCallSite serviceProviderCallSite, ILEmitResolverBuilderContext argument)
         {
             // [return] ProviderScope
             argument.Generator.Emit(OpCodes.Ldarg_1);
             return null;
         }
 
-        protected override Expression VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, ILEmitResolverBuilderContext argument)
+        protected override object VisitServiceScopeFactory(ServiceScopeFactoryCallSite serviceScopeFactoryCallSite, ILEmitResolverBuilderContext argument)
         {
             // this.ScopeFactory
             argument.Generator.Emit(OpCodes.Ldarg_0);
@@ -193,7 +202,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return null;
         }
 
-        protected override Expression VisitIEnumerable(IEnumerableCallSite enumerableCallSite, ILEmitResolverBuilderContext argument)
+        protected override object VisitIEnumerable(IEnumerableCallSite enumerableCallSite, ILEmitResolverBuilderContext argument)
         {
             if (enumerableCallSite.ServiceCallSites.Length == 0)
             {
@@ -224,7 +233,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             return null;
         }
 
-        protected override Expression VisitFactory(FactoryCallSite factoryCallSite, ILEmitResolverBuilderContext argument)
+        protected override object VisitFactory(FactoryCallSite factoryCallSite, ILEmitResolverBuilderContext argument)
         {
             if (argument.Factories == null)
             {

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -42,6 +43,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
 
         private readonly ConcurrentDictionary<ServiceCacheKey, Func<ServiceProviderEngineScope, object>> _scopeResolverCache;
 
+        private readonly Func<ServiceCacheKey, ServiceCallSite, Func<ServiceProviderEngineScope, object>> _buildTypeDelegate;
+
         public ExpressionResolverBuilder(CallSiteRuntimeResolver runtimeResolver, IServiceScopeFactory serviceScopeFactory, ServiceProviderEngineScope rootScope)
         {
             if (runtimeResolver == null)
@@ -53,17 +56,25 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             _runtimeResolver = runtimeResolver;
             _serviceScopeFactory = serviceScopeFactory;
             _rootScope = rootScope;
+            _buildTypeDelegate = (key, cs) => BuildNoCache(cs);
         }
 
         public Func<ServiceProviderEngineScope, object> Build(ServiceCallSite callSite)
         {
+            // Optimize singleton case
+            if (callSite.Cache.Location == CallSiteResultCacheLocation.Root)
+            {
+                var value = _runtimeResolver.Resolve(callSite, _rootScope);
+                return scope => value;
+            }
+
             // Only scope methods are cached
             if (callSite.Cache.Location == CallSiteResultCacheLocation.Scope)
             {
 #if NETCOREAPP
-                return _scopeResolverCache.GetOrAdd(callSite.Cache.Key, (key, cs) => BuildNoCache(cs), callSite);
+                return _scopeResolverCache.GetOrAdd(callSite.Cache.Key, _buildTypeDelegate, callSite);
 #else
-                return _scopeResolverCache.GetOrAdd(callSite.Cache.Key, (key) => BuildNoCache(callSite));
+                return _scopeResolverCache.GetOrAdd(callSite.Cache.Key, key => _buildTypeDelegate(key, callSite));
 #endif
             }
 
@@ -85,7 +96,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                     Expression.Block(
                         new [] { ResolvedServices },
                         ResolvedServicesVariableAssignment,
-                        BuildScopedExpression(callSite, null)),
+                        BuildScopedExpression(callSite)),
                     ScopeParameter);
             }
 
@@ -193,7 +204,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
         }
 
         // Move off the main stack
-        private Expression BuildScopedExpression(ServiceCallSite callSite, object context)
+        private Expression BuildScopedExpression(ServiceCallSite callSite)
         {
 
             var keyExpression = Expression.Constant(
@@ -210,7 +221,7 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
                 keyExpression,
                 resolvedVariable);
 
-            var captureDisposible = TryCaptureDisposable(callSite.ImplementationType, ScopeParameter, VisitCallSiteMain(callSite, context));
+            var captureDisposible = TryCaptureDisposable(callSite.ImplementationType, ScopeParameter, VisitCallSiteMain(callSite, null));
 
             var assignExpression = Expression.Assign(
                 resolvedVariable,
