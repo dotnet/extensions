@@ -122,7 +122,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Act
             var nonMatchingType = typeof(IFakeOpenGenericService<object>);
             // Assert
-            Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
+            var ex = Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
+            Assert.Equal($"Generic constraints violated for type '{nonMatchingType}' while attempting to activate '{implementationType}'.", ex.Message);
         }
 
         [Fact]
@@ -151,7 +152,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Act
             var nonMatchingType = typeof(IFakeOpenGenericService<int>);
             // Assert
-            Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
+            var ex = Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
+            Assert.Equal($"Generic constraints violated for type '{nonMatchingType}' while attempting to activate '{implementationType}'.", ex.Message);
         }
 
         [Fact]
@@ -180,7 +182,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Act
             var nonMatchingType = typeof(IFakeOpenGenericService<TypeWithNoPublicConstructors>);
             // Assert
-            Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
+            var ex = Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
+            Assert.Equal($"Generic constraints violated for type '{nonMatchingType}' while attempting to activate '{implementationType}'.", ex.Message);
         }
 
         [Fact]
@@ -209,7 +212,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Act
             var nonMatchingType = typeof(IFakeOpenGenericService<int>);
             // Assert
-            Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
+            var ex = Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
+            Assert.Equal($"Generic constraints violated for type '{nonMatchingType}' while attempting to activate '{implementationType}'.", ex.Message);
         }
 
         [Fact]
@@ -238,7 +242,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Act
             var nonMatchingType = typeof(IFakeOpenGenericService<object>);
             // Assert
-            Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
+            var ex = Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
+            Assert.Equal($"Generic constraints violated for type '{nonMatchingType}' while attempting to activate '{implementationType}'.", ex.Message);
         }
 
         [Fact]
@@ -267,7 +272,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Act
             var nonMatchingType = typeof(IFakeOpenGenericService<object>);
             // Assert
-            Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
+            var ex = Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
+            Assert.Equal($"Generic constraints violated for type '{nonMatchingType}' while attempting to activate '{implementationType}'.", ex.Message);
         }
 
         [Fact]
@@ -281,7 +287,8 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
             // Act
             var nonMatchingType = typeof(IFakeOpenGenericService<int[]>);
             // Assert
-            Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
+            var ex = Assert.Throws<InvalidOperationException>(() => callSiteFactory(nonMatchingType));
+            Assert.Equal($"Generic constraints violated for type '{nonMatchingType}' while attempting to activate '{implementationType}'.", ex.Message);
         }
 
         [Fact]
