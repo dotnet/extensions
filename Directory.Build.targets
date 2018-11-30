@@ -1,17 +1,16 @@
 <Project>
   <!-- Properties which should be set after the project has been evaluated -->
   <PropertyGroup>
-    <PackageOutputPath Condition="'$(IsProductComponent)' == 'true' ">$(ProductPackageOutputPath)</PackageOutputPath>
-    <PackageOutputPath Condition="'$(IsProductComponent)' != 'true' ">$(InternalPackageOutputPath)</PackageOutputPath>
-
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <!-- Properties which should be set after the project has been evaluated -->
   <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
-    <IsPackable Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' ) ">false</IsPackable>
+    <Description Condition=" '$(Description)' == ''">$(PackageId)</Description>
+    <IsPackable Condition="'$(IsPackable)' == '' AND ( '$(IsUnitTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' ) ">false</IsPackable>
     <IsPackable Condition="'$(IsPackable)' == '' ">true</IsPackable>
+    <IsShipping>$(IsProductComponent)</IsShipping>
   </PropertyGroup>
 
   <Import Project="eng\Baseline.Designer.props" />
@@ -35,7 +34,7 @@
 
   <PropertyGroup>
     <!-- Implementation projects are the projects which produce nuget packages or shipping assemblies. -->
-    <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsTestAssetProject)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</IsImplementationProject>
+    <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsTestAssetProject)' != 'true' AND '$(IsUnitTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</IsImplementationProject>
 
     <!-- Suppress KoreBuild warnings about the mismatch of repo version and local project version. The versioning in this mega repo is sufficiently complicated that KoreBuild's validation isn't helpful. -->
     <VerifyVersion>false</VerifyVersion>
@@ -43,4 +42,11 @@
 
   <Import Project="eng\targets\Packaging.targets" Condition=" '$(MSBuildProjectExtension)' == '.csproj' " />
   <Import Project="eng\targets\ResolveReferences.targets" Condition=" '$(DisableReferenceRestrictions)' != 'true' AND '$(MSBuildProjectExtension)' == '.csproj' " />
+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+
+  <!-- Has to be set after Sdk.targets or it will be overrided -->
+  <PropertyGroup>
+    <PackageOutputPath Condition="'$(IsProductComponent)' == 'true' ">$(ProductPackageOutputPath)</PackageOutputPath>
+    <PackageOutputPath Condition="'$(IsProductComponent)' != 'true' ">$(InternalPackageOutputPath)</PackageOutputPath>
+  </PropertyGroup>
 </Project>

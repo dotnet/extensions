@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Logging.Configuration" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="../../shared/*.cs" />
 
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />

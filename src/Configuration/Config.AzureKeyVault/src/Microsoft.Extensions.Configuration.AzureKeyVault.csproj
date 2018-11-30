@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Configuration.AzureKeyVault.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.Azure.KeyVault" />
     <Reference Include="Microsoft.Azure.Services.AppAuthentication" />
     <Reference Include="Microsoft.Extensions.Configuration" />

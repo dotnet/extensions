@@ -3,19 +3,42 @@
     Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
     Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
 
-  <Import Project="version.props" />
+  <PropertyGroup>
+    <UsingToolXliff>false</UsingToolXliff>
+  </PropertyGroup>
+
+  <!-- Update variables to match this repo's conventions for project naming. -->
+  <PropertyGroup Condition="'$(IsUnitTestProject)' == ''">
+    <IsUnitTestProject>false</IsUnitTestProject>
+    <IsUnitTestProject Condition="$(MSBuildProjectName.EndsWith('.Tests'))">true</IsUnitTestProject>
+    <IsUnitTestProject Condition="$(MSBuildProjectName.EndsWith('.FunctionalTests'))">true</IsUnitTestProject>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+
+  <PropertyGroup Condition="'$(IsUnitTestProject)' == 'false'">
+    <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
+  </PropertyGroup>
 
   <PropertyGroup>
+    <IncludeSymbols>true</IncludeSymbols>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/aspnet/AspNetCore/2.0.0/LICENSE.txt</PackageLicenseUrl>
+    <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
+    <PackageProjectUrl>https://asp.net</PackageProjectUrl>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <LangVersion>7.2</LangVersion>
+
     <Product>Microsoft .NET Extensions</Product>
     <RepositoryUrl>https://github.com/aspnet/Extensions</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)eng\AspNetCore.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- Enables Strict mode for Roslyn compiler -->
     <Features>strict</Features>
 
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts\</ArtifactsDir>
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\build\</PackageOutputPath>
     <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\src\</SharedSourceRoot>
@@ -23,6 +46,7 @@
     <BasePackageOutputPath>$(ArtifactsConfigurationDir)packages\</BasePackageOutputPath>
     <ProductPackageOutputPath>$(BasePackageOutputPath)product\</ProductPackageOutputPath>
     <InternalPackageOutputPath>$(BasePackageOutputPath)internal\</InternalPackageOutputPath>
+    <DebugType>portable</DebugType>
 
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
 
@@ -33,13 +57,14 @@
     <IsProductComponent>false</IsProductComponent>
 
     <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance'))">true</IsBenchmarkProject>
-    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests')) OR $(MSBuildProjectName.EndsWith('.Test'))">true</IsTestProject>
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('samples'))">true</IsSampleProject>
+  </PropertyGroup>
 
-    <IncludeSymbols>true</IncludeSymbols>
-
-    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+  <PropertyGroup>
+    <DeveloperBuildTestTfms>netcoreapp3.0</DeveloperBuildTestTfms>
+    <StandardTestTfms>$(DeveloperBuildTestTfms)</StandardTestTfms>
+    <StandardTestTfms Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(StandardTestTfms);net461</StandardTestTfms>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
@@ -55,9 +80,4 @@
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\PatchConfig.props" />
   <Import Project="eng\ProjectReferences.props" />
-  <Import Project="eng\Sources.props" />
-
-  <ItemGroup>
-    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
-  </ItemGroup>
 </Project>

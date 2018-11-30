@@ -34,7 +34,6 @@
   <ItemGroup>
     <_ImplicitPackageReference Include="@(PackageReference->WithMetadataValue('IsImplicitlyDefined', 'true'))" />
     <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference)" />
-    <_ExplicitPackageReference Remove="Internal.AspNetCore.Sdk" />
 
     <UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
 

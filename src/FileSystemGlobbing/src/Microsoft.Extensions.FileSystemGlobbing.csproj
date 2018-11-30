@@ -11,6 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.FileSystemGlobbing.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="$(SharedSourceRoot)HashCodeCombiner\*.cs" />
   </ItemGroup>
 

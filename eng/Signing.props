@@ -1,0 +1,7 @@
+<Project>
+  <!-- We have to override this because we use different packagedirectories than Arcade default -->
+  <!-- We also don't seem to have access to properties from Directory.Build.props, so we're re-creating it. -->
+  <ItemGroup>
+    <ItemsToSign Include="$(RepoRoot)artifacts\$(Configuration)\packages\**\*.nupkg" />
+  </ItemGroup>
+</Project>

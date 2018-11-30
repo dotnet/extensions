@@ -15,11 +15,6 @@
     <SystemSecurityCryptographyXmlPackageVersion>4.6.0-preview.19073.11</SystemSecurityCryptographyXmlPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.6.0-preview.19073.11</SystemTextEncodingsWebPackageVersion>
   </PropertyGroup>
-  <!-- The versions in this section are updated manually and can be removed when conversion to the Arcade SDK is complete. -->
-  <PropertyGroup>
-    <InternalAspNetCoreSdkPackageVersion>3.0.0-build-20190105.1</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftDotNetBuildTasksFeedVersion>2.2.0-beta.19072.5</MicrosoftDotNetBuildTasksFeedVersion>
-  </PropertyGroup>
   <!-- Stable dependencies which are not expected to update via automation -->
   <PropertyGroup>
     <SystemMemoryPackageVersion>4.5.2</SystemMemoryPackageVersion>
@@ -28,4 +23,58 @@
     <SystemThreadingTasksExtensionsPackageVersion>4.5.2</SystemThreadingTasksExtensionsPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
   </PropertyGroup>
+  <PropertyGroup>
+    <MajorVersion>3</MajorVersion>
+    <MinorVersion>0</MinorVersion>
+    <PatchVersion>0</PatchVersion>
+    <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/aspnet/AspNetCore/2.0.0/LICENSE.txt</PackageLicenseUrl>
+    <Serviceable Condition="'$(Configuration)' == 'Release'">true</Serviceable>
+    <UsingToolNetFrameworkReferenceAssemblies Condition="'$(OS)' != 'Windows_NT'">true</UsingToolNetFrameworkReferenceAssemblies>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ExperimentalVersionPrefix>0.1.$(PatchVersion)</ExperimentalVersionPrefix>
+    <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
+    <IsServicingBuild Condition=" '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
+    <!-- Run the build with /p:IsFinalBuild=true to produce the product with 'final' branding and versioning -->
+    <IsFinalBuild Condition=" '$(IsFinalBuild)' == '' ">false</IsFinalBuild>
+    <IncludePreReleaseLabelInPackageVersion>true</IncludePreReleaseLabelInPackageVersion>
+    <IncludePreReleaseLabelInPackageVersion Condition=" '$(IsFinalBuild)' == 'true' AND ('$(PreReleaseVersionLabel)' == 'servicing' OR '$(PreReleaseVersionLabel)' == 'rtm')">false</IncludePreReleaseLabelInPackageVersion>
+    <!-- The version in files -->
+    <ExperimentalPackageVersion>$(ExperimentalVersionPrefix)</ExperimentalPackageVersion>
+    <ExperimentalPackageVersion Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(VersionPrefix)-$(PreReleaseVersionLabel)</ExperimentalPackageVersion>
+    <ExperimentalVersionSuffix>$(PreReleaseVersionLabel)</ExperimentalVersionSuffix>
+    <!-- This is used for error checking to ensure generated code and baselines are up to date when we increment the patch. -->
+    <PreviousExtensionsReleaseVersion Condition=" '$(PatchVersion)' != '0' ">$(MajorVersion).$(MinorVersion).$([MSBuild]::Subtract($(PatchVersion), 1))</PreviousExtensionsReleaseVersion>
+    <InformationalVersion>$(VersionPrefix)-$(VersionSuffix)</InformationalVersion>
+  </PropertyGroup>
+  <PropertyGroup Label="Package Versions">
+    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview-27122-01</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNetFrameworkReferenceAssembliesPackageVersion>1.0.0-alpha-004</MicrosoftNetFrameworkReferenceAssembliesPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.6.0-preview.18571.3</MicrosoftWin32RegistryPackageVersion>
+    <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview.18631.1</SystemComponentModelAnnotationsPackageVersion>
+    <SystemDataSqlClientPackageVersion>4.7.0-preview.18631.1</SystemDataSqlClientPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview.18631.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>4.6.0-preview.18631.1</SystemDiagnosticsEventLogPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.6.0-preview.18631.1</SystemIOPipelinesPackageVersion>
+    <SystemMemoryPackageVersion>4.5.2-servicing-27114-05</SystemMemoryPackageVersion>
+    <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.7.0-preview.18604.2</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0-preview.18604.2</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.6.0-preview.18604.2</SystemSecurityCryptographyCngPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>4.6.0-preview.18604.2</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>4.6.0-preview.18604.2</SystemTextEncodingsWebPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.6.0-preview.18604.2</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <DotNetRuntime Include="$(MicrosoftNETCoreAppPackageVersion)" />
+  </ItemGroup>
+  <Target Name="InspectVersionNumbers">
+    <Message Importance="High" Text="InformationalVersion    = '$(InformationalVersion)'" />
+    <Message Importance="High" Text="PackageVersion          = '$(PackageVersion)'" />
+  </Target>
 </Project>

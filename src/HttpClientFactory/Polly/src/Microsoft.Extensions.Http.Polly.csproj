@@ -14,6 +14,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Http.Polly.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\**\*.cs" />
   </ItemGroup>
 

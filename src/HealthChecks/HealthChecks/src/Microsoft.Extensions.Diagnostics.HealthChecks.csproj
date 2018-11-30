@@ -13,6 +13,10 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Diagnostics.HealthChecks.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="$(SharedSourceRoot)NonCapturingTimer\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\**\*.cs" />
   </ItemGroup>

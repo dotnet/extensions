@@ -29,14 +29,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{36617B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Sources.Tests", "src\Shared\test\Microsoft.Extensions.Sources.Tests.csproj", "{33E57F0C-3CDB-4EB8-B6BE-6A0875B42EDE}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{2C7E2059-8542-4BC8-A170-39F6B9EDE548}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThrowingLibrary", "src\Shared\testassets\ThrowingLibrary\ThrowingLibrary.csproj", "{727D7A4D-49ED-4FBF-B713-1091191C78AD}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{7A597F60-480C-4BFF-A940-26094BB0CA62}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BaselineGenerator", "eng\tools\BaselineGenerator\BaselineGenerator.csproj", "{532F85C9-F589-40E7-814F-F0463A927788}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.Extensions.CommandLineUtils.Sources", "src\Shared\src\CommandLineUtils\Microsoft.Extensions.CommandLineUtils.Sources.shproj", "{00947D4A-C20E-46E3-90C3-6CD6BC87EE72}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestingUtils", "TestingUtils", "{3DBE2341-7244-4095-A60C-A0AF7E187C9B}"
@@ -77,7 +69,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FilePr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FileProviders.Embedded.Manifest.Task", "src\FileProviders\Manifest.MSBuildTask\src\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.csproj", "{DB61A8BF-1340-4D6E-80A3-29D0E1F39F35}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.Test", "src\FileProviders\Manifest.MSBuildTask\test\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.Test.csproj", "{EFE02002-DD70-4570-A5EF-9B4521771345}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.Tests", "src\FileProviders\Manifest.MSBuildTask\test\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.Tests.csproj", "{EFE02002-DD70-4570-A5EF-9B4521771345}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FileProviders.Physical", "src\FileProviders\Physical\src\Microsoft.Extensions.FileProviders.Physical.csproj", "{54E60C1B-DD8F-4407-B787-EEA4FECD7B27}"
 EndProject
@@ -155,41 +147,41 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Option
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Logging", "Logging", "{36DFDB12-6055-43D9-8027-B052667AD34F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging", "src\logging\Logging\src\Microsoft.Extensions.Logging.csproj", "{C29CF488-733D-419D-B4E0-D45417EEEA2E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging", "src\Logging\Logging\src\Microsoft.Extensions.Logging.csproj", "{C29CF488-733D-419D-B4E0-D45417EEEA2E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Abstractions", "src\logging\Logging.Abstractions\src\Microsoft.Extensions.Logging.Abstractions.csproj", "{6E8EA53E-19B0-46E8-84DF-D32FBC47966F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Abstractions", "src\Logging\Logging.Abstractions\src\Microsoft.Extensions.Logging.Abstractions.csproj", "{6E8EA53E-19B0-46E8-84DF-D32FBC47966F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Analyzers", "src\logging\Logging.Analyzers\src\Microsoft.Extensions.Logging.Analyzers.csproj", "{41DF3B4F-9E3C-4D4B-A824-FC5B2094A1C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Analyzers", "src\Logging\Logging.Analyzers\src\Microsoft.Extensions.Logging.Analyzers.csproj", "{41DF3B4F-9E3C-4D4B-A824-FC5B2094A1C8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Analyzer.Tests", "src\logging\Logging.Analyzers\test\Microsoft.Extensions.Logging.Analyzer.Tests.csproj", "{938990D7-422A-44B2-AA6C-1AE6F4FF2CB1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Analyzer.Tests", "src\Logging\Logging.Analyzers\test\Microsoft.Extensions.Logging.Analyzer.Tests.csproj", "{938990D7-422A-44B2-AA6C-1AE6F4FF2CB1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.AzureAppServices", "src\logging\Logging.AzureAppServices\src\Microsoft.Extensions.Logging.AzureAppServices.csproj", "{91CC7F32-CEA6-4039-94EE-B1000DBE0DBB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.AzureAppServices", "src\Logging\Logging.AzureAppServices\src\Microsoft.Extensions.Logging.AzureAppServices.csproj", "{91CC7F32-CEA6-4039-94EE-B1000DBE0DBB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.AzureAppServices.Tests", "src\logging\Logging.AzureAppServices\test\Microsoft.Extensions.Logging.AzureAppServices.Tests.csproj", "{92B4C424-DA96-464E-B9DA-4D3ECB4176ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.AzureAppServices.Tests", "src\Logging\Logging.AzureAppServices\test\Microsoft.Extensions.Logging.AzureAppServices.Tests.csproj", "{92B4C424-DA96-464E-B9DA-4D3ECB4176ED}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Configuration", "src\logging\Logging.Configuration\src\Microsoft.Extensions.Logging.Configuration.csproj", "{053B27BF-69AD-42F5-8841-F9F631DBB1BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Configuration", "src\Logging\Logging.Configuration\src\Microsoft.Extensions.Logging.Configuration.csproj", "{053B27BF-69AD-42F5-8841-F9F631DBB1BC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Console", "src\logging\Logging.Console\src\Microsoft.Extensions.Logging.Console.csproj", "{BBE29F30-74A4-4504-8EE4-16D4DFDAA72D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Console", "src\Logging\Logging.Console\src\Microsoft.Extensions.Logging.Console.csproj", "{BBE29F30-74A4-4504-8EE4-16D4DFDAA72D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Debug", "src\logging\Logging.Debug\src\Microsoft.Extensions.Logging.Debug.csproj", "{ABEC8A89-AA53-4FBC-BB00-451A970CB1DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Debug", "src\Logging\Logging.Debug\src\Microsoft.Extensions.Logging.Debug.csproj", "{ABEC8A89-AA53-4FBC-BB00-451A970CB1DD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.EventLog", "src\logging\Logging.EventLog\src\Microsoft.Extensions.Logging.EventLog.csproj", "{6D3F09ED-F295-4BD3-931A-2300CDAFBE42}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.EventLog", "src\Logging\Logging.EventLog\src\Microsoft.Extensions.Logging.EventLog.csproj", "{6D3F09ED-F295-4BD3-931A-2300CDAFBE42}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.EventSource", "src\logging\Logging.EventSource\src\Microsoft.Extensions.Logging.EventSource.csproj", "{2B1EE2B3-680C-4D4D-85BC-9FA68D0B7FFA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.EventSource", "src\Logging\Logging.EventSource\src\Microsoft.Extensions.Logging.EventSource.csproj", "{2B1EE2B3-680C-4D4D-85BC-9FA68D0B7FFA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.EventSource.Tests", "src\logging\Logging.EventSource\test\Microsoft.Extensions.Logging.EventSource.Tests.csproj", "{642D2A25-A019-48A7-99D3-4F05E5B3B138}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.EventSource.Tests", "src\Logging\Logging.EventSource\test\Microsoft.Extensions.Logging.EventSource.Tests.csproj", "{642D2A25-A019-48A7-99D3-4F05E5B3B138}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Testing", "src\logging\Logging.Testing\src\Microsoft.Extensions.Logging.Testing.csproj", "{BEA4DCA4-E98A-4CFA-BFF3-C9F887CDB063}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Testing", "src\Logging\Logging.Testing\src\Microsoft.Extensions.Logging.Testing.csproj", "{BEA4DCA4-E98A-4CFA-BFF3-C9F887CDB063}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Testing.Tests", "src\logging\Logging.Testing\test\Microsoft.Extensions.Logging.Testing.Tests.csproj", "{A08DDDA1-1634-482C-8E79-1E0016D99A93}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Testing.Tests", "src\Logging\Logging.Testing\test\Microsoft.Extensions.Logging.Testing.Tests.csproj", "{A08DDDA1-1634-482C-8E79-1E0016D99A93}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.TraceSource", "src\logging\Logging.TraceSource\src\Microsoft.Extensions.Logging.TraceSource.csproj", "{53A480C7-4C90-400F-859C-9C5C70EE762E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.TraceSource", "src\Logging\Logging.TraceSource\src\Microsoft.Extensions.Logging.TraceSource.csproj", "{53A480C7-4C90-400F-859C-9C5C70EE762E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{26D1BCE2-F638-4984-993D-6BF781E0C652}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleApp", "src\logging\samples\SampleApp\SampleApp.csproj", "{4904B307-625D-4E3B-B156-A833583ABAF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleApp", "src\Logging\samples\SampleApp\SampleApp.csproj", "{4904B307-625D-4E3B-B156-A833583ABAF1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Tests", "src\logging\test\Microsoft.Extensions.Logging.Tests.csproj", "{2042D452-29E5-41E8-B2C1-80EAD6F9C5E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Logging.Tests", "src\Logging\test\Microsoft.Extensions.Logging.Tests.csproj", "{2042D452-29E5-41E8-B2C1-80EAD6F9C5E6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Options.DataAnnotations", "src\Options\DataAnnotations\src\Microsoft.Extensions.Options.DataAnnotations.csproj", "{9BF9888F-8635-40A0-AC1E-02F2B04C9E59}"
 EndProject
@@ -302,6 +294,7 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.JSInterop.JS", "src\JSInterop\Microsoft.JSInterop.JS\src\Microsoft.JSInterop.JS.csproj", "{76258B76-8CDD-471A-9D43-0815B712D668}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mono.WebAssembly.Interop", "src\JSInterop\Mono.WebAssembly.Interop\src\Mono.WebAssembly.Interop.csproj", "{89B01C5B-42DF-4E99-847E-354B8C5FBA6F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BaselineGenerator", "eng\tools\BaselineGenerator\BaselineGenerator.csproj", "{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -424,30 +417,6 @@ Global
 		{33E57F0C-3CDB-4EB8-B6BE-6A0875B42EDE}.Release|x64.Build.0 = Release|Any CPU
 		{33E57F0C-3CDB-4EB8-B6BE-6A0875B42EDE}.Release|x86.ActiveCfg = Release|Any CPU
 		{33E57F0C-3CDB-4EB8-B6BE-6A0875B42EDE}.Release|x86.Build.0 = Release|Any CPU
-		{727D7A4D-49ED-4FBF-B713-1091191C78AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{727D7A4D-49ED-4FBF-B713-1091191C78AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{727D7A4D-49ED-4FBF-B713-1091191C78AD}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{727D7A4D-49ED-4FBF-B713-1091191C78AD}.Debug|x64.Build.0 = Debug|Any CPU
-		{727D7A4D-49ED-4FBF-B713-1091191C78AD}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{727D7A4D-49ED-4FBF-B713-1091191C78AD}.Debug|x86.Build.0 = Debug|Any CPU
-		{727D7A4D-49ED-4FBF-B713-1091191C78AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{727D7A4D-49ED-4FBF-B713-1091191C78AD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{727D7A4D-49ED-4FBF-B713-1091191C78AD}.Release|x64.ActiveCfg = Release|Any CPU
-		{727D7A4D-49ED-4FBF-B713-1091191C78AD}.Release|x64.Build.0 = Release|Any CPU
-		{727D7A4D-49ED-4FBF-B713-1091191C78AD}.Release|x86.ActiveCfg = Release|Any CPU
-		{727D7A4D-49ED-4FBF-B713-1091191C78AD}.Release|x86.Build.0 = Release|Any CPU
-		{532F85C9-F589-40E7-814F-F0463A927788}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{532F85C9-F589-40E7-814F-F0463A927788}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{532F85C9-F589-40E7-814F-F0463A927788}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{532F85C9-F589-40E7-814F-F0463A927788}.Debug|x64.Build.0 = Debug|Any CPU
-		{532F85C9-F589-40E7-814F-F0463A927788}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{532F85C9-F589-40E7-814F-F0463A927788}.Debug|x86.Build.0 = Debug|Any CPU
-		{532F85C9-F589-40E7-814F-F0463A927788}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{532F85C9-F589-40E7-814F-F0463A927788}.Release|Any CPU.Build.0 = Release|Any CPU
-		{532F85C9-F589-40E7-814F-F0463A927788}.Release|x64.ActiveCfg = Release|Any CPU
-		{532F85C9-F589-40E7-814F-F0463A927788}.Release|x64.Build.0 = Release|Any CPU
-		{532F85C9-F589-40E7-814F-F0463A927788}.Release|x86.ActiveCfg = Release|Any CPU
-		{532F85C9-F589-40E7-814F-F0463A927788}.Release|x86.Build.0 = Release|Any CPU
 		{62EF7870-CA1F-4815-BC80-8477D358A16C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{62EF7870-CA1F-4815-BC80-8477D358A16C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62EF7870-CA1F-4815-BC80-8477D358A16C}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -1804,6 +1773,18 @@ Global
 		{89B01C5B-42DF-4E99-847E-354B8C5FBA6F}.Release|x64.Build.0 = Release|Any CPU
 		{89B01C5B-42DF-4E99-847E-354B8C5FBA6F}.Release|x86.ActiveCfg = Release|Any CPU
 		{89B01C5B-42DF-4E99-847E-354B8C5FBA6F}.Release|x86.Build.0 = Release|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Debug|x64.Build.0 = Debug|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Debug|x86.Build.0 = Debug|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Release|x64.ActiveCfg = Release|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Release|x64.Build.0 = Release|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Release|x86.ActiveCfg = Release|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1818,9 +1799,6 @@ Global
 		{4D8EC9A1-4854-4A88-8FE2-0B62C67110CB} = {B938B88D-2FD2-445F-B194-DEB3FF405ACF}
 		{9D2408A7-F77B-4D79-8FE3-5A9B67DF5AD3} = {B938B88D-2FD2-445F-B194-DEB3FF405ACF}
 		{33E57F0C-3CDB-4EB8-B6BE-6A0875B42EDE} = {36617B81-CF74-4FCB-A7CA-E95DF3CA92FC}
-		{2C7E2059-8542-4BC8-A170-39F6B9EDE548} = {36617B81-CF74-4FCB-A7CA-E95DF3CA92FC}
-		{727D7A4D-49ED-4FBF-B713-1091191C78AD} = {2C7E2059-8542-4BC8-A170-39F6B9EDE548}
-		{532F85C9-F589-40E7-814F-F0463A927788} = {7A597F60-480C-4BFF-A940-26094BB0CA62}
 		{00947D4A-C20E-46E3-90C3-6CD6BC87EE72} = {36617B81-CF74-4FCB-A7CA-E95DF3CA92FC}
 		{62EF7870-CA1F-4815-BC80-8477D358A16C} = {3DBE2341-7244-4095-A60C-A0AF7E187C9B}
 		{9D0EDBEC-22F9-4C3C-9349-B5888F709B6A} = {3DBE2341-7244-4095-A60C-A0AF7E187C9B}
