@@ -40,10 +40,13 @@ jobs:
     agentOs: Linux
     configuration: Release
 
-- template: eng/templates/default-build.yml
-  parameters:
-    agentOs: Windows
-    configuration: Release
-    buildArgs: |
-      '/t:Helix'
-      '/p:HelixAccessToken=$(BotAccount-dotnet-github-anon-kaonashi-bot-helix-token)'
+- job: Helix
+  pool:
+    name: Hosted VS2017
+    vmImage: vs2017-win2016
+  steps:
+  - checkout: self
+    clean: true
+  - script: .\build.cmd -ci /t:Helix /p:SignType=$(_SignType) /p:Configuration=Release /p:HelixAccessToken=$(BotAccount-dotnet-github-anon-kaonashi-bot-helix-token)
+    displayName: Run build.cmd helix target
+
