@@ -76,7 +76,6 @@
     <LatestPackageReference Include="xunit.assert" Version="2.3.1" />
     <LatestPackageReference Include="xunit.extensibility.core" Version="2.3.1" />
     <LatestPackageReference Include="xunit.extensibility.execution" Version="2.3.1" />
-    <LatestPackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
     <LatestPackageReference Include="xunit" Version="2.4.0" />
 
     <!-- External DI container references -->
@@ -92,10 +91,7 @@
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
-    <Reference Include="Microsoft.NET.Test.Sdk" />
     <Reference Include="Moq" />
-    <Reference Include="xunit" />
     <Reference Include="xunit.analyzers" />
-    <Reference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 </Project>
