@@ -45,5 +45,5 @@ jobs:
     agentOs: Windows
     configuration: Release
     buildArgs: |
-      '/t:Helix`
+      '/t:Helix'
       '/p:HelixAccessToken=$(BotAccount-dotnet-github-anon-kaonashi-bot-helix-token)'
