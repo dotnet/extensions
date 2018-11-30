@@ -39,3 +39,11 @@ jobs:
   parameters:
     agentOs: Linux
     configuration: Release
+
+- template: eng/templates/default-build.yml
+  parameters:
+    agentOs: Windows
+    configuration: Release
+    buildArgs: |
+      '/t:Helix`
+      '/p:HelixAccessToken=$(BotAccount-dotnet-github-anon-kaonashi-bot-helix-token)'
