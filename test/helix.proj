@@ -26,6 +26,8 @@
   </Target>
 
   <PropertyGroup>
+    <!-- TODO: Follow up with helix SDK -->
+    <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
     <HelixSource>pr/aspnet/extensions</HelixSource>
     <HelixType>ci</HelixType>
     <!-- TODO: use package version -->
