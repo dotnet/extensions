@@ -46,14 +46,8 @@
     <PackageReference Include="Microsoft.VisualStudio.ImageCatalog" Version="$(MicrosoftVisualStudioImageCatalogPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="$(MicrosoftVisualStudioLanguageIntellisensePackageVersion)" />
     <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(TEST_NewtonsoftJsonPackageVersion)" />
     <PackageReference Include="StreamJsonRpc" Version="$(StreamJsonRpcPackageVersion)" />
-    <PackageReference Include="xunit.analyzers" Version="$(XunitAnalyzersPackageVersion)" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" />
-    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' ">
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssemblies)" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

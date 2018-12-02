@@ -1,16 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net472</TargetFrameworks>
+    <TargetFramework>net472</TargetFramework>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains the Razor design-time infrastructure for Visual Studio.</Description>
     <EnableApiCheck>false</EnableApiCheck>
     <RulesDirectory>..\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Rules\</RulesDirectory>
     <DefineConstants>$(DefineConstants);WORKSPACE_PROJECT_CONTEXT_FACTORY</DefineConstants>
     <CodeAnalysisRuleSet>Microsoft.VisualStudio.LanguageServices.Razor.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <DefineConstants>$(DefineConstants);RAZOR_EXTENSION_DEVELOPER_MODE</DefineConstants>
+    <IsShipping>false</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,7 +20,6 @@
     <PackageReference Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="$(VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.LanguageServices" Version="$(VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.OLE.Interop" Version="$(MicrosoftVisualStudioOLEInteropPackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.ProjectSystem.Analyzers" Version="$(MicrosoftVisualStudioProjectSystemAnalyzersPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" Version="$(MicrosoftVisualStudioProjectSystemManagedVSPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem.SDK" Version="$(MicrosoftVisualStudioProjectSystemSDKPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="$(MicrosoftVisualStudioShell150PackageVersion)" />
@@ -37,12 +33,8 @@
 
 
     <!-- We need to use this version of Json.Net to maintain consistency with Visual Studio. -->
-    <PackageReference Include="Newtonsoft.Json" Version="$(VisualStudio_NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(VS_NewtonsoftJsonPackageVersion)" />
     <PackageReference Include="StreamJsonRpc" Version="$(StreamJsonRpcPackageVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' ">
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssemblies)" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <ImportNetSdkFromRepoToolset>false</ImportNetSdkFromRepoToolset>
+  </PropertyGroup>
+
+  <!--
+    We don't follow their conventions for project naming. 
+  -->
+  <PropertyGroup Condition="'$(IsUnitTestProject)' == ''">
+    <IsUnitTestProject>false</IsUnitTestProject>
+    <IsUnitTestProject Condition="$(MSBuildProjectName.EndsWith('.Test'))">true</IsUnitTestProject>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="eng\MPack.props" />
+
+  <Import
+    Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
+    Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
+
+  <PropertyGroup Label="Build Settings">
+    <LangVersion>7.3</LangVersion>
+    <StrongNameKeyId>MicrosoftAspNet</StrongNameKeyId>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Package and Assembly Metadata">
+    <Product>Microsoft ASP.NET Core</Product>
+    <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Warning Suppressions">
+    <!-- 
+      Suppress a warning about upcoming deprecation of PackageLicenseUrl. When embedding licenses are supported, replace PackageLicenseUrl with PackageLicenseExpression.
+    -->
+    <NoWarn>$(NoWarn);NU5125</NoWarn>
+
+    <!-- 
+      Suppress warnings about assembly conflicts. This happens for assemblies that ship in VS so it's irrelevant.
+    -->
+    <NoWarn>$(NoWarn);MSB3277</NoWarn>
+  </PropertyGroup>
+
+  <Target Name="WORKAROUND_InitializeSourceControlInformationFromSourceControlManager" AfterTargets="InitializeSourceControlInformationFromSourceControlManager">
+    <!-- 
+      Arcade's SourceLink support doesn't deal gracefully with ssh remotes.
+      See: https://github.com/dotnet/arcade/blob/878b6f0434a2ed0aa4ff10644425abe61bbe3ad5/src/Microsoft.DotNet.Arcade.Sdk/tools/RepositoryInfo.targets#L22
+
+      Turn the ssh URL into one the https URLs that Arcade knows how to process.
+    -->
+    <PropertyGroup>
+      <_Pattern>ssh://git%40ssh.dev.azure.com/v3/dnceng/internal/([^/-]+)-(.+)</_Pattern>
+      <_Replacement>https://dnceng.visualstudio.com/internal/_git/$1-$2</_Replacement>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <ScmRepositoryUrl>$([System.Text.RegularExpressions.Regex]::Replace($(ScmRepositoryUrl), $(_Pattern), $(_Replacement)))</ScmRepositoryUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <SourceRoot Update="@(SourceRoot)">
+        <ScmRepositoryUrl>$([System.Text.RegularExpressions.Regex]::Replace(%(ScmRepositoryUrl), $(_Pattern), $(_Replacement)))</ScmRepositoryUrl>
+      </SourceRoot>
+    </ItemGroup>
+  </Target>
+  
+</Project>

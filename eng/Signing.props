@@ -1,0 +1,9 @@
+<Project>
+  <!--
+    These are third party libraries that we use in this repo. We need to sign them even if they
+    are already signed. However, they must be signed with a 3rd party certificate.
+  -->
+  <ItemGroup>
+    <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
+  </ItemGroup>
+</Project>

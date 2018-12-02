@@ -1,0 +1,12 @@
+{
+    "tools": {
+      "dotnet": "3.0.100-preview-009750",
+      "vs": {
+         "version": "15.9",
+         "components": ["Microsoft.VisualStudio.Component.VSSDK"]
+      }
+    },
+    "msbuild-sdks": {
+      "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.18579.6"
+    }
+  }

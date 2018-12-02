@@ -5,6 +5,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <EnableApiCheck>false</EnableApiCheck>
     <DefineConstants>$(DefineConstants);DOCUMENT_SERVICE_FACTORY</DefineConstants>
+    <IsShipping>false</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>
