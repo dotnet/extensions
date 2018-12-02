@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Specify the solutions to build. Add all new solutions/projects here as necessary or the main build won't build them! -->
   <ItemGroup>
-    <ProjectToBuild Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.sln" />
+    <ProjectToBuild Condition="'$(OS)'=='WINDOWS_NT'" Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.sln" />
+
+    <!-- Exclude VSIX projects on non-Windows -->
+    <ProjectToBuild Condition="'$(OS)'!='WINDOWS_NT'" Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Slim.sln" />
   </ItemGroup>
 </Project>
