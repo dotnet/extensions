@@ -17,4 +17,11 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
         {
         }
     }
+
+    internal static class RazorInfoToolWindowControl_Workaround
+    {
+        public static void InitializeComponent(this RazorInfoToolWindowControl _)
+        {
+        }
+    }
 }
