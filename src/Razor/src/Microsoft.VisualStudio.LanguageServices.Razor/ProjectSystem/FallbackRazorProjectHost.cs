@@ -29,7 +29,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     [Export(ExportContractNames.Scopes.UnconfiguredProject, typeof(IProjectDynamicLoadComponent))]
     internal class FallbackRazorProjectHost : RazorProjectHostBase
     {
-        private const string MvcAssemblyName = "Microsoft.AspNetCore.Mvc.Razor";
         private const string MvcAssemblyFileName = "Microsoft.AspNetCore.Mvc.Razor.dll";
 
         private IDisposable _subscription;
@@ -38,7 +37,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public FallbackRazorProjectHost(
             IUnconfiguredProjectCommonServices commonServices,
             [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
-            : base(commonServices, workspace, projectContextFactory: null)
+            : base(commonServices, workspace)
         {
         }
 
@@ -151,7 +150,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                             AddDocumentUnsafe(documents[i]);
                         }
                     }).ConfigureAwait(false);
-                });
+                }).ConfigureAwait(false);
             }, registerFaultHandler: true);
         }
 
@@ -240,7 +239,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     targetPath = filePath;
                 }
 
-                if (targetPath.EndsWith(".cshtml"))
+                if (targetPath.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
                 {
                     targetPath = CommonServices.UnconfiguredProject.MakeRooted(targetPath);
                     razorDocument = new HostDocument(filePath, targetPath);

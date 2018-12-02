@@ -44,7 +44,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             if (activeConfiguredProjectSubscription == null)
             {
-                throw new ArgumentNullException(nameof(ActiveConfiguredProjectSubscription));
+                throw new ArgumentNullException(nameof(activeConfiguredProjectSubscription));
             }
 
             if (activeConfiguredProject == null)

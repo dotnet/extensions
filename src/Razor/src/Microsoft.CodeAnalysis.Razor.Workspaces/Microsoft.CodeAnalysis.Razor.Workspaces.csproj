@@ -4,7 +4,6 @@
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains the Razor design-time infrastructure.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <EnableApiCheck>false</EnableApiCheck>
-    <DefineConstants>$(DefineConstants);DOCUMENT_SERVICE_FACTORY</DefineConstants>
     <IsShipping>false</IsShipping>
   </PropertyGroup>
 

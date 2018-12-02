@@ -89,5 +89,17 @@
     <Rule Id="VSTHRD110" Action="Info" />
     <Rule Id="VSTHRD111" Action="Info" />
     <Rule Id="VSTHRD200" Action="Info" />
+    <Rule Id="VSSDK005" Action="Info" />
+  </Rules>
+  <Rules AnalyzerId="Microsoft.CodeQuality.Analyzers" RuleNamespace="Microsoft.CodeQuality.Analyzers">
+    <Rule Id="CA1507" Action="None" />
+    <Rule Id="CA1707" Action="None" />
+    <Rule Id="CA1810" Action="None" />
+    <Rule Id="CA1812" Action="None" />
+    <Rule Id="CA1819" Action="None" />
+    <Rule Id="CA1825" Action="None" />
+    <Rule Id="CA2007" Action="None" />
+    <Rule Id="CA2211" Action="None" />
+    <Rule Id="CA2227" Action="None" />
   </Rules>
 </RuleSet>

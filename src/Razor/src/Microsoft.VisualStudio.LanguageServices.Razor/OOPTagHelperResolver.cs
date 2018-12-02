@@ -70,13 +70,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 TagHelperResolutionResult result = null;
                 if (factory != null)
                 {
-                    result = await ResolveTagHelpersOutOfProcessAsync(factory, project);
+                    result = await ResolveTagHelpersOutOfProcessAsync(factory, project).ConfigureAwait(false);
                 }
 
                 if (result == null)
                 {
                     // Was unable to get tag helpers OOP, fallback to default behavior.
-                    result = await ResolveTagHelpersInProcessAsync(project);
+                    result = await ResolveTagHelpersInProcessAsync(project).ConfigureAwait(false);
                 }
 
                 return result;
@@ -99,10 +99,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             // This will change in the future to an easier to consume API but for VS RTM this is what we have.
             try
             {
-                var client = await RazorLanguageServiceClientFactory.CreateAsync(_workspace, CancellationToken.None);
+                var client = await RazorLanguageServiceClientFactory.CreateAsync(_workspace, CancellationToken.None).ConfigureAwait(false);
                 if (client != null)
                 {
-                    using (var session = await client.CreateSessionAsync(project.WorkspaceProject.Solution))
+                    using (var session = await client.CreateSessionAsync(project.WorkspaceProject.Solution).ConfigureAwait(false))
                     {
                         if (session != null)
                         {
@@ -134,7 +134,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             return _defaultResolver.GetTagHelpersAsync(project);
         }
 
-        private JObject Serialize(ProjectSnapshot snapshot)
+        private static JObject Serialize(ProjectSnapshot snapshot)
         {
             var serializer = new JsonSerializer();
             serializer.Converters.RegisterRazorConverters();
@@ -142,7 +142,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             return JObject.FromObject(snapshot, serializer);
         }
 
-        private TagHelperResolutionResult Deserialize(JObject jsonObject)
+        private static TagHelperResolutionResult Deserialize(JObject jsonObject)
         {
             var serializer = new JsonSerializer();
             serializer.Converters.RegisterRazorConverters();

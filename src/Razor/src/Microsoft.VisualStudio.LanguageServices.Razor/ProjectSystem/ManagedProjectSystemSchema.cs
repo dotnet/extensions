@@ -6,46 +6,32 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     // Well-Known Schema and property names defined by the ManagedProjectSystem
     internal static class ManagedProjectSystemSchema
     {
-        public static class CompilerCommandLineArgs
-        {
-            public static readonly string SchemaName = "CompilerCommandLineArgs";
-
-            public static readonly string ItemName = "CompilerCommandLineArgs";
-        }
-
-        public static class ConfigurationGeneral
-        {
-            public static readonly string SchemaName = "ConfigurationGeneral";
-
-            public static readonly string TargetPathPropertyName = "TargetPath";
-        }
-
         public static class ResolvedCompilationReference
         {
-            public static readonly string SchemaName = "ResolvedCompilationReference";
+            public const string SchemaName = "ResolvedCompilationReference";
 
-            public static readonly string ItemName = "ResolvedCompilationReference";
+            public const string ItemName = "ResolvedCompilationReference";
         }
 
         public static class ContentItem
         {
-            public static readonly string SchemaName = "Content";
+            public const string SchemaName = "Content";
 
-            public static readonly string ItemName = "Content";
+            public const string ItemName = "Content";
         }
 
         public static class NoneItem
         {
-            public static readonly string SchemaName = "None";
+            public const string SchemaName = "None";
 
-            public static readonly string ItemName = "None";
+            public const string ItemName = "None";
         }
 
         public static class ItemReference
         {
-            public static readonly string FullPathPropertyName = "FullPath";
+            public const string FullPathPropertyName = "FullPath";
 
-            public static readonly string LinkPropertyName = "Link";
+            public const string LinkPropertyName = "Link";
         }
     }
 }

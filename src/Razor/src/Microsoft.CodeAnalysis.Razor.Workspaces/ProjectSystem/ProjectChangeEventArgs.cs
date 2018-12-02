@@ -7,6 +7,31 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     internal class ProjectChangeEventArgs : EventArgs
     {
+        [Obsolete("Adding this as a workaround to unblock live share")]
+        public ProjectChangeEventArgs(string projectFilePath, ProjectChangeKind kind)
+        {
+            if (projectFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(projectFilePath));
+            }
+
+            ProjectFilePath = projectFilePath;
+            Kind = kind;
+        }
+
+        [Obsolete("Adding this as a workaround to unblock live share")]
+        public ProjectChangeEventArgs(string projectFilePath, string documentFilePath, ProjectChangeKind kind)
+        {
+            if (projectFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(projectFilePath));
+            }
+
+            ProjectFilePath = projectFilePath;
+            DocumentFilePath = documentFilePath;
+            Kind = kind;
+        }
+
         public ProjectChangeEventArgs(ProjectSnapshot older, ProjectSnapshot newer, ProjectChangeKind kind)
         {
             if (older == null && newer == null)

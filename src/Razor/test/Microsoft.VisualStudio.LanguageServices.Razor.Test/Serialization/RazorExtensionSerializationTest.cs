@@ -19,7 +19,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             Converters = converters.ToArray();
         }
 
-        public JsonConverter[] Converters { get; }
+        private JsonConverter[] Converters { get; }
 
         [Fact]
         public void RazorExensionJsonConverter_Serialization_CanRoundTrip()

@@ -12,25 +12,34 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
+    [Shared]
     [Export(typeof(ProjectSnapshotChangeTrigger))]
     internal class BackgroundDocumentGenerator : ProjectSnapshotChangeTrigger
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
+        private readonly RazorDynamicFileInfoProvider _infoProvider;
         private ProjectSnapshotManagerBase _projectManager;
 
-        private readonly Dictionary<DocumentKey, DocumentSnapshot> _work;
+        private readonly Dictionary<DocumentKey, (ProjectSnapshot project, DocumentSnapshot document)> _work;
         private Timer _timer;
 
         [ImportingConstructor]
-        public BackgroundDocumentGenerator(ForegroundDispatcher foregroundDispatcher)
+        public BackgroundDocumentGenerator(ForegroundDispatcher foregroundDispatcher, RazorDynamicFileInfoProvider infoProvider)
         {
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
             }
 
+            if (infoProvider == null)
+            {
+                throw new ArgumentNullException(nameof(infoProvider));
+            }
+
             _foregroundDispatcher = foregroundDispatcher;
-            _work = new Dictionary<DocumentKey, DocumentSnapshot>();
+            _infoProvider = infoProvider;
+
+            _work = new Dictionary<DocumentKey, (ProjectSnapshot project, DocumentSnapshot document)>();
         }
 
         public bool HasPendingNotifications
@@ -114,9 +123,10 @@ namespace Microsoft.CodeAnalysis.Razor
             _projectManager.Changed += ProjectManager_Changed;
         }
 
-        protected virtual Task ProcessDocument(DocumentSnapshot document)
+        protected virtual async Task ProcessDocument(ProjectSnapshot project, DocumentSnapshot document)
         {
-            return document.GetGeneratedOutputAsync();
+            await document.GetGeneratedOutputAsync().ConfigureAwait(false);
+            _infoProvider.UpdateFileInfo(project, document);
         }
 
         public void Enqueue(ProjectSnapshot project, DocumentSnapshot document)
@@ -135,9 +145,15 @@ namespace Microsoft.CodeAnalysis.Razor
 
             lock (_work)
             {
+                if (_projectManager.IsDocumentOpen(document.FilePath))
+                {
+                    _infoProvider.SuppressDocument(project, document);
+                    return;
+                }
+
                 // We only want to store the last 'seen' version of any given document. That way when we pick one to process
                 // it's always the best version to use.
-                _work[new DocumentKey(project.FilePath, document.FilePath)] = document;
+                _work[new DocumentKey(project.FilePath, document.FilePath)] = (project, document);
 
                 StartWorker();
             }
@@ -170,7 +186,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
                 OnStartingBackgroundWork();
 
-                KeyValuePair<DocumentKey, DocumentSnapshot>[] work;
+                KeyValuePair<DocumentKey, (ProjectSnapshot project, DocumentSnapshot document)>[] work;
                 lock (_work)
                 {
                     work = _work.ToArray();
@@ -181,14 +197,14 @@ namespace Microsoft.CodeAnalysis.Razor
 
                 for (var i = 0; i < work.Length; i++)
                 {
-                    var document = work[i].Value;
+                    var (project, document) = work[i].Value;
                     try
                     {
-                        await ProcessDocument(document);
+                        await ProcessDocument(project, document).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
-                        ReportError(document, ex);
+                        ReportError(project, ex);
                     }
                 }
 
@@ -217,14 +233,14 @@ namespace Microsoft.CodeAnalysis.Razor
                     _projectManager,
                     CancellationToken.None,
                     TaskCreationOptions.None,
-                    _foregroundDispatcher.ForegroundScheduler);
+                    _foregroundDispatcher.ForegroundScheduler).ConfigureAwait(false);
             }
         }
 
-        private void ReportError(DocumentSnapshot document, Exception ex)
+        private void ReportError(ProjectSnapshot project, Exception ex)
         {
             GC.KeepAlive(Task.Factory.StartNew(
-                (p) => ((ProjectSnapshotManagerBase)p).ReportError(ex), 
+                (p) => ((ProjectSnapshotManagerBase)p).ReportError(ex, project), 
                 _projectManager,
                 CancellationToken.None,
                 TaskCreationOptions.None,

@@ -48,6 +48,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             WorkspaceProject1 = solution.GetProject(projectId1);
             WorkspaceProject2 = solution.GetProject(projectId2);
+
+            DynamicFileInfoProvider = new RazorDynamicFileInfoProvider(new DefaultDocumentServiceProviderFactory());
         }
 
         private HostDocument[] Documents { get; }
@@ -59,6 +61,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private Project WorkspaceProject1 { get; }
 
         private Project WorkspaceProject2 { get; }
+
+        private RazorDynamicFileInfoProvider DynamicFileInfoProvider { get; }
 
         protected override void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
         {
@@ -80,7 +84,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var project = projectManager.GetLoadedProject(HostProject1.FilePath);
 
-            var queue = new BackgroundDocumentGenerator(Dispatcher)
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
             {
                 Delay = TimeSpan.FromMilliseconds(1),
                 BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false),
@@ -88,6 +92,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 BlockBackgroundWorkCompleting = new ManualResetEventSlim(initialState: false),
                 NotifyBackgroundWorkCompleted = new ManualResetEventSlim(initialState: false),
             };
+
+            queue.Initialize(projectManager);
 
             // Act & Assert
             queue.Enqueue(project, project.GetDocument(Documents[0].FilePath));
@@ -119,7 +125,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var project = projectManager.GetLoadedProject(HostProject1.FilePath);
 
-            var queue = new BackgroundDocumentGenerator(Dispatcher)
+            var queue = new BackgroundDocumentGenerator(Dispatcher, DynamicFileInfoProvider)
             {
                 Delay = TimeSpan.FromMilliseconds(1),
                 BlockBackgroundWorkStart = new ManualResetEventSlim(initialState: false),
@@ -128,6 +134,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 BlockBackgroundWorkCompleting = new ManualResetEventSlim(initialState: false),
                 NotifyBackgroundWorkCompleted = new ManualResetEventSlim(initialState: false),
             };
+
+            queue.Initialize(projectManager);
 
             // Act & Assert
             queue.Enqueue(project, project.GetDocument(Documents[0].FilePath));

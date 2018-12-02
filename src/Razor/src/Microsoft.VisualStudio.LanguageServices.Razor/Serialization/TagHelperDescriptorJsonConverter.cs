@@ -131,7 +131,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             writer.WriteEndObject();
         }
 
-        private void WriteAllowedChildTags(JsonWriter writer, AllowedChildTagDescriptor allowedChildTag, JsonSerializer serializer)
+        private static void WriteAllowedChildTags(JsonWriter writer, AllowedChildTagDescriptor allowedChildTag, JsonSerializer serializer)
         {
             writer.WriteStartObject();
 
@@ -147,7 +147,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             writer.WriteEndObject();
         }
 
-        private void WriteBoundAttribute(JsonWriter writer, BoundAttributeDescriptor boundAttribute, JsonSerializer serializer)
+        private static void WriteBoundAttribute(JsonWriter writer, BoundAttributeDescriptor boundAttribute, JsonSerializer serializer)
         {
             writer.WriteStartObject();
 
@@ -192,7 +192,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             writer.WriteEndObject();
         }
 
-        private void WriteTagMatchingRule(JsonWriter writer, TagMatchingRuleDescriptor ruleDescriptor, JsonSerializer serializer)
+        private static void WriteTagMatchingRule(JsonWriter writer, TagMatchingRuleDescriptor ruleDescriptor, JsonSerializer serializer)
         {
             writer.WriteStartObject();
 
@@ -219,7 +219,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             writer.WriteEndObject();
         }
 
-        private void WriteRequiredAttribute(JsonWriter writer, RequiredAttributeDescriptor requiredAttribute, JsonSerializer serializer)
+        private static void WriteRequiredAttribute(JsonWriter writer, RequiredAttributeDescriptor requiredAttribute, JsonSerializer serializer)
         {
             writer.WriteStartObject();
 
@@ -241,7 +241,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             writer.WriteEndObject();
         }
 
-        private void ReadTagMatchingRule(TagMatchingRuleDescriptorBuilder builder, JObject rule, JsonSerializer serializer)
+        private static void ReadTagMatchingRule(TagMatchingRuleDescriptorBuilder builder, JObject rule, JsonSerializer serializer)
         {
             var tagName = rule[nameof(TagMatchingRuleDescriptor.TagName)].Value<string>();
             var attributes = rule[nameof(TagMatchingRuleDescriptor.Attributes)].Value<JArray>();
@@ -267,7 +267,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             }
         }
 
-        private void ReadRequiredAttribute(RequiredAttributeDescriptorBuilder builder, JObject attribute, JsonSerializer serializer)
+        private static void ReadRequiredAttribute(RequiredAttributeDescriptorBuilder builder, JObject attribute, JsonSerializer serializer)
         {
             var name = attribute[nameof(RequiredAttributeDescriptor.Name)].Value<string>();
             var nameComparison = attribute[nameof(RequiredAttributeDescriptor.NameComparison)].Value<int>();
@@ -288,7 +288,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             }
         }
 
-        private void ReadAllowedChildTag(AllowedChildTagDescriptorBuilder builder, JObject childTag, JsonSerializer serializer)
+        private static void ReadAllowedChildTag(AllowedChildTagDescriptorBuilder builder, JObject childTag, JsonSerializer serializer)
         {
             var name = childTag[nameof(AllowedChildTagDescriptor.Name)].Value<string>();
             var displayName = childTag[nameof(AllowedChildTagDescriptor.DisplayName)].Value<string>();
@@ -305,7 +305,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             }
         }
 
-        private void ReadBoundAttribute(BoundAttributeDescriptorBuilder builder, JObject attribute, JsonSerializer serializer)
+        private static void ReadBoundAttribute(BoundAttributeDescriptorBuilder builder, JObject attribute, JsonSerializer serializer)
         {
             var descriptorKind = attribute[nameof(BoundAttributeDescriptor.Kind)].Value<string>();
             var name = attribute[nameof(BoundAttributeDescriptor.Name)].Value<string>();

@@ -19,10 +19,6 @@ using Microsoft.VisualStudio.ProjectSystem.Properties;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Item = System.Collections.Generic.KeyValuePair<string, System.Collections.Immutable.IImmutableDictionary<string, string>>;
 
-#if WORKSPACE_PROJECT_CONTEXT_FACTORY
-using IWorkspaceProjectContextFactory = Microsoft.VisualStudio.LanguageServices.ProjectSystem.IWorkspaceProjectContextFactory2;
-#endif
-
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     // Somewhat similar to https://github.com/dotnet/project-system/blob/fa074d228dcff6dae9e48ce43dd4a3a5aa22e8f0/src/Microsoft.VisualStudio.ProjectSystem.Managed/ProjectSystem/LanguageServices/LanguageServiceHost.cs
@@ -30,18 +26,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     // This class is responsible for intializing the Razor ProjectSnapshotManager for cases where
     // MSBuild provides configuration support (>= 2.1).
     [AppliesTo("DotNetCoreRazor & DotNetCoreRazorConfiguration")]
-    [ExportVsProfferedProjectService(typeof(IVsContainedLanguageProjectNameProvider))]
     [Export(ExportContractNames.Scopes.UnconfiguredProject, typeof(IProjectDynamicLoadComponent))]
-    internal class DefaultRazorProjectHost : RazorProjectHostBase, IVsContainedLanguageProjectNameProvider
+    internal class DefaultRazorProjectHost : RazorProjectHostBase
     {
         private IDisposable _subscription;
 
         [ImportingConstructor]
         public DefaultRazorProjectHost(
             IUnconfiguredProjectCommonServices commonServices,
-            [Import(typeof(VisualStudioWorkspace))] Workspace workspace,
-            Lazy<IWorkspaceProjectContextFactory> projectContextFactory)
-            : base(commonServices, workspace, projectContextFactory)
+            [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
+            : base(commonServices, workspace)
         {
         }
 
@@ -77,9 +71,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     Rules.RazorConfiguration.SchemaName,
                     Rules.RazorExtension.SchemaName,
                     Rules.RazorGenerateWithTargetPath.SchemaName,
-                    ManagedProjectSystemSchema.CompilerCommandLineArgs.SchemaName,
-                    ManagedProjectSystemSchema.ConfigurationGeneral.SchemaName,
-                    ManagedProjectSystemSchema.ResolvedCompilationReference.SchemaName,
                 });
         }
 
@@ -119,14 +110,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                         var documents = GetCurrentDocuments(update.Value);
                         var changedDocuments = GetChangedAndRemovedDocuments(update.Value);
 
-                        var references = GetReferences(update.Value);
-                        TryGetCommandLineOptions(update.Value.CurrentState, out var commandLineOptions);
-
                         await UpdateAsync(() =>
                         {
                             UpdateProjectUnsafe(hostProject);
-                            UpdateWorkspaceProjectOptionsUnsafe(commandLineOptions);
-                            UpdateWorkspaceProjectReferencesUnsafe(references);
 
                             for (var i = 0; i < changedDocuments.Length; i++)
                             {
@@ -144,7 +130,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                         // Ok we can't find a configuration. Let's assume this project isn't using Razor then.
                         await UpdateAsync(UninitializeProjectUnsafe).ConfigureAwait(false);
                     }
-                });
+                }).ConfigureAwait(false);
             }, registerFaultHandler: true);
         }
 
@@ -318,77 +304,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             extensions = extensionList.ToArray();
             return true;
         }
-
-
-        // This is temporary code for initializing the companion project. We expect
-        // this to be provided by the Managed Project System in the near future.
-        internal static bool TryGetReferences(
-            IImmutableDictionary<string, IProjectRuleSnapshot> state,
-            out string[] references)
-        {
-            if (!state.TryGetValue(ManagedProjectSystemSchema.ResolvedCompilationReference.ItemName, out var rule))
-            {
-                references = null;
-                return false;
-            }
-
-            var items = rule.Items;
-            var referencesList = new List<string>();
-            foreach (var item in items)
-            {
-                var reference = item.Key;
-                if (!referencesList.Contains(reference, FilePathComparer.Instance))
-                {
-                    referencesList.Add(reference);
-                }
-            }
-
-            references = referencesList.ToArray();
-            return true;
-        }
-
-        // This is temporary code for initializing the companion project. We expect
-        // this to be provided by the Managed Project System in the near future.
-        internal static bool TryGetCommandLineOptions(
-            IImmutableDictionary<string, IProjectRuleSnapshot> state,
-            out string commandLineOptions)
-        {
-            if (!state.TryGetValue(ManagedProjectSystemSchema.CompilerCommandLineArgs.ItemName, out var rule))
-            {
-                commandLineOptions = null;
-                return false;
-            }
-
-            commandLineOptions = string.Join(" ", rule.Items.Select(kvp => kvp.Key));
-            return true;
-        }
-
-        // This is temporary code for initializing the companion project. We expect
-        // this to be provided by the Managed Project System in the near future.
-        internal static bool TryGetTargetPath(
-            IImmutableDictionary<string, IProjectRuleSnapshot> state,
-            out string targetPath)
-        {
-            if (!state.TryGetValue(ManagedProjectSystemSchema.ConfigurationGeneral.SchemaName, out var rule))
-            {
-                targetPath = null;
-                return false;
-            }
-
-            if (!rule.Properties.TryGetValue(ManagedProjectSystemSchema.ConfigurationGeneral.TargetPathPropertyName, out targetPath))
-            {
-                targetPath = null;
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(targetPath))
-            {
-                targetPath = null;
-                return false;
-            }
-
-            return true;
-        }
         
         private HostDocument[] GetCurrentDocuments(IProjectSubscriptionUpdate update)
         {
@@ -435,38 +350,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
 
             return documents.ToArray();
-        }
-
-        // This is temporary code for initializing the companion project. We expect
-        // this to be provided by the Managed Project System in the near future.
-        private string[] GetReferences(IProjectSubscriptionUpdate update)
-        {
-            if (!TryGetReferences(update.CurrentState, out var references))
-            {
-                return Array.Empty<string>();
-            }
-
-            if (TryGetTargetPath(update.CurrentState, out var targetPath))
-            {
-                references = references.Concat(new[] { targetPath, }).ToArray();
-            }
-
-            return references;
-        }
-
-        // This is temporary code for initializing the companion project. We expect
-        // this to be provided by the Managed Project System in the near future.
-        public int GetProjectName([In] uint itemid, [MarshalAs(UnmanagedType.BStr)] out string pbstrProjectName)
-        {
-            if (Current == null)
-            {
-                pbstrProjectName = null;
-
-                return VSConstants.E_INVALIDARG;
-            }
-
-            pbstrProjectName = Path.GetFileNameWithoutExtension(Current.FilePath) + " (Razor)";
-            return VSConstants.S_OK;
         }
     }
 }

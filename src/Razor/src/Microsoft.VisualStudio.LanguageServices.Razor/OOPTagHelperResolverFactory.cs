@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Editor.Razor;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
+    [System.Composition.Shared]
     [ExportLanguageServiceFactory(typeof(TagHelperResolver), RazorLanguage.Name, ServiceLayer.Host)]
     internal class OOPTagHelperResolverFactory : ILanguageServiceFactory
     {

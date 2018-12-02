@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Reflection;
 using Microsoft.VisualStudio.Shell;
 
@@ -39,7 +40,7 @@ namespace Microsoft.VisualStudio.RazorExtension
             using (var key = context.CreateKey(GetKeyName()))
             {
                 key.SetValue(null, _nameId);
-                key.SetValue("Package", Guid.Parse(_packageGuid).ToString("B"));
+                key.SetValue("Package", Guid.Parse(_packageGuid).ToString("B", CultureInfo.InvariantCulture));
                 key.SetValue("ProductDetails", _detailsId);
                 key.SetValue("UseInterface", false);
                 key.SetValue("UseVSProductID", false);
