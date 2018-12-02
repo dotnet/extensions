@@ -9,6 +9,7 @@ variables:
     # These are needed to suppress a warning in the cibuild invocation since AzDO leaves the `$(_SignArgs)` in place and it fails to resolve.
     _SignArgs: ''
     _OfficialBuildIdArgs: ''
+    _PublishArgs: ''
 
   # Variables for internal Official builds
   ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
@@ -17,6 +18,7 @@ variables:
     _SignType: test
     _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
     _OfficialBuildIdArgs: /p:OfficialBuildId=$(Build.BuildNumber)
+    _PublishArgs: '/p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat) /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)'
  
 resources:
   containers:
@@ -55,6 +57,7 @@ phases:
         -prepareMachine
         $(_SignArgs)
         $(_OfficialBuildIdArgs)
+        $(_PublishArgs)
       name: Build
       displayName: Build
       condition: succeeded()
