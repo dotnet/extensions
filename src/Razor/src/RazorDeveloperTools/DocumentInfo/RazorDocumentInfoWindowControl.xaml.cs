@@ -12,11 +12,4 @@ namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
             this.InitializeComponent();
         }
     }
-
-    internal static class RazorDocumentInfoWindowControl_Workaround
-    {
-        public static void InitializeComponent(this RazorDocumentInfoWindowControl _)
-        {
-        }
-    }
 }
