@@ -121,4 +121,10 @@ using Microsoft.VisualStudio.Shell;
       <FileWrites Include="$(_GeneratedVSIXBindingRedirectFile)" />
     </ItemGroup>
   </Target>
+
+  <Target Name="_RemoveAnalyzers" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" />
+    </ItemGroup>
+  </Target>
 </Project>
