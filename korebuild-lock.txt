@@ -1,2 +1,0 @@
-version:3.0.0-build-20181211.1
-commithash:e746b2b3c66fc02cd1a400d8a9d8307186ed6bce

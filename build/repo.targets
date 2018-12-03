@@ -4,16 +4,6 @@
     <Message Importance="high" Text="##vso[build.addbuildtag]release-candidate" Condition=" '$(IsFinalBuild)' == 'true' " />
   </Target>
 
-  <Target Name="PublishToBAR">
-    <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\tools.proj"
-             Targets="Restore"
-             Properties="$(BuildProperties);RestorePackagesPath=$(RepositoryRoot).packages\" />
-
-    <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\publish.proj"
-             Targets="Publish"
-             Properties="$(BuildProperties);RestorePackagesPath=$(RepositoryRoot).packages\" />
-  </Target>
-
   <Target Name="GenerateProjectList" DependsOnTargets="ResolveProjects">
     <MSBuild Projects="@(ProjectToBuild)"
              Targets="GetReferencesProvided"

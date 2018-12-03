@@ -36,3 +36,5 @@ node_modules/
 .testPublish/
 BenchmarkDotNet.Artifacts/
 *.binlog
+.dotnet/
+**/src/xlf/

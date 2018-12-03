@@ -3,17 +3,14 @@
     Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
     Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
 
-  <Import Project="version.props" />
-
   <PropertyGroup>
     <Product>Microsoft .NET Extensions</Product>
     <RepositoryUrl>https://github.com/aspnet/Extensions</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)eng\AspNetCore.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <StrongNameKeyId>MicrosoftAspNet</StrongNameKeyId>
     <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts\</ArtifactsDir>
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\build\</PackageOutputPath>
     <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\src\</SharedSourceRoot>
@@ -21,6 +18,8 @@
     <BasePackageOutputPath>$(ArtifactsConfigurationDir)packages\</BasePackageOutputPath>
     <ProductPackageOutputPath>$(BasePackageOutputPath)product\</ProductPackageOutputPath>
     <InternalPackageOutputPath>$(BasePackageOutputPath)internal\</InternalPackageOutputPath>
+    <DebugType>portable</DebugType>
+    <LangVersion>7.3</LangVersion>
 
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
 
@@ -38,20 +37,17 @@
     <IncludeSymbols>true</IncludeSymbols>
 
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+    <ImportNetSdkFromRepoToolset>false</ImportNetSdkFromRepoToolset>
   </PropertyGroup>
 
   <PropertyGroup>
     <DeveloperBuildTestTfms>netcoreapp3.0</DeveloperBuildTestTfms>
     <StandardTestTfms>$(DeveloperBuildTestTfms)</StandardTestTfms>
-    <StandardTestTfms Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(StandardTestTfms);net461</StandardTestTfms>
   </PropertyGroup>
 
+  <Import Project="build\repo.props" />
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\PatchConfig.props" />
   <Import Project="eng\ProjectReferences.props" />
-  <Import Project="eng\Sources.props" />
-
-  <ItemGroup>
-    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
-  </ItemGroup>
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 </Project>

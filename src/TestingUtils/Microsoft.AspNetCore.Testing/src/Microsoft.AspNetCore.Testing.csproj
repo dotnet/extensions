@@ -13,6 +13,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Testing.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.Win32.Registry" />
     <Reference Include="System.ValueTuple" />
     <Reference Include="xunit.assert" />

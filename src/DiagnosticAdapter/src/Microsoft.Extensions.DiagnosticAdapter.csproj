@@ -9,6 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.DiagnosticAdapter.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="System.Diagnostics.DiagnosticSource" />
   </ItemGroup>
 

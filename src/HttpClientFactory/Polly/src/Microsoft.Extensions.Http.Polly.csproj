@@ -14,6 +14,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Http.Polly.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\**\*.cs" />
   </ItemGroup>
 

@@ -15,6 +15,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.DependencyInjection.Tests" />
+    <InternalsVisibleTo Include="Microsoft.Extensions.DependencyInjection.Performance" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 

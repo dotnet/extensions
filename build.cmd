@@ -1,2 +1,4 @@
-@ECHO OFF
-PowerShell -NoProfile -NoLogo -ExecutionPolicy unrestricted -Command "[System.Threading.Thread]::CurrentThread.CurrentCulture = ''; [System.Threading.Thread]::CurrentThread.CurrentUICulture = '';& '%~dp0build.ps1' %*; exit $LASTEXITCODE"
+@echo off
+powershell -ExecutionPolicy ByPass -NoProfile %~dp0eng\build.ps1 %*
+echo Build.cmd ErrorLevel=%ERRORLEVEL%
+exit /b %ERRORLEVEL%

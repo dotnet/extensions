@@ -11,6 +11,10 @@ Microsoft.Extensions.DependencyInjection.IServiceCollection</Description>
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.DependencyInjection.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ParameterDefaultValue\*.cs" />
     <Compile Include="$(SharedSourceRoot)ActivatorUtilities\*.cs" />
   </ItemGroup>

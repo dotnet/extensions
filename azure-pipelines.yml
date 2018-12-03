@@ -18,7 +18,7 @@ pr:
 name: $(Date:yyyyMMdd).$(Rev:rr)
 
 jobs:
-- template: eng/templates/default-build.yml
+- template: eng/common/templates/jobs/jobs.yml
   parameters:
     agentOs: Windows
     configuration: Release
@@ -29,12 +29,29 @@ jobs:
       name: artifacts
       path: artifacts/
 
-- template: eng/templates/default-build.yml
-  parameters:
-    agentOs: macOS
-    configuration: Release
-
-- template: eng/templates/default-build.yml
-  parameters:
-    agentOs: Linux
-    configuration: Release
+    - job: Linux
+      container: LinuxContainer
+      pool:
+        ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+          name: dnceng-linux-external-temp
+        ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+          name: dnceng-linux-internal-temp
+      strategy:
+        matrix:
+          Build_Debug:
+            _BuildConfig: Debug
+            _PublishType: none
+            _SignType: none
+            _DotNetPublishToBlobFeed : false
+          Build_Release:
+            _BuildConfig: Release
+            _PublishType: none
+            _SignType: none
+            _DotNetPublishToBlobFeed : false
+      steps:
+      - checkout: self
+        clean: true
+      - script: eng/common/cibuild.sh
+          --configuration $(_BuildConfig)
+          --prepareMachine
+        displayName: Unix Build / Publish

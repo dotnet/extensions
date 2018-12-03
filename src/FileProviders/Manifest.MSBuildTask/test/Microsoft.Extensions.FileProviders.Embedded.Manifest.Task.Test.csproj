@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="xunit" />
     <Reference Include="Microsoft.Build" />
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities.Core" />

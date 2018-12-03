@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.FileProviders.Embedded.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
     <ProjectReference Include="..\..\Manifest.MSBuildTask\src\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" />
   </ItemGroup>

@@ -42,6 +42,8 @@
     <VerifyVersion>false</VerifyVersion>
   </PropertyGroup>
 
+  <Import Project="build\repo.targets" />
   <Import Project="eng\targets\Packaging.targets" Condition=" '$(MSBuildProjectExtension)' == '.csproj' " />
   <Import Project="eng\targets\ResolveReferences.targets" Condition=" '$(DisableReferenceRestrictions)' != 'true' AND '$(MSBuildProjectExtension)' == '.csproj' " />
+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 </Project>
