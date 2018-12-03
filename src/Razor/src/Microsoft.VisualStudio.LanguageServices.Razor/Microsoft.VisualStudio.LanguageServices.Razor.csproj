@@ -24,7 +24,7 @@
     <PackageReference Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="$(VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.LanguageServices" Version="$(VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.OLE.Interop" Version="$(MicrosoftVisualStudioOLEInteropPackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" Version="$(MicrosoftVisualStudioProjectSystemManagedVSPackageVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" Version="$(MicrosoftVisualStudioProjectSystemManagedVSPackageVersion)" ExcludeAssets="analyzers" />
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem.SDK" Version="$(MicrosoftVisualStudioProjectSystemSDKPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="$(MicrosoftVisualStudioShell150PackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.10.0" Version="$(MicrosoftVisualStudioShellInterop100PackageVersion)" />
@@ -143,6 +143,12 @@
   <Target Name="GrossProjectSystemSDKWorkaround" AfterTargets="GenerateRulePrep">
     <ItemGroup>
       <Compile Remove="@(XamlPropertyRule->'$(IntermediateOutputPath)%(FileName)$(DefaultLanguageSourceExtension)')" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_RemoveAnalyzers" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" />
     </ItemGroup>
   </Target>
 </Project>

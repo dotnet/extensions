@@ -49,4 +49,9 @@
     <PackageReference Include="StreamJsonRpc" Version="$(StreamJsonRpcPackageVersion)" />
   </ItemGroup>
 
+  <Target Name="_RemoveAnalyzers" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" />
+    </ItemGroup>
+  </Target>
 </Project>
