@@ -28,6 +28,8 @@
   <Package Id="Microsoft.Extensions.Hosting" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.Http.Polly" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.Http" Version="2.1.1" />
+  <Package Id="Microsoft.Extensions.Localization.Abstractions" Version="2.1.1" />
+  <Package Id="Microsoft.Extensions.Localization" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.Logging.Abstractions" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.Logging.AzureAppServices" Version="2.1.1" />
   <Package Id="Microsoft.Extensions.Logging.Configuration" Version="2.1.1" />

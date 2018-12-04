@@ -31,6 +31,8 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.Hosting" ProjectPath="$(RepositoryRoot)src\Hosting\Hosting\src\Microsoft.Extensions.Hosting.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Http" ProjectPath="$(RepositoryRoot)src\HttpClientFactory\Http\src\Microsoft.Extensions.Http.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Http.Polly" ProjectPath="$(RepositoryRoot)src\HttpClientFactory\Polly\src\Microsoft.Extensions.Http.Polly.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Localization.Abstractions" ProjectPath="$(RepositoryRoot)src\Localization\Abstractions\src\Microsoft.Extensions.Localization.Abstractions.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Localization" ProjectPath="$(RepositoryRoot)src\Localization\Localization\src\Microsoft.Extensions.Localization.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.Abstractions" ProjectPath="$(RepositoryRoot)src\Logging\Logging.Abstractions\src\Microsoft.Extensions.Logging.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.Analyzers" ProjectPath="$(RepositoryRoot)src\Logging\Logging.Analyzers\src\Microsoft.Extensions.Logging.Analyzers.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.AzureAppServices" ProjectPath="$(RepositoryRoot)src\Logging\Logging.AzureAppServices\src\Microsoft.Extensions.Logging.AzureAppServices.csproj" />
