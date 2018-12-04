@@ -1,6 +1,8 @@
 variables:
   Build.Repository.Clean: true
   _TeamName: DotNetCore
+  _DotNetPublishToBlobFeed : true
+  _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
   
   # Variables for public PR builds
   ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'github')) }}:
@@ -18,7 +20,11 @@ variables:
     _SignType: test
     _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
     _OfficialBuildIdArgs: /p:OfficialBuildId=$(Build.BuildNumber)
-    _PublishArgs: '/p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat) /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)'
+    _PublishArgs: /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
+      /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
+      /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
+      /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+      /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
  
 resources:
   containers:
@@ -52,6 +58,12 @@ phases:
         release:
           _BuildConfig: Release
     steps:
+    - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
+      - task: AzureKeyVault@1
+        inputs:
+          azureSubscription: 'DotNet-Engineering-Services_KeyVault'
+          KeyVaultName: EngKeyVault
+          SecretsFilter: 'dotnetfeed-storage-access-key-1,microsoft-symbol-server-pat,symweb-symbol-server-pat'
     # workaround for dotnet/arcade#1425 (revert to cibuild.cmd once fixed)
     - script: eng\build-no-publish.cmd 
         -configuration $(_BuildConfig)
@@ -186,3 +198,14 @@ phases:
       condition: always()
     variables:
       _HelixBuildConfig: $(_BuildConfig)
+
+# Closing Phase for publishing - must come after and list all other jobs
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
+  - template: /eng/common/templates/phases/publish-build-assets.yml
+    parameters:
+      dependsOn:
+        - Windows
+        - macOS
+        - Linux
+      queue:
+        name: Hosted VS2017
