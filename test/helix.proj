@@ -3,7 +3,6 @@
   <!-- Version included until we get global.json generation to support this SDK. -->
   <Sdk Name="Microsoft.DotNet.Helix.Sdk" Version="1.0.0-beta.18575.1" />
 
-
   <Target Name="Gather" BeforeTargets="Test">
     <ItemGroup>
       <ProjectsToTest Include="$(ProjectsToTest)" />
@@ -19,7 +18,6 @@
       </HelixCorrelationPayload>
       <HelixWorkItem Include="%(TestPayload.TestName)">
         <Command>%(TestPayload.Command)</Command>
-        <!-- <PayloadDirectory>%(TestPayload.Identity)</PayloadDirectory> -->
         <Timeout>%(TestPayload.TestTimeout)</Timeout>
       </HelixWorkItem>
     </ItemGroup>
@@ -30,10 +28,9 @@
     <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
     <HelixSource>pr/aspnet/extensions</HelixSource>
     <HelixType>ci</HelixType>
-    <!-- TODO: use package version -->
     <HelixBuild Condition=" '$(CI)' == 'true' ">$(BUILD_BUILDNUMBER)</HelixBuild>
-    <HelixBuild>haok-11-29-2</HelixBuild>
-    <WaitForWorkItemCompletion>false</WaitForWorkItemCompletion>
+    <HelixBuild Condition=" '$(CI)' == 'false' ">private-$(USERNAME)</HelixBuild>
+    <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
 
     <HelixTargetQueues>Windows.10.Amd64.Open;Ubuntu.1604.Amd64.Open;RedHat.73.Amd64;OSX.1012.Amd64.Open</HelixTargetQueues>
     

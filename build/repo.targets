@@ -51,7 +51,6 @@
     <DefaultHelixTestTimeout>00:30:00</DefaultHelixTestTimeout>
   </PropertyGroup>
 
-  <!-- TODO: What should this depend on? Fails after clean build -->
   <Target Name="Helix" DependsOnTargets="ResolveProjects;Restore">
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\test\helix.proj"
              Targets="Test"
