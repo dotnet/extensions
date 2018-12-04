@@ -52,7 +52,7 @@
   </PropertyGroup>
 
   <!-- TODO: What should this depend on? Fails after clean build -->
-  <Target Name="Helix" DependsOnTargets="ResolveProjects">
+  <Target Name="Helix" DependsOnTargets="ResolveProjects;Restore">
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\test\helix.proj"
              Targets="Test"
              Properties="ProjectsToTest=$(ProjectToBuildList)"
