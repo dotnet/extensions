@@ -12,6 +12,7 @@
     -->
     <EnableApiCheck>false</EnableApiCheck>
     <IsTestProject>false</IsTestProject>
+    <IsUnitTestProject>false</IsUnitTestProject>
   </PropertyGroup>
 
   <ItemGroup>
