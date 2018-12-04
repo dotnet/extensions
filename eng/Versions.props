@@ -25,6 +25,8 @@
     <VsixVersion Condition="'$(VersionSuffixDateStamp)' == ''">$(VsixVersion).4242424</VsixVersion>
 
     <AddinVersion>7.5</AddinVersion>
+    <AddinVersion Condition="'$(VersionSuffixDateStamp)' != ''">$(AddinVersion).$(VersionSuffixDateStamp)$(VersionSuffixBuildOfTheDayPadded)</AddinVersion>
+    <AddinVersion Condition="'$(VersionSuffixDateStamp)' == ''">$(AddinVersion).4242424</AddinVersion>
   </PropertyGroup>
 
   <PropertyGroup>
