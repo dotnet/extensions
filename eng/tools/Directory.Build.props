@@ -1,2 +1,3 @@
 ﻿<Project>
+  <!-- Intentionally empty to isolate tools projects from the result of the repo -->
 </Project>

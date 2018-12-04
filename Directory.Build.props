@@ -16,16 +16,38 @@
     <IsUnitTestProject Condition="$(MSBuildProjectName.EndsWith('.FunctionalTests'))">true</IsUnitTestProject>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(IsUnitTestProject)' == 'false'">
+    <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
+  </PropertyGroup>
+
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
   <PropertyGroup>
+    <Authors Condition="'$(Authors)' == ''">Microsoft</Authors>
+    <Company Condition="'$(Company)' == ''">Microsoft Corporation.</Company>
+    <Copyright Condition="'$(Copyright)' == ''">© Microsoft Corporation. All rights reserved.</Copyright>
+    <IncludeSymbols Condition="'$(IncludeSymbols)' == ''">true</IncludeSymbols>
+    <NeutralLanguage Condition="'$(NeutralLanguage)' == ''">en-US</NeutralLanguage>
+    <PackageLicenseUrl Condition="'$(PackageLicenseUrl)' == ''">https://raw.githubusercontent.com/aspnet/AspNetCore/2.0.0/LICENSE.txt</PackageLicenseUrl>
+    <PackageIconUrl Condition="'$(PackageIconUrl)' == ''">https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
+    <PackageProjectUrl Condition="'$(PackageProjectUrl)' == ''">https://asp.net</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance Condition="'$(PackageRequireLicenseAcceptance)' == ''">true</PackageRequireLicenseAcceptance>
+    <NoPackageAnalysis Condition="'$(NoPackageAnalysis)' == ''">true</NoPackageAnalysis>
+    <Serviceable Condition="'$(Configuration)' == 'Release'">true</Serviceable>
+    <LangVersion Condition="'$(LangVersion)' == ''">7.2</LangVersion>
+    <!-- Instructs the compiler to use SHA256 instead of SHA1 when adding file hashes to PDBs. -->
+    <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
+    <!-- Suppress the message about using a preview version of .NET Core SDK. We are okay with this and don't need the warning. -->
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+
     <Product>Microsoft .NET Extensions</Product>
     <RepositoryUrl>https://github.com/aspnet/Extensions</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <SignAssembly>true</SignAssembly>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <StrongNameKeyId>MicrosoftAspNet</StrongNameKeyId>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts\</ArtifactsDir>
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\build\</PackageOutputPath>
     <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\src\</SharedSourceRoot>
@@ -34,7 +56,6 @@
     <ProductPackageOutputPath>$(BasePackageOutputPath)product\</ProductPackageOutputPath>
     <InternalPackageOutputPath>$(BasePackageOutputPath)internal\</InternalPackageOutputPath>
     <DebugType>portable</DebugType>
-    <LangVersion>7.3</LangVersion>
 
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
 
@@ -45,18 +66,14 @@
     <IsProductComponent>false</IsProductComponent>
 
     <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance'))">true</IsBenchmarkProject>
-    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests')) OR $(MSBuildProjectName.EndsWith('.Test'))">true</IsTestProject>
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('samples'))">true</IsSampleProject>
-
-    <IncludeSymbols>true</IncludeSymbols>
-
-    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
   </PropertyGroup>
 
   <PropertyGroup>
     <DeveloperBuildTestTfms>netcoreapp3.0</DeveloperBuildTestTfms>
     <StandardTestTfms>$(DeveloperBuildTestTfms)</StandardTestTfms>
+    <StandardTestTfms Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(StandardTestTfms);net461</StandardTestTfms>
   </PropertyGroup>
 
   <Import Project="build\repo.props" />

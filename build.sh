@@ -1,3 +1,4 @@
+
 #!/usr/bin/env bash
 
 source="${BASH_SOURCE[0]}"
@@ -13,5 +14,4 @@ while [[ -h $source ]]; do
 done
 
 scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
-"$scriptroot/eng/build.sh" $@
-exit $?
+"$scriptroot/eng/common/build.sh" --pack --build --restore --test $@

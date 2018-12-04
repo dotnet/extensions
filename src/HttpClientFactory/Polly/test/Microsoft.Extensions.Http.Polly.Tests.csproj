@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
-    <StrongNameKeyId>MicrosoftAspNet</StrongNameKeyId>
   </PropertyGroup>
 
   <ItemGroup>

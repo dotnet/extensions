@@ -1,11 +1,11 @@
 variables:
   Build.Repository.Clean: true
-  _TeamName: DotNetCore
+  _TeamName: AspNetCore
 
   # Variables for public PR builds
   ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'github')) }}:
     _HelixType: build/product
-    _HelixSource: pr/aspnet/AspNetCore-Tooling/$(Build.SourceBranch)
+    _HelixSource: pr/aspnet/Extensions/$(Build.SourceBranch)
     # These are needed to suppress a warning in the cibuild invocation since AzDO leaves the `$(_SignArgs)` in place and it fails to resolve.
     _SignArgs: ''
     _OfficialBuildIdArgs: ''
@@ -14,7 +14,7 @@ variables:
   # Variables for internal Official builds
   ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
     _HelixType: build/product
-    _HelixSource: official/aspnet/AspNetCore-Tooling/$(Build.SourceBranch)
+    _HelixSource: official/aspnet/Extensions/$(Build.SourceBranch)
     _SignType: test
     _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
     _OfficialBuildIdArgs: /p:OfficialBuildId=$(Build.BuildNumber)

@@ -11,7 +11,6 @@
       https://github.com/dotnet/corefx/issues/12338 & https://github.com/dotnet/corefx/issues/11797
     -->
     <EnableApiCheck>false</EnableApiCheck>
-    <IsTestProject>false</IsTestProject>
     <IsUnitTestProject>false</IsUnitTestProject>
   </PropertyGroup>
 

@@ -54,7 +54,7 @@
     <LatestPackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" />
   </ItemGroup>
 
-  <!-- These versions mustn't be renamed because they over-ride the implicite package references from Arcade. -->
+  <!-- These versions must not be renamed because they override the implicit package references from Arcade. -->
   <PropertyGroup Label="External dependency versions">
     <XUnitVersion>2.4.0</XUnitVersion>
     <XUnitRunnerVisualStudioVersion>$(XUnitVersion)</XUnitRunnerVisualStudioVersion>
@@ -96,7 +96,7 @@
     <LatestPackageReference Include="Unity.Microsoft.DependencyInjection" Version="2.1.3" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
+  <ItemGroup Condition=" '$(IsUnitTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Moq" />
     <Reference Include="xunit.analyzers" />
