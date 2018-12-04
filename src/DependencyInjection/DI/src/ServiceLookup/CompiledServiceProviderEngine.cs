@@ -9,23 +9,23 @@ namespace Microsoft.Extensions.DependencyInjection.ServiceLookup
     internal abstract class CompiledServiceProviderEngine : ServiceProviderEngine
     {
 #if IL_EMIT
-        public ILEmitResolverBuilder ExpressionResolverBuilder { get; }
+        public ILEmitResolverBuilder ResolverBuilder { get; }
 #else
-        public ExpressionResolverBuilder ExpressionResolverBuilder { get; }
+        public ExpressionResolverBuilder ResolverBuilder { get; }
 #endif
 
         public CompiledServiceProviderEngine(IEnumerable<ServiceDescriptor> serviceDescriptors, IServiceProviderEngineCallback callback) : base(serviceDescriptors, callback)
         {
 #if IL_EMIT
-            ExpressionResolverBuilder = new ILEmitResolverBuilder(RuntimeResolver, this, Root);
+            ResolverBuilder = new ILEmitResolverBuilder(RuntimeResolver, this, Root);
 #else
-            ExpressionResolverBuilder = new ExpressionResolverBuilder(RuntimeResolver, this, Root);
+            ResolverBuilder = new ExpressionResolverBuilder(RuntimeResolver, this, Root);
 #endif
         }
 
         protected override Func<ServiceProviderEngineScope, object> RealizeService(ServiceCallSite callSite)
         {
-            var realizedService = ExpressionResolverBuilder.Build(callSite);
+            var realizedService = ResolverBuilder.Build(callSite);
             RealizedServices[callSite.ServiceType] = realizedService;
             return realizedService;
         }
