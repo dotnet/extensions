@@ -1,6 +1,6 @@
 variables:
   Build.Repository.Clean: true
-  _TeamName: DotNetCore
+  _TeamName: AspNetCore
   _DotNetPublishToBlobFeed : true
   _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
   
@@ -17,7 +17,7 @@ variables:
   ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
     _HelixType: build/product
     _HelixSource: official/aspnet/AspNetCore-Tooling/$(Build.SourceBranch)
-    _SignType: test
+    _SignType: real
     _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
     _OfficialBuildIdArgs: /p:OfficialBuildId=$(Build.BuildNumber)
     _PublishArgs: /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
