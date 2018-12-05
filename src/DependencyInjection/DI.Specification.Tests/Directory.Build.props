@@ -3,5 +3,7 @@
 
   <PropertyGroup>
     <IsProductComponent>true</IsProductComponent>
+    <IsUnitTestProject>false</IsUnitTestProject>
+    <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 </Project>
