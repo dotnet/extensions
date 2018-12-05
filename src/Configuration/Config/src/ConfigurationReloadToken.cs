@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Configuration
     /// <summary>
     /// Implements <see cref="IChangeToken"/>
     /// </summary>
-    public class ConfigurationReloadToken : IChangeToken
+    public class ConfigurationReloadToken : IChangeToken, IDisposable
     {
         private CancellationTokenSource _cts = new CancellationTokenSource();
 
@@ -37,5 +37,10 @@ namespace Microsoft.Extensions.Configuration
         /// Used to trigger the change token when a reload occurs.
         /// </summary>
         public void OnReload() => _cts.Cancel();
+
+        /// <summary>
+        /// Disposes the underlying CancellationTokenSource.
+        /// </summary>
+        public void Dispose() => _cts.Dispose();
     }
 }

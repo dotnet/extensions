@@ -126,6 +126,7 @@ namespace Microsoft.Extensions.Configuration
         {
             var previousToken = Interlocked.Exchange(ref _changeToken, new ConfigurationReloadToken());
             previousToken.OnReload();
+            previousToken.Dispose();
         }
     }
 }
