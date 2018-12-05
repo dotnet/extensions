@@ -1,7 +1,7 @@
 variables:
   Build.Repository.Clean: true
   _TeamName: AspNetCore
-  _DotNetPublishToBlobFeed : true
+  _DotNetPublishToBlobFeed : false
   _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
   
   # Variables for public PR builds
@@ -57,6 +57,7 @@ phases:
           _BuildConfig: Debug
         release:
           _BuildConfig: Release
+          _DotNetPublishToBlobFeed: true
     steps:
     - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
       - task: AzureKeyVault@1
