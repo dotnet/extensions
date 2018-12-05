@@ -19,8 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="BenchmarkDotNet" />
-    <Reference Include="Newtonsoft.Json" />
+    <Dependency Include="BenchmarkDotNet" />
+    <Dependency Include="Newtonsoft.Json" />
   </ItemGroup>
 
 </Project>

@@ -12,7 +12,7 @@ Microsoft.Extensions.Configuration.IConfigurationSection</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Primitives" />
+    <Dependency Include="Microsoft.Extensions.Primitives" />
   </ItemGroup>
 
 </Project>

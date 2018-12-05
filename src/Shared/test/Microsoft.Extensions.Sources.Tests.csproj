@@ -21,12 +21,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="FSharp.Core" />
-    <Reference Include="System.Reflection.Metadata" />
-    <Reference Include="System.Threading.Tasks.Extensions" />
-    <Reference Include="System.Security.Cryptography.Cng" />
-    <Reference Include="System.Runtime.CompilerServices.Unsafe" />
-    <Reference Include="System.IO.Pipelines" />
+    <Dependency Include="FSharp.Core" />
+    <Dependency Include="System.Reflection.Metadata" />
+    <Dependency Include="System.Threading.Tasks.Extensions" />
+    <Dependency Include="System.Security.Cryptography.Cng" />
+    <Dependency Include="System.Runtime.CompilerServices.Unsafe" />
+    <Dependency Include="System.IO.Pipelines" />
   </ItemGroup>
 
 </Project>

@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.WebEncoders" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Dependency Include="Microsoft.Extensions.WebEncoders" />
+    <Dependency Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
 </Project>

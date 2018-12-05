@@ -15,7 +15,7 @@ Microsoft.Extensions.FileProviders.IFileProvider</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Primitives" />
+    <Dependency Include="Microsoft.Extensions.Primitives" />
   </ItemGroup>
 
 </Project>

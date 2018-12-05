@@ -9,16 +9,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Build" />
-    <Reference Include="Microsoft.Build.Framework" />
+    <Dependency Include="Microsoft.Build" />
+    <Dependency Include="Microsoft.Build.Framework" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
-    <Reference Include="Microsoft.Build.Utilities.Core" />
+    <Dependency Include="Microsoft.Build.Utilities.Core" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <Reference Include="Microsoft.Build.Utilities.v4.0" />
+    <Dependency Include="Microsoft.Build.Utilities.v4.0" />
   </ItemGroup>
 
 </Project>

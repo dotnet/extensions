@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration.Ini" />
-    <Reference Include="Microsoft.Extensions.Configuration.Test.Common" />
+    <Dependency Include="Microsoft.Extensions.Configuration.Ini" />
+    <Dependency Include="Microsoft.Extensions.Configuration.Test.Common" />
   </ItemGroup>
 
 </Project>

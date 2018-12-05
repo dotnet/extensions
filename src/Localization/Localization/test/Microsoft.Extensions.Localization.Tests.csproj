@@ -5,9 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Localization" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Dependency Include="Microsoft.Extensions.Localization" />
+    <Dependency Include="Microsoft.Extensions.DependencyInjection" />
+    <Dependency Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 
 </Project>

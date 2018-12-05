@@ -36,7 +36,7 @@
     <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference)" />
     <_ExplicitPackageReference Remove="Internal.AspNetCore.Sdk" />
 
-    <UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
+    <UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Dependency)" />
 
     <!-- Order matters. Projects should be used when possible instead of packages. -->
     <_ProjectReferenceByAssemblyName Condition="'$(UseProjectReferences)' == 'true'"
@@ -45,7 +45,7 @@
 
     <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" />
 
-    <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
+    <Dependency Remove="@(_ProjectReferenceByAssemblyName)" />
   </ItemGroup>
 
   <!-- Ensure package output paths are available. -->
@@ -55,23 +55,23 @@
 
   <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences" Condition=" '$(TargetFramework)' != '' ">
     <ItemGroup>
-      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName)" />
+      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Dependency);@(_ProjectReferenceByAssemblyName)" />
 
       <!--
         MSBuild does not provide a way to join on matching identities in a Condition,
         but you can do a cartesian product of two item groups and filter out mismatched id's in a second pass.
       -->
-      <_LatestPackageReferenceWithVersion Include="@(Reference)" Condition=" '$(UseLatestPackageReferences)' == 'true' ">
+      <_LatestPackageReferenceWithVersion Include="@(Dependency)" Condition=" '$(UseLatestPackageReferences)' == 'true' ">
         <Id>%(LatestPackageReference.Identity)</Id>
         <Version>%(LatestPackageReference.Version)</Version>
       </_LatestPackageReferenceWithVersion>
       <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
 
       <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
-      <Reference Remove="@(_LatestPackageReferenceWithVersion)" />
+      <Dependency Remove="@(_LatestPackageReferenceWithVersion)" />
       <PackageReference Include="@(_LatestPackageReferenceWithVersion)" IsImplicitlyDefined="true" />
 
-      <_BaselinePackageReferenceWithVersion Include="@(Reference)" Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
+      <_BaselinePackageReferenceWithVersion Include="@(Dependency)" Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
         <Id>%(BaselinePackageReference.Identity)</Id>
         <Version>%(BaselinePackageReference.Version)</Version>
       </_BaselinePackageReferenceWithVersion>
@@ -80,7 +80,7 @@
 
       <!-- Remove reference items that have been resolved to a BaselinePackageReference item. -->
       <PackageReference Include="@(_BaselinePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
-      <Reference Remove="@(_BaselinePackageReferenceWithVersion)" />
+      <Dependency Remove="@(_BaselinePackageReferenceWithVersion)" />
 
       <!-- Free up memory for unnecessary items -->
       <_BaselinePackageReferenceWithVersion Remove="@(_BaselinePackageReferenceWithVersion)" />
@@ -89,7 +89,7 @@
     </ItemGroup>
 
     <Error Condition="@(_ExplicitPackageReference->Count()) != 0"
-           Text="PackageReference items are not allowed. Use &lt;Reference&gt; instead. " />
+           Text="PackageReference items are not allowed. Use &lt;Dependency&gt; instead. " />
 
     <ItemGroup>
       <_ExplicitPackageReference Remove="@(_ExplicitPackageReference)" />
@@ -98,9 +98,13 @@
     <Warning Condition="@(UnusedBaselinePackageReference->Count()) != 0"
              Text="Package references changed since the last release. This could be a breaking change. References removed:%0A - @(UnusedBaselinePackageReference, '%0A -')" />
 
-    <Error Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)')"
+    <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+      <Reference Include="@(Dependency)" />
+    </ItemGroup>
+
+    <Error Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Dependency.Identity)' != '' AND ! Exists('%(Dependency.Identity)')"
            Code="MSB3245"
-           Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;" />
+           Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Dependency.Identity)&quot;" />
   </Target>
 
   <Target Name="GetReferencesProvided" Returns="@(ProvidesReference)">

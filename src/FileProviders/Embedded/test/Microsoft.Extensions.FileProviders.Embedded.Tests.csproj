@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
+    <Dependency Include="Microsoft.Extensions.FileProviders.Embedded" />
   </ItemGroup>
 
 </Project>

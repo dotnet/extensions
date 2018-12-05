@@ -17,8 +17,8 @@ Microsoft.Extensions.Primitives.StringSegment</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="System.Memory" />
-    <Reference Include="System.Runtime.CompilerServices.Unsafe" />
+    <Dependency Include="System.Memory" />
+    <Dependency Include="System.Runtime.CompilerServices.Unsafe" />
   </ItemGroup>
 
 </Project>

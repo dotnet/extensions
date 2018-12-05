@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="System.Diagnostics.DiagnosticSource" />
+    <Dependency Include="System.Diagnostics.DiagnosticSource" />
   </ItemGroup>
 
 </Project>

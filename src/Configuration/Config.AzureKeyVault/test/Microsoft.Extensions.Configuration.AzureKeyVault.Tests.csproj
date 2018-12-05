@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration.AzureKeyVault" />
-    <Reference Include="Microsoft.Extensions.Configuration.Test.Common" />
+    <Dependency Include="Microsoft.Extensions.Configuration.AzureKeyVault" />
+    <Dependency Include="Microsoft.Extensions.Configuration.Test.Common" />
   </ItemGroup>
 
 </Project>

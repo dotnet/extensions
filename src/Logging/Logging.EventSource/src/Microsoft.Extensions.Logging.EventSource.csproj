@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="Newtonsoft.Json" />
+    <Dependency Include="Microsoft.Extensions.Logging" />
+    <Dependency Include="Newtonsoft.Json" />
   </ItemGroup>
 
 </Project>

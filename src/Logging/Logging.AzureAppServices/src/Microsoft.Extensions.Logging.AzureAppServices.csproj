@@ -7,12 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
-    <Reference Include="Microsoft.Extensions.Configuration.Json" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Logging.Configuration" />
-    <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="System.ValueTuple" />
+    <Dependency Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <Dependency Include="Microsoft.Extensions.Configuration.Json" />
+    <Dependency Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Dependency Include="Microsoft.Extensions.Logging.Configuration" />
+    <Dependency Include="Microsoft.Extensions.Logging" />
+    <Dependency Include="System.ValueTuple" />
   </ItemGroup>
 
 </Project>

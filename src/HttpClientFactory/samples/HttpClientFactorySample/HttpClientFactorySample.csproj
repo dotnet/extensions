@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNet.WebApi.Client" />
-    <Reference Include="Microsoft.Extensions.Http" />
-    <Reference Include="Microsoft.Extensions.Http.Polly" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Dependency Include="Microsoft.AspNet.WebApi.Client" />
+    <Dependency Include="Microsoft.Extensions.Http" />
+    <Dependency Include="Microsoft.Extensions.Http.Polly" />
+    <Dependency Include="Microsoft.Extensions.DependencyInjection" />
+    <Dependency Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
 
 </Project>

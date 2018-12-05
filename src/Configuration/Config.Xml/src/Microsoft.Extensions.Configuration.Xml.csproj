@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration" />
-    <Reference Include="Microsoft.Extensions.Configuration.FileExtensions" />
-    <Reference Include="System.Security.Cryptography.Xml" />
+    <Dependency Include="Microsoft.Extensions.Configuration" />
+    <Dependency Include="Microsoft.Extensions.Configuration.FileExtensions" />
+    <Dependency Include="System.Security.Cryptography.Xml" />
   </ItemGroup>
 
 </Project>

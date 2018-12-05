@@ -10,17 +10,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration.FileExtensions" />
-    <Reference Include="Microsoft.Extensions.Configuration.Json" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
-    <Reference Include="Microsoft.Extensions.Logging.AzureAppServices" />
-    <Reference Include="Microsoft.Extensions.Logging.Configuration" />
-    <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Dependency Include="Microsoft.Extensions.Configuration.FileExtensions" />
+    <Dependency Include="Microsoft.Extensions.Configuration.Json" />
+    <Dependency Include="Microsoft.Extensions.DependencyInjection" />
+    <Dependency Include="Microsoft.Extensions.FileProviders.Physical" />
+    <Dependency Include="Microsoft.Extensions.Logging.AzureAppServices" />
+    <Dependency Include="Microsoft.Extensions.Logging.Configuration" />
+    <Dependency Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <Reference Include="Microsoft.Extensions.Logging.EventLog" />
+    <Dependency Include="Microsoft.Extensions.Logging.EventLog" />
   </ItemGroup>
 
 </Project>

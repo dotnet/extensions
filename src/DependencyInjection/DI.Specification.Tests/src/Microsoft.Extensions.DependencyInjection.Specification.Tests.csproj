@@ -15,12 +15,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <Dependency Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="xunit.assert" />
-    <Reference Include="xunit.extensibility.core" />
+    <Dependency Include="xunit.assert" />
+    <Dependency Include="xunit.extensibility.core" />
   </ItemGroup>
 
 </Project>

@@ -8,17 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Hosting" />
+    <Dependency Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
   
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <Reference Include="System.ServiceProcess" />
+    <Dependency Include="System.ServiceProcess" />
   </ItemGroup>
   
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
-    <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
-    <Reference Include="Microsoft.Extensions.Configuration.Json" />
+    <Dependency Include="Microsoft.Extensions.Configuration.CommandLine" />
+    <Dependency Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <Dependency Include="Microsoft.Extensions.Configuration.Json" />
   </ItemGroup>
 
 </Project>

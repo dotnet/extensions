@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
+    <Dependency Include="Microsoft.Extensions.FileProviders.Abstractions" />
   </ItemGroup>
 
 </Project>

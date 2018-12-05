@@ -7,10 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Azure.KeyVault" />
-    <Reference Include="Microsoft.Azure.Services.AppAuthentication" />
-    <Reference Include="Microsoft.Extensions.Configuration" />
-    <Reference Include="Microsoft.Extensions.Configuration.FileExtensions" />
+    <Dependency Include="Microsoft.Azure.KeyVault" />
+    <Dependency Include="Microsoft.Azure.Services.AppAuthentication" />
+    <Dependency Include="Microsoft.Extensions.Configuration" />
+    <Dependency Include="Microsoft.Extensions.Configuration.FileExtensions" />
   </ItemGroup>
 
 </Project>

@@ -7,10 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration.Binder" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Options" />
+    <Dependency Include="Microsoft.Extensions.Configuration.Binder" />
+    <Dependency Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <Dependency Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Dependency Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
 </Project>

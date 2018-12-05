@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration" />
-    <Reference Include="Microsoft.Extensions.Configuration.FileExtensions" />
-    <Reference Include="Newtonsoft.Json" />
+    <Dependency Include="Microsoft.Extensions.Configuration" />
+    <Dependency Include="Microsoft.Extensions.Configuration.FileExtensions" />
+    <Dependency Include="Newtonsoft.Json" />
   </ItemGroup>
 
 </Project>

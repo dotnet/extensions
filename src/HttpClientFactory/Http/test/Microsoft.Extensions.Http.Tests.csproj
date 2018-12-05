@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Http" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Dependency Include="Microsoft.Extensions.Http" />
+    <Dependency Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
 </Project>

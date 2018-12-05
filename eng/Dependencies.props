@@ -75,11 +75,11 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
-    <Reference Include="Microsoft.AspNetCore.Testing" />
-    <Reference Include="Microsoft.NET.Test.Sdk" />
-    <Reference Include="Moq" />
-    <Reference Include="xunit" />
-    <Reference Include="xunit.analyzers" />
-    <Reference Include="xunit.runner.visualstudio" />
+    <Dependency Include="Microsoft.AspNetCore.Testing" />
+    <Dependency Include="Microsoft.NET.Test.Sdk" />
+    <Dependency Include="Moq" />
+    <Dependency Include="xunit" />
+    <Dependency Include="xunit.analyzers" />
+    <Dependency Include="xunit.runner.visualstudio" />
   </ItemGroup>
 </Project>

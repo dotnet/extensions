@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="BenchmarkDotNet" />
+    <Dependency Include="Microsoft.Extensions.DependencyInjection" />
+    <Dependency Include="BenchmarkDotNet" />
   </ItemGroup>
 
   <ItemGroup>

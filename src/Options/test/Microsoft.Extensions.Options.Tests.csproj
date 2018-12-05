@@ -5,9 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
-    <Reference Include="Microsoft.Extensions.Options" />
+    <Dependency Include="Microsoft.Extensions.DependencyInjection" />
+    <Dependency Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <Dependency Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
 </Project>

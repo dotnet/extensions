@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration" />
-    <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
+    <Dependency Include="Microsoft.Extensions.Configuration" />
+    <Dependency Include="Microsoft.Extensions.FileProviders.Physical" />
   </ItemGroup>
 
 </Project>

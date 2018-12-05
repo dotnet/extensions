@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration.Binder" />
-    <Reference Include="Microsoft.Extensions.Configuration.Test.Common" />
+    <Dependency Include="Microsoft.Extensions.Configuration.Binder" />
+    <Dependency Include="Microsoft.Extensions.Configuration.Test.Common" />
   </ItemGroup>
 
 </Project>

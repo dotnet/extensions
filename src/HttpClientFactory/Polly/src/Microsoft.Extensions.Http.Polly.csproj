@@ -18,9 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Http" />
-    <Reference Include="Polly.Extensions.Http" />
-    <Reference Include="Polly" />
+    <Dependency Include="Microsoft.Extensions.Http" />
+    <Dependency Include="Polly.Extensions.Http" />
+    <Dependency Include="Polly" />
   </ItemGroup>
 
 </Project>

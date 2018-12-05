@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <Dependency Include="Microsoft.Extensions.Configuration.Abstractions" />
   </ItemGroup>
 
 </Project>

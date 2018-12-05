@@ -5,12 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration.Test.Common" />
-    <Reference Include="Microsoft.Extensions.Configuration.Xml" />
+    <Dependency Include="Microsoft.Extensions.Configuration.Test.Common" />
+    <Dependency Include="Microsoft.Extensions.Configuration.Xml" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <Reference Include="System.Security" />
+    <Dependency Include="System.Security" />
   </ItemGroup>
 
 </Project>

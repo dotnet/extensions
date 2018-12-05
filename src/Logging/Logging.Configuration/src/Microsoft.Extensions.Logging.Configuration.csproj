@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <Dependency Include="Microsoft.Extensions.Logging" />
+    <Dependency Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
   </ItemGroup>
 
 </Project>

@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Primitives" />
+    <Dependency Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <Dependency Include="Microsoft.Extensions.Primitives" />
   </ItemGroup>
 
 </Project>

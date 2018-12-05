@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
+    <Dependency Include="Microsoft.Extensions.FileProviders.Composite" />
   </ItemGroup>
 
 </Project>

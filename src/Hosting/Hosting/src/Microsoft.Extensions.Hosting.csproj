@@ -10,11 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Configuration" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
-    <Reference Include="Microsoft.Extensions.Logging" />
+    <Dependency Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <Dependency Include="Microsoft.Extensions.Configuration" />
+    <Dependency Include="Microsoft.Extensions.DependencyInjection" />
+    <Dependency Include="Microsoft.Extensions.FileProviders.Physical" />
+    <Dependency Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 
 </Project>

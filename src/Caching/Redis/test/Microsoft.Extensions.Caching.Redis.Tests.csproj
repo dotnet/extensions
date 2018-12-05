@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Caching.Redis" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Dependency Include="Microsoft.Extensions.Caching.Redis" />
+    <Dependency Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
 </Project>

@@ -245,8 +245,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{1E66
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenericHostSample", "src\Hosting\samples\GenericHostSample\GenericHostSample.csproj", "{97AE13C4-B72C-4E30-8835-FF1603A9E224}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{11FC1750-8A8A-4006-A9F1-F5D9082AC7FA}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Localization", "Localization", "{2FAC6FF0-1FB6-41C6-9A36-FFC2E1727783}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Localization", "src\Localization\Localization\src\Microsoft.Extensions.Localization.csproj", "{AC33A64E-1261-47E7-8676-69C48E4B0266}"

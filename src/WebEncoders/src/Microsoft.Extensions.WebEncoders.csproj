@@ -10,9 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="System.Text.Encodings.Web" />
+    <Dependency Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <Dependency Include="Microsoft.Extensions.Options" />
+    <Dependency Include="System.Text.Encodings.Web" />
   </ItemGroup>
 
 </Project>

@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
+    <Dependency Include="Microsoft.Extensions.FileProviders.Abstractions" />
     <ProjectReference Include="..\..\Manifest.MSBuildTask\src\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" />
   </ItemGroup>
 

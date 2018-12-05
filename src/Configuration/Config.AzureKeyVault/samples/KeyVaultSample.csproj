@@ -11,8 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration.AzureKeyVault" />
-    <Reference Include="Microsoft.Extensions.Configuration.Json" />
+    <Dependency Include="Microsoft.Extensions.Configuration.AzureKeyVault" />
+    <Dependency Include="Microsoft.Extensions.Configuration.Json" />
   </ItemGroup>
 
 </Project>

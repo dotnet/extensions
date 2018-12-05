@@ -10,9 +10,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Caching.SqlServer" />
-    <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
-    <Reference Include="Microsoft.Extensions.Configuration.Json" />
+    <Dependency Include="Microsoft.Extensions.Caching.SqlServer" />
+    <Dependency Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <Dependency Include="Microsoft.Extensions.Configuration.Json" />
   </ItemGroup>
 
 </Project>

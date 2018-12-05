@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
-    <Reference Include="Microsoft.Extensions.Configuration.Test.Common" />
+    <Dependency Include="Microsoft.Extensions.Configuration.CommandLine" />
+    <Dependency Include="Microsoft.Extensions.Configuration.Test.Common" />
   </ItemGroup>
 
 </Project>

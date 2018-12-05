@@ -12,9 +12,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Caching.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="System.Data.SqlClient" />
+    <Dependency Include="Microsoft.Extensions.Caching.Abstractions" />
+    <Dependency Include="Microsoft.Extensions.Options" />
+    <Dependency Include="System.Data.SqlClient" />
   </ItemGroup>
 
 </Project>

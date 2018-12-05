@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
-    <Reference Include="Microsoft.Extensions.Configuration.Test.Common" />
+    <Dependency Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <Dependency Include="Microsoft.Extensions.Configuration.Test.Common" />
   </ItemGroup>
 
 </Project>

@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="System.Diagnostics.EventLog" />
+    <Dependency Include="Microsoft.Extensions.Logging" />
+    <Dependency Include="System.Diagnostics.EventLog" />
   </ItemGroup>
 
 </Project>

@@ -9,10 +9,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Hosting" />
-    <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
-    <Reference Include="Microsoft.Extensions.Options" />
+    <Dependency Include="Microsoft.Extensions.Hosting" />
+    <Dependency Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <Dependency Include="Microsoft.Extensions.Logging.Testing" />
+    <Dependency Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
 </Project>

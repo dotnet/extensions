@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
-    <Reference Include="Microsoft.Extensions.DependencyModel" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Logging.Analyzers" />
-    <Reference Include="System.Reflection.Metadata" />
+    <Dependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+    <Dependency Include="Microsoft.Extensions.DependencyModel" />
+    <Dependency Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Dependency Include="Microsoft.Extensions.Logging.Analyzers" />
+    <Dependency Include="System.Reflection.Metadata" />
   </ItemGroup>
 
   <ItemGroup>

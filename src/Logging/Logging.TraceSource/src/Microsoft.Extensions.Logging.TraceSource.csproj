@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Logging" />
+    <Dependency Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 
 </Project>
