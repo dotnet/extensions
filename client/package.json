@@ -126,6 +126,6 @@
     },
     "dependencies": {
         "microsoft.aspnetcore.razor.vscode": "file:../src/Microsoft.AspNetCore.Razor.VSCode",
-        "vscode": "^1.1.21"
+        "vscode": "^1.1.22"
     }
 }
