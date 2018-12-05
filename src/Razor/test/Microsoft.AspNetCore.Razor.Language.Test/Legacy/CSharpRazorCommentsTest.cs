@@ -110,6 +110,16 @@ This is a comment
         }
 
         [Fact]
+        public void RazorCommentBetweenCodeBlockAndMarkup()
+        {
+            ParseDocumentTest(
+                "@{ }" + Environment.NewLine +
+                "@* Hello World *@" + Environment.NewLine + 
+                "<div>Foo</div>"
+            );
+        }
+
+        [Fact]
         public void RazorCommentWithExtraNewLineInMarkup()
         {
             ParseDocumentTest(
