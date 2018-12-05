@@ -8,7 +8,6 @@
     <VersionPrefix>3.0.0</VersionPrefix>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
   </PropertyGroup>
-
   <PropertyGroup Condition=" '$(OfficialBuildId)' != '' ">
     <!-- This implements core versioning. Spec: https://github.com/dotnet/arcade/blob/master/Documentation/CorePackages/Versioning.md -->
     <_BuildNumber>$(OfficialBuildId)</_BuildNumber>
