@@ -12,6 +12,8 @@
     -->
     <EnableApiCheck>false</EnableApiCheck>
     <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
+    <IsUnitTestProject>false</IsUnitTestProject>
+    <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>

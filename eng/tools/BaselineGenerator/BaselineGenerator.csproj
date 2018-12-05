@@ -5,6 +5,9 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <StartArguments>-o "$(MSBuildThisFileDirectory)../../Baseline.Designer.props"</StartArguments>
     <StartWorkingDirectory>$(MSBuildProjectDirectory)/../../</StartWorkingDirectory>
+    <IsUnitTestProject>false</IsUnitTestProject>
+    <IsTestProject>false</IsTestProject>
+    <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
   </PropertyGroup>
 
   <ItemGroup>
