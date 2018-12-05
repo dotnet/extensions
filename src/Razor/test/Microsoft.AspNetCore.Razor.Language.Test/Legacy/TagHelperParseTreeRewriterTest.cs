@@ -61,11 +61,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var rootBlock = Assert.IsType<RazorDocumentSyntax>(document);
             var rootMarkup = Assert.IsType<MarkupBlockSyntax>(rootBlock.Document);
             var childBlock = Assert.Single(rootMarkup.Children);
-            var tagBlock = Assert.IsType<MarkupTagBlockSyntax>(childBlock);
+            var element = Assert.IsType<MarkupElementSyntax>(childBlock);
             Assert.Empty(errorSink.Errors);
 
             // Act
-            var pairs = parseTreeRewriter.GetAttributeNameValuePairs(tagBlock);
+            var pairs = parseTreeRewriter.GetAttributeNameValuePairs(element.StartTag);
 
             // Assert
             Assert.Equal(expectedPairs, pairs);

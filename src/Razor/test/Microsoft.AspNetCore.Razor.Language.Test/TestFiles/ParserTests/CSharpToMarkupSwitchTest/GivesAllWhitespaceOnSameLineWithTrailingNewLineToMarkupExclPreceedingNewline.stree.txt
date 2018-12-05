@@ -23,36 +23,37 @@ CSharpCodeBlock - [0..161)::161 - [if(foo) {LF    var foo = "After this statemen
     MarkupBlock - [80..126)::46
         MarkupTextLiteral - [80..84)::4 - [    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Whitespace;[    ];
-        MarkupTagBlock - [84..87)::3 - [<p>]
-            MarkupTextLiteral - [84..86)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
-                OpenAngle;[<];
-                Text;[p];
-            MarkupTextLiteral - [86..87)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                CloseAngle;[>];
-        MarkupTextLiteral - [87..102)::15 - [LF        FooLF] - Gen<Markup> - SpanEditHandler;Accepts:Any
-            NewLine;[LF];
-            Whitespace;[        ];
-            Text;[Foo];
-            NewLine;[LF];
-        CSharpCodeBlock - [102..114)::12
-            CSharpStatementLiteral - [102..110)::8 - [        ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        MarkupElement - [84..124)::40
+            MarkupStartTag - [84..87)::3 - [<p>]
+                MarkupTextLiteral - [84..86)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupTextLiteral - [86..87)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    CloseAngle;[>];
+            MarkupTextLiteral - [87..102)::15 - [LF        FooLF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                NewLine;[LF];
                 Whitespace;[        ];
-            CSharpImplicitExpression - [110..114)::4
-                CSharpTransition - [110..111)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                    Transition;[@];
-                CSharpImplicitExpressionBody - [111..114)::3
-                    CSharpCodeBlock - [111..114)::3
-                        CSharpExpressionLiteral - [111..114)::3 - [bar] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
-                            Identifier;[bar];
-        MarkupTextLiteral - [114..120)::6 - [LF    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
-            NewLine;[LF];
-            Whitespace;[    ];
-        MarkupTagBlock - [120..124)::4 - [</p>]
-            MarkupTextLiteral - [120..124)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                OpenAngle;[<];
-                ForwardSlash;[/];
-                Text;[p];
-                CloseAngle;[>];
+                Text;[Foo];
+                NewLine;[LF];
+            CSharpCodeBlock - [102..114)::12
+                CSharpStatementLiteral - [102..110)::8 - [        ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                    Whitespace;[        ];
+                CSharpImplicitExpression - [110..114)::4
+                    CSharpTransition - [110..111)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        Transition;[@];
+                    CSharpImplicitExpressionBody - [111..114)::3
+                        CSharpCodeBlock - [111..114)::3
+                            CSharpExpressionLiteral - [111..114)::3 - [bar] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                Identifier;[bar];
+            MarkupTextLiteral - [114..120)::6 - [LF    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                NewLine;[LF];
+                Whitespace;[    ];
+            MarkupEndTag - [120..124)::4 - [</p>]
+                MarkupTextLiteral - [120..124)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];
         MarkupTextLiteral - [124..126)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:None
             NewLine;[LF];
     MarkupBlock - [126..140)::14

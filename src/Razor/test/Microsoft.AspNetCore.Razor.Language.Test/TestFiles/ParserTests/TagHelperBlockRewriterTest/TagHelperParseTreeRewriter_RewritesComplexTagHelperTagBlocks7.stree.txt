@@ -20,38 +20,39 @@ RazorDocument - [0..77)::77 - [<p>Hello @DateTime.Now<strong>inside of @DateTime
                                 Identifier;[DateTime];
                                 Dot;[.];
                                 Identifier;[Now];
-            MarkupTagBlock - [22..30)::8 - [<strong>]
-                MarkupTextLiteral - [22..29)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
+            MarkupElement - [22..73)::51
+                MarkupStartTag - [22..30)::8 - [<strong>]
+                    MarkupTextLiteral - [22..29)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[strong];
+                    MarkupTextLiteral - [29..30)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        CloseAngle;[>];
+                MarkupTextLiteral - [30..40)::10 - [inside of ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Text;[inside];
+                    Whitespace;[ ];
+                    Text;[of];
+                    Whitespace;[ ];
+                CSharpCodeBlock - [40..53)::13
+                    CSharpImplicitExpression - [40..53)::13
+                        CSharpTransition - [40..41)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            Transition;[@];
+                        CSharpImplicitExpressionBody - [41..53)::12
+                            CSharpCodeBlock - [41..53)::12
+                                CSharpExpressionLiteral - [41..53)::12 - [DateTime.Now] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                    Identifier;[DateTime];
+                                    Dot;[.];
+                                    Identifier;[Now];
+                MarkupTextLiteral - [53..64)::11 - [ strong tag] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
                     Text;[strong];
-                MarkupTextLiteral - [29..30)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
-            MarkupTextLiteral - [30..40)::10 - [inside of ] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                Text;[inside];
-                Whitespace;[ ];
-                Text;[of];
-                Whitespace;[ ];
-            CSharpCodeBlock - [40..53)::13
-                CSharpImplicitExpression - [40..53)::13
-                    CSharpTransition - [40..41)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                        Transition;[@];
-                    CSharpImplicitExpressionBody - [41..53)::12
-                        CSharpCodeBlock - [41..53)::12
-                            CSharpExpressionLiteral - [41..53)::12 - [DateTime.Now] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
-                                Identifier;[DateTime];
-                                Dot;[.];
-                                Identifier;[Now];
-            MarkupTextLiteral - [53..64)::11 - [ strong tag] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                Whitespace;[ ];
-                Text;[strong];
-                Whitespace;[ ];
-                Text;[tag];
-            MarkupTagBlock - [64..73)::9 - [</strong>]
-                MarkupTextLiteral - [64..73)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[strong];
-                    CloseAngle;[>];
+                    Whitespace;[ ];
+                    Text;[tag];
+                MarkupEndTag - [64..73)::9 - [</strong>]
+                    MarkupTextLiteral - [64..73)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        ForwardSlash;[/];
+                        Text;[strong];
+                        CloseAngle;[>];
             MarkupTagHelperEndTag - [73..77)::4
                 MarkupTextLiteral - [73..77)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];

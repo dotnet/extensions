@@ -11,21 +11,22 @@ RazorDocument - [0..11)::11 - [@{<!text /}]
                         LeftBrace;[{];
                     CSharpCodeBlock - [2..11)::9
                         MarkupBlock - [2..11)::9
-                            MarkupTagBlock - [2..11)::9 - [<!text /}]
-                                MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                    OpenAngle;[<];
-                                RazorMetaCode - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                                    Bang;[!];
-                                MarkupTextLiteral - [4..8)::4 - [text] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                    Text;[text];
-                                MarkupMiscAttributeContent - [8..9)::1
-                                    MarkupTextLiteral - [8..9)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        Whitespace;[ ];
-                                MarkupMiscAttributeContent - [9..10)::1
-                                    MarkupTextLiteral - [9..10)::1 - [/] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        ForwardSlash;[/];
-                                MarkupMinimizedAttributeBlock - [10..11)::1 - [}]
-                                    MarkupTextLiteral - [10..11)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        Text;[}];
+                            MarkupElement - [2..11)::9
+                                MarkupStartTag - [2..11)::9 - [<!text /}]
+                                    MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        OpenAngle;[<];
+                                    RazorMetaCode - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                        Bang;[!];
+                                    MarkupTextLiteral - [4..8)::4 - [text] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        Text;[text];
+                                    MarkupMiscAttributeContent - [8..9)::1
+                                        MarkupTextLiteral - [8..9)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Whitespace;[ ];
+                                    MarkupMiscAttributeContent - [9..10)::1
+                                        MarkupTextLiteral - [9..10)::1 - [/] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            ForwardSlash;[/];
+                                    MarkupMinimizedAttributeBlock - [10..11)::1 - [}]
+                                        MarkupTextLiteral - [10..11)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Text;[}];
                     RazorMetaCode - [11..11)::0 - Gen<None> - SpanEditHandler;Accepts:Any
                         RightBrace;[<Missing>];

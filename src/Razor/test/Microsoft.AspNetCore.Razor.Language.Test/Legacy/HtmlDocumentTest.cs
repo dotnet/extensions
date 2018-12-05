@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -198,7 +199,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new[] { SectionDirective.Directive, });
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "We currently don't support 1000 nested elements on MacOS.")]
         public void ParseBlockCanParse1000NestedElements()
         {
             var content = Nested1000.ReadAllText();

@@ -7,18 +7,19 @@ RazorDocument - [0..40)::40 - [<th:myth><th:my2th></th:my2th></th:myth>]
                     Text;[th:myth];
                 MarkupTextLiteral - [8..9)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
-            MarkupTagBlock - [9..19)::10 - [<th:my2th>]
-                MarkupTextLiteral - [9..18)::9 - [<th:my2th] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[th:my2th];
-                MarkupTextLiteral - [18..19)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
-            MarkupTagBlock - [19..30)::11 - [</th:my2th>]
-                MarkupTextLiteral - [19..30)::11 - [</th:my2th>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[th:my2th];
-                    CloseAngle;[>];
+            MarkupElement - [9..30)::21
+                MarkupStartTag - [9..19)::10 - [<th:my2th>]
+                    MarkupTextLiteral - [9..18)::9 - [<th:my2th] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[th:my2th];
+                    MarkupTextLiteral - [18..19)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        CloseAngle;[>];
+                MarkupEndTag - [19..30)::11 - [</th:my2th>]
+                    MarkupTextLiteral - [19..30)::11 - [</th:my2th>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        ForwardSlash;[/];
+                        Text;[th:my2th];
+                        CloseAngle;[>];
             MarkupTagHelperEndTag - [30..40)::10
                 MarkupTextLiteral - [30..40)::10 - [</th:myth>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];

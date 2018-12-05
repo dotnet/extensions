@@ -11,12 +11,13 @@ RazorDocument - [0..5)::5 - [@{<!}]
                         LeftBrace;[{];
                     CSharpCodeBlock - [2..5)::3
                         MarkupBlock - [2..5)::3
-                            MarkupTagBlock - [2..5)::3 - [<!}]
-                                MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                    OpenAngle;[<];
-                                RazorMetaCode - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                                    Bang;[!];
-                                MarkupTextLiteral - [4..5)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                    Text;[}];
+                            MarkupElement - [2..5)::3
+                                MarkupStartTag - [2..5)::3 - [<!}]
+                                    MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        OpenAngle;[<];
+                                    RazorMetaCode - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                        Bang;[!];
+                                    MarkupTextLiteral - [4..5)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        Text;[}];
                     RazorMetaCode - [5..5)::0 - Gen<None> - SpanEditHandler;Accepts:Any
                         RightBrace;[<Missing>];

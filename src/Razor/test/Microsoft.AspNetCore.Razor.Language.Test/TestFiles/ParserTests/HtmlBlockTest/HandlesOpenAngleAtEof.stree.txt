@@ -13,8 +13,9 @@ RazorDocument - [0..5)::5 - [@{LF<]
                         CSharpStatementLiteral - [2..4)::2 - [LF] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[}];AtEOL
                             NewLine;[LF];
                         MarkupBlock - [4..5)::1
-                            MarkupTagBlock - [4..5)::1 - [<]
-                                MarkupTextLiteral - [4..5)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                    OpenAngle;[<];
+                            MarkupElement - [4..5)::1
+                                MarkupStartTag - [4..5)::1 - [<]
+                                    MarkupTextLiteral - [4..5)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        OpenAngle;[<];
                     RazorMetaCode - [5..5)::0 - Gen<None> - SpanEditHandler;Accepts:Any
                         RightBrace;[<Missing>];

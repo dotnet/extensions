@@ -35,20 +35,21 @@ RazorDocument - [0..63)::63 - [<div style="" class="btn">words<strong>and</stron
                     CloseAngle;[>];
             MarkupTextLiteral - [26..31)::5 - [words] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[words];
-            MarkupTagBlock - [31..39)::8 - [<strong>]
-                MarkupTextLiteral - [31..38)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[strong];
-                MarkupTextLiteral - [38..39)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
-            MarkupTextLiteral - [39..42)::3 - [and] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                Text;[and];
-            MarkupTagBlock - [42..51)::9 - [</strong>]
-                MarkupTextLiteral - [42..51)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[strong];
-                    CloseAngle;[>];
+            MarkupElement - [31..51)::20
+                MarkupStartTag - [31..39)::8 - [<strong>]
+                    MarkupTextLiteral - [31..38)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[strong];
+                    MarkupTextLiteral - [38..39)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        CloseAngle;[>];
+                MarkupTextLiteral - [39..42)::3 - [and] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Text;[and];
+                MarkupEndTag - [42..51)::9 - [</strong>]
+                    MarkupTextLiteral - [42..51)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        ForwardSlash;[/];
+                        Text;[strong];
+                        CloseAngle;[>];
             MarkupTextLiteral - [51..57)::6 - [spaces] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[spaces];
             MarkupTagHelperEndTag - [57..63)::6

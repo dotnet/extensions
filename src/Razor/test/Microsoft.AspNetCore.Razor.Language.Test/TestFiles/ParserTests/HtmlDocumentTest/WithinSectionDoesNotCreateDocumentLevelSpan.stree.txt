@@ -22,18 +22,19 @@ RazorDocument - [0..36)::36 - [@section Foo {LF    <html></html>LF}]
                             MarkupTextLiteral - [14..20)::6 - [LF    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 NewLine;[LF];
                                 Whitespace;[    ];
-                            MarkupTagBlock - [20..26)::6 - [<html>]
-                                MarkupTextLiteral - [20..25)::5 - [<html] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                    OpenAngle;[<];
-                                    Text;[html];
-                                MarkupTextLiteral - [25..26)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                    CloseAngle;[>];
-                            MarkupTagBlock - [26..33)::7 - [</html>]
-                                MarkupTextLiteral - [26..33)::7 - [</html>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                    OpenAngle;[<];
-                                    ForwardSlash;[/];
-                                    Text;[html];
-                                    CloseAngle;[>];
+                            MarkupElement - [20..33)::13
+                                MarkupStartTag - [20..26)::6 - [<html>]
+                                    MarkupTextLiteral - [20..25)::5 - [<html] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        OpenAngle;[<];
+                                        Text;[html];
+                                    MarkupTextLiteral - [25..26)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        CloseAngle;[>];
+                                MarkupEndTag - [26..33)::7 - [</html>]
+                                    MarkupTextLiteral - [26..33)::7 - [</html>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        OpenAngle;[<];
+                                        ForwardSlash;[/];
+                                        Text;[html];
+                                        CloseAngle;[>];
                             MarkupTextLiteral - [33..35)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 NewLine;[LF];
                         RazorMetaCode - [35..36)::1 - Gen<None> - SpanEditHandler;Accepts:None

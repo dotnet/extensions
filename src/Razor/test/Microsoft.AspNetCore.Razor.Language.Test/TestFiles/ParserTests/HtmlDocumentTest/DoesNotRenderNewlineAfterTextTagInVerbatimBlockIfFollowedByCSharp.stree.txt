@@ -11,27 +11,30 @@ RazorDocument - [0..30)::30 - [@{<text>Blah</text>LFLF}<html>]
                         LeftBrace;[{];
                     CSharpCodeBlock - [2..23)::21
                         MarkupBlock - [2..19)::17
-                            MarkupTagBlock - [2..8)::6 - [<text>]
-                                MarkupTransition - [2..8)::6 - Gen<None> - SpanEditHandler;Accepts:None
-                                    OpenAngle;[<];
-                                    Text;[text];
-                                    CloseAngle;[>];
+                            MarkupElement - [2..8)::6
+                                MarkupStartTag - [2..8)::6 - [<text>]
+                                    MarkupTransition - [2..8)::6 - Gen<None> - SpanEditHandler;Accepts:None
+                                        OpenAngle;[<];
+                                        Text;[text];
+                                        CloseAngle;[>];
                             MarkupTextLiteral - [8..12)::4 - [Blah] - Gen<Markup> - SpanEditHandler;Accepts:None
                                 Text;[Blah];
-                            MarkupTagBlock - [12..19)::7 - [</text>]
-                                MarkupTransition - [12..19)::7 - Gen<None> - SpanEditHandler;Accepts:None
-                                    OpenAngle;[<];
-                                    ForwardSlash;[/];
-                                    Text;[text];
-                                    CloseAngle;[>];
+                            MarkupElement - [12..19)::7
+                                MarkupEndTag - [12..19)::7 - [</text>]
+                                    MarkupTransition - [12..19)::7 - Gen<None> - SpanEditHandler;Accepts:None
+                                        OpenAngle;[<];
+                                        ForwardSlash;[/];
+                                        Text;[text];
+                                        CloseAngle;[>];
                         CSharpStatementLiteral - [19..23)::4 - [LFLF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             NewLine;[LF];
                             NewLine;[LF];
                     RazorMetaCode - [23..24)::1 - Gen<None> - SpanEditHandler;Accepts:None
                         RightBrace;[}];
-        MarkupTagBlock - [24..30)::6 - [<html>]
-            MarkupTextLiteral - [24..29)::5 - [<html] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                OpenAngle;[<];
-                Text;[html];
-            MarkupTextLiteral - [29..30)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                CloseAngle;[>];
+        MarkupElement - [24..30)::6
+            MarkupStartTag - [24..30)::6 - [<html>]
+                MarkupTextLiteral - [24..29)::5 - [<html] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[html];
+                MarkupTextLiteral - [29..30)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    CloseAngle;[>];

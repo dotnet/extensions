@@ -1,9 +1,10 @@
 MarkupBlock - [0..28)::28 - [<                      LF   ]
-    MarkupTagBlock - [0..28)::28 - [<                      LF   ]
-        MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
-            OpenAngle;[<];
-        MarkupMiscAttributeContent - [1..28)::27
-            MarkupTextLiteral - [1..28)::27 - [                      LF   ] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                Whitespace;[                      ];
-                NewLine;[LF];
-                Whitespace;[   ];
+    MarkupElement - [0..28)::28
+        MarkupStartTag - [0..28)::28 - [<                      LF   ]
+            MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+            MarkupMiscAttributeContent - [1..28)::27
+                MarkupTextLiteral - [1..28)::27 - [                      LF   ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[                      ];
+                    NewLine;[LF];
+                    Whitespace;[   ];

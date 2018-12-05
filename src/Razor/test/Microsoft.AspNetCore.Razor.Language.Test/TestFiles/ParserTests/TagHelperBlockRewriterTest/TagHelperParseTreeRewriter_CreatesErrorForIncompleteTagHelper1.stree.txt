@@ -59,9 +59,10 @@ RazorDocument - [0..73)::73 - [<p class=foo dynamic=@DateTime.Now style=color:re
                     ForwardSlash;[/];
                     Text;[p];
                     CloseAngle;[>];
-        MarkupTagBlock - [64..73)::9 - [</strong>]
-            MarkupTextLiteral - [64..73)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                OpenAngle;[<];
-                ForwardSlash;[/];
-                Text;[strong];
-                CloseAngle;[>];
+        MarkupElement - [64..73)::9
+            MarkupEndTag - [64..73)::9 - [</strong>]
+                MarkupTextLiteral - [64..73)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[strong];
+                    CloseAngle;[>];

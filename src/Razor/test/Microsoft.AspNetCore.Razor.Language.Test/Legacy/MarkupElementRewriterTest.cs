@@ -146,9 +146,6 @@ Foo</div>
             var syntaxTree = ParseDocument(input, designTime: false);
             var rewritten = MarkupElementRewriter.AddMarkupElements(syntaxTree);
             BaselineTest(rewritten);
-
-            var unrewritten = MarkupElementRewriter.RemoveMarkupElements(rewritten);
-            Assert.Equal(syntaxTree.Root.SerializedValue, unrewritten.Root.SerializedValue);
         }
     }
 }

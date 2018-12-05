@@ -3,7 +3,7 @@ RazorDocument - [0..66)::66 - [LF<div>LF    FooLF    <p>@Bar</p>LF    @{ var x =
         MarkupTextLiteral - [0..2)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
             NewLine;[LF];
         MarkupElement - [2..64)::62
-            MarkupTagBlock - [2..7)::5 - [<div>]
+            MarkupStartTag - [2..7)::5 - [<div>]
                 MarkupTextLiteral - [2..6)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[div];
@@ -16,7 +16,7 @@ RazorDocument - [0..66)::66 - [LF<div>LF    FooLF    <p>@Bar</p>LF    @{ var x =
                 NewLine;[LF];
                 Whitespace;[    ];
             MarkupElement - [22..33)::11
-                MarkupTagBlock - [22..25)::3 - [<p>]
+                MarkupStartTag - [22..25)::3 - [<p>]
                     MarkupTextLiteral - [22..24)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         OpenAngle;[<];
                         Text;[p];
@@ -30,7 +30,7 @@ RazorDocument - [0..66)::66 - [LF<div>LF    FooLF    <p>@Bar</p>LF    @{ var x =
                             CSharpCodeBlock - [26..29)::3
                                 CSharpExpressionLiteral - [26..29)::3 - [Bar] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
                                     Identifier;[Bar];
-                MarkupTagBlock - [29..33)::4 - [</p>]
+                MarkupEndTag - [29..33)::4 - [</p>]
                     MarkupTextLiteral - [29..33)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         OpenAngle;[<];
                         ForwardSlash;[/];
@@ -63,7 +63,7 @@ RazorDocument - [0..66)::66 - [LF<div>LF    FooLF    <p>@Bar</p>LF    @{ var x =
                             RightBrace;[}];
             MarkupEphemeralTextLiteral - [56..58)::2 - [LF] - Gen<None> - SpanEditHandler;Accepts:Any
                 NewLine;[LF];
-            MarkupTagBlock - [58..64)::6 - [</div>]
+            MarkupEndTag - [58..64)::6 - [</div>]
                 MarkupTextLiteral - [58..64)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     ForwardSlash;[/];

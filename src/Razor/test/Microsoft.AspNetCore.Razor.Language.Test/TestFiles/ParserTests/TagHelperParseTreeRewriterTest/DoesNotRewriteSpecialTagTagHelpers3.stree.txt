@@ -1,25 +1,26 @@
 RazorDocument - [0..31)::31 - [<foo><?xml Hello World ?></foo>]
     MarkupBlock - [0..31)::31
-        MarkupTagBlock - [0..5)::5 - [<foo>]
-            MarkupTextLiteral - [0..4)::4 - [<foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+        MarkupElement - [0..31)::31
+            MarkupStartTag - [0..5)::5 - [<foo>]
+                MarkupTextLiteral - [0..4)::4 - [<foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[foo];
+                MarkupTextLiteral - [4..5)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    CloseAngle;[>];
+            MarkupTextLiteral - [5..25)::20 - [<?xml Hello World ?>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
-                Text;[foo];
-            MarkupTextLiteral - [4..5)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                QuestionMark;[?];
+                Text;[xml];
+                Whitespace;[ ];
+                Text;[Hello];
+                Whitespace;[ ];
+                Text;[World];
+                Whitespace;[ ];
+                QuestionMark;[?];
                 CloseAngle;[>];
-        MarkupTextLiteral - [5..25)::20 - [<?xml Hello World ?>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-            OpenAngle;[<];
-            QuestionMark;[?];
-            Text;[xml];
-            Whitespace;[ ];
-            Text;[Hello];
-            Whitespace;[ ];
-            Text;[World];
-            Whitespace;[ ];
-            QuestionMark;[?];
-            CloseAngle;[>];
-        MarkupTagBlock - [25..31)::6 - [</foo>]
-            MarkupTextLiteral - [25..31)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                OpenAngle;[<];
-                ForwardSlash;[/];
-                Text;[foo];
-                CloseAngle;[>];
+            MarkupEndTag - [25..31)::6 - [</foo>]
+                MarkupTextLiteral - [25..31)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[foo];
+                    CloseAngle;[>];

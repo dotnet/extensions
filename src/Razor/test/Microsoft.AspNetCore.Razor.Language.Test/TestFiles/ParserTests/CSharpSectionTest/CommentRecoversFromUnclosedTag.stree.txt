@@ -21,30 +21,31 @@ RazorDocument - [0..33)::33 - [@section s {LF<aLF<!--  > " '-->}]
                         MarkupBlock - [12..32)::20
                             MarkupTextLiteral - [12..14)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 NewLine;[LF];
-                            MarkupTagBlock - [14..18)::4 - [<aLF]
-                                MarkupTextLiteral - [14..16)::2 - [<a] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                    OpenAngle;[<];
-                                    Text;[a];
-                                MarkupMiscAttributeContent - [16..18)::2
-                                    MarkupTextLiteral - [16..18)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        NewLine;[LF];
-                            MarkupCommentBlock - [18..32)::14
-                                MarkupTextLiteral - [18..22)::4 - [<!--] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                    OpenAngle;[<];
-                                    Bang;[!];
-                                    DoubleHyphen;[--];
-                                MarkupTextLiteral - [22..29)::7 - [  > " '] - Gen<Markup> - SpanEditHandler;Accepts:Whitespace
-                                    Whitespace;[  ];
-                                    CloseAngle;[>];
-                                    Whitespace;[ ];
-                                    DoubleQuote;["];
-                                    Whitespace;[ ];
-                                    SingleQuote;['];
-                                MarkupTextLiteral - [29..32)::3 - [-->] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                    DoubleHyphen;[--];
-                                    CloseAngle;[>];
-                            MarkupTextLiteral - [32..32)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                Marker;[];
+                            MarkupElement - [14..32)::18
+                                MarkupStartTag - [14..18)::4 - [<aLF]
+                                    MarkupTextLiteral - [14..16)::2 - [<a] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        OpenAngle;[<];
+                                        Text;[a];
+                                    MarkupMiscAttributeContent - [16..18)::2
+                                        MarkupTextLiteral - [16..18)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            NewLine;[LF];
+                                MarkupCommentBlock - [18..32)::14
+                                    MarkupTextLiteral - [18..22)::4 - [<!--] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                        OpenAngle;[<];
+                                        Bang;[!];
+                                        DoubleHyphen;[--];
+                                    MarkupTextLiteral - [22..29)::7 - [  > " '] - Gen<Markup> - SpanEditHandler;Accepts:Whitespace
+                                        Whitespace;[  ];
+                                        CloseAngle;[>];
+                                        Whitespace;[ ];
+                                        DoubleQuote;["];
+                                        Whitespace;[ ];
+                                        SingleQuote;['];
+                                    MarkupTextLiteral - [29..32)::3 - [-->] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                        DoubleHyphen;[--];
+                                        CloseAngle;[>];
+                                MarkupTextLiteral - [32..32)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    Marker;[];
                         RazorMetaCode - [32..33)::1 - Gen<None> - SpanEditHandler;Accepts:None
                             RightBrace;[}];
         MarkupTextLiteral - [33..33)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any

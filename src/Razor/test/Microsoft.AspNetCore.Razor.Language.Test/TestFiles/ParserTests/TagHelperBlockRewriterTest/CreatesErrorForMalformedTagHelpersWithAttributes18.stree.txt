@@ -21,11 +21,12 @@ RazorDocument - [0..33)::33 - [<p @do { someattribute="btn"></p>]
                             StringLiteral;["btn"];
                             GreaterThan;[>];
                         MarkupBlock - [29..33)::4
-                            MarkupTagBlock - [29..33)::4 - [</p>]
-                                MarkupTextLiteral - [29..33)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                    OpenAngle;[<];
-                                    ForwardSlash;[/];
-                                    Text;[p];
-                                    CloseAngle;[>];
+                            MarkupElement - [29..33)::4
+                                MarkupEndTag - [29..33)::4 - [</p>]
+                                    MarkupTextLiteral - [29..33)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                        OpenAngle;[<];
+                                        ForwardSlash;[/];
+                                        Text;[p];
+                                        CloseAngle;[>];
                         CSharpStatementLiteral - [33..33)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Marker;[];

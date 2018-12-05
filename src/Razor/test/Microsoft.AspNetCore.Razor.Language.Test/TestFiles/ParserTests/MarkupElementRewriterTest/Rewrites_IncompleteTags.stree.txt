@@ -3,11 +3,11 @@ RazorDocument - [0..27)::27 - [LF<<div>>Foo</</div><   >LF]
         MarkupTextLiteral - [0..2)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
             NewLine;[LF];
         MarkupElement - [2..3)::1
-            MarkupTagBlock - [2..3)::1 - [<]
+            MarkupStartTag - [2..3)::1 - [<]
                 MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
         MarkupElement - [3..20)::17
-            MarkupTagBlock - [3..8)::5 - [<div>]
+            MarkupStartTag - [3..8)::5 - [<div>]
                 MarkupTextLiteral - [3..7)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[div];
@@ -17,18 +17,18 @@ RazorDocument - [0..27)::27 - [LF<<div>>Foo</</div><   >LF]
                 CloseAngle;[>];
                 Text;[Foo];
             MarkupElement - [12..14)::2
-                MarkupTagBlock - [12..14)::2 - [</]
+                MarkupEndTag - [12..14)::2 - [</]
                     MarkupTextLiteral - [12..14)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         OpenAngle;[<];
                         ForwardSlash;[/];
-            MarkupTagBlock - [14..20)::6 - [</div>]
+            MarkupEndTag - [14..20)::6 - [</div>]
                 MarkupTextLiteral - [14..20)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     ForwardSlash;[/];
                     Text;[div];
                     CloseAngle;[>];
         MarkupElement - [20..25)::5
-            MarkupTagBlock - [20..25)::5 - [<   >]
+            MarkupStartTag - [20..25)::5 - [<   >]
                 MarkupTextLiteral - [20..21)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                 MarkupMiscAttributeContent - [21..24)::3

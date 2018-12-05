@@ -1,15 +1,16 @@
 RazorDocument - [0..12)::12 - [<!th:myth />]
     MarkupBlock - [0..12)::12
-        MarkupTagBlock - [0..12)::12 - [<!th:myth />]
-            MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                OpenAngle;[<];
-            RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                Bang;[!];
-            MarkupTextLiteral - [2..9)::7 - [th:myth] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                Text;[th:myth];
-            MarkupMiscAttributeContent - [9..10)::1
-                MarkupTextLiteral - [9..10)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
-            MarkupTextLiteral - [10..12)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                ForwardSlash;[/];
-                CloseAngle;[>];
+        MarkupElement - [0..12)::12
+            MarkupStartTag - [0..12)::12 - [<!th:myth />]
+                MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Bang;[!];
+                MarkupTextLiteral - [2..9)::7 - [th:myth] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Text;[th:myth];
+                MarkupMiscAttributeContent - [9..10)::1
+                    MarkupTextLiteral - [9..10)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [10..12)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

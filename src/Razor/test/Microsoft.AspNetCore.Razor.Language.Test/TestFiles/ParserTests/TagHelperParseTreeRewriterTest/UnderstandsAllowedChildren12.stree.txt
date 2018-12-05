@@ -7,10 +7,11 @@ RazorDocument - [0..9)::9 - [<p></</p>]
                     Text;[p];
                 MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
-            MarkupTagBlock - [3..5)::2 - [</]
-                MarkupTextLiteral - [3..5)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
+            MarkupElement - [3..5)::2
+                MarkupEndTag - [3..5)::2 - [</]
+                    MarkupTextLiteral - [3..5)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        ForwardSlash;[/];
             MarkupTagHelperEndTag - [5..9)::4
                 MarkupTextLiteral - [5..9)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];

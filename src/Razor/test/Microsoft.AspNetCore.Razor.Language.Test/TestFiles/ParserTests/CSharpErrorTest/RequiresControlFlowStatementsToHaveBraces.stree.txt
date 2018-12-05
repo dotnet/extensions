@@ -8,20 +8,21 @@ CSharpCodeBlock - [0..58)::58 - [if(foo) <p>Bar</p> else if(bar) <p>Baz</p> else
         RightParenthesis;[)];
         Whitespace;[ ];
     MarkupBlock - [8..19)::11
-        MarkupTagBlock - [8..11)::3 - [<p>]
-            MarkupTextLiteral - [8..10)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
-                OpenAngle;[<];
-                Text;[p];
-            MarkupTextLiteral - [10..11)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                CloseAngle;[>];
-        MarkupTextLiteral - [11..14)::3 - [Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
-            Text;[Bar];
-        MarkupTagBlock - [14..18)::4 - [</p>]
-            MarkupTextLiteral - [14..18)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                OpenAngle;[<];
-                ForwardSlash;[/];
-                Text;[p];
-                CloseAngle;[>];
+        MarkupElement - [8..18)::10
+            MarkupStartTag - [8..11)::3 - [<p>]
+                MarkupTextLiteral - [8..10)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupTextLiteral - [10..11)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    CloseAngle;[>];
+            MarkupTextLiteral - [11..14)::3 - [Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[Bar];
+            MarkupEndTag - [14..18)::4 - [</p>]
+                MarkupTextLiteral - [14..18)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];
         MarkupTextLiteral - [18..19)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:None
             Whitespace;[ ];
     CSharpStatementLiteral - [19..32)::13 - [else if(bar) ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
@@ -33,39 +34,41 @@ CSharpCodeBlock - [0..58)::58 - [if(foo) <p>Bar</p> else if(bar) <p>Baz</p> else
         RightParenthesis;[)];
         Whitespace;[ ];
     MarkupBlock - [32..43)::11
-        MarkupTagBlock - [32..35)::3 - [<p>]
-            MarkupTextLiteral - [32..34)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
-                OpenAngle;[<];
-                Text;[p];
-            MarkupTextLiteral - [34..35)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                CloseAngle;[>];
-        MarkupTextLiteral - [35..38)::3 - [Baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
-            Text;[Baz];
-        MarkupTagBlock - [38..42)::4 - [</p>]
-            MarkupTextLiteral - [38..42)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                OpenAngle;[<];
-                ForwardSlash;[/];
-                Text;[p];
-                CloseAngle;[>];
+        MarkupElement - [32..42)::10
+            MarkupStartTag - [32..35)::3 - [<p>]
+                MarkupTextLiteral - [32..34)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupTextLiteral - [34..35)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    CloseAngle;[>];
+            MarkupTextLiteral - [35..38)::3 - [Baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[Baz];
+            MarkupEndTag - [38..42)::4 - [</p>]
+                MarkupTextLiteral - [38..42)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];
         MarkupTextLiteral - [42..43)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:None
             Whitespace;[ ];
     CSharpStatementLiteral - [43..48)::5 - [else ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
         Keyword;[else];
         Whitespace;[ ];
     MarkupBlock - [48..58)::10
-        MarkupTagBlock - [48..51)::3 - [<p>]
-            MarkupTextLiteral - [48..50)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
-                OpenAngle;[<];
-                Text;[p];
-            MarkupTextLiteral - [50..51)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                CloseAngle;[>];
-        MarkupTextLiteral - [51..54)::3 - [Boz] - Gen<Markup> - SpanEditHandler;Accepts:Any
-            Text;[Boz];
-        MarkupTagBlock - [54..58)::4 - [</p>]
-            MarkupTextLiteral - [54..58)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                OpenAngle;[<];
-                ForwardSlash;[/];
-                Text;[p];
-                CloseAngle;[>];
+        MarkupElement - [48..58)::10
+            MarkupStartTag - [48..51)::3 - [<p>]
+                MarkupTextLiteral - [48..50)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupTextLiteral - [50..51)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    CloseAngle;[>];
+            MarkupTextLiteral - [51..54)::3 - [Boz] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[Boz];
+            MarkupEndTag - [54..58)::4 - [</p>]
+                MarkupTextLiteral - [54..58)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];
     CSharpStatementLiteral - [58..58)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
         Marker;[];

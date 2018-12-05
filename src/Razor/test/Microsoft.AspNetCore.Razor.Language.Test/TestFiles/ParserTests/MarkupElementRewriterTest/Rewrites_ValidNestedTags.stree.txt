@@ -3,7 +3,7 @@ RazorDocument - [0..49)::49 - [LF<div>LF    FooLF    <p>Bar</p>LF    BazLF</div>
         MarkupTextLiteral - [0..2)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
             NewLine;[LF];
         MarkupElement - [2..49)::47
-            MarkupTagBlock - [2..7)::5 - [<div>]
+            MarkupStartTag - [2..7)::5 - [<div>]
                 MarkupTextLiteral - [2..6)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[div];
@@ -16,7 +16,7 @@ RazorDocument - [0..49)::49 - [LF<div>LF    FooLF    <p>Bar</p>LF    BazLF</div>
                 NewLine;[LF];
                 Whitespace;[    ];
             MarkupElement - [22..32)::10
-                MarkupTagBlock - [22..25)::3 - [<p>]
+                MarkupStartTag - [22..25)::3 - [<p>]
                     MarkupTextLiteral - [22..24)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         OpenAngle;[<];
                         Text;[p];
@@ -24,7 +24,7 @@ RazorDocument - [0..49)::49 - [LF<div>LF    FooLF    <p>Bar</p>LF    BazLF</div>
                         CloseAngle;[>];
                 MarkupTextLiteral - [25..28)::3 - [Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     Text;[Bar];
-                MarkupTagBlock - [28..32)::4 - [</p>]
+                MarkupEndTag - [28..32)::4 - [</p>]
                     MarkupTextLiteral - [28..32)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         OpenAngle;[<];
                         ForwardSlash;[/];
@@ -35,7 +35,7 @@ RazorDocument - [0..49)::49 - [LF<div>LF    FooLF    <p>Bar</p>LF    BazLF</div>
                 Whitespace;[    ];
                 Text;[Baz];
                 NewLine;[LF];
-            MarkupTagBlock - [43..49)::6 - [</div>]
+            MarkupEndTag - [43..49)::6 - [</div>]
                 MarkupTextLiteral - [43..49)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     ForwardSlash;[/];

@@ -14,10 +14,11 @@ RazorDocument - [0..26)::26 - [@{LF    <textLF    @**@LF}]
                             NewLine;[LF];
                             Whitespace;[    ];
                         MarkupBlock - [8..26)::18
-                            MarkupTagBlock - [8..13)::5 - [<text]
-                                MarkupTransition - [8..13)::5 - Gen<None> - SpanEditHandler;Accepts:Any
-                                    OpenAngle;[<];
-                                    Text;[text];
+                            MarkupElement - [8..13)::5
+                                MarkupStartTag - [8..13)::5 - [<text]
+                                    MarkupTransition - [8..13)::5 - Gen<None> - SpanEditHandler;Accepts:Any
+                                        OpenAngle;[<];
+                                        Text;[text];
                             MarkupTextLiteral - [13..15)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:None
                                 NewLine;[LF];
                             MarkupEphemeralTextLiteral - [15..19)::4 - [    ] - Gen<None> - SpanEditHandler;Accepts:Any

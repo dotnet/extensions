@@ -21,23 +21,24 @@ RazorDocument - [0..33)::33 - [@section Foo { <foo>@@bar</foo> }]
                         MarkupBlock - [14..32)::18
                             MarkupTextLiteral - [14..15)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Whitespace;[ ];
-                            MarkupTagBlock - [15..20)::5 - [<foo>]
-                                MarkupTextLiteral - [15..19)::4 - [<foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                    OpenAngle;[<];
-                                    Text;[foo];
-                                MarkupTextLiteral - [19..20)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                    CloseAngle;[>];
-                            MarkupEphemeralTextLiteral - [20..21)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:Any
-                                Transition;[@];
-                            MarkupTextLiteral - [21..25)::4 - [@bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                Transition;[@];
-                                Text;[bar];
-                            MarkupTagBlock - [25..31)::6 - [</foo>]
-                                MarkupTextLiteral - [25..31)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                    OpenAngle;[<];
-                                    ForwardSlash;[/];
-                                    Text;[foo];
-                                    CloseAngle;[>];
+                            MarkupElement - [15..31)::16
+                                MarkupStartTag - [15..20)::5 - [<foo>]
+                                    MarkupTextLiteral - [15..19)::4 - [<foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        OpenAngle;[<];
+                                        Text;[foo];
+                                    MarkupTextLiteral - [19..20)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        CloseAngle;[>];
+                                MarkupEphemeralTextLiteral - [20..21)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:Any
+                                    Transition;[@];
+                                MarkupTextLiteral - [21..25)::4 - [@bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    Transition;[@];
+                                    Text;[bar];
+                                MarkupEndTag - [25..31)::6 - [</foo>]
+                                    MarkupTextLiteral - [25..31)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        OpenAngle;[<];
+                                        ForwardSlash;[/];
+                                        Text;[foo];
+                                        CloseAngle;[>];
                             MarkupTextLiteral - [31..32)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Whitespace;[ ];
                         RazorMetaCode - [32..33)::1 - Gen<None> - SpanEditHandler;Accepts:None

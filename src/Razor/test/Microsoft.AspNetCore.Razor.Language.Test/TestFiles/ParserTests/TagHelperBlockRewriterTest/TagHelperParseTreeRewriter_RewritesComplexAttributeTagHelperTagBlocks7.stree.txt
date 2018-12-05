@@ -58,49 +58,50 @@ RazorDocument - [0..122)::122 - [<p class="@DateTime.Now" style='@DateTime.Now'>
                 Whitespace;[ ];
                 Text;[World];
                 Whitespace;[ ];
-            MarkupTagBlock - [59..89)::30 - [<strong class="@DateTime.Now">]
-                MarkupTextLiteral - [59..66)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
+            MarkupElement - [59..118)::59
+                MarkupStartTag - [59..89)::30 - [<strong class="@DateTime.Now">]
+                    MarkupTextLiteral - [59..66)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[strong];
+                    MarkupAttributeBlock - [66..88)::22 - [ class="@DateTime.Now"]
+                        MarkupTextLiteral - [66..67)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Whitespace;[ ];
+                        MarkupTextLiteral - [67..72)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[class];
+                        Equals;[=];
+                        MarkupTextLiteral - [73..74)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                            DoubleQuote;["];
+                        GenericBlock - [74..87)::13
+                            MarkupDynamicAttributeValue - [74..87)::13 - [@DateTime.Now]
+                                GenericBlock - [74..87)::13
+                                    CSharpCodeBlock - [74..87)::13
+                                        CSharpImplicitExpression - [74..87)::13
+                                            CSharpTransition - [74..75)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                                Transition;[@];
+                                            CSharpImplicitExpressionBody - [75..87)::12
+                                                CSharpCodeBlock - [75..87)::12
+                                                    CSharpExpressionLiteral - [75..87)::12 - [DateTime.Now] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                                        Identifier;[DateTime];
+                                                        Dot;[.];
+                                                        Identifier;[Now];
+                        MarkupTextLiteral - [87..88)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                            DoubleQuote;["];
+                    MarkupTextLiteral - [88..89)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        CloseAngle;[>];
+                MarkupTextLiteral - [89..109)::20 - [inside of strong tag] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Text;[inside];
+                    Whitespace;[ ];
+                    Text;[of];
+                    Whitespace;[ ];
                     Text;[strong];
-                MarkupAttributeBlock - [66..88)::22 - [ class="@DateTime.Now"]
-                    MarkupTextLiteral - [66..67)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        Whitespace;[ ];
-                    MarkupTextLiteral - [67..72)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        Text;[class];
-                    Equals;[=];
-                    MarkupTextLiteral - [73..74)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
-                        DoubleQuote;["];
-                    GenericBlock - [74..87)::13
-                        MarkupDynamicAttributeValue - [74..87)::13 - [@DateTime.Now]
-                            GenericBlock - [74..87)::13
-                                CSharpCodeBlock - [74..87)::13
-                                    CSharpImplicitExpression - [74..87)::13
-                                        CSharpTransition - [74..75)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                                            Transition;[@];
-                                        CSharpImplicitExpressionBody - [75..87)::12
-                                            CSharpCodeBlock - [75..87)::12
-                                                CSharpExpressionLiteral - [75..87)::12 - [DateTime.Now] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
-                                                    Identifier;[DateTime];
-                                                    Dot;[.];
-                                                    Identifier;[Now];
-                    MarkupTextLiteral - [87..88)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
-                        DoubleQuote;["];
-                MarkupTextLiteral - [88..89)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
-            MarkupTextLiteral - [89..109)::20 - [inside of strong tag] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                Text;[inside];
-                Whitespace;[ ];
-                Text;[of];
-                Whitespace;[ ];
-                Text;[strong];
-                Whitespace;[ ];
-                Text;[tag];
-            MarkupTagBlock - [109..118)::9 - [</strong>]
-                MarkupTextLiteral - [109..118)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[strong];
-                    CloseAngle;[>];
+                    Whitespace;[ ];
+                    Text;[tag];
+                MarkupEndTag - [109..118)::9 - [</strong>]
+                    MarkupTextLiteral - [109..118)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        ForwardSlash;[/];
+                        Text;[strong];
+                        CloseAngle;[>];
             MarkupTagHelperEndTag - [118..122)::4
                 MarkupTextLiteral - [118..122)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];

@@ -12,18 +12,19 @@ CSharpCodeBlock - [0..29)::29 - [{string.Format(<html></html>}]
                     Identifier;[Format];
                     LeftParenthesis;[(];
                 MarkupBlock - [15..28)::13
-                    MarkupTagBlock - [15..21)::6 - [<html>]
-                        MarkupTextLiteral - [15..20)::5 - [<html] - Gen<Markup> - SpanEditHandler;Accepts:None
-                            OpenAngle;[<];
-                            Text;[html];
-                        MarkupTextLiteral - [20..21)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                            CloseAngle;[>];
-                    MarkupTagBlock - [21..28)::7 - [</html>]
-                        MarkupTextLiteral - [21..28)::7 - [</html>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                            OpenAngle;[<];
-                            ForwardSlash;[/];
-                            Text;[html];
-                            CloseAngle;[>];
+                    MarkupElement - [15..28)::13
+                        MarkupStartTag - [15..21)::6 - [<html>]
+                            MarkupTextLiteral - [15..20)::5 - [<html] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                OpenAngle;[<];
+                                Text;[html];
+                            MarkupTextLiteral - [20..21)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                CloseAngle;[>];
+                        MarkupEndTag - [21..28)::7 - [</html>]
+                            MarkupTextLiteral - [21..28)::7 - [</html>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                OpenAngle;[<];
+                                ForwardSlash;[/];
+                                Text;[html];
+                                CloseAngle;[>];
                 CSharpStatementLiteral - [28..28)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                     Marker;[];
             RazorMetaCode - [28..29)::1 - Gen<None> - SpanEditHandler;Accepts:None

@@ -1,13 +1,15 @@
 MarkupBlock - [0..6)::6 - [<></> ]
-    MarkupTagBlock - [0..2)::2 - [<>]
-        MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:None
-            OpenAngle;[<];
-        MarkupTextLiteral - [1..2)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-            CloseAngle;[>];
-    MarkupTagBlock - [2..5)::3 - [</>]
-        MarkupTextLiteral - [2..5)::3 - [</>] - Gen<Markup> - SpanEditHandler;Accepts:None
-            OpenAngle;[<];
-            ForwardSlash;[/];
-            CloseAngle;[>];
+    MarkupElement - [0..2)::2
+        MarkupStartTag - [0..2)::2 - [<>]
+            MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+            MarkupTextLiteral - [1..2)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                CloseAngle;[>];
+    MarkupElement - [2..5)::3
+        MarkupEndTag - [2..5)::3 - [</>]
+            MarkupTextLiteral - [2..5)::3 - [</>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                CloseAngle;[>];
     MarkupTextLiteral - [5..6)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:None
         Whitespace;[ ];
