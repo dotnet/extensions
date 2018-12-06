@@ -19,6 +19,36 @@
     <!-- This is used for error checking to ensure generated code and baselines are up to date when we increment the patch. -->
     <PreviousExtensionsReleaseVersion Condition=" '$(PatchVersion)' != '0' ">$(MajorVersion).$(MinorVersion).$([MSBuild]::Subtract($(PatchVersion), 1))</PreviousExtensionsReleaseVersion>
   </PropertyGroup>
+
+  <!-- These package versions may be overridden or updated by automation. -->
+  <PropertyGroup Label="Package Versions">
+    <InternalAspNetCoreSdkPackageVersion>3.0.0-build-20181114.5</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftNetCoreApp20PackageVersion>2.0.0</MicrosoftNetCoreApp20PackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview-27204-02</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.6.0-preview.18604.2</MicrosoftWin32RegistryPackageVersion>
+    <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview.18604.2</SystemComponentModelAnnotationsPackageVersion>
+    <SystemDataSqlClientPackageVersion>4.7.0-preview.18604.2</SystemDataSqlClientPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview.18604.2</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>4.6.0-preview.18604.2</SystemDiagnosticsEventLogPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.6.0-preview.18604.2</SystemIOPipelinesPackageVersion>
+    <SystemMemoryPackageVersion>4.5.2-servicing-27114-05</SystemMemoryPackageVersion>
+    <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.7.0-preview.18604.2</SystemReflectionMetadataPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0-preview.18604.2</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.6.0-preview.18604.2</SystemSecurityCryptographyCngPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>4.6.0-preview.18604.2</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>4.6.0-preview.18604.2</SystemTextEncodingsWebPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.6.0-preview.18604.2</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <DotNetRuntime Include="$(MicrosoftNETCoreAppPackageVersion)" />
+    <DotNetRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
+  </ItemGroup>
+
   <!-- Run 'dotnet msbuild version.props' to test changes to this file. -->
   <Target Name="InspectVersionNumbers">
     <Message Importance="High" Text="InformationalVersion    = '$(InformationalVersion)'" />

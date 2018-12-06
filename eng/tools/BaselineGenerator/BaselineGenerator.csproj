@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -9,6 +8,9 @@
     <IsTestProject>false</IsTestProject>
     <TestRunnerName></TestRunnerName>
   </PropertyGroup>
+
+  <!-- An empty Test target to deal with arcade -->
+  <Target Name="Test" />
 
   <ItemGroup>
     <PackageReference Include="NuGet.Packaging" Version="4.8.0" />
