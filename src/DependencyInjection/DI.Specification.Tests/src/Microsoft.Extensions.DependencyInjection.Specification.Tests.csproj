@@ -11,9 +11,9 @@
       https://github.com/dotnet/corefx/issues/12338 & https://github.com/dotnet/corefx/issues/11797
     -->
     <EnableApiCheck>false</EnableApiCheck>
-    <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
     <IsUnitTestProject>false</IsUnitTestProject>
     <IsTestProject>false</IsTestProject>
+    <TestRunnerName></TestRunnerName>
   </PropertyGroup>
 
   <ItemGroup>

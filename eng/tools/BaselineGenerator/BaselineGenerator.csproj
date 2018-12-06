@@ -7,7 +7,7 @@
     <StartWorkingDirectory>$(MSBuildProjectDirectory)/../../</StartWorkingDirectory>
     <IsUnitTestProject>false</IsUnitTestProject>
     <IsTestProject>false</IsTestProject>
-    <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
+    <TestRunnerName></TestRunnerName>
   </PropertyGroup>
 
   <ItemGroup>
