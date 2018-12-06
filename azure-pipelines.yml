@@ -19,7 +19,12 @@ variables:
     _HelixSource: official/aspnet/AspNetCore-Tooling/$(Build.SourceBranch)
     _SignType: real
     _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-    _OfficialBuildIdArgs: /p:OfficialBuildId=$(Build.BuildNumber)
+    _OfficialBuildIdArgs: /p:OfficialBuildId=$(Build.BuildNumber) 
+      /p:ManifestTeamProject=AspNet
+      /p:ManifestTeamName=AspNetCore-Tooling
+      /p:ManifestBuildBranch=$(Build.SourceBranch)
+      /p:ManifestBuildNumber=$(Build.BuildNumber)
+      /p:ManifestPublishUrl=https://vsdrop.corp.microsoft.com/file/v1/Products/AspNet/AspNetCore-Tooling/$(Build.SourceBranch)/$(Build.BuildNumber);
     _PublishArgs: /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
       /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
       /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)

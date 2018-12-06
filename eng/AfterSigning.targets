@@ -1,0 +1,25 @@
+<Project>
+  <!-- Called when generating a VSIX manifest -->
+  <Target Name="_SetManifestProperties" BeforeTargets="GenerateVisualStudioInsertionManifests">
+
+    <!-- 
+      We expect these to be set by the build arguments in the official build. Populating them here with reasonable defaults
+      so we can inspect the behavior during local builds.
+    -->
+    <PropertyGroup>
+      <ManifestTeamProject Condition="'$(ManifestTeamProject)' == ''">AspNet</ManifestTeamProject>
+      <ManifestRepositoryName Condition="'$(ManifestRepositoryName)' == ''">AspNetCore-Tooling</ManifestRepositoryName>
+      <ManifestBuildBranch Condition="'$(ManifestBuildBranch)' == ''">local_build</ManifestBuildBranch>
+      <ManifestBuildNumber Condition="'$(ManifestBuildNumber)' == ''">4242424242</ManifestBuildNumber>
+      <ManifestPublishUrl Condition="'$(ManifestPublishUrl)' == ''">https://vsdrop.corp.microsoft.com/file/v1/Products/$(ManifestTeamProject)/$(ManifestRepositoryName)/$(ManifestBuildBranch)/$(ManifestBuildNumber);</ManifestPublishUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_Args Include="ManifestTeamProject=$(ManifestTeamProject)" />
+      <_Args Include="ManifestRepositoryName=$(ManifestRepositoryName)" />
+      <_Args Include="ManifestBuildBranch=$(ManifestBuildBranch)" />
+      <_Args Include="ManifestBuildNumber=$(ManifestBuildNumber)" />
+      <_Args Include="ManifestPublishUrl=$(ManifestPublishUrl)" />
+    </ItemGroup>
+  </Target>
+</Project>

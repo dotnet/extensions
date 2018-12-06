@@ -19,14 +19,18 @@
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
   </PropertyGroup>
 
+  <!-- 
+    Note: Using $(OfficialBuildId) because the other version-related properties are defined yet when this is
+    imported. This OK because we want to just have an obvious salt for a local build.
+  -->
   <PropertyGroup>
     <VsixVersion>16.0</VsixVersion>
-    <VsixVersion Condition="'$(VersionSuffixDateStamp)' != ''">$(VsixVersion).$(VersionSuffixDateStamp)$(VersionSuffixBuildOfTheDayPadded)</VsixVersion>
-    <VsixVersion Condition="'$(VersionSuffixDateStamp)' == ''">$(VsixVersion).4242424</VsixVersion>
+    <VsixVersion Condition="'$(OfficialBuildId)' != ''">$(VsixVersion).$(OfficialBuildId)</VsixVersion>
+    <VsixVersion Condition="'$(OfficialBuildId)' == ''">$(VsixVersion).4242424</VsixVersion>
 
     <AddinVersion>7.5</AddinVersion>
-    <AddinVersion Condition="'$(VersionSuffixDateStamp)' != ''">$(AddinVersion).$(VersionSuffixDateStamp)$(VersionSuffixBuildOfTheDayPadded)</AddinVersion>
-    <AddinVersion Condition="'$(VersionSuffixDateStamp)' == ''">$(AddinVersion).4242424</AddinVersion>
+    <AddinVersion Condition="'$(OfficialBuildId)' != ''">$(AddinVersion).$(OfficialBuildId)</AddinVersion>
+    <AddinVersion Condition="'$(OfficialBuildId)' == ''">$(AddinVersion).4242424</AddinVersion>
   </PropertyGroup>
 
   <PropertyGroup>
