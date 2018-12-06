@@ -67,8 +67,7 @@ phases:
           azureSubscription: 'DotNet-Engineering-Services_KeyVault'
           KeyVaultName: EngKeyVault
           SecretsFilter: 'dotnetfeed-storage-access-key-1,microsoft-symbol-server-pat,symweb-symbol-server-pat'
-    # workaround for dotnet/arcade#1425 (revert to cibuild.cmd once fixed)
-    - script: eng\build-no-publish.cmd 
+    - script: eng\common\cibuild.cmd 
         -configuration $(_BuildConfig)
         -prepareMachine
         $(_SignArgs)
@@ -84,24 +83,6 @@ phases:
       inputs:
         testRunner: xunit
         testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'
-    # workaround for dotnet/arcade#1425 (remove once fixed)
-    - script: eng\publish.cmd
-        -configuration $(_BuildConfig)
-        -msbuildEngine dotnet
-        $(_SignArgs)
-        $(_OfficialBuildIdArgs)
-        $(_PublishArgs)
-      name: Publish
-      displayName: Publish
-      condition: succeeded()
-    - task: PublishBuildArtifacts@1
-      displayName: Publish Packages
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/packages/$(_BuildConfig)'
-        PublishLocation: Container
-        ArtifactName: Packages_$(Agent.Os)_$(Agent.JobName)
-      continueOnError: true
-      condition: eq(variables['_BuildConfig'], 'Release')
     - task: PublishBuildArtifacts@1
       displayName: Publish VSIX Artifacts
       inputs:
