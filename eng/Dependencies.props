@@ -24,7 +24,7 @@
     <SystemSecurityCryptographyXmlPackageVersion>4.6.0-preview.18606.1</SystemSecurityCryptographyXmlPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.6.0-preview.18606.1</SystemTextEncodingsWebPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.6.0-preview.18606.1</SystemThreadingTasksExtensionsPackageVersion>
-    <SystemValueTuplePackageVersion>4.6.0-preview1-26829-04</SystemValueTuplePackageVersion>
+    <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
   </PropertyGroup>
 
   <!-- This may import a generated file which may override the variables above. -->
