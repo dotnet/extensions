@@ -11,7 +11,16 @@
       <ManifestRepositoryName Condition="'$(ManifestRepositoryName)' == ''">AspNetCore-Tooling</ManifestRepositoryName>
       <ManifestBuildBranch Condition="'$(ManifestBuildBranch)' == ''">local_build</ManifestBuildBranch>
       <ManifestBuildNumber Condition="'$(ManifestBuildNumber)' == ''">4242424242</ManifestBuildNumber>
-      <ManifestPublishUrl Condition="'$(ManifestPublishUrl)' == ''">https://vsdrop.corp.microsoft.com/file/v1/Products/$(ManifestTeamProject)/$(ManifestRepositoryName)/$(ManifestBuildBranch)/$(ManifestBuildNumber);</ManifestPublishUrl>
+
+      <!-- 
+        The %3B is not a mistake, it's an escaped semicolon.
+
+        The final manifest URL needs to look like:
+          https://vsdrop.corp.microsoft.com/file/v1/Products/AspNet/AspNetCore-Tooling/master/20180909.1;Microsoft.VisualStudio.RazorExtension.vsix
+
+        We are responsible for providing the semicolon for some reason. 
+      -->
+      <ManifestPublishUrl Condition="'$(ManifestPublishUrl)' == ''">https://vsdrop.corp.microsoft.com/file/v1/Products/$(ManifestTeamProject)/$(ManifestRepositoryName)/$(ManifestBuildBranch)/$(ManifestBuildNumber)%3B</ManifestPublishUrl>
     </PropertyGroup>
 
     <ItemGroup>
