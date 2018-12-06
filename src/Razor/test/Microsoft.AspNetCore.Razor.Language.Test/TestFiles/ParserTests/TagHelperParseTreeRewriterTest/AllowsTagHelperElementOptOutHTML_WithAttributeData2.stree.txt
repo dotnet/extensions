@@ -1,6 +1,6 @@
 RazorDocument - [0..21)::21 - [<!p class="btn"></!p>]
     MarkupBlock - [0..21)::21
-        MarkupElement - [0..16)::16
+        MarkupElement - [0..21)::21
             MarkupStartTag - [0..16)::16 - [<!p class="btn">]
                 MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
@@ -24,7 +24,6 @@ RazorDocument - [0..21)::21 - [<!p class="btn"></!p>]
                         DoubleQuote;["];
                 MarkupTextLiteral - [15..16)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
-        MarkupElement - [16..21)::5
             MarkupEndTag - [16..21)::5 - [</!p>]
                 MarkupTextLiteral - [16..18)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];

@@ -11,7 +11,7 @@ RazorDocument - [0..47)::47 - [@{<!text class="btn">words with spaces</!text>}]
                         LeftBrace;[{];
                     CSharpCodeBlock - [2..46)::44
                         MarkupBlock - [2..46)::44
-                            MarkupElement - [2..21)::19
+                            MarkupElement - [2..46)::44
                                 MarkupStartTag - [2..21)::19 - [<!text class="btn">]
                                     MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                         OpenAngle;[<];
@@ -35,13 +35,12 @@ RazorDocument - [0..47)::47 - [@{<!text class="btn">words with spaces</!text>}]
                                             DoubleQuote;["];
                                     MarkupTextLiteral - [20..21)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         CloseAngle;[>];
-                            MarkupTextLiteral - [21..38)::17 - [words with spaces] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                Text;[words];
-                                Whitespace;[ ];
-                                Text;[with];
-                                Whitespace;[ ];
-                                Text;[spaces];
-                            MarkupElement - [38..46)::8
+                                MarkupTextLiteral - [21..38)::17 - [words with spaces] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    Text;[words];
+                                    Whitespace;[ ];
+                                    Text;[with];
+                                    Whitespace;[ ];
+                                    Text;[spaces];
                                 MarkupEndTag - [38..46)::8 - [</!text>]
                                     MarkupTextLiteral - [38..40)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                         OpenAngle;[<];

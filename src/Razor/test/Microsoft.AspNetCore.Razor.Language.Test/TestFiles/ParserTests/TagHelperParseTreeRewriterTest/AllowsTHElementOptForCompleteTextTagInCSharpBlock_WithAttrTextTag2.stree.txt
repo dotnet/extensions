@@ -11,7 +11,7 @@ RazorDocument - [0..30)::30 - [@{<!text class="btn"></!text>}]
                         LeftBrace;[{];
                     CSharpCodeBlock - [2..29)::27
                         MarkupBlock - [2..29)::27
-                            MarkupElement - [2..21)::19
+                            MarkupElement - [2..29)::27
                                 MarkupStartTag - [2..21)::19 - [<!text class="btn">]
                                     MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                         OpenAngle;[<];
@@ -35,7 +35,6 @@ RazorDocument - [0..30)::30 - [@{<!text class="btn"></!text>}]
                                             DoubleQuote;["];
                                     MarkupTextLiteral - [20..21)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         CloseAngle;[>];
-                            MarkupElement - [21..29)::8
                                 MarkupEndTag - [21..29)::8 - [</!text>]
                                     MarkupTextLiteral - [21..23)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                         OpenAngle;[<];

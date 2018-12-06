@@ -13,7 +13,7 @@ RazorDocument - [0..26)::26 - [<strong></strong><!p></!p>]
                     ForwardSlash;[/];
                     Text;[strong];
                     CloseAngle;[>];
-        MarkupElement - [17..21)::4
+        MarkupElement - [17..26)::9
             MarkupStartTag - [17..21)::4 - [<!p>]
                 MarkupTextLiteral - [17..18)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
@@ -23,7 +23,6 @@ RazorDocument - [0..26)::26 - [<strong></strong><!p></!p>]
                     Text;[p];
                 MarkupTextLiteral - [20..21)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
-        MarkupElement - [21..26)::5
             MarkupEndTag - [21..26)::5 - [</!p>]
                 MarkupTextLiteral - [21..23)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];

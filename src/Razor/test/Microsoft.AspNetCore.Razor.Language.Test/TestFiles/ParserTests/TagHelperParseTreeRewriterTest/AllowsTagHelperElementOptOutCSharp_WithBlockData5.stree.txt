@@ -11,7 +11,7 @@ RazorDocument - [0..11)::11 - [@{<!p></p>}]
                         LeftBrace;[{];
                     CSharpCodeBlock - [2..10)::8
                         MarkupBlock - [2..10)::8
-                            MarkupElement - [2..6)::4
+                            MarkupElement - [2..10)::8
                                 MarkupStartTag - [2..6)::4 - [<!p>]
                                     MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                         OpenAngle;[<];
@@ -21,13 +21,13 @@ RazorDocument - [0..11)::11 - [@{<!p></p>}]
                                         Text;[p];
                                     MarkupTextLiteral - [5..6)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         CloseAngle;[>];
-                            MarkupElement - [6..10)::4
-                                MarkupEndTag - [6..10)::4 - [</p>]
-                                    MarkupTextLiteral - [6..10)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[p];
-                                        CloseAngle;[>];
+                                MarkupElement - [6..10)::4
+                                    MarkupEndTag - [6..10)::4 - [</p>]
+                                        MarkupTextLiteral - [6..10)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                            OpenAngle;[<];
+                                            ForwardSlash;[/];
+                                            Text;[p];
+                                            CloseAngle;[>];
                         CSharpStatementLiteral - [10..10)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Marker;[];
                     RazorMetaCode - [10..11)::1 - Gen<None> - SpanEditHandler;Accepts:None

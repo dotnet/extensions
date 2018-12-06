@@ -11,7 +11,7 @@ RazorDocument - [0..31)::31 - [@{<!text><text></text></!text>}]
                         LeftBrace;[{];
                     CSharpCodeBlock - [2..30)::28
                         MarkupBlock - [2..30)::28
-                            MarkupElement - [2..9)::7
+                            MarkupElement - [2..30)::28
                                 MarkupStartTag - [2..9)::7 - [<!text>]
                                     MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                         OpenAngle;[<];
@@ -21,20 +21,19 @@ RazorDocument - [0..31)::31 - [@{<!text><text></text></!text>}]
                                         Text;[text];
                                     MarkupTextLiteral - [8..9)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         CloseAngle;[>];
-                            MarkupTagHelperElement - [9..22)::13 - text[StartTagAndEndTag] - texttaghelper
-                                MarkupTagHelperStartTag - [9..15)::6
-                                    MarkupTextLiteral - [9..14)::5 - [<text] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        Text;[text];
-                                    MarkupTextLiteral - [14..15)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
-                                MarkupTagHelperEndTag - [15..22)::7
-                                    MarkupTextLiteral - [15..22)::7 - [</text>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[text];
-                                        CloseAngle;[>];
-                            MarkupElement - [22..30)::8
+                                MarkupTagHelperElement - [9..22)::13 - text[StartTagAndEndTag] - texttaghelper
+                                    MarkupTagHelperStartTag - [9..15)::6
+                                        MarkupTextLiteral - [9..14)::5 - [<text] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                            OpenAngle;[<];
+                                            Text;[text];
+                                        MarkupTextLiteral - [14..15)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                            CloseAngle;[>];
+                                    MarkupTagHelperEndTag - [15..22)::7
+                                        MarkupTextLiteral - [15..22)::7 - [</text>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                            OpenAngle;[<];
+                                            ForwardSlash;[/];
+                                            Text;[text];
+                                            CloseAngle;[>];
                                 MarkupEndTag - [22..30)::8 - [</!text>]
                                     MarkupTextLiteral - [22..24)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                         OpenAngle;[<];

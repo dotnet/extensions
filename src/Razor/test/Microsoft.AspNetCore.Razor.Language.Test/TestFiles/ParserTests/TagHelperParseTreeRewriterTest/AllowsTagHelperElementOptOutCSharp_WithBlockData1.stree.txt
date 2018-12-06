@@ -11,7 +11,7 @@ RazorDocument - [0..7)::7 - [@{<!p>}]
                         LeftBrace;[{];
                     CSharpCodeBlock - [2..7)::5
                         MarkupBlock - [2..7)::5
-                            MarkupElement - [2..6)::4
+                            MarkupElement - [2..7)::5
                                 MarkupStartTag - [2..6)::4 - [<!p>]
                                     MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                         OpenAngle;[<];
@@ -21,7 +21,7 @@ RazorDocument - [0..7)::7 - [@{<!p>}]
                                         Text;[p];
                                     MarkupTextLiteral - [5..6)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         CloseAngle;[>];
-                            MarkupTextLiteral - [6..7)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                Text;[}];
+                                MarkupTextLiteral - [6..7)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    Text;[}];
                     RazorMetaCode - [7..7)::0 - Gen<None> - SpanEditHandler;Accepts:Any
                         RightBrace;[<Missing>];

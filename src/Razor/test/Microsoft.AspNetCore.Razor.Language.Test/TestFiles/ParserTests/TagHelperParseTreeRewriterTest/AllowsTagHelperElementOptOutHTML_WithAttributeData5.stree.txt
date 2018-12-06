@@ -1,6 +1,6 @@
 RazorDocument - [0..41)::41 - [<!p class='btn1 @DateTime.Now btn2'></!p>]
     MarkupBlock - [0..41)::41
-        MarkupElement - [0..36)::36
+        MarkupElement - [0..41)::41
             MarkupStartTag - [0..36)::36 - [<!p class='btn1 @DateTime.Now btn2'>]
                 MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
@@ -43,7 +43,6 @@ RazorDocument - [0..41)::41 - [<!p class='btn1 @DateTime.Now btn2'></!p>]
                         SingleQuote;['];
                 MarkupTextLiteral - [35..36)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
-        MarkupElement - [36..41)::5
             MarkupEndTag - [36..41)::5 - [</!p>]
                 MarkupTextLiteral - [36..38)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
