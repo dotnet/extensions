@@ -1,6 +1,8 @@
 variables:
   Build.Repository.Clean: true
   _TeamName: AspNetCore
+  _DotNetPublishToBlobFeed : false
+  _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
 
   # Variables for public PR builds
   ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'github')) }}:
@@ -15,10 +17,16 @@ variables:
   ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
     _HelixType: build/product
     _HelixSource: official/aspnet/Extensions/$(Build.SourceBranch)
-    _SignType: test
+    _SignType: real
     _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
     _OfficialBuildIdArgs: /p:OfficialBuildId=$(Build.BuildNumber)
-    _PublishArgs: '/p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat) /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)'
+      /p:ManifestBuildBranch=$(Build.SourceBranchName)
+      /p:ManifestBuildNumber=$(Build.BuildNumber)
+    _PublishArgs: /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
+      /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
+      /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
+      /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+      /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
 
 resources:
   containers:
@@ -51,7 +59,14 @@ phases:
           _BuildConfig: Debug
         release:
           _BuildConfig: Release
+          _DotNetPublishToBlobFeed: true
     steps:
+    - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
+      - task: AzureKeyVault@1
+        inputs:
+          azureSubscription: 'DotNet-Engineering-Services_KeyVault'
+          KeyVaultName: EngKeyVault
+          SecretsFilter: 'dotnetfeed-storage-access-key-1,microsoft-symbol-server-pat,symweb-symbol-server-pat'
     - script: eng\common\cibuild.cmd
         -configuration $(_BuildConfig)
         -prepareMachine
@@ -61,13 +76,6 @@ phases:
       name: Build
       displayName: Build
       condition: succeeded()
-    - task: PublishTestResults@2
-      displayName: Publish xUnit Test Results
-      condition: always()
-      continueOnError: true
-      inputs:
-        testRunner: xunit
-        testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'
     - task: PublishBuildArtifacts@1
       displayName: Publish Packages
       inputs:

@@ -103,7 +103,7 @@ let main argv =
 
             AssertDotNet("build --configuration Debug");
 
-            Assert.True(File.Exists(assemblyInfoFile), $"{assemblyInfoFile} should not exist but does not");
+            Assert.True(File.Exists(assemblyInfoFile), $"{assemblyInfoFile} should exist but does not");
             var contents = File.ReadAllText(assemblyInfoFile);
             Assert.Contains("assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute(\"xyz123\")", contents);
             var lastWrite = new FileInfo(assemblyInfoFile).LastWriteTimeUtc;
