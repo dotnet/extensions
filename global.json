@@ -6,6 +6,9 @@
          "components": ["Microsoft.VisualStudio.Component.VSSDK"]
       }
     },
+    "sdk": {
+      "version": "3.0.100-preview-009750"
+    },
     "msbuild-sdks": {
       "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.18579.9"
     }
