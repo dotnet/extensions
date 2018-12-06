@@ -7,7 +7,6 @@
     <IsUnitTestProject>false</IsUnitTestProject>
     <IsTestProject>false</IsTestProject>
     <TestRunnerName></TestRunnerName>
-    <UsingToolMicrosoftNetCompilers>true</UsingToolMicrosoftNetCompilers>
   </PropertyGroup>
 
   <!-- An empty Test target to deal with arcade -->
