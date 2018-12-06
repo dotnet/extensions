@@ -35,8 +35,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThrowingLibrary", "src\Shar
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{7A597F60-480C-4BFF-A940-26094BB0CA62}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BaselineGenerator", "eng\tools\BaselineGenerator\BaselineGenerator.csproj", "{532F85C9-F589-40E7-814F-F0463A927788}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.Extensions.CommandLineUtils.Sources", "src\Shared\src\CommandLineUtils\Microsoft.Extensions.CommandLineUtils.Sources.shproj", "{00947D4A-C20E-46E3-90C3-6CD6BC87EE72}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestingUtils", "TestingUtils", "{3DBE2341-7244-4095-A60C-A0AF7E187C9B}"
