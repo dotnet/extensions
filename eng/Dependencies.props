@@ -73,7 +73,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(OS)' != 'Windows_NT'">
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssemblies)" PrivateAssets="All" />
+    <Reference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsUnitTestProject)' == 'true' ">
