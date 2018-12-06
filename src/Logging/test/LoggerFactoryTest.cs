@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Moq;
 using Xunit;
 
@@ -177,10 +178,33 @@ namespace Microsoft.Extensions.Logging.Test
                     "Message2",
                 });
         }
+#if NETCOREAPP
 
+        [Fact]
+        public void BeginScope_CreatesActivity()
+        {
+            var loggerProvider = new ExternalScopeLoggerProvider();
+            var loggerFactory = new LoggerFactory(new[] { loggerProvider });
+
+            var logger = loggerFactory.CreateLogger("Logger");
+
+            Assert.Null(Activity.Current);
+
+            Activity current;
+            using (logger.BeginScope("Scope"))
+            {
+                current = Activity.Current;
+                Assert.NotNull(current);
+            }
+            Assert.Null(Activity.Current);
+
+            Assert.Equal("Scope", current.OperationName);
+        }
+
+#endif
         private class InternalScopeLoggerProvider : ILoggerProvider, ILogger
         {
-            private IExternalScopeProvider _scopeProvider = new LoggerExternalScopeProvider();
+            private List<Scope> _scopeProvider = new List<Scope>();
             public List<string> LogText { get; set; } = new List<string>();
 
             public void Dispose()
@@ -195,7 +219,10 @@ namespace Microsoft.Extensions.Logging.Test
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
             {
                 LogText.Add(formatter(state, exception));
-                _scopeProvider.ForEachScope((scope, builder) => builder.Add(scope.ToString()), LogText);
+                foreach (var scope in _scopeProvider)
+                {
+                    LogText.Add(scope.ToString());
+                }
             }
 
             public bool IsEnabled(LogLevel logLevel)
@@ -205,7 +232,31 @@ namespace Microsoft.Extensions.Logging.Test
 
             public IDisposable BeginScope<TState>(TState state)
             {
-                return _scopeProvider.Push(state);
+                var scope = new Scope(state, this);
+                _scopeProvider.Add(scope);
+                return scope;
+            }
+
+            private void PopScope()
+            {
+                _scopeProvider.RemoveAt(_scopeProvider.Count - 1);
+            }
+
+            private class Scope : IDisposable
+            {
+                public object State { get; }
+                public InternalScopeLoggerProvider Provider { get; }
+
+                public Scope(object state, InternalScopeLoggerProvider provider)
+                {
+                    State = state;
+                    Provider = provider;
+                }
+
+                public void Dispose()
+                {
+                    Provider.PopScope();
+                }
             }
         }
 
