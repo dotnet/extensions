@@ -4,13 +4,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <StartArguments>-o "$(MSBuildThisFileDirectory)../../Baseline.Designer.props"</StartArguments>
     <StartWorkingDirectory>$(MSBuildProjectDirectory)/../../</StartWorkingDirectory>
-    <IsUnitTestProject>false</IsUnitTestProject>
-    <IsTestProject>false</IsTestProject>
-    <TestRunnerName></TestRunnerName>
   </PropertyGroup>
-
-  <!-- An empty Test target to deal with arcade -->
-  <Target Name="Test" />
 
   <ItemGroup>
     <PackageReference Include="NuGet.Packaging" Version="4.8.0" />
