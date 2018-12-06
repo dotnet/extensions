@@ -15,7 +15,7 @@
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview.18606.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>4.6.0-preview.18606.1</SystemDiagnosticsEventLogPackageVersion>
     <SystemIOPipelinesPackageVersion>4.6.0-preview.18606.1</SystemIOPipelinesPackageVersion>
-    <SystemMemoryPackageVersion>4.6.0-preview1-26717-04</SystemMemoryPackageVersion>
+    <SystemMemoryPackageVersion>4.5.2-servicing-27114-05</SystemMemoryPackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.7.0-preview.18606.1</SystemReflectionMetadataPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0-preview.18606.1</SystemRuntimeCompilerServicesUnsafePackageVersion>
