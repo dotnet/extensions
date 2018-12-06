@@ -68,6 +68,7 @@
     <MicrosoftVisualStudioEditorPackageVersion>16.0.177-g0ae5fa46a1</MicrosoftVisualStudioEditorPackageVersion>
     <MicrosoftVisualStudioLanguagePackageVersion>16.0.177-g0ae5fa46a1</MicrosoftVisualStudioLanguagePackageVersion>
     <MicrosoftVisualStudioLanguageIntellisensePackageVersion>16.0.177-g0ae5fa46a1</MicrosoftVisualStudioLanguageIntellisensePackageVersion>
+    <MicrosoftVisualLiveSharePackageVersion>0.3.959</MicrosoftVisualLiveSharePackageVersion>
     <MicrosoftVisualStudioOLEInteropPackageVersion>7.10.6071</MicrosoftVisualStudioOLEInteropPackageVersion>
     <MicrosoftVisualStudioProjectSystemAnalyzersPackageVersion>16.0.201-pre-g7d366164d0</MicrosoftVisualStudioProjectSystemAnalyzersPackageVersion>
     <MicrosoftVisualStudioProjectSystemManagedVSPackageVersion>3.0.0-beta1-63529-03</MicrosoftVisualStudioProjectSystemManagedVSPackageVersion>
