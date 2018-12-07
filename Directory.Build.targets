@@ -2,4 +2,14 @@
 <Project>
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="eng\MPack.targets" />
+
+  <!-- 
+    Repeating this here because the Arcade VisualStudio.props runs after our Versions.props and overwrites
+    our VsixVersion
+  -->
+  <PropertyGroup>
+    <VsixVersion>16.0</VsixVersion>
+    <VsixVersion Condition="'$(OfficialBuildId)' != ''">$(VsixVersion).$(OfficialBuildId)</VsixVersion>
+    <VsixVersion Condition="'$(OfficialBuildId)' == ''">$(VsixVersion).4242424</VsixVersion>
+  </PropertyGroup>
 </Project>
