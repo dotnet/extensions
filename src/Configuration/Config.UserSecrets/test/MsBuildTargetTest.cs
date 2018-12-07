@@ -95,6 +95,21 @@ let main argv =
                     break;
             }
 
+            foreach (var file in new[] { Path.Join(_tempDir, "Directory.Build.props"), Path.Join(_tempDir, "Directory.Build.targets") })
+            {
+                if (!File.Exists(file))
+                {
+                    using (var fileStream = File.CreateText(file))
+                    {
+                        fileStream.WriteLine(@"
+<Project>
+  <!-- Intentionally empty to isolate tools projects from the result of the repo -->
+</Project>
+");
+                    }
+                }
+            }
+
             var assemblyInfoFile = Path.Combine(_tempDir, $"obj/Debug/{testTfm}/test.AssemblyInfo" + sourceExt);
 
             AssertDotNet("restore");
