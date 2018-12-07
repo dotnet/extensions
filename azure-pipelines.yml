@@ -76,6 +76,13 @@ phases:
       name: Build
       displayName: Build
       condition: succeeded()
+    - task: PublishTestResults@2
+      displayName: Publish xUnit Test Results
+      condition: always()
+      continueOnError: true
+      inputs:
+        testRunner: xunit
+        testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'
     - task: PublishBuildArtifacts@1
       displayName: Publish Packages
       inputs:
