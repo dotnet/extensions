@@ -24,6 +24,7 @@
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
+    <PublishWindowsPdb>true</PublishWindowsPdb>
   </PropertyGroup>
 
   <PropertyGroup Label="Package and Assembly Metadata">
