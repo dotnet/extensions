@@ -134,10 +134,12 @@ let main argv =
                 StartInfo = processInfo
             };
             process.OutputDataReceived += LogData;
+            process.ErrorDataReceived += LogData;
             process.Start();
             process.BeginOutputReadLine();
             process.WaitForExit();
             process.OutputDataReceived -= LogData;
+            process.ErrorDataReceived -= LogData;
             Assert.Equal(0, process.ExitCode);
         }
 
