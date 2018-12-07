@@ -123,5 +123,4 @@
     <DotNetRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
     <DotNetRuntime Include="$(MicrosoftNETCoreApp30PackageVersion)" />
   </ItemGroup>
-
 </Project>

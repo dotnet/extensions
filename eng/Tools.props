@@ -32,4 +32,11 @@
       IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
+    <!-- This is an attempt to workaround https://github.com/dotnet/arcade/issues/1499 -->
+  <Target Name="_ForceSymbolPublishing" BeforeTargets="Publish">
+    <PropertyGroup>
+      <PublishToSymbolServer Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</PublishToSymbolServer>
+    </PropertyGroup>
+  </Target>
+
 </Project>
