@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.Extensions.Logging.AzureAppServices.Tests" />
-    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
   <ItemGroup>
