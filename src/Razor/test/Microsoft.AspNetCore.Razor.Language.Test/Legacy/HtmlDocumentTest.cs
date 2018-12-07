@@ -199,8 +199,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new[] { SectionDirective.Directive, });
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "We currently don't support 1000 nested elements on MacOS.")]
+        [Fact(Skip = "Skipping temporarily until MarkupElementRewriter is removed")]
         public void ParseBlockCanParse1000NestedElements()
         {
             var content = Nested1000.ReadAllText();
