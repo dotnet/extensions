@@ -56,7 +56,7 @@ phases:
           _BuildConfig: Debug
         release:
           _BuildConfig: Release
-          _DotNetPublishToBlobFeed: true
+          _DotNetPublishToBlobFeed: false
     steps:
     - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
       - task: AzureKeyVault@1
