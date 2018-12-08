@@ -22,10 +22,7 @@ variables:
     _OfficialBuildIdArgs: /p:OfficialBuildId=$(Build.BuildNumber) 
       /p:ManifestBuildBranch=$(Build.SourceBranchName)
       /p:ManifestBuildNumber=$(Build.BuildNumber)
-    _PublishArgs: /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
-      /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
-      /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
-      /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+    _PublishArgs: /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
       /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
  
 resources:
