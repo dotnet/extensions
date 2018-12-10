@@ -4,7 +4,7 @@
     Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
 
   <PropertyGroup>
-    <ImportNetSdkFromRepoToolset>true</ImportNetSdkFromRepoToolset>
+    <ImportNetSdkFromRepoToolset>false</ImportNetSdkFromRepoToolset>
     <UsingToolXliff>false</UsingToolXliff>
   </PropertyGroup>
 
