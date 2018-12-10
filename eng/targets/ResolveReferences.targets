@@ -46,6 +46,10 @@
     <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" />
 
     <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
+
+    <!-- Use _ReferenceTemp to workaround issues in Visual Studio which causes a conflict between Reference, packages, and projects. -->
+    <_ReferenceTemp Include="@(Reference)" />
+    <Reference Remove="@(Reference)" />
   </ItemGroup>
 
   <!-- Ensure package output paths are available. -->
@@ -55,6 +59,9 @@
 
   <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences" Condition=" '$(TargetFramework)' != '' ">
     <ItemGroup>
+      <Reference Include="@(_ReferenceTemp)" />
+      <_ReferenceTemp Remove="@(_ReferenceTemp)" />
+
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName)" />
 
       <!--
