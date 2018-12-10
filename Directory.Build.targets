@@ -121,7 +121,7 @@
         <!-- <Command Condition="'$(HelixTargetQueue)' == 'Windows.10.Amd64.Open'">%HELIX_CORRELATION_PAYLOAD%\$(TargetFramework)\runtests.cmd %HELIX_CORRELATION_PAYLOAD%\$(TargetFramework)\$(TargetFileName) 2.1.500-preview-009398 2.1.6</Command>
         <Command Condition="'$(HelixTargetQueue)' != 'Windows.10.Amd64.Open'">$HELIX_CORRELATION_PAYLOAD/$(TargetFramework)/runtests.sh $HELIX_CORRELATION_PAYLOAD/$(TargetFramework)/$(TargetFileName) 2.1.500-preview-009398 2.1.6</Command> -->
         <Command Condition="'$(HelixTargetQueue)' == 'Windows.10.Amd64.Open'">runtests.cmd $(TargetFileName) 2.1.500-preview-009398 2.1.6</Command>
-        <Command Condition="'$(HelixTargetQueue)' != 'Windows.10.Amd64.Open'">$HELIX_CORRELATION_PAYLOAD/runtests.sh $HELIX_CORRELATION_PAYLOAD)/$(TargetFileName) 2.1.500-preview-009398 2.1.6</Command>
+        <Command Condition="'$(HelixTargetQueue)' != 'Windows.10.Amd64.Open'">$HELIX_CORRELATION_PAYLOAD/runtests.sh $HELIX_CORRELATION_PAYLOAD/$(TargetFileName) 2.1.500-preview-009398 2.1.6</Command>
         <!-- <Command Condition="'$(HelixTargetQueue)' != 'Windows.10.Amd64.Open'">runtests.sh $(TargetFileName) 2.1.500-preview-009398 2.1.6</Command> -->
         <TestPlatform>%(DistributedTestPlatform.Identity)</TestPlatform>
         <TestTimeout>$(DistributedTestTimeout)</TestTimeout>
