@@ -107,11 +107,11 @@
 
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(PublishAbsoluteDir)" />
 
-    <ItemGroup>
+    <!-- <ItemGroup>
       <PublishDirFiles Include="$(PublishAbsoluteDir)/**/*" />
-    </ItemGroup>
+    </ItemGroup> -->
 
-    <Copy SourceFiles="@(PublishDirFiles)" DestinationFolder="$(ArtifactsDir)\Helix\$(TargetFramework)\%(RecursiveDir)" />
+    <!-- <Copy SourceFiles="@(PublishDirFiles)" DestinationFolder="$(ArtifactsDir)\Helix\$(TargetFramework)\%(RecursiveDir)" /> -->
 
     <ItemGroup>
       <TestPayload Include="$(PublishAbsoluteDir.TrimEnd('\').TrimEnd('\'))">

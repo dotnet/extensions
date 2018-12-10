@@ -13,11 +13,12 @@
       <Output TaskParameter="TargetOutputs" ItemName="TestPayload" />
     </MSBuild>
     <ItemGroup>
-      <HelixCorrelationPayload Include="$(ArtifactsDir)\Helix">
+      <!-- <HelixCorrelationPayload Include="$(ArtifactsDir)\Helix">
         <PayloadDirectory>$(ArtifactsDir)\Helix</PayloadDirectory>
-      </HelixCorrelationPayload>
+      </HelixCorrelationPayload> -->
       <HelixWorkItem Include="%(TestPayload.TestName)">
         <Command>%(TestPayload.Command)</Command>
+        <PayloadDirectory>%(TestPayload.Identity)</PayloadDirectory>
         <Timeout>%(TestPayload.TestTimeout)</Timeout>
       </HelixWorkItem>
     </ItemGroup>
