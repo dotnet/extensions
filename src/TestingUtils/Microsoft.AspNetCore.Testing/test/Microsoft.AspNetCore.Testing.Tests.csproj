@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
+    
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
