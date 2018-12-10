@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
@@ -76,6 +76,5 @@
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Moq" />
     <Reference Include="xunit.analyzers" />
-    <DotNetCliToolReference Include="dotnet-xunit" Version="2.4.0-beta.1.build3958" />
   </ItemGroup>
 </Project>

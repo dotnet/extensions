@@ -34,7 +34,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TestRunnerAdditionalArguments></TestRunnerAdditionalArguments>
     <!-- Implementation projects are the projects which produce nuget packages or shipping assemblies. -->
     <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsTestAssetProject)' != 'true' AND '$(IsUnitTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</IsImplementationProject>
 
@@ -45,22 +44,4 @@
   <Import Project="eng\targets\Packaging.targets" Condition=" '$(MSBuildProjectExtension)' == '.csproj' " />
   <Import Project="eng\targets\ResolveReferences.targets" Condition=" '$(DisableReferenceRestrictions)' != 'true' AND '$(MSBuildProjectExtension)' == '.csproj' " />
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-
-  <!--
-    Include '*' target to force running tests even if the input assemblies haven't changed and the outputs are present.
-    This matches the common expectations that test command always runs all tests in scope.
-  -->
-  <!-- <Target Name="RunTests"
-    Inputs="@(TestToRun);*"
-    Outputs="%(TestToRun.LogPath);%(TestToRun.ResultsXmlPath);%(TestToRun.ResultsHtmlPath)">
-    <PropertyGroup>
-      <TestAdapterPath></TestAdapterPath>
-      <_TestRunnerCommand>$(DotNetTool) vstest Parallel</_TestRunnerCommand>
-      <_TestRunnerCommand Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">$(_TestRunnerCommand) TestAdapterPath:$(TestAdapterPath)</_TestRunnerCommand>
-      <_TestRunnerCommand>$(_TestRunnerCommand) %(TestToRun.Identity)</_TestRunnerCommand>
-    </PropertyGroup>
-    <Exec Command='$(_TestRunnerCommand)' LogStandardErrorAsError="false" WorkingDirectory="$(_TargetDir)" IgnoreExitCode="true">
-      <Output TaskParameter="ExitCode" PropertyName="_TestErrorCode" />
-    </Exec>
-  </Target> -->
 </Project>
