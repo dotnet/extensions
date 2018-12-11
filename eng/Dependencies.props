@@ -80,6 +80,8 @@
     <LatestPackageReference Include="xunit.extensibility.execution" Version="2.3.1" />
     <LatestPackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
     <LatestPackageReference Include="xunit" Version="2.4.0" />
+    <LatestPackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.3.1" />
+    <LatestPackageReference Include="DryIoc.Microsoft.DependencyInjection" Version="2.1.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">

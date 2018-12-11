@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.DependencyInjection</RootNamespace>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,6 +12,7 @@
     <ProjectReference Include="..\..\DI.Specification.Tests\src\Microsoft.Extensions.DependencyInjection.Specification.Tests.csproj" />
 
     <Reference Include="Autofac.Extensions.DependencyInjection" />
+    <Reference Include="DryIoc.Microsoft.DependencyInjection" />
 
   </ItemGroup>
 
