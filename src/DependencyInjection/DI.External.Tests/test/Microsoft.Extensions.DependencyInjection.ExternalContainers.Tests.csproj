@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <RootNamespace>Microsoft.Extensions.DependencyInjection</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json" />
+
+    <ProjectReference Include="..\..\DI.Specification.Tests\src\Microsoft.Extensions.DependencyInjection.Specification.Tests.csproj" />
+
+    <Reference Include="Autofac.Extensions.DependencyInjection" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
