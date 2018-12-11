@@ -68,10 +68,10 @@ jobs:
       value: ${{ parameters.configuration }}
     - name: VSTS_OVERWRITE_TEMP
       value: false # Workaround for https://github.com/dotnet/core-eng/issues/2812
-    ${{ if or(ne(parameters.codeSign, 'true'), ne(variables['System.TeamProject'], 'internal')) }}:
+    - ${{ if or(ne(parameters.codeSign, 'true'), ne(variables['System.TeamProject'], 'internal')) }}:
       - name: _SignType
         value: ''
-    ${{ if and(eq(parameters.codeSign, 'true'), eq(variables['System.TeamProject'], 'internal')) }}:
+    - ${{ if and(eq(parameters.codeSign, 'true'), eq(variables['System.TeamProject'], 'internal')) }}:
       - name: TeamName
         value: AspNetCore
       - name: _SignType
