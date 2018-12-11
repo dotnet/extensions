@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Localization
     public class ResourceManagerStringLocalizerTest
     {
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX, "https://github.com/aspnet/Extensions/issues/627")]
+        [OSSkipCondition(OperatingSystems.MacOSX)] // https://github.com/aspnet/Extensions/issues/627
         public void EnumeratorCachesCultureWalkForSameAssembly()
         {
             // Arrange
@@ -57,7 +57,7 @@ namespace Microsoft.Extensions.Localization
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX, "https://github.com/aspnet/Extensions/issues/627")]
+        [OSSkipCondition(OperatingSystems.MacOSX)] // https://github.com/aspnet/Extensions/issues/627
         public void EnumeratorCacheIsScopedByAssembly()
         {
             // Arrange
@@ -173,7 +173,7 @@ namespace Microsoft.Extensions.Localization
         }
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.MacOSX, "https://github.com/aspnet/Extensions/issues/627")]
+        [OSSkipCondition(OperatingSystems.MacOSX)] // https://github.com/aspnet/Extensions/issues/627
         [InlineData(true)]
         [InlineData(false)]
         public void ResourceManagerStringLocalizer_GetAllStrings_MissingResourceThrows(bool includeParentCultures)
