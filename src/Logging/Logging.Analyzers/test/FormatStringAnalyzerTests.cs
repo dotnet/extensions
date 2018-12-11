@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Logging.Analyzer.Test
 {
     public class FormatStringAnalyzerTests : DiagnosticVerifier
     {
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/Extensions/issues/625")]
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @"""{0}""", "1")]
         public void MEL0001IsProducedForNumericFormatArgument(string format)
         {
@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.Logging.Analyzer.Test
             Assert.Equal("MEL0001", diagnostic.Id);
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/Extensions/issues/625")]
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @"$""{string.Empty}""", "")]
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @"""string"" + 2", "")]
         public void MEL0002IsProducedForDynamicFormatArgument(string format)
@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.Logging.Analyzer.Test
             Assert.Equal("MEL0002", diagnostic.Id);
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/Extensions/issues/625")]
         [MemberData(nameof(GenerateTemplateUsages), @"""{string}""", "1, 2")]
         [MemberData(nameof(GenerateTemplateUsages), @"""{str"" + ""ing}""", "1, 2")]
         [MemberData(nameof(GenerateTemplateUsages), @"""{"" + nameof(ILogger) + ""}""", "")]
@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.Logging.Analyzer.Test
             Assert.Equal("MEL0003", diagnostic.Id);
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/Extensions/issues/625")]
         [InlineData(@"LoggerMessage.Define(LogLevel.Information, 42, ""{One} {Two} {Three}"");")]
         [InlineData(@"LoggerMessage.Define<int>(LogLevel.Information, 42, ""{One} {Two} {Three}"");")]
         [InlineData(@"LoggerMessage.Define<int, int>(LogLevel.Information, 42, ""{One} {Two} {Three}"");")]
@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.Logging.Analyzer.Test
             Assert.Equal("MEL0003", diagnostic.Id);
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/Extensions/issues/625")]
         [InlineData("LogTrace", @"""This is a test {Message}"", ""Foo""")]
         [InlineData("LogDebug", @"""This is a test {Message}"", ""Foo""")]
         [InlineData("LogInformation", @"""This is a test {Message}"", ""Foo""")]
@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.Logging.Analyzer.Test
             Assert.Equal($"For improved performance, use pre-compiled log messages instead of calling '{method}' with a string message.", diagnostic.GetMessage());
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/Extensions/issues/625")]
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @"""{camelCase}""", "1")]
         public void MEL0005IsProducedForCamelCasedFormatArgument(string format)
         {
@@ -79,7 +79,7 @@ namespace Microsoft.Extensions.Logging.Analyzer.Test
             Assert.Equal("MEL0005", diagnostic.Id);
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/Extensions/issues/625")]
         // Concat would be optimized by compiler
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @"nameof(ILogger) + "" string""", "")]
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @""" string"" + "" string""", "")]
