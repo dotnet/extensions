@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             {
                 if (SkippedTests.Contains(stackFrame.GetMethod().Name))
                 {
+                    // We skip tests by returning MEDI service provider that we know passes the test
                     return serviceCollection.BuildServiceProvider();
                 }
             }

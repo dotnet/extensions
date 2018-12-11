@@ -6,7 +6,7 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using LightInject.Microsoft.DependencyInjection;
 
-    namespace Microsoft.Extensions.DependencyInjection.Specification
+namespace Microsoft.Extensions.DependencyInjection.Specification
 {
     public class LightInjectDependencyInjectionSpecificationTests: DependencyInjectionSpecificationTests
     {
