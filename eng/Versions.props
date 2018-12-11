@@ -1,5 +1,5 @@
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <UsingToolVSSDK>true</UsingToolVSSDK>
     <MicrosoftVSSDKBuildToolsVersion>15.9.3032</MicrosoftVSSDKBuildToolsVersion>
@@ -7,18 +7,15 @@
     <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
     <MicrosoftNetFrameworkReferenceAssembliesVersion>1.0.0-alpha-004</MicrosoftNetFrameworkReferenceAssembliesVersion>
   </PropertyGroup>
-
   <!-- Opt out of certain Arcade features -->
   <PropertyGroup>
     <UsingToolXliff>false</UsingToolXliff>
   </PropertyGroup>
-
   <PropertyGroup>
     <MajorVersion>3</MajorVersion>
     <MinorVersion>0</MinorVersion>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
   </PropertyGroup>
-
   <!-- 
     Note: Using $(OfficialBuildId) because the other version-related properties are defined yet when this is
     imported. This OK because we want to just have an obvious salt for a local build.
@@ -27,12 +24,10 @@
     <VsixVersion>16.0</VsixVersion>
     <VsixVersion Condition="'$(OfficialBuildId)' != ''">$(VsixVersion).$(OfficialBuildId)</VsixVersion>
     <VsixVersion Condition="'$(OfficialBuildId)' == ''">$(VsixVersion).4242424</VsixVersion>
-
     <AddinVersion>7.5</AddinVersion>
     <AddinVersion Condition="'$(OfficialBuildId)' != ''">$(AddinVersion).$(OfficialBuildId)</AddinVersion>
     <AddinVersion Condition="'$(OfficialBuildId)' == ''">$(AddinVersion).4242424</AddinVersion>
   </PropertyGroup>
-
   <PropertyGroup>
     <RestoreSources>
       $(RestoreSources);
@@ -46,7 +41,6 @@
       https://vside.myget.org/F/devcore/api/v3/index.json;
     </RestoreSources>
   </PropertyGroup>
-
   <PropertyGroup Label="Package Versions">
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-preview-181106-14</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
@@ -90,7 +84,6 @@
     <MonoDevelopSdkPackageVersion>1.0.1</MonoDevelopSdkPackageVersion>
     <MoqPackageVersion>4.10.0</MoqPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
-
     <!-- STOP!!! We need to reference the version of JSON that our HOSTS supprt. -->
     <NewtonsoftJsonPackageVersion>9.0.1</NewtonsoftJsonPackageVersion>
     <VS_NewtonsoftJsonPackageVersion>9.0.1</VS_NewtonsoftJsonPackageVersion>
@@ -115,7 +108,6 @@
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
-
   <!--
     These items will be used to install additional dotnet runtimes during bootstrapping. See tools.props.
   -->
