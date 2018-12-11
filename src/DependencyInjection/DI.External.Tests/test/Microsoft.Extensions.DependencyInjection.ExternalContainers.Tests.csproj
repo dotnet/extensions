@@ -9,11 +9,17 @@
   <ItemGroup>
     <Reference Include="Newtonsoft.Json" />
 
+    <ProjectReference Include="..\..\DI\src\Microsoft.Extensions.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\DI.Specification.Tests\src\Microsoft.Extensions.DependencyInjection.Specification.Tests.csproj" />
 
     <Reference Include="Autofac.Extensions.DependencyInjection" />
     <Reference Include="DryIoc.Microsoft.DependencyInjection" />
-
+    <Reference Include="Lamar.Microsoft.DependencyInjection" />
+    <Reference Include="LightInject.Microsoft.DependencyInjection" />
+    <Reference Include="StructureMap.Microsoft.DependencyInjection" />
+    <Reference Include="Grace.DependencyInjection.Extensions" />
+    <Reference Include="Stashbox.Extensions.Dependencyinjection" />
+    <Reference Include="Unity.Microsoft.DependencyInjection" />
   </ItemGroup>
 
   <ItemGroup>

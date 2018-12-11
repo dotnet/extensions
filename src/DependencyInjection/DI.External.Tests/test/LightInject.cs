@@ -4,16 +4,17 @@
 using System;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using LightInject.Microsoft.DependencyInjection;
 
-namespace Microsoft.Extensions.DependencyInjection.Specification
+    namespace Microsoft.Extensions.DependencyInjection.Specification
 {
-    public class AutofacDependencyInjectionSpecificationTests: DependencyInjectionSpecificationTests
+    public class LightInjectDependencyInjectionSpecificationTests: DependencyInjectionSpecificationTests
     {
         protected override IServiceProvider CreateServiceProvider(IServiceCollection serviceCollection)
         {
             var builder = new ContainerBuilder();
             builder.Populate(serviceCollection);
-            return new AutofacServiceProvider(builder.Build());
+            return serviceCollection.CreateLightInjectServiceProvider();
         }
     }
 }
