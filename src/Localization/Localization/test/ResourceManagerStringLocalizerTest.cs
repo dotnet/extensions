@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Resources;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Localization.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
