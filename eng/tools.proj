@@ -21,7 +21,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="$(MicrosoftDotNetBuildTasksFeedVersion)" IsImplicitlyDefined="true" />
-    <PackageReference Include="Microsoft.SymbolUploader.Build.Task" Version="$(MicrosoftSymbolUploaderBuildTaskVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 
 </Project>
