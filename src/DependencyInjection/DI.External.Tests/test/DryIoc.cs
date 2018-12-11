@@ -5,7 +5,7 @@ using System;
 using DryIoc;
 using DryIoc.Microsoft.DependencyInjection;
 
-    namespace Microsoft.Extensions.DependencyInjection.Specification
+namespace Microsoft.Extensions.DependencyInjection.Specification
 {
     public class DryIocDependencyInjectionSpecificationTests: DependencyInjectionSpecificationTests
     {
