@@ -127,6 +127,7 @@ jobs:
         azureSubscription: 'DotNet-Engineering-Services_KeyVault'
         KeyVaultName: EngKeyVault
         SecretsFilter: 'MaestroAccessToken'
+      displayName: Fetch secrets from KeyVault
     - script: eng\common\publishbuildassets.cmd
         /p:ManifestsPath='$(Build.SourcesDirectory)/artifacts/AssetManifest/'
         /p:BuildAssetRegistryToken=$(MaestroAccessToken)
