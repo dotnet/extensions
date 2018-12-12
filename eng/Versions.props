@@ -9,7 +9,7 @@
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
     <PackageLicenseUrl>https://raw.githubusercontent.com/aspnet/AspNetCore/2.0.0/LICENSE.txt</PackageLicenseUrl>
     <Serviceable Condition="'$(Configuration)' == 'Release'">true</Serviceable>
-    <UsingToolNetFrameworkReferenceAssemblies>false</UsingToolNetFrameworkReferenceAssemblies>
+    <UsingToolNetFrameworkReferenceAssemblies Condition="'$(OS)' != 'Windows_NT'" >true</UsingToolNetFrameworkReferenceAssemblies>
   </PropertyGroup>
 
   <PropertyGroup>
