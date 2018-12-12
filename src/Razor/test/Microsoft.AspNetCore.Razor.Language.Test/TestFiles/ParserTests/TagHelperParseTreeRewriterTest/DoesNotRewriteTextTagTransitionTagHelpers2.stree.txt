@@ -11,17 +11,16 @@ RazorDocument - [0..27)::27 - [@{<text>Hello World</text>}]
                         LeftBrace;[{];
                     CSharpCodeBlock - [2..26)::24
                         MarkupBlock - [2..26)::24
-                            MarkupElement - [2..8)::6
+                            MarkupElement - [2..26)::24
                                 MarkupStartTag - [2..8)::6 - [<text>]
                                     MarkupTransition - [2..8)::6 - Gen<None> - SpanEditHandler;Accepts:None
                                         OpenAngle;[<];
                                         Text;[text];
                                         CloseAngle;[>];
-                            MarkupTextLiteral - [8..19)::11 - [Hello World] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                Text;[Hello];
-                                Whitespace;[ ];
-                                Text;[World];
-                            MarkupElement - [19..26)::7
+                                MarkupTextLiteral - [8..19)::11 - [Hello World] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    Text;[Hello];
+                                    Whitespace;[ ];
+                                    Text;[World];
                                 MarkupEndTag - [19..26)::7 - [</text>]
                                     MarkupTransition - [19..26)::7 - Gen<None> - SpanEditHandler;Accepts:None
                                         OpenAngle;[<];

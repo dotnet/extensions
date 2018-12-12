@@ -26,7 +26,7 @@ CSharpCodeBlock - [0..14)::14 - [{<span foo='@@]
                                             Transition;[@];
                                         MarkupEphemeralTextLiteral - [13..14)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:None
                                             Transition;[@];
-                        MarkupTextLiteral - [14..14)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                            Marker;[];
+                    MarkupTextLiteral - [14..14)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Marker;[];
             RazorMetaCode - [14..14)::0 - Gen<None> - SpanEditHandler;Accepts:Any
                 RightBrace;[<Missing>];

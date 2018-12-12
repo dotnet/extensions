@@ -81,80 +81,80 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsHtmlCommentAhead_ReturnsTrueForEmptyCommentTag()
         {
             // Arrange
-            var sut = CreateTestParserForContent("---->");
+            var sut = CreateTestParserForContent("<!---->");
 
             // Act & Assert
-            Assert.True(sut.LegacyIsHtmlCommentAhead());
+            Assert.True(sut.IsHtmlCommentAhead());
         }
 
         [Fact]
         public void IsHtmlCommentAhead_ReturnsTrueForValidCommentTag()
         {
             // Arrange
-            var sut = CreateTestParserForContent("-- Some comment content in here -->");
+            var sut = CreateTestParserForContent("<!-- Some comment content in here -->");
 
             // Act & Assert
-            Assert.True(sut.LegacyIsHtmlCommentAhead());
+            Assert.True(sut.IsHtmlCommentAhead());
         }
 
         [Fact]
         public void IsHtmlCommentAhead_ReturnsTrueForValidCommentTagWithExtraDashesAtClosingTag()
         {
             // Arrange
-            var sut = CreateTestParserForContent("-- Some comment content in here ----->");
+            var sut = CreateTestParserForContent("<!-- Some comment content in here ----->");
 
             // Act & Assert
-            Assert.True(sut.LegacyIsHtmlCommentAhead());
+            Assert.True(sut.IsHtmlCommentAhead());
         }
 
         [Fact]
         public void IsHtmlCommentAhead_ReturnsFalseForContentWithBadEndingAndExtraDash()
         {
             // Arrange
-            var sut = CreateTestParserForContent("-- Some comment content in here <!--->");
+            var sut = CreateTestParserForContent("<!-- Some comment content in here <!--->");
 
             // Act & Assert
-            Assert.False(sut.LegacyIsHtmlCommentAhead());
+            Assert.False(sut.IsHtmlCommentAhead());
         }
 
         [Fact]
         public void IsHtmlCommentAhead_ReturnsTrueForValidCommentTagWithExtraInfoAfter()
         {
             // Arrange
-            var sut = CreateTestParserForContent("-- comment --> the first part is a valid comment without the Open angle and bang tokens");
+            var sut = CreateTestParserForContent("<!-- comment --> the first part is a valid comment without the Open angle and bang tokens");
 
             // Act & Assert
-            Assert.True(sut.LegacyIsHtmlCommentAhead());
+            Assert.True(sut.IsHtmlCommentAhead());
         }
 
         [Fact]
         public void IsHtmlCommentAhead_ReturnsFalseForNotClosedComment()
         {
             // Arrange
-            var sut = CreateTestParserForContent("-- not closed comment");
+            var sut = CreateTestParserForContent("<!-- not closed comment");
 
             // Act & Assert
-            Assert.False(sut.LegacyIsHtmlCommentAhead());
+            Assert.False(sut.IsHtmlCommentAhead());
         }
 
         [Fact]
         public void IsHtmlCommentAhead_ReturnsFalseForCommentWithoutLastClosingAngle()
         {
             // Arrange
-            var sut = CreateTestParserForContent("-- not closed comment--");
+            var sut = CreateTestParserForContent("<!-- not closed comment--");
 
             // Act & Assert
-            Assert.False(sut.LegacyIsHtmlCommentAhead());
+            Assert.False(sut.IsHtmlCommentAhead());
         }
 
         [Fact]
         public void IsHtmlCommentAhead_ReturnsTrueForCommentWithCodeInside()
         {
             // Arrange
-            var sut = CreateTestParserForContent("-- not closed @DateTime.Now comment-->");
+            var sut = CreateTestParserForContent("<!-- not closed @DateTime.Now comment-->");
 
             // Act & Assert
-            Assert.True(sut.LegacyIsHtmlCommentAhead());
+            Assert.True(sut.IsHtmlCommentAhead());
         }
 
         [Fact]
@@ -202,9 +202,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
                 get => base.PreviousToken;
             }
 
-            public new bool LegacyIsHtmlCommentAhead()
+            public new bool IsHtmlCommentAhead()
             {
-                return base.LegacyIsHtmlCommentAhead();
+                return base.IsHtmlCommentAhead();
             }
 
             public TestHtmlMarkupParser(ParserContext context) : base(context)

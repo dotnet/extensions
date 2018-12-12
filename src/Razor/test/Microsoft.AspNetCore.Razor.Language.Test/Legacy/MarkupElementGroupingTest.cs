@@ -1,16 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Text;
-using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class MarkupElementRewriterTest : CsHtmlMarkupParserTestBase
+    public class MarkupElementGroupingTest : CsHtmlMarkupParserTestBase
     {
         [Fact]
-        public void Rewrites_ValidTags()
+        public void Handles_ValidTags()
         {
             // Arrange
             var content = @"
@@ -19,11 +17,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 ";
 
             // Act & Assert
-            RewriterTest(content);
+            ParseDocumentTest(content);
         }
 
         [Fact]
-        public void Rewrites_ValidNestedTags()
+        public void Handles_ValidNestedTags()
         {
             // Arrange
             var content = @"
@@ -34,11 +32,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 </div>";
 
             // Act & Assert
-            RewriterTest(content);
+            ParseDocumentTest(content);
         }
 
         [Fact]
-        public void Rewrites_ValidNestedTagsMixedWithCode()
+        public void Handles_ValidNestedTagsMixedWithCode()
         {
             // Arrange
             var content = @"
@@ -50,11 +48,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 ";
 
             // Act & Assert
-            RewriterTest(content);
+            ParseDocumentTest(content);
         }
 
         [Fact]
-        public void Rewrites_EndTagsWithMissingStartTags()
+        public void Handles_EndTagsWithMissingStartTags()
         {
             // Arrange
             var content = @"
@@ -62,11 +60,11 @@ Foo</div>
 ";
 
             // Act & Assert
-            RewriterTest(content);
+            ParseDocumentTest(content);
         }
 
         [Fact]
-        public void Rewrites_StartTagsWithMissingEndTags()
+        public void Handles_StartTagsWithMissingEndTags()
         {
             // Arrange
             var content = @"
@@ -78,11 +76,11 @@ Foo</div>
 ";
 
             // Act & Assert
-            RewriterTest(content);
+            ParseDocumentTest(content);
         }
 
         [Fact]
-        public void Rewrites_SelfClosingTags()
+        public void Handles_SelfClosingTags()
         {
             // Arrange
             var content = @"
@@ -90,11 +88,11 @@ Foo</div>
 ";
 
             // Act & Assert
-            RewriterTest(content);
+            ParseDocumentTest(content);
         }
 
         [Fact]
-        public void Rewrites_MalformedTags_RecoversSuccessfully()
+        public void Handles_MalformedTags_RecoversSuccessfully()
         {
             // Arrange
             var content = @"
@@ -102,11 +100,11 @@ Foo</div>
 ";
 
             // Act & Assert
-            RewriterTest(content);
+            ParseDocumentTest(content);
         }
 
         [Fact]
-        public void Rewrites_MisplacedEndTags_RecoversSuccessfully()
+        public void Handles_MisplacedEndTags_RecoversSuccessfully()
         {
             // Arrange
             var content = @"
@@ -114,11 +112,11 @@ Foo</div>
 ";
 
             // Act & Assert
-            RewriterTest(content);
+            ParseDocumentTest(content);
         }
 
         [Fact]
-        public void Rewrites_DoesNotSpecialCase_VoidTags()
+        public void Handles_DoesNotSpecialCase_VoidTags()
         {
             // Arrange
             var content = @"
@@ -126,11 +124,11 @@ Foo</div>
 ";
 
             // Act & Assert
-            RewriterTest(content);
+            ParseDocumentTest(content);
         }
 
         [Fact]
-        public void Rewrites_IncompleteTags()
+        public void Handles_IncompleteTags()
         {
             // Arrange
             var content = @"
@@ -138,14 +136,7 @@ Foo</div>
 ";
 
             // Act & Assert
-            RewriterTest(content);
-        }
-
-        private void RewriterTest(string input)
-        {
-            var syntaxTree = ParseDocument(input, designTime: false);
-            var rewritten = MarkupElementRewriter.AddMarkupElements(syntaxTree);
-            BaselineTest(rewritten);
+            ParseDocumentTest(content);
         }
     }
 }

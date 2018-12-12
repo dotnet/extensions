@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -199,7 +198,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new[] { SectionDirective.Directive, });
         }
 
-        [Fact(Skip = "Skipping temporarily until MarkupElementRewriter is removed")]
+        [Fact]
         public void ParseBlockCanParse1000NestedElements()
         {
             var content = Nested1000.ReadAllText();

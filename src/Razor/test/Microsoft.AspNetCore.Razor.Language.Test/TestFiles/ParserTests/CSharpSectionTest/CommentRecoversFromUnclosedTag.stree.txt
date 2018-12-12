@@ -44,8 +44,8 @@ RazorDocument - [0..33)::33 - [@section s {LF<aLF<!--  > " '-->}]
                                     MarkupTextLiteral - [29..32)::3 - [-->] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         DoubleHyphen;[--];
                                         CloseAngle;[>];
-                                MarkupTextLiteral - [32..32)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                    Marker;[];
+                            MarkupTextLiteral - [32..32)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Marker;[];
                         RazorMetaCode - [32..33)::1 - Gen<None> - SpanEditHandler;Accepts:None
                             RightBrace;[}];
         MarkupTextLiteral - [33..33)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any

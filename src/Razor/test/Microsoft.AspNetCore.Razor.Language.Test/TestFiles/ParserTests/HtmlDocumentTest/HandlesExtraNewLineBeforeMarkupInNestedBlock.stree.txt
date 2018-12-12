@@ -27,16 +27,16 @@ RazorDocument - [0..37)::37 - [@{LF@if(true){LF} LF<input> LF}<html>]
                             Whitespace;[ ];
                             NewLine;[LF];
                         MarkupBlock - [20..30)::10
-                            MarkupElement - [20..30)::10
+                            MarkupElement - [20..27)::7
                                 MarkupStartTag - [20..27)::7 - [<input>]
                                     MarkupTextLiteral - [20..26)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         OpenAngle;[<];
                                         Text;[input];
                                     MarkupTextLiteral - [26..27)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         CloseAngle;[>];
-                                MarkupTextLiteral - [27..30)::3 - [ LF] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                    Whitespace;[ ];
-                                    NewLine;[LF];
+                            MarkupTextLiteral - [27..30)::3 - [ LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                Whitespace;[ ];
+                                NewLine;[LF];
                         CSharpStatementLiteral - [30..30)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Marker;[];
                     RazorMetaCode - [30..31)::1 - Gen<None> - SpanEditHandler;Accepts:None

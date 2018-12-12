@@ -21,15 +21,14 @@ CSharpCodeBlock - [0..33)::33 - [{ if (i > 0) { <text>;</text> } }]
                     LeftBrace;[{];
                     Whitespace;[ ];
                 MarkupBlock - [15..29)::14
-                    MarkupElement - [15..21)::6
+                    MarkupElement - [15..29)::14
                         MarkupStartTag - [15..21)::6 - [<text>]
                             MarkupTransition - [15..21)::6 - Gen<None> - SpanEditHandler;Accepts:None
                                 OpenAngle;[<];
                                 Text;[text];
                                 CloseAngle;[>];
-                    MarkupTextLiteral - [21..22)::1 - [;] - Gen<Markup> - SpanEditHandler;Accepts:None
-                        Text;[;];
-                    MarkupElement - [22..29)::7
+                        MarkupTextLiteral - [21..22)::1 - [;] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[;];
                         MarkupEndTag - [22..29)::7 - [</text>]
                             MarkupTransition - [22..29)::7 - Gen<None> - SpanEditHandler;Accepts:None
                                 OpenAngle;[<];
