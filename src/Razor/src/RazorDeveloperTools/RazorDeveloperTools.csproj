@@ -101,4 +101,14 @@
       <Analyzer Remove="@(Analyzer)" />
     </ItemGroup>
   </Target>
+
+  <Target Name="WORKAROUND_SETINFORMATIONVERSION" BeforeTargets="AddSourceRevisionToInformationalVersion">
+    <!-- 
+      We use the VS release versioning for the VSIX. We also need this to flow into the AssemblyInformationVersionAttribute
+      for the about... dialog
+    -->
+    <PropertyGroup>
+      <InformationalVersion>$(VsixVersion)</InformationalVersion>
+    </PropertyGroup>
+  </Target>
 </Project>

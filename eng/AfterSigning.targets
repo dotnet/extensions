@@ -25,10 +25,15 @@
       <!-- 
         The build-in VSIX manifest support will compute its own version before calling this target.
         Replace it with our versioning scheme.
+
+        If this is developer build - we need to have a LARGER number than our official builds, which will
+        look like: 16.0.20181207.3
+
+        The current scheme should work until the 43rd century.
       -->
       <VsixVersion>16.0</VsixVersion>
       <VsixVersion Condition="'$(OfficialBuildId)' != ''">$(VsixVersion).$(OfficialBuildId)</VsixVersion>
-      <VsixVersion Condition="'$(OfficialBuildId)' == ''">$(VsixVersion).4242424</VsixVersion>
+      <VsixVersion Condition="'$(OfficialBuildId)' == ''">$(VsixVersion).42424242.42</VsixVersion>
     </PropertyGroup>
 
     <ItemGroup>

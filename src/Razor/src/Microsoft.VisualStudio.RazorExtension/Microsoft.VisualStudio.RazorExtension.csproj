@@ -2,12 +2,6 @@
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
 
-    <!-- 
-      We use the VS release versioning for the VSIX. We also need this to flow into the AssemblyInformationVersionAttribute
-      for the about... dialog
-    -->
-    <InformationalVersion>$(VsixVersion)</InformationalVersion>
-
     <!-- Use the RoslynDev Experimental instance so we can mingle with local builds of Roslyn -->
     <VSSDKTargetPlatformRegRootSuffix>RoslynDev</VSSDKTargetPlatformRegRootSuffix>
 
@@ -129,5 +123,15 @@ using Microsoft.VisualStudio.Shell;
     <ItemGroup>
       <Analyzer Remove="@(Analyzer)" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="WORKAROUND_SETINFORMATIONVERSION" BeforeTargets="AddSourceRevisionToInformationalVersion">
+    <!-- 
+      We use the VS release versioning for the VSIX. We also need this to flow into the AssemblyInformationVersionAttribute
+      for the about... dialog
+    -->
+    <PropertyGroup>
+      <InformationalVersion>$(VsixVersion)</InformationalVersion>
+    </PropertyGroup>
   </Target>
 </Project>
