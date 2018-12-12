@@ -10,7 +10,7 @@
     <Reference Include="Newtonsoft.Json" />
 
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <ProjectReference Include="..\..\DI.Specification.Tests\src\Microsoft.Extensions.DependencyInjection.Specification.Tests.csproj" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Specification.Tests" />
 
     <Reference Include="Autofac.Extensions.DependencyInjection" />
     <Reference Include="DryIoc.Microsoft.DependencyInjection" />
