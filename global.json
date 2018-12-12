@@ -1,0 +1,12 @@
+{
+  "sdk": {
+    "version": "3.0.100-preview-009750"
+  },
+  "tools": {
+    "dotnet": "3.0.100-preview-009750"
+  },
+  "msbuild-sdks": {
+    "Internal.AspNetCore.Sdk": "3.0.0-build-20181211.1",
+    "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.18610.4"
+  }
+}

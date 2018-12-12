@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <MicrosoftDotNetBuildTasksFeedVersion>2.2.0-beta.18607.6</MicrosoftDotNetBuildTasksFeedVersion>
+  </PropertyGroup>
+</Project>

@@ -23,8 +23,7 @@ jobs:
     agentOs: Windows
     configuration: Release
     codeSign: true
-    buildArgs: |
-      '/p:PublishBlobFeedKey=$(PB_PublishBlobFeedKey)'
+    publishToBar: true
     artifacts:
       publish: true
       name: packages

@@ -1,21 +1,17 @@
 <Project InitialTargets="TagCiBuilds">
-  <PropertyGroup>
-    <BuildDependsOn Condition="'$(Configuration)' == 'Release' AND '$(OS)' == 'Windows_NT' AND $(PublishType.Contains('blob'))" >$(BuildDependsOn);PublishToProdCon</BuildDependsOn>
-  </PropertyGroup>
-
   <Target Name="TagCiBuilds" Condition=" '$(CI)' == 'true' AND '$(BUILD_REASON)' != 'PullRequest' ">
     <Message Importance="high" Text="##vso[build.addbuildtag]daily-build" Condition=" '$(IsFinalBuild)' != 'true' " />
     <Message Importance="high" Text="##vso[build.addbuildtag]release-candidate" Condition=" '$(IsFinalBuild)' == 'true' " />
   </Target>
 
-  <Target Name="PublishToProdCon">
-    <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\ProdConPublish.csproj"
+  <Target Name="PublishToBAR">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\tools.proj"
              Targets="Restore"
-             Properties="$(BuildProperties);_Dummy=Restore" />
+             Properties="$(BuildProperties);RestorePackagesPath=$(RepositoryRoot).packages\" />
 
-    <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\ProdConPublish.csproj"
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\publish.proj"
              Targets="Publish"
-             Properties="$(BuildProperties)" />
+             Properties="$(BuildProperties);RestorePackagesPath=$(RepositoryRoot).packages\" />
   </Target>
 
   <Target Name="GenerateProjectList" DependsOnTargets="ResolveProjects">
