@@ -29,7 +29,7 @@
 # Specifies which msbuild engine to use for build: 'vs', 'dotnet' or unspecified (determined based on presence of tools.vs in global.json).
 [string]$msbuildEngine = if (Test-Path variable:msbuildEngine) { $msbuildEngine } else { $null }
 
-# True to attempt using .NET Core already that meets requirements specified in global.json
+# True to attempt using .NET Core already that meets requirements specified in global.json 
 # installed on the machine instead of downloading one.
 [bool]$useInstalledDotNetCli = if (Test-Path variable:useInstalledDotNetCli) { $useInstalledDotNetCli } else { $true }
 
@@ -100,9 +100,13 @@ function InitializeDotNetCli([bool]$install) {
   # Disable telemetry on CI.
   if ($ci) {
     $env:DOTNET_CLI_TELEMETRY_OPTOUT=1
+  }
+
   # Source Build uses DotNetCoreSdkDir variable
   if ($env:DotNetCoreSdkDir -ne $null) {
 
+  # Find the first path on %PATH% that contains the dotnet.exe
+  if ($useInstalledDotNetCli -and ($env:DOTNET_INSTALL_DIR -eq $null)) {
     $dotnetCmd = Get-Command "dotnet.exe" -ErrorAction SilentlyContinue
     if ($dotnetCmd -ne $null) {
       $env:DOTNET_INSTALL_DIR = Split-Path $dotnetCmd.Path -Parent
@@ -340,7 +344,7 @@ function GetDefaultMSBuildEngine() {
   if (Get-Member -InputObject $GlobalJson.tools -Name "vs") {
     return "vs"
   }
-
+  
   if (Get-Member -InputObject $GlobalJson.tools -Name "dotnet") {
     return "dotnet"
   }
@@ -390,9 +394,11 @@ function InitializeToolset() {
   $proj = Join-Path $ToolsetDir "restore.proj"
   $bl = if ($binaryLog) { "/bl:" + (Join-Path $LogDir "ToolsetRestore.binlog") } else { "" }
 
+  $proj = Join-Path $ToolsetDir "restore.proj"
+  $bl = if ($binaryLog) { "/bl:" + (Join-Path $LogDir "ToolsetRestore.binlog") } else { "" }
+  
   '<Project Sdk="Microsoft.DotNet.Arcade.Sdk"/>' | Set-Content $proj
   MSBuild $proj $bl /t:__WriteToolsetLocation /noconsolelogger /p:__ToolsetLocationOutputFile=$toolsetLocationFile
-
   $path = Get-Content $toolsetLocationFile -TotalCount 1
   if (!(Test-Path $path)) {
     throw "Invalid toolset path: $path"
