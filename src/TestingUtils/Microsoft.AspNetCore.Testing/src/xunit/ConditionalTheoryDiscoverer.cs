@@ -14,6 +14,25 @@ namespace Microsoft.AspNetCore.Testing.xunit
         {
         }
 
+        private sealed class OptionsWithPreEnumerationEnabled : ITestFrameworkDiscoveryOptions
+        {
+            private const string PreEnumerateTheories = "xunit.discovery.PreEnumerateTheories";
+
+            private readonly ITestFrameworkDiscoveryOptions _original;
+
+            public OptionsWithPreEnumerationEnabled(ITestFrameworkDiscoveryOptions original)
+                => _original = original;
+
+            public TValue GetValue<TValue>(string name)
+                => (name == PreEnumerateTheories) ? (TValue)(object)true : _original.GetValue<TValue>(name);
+
+            public void SetValue<TValue>(string name, TValue value)
+                => _original.SetValue(name, value);
+        }
+
+        public override IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo theoryAttribute)
+            => base.Discover(new OptionsWithPreEnumerationEnabled(discoveryOptions), testMethod, theoryAttribute);
+
         protected override IEnumerable<IXunitTestCase> CreateTestCasesForTheory(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo theoryAttribute)
         {
             var skipReason = testMethod.EvaluateSkipConditions();
