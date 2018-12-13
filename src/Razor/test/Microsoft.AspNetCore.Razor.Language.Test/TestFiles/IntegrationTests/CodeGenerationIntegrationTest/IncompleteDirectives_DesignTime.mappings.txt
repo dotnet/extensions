@@ -45,26 +45,26 @@ Generated Location: (2355:75,37 [1] )
 
 Source Location: (264:14,9 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (2450:82,0 [0] )
+Generated Location: (2547:83,0 [0] )
 ||
 
 Source Location: (276:15,10 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (2503:85,0 [0] )
+Generated Location: (2738:91,0 [0] )
 ||
 
 Source Location: (315:20,8 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (2556:88,0 [0] )
+Generated Location: (2929:99,0 [0] )
 ||
 
 Source Location: (326:21,9 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (2609:91,0 [0] )
+Generated Location: (3120:107,0 [0] )
 ||
 
 Source Location: (354:24,12 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (3025:102,12 [0] )
+Generated Location: (3577:122,12 [0] )
 ||
 

@@ -80,16 +80,36 @@ global::System.Object __typeHelper = ";
         }
         ))();
         ((System.Action)(() => {
- }
+#line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
+ 
+
+#line default
+#line hidden
+        }
         ))();
         ((System.Action)(() => {
- }
+#line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
+ 
+
+#line default
+#line hidden
+        }
         ))();
         ((System.Action)(() => {
- }
+#line 21 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
+ 
+
+#line default
+#line hidden
+        }
         ))();
         ((System.Action)(() => {
- }
+#line 22 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
+ 
+
+#line default
+#line hidden
+        }
         ))();
         }
         #pragma warning restore 219
