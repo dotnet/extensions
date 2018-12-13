@@ -7,7 +7,7 @@ using Grace.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection.Specification
 {
-    public class GraceDependencyInjectionSpecificationTests: SkipableDependencyInjectionSpecificationTests
+    public class GraceDependencyInjectionSpecificationTests: SkippableDependencyInjectionSpecificationTests
     {
         public override string[] SkippedTests => new[]
         {

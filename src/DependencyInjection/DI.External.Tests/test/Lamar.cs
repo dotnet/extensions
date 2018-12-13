@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Extensions.DependencyInjection.Specification
 {
-    public class LamarDependencyInjectionSpecificationTests : SkipableDependencyInjectionSpecificationTests
+    public class LamarDependencyInjectionSpecificationTests : SkippableDependencyInjectionSpecificationTests
     {
         public override string[] SkippedTests => new[]
         {

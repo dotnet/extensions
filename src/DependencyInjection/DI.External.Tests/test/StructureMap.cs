@@ -6,7 +6,7 @@ using StructureMap;
 
 namespace Microsoft.Extensions.DependencyInjection.Specification
 {
-    public class StructureMapDependencyInjectionSpecificationTests: SkipableDependencyInjectionSpecificationTests
+    public class StructureMapDependencyInjectionSpecificationTests: SkippableDependencyInjectionSpecificationTests
     {
         public override string[] SkippedTests => new[]
         {

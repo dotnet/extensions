@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Microsoft.Extensions.DependencyInjection.Specification
 {
-    public abstract class SkipableDependencyInjectionSpecificationTests: DependencyInjectionSpecificationTests
+    public abstract class SkippableDependencyInjectionSpecificationTests: DependencyInjectionSpecificationTests
     {
         public abstract string[] SkippedTests { get; }
 
