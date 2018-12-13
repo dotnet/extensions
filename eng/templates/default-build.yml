@@ -38,6 +38,8 @@ parameters:
 
 jobs:
 - job: ${{ parameters.agentOs }}
+  # Double the default timeout. Publishing is subject to huge delays due to contention on the dotnet-core blob feed
+  timeoutInMinutes: 120
   workspace:
     clean: all
   # Map friendly OS names to the right queue
