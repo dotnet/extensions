@@ -54,7 +54,7 @@ namespace PackageBaselineGenerator
 
             var output = _output.HasValue()
                 ? _output.Value()
-                : Path.Combine(Directory.GetCurrentDirectory(), "Baseline.props");
+                : Path.Combine(Directory.GetCurrentDirectory(), "Baseline.Designer.props");
 
             var baselineVersion = input.Root.Attribute("Version").Value;
 

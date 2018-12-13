@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\Shared\src\BenchmarkRunner\**\*.cs">
+    <Compile Include="$(SharedSourceRoot)BenchmarkRunner\**\*.cs">
       <Link>Shared\%(FileName)%(Extension)</Link>
     </Compile>
   </ItemGroup>

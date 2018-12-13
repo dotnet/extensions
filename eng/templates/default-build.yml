@@ -30,6 +30,7 @@ parameters:
   buildArgs: ''
   configuration: 'Release'
   codeSign: false
+  publishToBar: false
   artifacts:
     publish: false
     name: ''
@@ -55,17 +56,29 @@ jobs:
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         name: dotnet-internal-temp
   variables:
-    AgentOsName: ${{ parameters.agentOs }}
-    ASPNETCORE_TEST_LOG_MAXPATH: "200" # Keep test log file name length low enough for artifact zipping
-    DOTNET_HOME: $(Agent.WorkFolder)/.dotnet
-    BuildScriptArgs: ${{ parameters.buildArgs }}
-    BuildConfiguration: ${{ parameters.configuration }}
-    VSTS_OVERWRITE_TEMP: false # Workaround for https://github.com/dotnet/core-eng/issues/2812
-    ${{ if or(ne(parameters.codeSign, 'true'), ne(variables['System.TeamProject'], 'internal')) }}:
-      _SignType:
-    ${{ if and(eq(parameters.codeSign, 'true'), eq(variables['System.TeamProject'], 'internal')) }}:
-      TeamName: AspNetCore
-      _SignType: real
+    - name: KOREBUILD_KEEPGLOBALJSON
+      value: 1
+    - name: AgentOsName
+      value: ${{ parameters.agentOs }}
+    - name: ASPNETCORE_TEST_LOG_MAXPATH
+      value: "200" # Keep test log file name length low enough for artifact zipping
+    - name: DOTNET_HOME
+      value: $(Agent.WorkFolder)/.dotnet
+    - name: BuildScriptArgs
+      value: ${{ parameters.buildArgs }}
+    - name: BuildConfiguration
+      value: ${{ parameters.configuration }}
+    - name: VSTS_OVERWRITE_TEMP
+      value: false # Workaround for https://github.com/dotnet/core-eng/issues/2812
+    - ${{ if or(ne(parameters.codeSign, 'true'), ne(variables['System.TeamProject'], 'internal')) }}:
+      - name: _SignType
+        value: ''
+    - ${{ if and(eq(parameters.codeSign, 'true'), eq(variables['System.TeamProject'], 'internal')) }}:
+      - name: TeamName
+        value: AspNetCore
+      - name: _SignType
+        value: real
+      - group: DotNet-Blob-Feed
   steps:
   - checkout: self
     clean: true
@@ -103,6 +116,17 @@ jobs:
           artifactName: ${{ parameters.artifacts.name }}
         artifactType: Container
         parallel: true
+  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.publishToBar, 'true')) }}:
+    - script: build.cmd -ci /t:PublishToBAR /p:AzureAccountKey=$(dotnetfeed-storage-access-key-1) /p:AzureFeedUrl=https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json /p:DotNetPublishToBlobFeed=true
+      displayName: Publish packages to dotnet-core feed
+    - task: AzureKeyVault@1
+      inputs:
+        azureSubscription: 'DotNet-Engineering-Services_KeyVault'
+        KeyVaultName: EngKeyVault
+        SecretsFilter: 'MaestroAccessToken'
+      displayName: Fetch secrets from KeyVault
+    - script: eng\common\publishbuildassets.cmd /p:ManifestsPath='$(Build.SourcesDirectory)/artifacts/AssetManifest/' /p:BuildAssetRegistryToken=$(MaestroAccessToken) /p:MaestroApiEndpoint=https://maestro-prod.westus2.cloudapp.azure.com /p:Configuration=$(BuildConfiguration)
+      displayName: Register Build Assets with Maestro
   - ${{ if and(eq(variables['System.TeamProject'], 'internal'), eq(parameters.agentOs, 'Windows')) }}:
     - task: MicroBuildCleanup@1
       displayName: Cleanup MicroBuild tasks
