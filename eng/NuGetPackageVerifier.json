@@ -3,7 +3,6 @@
     "rules": [],
     "packages": {
       "Microsoft.AspNetCore.BenchmarkRunner.Sources": {},
-      "Microsoft.AspNetCore.Certificates.Generation.Sources": {},
       "Microsoft.Extensions.ActivatorUtilities.Sources": {},
       "Microsoft.Extensions.ClosedGenericMatcher.Sources": {},
       "Microsoft.Extensions.CommandLineUtils.Sources": {},
@@ -11,7 +10,6 @@
       "Microsoft.Extensions.HashCodeCombiner.Sources": {},
       "Microsoft.Extensions.ObjectMethodExecutor.Sources": {},
       "Microsoft.Extensions.ParameterDefaultValue.Sources": {},
-      "Microsoft.Extensions.Process.Sources": {},
       "Microsoft.Extensions.PropertyActivator.Sources": {},
       "Microsoft.Extensions.PropertyHelper.Sources": {},
       "Microsoft.Extensions.RazorViews.Sources": {},
