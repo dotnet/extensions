@@ -50,6 +50,8 @@ export class RazorLanguageServerClient implements vscode.Disposable {
             args.push(options.serverPath);
         }
 
+        this.logger.logMessage(`Razor language server path: ${options.serverPath}`);
+
         args.push('-lsp');
         args.push('--logLevel');
         const logLevelString = this.getLogLevelString(options.trace);
