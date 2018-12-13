@@ -7,7 +7,7 @@ variables:
   # Variables for public PR builds
   ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'github')) }}:
     _HelixType: build/product
-    _HelixSource: pr/aspnet/Extensions/$(Build.SourceBranch)
+    _HelixSource: pr/aspnet/AspNetCore-Tooling/$(Build.SourceBranch)
     # These are needed to suppress a warning in the cibuild invocation since AzDO leaves the `$(_SignArgs)` in place and it fails to resolve.
     _SignArgs: ''
     _OfficialBuildIdArgs: ''
@@ -16,16 +16,13 @@ variables:
   # Variables for internal Official builds
   ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
     _HelixType: build/product
-    _HelixSource: official/aspnet/Extensions/$(Build.SourceBranch)
+    _HelixSource: official/aspnet/AspNetCore-Tooling/$(Build.SourceBranch)
     _SignType: real
     _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
     _OfficialBuildIdArgs: /p:OfficialBuildId=$(Build.BuildNumber)
       /p:ManifestBuildBranch=$(Build.SourceBranchName)
       /p:ManifestBuildNumber=$(Build.BuildNumber)
-    _PublishArgs: /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
-      /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
-      /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
-      /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+    _PublishArgs: /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
       /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
 
 resources:
@@ -35,6 +32,7 @@ resources:
 
 trigger:
 - master
+- release/*
 
 pr:
 - "*"
@@ -59,7 +57,7 @@ phases:
           _BuildConfig: Debug
         release:
           _BuildConfig: Release
-          _DotNetPublishToBlobFeed: true
+          _DotNetPublishToBlobFeed: false
     steps:
     - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
       - task: AzureKeyVault@1
@@ -84,14 +82,6 @@ phases:
         testRunner: xunit
         testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'
     - task: PublishBuildArtifacts@1
-      displayName: Publish Packages
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/packages/$(_BuildConfig)'
-        PublishLocation: Container
-        ArtifactName: Packages_$(Agent.Os)_$(Agent.JobName)
-      continueOnError: true
-      condition: eq(variables['_BuildConfig'], 'Release')
-    - task: PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
@@ -101,6 +91,23 @@ phases:
       condition: always()
     variables:
       _HelixBuildConfig: $(_BuildConfig)
+
+    - ${{ if and(eq(parameters.enablePublishBuildAssets, true), eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+      - task: CopyFiles@2
+        displayName: Gather Asset Manifests
+        inputs:
+          SourceFolder: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/AssetManifest'
+          TargetFolder: '$(Build.StagingDirectory)/AssetManifests'
+        continueOnError: ${{ parameters.continueOnError }}
+        condition: and(succeeded(), eq(variables['_DotNetPublishToBlobFeed'], 'true'))
+      - task: PublishBuildArtifacts@1
+        displayName: Push Asset Manifests
+        inputs:
+          PathtoPublish: '$(Build.StagingDirectory)/AssetManifests'
+          PublishLocation: Container
+          ArtifactName: AssetManifests
+        continueOnError: ${{ parameters.continueOnError }}
+        condition: and(succeeded(), eq(variables['_DotNetPublishToBlobFeed'], 'true'))
 
 - template: /eng/common/templates/phases/base.yml
   parameters:
@@ -174,3 +181,13 @@ phases:
       condition: always()
     variables:
       _HelixBuildConfig: $(_BuildConfig)
+
+- ${{ if and(eq(parameters.enablePublishBuildAssets, true), eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  - template: ../job/publish-build-assets.yml
+    parameters:
+      continueOnError: ${{ parameters.continueOnError }}
+      dependsOn:
+      - Windows
+      pool:
+        vmImage: vs2017-win2016
+      runAsPublic: ${{ parameters.runAsPublic }}
