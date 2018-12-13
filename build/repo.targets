@@ -55,7 +55,7 @@
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\test\helix.proj"
              Targets="Test"
              Properties="ProjectsToTest=$(ProjectToBuildList)"
-             BuildInParallel="true" />
+             BuildInParallel="false" />
   </Target>
 
 </Project>
