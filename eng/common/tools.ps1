@@ -29,7 +29,7 @@
 # Specifies which msbuild engine to use for build: 'vs', 'dotnet' or unspecified (determined based on presence of tools.vs in global.json).
 [string]$msbuildEngine = if (Test-Path variable:msbuildEngine) { $msbuildEngine } else { $null }
 
-# True to attempt using .NET Core already that meets requirements specified in global.json 
+# True to attempt using .NET Core already that meets requirements specified in global.json
 # installed on the machine instead of downloading one.
 [bool]$useInstalledDotNetCli = if (Test-Path variable:useInstalledDotNetCli) { $useInstalledDotNetCli } else { $true }
 
@@ -104,6 +104,8 @@ function InitializeDotNetCli([bool]$install) {
 
   # Source Build uses DotNetCoreSdkDir variable
   if ($env:DotNetCoreSdkDir -ne $null) {
+    $env:DOTNET_INSTALL_DIR = $env:DotNetCoreSdkDir
+  }
 
   # Find the first path on %PATH% that contains the dotnet.exe
   if ($useInstalledDotNetCli -and ($env:DOTNET_INSTALL_DIR -eq $null)) {
@@ -344,7 +346,7 @@ function GetDefaultMSBuildEngine() {
   if (Get-Member -InputObject $GlobalJson.tools -Name "vs") {
     return "vs"
   }
-  
+
   if (Get-Member -InputObject $GlobalJson.tools -Name "dotnet") {
     return "dotnet"
   }
@@ -394,17 +396,90 @@ function InitializeToolset() {
   $proj = Join-Path $ToolsetDir "restore.proj"
   $bl = if ($binaryLog) { "/bl:" + (Join-Path $LogDir "ToolsetRestore.binlog") } else { "" }
 
-  $proj = Join-Path $ToolsetDir "restore.proj"
-  $bl = if ($binaryLog) { "/bl:" + (Join-Path $LogDir "ToolsetRestore.binlog") } else { "" }
-  
   '<Project Sdk="Microsoft.DotNet.Arcade.Sdk"/>' | Set-Content $proj
   MSBuild $proj $bl /t:__WriteToolsetLocation /noconsolelogger /p:__ToolsetLocationOutputFile=$toolsetLocationFile
+
   $path = Get-Content $toolsetLocationFile -TotalCount 1
   if (!(Test-Path $path)) {
     throw "Invalid toolset path: $path"
   }
 
   return $global:_ToolsetBuildProj = $path
+}
+
+function ExitWithExitCode([int] $exitCode) {
+  if ($ci -and $prepareMachine) {
+    Stop-Processes
+  }
+  exit $exitCode
+}
+
+function Stop-Processes() {
+  Write-Host "Killing running build processes..."
+  foreach ($processName in $processesToStopOnExit) {
+    Get-Process -Name $processName -ErrorAction SilentlyContinue | Stop-Process
+  }
+}
+
+#
+# Executes msbuild (or 'dotnet msbuild') with arguments passed to the function.
+# The arguments are automatically quoted.
+# Terminates the script if the build fails.
+#
+function MSBuild() {
+  if ($ci) {
+    if (!$binaryLog) {
+      throw "Binary log must be enabled in CI build."
+    }
+
+    if ($nodeReuse) {
+      throw "Node reuse must be disabled in CI build."
+    }
+  }
+
+  $buildTool = InitializeBuildTool
+
+  $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse"
+
+  if ($warnAsError) {
+    $cmdArgs += " /warnaserror /p:TreatWarningsAsErrors=true"
+  }
+
+  foreach ($arg in $args) {
+    if ($arg -ne $null -and $arg.Trim() -ne "") {
+      $cmdArgs += " `"$arg`""
+    }
+  }
+
+  $exitCode = Exec-Process $buildTool.Path $cmdArgs
+
+  if ($exitCode -ne 0) {
+    Write-Host "Build failed." -ForegroundColor Red
+
+    $buildLog = GetMSBuildBinaryLogCommandLineArgument $args
+    if ($buildLog -ne $null) {
+      Write-Host "See log: $buildLog" -ForegroundColor DarkGray
+    }
+
+    ExitWithExitCode $exitCode
+  }
+}
+
+function GetMSBuildBinaryLogCommandLineArgument($arguments) {
+  foreach ($argument in $arguments) {
+    if ($argument -ne $null) {
+      $arg = $argument.Trim()
+      if ($arg.StartsWith("/bl:", "OrdinalIgnoreCase")) {
+        return $arg.Substring("/bl:".Length)
+      }
+
+      if ($arg.StartsWith("/binaryLogger:", "OrdinalIgnoreCase")) {
+        return $arg.Substring("/binaryLogger:".Length)
+      }
+    }
+  }
+
+  return $null
 }
 
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")

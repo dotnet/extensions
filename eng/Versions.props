@@ -3,7 +3,6 @@
   <PropertyGroup>
     <MicrosoftDotNetBuildTasksFeedVersion>2.2.0-beta.18607.6</MicrosoftDotNetBuildTasksFeedVersion>
   </PropertyGroup>
-
   <PropertyGroup>
     <VersionPrefix>3.0.0</VersionPrefix>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
