@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.Logging
         /// </summary>
         public static ILoggerFactory Create(Action<ILoggingBuilder> configure)
         {
-            IServiceCollection serviceCollection = new ServiceCollection();
+            var serviceCollection = new ServiceCollection();
             serviceCollection.AddLogging(configure);
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
@@ -222,7 +222,7 @@ namespace Microsoft.Extensions.Logging
 
         private class DisposingLoggerFactory: ILoggerFactory
         {
-            private ILoggerFactory _loggerFactory;
+            private readonly ILoggerFactory _loggerFactory;
 
             private readonly ServiceProvider _serviceProvider;
 
@@ -234,7 +234,6 @@ namespace Microsoft.Extensions.Logging
 
             public void Dispose()
             {
-                _loggerFactory.Dispose();
                 _serviceProvider.Dispose();
             }
 
