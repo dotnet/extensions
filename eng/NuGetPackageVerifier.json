@@ -7,7 +7,6 @@
       "Microsoft.Extensions.CommandLineUtils.Sources": {},
       "Microsoft.Extensions.HashCodeCombiner.Sources": {},
       "Microsoft.Extensions.ParameterDefaultValue.Sources": {},
-      "Microsoft.Extensions.StackTrace.Sources": {},
       "Microsoft.Extensions.TypeNameHelper.Sources": {},
       "Microsoft.Extensions.ValueStopwatch.Sources": {},
       "Microsoft.Extensions.WebEncoders.Sources": {}
