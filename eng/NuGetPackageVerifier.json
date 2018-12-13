@@ -7,8 +7,6 @@
       "Microsoft.Extensions.CommandLineUtils.Sources": {},
       "Microsoft.Extensions.HashCodeCombiner.Sources": {},
       "Microsoft.Extensions.ParameterDefaultValue.Sources": {},
-      "Microsoft.Extensions.PropertyActivator.Sources": {},
-      "Microsoft.Extensions.PropertyHelper.Sources": {},
       "Microsoft.Extensions.RazorViews.Sources": {},
       "Microsoft.Extensions.SecurityHelper.Sources": {},
       "Microsoft.Extensions.StackTrace.Sources": {},
