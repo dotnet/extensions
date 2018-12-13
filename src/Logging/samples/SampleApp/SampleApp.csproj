@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp3.0</TargetFrameworks>
@@ -19,9 +19,6 @@
     <Reference Include="Microsoft.Extensions.Logging.AzureAppServices" />
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <Reference Include="Microsoft.Extensions.Logging.EventLog" />
   </ItemGroup>
 
