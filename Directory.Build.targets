@@ -103,7 +103,7 @@
     <ItemGroup>
       <TestPayload Include="$(PublishAbsoluteDir.TrimEnd('\').TrimEnd('\'))">
         <TestAssembly>$(TargetFileName)</TestAssembly>
-        <TestName>$(MSBuildProjectName)/$(TargetFramework)</TestName>
+        <TestName>$(MSBuildProjectName)-$(TargetFramework)</TestName>
         <!-- Look into how to be able to use $(NETCoreSdkVersion) -->
         <Command Condition="'$(HelixTargetQueue)' == 'Windows.10.Amd64.Open'">runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(RuntimeFrameworkVersion)</Command>
         <Command Condition="'$(HelixTargetQueue)' != 'Windows.10.Amd64.Open'">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(RuntimeFrameworkVersion)</Command>
