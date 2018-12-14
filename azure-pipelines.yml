@@ -68,6 +68,7 @@ phases:
     - script: eng\common\cibuild.cmd
         -configuration $(_BuildConfig)
         -prepareMachine
+        -warnaserror $False
         $(_SignArgs)
         $(_OfficialBuildIdArgs)
         $(_PublishArgs)
@@ -121,6 +122,7 @@ phases:
           _BuildConfig: Release
     steps:
     - script: eng/common/cibuild.sh
+        --warnAsError false
         --configuration $(_BuildConfig)
         --prepareMachine
       name: Build
@@ -158,6 +160,7 @@ phases:
           _BuildConfig: Release
     steps:
     - script: eng/common/cibuild.sh
+        --warnAsError false
         --configuration $(_BuildConfig)
         --prepareMachine
       name: Build
