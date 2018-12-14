@@ -1,4 +1,7 @@
 <Project>
+
+  <Import Project="MPack.props" />
+
   <!--
     These are third party libraries that we use in this repo. We need to sign them even if they
     are already signed. However, they must be signed with a 3rd party certificate.
@@ -6,4 +9,15 @@
   <ItemGroup>
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ItemsToSign Include="$(ArtifactsMPackDir)**\*.mpack" />
+  </ItemGroup>
+
+  <!--
+    The .mpack itself is not signed, only the contents.
+  -->
+  <PropertyGroup>
+    <FileExtensionSignInfo Include=".mpack" CertificateName="None" />
+  </PropertyGroup>
 </Project>

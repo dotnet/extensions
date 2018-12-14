@@ -2,4 +2,8 @@
   <PropertyGroup>
     <ArtifactsMPackDir>$(ArtifactsDir)MPack\$(Configuration)\</ArtifactsMPackDir>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ItemsToSign Include="$(ArtifactsMPackDir)**\*.mpack" />
+  </ItemGroup>
 </Project>
