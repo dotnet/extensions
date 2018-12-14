@@ -4,11 +4,10 @@
 using System;
 using System.Globalization;
 using System.IO;
-using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Configuration.Test;
 using Xunit;
 
-namespace Microsoft.Extensions.Configuration
+namespace Microsoft.Extensions.Configuration.Json.Test
 {
     public class JsonConfigurationTest
     {
@@ -37,6 +36,25 @@ namespace Microsoft.Extensions.Configuration
             Assert.Equal("last.name", jsonConfigSrc.Get("test.last.name"));
             Assert.Equal("Something street", jsonConfigSrc.Get("residential.address:STREET.name"));
             Assert.Equal("12345", jsonConfigSrc.Get("residential.address:zipcode"));
+        }
+
+        [Fact]
+        public void CanLoadValidJsonFromStreamProvider()
+        {
+            var json = @"
+{
+    'firstname': 'test',
+    'test.last.name': 'last.name',
+        'residential.address': {
+            'street.name': 'Something street',
+            'zipcode': '12345'
+        }
+}";
+            var config = new ConfigurationBuilder().AddJsonStream(TestStreamHelpers.StringToStream(json)).Build();
+            Assert.Equal("test", config["firstname"]);
+            Assert.Equal("last.name", config["test.last.name"]);
+            Assert.Equal("Something street", config["residential.address:STREET.name"]);
+            Assert.Equal("12345", config["residential.address:zipcode"]);
         }
 
         [Fact]

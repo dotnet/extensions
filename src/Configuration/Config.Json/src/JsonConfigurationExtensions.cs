@@ -14,6 +14,26 @@ namespace Microsoft.Extensions.Configuration
     public static class JsonConfigurationExtensions
     {
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="stream"></param>
+        /// <returns></returns>
+        public static IConfigurationBuilder AddJsonStream(this IConfigurationBuilder builder, Stream stream)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            return builder.Add<StreamConfigurationSource>(s =>
+            {
+                s.Loader = new JsonConfigurationStreamLoader();
+                s.Stream = stream;
+            });
+        }
+
+        /// <summary>
         /// Adds the JSON configuration provider at <paramref name="path"/> to <paramref name="builder"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IConfigurationBuilder"/> to add to.</param>
