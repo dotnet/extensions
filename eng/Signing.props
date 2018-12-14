@@ -12,12 +12,10 @@
 
   <ItemGroup>
     <ItemsToSign Include="$(ArtifactsMPackDir)**\*.mpack" />
-  </ItemGroup>
 
-  <!--
-    The .mpack itself is not signed, only the contents.
-  -->
-  <PropertyGroup>
+    <!--
+      The .mpack itself is not signed, only the contents.
+    -->
     <FileExtensionSignInfo Include=".mpack" CertificateName="None" />
-  </PropertyGroup>
+  </ItemGroup>
 </Project>
