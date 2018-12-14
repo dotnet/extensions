@@ -5,7 +5,6 @@
 
   <!-- These package versions may be overridden or updated by automation. -->
   <PropertyGroup Label="Package Versions: Auto">
-    <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
     <InternalAspNetCoreSdkPackageVersion>2.2.1-build-20181130.1</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftNETCoreAppPackageVersion>2.2.0</MicrosoftNETCoreAppPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.5.0</MicrosoftWin32RegistryPackageVersion>
@@ -31,7 +30,6 @@
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 
   <ItemGroup Label=".NET Core dependencies">
-    <LatestPackageReference Include="FSharp.Core" Version="$(FSharpCorePackageVersion)" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
     <LatestPackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsPackageVersion)" />
     <LatestPackageReference Include="System.Data.SqlClient" Version="$(SystemDataSqlClientPackageVersion)" />
