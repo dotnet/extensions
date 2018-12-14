@@ -43,28 +43,4 @@
     -->
     <NoWarn>$(NoWarn);MSB3277</NoWarn>
   </PropertyGroup>
-
-  <Target Name="WORKAROUND_InitializeSourceControlInformationFromSourceControlManager" AfterTargets="InitializeSourceControlInformationFromSourceControlManager">
-    <!-- 
-      Arcade's SourceLink support doesn't deal gracefully with ssh remotes.
-      See: https://github.com/dotnet/arcade/blob/878b6f0434a2ed0aa4ff10644425abe61bbe3ad5/src/Microsoft.DotNet.Arcade.Sdk/tools/RepositoryInfo.targets#L22
-
-      Turn the ssh URL into one the https URLs that Arcade knows how to process.
-    -->
-    <PropertyGroup>
-      <_Pattern>ssh://git%40ssh.dev.azure.com/v3/dnceng/internal/([^/-]+)-(.+)</_Pattern>
-      <_Replacement>https://dnceng.visualstudio.com/internal/_git/$1-$2</_Replacement>
-    </PropertyGroup>
-
-    <PropertyGroup>
-      <ScmRepositoryUrl>$([System.Text.RegularExpressions.Regex]::Replace($(ScmRepositoryUrl), $(_Pattern), $(_Replacement)))</ScmRepositoryUrl>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <SourceRoot Update="@(SourceRoot)">
-        <ScmRepositoryUrl>$([System.Text.RegularExpressions.Regex]::Replace(%(ScmRepositoryUrl), $(_Pattern), $(_Replacement)))</ScmRepositoryUrl>
-      </SourceRoot>
-    </ItemGroup>
-  </Target>
-  
 </Project>
