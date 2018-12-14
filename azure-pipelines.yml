@@ -3,6 +3,7 @@ variables:
   _TeamName: AspNetCore
   _DotNetPublishToBlobFeed : false
   _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
+  _PublishArgs: ''
   
   # Variables for public PR builds
   ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'github')) }}:
@@ -11,7 +12,6 @@ variables:
     # These are needed to suppress a warning in the cibuild invocation since AzDO leaves the `$(_SignArgs)` in place and it fails to resolve.
     _SignArgs: ''
     _OfficialBuildIdArgs: ''
-    _PublishArgs: ''
 
   # Variables for internal Official builds
   ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
@@ -22,8 +22,6 @@ variables:
     _OfficialBuildIdArgs: /p:OfficialBuildId=$(Build.BuildNumber) 
       /p:ManifestBuildBranch=$(Build.SourceBranchName)
       /p:ManifestBuildNumber=$(Build.BuildNumber)
-    _PublishArgs: /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
-      /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
  
 resources:
   containers:
@@ -57,7 +55,14 @@ phases:
           _BuildConfig: Debug
         release:
           _BuildConfig: Release
-          _DotNetPublishToBlobFeed: false
+          ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
+            _DotNetPublishToBlobFeed: true
+            _PublishArgs: /p:PublishToSymbolServer=true
+              /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
+              /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
+              /p:DotNetPublishBlobFeedKey=$(dotnetfeed-storage-access-key-1)
+              /p:DotNetPublishBlobFeedUrl=$(_PublishBlobFeedUrl)
+              /p:DotNetPublishToBlobFeed=$(_DotNetPublishToBlobFeed)
     steps:
     - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
       - task: AzureKeyVault@1
@@ -80,7 +85,7 @@ phases:
       continueOnError: true
       inputs:
         testRunner: xunit
-        testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'
+        testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml' 
     - task: PublishBuildArtifacts@1
       displayName: Publish VSIX Artifacts
       inputs:
