@@ -589,12 +589,12 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             var collection = new TestServiceCollection();
             collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>));
             collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(ClassWithInterfaceConstraint<>));
-            var enumerableVal = "";
+            var enumerableVal = new ClassImplementingIEnumerable();
             collection.AddSingleton(enumerableVal);
             collection.AddSingleton<IFakeSingletonService, FakeService>();
             var provider = CreateServiceProvider(collection);
             // Act
-            var allServices = provider.GetServices<IFakeOpenGenericService<string>>().ToList();
+            var allServices = provider.GetServices<IFakeOpenGenericService<ClassImplementingIEnumerable>>().ToList();
             var constrainedServices = provider.GetServices<IFakeOpenGenericService<IFakeSingletonService>>().ToList();
             var singletonService = provider.GetService<IFakeSingletonService>();
             // Assert
@@ -685,11 +685,11 @@ namespace Microsoft.Extensions.DependencyInjection.Specification
             collection.AddTransient(typeof(IFakeOpenGenericService<>), typeof(ClassWithSelfReferencingConstraint<>));
             var poco = new PocoClass();
             collection.AddSingleton(poco);
-            var selfComparable = "";
+            var selfComparable = new ClassImplementingIComparable();
             collection.AddSingleton(selfComparable);
             var provider = CreateServiceProvider(collection);
             // Act
-            var allServices = provider.GetServices<IFakeOpenGenericService<string>>().ToList();
+            var allServices = provider.GetServices<IFakeOpenGenericService<ClassImplementingIComparable>>().ToList();
             var constrainedServices = provider.GetServices<IFakeOpenGenericService<PocoClass>>().ToList();
             // Assert
             Assert.Equal(2, allServices.Count);
