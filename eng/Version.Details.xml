@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
-  <ProductDependencies></ProductDependencies>
+  <ProductDependencies>
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="2.2.0-beta.18614.3">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>f30a96104c5be5720c74934d37d76b91959ec60d</Sha>
+    </Dependency>
+  </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.18630.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
