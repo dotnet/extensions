@@ -42,6 +42,26 @@ namespace Microsoft.Extensions.Configuration
         public IEnumerable<IConfigurationProvider> Providers => _providers;
 
         /// <summary>
+        /// Tries to get a configuration value for the specified key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <returns><c>True</c> if a value for the specified key was found, otherwise <c>false</c>.</returns>
+        public bool TryGet(string key, out string value)
+        {
+            foreach (var provider in _providers.Reverse())
+            {
+                if (provider.TryGet(key, out value))
+                {
+                    return true;
+                }
+            }
+
+            value = null;
+            return false;
+        }
+
+        /// <summary>
         /// Gets or sets the value corresponding to a configuration key.
         /// </summary>
         /// <param name="key">The configuration key.</param>
@@ -50,15 +70,8 @@ namespace Microsoft.Extensions.Configuration
         {
             get
             {
-                foreach (var provider in _providers.Reverse())
-                {
-                    if (provider.TryGet(key, out var value))
-                    {
-                        return value;
-                    }
-                }
-
-                return null;
+                TryGet(key, out var value);
+                return value;
             }
             set
             {

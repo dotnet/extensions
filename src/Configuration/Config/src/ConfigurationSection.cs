@@ -13,7 +13,6 @@ namespace Microsoft.Extensions.Configuration
     public class ConfigurationSection : IConfigurationSection
     {
         private readonly IConfigurationRoot _root;
-        private readonly string _path;
         private string _key;
 
         /// <summary>
@@ -34,43 +33,26 @@ namespace Microsoft.Extensions.Configuration
             }
 
             _root = root;
-            _path = path;
+            Path = path;
         }
 
         /// <summary>
         /// Gets the full path to this section from the <see cref="IConfigurationRoot"/>.
         /// </summary>
-        public string Path => _path;
+        public string Path { get; }
 
         /// <summary>
         /// Gets the key this section occupies in its parent.
         /// </summary>
-        public string Key
-        {
-            get
-            {
-                if (_key == null)
-                {
-                    // Key is calculated lazily as last portion of Path
-                    _key = ConfigurationPath.GetSectionKey(_path);
-                }
-                return _key;
-            }
-        }
+        public string Key => _key ?? (_key = ConfigurationPath.GetSectionKey(Path));
 
         /// <summary>
         /// Gets or sets the section value.
         /// </summary>
         public string Value
         {
-            get
-            {
-                return _root[Path];
-            }
-            set
-            {
-                _root[Path] = value;
-            }
+            get => _root[Path];
+            set => _root[Path] = value;
         }
 
         /// <summary>
@@ -80,16 +62,18 @@ namespace Microsoft.Extensions.Configuration
         /// <returns>The configuration value.</returns>
         public string this[string key]
         {
-            get
-            {
-                return _root[ConfigurationPath.Combine(Path, key)];
-            }
-
-            set
-            {
-                _root[ConfigurationPath.Combine(Path, key)] = value;
-            }
+            get => _root[ConfigurationPath.Combine(Path, key)];
+            set => _root[ConfigurationPath.Combine(Path, key)] = value;
         }
+
+        /// <summary>
+        /// Tries to get a configuration value for the specified key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <returns><c>True</c> if a value for the specified key was found, otherwise <c>false</c>.</returns>
+        public bool TryGet(string key, out string value)
+            => _root.TryGet(ConfigurationPath.Combine(Path, key), out value);
 
         /// <summary>
         /// Gets a configuration sub-section with the specified key.

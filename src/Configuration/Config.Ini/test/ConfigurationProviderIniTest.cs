@@ -39,5 +39,7 @@ namespace Microsoft.Extensions.Configuration.Ini.Test
                 SectionToIni(iniBuilder, tuple.Key + ":", tuple.Section);
             }
         }
+
+        protected override bool CanRepresentNulls => false;
     }
 }

@@ -9,7 +9,7 @@ using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
 {
-    public class ConfigurationProviderCommandLineTest : ConfigurationProviderTestBase
+    public class ConfigurationProviderKeyPerFileTest : ConfigurationProviderTestBase
     {
         protected override (IConfigurationProvider Provider, Action Initializer) LoadThroughProvider(
             TestSection testConfig)
@@ -39,5 +39,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
                 SectionToTestFiles(testFiles, sectionName + tuple.Key + "__", tuple.Section);
             }
         }
+
+        protected override bool CanRepresentNulls => false;
     }
 }

@@ -35,6 +35,8 @@ namespace Microsoft.Extensions.Configuration.CommandLine.Test
             }
         }
 
+        protected override bool CanRepresentNulls => false;
+
         [Fact]
         public override void Load_from_single_provider_with_duplicates_throws()
         {

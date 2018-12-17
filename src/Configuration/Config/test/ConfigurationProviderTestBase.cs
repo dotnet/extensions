@@ -46,8 +46,10 @@ Section3:
         [Fact]
         public virtual void Null_values_are_included_in_the_config()
         {
-            AssertConfig(BuildConfigRoot(LoadThroughProvider(TestSection.NullsTestConfig)), expectNulls: true, nullValue: "");
+            AssertConfig(BuildConfigRoot(LoadThroughProvider(TestSection.NullsTestConfig)), expectNulls: true);
         }
+
+        protected virtual bool CanRepresentNulls => true;
 
         [Fact]
         public virtual void Combine_after_other_provider()
@@ -185,9 +187,10 @@ Section3:
 
         protected virtual void AssertConfig(
             IConfigurationRoot config,
-            bool expectNulls = false,
-            string nullValue = null)
+            bool expectNulls = false)
         {
+            var nullValue = CanRepresentNulls ? null : "";
+
             var value1 = expectNulls ? nullValue : "Value1";
             var value12 = expectNulls ? nullValue : "Value12";
             var value123 = expectNulls ? nullValue : "Value123";
@@ -203,6 +206,28 @@ Section3:
             Assert.Equal(arrayvalue1, config["Section1:Section2:Key3a:1"], StringComparer.InvariantCultureIgnoreCase);
             Assert.Equal(arrayvalue2, config["Section1:Section2:Key3a:2"], StringComparer.InvariantCultureIgnoreCase);
             Assert.Equal(value344, config["Section3:Section4:Key4"], StringComparer.InvariantCultureIgnoreCase);
+
+            string value;
+            Assert.True(config.TryGet("Key1", out value));
+            Assert.Equal(value1, value, StringComparer.InvariantCultureIgnoreCase);
+
+            Assert.True(config.TryGet("Section1:Key2", out value));
+            Assert.Equal(value12, value, StringComparer.InvariantCultureIgnoreCase);
+
+            Assert.True(config.TryGet("Section1:Section2:Key3", out value));
+            Assert.Equal(value123, value, StringComparer.InvariantCultureIgnoreCase);
+
+            Assert.True(config.TryGet("Section1:Section2:Key3a:0", out value));
+            Assert.Equal(arrayvalue0, value, StringComparer.InvariantCultureIgnoreCase);
+
+            Assert.True(config.TryGet("Section1:Section2:Key3a:1", out value));
+            Assert.Equal(arrayvalue1, value, StringComparer.InvariantCultureIgnoreCase);
+
+            Assert.True(config.TryGet("Section1:Section2:Key3a:2", out value));
+            Assert.Equal(arrayvalue2, value, StringComparer.InvariantCultureIgnoreCase);
+
+            Assert.True(config.TryGet("Section3:Section4:Key4", out value));
+            Assert.Equal(value344, value, StringComparer.InvariantCultureIgnoreCase);
 
             var section1 = config.GetSection("Section1");
             Assert.Equal(value12, section1["Key2"], StringComparer.InvariantCultureIgnoreCase);
@@ -228,6 +253,18 @@ Section3:
             Assert.Equal(arrayvalue2, section2["Key3a:2"], StringComparer.InvariantCultureIgnoreCase);
             Assert.Equal("Section1:Section2", section2.Path, StringComparer.InvariantCultureIgnoreCase);
             Assert.Null(section2.Value);
+            
+            Assert.True(section2.TryGet("Key3", out value));
+            Assert.Equal(value123, value, StringComparer.InvariantCultureIgnoreCase);
+
+            Assert.True(section2.TryGet("Key3a:0", out value));
+            Assert.Equal(arrayvalue0, value, StringComparer.InvariantCultureIgnoreCase);
+
+            Assert.True(section2.TryGet("Key3a:1", out value));
+            Assert.Equal(arrayvalue1, value, StringComparer.InvariantCultureIgnoreCase);
+
+            Assert.True(section2.TryGet("Key3a:2", out value));
+            Assert.Equal(arrayvalue2, value, StringComparer.InvariantCultureIgnoreCase);
 
             var section3a = section2.GetSection("Key3a");
             Assert.Equal(arrayvalue0, section3a["0"], StringComparer.InvariantCultureIgnoreCase);

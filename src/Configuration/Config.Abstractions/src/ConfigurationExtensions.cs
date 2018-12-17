@@ -41,7 +41,8 @@ namespace Microsoft.Extensions.Configuration
         /// </summary>
         /// <param name="configuration">The <see cref="IConfiguration"/> to enumerate.</param>
         /// <returns>An enumeration of key value pairs.</returns>
-        public static IEnumerable<KeyValuePair<string, string>> AsEnumerable(this IConfiguration configuration) => configuration.AsEnumerable(makePathsRelative: false);
+        public static IEnumerable<KeyValuePair<string, string>> AsEnumerable(this IConfiguration configuration)
+            => configuration.AsEnumerable(makePathsRelative: false);
 
         /// <summary>
         /// Get the enumeration of key value pairs within the <see cref="IConfiguration" />
@@ -53,8 +54,7 @@ namespace Microsoft.Extensions.Configuration
         {
             var stack = new Stack<IConfiguration>();
             stack.Push(configuration);
-            var rootSection = configuration as IConfigurationSection;
-            var prefixLength = (makePathsRelative && rootSection != null) ? rootSection.Path.Length + 1 : 0;
+            var prefixLength = (makePathsRelative && configuration is IConfigurationSection rootSection) ? rootSection.Path.Length + 1 : 0;
             while (stack.Count > 0)
             {
                 var config = stack.Pop();
@@ -74,12 +74,6 @@ namespace Microsoft.Extensions.Configuration
         /// Determines whether the section has a <see cref="IConfigurationSection.Value"/> or has children 
         /// </summary>
         public static bool Exists(this IConfigurationSection section)
-        {
-            if (section == null)
-            {
-                return false;
-            }
-            return section.Value != null || section.GetChildren().Any();
-        }
+            => section != null && (section.Value != null || section.GetChildren().Any());
     }
 }

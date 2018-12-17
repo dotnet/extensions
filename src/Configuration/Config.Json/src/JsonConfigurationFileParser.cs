@@ -101,7 +101,8 @@ namespace Microsoft.Extensions.Configuration.Json
             {
                 throw new FormatException(Resources.FormatError_KeyIsDuplicated(key));
             }
-            _data[key] = data.ToString(CultureInfo.InvariantCulture);
+
+            _data[key] = data.Value == null ? null : data.ToString(CultureInfo.InvariantCulture);
         }
 
         private void EnterContext(string context)

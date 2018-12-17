@@ -20,6 +20,8 @@ namespace Microsoft.Extensions.Configuration.Xml.Test
             // Disabled test due to XML handling of empty section.
         }
 
+        protected override bool CanRepresentNulls => false;
+
         public override void Has_debug_view()
         {
             var configRoot = BuildConfigRoot(LoadThroughProvider(TestSection.TestConfig));

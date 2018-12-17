@@ -19,6 +19,14 @@ namespace Microsoft.Extensions.Configuration
         string this[string key] { get; set; }
 
         /// <summary>
+        /// Tries to get a configuration value for the specified key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <returns><c>True</c> if a value for the specified key was found, otherwise <c>false</c>.</returns>
+        bool TryGet(string key, out string value);
+
+        /// <summary>
         /// Gets a configuration sub-section with the specified key.
         /// </summary>
         /// <param name="key">The key of the configuration section.</param>
