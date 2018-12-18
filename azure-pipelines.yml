@@ -27,7 +27,7 @@ jobs:
     artifacts:
       publish: true
       name: packages
-      path: artifacts/Release/packages/
+      path: artifacts/packages/Release
 
 - template: eng/templates/default-build.yml
   parameters:
