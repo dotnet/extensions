@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Caching.Memory.Tests.Infrastructure
@@ -10,7 +12,21 @@ namespace Microsoft.Extensions.Caching.Memory.Tests.Infrastructure
     {
         public static async Task<bool> WaitAsync(this Task task, TimeSpan timeout)
         {
-            return await Task.WhenAny(task, Task.Delay(timeout)).ConfigureAwait(false) == task;
+            if (task.IsCompleted)
+            {
+                return true;
+            }
+
+            var cts = new CancellationTokenSource();
+            var completed =  await Task.WhenAny(task, Task.Delay(Debugger.IsAttached ? Timeout.InfiniteTimeSpan : timeout, cts.Token));
+
+            if (completed != task)
+            {
+                return false;
+            }
+
+            cts.Cancel();
+            return true;
         }
     }
 }
