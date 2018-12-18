@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory.Infrastructure;
+using Microsoft.Extensions.Caching.Memory.Tests.Infrastructure;
 using Microsoft.Extensions.Internal;
 using Xunit;
 
@@ -118,10 +120,10 @@ namespace Microsoft.Extensions.Caching.Memory
             });
 
             var entryOptions = new MemoryCacheEntryOptions { Size = long.MaxValue };
-            var sem = new SemaphoreSlim(0, 1);
+            var tcs = new TaskCompletionSource<object>();
             entryOptions.PostEvictionCallbacks.Add(new PostEvictionCallbackRegistration
             {
-                EvictionCallback = (k, v, r, s) => sem.Release(),
+                EvictionCallback = (k, v, r, s) => tcs.SetResult(null),
                 State = null
             });
 
@@ -137,7 +139,7 @@ namespace Microsoft.Extensions.Caching.Memory
             Assert.Null(cache.Get("key1"));
 
             // Wait for compaction to complete
-            Assert.True(await sem.WaitAsync(TimeSpan.FromSeconds(10)));
+            Assert.True(await tcs.Task.WaitAsync(TimeSpan.FromSeconds(10)));
 
             // Compaction removes old item
             Assert.Null(cache.Get("key"));
@@ -155,10 +157,10 @@ namespace Microsoft.Extensions.Caching.Memory
             });
 
             var entryOptions = new MemoryCacheEntryOptions { Size = 6 };
-            var sem = new SemaphoreSlim(0, 1);
+            var tcs = new TaskCompletionSource<object>();
             entryOptions.PostEvictionCallbacks.Add(new PostEvictionCallbackRegistration
             {
-                EvictionCallback = (k, v, r, s) => sem.Release(),
+                EvictionCallback = (k, v, r, s) => tcs.SetResult(null),
                 State = null
             });
 
@@ -172,7 +174,7 @@ namespace Microsoft.Extensions.Caching.Memory
             cache.Set("key2", "value2", new MemoryCacheEntryOptions { Size = 5 });
 
             // Wait for compaction to complete
-            Assert.True(await sem.WaitAsync(TimeSpan.FromSeconds(10)));
+            Assert.True(await tcs.Task.WaitAsync(TimeSpan.FromSeconds(10)));
 
             Assert.Null(cache.Get("key"));
             Assert.Null(cache.Get("key2"));
@@ -247,10 +249,10 @@ namespace Microsoft.Extensions.Caching.Memory
             });
 
             var entryOptions = new MemoryCacheEntryOptions { Size = 6 };
-            var sem = new SemaphoreSlim(0, 1);
+            var tcs = new TaskCompletionSource<object>();
             entryOptions.PostEvictionCallbacks.Add(new PostEvictionCallbackRegistration
             {
-                EvictionCallback = (k, v, r, s) => sem.Release(),
+                EvictionCallback = (k, v, r, s) => tcs.SetResult(null),
                 State = null
             });
 
@@ -264,7 +266,7 @@ namespace Microsoft.Extensions.Caching.Memory
             cache.Set("key", "value1", new MemoryCacheEntryOptions { Size = 5 });
 
             // Wait for compaction to complete
-            Assert.True(await sem.WaitAsync(TimeSpan.FromSeconds(10)));
+            Assert.True(await tcs.Task.WaitAsync(TimeSpan.FromSeconds(10)));
 
             Assert.Null(cache.Get("key"));
             Assert.Equal(0, cache.Size);
@@ -317,11 +319,11 @@ namespace Microsoft.Extensions.Caching.Memory
 
             var entryOptions = new MemoryCacheEntryOptions { Size = 5 };
             var changeToken = new TestExpirationToken();
-            var sem = new SemaphoreSlim(0, 1);
+            var tcs = new TaskCompletionSource<object>();
             entryOptions.ExpirationTokens.Add(changeToken);
             entryOptions.PostEvictionCallbacks.Add(new PostEvictionCallbackRegistration
             {
-                EvictionCallback = (k, v, r, s) => sem.Release(),
+                EvictionCallback = (k, v, r, s) => tcs.SetResult(null),
                 State = null
             });
 
@@ -336,7 +338,7 @@ namespace Microsoft.Extensions.Caching.Memory
             Assert.Null(cache.Get("key"));
 
             // Wait for compaction to complete
-            Assert.True(await sem.WaitAsync(TimeSpan.FromSeconds(10)));
+            Assert.True(await tcs.Task.WaitAsync(TimeSpan.FromSeconds(10)));
 
             Assert.Equal(0, cache.Size);
         }
@@ -353,14 +355,15 @@ namespace Microsoft.Extensions.Caching.Memory
             });
 
             var numEntries = 5;
-            var sem = new SemaphoreSlim(0, numEntries);
+            var tcs = new TaskCompletionSource<object>[numEntries];
 
             for (var i = 0; i < numEntries; i++)
             {
+                tcs[i] = new TaskCompletionSource<object>();
                 var entryOptions = new MemoryCacheEntryOptions { Size = i };
                 entryOptions.PostEvictionCallbacks.Add(new PostEvictionCallbackRegistration
                 {
-                    EvictionCallback = (k, v, r, s) => sem.Release(),
+                    EvictionCallback = (k, v, r, s) => tcs[i].SetResult(null),
                     State = null
                 });
                 cache.Set($"key{i}", $"value{i}", entryOptions);
@@ -374,10 +377,7 @@ namespace Microsoft.Extensions.Caching.Memory
             testClock.Add(TimeSpan.FromSeconds(10));
 
             // Wait for compaction to complete
-            for (var i = 0; i < 3; i++)
-            {
-                Assert.True(await sem.WaitAsync(TimeSpan.FromSeconds(10)));
-            }
+            await Task.WhenAll(tcs.Take(3).Select(t => t.Task)).WaitAsync(TimeSpan.FromSeconds(10));
 
             // There should be 2 items in the cache
             Assert.Equal(2, cache.Count);
