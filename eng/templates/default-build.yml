@@ -105,13 +105,12 @@ jobs:
         --prepareMachine
       displayName: Run cibuild.sh
   - task: PublishTestResults@2
-    displayName: Publish test results
+    displayName: Publish xUnit Test Results
     condition: always()
+    continueOnError: true
     inputs:
-      testRunTitle: $(AgentOsName)-$(BuildConfiguration)
-      testRunner: vstest
-      testResultsFiles: 'artifacts/logs/**/*.trx'
-      mergeTestResults: true
+      testRunner: xunit
+      testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'
   - ${{ if eq(parameters.artifacts.publish, 'true') }}:
     - task: PublishBuildArtifacts@1
       displayName: Upload artifacts
