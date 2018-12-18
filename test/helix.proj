@@ -40,7 +40,7 @@
         test-results.xml
         test_results.xml
     -->
-    <EnableXUnitReporter Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'>true</EnableXUnitReporter>
+    <EnableXUnitReporter Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">true</EnableXUnitReporter>
 
   </PropertyGroup>
 </Project>
