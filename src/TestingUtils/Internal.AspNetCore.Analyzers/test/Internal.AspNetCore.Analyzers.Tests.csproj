@@ -4,6 +4,7 @@
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <TestGroupName>Analyzers</TestGroupName>
+    <UsingToolNetFrameworkReferenceAssemblies Condition="'$(OS)' == 'Windows_NT'">false</UsingToolNetFrameworkReferenceAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
