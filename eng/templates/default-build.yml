@@ -110,7 +110,7 @@ jobs:
     continueOnError: true
     inputs:
       testRunner: xunit
-      testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'
+      testResultsFiles: 'artifacts/TestResults/$(BuildConfiguration)/*.xml'
   - ${{ if eq(parameters.artifacts.publish, 'true') }}:
     - task: PublishBuildArtifacts@1
       displayName: Upload artifacts
