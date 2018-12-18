@@ -104,6 +104,14 @@ phases:
       continueOnError: true
       condition: eq(variables['_BuildConfig'], 'Release')
     - task: PublishBuildArtifacts@1
+      displayName: Publish package artifacts
+      inputs:
+        PathtoPublish: $(Build.SourcesDirectory)/artifacts/packages/$(_BuildConfig)
+        PublishLocation: Container
+        ArtifactName: Packages_$(Agent.Os)_$(Agent.JobName)
+      continueOnError: true
+      condition: eq(variables['_BuildConfig'], 'Release')
+    - task: PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
