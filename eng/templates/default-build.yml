@@ -94,17 +94,14 @@ jobs:
         feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
   - ${{ if eq(parameters.agentOs, 'Windows') }}:
     - script: eng\common\cibuild.cmd
-        -configuration $(_BuildConfig)
+        -configuration $(BuildConfiguration)
         -prepareMachine
         -warnaserror $False
-        $(_SignArgs)
-        $(_OfficialBuildIdArgs)
-        $(_PublishArgs)
       displayName: Run cibuild.cmd
   - ${{ if ne(parameters.agentOs, 'Windows') }}:
     - script: eng/common/cibuild.sh
         --warnAsError false
-        --configuration $(_BuildConfig)
+        --configuration $(BuildConfiguration)
         --prepareMachine
       displayName: Run cibuild.sh
   - task: PublishTestResults@2
