@@ -6,6 +6,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
     <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>

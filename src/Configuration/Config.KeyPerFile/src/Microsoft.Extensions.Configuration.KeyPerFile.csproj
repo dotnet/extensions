@@ -5,6 +5,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <EnableApiCheck>false</EnableApiCheck>
     <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>

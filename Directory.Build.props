@@ -4,7 +4,6 @@
     Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
 
   <PropertyGroup>
-    <ImportNetSdkFromRepoToolset>false</ImportNetSdkFromRepoToolset>
     <UsingToolXliff>false</UsingToolXliff>
   </PropertyGroup>
 
@@ -65,6 +64,7 @@
       Packages which are intended to ship to NuGet.org must opt-in by setting this to true in their project file.
     -->
     <IsProductComponent>false</IsProductComponent>
+    <IsShipping>false</IsShipping>
 
     <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance'))">true</IsBenchmarkProject>
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>

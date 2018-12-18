@@ -4,5 +4,6 @@
 
   <PropertyGroup>
     <PackageId>Microsoft.AspNetCore.BenchmarkRunner.Sources</PackageId>
+    <IsShipping>false</IsShipping>
   </PropertyGroup>
 </Project>

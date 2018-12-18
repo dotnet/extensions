@@ -12,6 +12,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnostics;healthchecks</PackageTags>
     <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
 
 </Project>

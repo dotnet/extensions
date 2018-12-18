@@ -15,6 +15,7 @@
     <IsTestProject>false</IsTestProject>
     <TestRunnerName></TestRunnerName>
     <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>
