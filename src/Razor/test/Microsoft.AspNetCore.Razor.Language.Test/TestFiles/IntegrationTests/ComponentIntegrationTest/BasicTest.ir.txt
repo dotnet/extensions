@@ -2,7 +2,7 @@ Document -
     RazorCompiledItemAttribute - 
     NamespaceDeclaration -  - AspNetCore
         RazorSourceChecksumAttribute - 
-        ClassDeclaration -  - public sealed - BasicTest - global::Microsoft.AspNetCore.Components.Component - 
+        ClassDeclaration -  - public sealed - BasicTest - global::Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - public override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);

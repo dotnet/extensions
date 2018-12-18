@@ -6,7 +6,7 @@ namespace AspNetCore
 {
     #line hidden
     [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"47f616cdc7ec75674c74246619b0e6118ef227e4", @"/TestFiles/IntegrationTests/ComponentIntegrationTest/BasicTest.razor")]
-    public sealed class BasicTest : global::Microsoft.AspNetCore.Components.Component
+    public sealed class BasicTest : global::Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
         public override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)

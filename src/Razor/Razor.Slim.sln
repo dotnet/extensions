@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2036
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28410.60
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3C0D6505-79B3-49D0-B4C3-176F0F1836ED}"
 	ProjectSection(SolutionItems) = preProject
@@ -79,6 +79,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X", "test\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.csproj", "{D87E5501-B832-46B6-ACD3-EC989E3D14ED}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.Mac.RazorAddin", "src\Microsoft.VisualStudio.Mac.RazorAddin\Microsoft.VisualStudio.Mac.RazorAddin.csproj", "{A34CCC12-687B-4D12-AA0E-F5BE800DE19C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test.ComponentShim", "test\Microsoft.AspNetCore.Razor.Test.ComponentShim\Microsoft.AspNetCore.Razor.Test.ComponentShim.csproj", "{A9FDA40B-0EE4-4B00-8E24-F1C8B62154BE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -222,6 +224,10 @@ Global
 		{A34CCC12-687B-4D12-AA0E-F5BE800DE19C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A34CCC12-687B-4D12-AA0E-F5BE800DE19C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A34CCC12-687B-4D12-AA0E-F5BE800DE19C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9FDA40B-0EE4-4B00-8E24-F1C8B62154BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9FDA40B-0EE4-4B00-8E24-F1C8B62154BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9FDA40B-0EE4-4B00-8E24-F1C8B62154BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9FDA40B-0EE4-4B00-8E24-F1C8B62154BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -261,6 +267,7 @@ Global
 		{495A006C-D2B9-4AD0-9D33-60820BA501D8} = {92463391-81BE-462B-AC3C-78C6C760741F}
 		{D87E5501-B832-46B6-ACD3-EC989E3D14ED} = {92463391-81BE-462B-AC3C-78C6C760741F}
 		{A34CCC12-687B-4D12-AA0E-F5BE800DE19C} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
+		{A9FDA40B-0EE4-4B00-8E24-F1C8B62154BE} = {92463391-81BE-462B-AC3C-78C6C760741F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0035341D-175A-4D05-95E6-F1C2785A1E26}
