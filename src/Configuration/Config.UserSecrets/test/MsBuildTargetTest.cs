@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Extensions/issues/624")]
+        [Fact]
         public void GeneratesAssemblyAttributeFile()
         {
             var target = Path.Combine(_solutionRoot.FullName, "src", "Configuration", "Config.UserSecrets", "src", "build", "netstandard2.0", "Microsoft.Extensions.Configuration.UserSecrets.targets");
