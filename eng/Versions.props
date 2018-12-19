@@ -1,6 +1,5 @@
 
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <!-- Opt-in arcade features -->
   <PropertyGroup>
     <UsingToolVSSDK>true</UsingToolVSSDK>
@@ -9,19 +8,16 @@
     <MicrosoftNetFrameworkReferenceAssembliesVersion>1.0.0-alpha-004</MicrosoftNetFrameworkReferenceAssembliesVersion>
     <UsingToolSymbolUploader>true</UsingToolSymbolUploader>
   </PropertyGroup>
-
   <!-- Opt out Arcade features -->
   <PropertyGroup>
     <UsingToolXliff>false</UsingToolXliff>
   </PropertyGroup>
-
   <!-- Versioning for assemblies/packages -->
   <PropertyGroup>
     <MajorVersion>3</MajorVersion>
     <MinorVersion>0</MinorVersion>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
   </PropertyGroup>
-
   <!-- 
     Versioning for tooling releases.
 
@@ -42,7 +38,6 @@
     <AddinVersion Condition="'$(OfficialBuildId)' != ''">$(AddinVersion).$(OfficialBuildId)</AddinVersion>
     <AddinVersion Condition="'$(OfficialBuildId)' == ''">$(AddinVersion).42424242.42</AddinVersion>
   </PropertyGroup>
-
   <PropertyGroup>
     <RestoreSources>
       $(RestoreSources);
