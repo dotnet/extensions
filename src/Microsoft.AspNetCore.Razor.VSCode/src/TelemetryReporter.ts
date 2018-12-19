@@ -3,9 +3,9 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { Trace } from 'vscode-jsonrpc';
 import { HostEventStream, TelemetryEvent } from './HostEventStream';
 import { IRazorProject } from './IRazorProject';
+import { Trace } from './Trace';
 
 export class TelemetryReporter {
     private readonly razorDocuments: { [hostDocumentPath: string]: boolean } = {};

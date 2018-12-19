@@ -33,6 +33,23 @@
                 "${workspaceFolder}/client/out/test/**/*.js"
             ],
             "preLaunchTask": "client-npm-watch"
-        }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Unit Tests",
+            "program": "${workspaceFolder}/client/node_modules/mocha/bin/_mocha",
+            "args": [
+                "-u",
+                "tdd",
+                "--timeout",
+                "999999",
+                "--colors",
+                "${workspaceFolder}/client/out/unittest"
+            ],
+            "sourceMaps": true,
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchTask": "client-npm-compile"
+        },
     ]
 }

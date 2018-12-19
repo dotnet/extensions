@@ -5,22 +5,23 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import * as vscode from 'vscode';
-import { Trace } from 'vscode-jsonrpc';
+import { Trace } from './Trace';
+import * as vscode from './vscodeAdapter';
 
 export class RazorLogger implements vscode.Disposable {
+    public static readonly logName = 'Razor Log';
     public readonly verboseEnabled: boolean;
     public readonly messageEnabled: boolean;
     public readonly outputChannel: vscode.OutputChannel;
 
     private readonly trace: Trace;
 
-    constructor(trace: Trace) {
+    constructor(private readonly vscodeApi: vscode.api, trace: Trace) {
         this.trace = trace;
         this.verboseEnabled = this.trace >= Trace.Verbose;
         this.messageEnabled = this.trace >= Trace.Messages;
 
-        this.outputChannel = vscode.window.createOutputChannel('Razor Log');
+        this.outputChannel = this.vscodeApi.window.createOutputChannel(RazorLogger.logName);
 
         this.logRazorInformation();
     }

@@ -4,7 +4,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as vscode from 'vscode';
-import { Trace } from 'vscode-jsonrpc';
+import { Trace } from './Trace';
 
 export interface RazorLanguageServerOptions {
     serverPath: string;

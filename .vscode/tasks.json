@@ -4,6 +4,41 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "client-npm-compile",
+            "dependsOn": [
+                "client-npm-compile:shell",
+                "client-npm-compile:package"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "isBackground": true,
+            "problemMatcher": []
+        },
+        {
+            "label": "client-npm-compile:shell",
+            "type": "npm",
+            "script": "compile",
+            "path": "client/",
+            "problemMatcher": "$tsc-watch",
+            "isBackground": true,
+            "presentation": {
+                "reveal": "never"
+            }
+        },
+        {
+            "label": "client-npm-compile:package",
+            "type": "npm",
+            "script": "compile",
+            "path": "src/Microsoft.AspNetCore.Razor.VSCode/",
+            "problemMatcher": "$tsc-watch",
+            "isBackground": true,
+            "presentation": {
+                "reveal": "never"
+            }
+        },
+        {
             "label": "client-npm-watch",
             "dependsOn": [
                 "client-npm-watch:shell",

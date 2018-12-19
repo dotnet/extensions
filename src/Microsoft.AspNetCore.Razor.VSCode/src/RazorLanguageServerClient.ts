@@ -5,7 +5,6 @@
 
 import { EventEmitter } from 'events';
 import * as vscode from 'vscode';
-import { Trace } from 'vscode-jsonrpc';
 import {
     GenericRequestHandler,
     LanguageClient,
@@ -15,6 +14,7 @@ import {
 import { RazorLanguageServerOptions } from './RazorLanguageServerOptions';
 import { RazorLogger } from './RazorLogger';
 import { TelemetryReporter } from './TelemetryReporter';
+import { Trace } from './Trace';
 
 const events = {
     ServerStart: 'ServerStart',

@@ -3,12 +3,8 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import * as assert from 'assert';
-
-describe('Sample', () => {
-    describe('Sample thing', () => {
-        it('should do arithmetic', () => {
-            assert.equal(1 + 1, 2);
-        });
-    });
-});
+export enum Trace {
+    Off = 0,
+    Messages = 1,
+    Verbose = 2,
+}

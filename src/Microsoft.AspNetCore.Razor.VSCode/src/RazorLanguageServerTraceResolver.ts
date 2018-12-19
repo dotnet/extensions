@@ -3,8 +3,8 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { Trace } from 'vscode-jsonrpc';
 import { RazorLanguage } from './RazorLanguage';
+import { Trace } from './Trace';
 
 export function resolveRazorLanguageServerTrace() {
     const traceString = RazorLanguage.languageConfig.get<string>('trace');

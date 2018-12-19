@@ -7,11 +7,18 @@
             some other VSCode instance at the same time, which is fine in CI but inconvenient locally.
         -->
         <CallTarget Targets="RunFunctionalTests" Condition="'$(IncludeFunctionalTests)'=='true'" />
+        <CallTarget Targets="RunUnitTests" />
     </Target>
 
     <Target Name="RunFunctionalTests">
         <Message Importance="high" Text="Running functional tests" />
         <Exec Command="npm install" WorkingDirectory="$(MSBuildThisFileDirectory)..\..\client" />
         <Exec Command="npm test" WorkingDirectory="$(MSBuildThisFileDirectory)..\..\client" />
+    </Target>
+
+    <Target Name="RunUnitTests">
+        <Message Importance="high" Text="Running unit tests" />
+        <Exec Command="npm install" WorkingDirectory="$(MSBuildThisFileDirectory)..\..\client" />
+        <Exec Command="npm run unittest" WorkingDirectory="$(MSBuildThisFileDirectory)..\..\client" />
     </Target>
 </Project>

@@ -18,6 +18,8 @@
     "vscode": "^1.25.0"
   },
   "scripts": {
+    "clean": "rimraf out",
+    "compile": "npm run clean && npm run lint && tsc -p ./",
     "prepare": "node ./node_modules/vscode/bin/install",
     "lint": "tslint ./src/**/*.ts",
     "watch": "tsc -watch -p ./"

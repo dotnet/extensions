@@ -31,7 +31,7 @@ export async function activate(context: ExtensionContext, languageServerDir: str
     const telemetryReporter = new TelemetryReporter(eventStream);
     try {
         const languageServerTrace = resolveRazorLanguageServerTrace();
-        const logger = new RazorLogger(languageServerTrace);
+        const logger = new RazorLogger(vscode, languageServerTrace);
         const languageServerOptions = resolveRazorLanguageServerOptions(languageServerDir, languageServerTrace, logger);
         const languageServerClient = new RazorLanguageServerClient(languageServerOptions, telemetryReporter, logger);
         const languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
