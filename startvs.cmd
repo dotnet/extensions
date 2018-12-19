@@ -13,7 +13,7 @@ SET PATH=%DOTNET_ROOT%;%PATH%
 
 SET sln=%1
 
-IF NOT EXIST %DOTNET_ROOT%\dotnet.exe (
+IF NOT EXIST "%DOTNET_ROOT%\dotnet.exe" (
     restore.cmd
 )
 
