@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public void Execute(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
             {
-                codeDocument.SetInputDocumentKind(InputDocumentKind.Component);
+                codeDocument.SetFileKind(FileKinds.Component);
             }
         }
     }

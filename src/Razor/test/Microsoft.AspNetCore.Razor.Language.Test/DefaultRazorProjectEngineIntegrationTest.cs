@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Moq;
 using Xunit;
 
@@ -110,12 +111,28 @@ namespace Microsoft.AspNetCore.Razor.Language
             var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
 
             // Act
-            var codeDocument = projectEngine.Process(RazorSourceDocument.ReadFrom(projectItem), expectedImports, expectedTagHelpers);
+            var codeDocument = projectEngine.Process(RazorSourceDocument.ReadFrom(projectItem), "test", expectedImports, expectedTagHelpers);
 
             // Assert
             var tagHelpers = codeDocument.GetTagHelpers();
             Assert.Same(expectedTagHelpers, tagHelpers);
             Assert.Equal(expectedImports, codeDocument.Imports);
+        }
+
+        [Fact]
+        public void Process_WithFileKind_SetsOnCodeDocument()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("Index.cshtml");
+
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
+
+            // Act
+            var codeDocument = projectEngine.Process(RazorSourceDocument.ReadFrom(projectItem), "test", Array.Empty<RazorSourceDocument>(), tagHelpers: null);
+
+            // Assert
+            var actual = codeDocument.GetFileKind();
+            Assert.Equal("test", actual);
         }
 
         [Fact]
@@ -127,7 +144,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
 
             // Act
-            var codeDocument = projectEngine.Process(RazorSourceDocument.ReadFrom(projectItem), Array.Empty<RazorSourceDocument>(), tagHelpers: null);
+            var codeDocument = projectEngine.Process(RazorSourceDocument.ReadFrom(projectItem), "test", Array.Empty<RazorSourceDocument>(), tagHelpers: null);
 
             // Assert
             var tagHelpers = codeDocument.GetTagHelpers();
@@ -151,6 +168,38 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
+        public void Process_SetsInferredFileKindOnCodeDocument_MvcFile()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("Index.cshtml");
+
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
+
+            // Act
+            var codeDocument = projectEngine.Process(projectItem);
+
+            // Assert
+            var actual = codeDocument.GetFileKind();
+            Assert.Same(FileKinds.Legacy, actual);
+        }
+
+        [Fact]
+        public void Process_SetsInferredFileKindOnCodeDocument_Component()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("Index.razor");
+
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
+
+            // Act
+            var codeDocument = projectEngine.Process(projectItem);
+
+            // Assert
+            var actual = codeDocument.GetFileKind();
+            Assert.Same(FileKinds.Component, actual);
+        }
+
+        [Fact]
         public void Process_WithNullImports_SetsEmptyListOnCodeDocument()
         {
             // Arrange
@@ -159,7 +208,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
 
             // Act
-            var codeDocument = projectEngine.Process(RazorSourceDocument.ReadFrom(projectItem), importSources: null, tagHelpers: null);
+            var codeDocument = projectEngine.Process(RazorSourceDocument.ReadFrom(projectItem), "test", importSources: null, tagHelpers: null);
 
             // Assert
             Assert.Empty(codeDocument.Imports);
@@ -181,7 +230,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
 
             // Act
-            var codeDocument = projectEngine.ProcessDesignTime(RazorSourceDocument.ReadFrom(projectItem), expectedImports, expectedTagHelpers);
+            var codeDocument = projectEngine.ProcessDesignTime(RazorSourceDocument.ReadFrom(projectItem), "test", expectedImports, expectedTagHelpers);
 
             // Assert
             var tagHelpers = codeDocument.GetTagHelpers();
@@ -198,11 +247,43 @@ namespace Microsoft.AspNetCore.Razor.Language
             var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
 
             // Act
-            var codeDocument = projectEngine.ProcessDesignTime(RazorSourceDocument.ReadFrom(projectItem), Array.Empty<RazorSourceDocument>(), tagHelpers: null);
+            var codeDocument = projectEngine.ProcessDesignTime(RazorSourceDocument.ReadFrom(projectItem), "test", Array.Empty<RazorSourceDocument>(), tagHelpers: null);
 
             // Assert
             var tagHelpers = codeDocument.GetTagHelpers();
             Assert.Null(tagHelpers);
+        }
+
+        [Fact]
+        public void ProcessDesignTime_SetsInferredFileKindOnCodeDocument_MvcFile()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("Index.cshtml");
+
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
+
+            // Act
+            var codeDocument = projectEngine.ProcessDesignTime(projectItem);
+
+            // Assert
+            var actual = codeDocument.GetFileKind();
+            Assert.Same(FileKinds.Legacy, actual);
+        }
+
+        [Fact]
+        public void ProcessDesignTime_SetsInferredFileKindOnCodeDocument_Component()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("Index.razor");
+
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
+
+            // Act
+            var codeDocument = projectEngine.ProcessDesignTime(projectItem);
+
+            // Assert
+            var actual = codeDocument.GetFileKind();
+            Assert.Same(FileKinds.Component, actual);
         }
 
         [Fact]
@@ -230,7 +311,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
 
             // Act
-            var codeDocument = projectEngine.ProcessDesignTime(RazorSourceDocument.ReadFrom(projectItem), importSources: null, tagHelpers: null);
+            var codeDocument = projectEngine.ProcessDesignTime(RazorSourceDocument.ReadFrom(projectItem), "test", importSources: null, tagHelpers: null);
 
             // Assert
             Assert.Empty(codeDocument.Imports);

@@ -128,5 +128,7 @@ config.ps1
 node_modules/
 
 # Python Compile Outputs
-
 *.pyc
+
+# Rider
+.idea/

@@ -381,7 +381,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                 var projectEngine = project.GetProjectEngine();
 
-                var codeDocument = projectEngine.ProcessDesignTime(documentSource, importSources, tagHelpers);
+                var codeDocument = projectEngine.ProcessDesignTime(documentSource, fileKind: null, importSources, tagHelpers);
                 var csharpDocument = codeDocument.GetCSharpDocument();
 
                 // OK now we've generated the code. Let's check if the output is actually different. This is

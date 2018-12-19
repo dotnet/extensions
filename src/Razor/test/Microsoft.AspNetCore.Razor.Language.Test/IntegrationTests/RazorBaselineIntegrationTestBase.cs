@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 #endif
         
         protected string TestProjectRoot { get; }
-
+        
         // For consistent line endings because the character counts are going to be recorded in files.
         internal override string LineEnding => "\r\n";
 

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 
 namespace Microsoft.VisualStudio.Editor.Razor
@@ -94,7 +95,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var sourceDocument = TestRazorSourceDocument.Create(source, normalizeNewLines: true);
             var importDocument = TestRazorSourceDocument.Create("@addTagHelper *, TestAssembly", filePath: "import.cshtml", relativePath: "import.cshtml");
 
-            var codeDocument = engine.ProcessDesignTime(sourceDocument, importSources: new []{ importDocument }, new []{ taghelper });
+            var codeDocument = engine.ProcessDesignTime(sourceDocument, FileKinds.Legacy, importSources: new []{ importDocument }, new []{ taghelper });
 
             return codeDocument;
         }

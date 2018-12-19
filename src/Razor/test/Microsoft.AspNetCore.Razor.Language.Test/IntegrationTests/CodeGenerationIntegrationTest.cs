@@ -941,7 +941,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var imports = GetImports(projectEngine, projectItem);
 
             // Act
-            var codeDocument = projectEngine.Process(RazorSourceDocument.ReadFrom(projectItem), imports, descriptors.ToList());
+            var codeDocument = projectEngine.Process(RazorSourceDocument.ReadFrom(projectItem), FileKinds.Legacy, imports, descriptors.ToList());
 
             // Assert
             AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
@@ -966,7 +966,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var imports = GetImports(projectEngine, projectItem);
 
             // Act
-            var codeDocument = projectEngine.ProcessDesignTime(RazorSourceDocument.ReadFrom(projectItem), imports, descriptors.ToList());
+            var codeDocument = projectEngine.ProcessDesignTime(RazorSourceDocument.ReadFrom(projectItem), FileKinds.Legacy, imports, descriptors.ToList());
 
             // Assert
             AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());

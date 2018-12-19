@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             public void Execute(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
             {
-                codeDocument.SetInputDocumentKind(InputDocumentKind.Component);
+                codeDocument.SetFileKind(FileKinds.Component);
             }
         }
     }

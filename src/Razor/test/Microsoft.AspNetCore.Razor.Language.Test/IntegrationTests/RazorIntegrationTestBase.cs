@@ -60,7 +60,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             AdditionalSyntaxTrees = new List<SyntaxTree>();
             AdditionalRazorItems = new List<RazorProjectItem>();
 
-
             Configuration = RazorConfiguration.Default;
             FileSystem = new VirtualRazorProjectFileSystem();
             PathSeparator = Path.DirectorySeparatorChar.ToString();
@@ -82,6 +81,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         internal virtual bool DesignTime { get; }
 
+        /// <summary>
+        /// Gets a hardcoded document kind to be added to each code document that's created. This can
+        /// be used to generate components.
+        /// </summary>
+        internal virtual string FileKind { get; }
+
         internal virtual VirtualRazorProjectFileSystem FileSystem { get; }
 
         // Used to force a specific style of line-endings for testing. This matters
@@ -98,7 +103,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         internal virtual string WorkingDirectory { get; }
 
-        internal RazorProjectEngine CreateProjectEngine(RazorConfiguration configuration, MetadataReference[] references)
+        // intentionally private - we don't want individual tests messing with the project engine
+        private RazorProjectEngine CreateProjectEngine(RazorConfiguration configuration, MetadataReference[] references)
         {
             return RazorProjectEngine.Create(configuration, FileSystem, b =>
             {
@@ -138,7 +144,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 filePath: filePath,
                 physicalPath: fullPath,
                 relativePhysicalPath: cshtmlRelativePath,
-                basePath: WorkingDirectory)
+                basePath: WorkingDirectory,
+                fileKind: FileKind)
             {
                 Content = cshtmlContent.TrimStart(),
             };
