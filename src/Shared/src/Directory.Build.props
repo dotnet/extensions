@@ -1,6 +1,15 @@
 <Project>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <SharedSourcesFolder Condition="'$(SharedSourcesFolder)' == ''">$(RepositoryRoot)src/Shared/src</SharedSourcesFolder>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(DisableSharedSources)' != 'true' ">
+    <SharedSourceDirectories Include="$([System.IO.Directory]::GetDirectories(&quot;$(SharedSourcesFolder)&quot;, '*.Sources'))"
+      Condition="Exists('$(SharedSourcesFolder)')"
+      Exclude="@(ExcludeSharedSourceDirectories)" />
+  </ItemGroup>
 
   <PropertyGroup>
     <IncludeSymbols>false</IncludeSymbols>
