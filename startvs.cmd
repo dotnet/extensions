@@ -14,9 +14,10 @@ SET PATH=%DOTNET_ROOT%;%PATH%
 SET sln=%1
 
 IF NOT EXIST %DOTNET_ROOT%\dotnet.exe (
-    echo .NET Core has not yet been installed. Run `build.cmd -restore` to install tools
-    exit /b 1
+    restore.cmd
 )
+
+echo ProTip^: You can drag and drop a solution file onto startvs.cmd
 
 IF "%sln%"=="" (
     echo Error^: Expected argument ^<SLN_FILE^>
