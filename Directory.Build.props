@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <!--
-    We don't follow their conventions for project naming.
+    Update variables to match this repo's conventions for project naming.
   -->
   <PropertyGroup Condition="'$(IsUnitTestProject)' == ''">
     <IsUnitTestProject>false</IsUnitTestProject>
