@@ -9,7 +9,6 @@
     <NoBuild>true</NoBuild>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <EnableDefaultItems>false</EnableDefaultItems>
-    <Description>$(PackageId)</Description>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
     <ContentTargetFolders>contentFiles</ContentTargetFolders>
