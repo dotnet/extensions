@@ -26,8 +26,8 @@ jobs:
     publishToBar: true
     artifacts:
       publish: true
-      name: packages
-      path: artifacts/Release/packages/
+      name: artifacts
+      path: artifacts/
 
 - template: eng/templates/default-build.yml
   parameters:
