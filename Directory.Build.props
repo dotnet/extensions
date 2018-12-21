@@ -7,14 +7,14 @@
     <UsingToolXliff>false</UsingToolXliff>
   </PropertyGroup>
 
-  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-
   <!-- Update variables to match this repo's conventions for project naming. -->
   <PropertyGroup Condition="'$(IsUnitTestProject)' == ''">
     <IsUnitTestProject>false</IsUnitTestProject>
     <IsUnitTestProject Condition="$(MSBuildProjectName.EndsWith('.Tests'))">true</IsUnitTestProject>
     <IsUnitTestProject Condition="$(MSBuildProjectName.EndsWith('.FunctionalTests'))">true</IsUnitTestProject>
   </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
   <PropertyGroup Condition="'$(IsUnitTestProject)' == 'false'">
     <IsPackable>true</IsPackable>

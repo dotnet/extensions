@@ -4,6 +4,8 @@
     <TargetFrameworks>netcoreapp3.0;net461</TargetFrameworks>
     <DebugType>portable</DebugType>
     <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsShipping>false</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>
