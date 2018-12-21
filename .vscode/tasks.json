@@ -6,8 +6,8 @@
         {
             "label": "client-npm-compile",
             "dependsOn": [
-                "client-npm-compile:shell",
-                "client-npm-compile:package"
+                "client-npm-compile:package",
+                "client-npm-compile:shell"
             ],
             "group": {
                 "kind": "build",

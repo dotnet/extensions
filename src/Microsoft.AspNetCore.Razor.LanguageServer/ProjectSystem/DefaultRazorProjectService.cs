@@ -378,6 +378,5 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 return textAndVersion;
             }
         }
-
     }
 }

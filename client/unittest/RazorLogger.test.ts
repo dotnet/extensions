@@ -6,9 +6,10 @@
 import * as assert from 'assert';
 import { RazorLogger } from 'microsoft.aspnetcore.razor.vscode/dist/RazorLogger';
 import { Trace } from 'microsoft.aspnetcore.razor.vscode/dist/Trace';
-import { createLogSink as useOutputChannelSink, getFakeVsCodeApi } from './vscodeMock';
+import { TestEventEmitterFactory } from './Mocks/TestEventEmitterFactory';
+import { createTestVSCodeApi } from './Mocks/TestVSCodeApi';
 
-describe('Razor Logger', () => {
+describe('RazorLogger', () => {
     function getAndAssertLog(sink: { [logName: string]: string[] }) {
         const log = sink[RazorLogger.logName];
         assert.ok(log);
@@ -19,11 +20,11 @@ describe('Razor Logger', () => {
 
     it('Always logs information header', () => {
         // Arrange
-        const vscodeApi = getFakeVsCodeApi();
-        const sink = useOutputChannelSink(vscodeApi);
+        const api = createTestVSCodeApi();
+        const sink = api.getOutputChannelSink();
 
         // Act
-        const logger = new RazorLogger(vscodeApi, Trace.Off);
+        const logger = new RazorLogger(api, Trace.Off);
 
         // Assert
         const log = getAndAssertLog(sink);
@@ -33,9 +34,9 @@ describe('Razor Logger', () => {
 
     it('logAlways logs when trace is Off', () => {
         // Arrange
-        const vscodeApi = getFakeVsCodeApi();
-        const sink = useOutputChannelSink(vscodeApi);
-        const logger = new RazorLogger(vscodeApi, Trace.Off);
+        const api = createTestVSCodeApi();
+        const sink = api.getOutputChannelSink();
+        const logger = new RazorLogger(api, Trace.Off);
 
         // Act
         logger.logAlways('Test');
@@ -48,9 +49,9 @@ describe('Razor Logger', () => {
 
     it('logError logs when trace is Off', () => {
         // Arrange
-        const vscodeApi = getFakeVsCodeApi();
-        const sink = useOutputChannelSink(vscodeApi);
-        const logger = new RazorLogger(vscodeApi, Trace.Off);
+        const api = createTestVSCodeApi();
+        const sink = api.getOutputChannelSink();
+        const logger = new RazorLogger(api, Trace.Off);
 
         // Act
         logger.logError('Test Error');
@@ -63,9 +64,9 @@ describe('Razor Logger', () => {
 
     it('logMessage does not log when trace is Off', () => {
         // Arrange
-        const vscodeApi = getFakeVsCodeApi();
-        const sink = useOutputChannelSink(vscodeApi);
-        const logger = new RazorLogger(vscodeApi, Trace.Off);
+        const api = createTestVSCodeApi();
+        const sink = api.getOutputChannelSink();
+        const logger = new RazorLogger(api, Trace.Off);
 
         // Act
         logger.logMessage('Test message');
@@ -79,9 +80,9 @@ describe('Razor Logger', () => {
     for (const trace of [Trace.Messages, Trace.Verbose]) {
         it(`logMessage logs when trace is ${Trace[trace]}`, () => {
             // Arrange
-            const vscodeApi = getFakeVsCodeApi();
-            const sink = useOutputChannelSink(vscodeApi);
-            const logger = new RazorLogger(vscodeApi, trace);
+            const api = createTestVSCodeApi();
+            const sink = api.getOutputChannelSink();
+            const logger = new RazorLogger(api, trace);
 
             // Act
             logger.logMessage('Test message');
@@ -96,9 +97,9 @@ describe('Razor Logger', () => {
     for (const trace of [Trace.Off, Trace.Messages]) {
         it(`logVerbose does not log when trace is ${Trace[trace]}`, () => {
             // Arrange
-            const vscodeApi = getFakeVsCodeApi();
-            const sink = useOutputChannelSink(vscodeApi);
-            const logger = new RazorLogger(vscodeApi, trace);
+            const api = createTestVSCodeApi();
+            const sink = api.getOutputChannelSink();
+            const logger = new RazorLogger(api, trace);
 
             // Act
             logger.logVerbose('Test message');
@@ -112,9 +113,9 @@ describe('Razor Logger', () => {
 
     it('logVerbose logs when trace is Verbose', () => {
         // Arrange
-        const vscodeApi = getFakeVsCodeApi();
-        const sink = useOutputChannelSink(vscodeApi);
-        const logger = new RazorLogger(vscodeApi, Trace.Verbose);
+        const api = createTestVSCodeApi();
+        const sink = api.getOutputChannelSink();
+        const logger = new RazorLogger(api, Trace.Verbose);
 
         // Act
         logger.logVerbose('Test message');

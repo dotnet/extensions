@@ -4,6 +4,58 @@
  *--------------------------------------------------------------------------------------------*/
 /* tslint:disable */
 
+
+
+/**
+ * Represents a typed event.
+ *
+ * A function that represents an event to which you subscribe by calling it with
+ * a listener function as argument.
+ *
+ * @sample `item.onDidChange(function(event) { console.log("Event happened: " + event); });`
+ */
+export interface Event<T> {
+
+    /**
+     * A function that represents an event to which you subscribe by calling it with
+     * a listener function as argument.
+     *
+     * @param listener The listener function will be called when the event happens.
+     * @param thisArgs The `this`-argument which will be used when calling the event listener.
+     * @param disposables An array to which a [disposable](#Disposable) will be added.
+     * @return A disposable which unsubscribes the event listener.
+     */
+    (listener: (e: T) => any, thisArgs?: any, disposables?: Disposable[]): Disposable;
+}
+
+/**
+ * An event emitter can be used to create and manage an [event](#Event) for others
+ * to subscribe to. One emitter always owns one event.
+ *
+ * Use this class if you want to provide event from within your extension, for instance
+ * inside a [TextDocumentContentProvider](#TextDocumentContentProvider) or when providing
+ * API to other extensions.
+ */
+export declare class EventEmitter<T> {
+    /**
+     * The event listeners can subscribe to.
+     */
+    event: Event<T>;
+
+    /**
+     * Notify all subscribers of the [event](EventEmitter#event). Failure
+     * of one or more listener will not fail this function call.
+     *
+     * @param data The event object.
+     */
+    fire(data?: T): void;
+
+    /**
+     * Dispose this object and free resources.
+     */
+    dispose(): void;
+}
+
 export interface OutputChannel {
 
     /**
@@ -885,6 +937,197 @@ export interface ConfigurationChangeEvent {
     affectsConfiguration(section: string, resource?: Uri): boolean;
 }
 
+export interface WebviewPanelSerializer {
+    /**
+     * Restore a webview panel from its seriailzed `state`.
+     *
+     * Called when a serialized webview first becomes visible.
+     *
+     * @param webviewPanel Webview panel to restore. The serializer should take ownership of this panel. The
+     * serializer must restore the webview's `.html` and hook up all webview events.
+     * @param state Persisted state from the webview content.
+     *
+     * @return Thanble indicating that the webview has been fully restored.
+     */
+    deserializeWebviewPanel(webviewPanel: WebviewPanel, state: any): Thenable<void>;
+}
+
+/**
+ * Content settings for a webview panel.
+ */
+export interface WebviewPanelOptions {
+    /**
+     * Controls if the find widget is enabled in the panel.
+     *
+     * Defaults to false.
+     */
+    readonly enableFindWidget?: boolean;
+
+    /**
+     * Controls if the webview panel's content (iframe) is kept around even when the panel
+     * is no longer visible.
+     *
+     * Normally the webview panel's html context is created when the panel becomes visible
+     * and destroyed when it is is hidden. Extensions that have complex state
+     * or UI can set the `retainContextWhenHidden` to make VS Code keep the webview
+     * context around, even when the webview moves to a background tab. When a webview using
+     * `retainContextWhenHidden` becomes hidden, its scripts and other dynamic content are suspended.
+     * When the panel becomes visible again, the context is automatically restored
+     * in the exact same state it was in originally. You cannot send messages to a
+     * hidden webview, even with `retainContextWhenHidden` enabled.
+     *
+     * `retainContextWhenHidden` has a high memory overhead and should only be used if
+     * your panel's context cannot be quickly saved and restored.
+     */
+    readonly retainContextWhenHidden?: boolean;
+}
+
+/**
+ * A panel that contains a webview.
+ */
+export interface WebviewPanel {
+    /**
+     * Identifies the type of the webview panel, such as `'markdown.preview'`.
+     */
+    readonly viewType: string;
+
+    /**
+     * Title of the panel shown in UI.
+     */
+    title: string;
+
+    /**
+     * Webview belonging to the panel.
+     */
+    readonly webview: Webview;
+
+    /**
+     * Content settings for the webview panel.
+     */
+    readonly options: WebviewPanelOptions;
+
+    /**
+     * Editor position of the panel. This property is only set if the webview is in
+     * one of the editor view columns.
+     *
+     * @deprecated
+     */
+    readonly viewColumn?: ViewColumn;
+
+    /**
+     * Whether the panel is active (focused by the user).
+     */
+    readonly active: boolean;
+
+    /**
+     * Whether the panel is visible.
+     */
+    readonly visible: boolean;
+
+    /**
+     * Fired when the panel's view state changes.
+     */
+    readonly onDidChangeViewState: Event<WebviewPanelOnDidChangeViewStateEvent>;
+
+    /**
+     * Fired when the panel is disposed.
+     *
+     * This may be because the user closed the panel or because `.dispose()` was
+     * called on it.
+     *
+     * Trying to use the panel after it has been disposed throws an exception.
+     */
+    readonly onDidDispose: Event<void>;
+
+    /**
+     * Show the webview panel in a given column.
+     *
+     * A webview panel may only show in a single column at a time. If it is already showing, this
+     * method moves it to a new column.
+     *
+     * @param viewColumn View column to show the panel in. Shows in the current `viewColumn` if undefined.
+     * @param preserveFocus When `true`, the webview will not take focus.
+     */
+    reveal(viewColumn?: ViewColumn, preserveFocus?: boolean): void;
+
+    /**
+     * Dispose of the webview panel.
+     *
+     * This closes the panel if it showing and disposes of the resources owned by the webview.
+     * Webview panels are also disposed when the user closes the webview panel. Both cases
+     * fire the `onDispose` event.
+     */
+    dispose(): any;
+}
+
+/**
+ * Event fired when a webview panel's view state changes.
+ */
+export interface WebviewPanelOnDidChangeViewStateEvent {
+    /**
+     * Webview panel whose view state changed.
+     */
+    readonly webviewPanel: WebviewPanel;
+}
+
+/**
+ * A webview displays html content, like an iframe.
+ */
+export interface Webview {
+    /**
+     * Content settings for the webview.
+     */
+    options: WebviewOptions;
+
+    /**
+     * Contents of the webview.
+     *
+     * Should be a complete html document.
+     */
+    html: string;
+
+    /**
+     * Fired when the webview content posts a message.
+     */
+    readonly onDidReceiveMessage: Event<any>;
+
+    /**
+     * Post a message to the webview content.
+     *
+     * Messages are only delivered if the webview is visible.
+     *
+     * @param message Body of the message.
+     */
+    postMessage(message: any): Thenable<boolean>;
+}
+
+/**
+ * Content settings for a webview.
+ */
+export interface WebviewOptions {
+    /**
+     * Controls whether scripts are enabled in the webview content or not.
+     *
+     * Defaults to false (scripts-disabled).
+     */
+    readonly enableScripts?: boolean;
+
+    /**
+     * Controls whether command uris are enabled in webview content or not.
+     *
+     * Defaults to false.
+     */
+    readonly enableCommandUris?: boolean;
+
+    /**
+     * Root paths from which the webview can load local (filesystem) resources using the `vscode-resource:` scheme.
+     *
+     * Default to the root folders of the current workspace plus the extension's install directory.
+     *
+     * Pass in an empty array to disallow access to any local resources.
+     */
+    readonly localResourceRoots?: ReadonlyArray<Uri>;
+}
 
 /**
  * Thenable is a common denominator between ES6 promises, Q, jquery.Deferred, WinJS.Promise,
@@ -892,7 +1135,7 @@ export interface ConfigurationChangeEvent {
  * enables reusing existing code without migrating to a specific promise implementation. Still,
  * we recommend the use of native promises which are available in this editor.
  */
-interface Thenable<T> {
+export interface Thenable<T> {
     /**
 	* Attaches callbacks for the resolution and/or rejection of the Promise.
 	* @param onfulfilled The callback to execute when the Promise is resolved.
@@ -903,7 +1146,7 @@ interface Thenable<T> {
     then<TResult>(onfulfilled?: (value: T) => TResult | Thenable<TResult>, onrejected?: (reason: any) => void): Thenable<TResult>;
 }
 
-export interface Extension<T>{
+export interface Extension<T> {
     readonly id: string;
     readonly packageJSON: any;
 }
@@ -911,6 +1154,7 @@ export interface Extension<T>{
 export interface api {
     commands: {
         executeCommand: <T>(command: string, ...rest: any[]) => Thenable<T | undefined>;
+        registerCommand(command: string, callback: (...args: any[]) => any, thisArg?: any): Disposable;
     };
     languages: {
         match: (selector: DocumentSelector, document: TextDocument) => number;
@@ -920,9 +1164,11 @@ export interface api {
         showInformationMessage: <T extends MessageItem>(message: string, ...items: T[]) => Thenable<T | undefined>;
         showWarningMessage: <T extends MessageItem>(message: string, ...items: T[]) => Thenable<T | undefined>;
         showErrorMessage(message: string, ...items: string[]): Thenable<string | undefined>;
-		createOutputChannel(name: string): OutputChannel;
+        createOutputChannel(name: string): OutputChannel;
+        registerWebviewPanelSerializer(viewType: string, serializer: WebviewPanelSerializer): Disposable;
     };
     workspace: {
+        openTextDocument: (uri: Uri) => Thenable<TextDocument>;
         getConfiguration: (section?: string, resource?: Uri) => WorkspaceConfiguration;
         asRelativePath: (pathOrUri: string | Uri, includeWorkspaceFolder?: boolean) => string;
         createFileSystemWatcher(globPattern: GlobPattern, ignoreCreateEvents?: boolean, ignoreChangeEvents?: boolean, ignoreDeleteEvents?: boolean): FileSystemWatcher;
@@ -934,6 +1180,9 @@ export interface api {
     };
     Uri: {
         parse(value: string): Uri;
+    };
+    Disposable: {
+        from(...disposableLikes: { dispose: () => any }[]): Disposable;
     };
 
     version: string;

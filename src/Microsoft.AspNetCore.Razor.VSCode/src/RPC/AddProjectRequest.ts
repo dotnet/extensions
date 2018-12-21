@@ -4,6 +4,6 @@
  * ------------------------------------------------------------------------------------------ */
 
 export class AddProjectRequest {
-    constructor(public readonly filePath: string, public readonly configurationName?: string) {
+    constructor(public readonly filePath: string) {
     }
 }
