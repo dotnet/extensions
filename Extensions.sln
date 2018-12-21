@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28407.52
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DiagnosticAdapter", "DiagnosticAdapter", "{13B8928D-1FE1-4B9D-8B2C-E3248612052B}"
 EndProject
@@ -270,6 +270,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Localization.Tests", "src\Localization\Localization\test\Microsoft.Extensions.Localization.Tests.csproj", "{66DA86CB-E1DD-4A3A-8855-AD37731F112E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Localization.Abstractions", "src\Localization\Abstractions\src\Microsoft.Extensions.Localization.Abstractions.csproj", "{9FE05F36-5626-416D-956D-5C4C6D7E3E1B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BaselineGenerator", "eng\tools\BaselineGenerator\BaselineGenerator.csproj", "{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -1616,6 +1618,18 @@ Global
 		{9FE05F36-5626-416D-956D-5C4C6D7E3E1B}.Release|x64.Build.0 = Release|Any CPU
 		{9FE05F36-5626-416D-956D-5C4C6D7E3E1B}.Release|x86.ActiveCfg = Release|Any CPU
 		{9FE05F36-5626-416D-956D-5C4C6D7E3E1B}.Release|x86.Build.0 = Release|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Debug|x64.Build.0 = Debug|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Debug|x86.Build.0 = Debug|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Release|x64.ActiveCfg = Release|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Release|x64.Build.0 = Release|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Release|x86.ActiveCfg = Release|Any CPU
+		{DE47CB52-3E6F-4A6A-910E-AE118A00CE1A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

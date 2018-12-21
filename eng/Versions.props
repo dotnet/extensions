@@ -15,6 +15,12 @@
   </PropertyGroup>
   <PropertyGroup>
     <ExperimentalVersionPrefix>0.1.$(PatchVersion)</ExperimentalVersionPrefix>
+
+    <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
+    <IsServicingBuild Condition=" '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
+    <!-- Run the build with /p:IsFinalBuild=true to produce the product with 'final' branding and versioning -->
+    <IsFinalBuild Condition=" '$(IsFinalBuild)' == '' ">false</IsFinalBuild>
+
     <!-- The version in files -->
     <ExperimentalPackageVersion>$(ExperimentalVersionPrefix)</ExperimentalPackageVersion>
     <ExperimentalPackageVersion Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(VersionPrefix)-$(VersionSuffix)</ExperimentalPackageVersion>
@@ -23,7 +29,6 @@
     <PreviousExtensionsReleaseVersion Condition=" '$(PatchVersion)' != '0' ">$(MajorVersion).$(MinorVersion).$([MSBuild]::Subtract($(PatchVersion), 1))</PreviousExtensionsReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <MicrosoftNetCoreApp20PackageVersion>2.0.0</MicrosoftNetCoreApp20PackageVersion>
     <MicrosoftNETCoreAppPackageVersion>3.0.0-preview-27122-01</MicrosoftNETCoreAppPackageVersion>
     <MicrosoftNetFrameworkReferenceAssembliesPackageVersion>1.0.0-alpha-004</MicrosoftNetFrameworkReferenceAssembliesPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview.18571.3</MicrosoftWin32RegistryPackageVersion>
@@ -46,16 +51,9 @@
   </PropertyGroup>
   <ItemGroup>
     <DotNetRuntime Include="$(MicrosoftNETCoreAppPackageVersion)" />
-    <DotNetRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
   </ItemGroup>
-  <!-- Run 'dotnet msbuild version.props' to test changes to this file. -->
   <Target Name="InspectVersionNumbers">
     <Message Importance="High" Text="InformationalVersion    = '$(InformationalVersion)'" />
     <Message Importance="High" Text="PackageVersion          = '$(PackageVersion)'" />
   </Target>
-  <!--Package names-->
-  <PropertyGroup>
-    <MicrosoftDotNetBuildTasksFeedPackage>Microsoft.DotNet.Build.Tasks.Feed</MicrosoftDotNetBuildTasksFeedPackage>
-    <SystemReflectionMetadataPackage>System.Reflection.Metadata</SystemReflectionMetadataPackage>
-  </PropertyGroup>
 </Project>
