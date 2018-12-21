@@ -7,7 +7,6 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>localization</PackageTags>
-    <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
   </PropertyGroup>
 

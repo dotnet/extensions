@@ -52,6 +52,14 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.Options.DataAnnotations" ProjectPath="$(RepositoryRoot)src\Options\DataAnnotations\src\Microsoft.Extensions.Options.DataAnnotations.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Options" ProjectPath="$(RepositoryRoot)src\Options\Options\src\Microsoft.Extensions.Options.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Primitives" ProjectPath="$(RepositoryRoot)src\Primitives\src\Microsoft.Extensions.Primitives.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.ActivatorUtilities.Sources" ProjectPath="$(RepositoryRoot)src\Shared\src\ActivatorUtilities\Microsoft.Extensions.ActivatorUtilities.Sources.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" ProjectPath="$(RepositoryRoot)src\Shared\src\BenchmarkRunner\Microsoft.AspNetCore.BenchmarkRunner.Sources.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.CommandLineUtils.Sources" ProjectPath="$(RepositoryRoot)src\Shared\src\CommandLineUtils\Microsoft.Extensions.CommandLineUtils.Sources.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.HashCodeCombiner.Sources" ProjectPath="$(RepositoryRoot)src\Shared\src\HashCodeCombiner\Microsoft.Extensions.HashCodeCombiner.Sources.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.NonCapturingTimer.Sources" ProjectPath="$(RepositoryRoot)src\Shared\src\NonCapturingTimer\Microsoft.Extensions.NonCapturingTimer.Sources.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.ParameterDefaultValue.Sources" ProjectPath="$(RepositoryRoot)src\Shared\src\ParameterDefaultValue\Microsoft.Extensions.ParameterDefaultValue.Sources.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.TypeNameHelper.Sources" ProjectPath="$(RepositoryRoot)src\Shared\src\TypeNameHelper\Microsoft.Extensions.TypeNameHelper.Sources.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.ValueStopWatch.Sources" ProjectPath="$(RepositoryRoot)src\Shared\src\ValueStopwatch\Microsoft.Extensions.ValueStopWatch.Sources.csproj" />
     <ProjectReferenceProvider Include="Internal.AspNetCore.Analyzers" ProjectPath="$(RepositoryRoot)src\TestingUtils\Internal.AspNetCore.Analyzers\src\Internal.AspNetCore.Analyzers.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Analyzer.Testing" ProjectPath="$(RepositoryRoot)src\TestingUtils\Microsoft.AspNetCore.Analyzer.Testing\src\Microsoft.AspNetCore.Analyzer.Testing.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Testing" ProjectPath="$(RepositoryRoot)src\TestingUtils\Microsoft.AspNetCore.Testing\src\Microsoft.AspNetCore.Testing.csproj" />

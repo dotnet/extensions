@@ -12,8 +12,6 @@
     <!-- Debug IL generation -->
     <ILEmitBackendSaveAssemblies>False</ILEmitBackendSaveAssemblies>
     <DefineConstants Condition="'$(TargetFramework)' == 'net461' AND '$(ILEmitBackendSaveAssemblies)' == 'True'">$(DefineConstants);SAVE_ASSEMBLIES</DefineConstants>
-    <IsPackable>true</IsPackable>
-    <IsShipping>true</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>

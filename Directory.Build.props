@@ -24,22 +24,14 @@
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
   <PropertyGroup>
-    <Authors Condition="'$(Authors)' == ''">Microsoft</Authors>
-    <Company Condition="'$(Company)' == ''">Microsoft Corporation.</Company>
-    <Copyright Condition="'$(Copyright)' == ''">© Microsoft Corporation. All rights reserved.</Copyright>
-    <IncludeSymbols Condition="'$(IncludeSymbols)' == ''">true</IncludeSymbols>
-    <NeutralLanguage Condition="'$(NeutralLanguage)' == ''">en-US</NeutralLanguage>
-    <PackageLicenseUrl Condition="'$(PackageLicenseUrl)' == ''">https://raw.githubusercontent.com/aspnet/AspNetCore/2.0.0/LICENSE.txt</PackageLicenseUrl>
-    <PackageIconUrl Condition="'$(PackageIconUrl)' == ''">https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
-    <PackageProjectUrl Condition="'$(PackageProjectUrl)' == ''">https://asp.net</PackageProjectUrl>
-    <PackageRequireLicenseAcceptance Condition="'$(PackageRequireLicenseAcceptance)' == ''">true</PackageRequireLicenseAcceptance>
-    <NoPackageAnalysis Condition="'$(NoPackageAnalysis)' == ''">true</NoPackageAnalysis>
-    <Serviceable Condition="'$(Configuration)' == 'Release'">true</Serviceable>
-    <LangVersion Condition="'$(LangVersion)' == ''">7.2</LangVersion>
+    <IncludeSymbols>true</IncludeSymbols>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/aspnet/AspNetCore/2.0.0/LICENSE.txt</PackageLicenseUrl>
+    <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
+    <PackageProjectUrl>https://asp.net</PackageProjectUrl>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <LangVersion>7.2</LangVersion>
     <!-- Instructs the compiler to use SHA256 instead of SHA1 when adding file hashes to PDBs. -->
     <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
-    <!-- Suppress the message about using a preview version of .NET Core SDK. We are okay with this and don't need the warning. -->
-    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
 
     <Product>Microsoft .NET Extensions</Product>
     <RepositoryUrl>https://github.com/aspnet/Extensions</RepositoryUrl>
@@ -53,18 +45,9 @@
     <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\src\</SharedSourceRoot>
     <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
     <BasePackageOutputPath>$(ArtifactsConfigurationDir)packages\</BasePackageOutputPath>
-    <ProductPackageOutputPath>$(BasePackageOutputPath)product\</ProductPackageOutputPath>
-    <InternalPackageOutputPath>$(BasePackageOutputPath)internal\</InternalPackageOutputPath>
     <DebugType>portable</DebugType>
 
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
-
-    <!--
-      By default, all projects which produce packages are not intended to ship to NuGet.org as a product package.
-      Packages which are intended to ship to NuGet.org must opt-in by setting this to true in their project file.
-    -->
-    <IsProductComponent>false</IsProductComponent>
-    <IsShipping>false</IsShipping>
 
     <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance'))">true</IsBenchmarkProject>
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
