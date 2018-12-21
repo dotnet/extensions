@@ -22,11 +22,11 @@
     <IsFinalBuild Condition=" '$(IsFinalBuild)' == '' ">false</IsFinalBuild>
 
     <IncludePreReleaseLabelInPackageVersion>true</IncludePreReleaseLabelInPackageVersion>
-    <IncludePreReleaseLabelInPackageVersion Condition=" '$(IsFinalBuild)' == 'true' AND ('$(PreReleaseLabel)' == 'servicing' OR '$(PreReleaseLabel)' == 'rtm')">false</IncludePreReleaseLabelInPackageVersion>
+    <IncludePreReleaseLabelInPackageVersion Condition=" '$(IsFinalBuild)' == 'true' AND ('$(PreReleaseVersionLabel)' == 'servicing' OR '$(PreReleaseVersionLabel)' == 'rtm')">false</IncludePreReleaseLabelInPackageVersion>
 
     <!-- The version in files -->
     <ExperimentalPackageVersion>$(ExperimentalVersionPrefix)</ExperimentalPackageVersion>
-    <ExperimentalPackageVersion Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(VersionPrefix)-$(VersionSuffix)</ExperimentalPackageVersion>
+    <ExperimentalPackageVersion Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(VersionPrefix)-$(PreReleaseVersionLabel)</ExperimentalPackageVersion>
     <ExperimentalVersionSuffix>$(PreReleaseVersionLabel)</ExperimentalVersionSuffix>
     <!-- This is used for error checking to ensure generated code and baselines are up to date when we increment the patch. -->
     <PreviousExtensionsReleaseVersion Condition=" '$(PatchVersion)' != '0' ">$(MajorVersion).$(MinorVersion).$([MSBuild]::Subtract($(PatchVersion), 1))</PreviousExtensionsReleaseVersion>
