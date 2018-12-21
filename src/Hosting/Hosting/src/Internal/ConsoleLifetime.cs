@@ -84,8 +84,8 @@ namespace Microsoft.Extensions.Hosting.Internal
         {
             _shutdownBlock.Set();
 
-            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
-            Console.CancelKeyPress += OnCancelKeyPress;
+            AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
+            Console.CancelKeyPress -= OnCancelKeyPress;
 
             _applicationStartedRegistration.Dispose();
         }
