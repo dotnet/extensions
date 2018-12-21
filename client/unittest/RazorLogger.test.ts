@@ -22,9 +22,10 @@ describe('RazorLogger', () => {
         // Arrange
         const api = createTestVSCodeApi();
         const sink = api.getOutputChannelSink();
+        const eventEmitterFactory = new TestEventEmitterFactory();
 
         // Act
-        const logger = new RazorLogger(api, Trace.Off);
+        const logger = new RazorLogger(api, eventEmitterFactory, Trace.Off);
 
         // Assert
         const log = getAndAssertLog(sink);
@@ -36,7 +37,8 @@ describe('RazorLogger', () => {
         // Arrange
         const api = createTestVSCodeApi();
         const sink = api.getOutputChannelSink();
-        const logger = new RazorLogger(api, Trace.Off);
+        const eventEmitterFactory = new TestEventEmitterFactory();
+        const logger = new RazorLogger(api, eventEmitterFactory, Trace.Off);
 
         // Act
         logger.logAlways('Test');
@@ -51,7 +53,8 @@ describe('RazorLogger', () => {
         // Arrange
         const api = createTestVSCodeApi();
         const sink = api.getOutputChannelSink();
-        const logger = new RazorLogger(api, Trace.Off);
+        const eventEmitterFactory = new TestEventEmitterFactory();
+        const logger = new RazorLogger(api, eventEmitterFactory, Trace.Off);
 
         // Act
         logger.logError('Test Error');
@@ -66,7 +69,8 @@ describe('RazorLogger', () => {
         // Arrange
         const api = createTestVSCodeApi();
         const sink = api.getOutputChannelSink();
-        const logger = new RazorLogger(api, Trace.Off);
+        const eventEmitterFactory = new TestEventEmitterFactory();
+        const logger = new RazorLogger(api, eventEmitterFactory, Trace.Off);
 
         // Act
         logger.logMessage('Test message');
@@ -82,7 +86,8 @@ describe('RazorLogger', () => {
             // Arrange
             const api = createTestVSCodeApi();
             const sink = api.getOutputChannelSink();
-            const logger = new RazorLogger(api, trace);
+            const eventEmitterFactory = new TestEventEmitterFactory();
+            const logger = new RazorLogger(api, eventEmitterFactory, trace);
 
             // Act
             logger.logMessage('Test message');
@@ -99,7 +104,8 @@ describe('RazorLogger', () => {
             // Arrange
             const api = createTestVSCodeApi();
             const sink = api.getOutputChannelSink();
-            const logger = new RazorLogger(api, trace);
+            const eventEmitterFactory = new TestEventEmitterFactory();
+            const logger = new RazorLogger(api, eventEmitterFactory, trace);
 
             // Act
             logger.logVerbose('Test message');
@@ -115,7 +121,8 @@ describe('RazorLogger', () => {
         // Arrange
         const api = createTestVSCodeApi();
         const sink = api.getOutputChannelSink();
-        const logger = new RazorLogger(api, Trace.Verbose);
+        const eventEmitterFactory = new TestEventEmitterFactory();
+        const logger = new RazorLogger(api, eventEmitterFactory, Trace.Verbose);
 
         // Act
         logger.logVerbose('Test message');

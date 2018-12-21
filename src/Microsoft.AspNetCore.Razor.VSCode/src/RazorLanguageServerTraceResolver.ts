@@ -3,11 +3,12 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { RazorLanguage } from './RazorLanguage';
 import { Trace } from './Trace';
+import * as vscode from './vscodeAdapter';
 
-export function resolveRazorLanguageServerTrace() {
-    const traceString = RazorLanguage.languageConfig.get<string>('trace');
+export function resolveRazorLanguageServerTrace(vscodeApi: vscode.api) {
+    const languageConfig = vscodeApi.workspace.getConfiguration('razor');
+    const traceString = languageConfig.get<string>('trace');
     const trace = parseTraceString(traceString);
 
     return trace;

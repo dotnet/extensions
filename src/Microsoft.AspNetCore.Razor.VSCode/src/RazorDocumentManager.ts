@@ -8,6 +8,7 @@ import { CSharpProjectedDocument } from './CSharp/CSharpProjectedDocument';
 import { HtmlProjectedDocument } from './Html/HtmlProjectedDocument';
 import { IRazorDocument } from './IRazorDocument';
 import { IRazorDocumentChangeEvent } from './IRazorDocumentChangeEvent';
+import { IRazorDocumentManager } from './IRazorDocumentManager';
 import { RazorDocumentChangeKind } from './RazorDocumentChangeKind';
 import { createDocument } from './RazorDocumentFactory';
 import { RazorLanguage } from './RazorLanguage';
@@ -16,7 +17,7 @@ import { RazorLogger } from './RazorLogger';
 import { UpdateCSharpBufferRequest } from './RPC/UpdateCSharpBufferRequest';
 import { getUriPath } from './UriPaths';
 
-export class RazorDocumentManager {
+export class RazorDocumentManager implements IRazorDocumentManager {
     private readonly razorDocuments: { [hostDocumentPath: string]: IRazorDocument } = {};
     private onChangeEmitter = new vscode.EventEmitter<IRazorDocumentChangeEvent>();
 

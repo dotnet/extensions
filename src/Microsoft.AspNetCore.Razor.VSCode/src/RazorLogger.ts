@@ -5,6 +5,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { IEventEmitterFactory } from './IEventEmitterFactory';
 import { Trace } from './Trace';
 import * as vscode from './vscodeAdapter';
 
@@ -14,17 +15,22 @@ export class RazorLogger implements vscode.Disposable {
     public readonly messageEnabled: boolean;
     public readonly outputChannel: vscode.OutputChannel;
 
-    private readonly trace: Trace;
+    private readonly onLogEmitter: vscode.EventEmitter<string>;
 
-    constructor(private readonly vscodeApi: vscode.api, trace: Trace) {
-        this.trace = trace;
+    constructor(
+        private readonly vscodeApi: vscode.api,
+        eventEmitterFactory: IEventEmitterFactory,
+        public readonly trace: Trace) {
         this.verboseEnabled = this.trace >= Trace.Verbose;
         this.messageEnabled = this.trace >= Trace.Messages;
+        this.onLogEmitter = eventEmitterFactory.create<string>();
 
         this.outputChannel = this.vscodeApi.window.createOutputChannel(RazorLogger.logName);
 
         this.logRazorInformation();
     }
+
+    public get onLog() { return this.onLogEmitter.event; }
 
     public logAlways(message: string) {
         this.logWithmarker(message);
@@ -61,6 +67,8 @@ export class RazorLogger implements vscode.Disposable {
 
     private log(message: string) {
         this.outputChannel.appendLine(message);
+
+        this.onLogEmitter.fire(message);
     }
 
     private logRazorInformation() {
@@ -73,12 +81,10 @@ export class RazorLogger implements vscode.Disposable {
             '--------------------------------------------------------------------------------');
         this.log(`Razor's trace level is currently set to '${Trace[this.trace]}'`);
         this.log(
-            ' - To log issues with the Razor experience in VSCode you can file issues ' +
-            'at https://github.com/aspnet/Razor.VSCode');
-        this.log(
             ' - To change Razor\'s trace level set \'razor.trace\' to ' +
             '\'Off\', \'Messages\' or \'Verbose\' and then restart VSCode.');
-
+        this.log(
+            ' - To report issues invoke the \'Report a Razor issue\' command via the command palette.');
         this.log(
             '-----------------------------------------------------------------------' +
             '------------------------------------------------------');

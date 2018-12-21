@@ -3,11 +3,9 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import * as vscode from './vscodeAdapter';
+import * as vscode from 'vscode';
 
-export class RazorLanguage {
-    public static id = 'aspnetcorerazor';
-    public static fileExtension = 'cshtml';
-    public static globbingPattern = `**/*.${RazorLanguage.fileExtension}`;
-    public static documentSelector: vscode.DocumentSelector =  [ { pattern: RazorLanguage.globbingPattern } ];
+export interface IReportIssueDataCollectionResult {
+    readonly document: vscode.TextDocument | undefined;
+    readonly logOutput: string;
 }

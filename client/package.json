@@ -11,6 +11,7 @@
         "Other"
     ],
     "activationEvents": [
+        "onWebviewPanel:razorReportIssue",
         "onDebugInitialConfigurations",
         "onDebugResolve:coreclr",
         "onDebugResolve:clr",
@@ -59,11 +60,18 @@
         "commands": [
             {
                 "command": "extension.showRazorCSharpWindow",
-                "title": "Show Razor CSharp"
+                "title": "Show Razor CSharp",
+                "category": "Razor"
             },
             {
                 "command": "extension.showRazorHtmlWindow",
-                "title": "Show Razor Html"
+                "title": "Show Razor Html",
+                "category": "Razor"
+            },
+            {
+                "command": "razor.reportIssue",
+                "title": "Report a Razor issue",
+                "category": "Razor"
             }
         ],
         "menus": {
@@ -74,6 +82,10 @@
                 },
                 {
                     "command": "extension.showRazorHtmlWindow",
+                    "when": "resourceLangId == aspnetcorerazor"
+                },
+                {
+                    "command": "razor.reportIssue",
                     "when": "resourceLangId == aspnetcorerazor"
                 }
             ]

@@ -10,10 +10,16 @@ import { RazorLanguage } from './RazorLanguage';
 import { RazorLanguageServerOptions } from './RazorLanguageServerOptions';
 import { RazorLogger } from './RazorLogger';
 import { Trace } from './Trace';
+import * as vscode from './vscodeAdapter';
 
-export function resolveRazorLanguageServerOptions(languageServerDir: string, trace: Trace, logger: RazorLogger) {
+export function resolveRazorLanguageServerOptions(
+    vscodeApi: vscode.api,
+    languageServerDir: string,
+    trace: Trace,
+    logger: RazorLogger) {
     const languageServerExecutablePath = findLanguageServerExecutable(languageServerDir);
-    const debugLanguageServer = RazorLanguage.serverConfig.get<boolean>('debug');
+    const serverConfig = vscodeApi.workspace.getConfiguration('razor.languageServer');
+    const debugLanguageServer = serverConfig.get<boolean>('debug');
 
     return {
         serverPath: languageServerExecutablePath,
