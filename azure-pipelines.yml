@@ -4,6 +4,8 @@ variables:
   _DotNetPublishToBlobFeed : false
   _PublishBlobFeedUrl: https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json
   _PublishArgs: '/p:PublishToSymbolServer=false /p:PublishToAzure=false'
+
+  _TimeoutInMinutes: 120 #increase timeout since BAR publishing might wait a long time
   
   # Variables for public PR builds
   ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'github')) }}:
@@ -40,6 +42,7 @@ phases:
 - template: /eng/common/templates/phases/base.yml
   parameters:
     name: Windows
+    timeoutInMinutes: $(_TimeoutInMinutes)
     enableTelemetry: true
     # enableMicrobuild can't be read from a user-defined variable (Azure DevOps limitation)
     ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.DefinitionName'], 'official')) }}:
@@ -125,6 +128,7 @@ phases:
 - template: /eng/common/templates/phases/base.yml
   parameters:
     name: macOS
+    timeoutInMinutes: $(_TimeoutInMinutes)
     enableTelemetry: true
     queue:
       name: Hosted macOS
@@ -161,6 +165,7 @@ phases:
 - template: /eng/common/templates/phases/base.yml
   parameters:
     name: Linux
+    timeoutInMinutes: $(_TimeoutInMinutes)
     enableTelemetry: true
     queue:
       name: Hosted Ubuntu 1604
