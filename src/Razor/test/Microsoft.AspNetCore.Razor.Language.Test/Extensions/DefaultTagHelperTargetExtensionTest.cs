@@ -10,8 +10,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
-    public class DefaultTagHelperTargetExtensionTest
+    public class DefaultTagHelperTargetExtensionTest : RazorProjectEngineTestBase
     {
+        protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
+
         private static readonly TagHelperDescriptor StringPropertyTagHelper = CreateTagHelperDescriptor(
             tagName: "input",
             typeName: "InputTagHelper",
@@ -1137,14 +1139,13 @@ private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeMana
             ((DefaultCodeRenderingContext)context).AncestorsInternal.Push(node);
         }
 
-        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument)
+        private DocumentIntermediateNode Lower(RazorCodeDocument codeDocument)
         {
-            var projectEngine = RazorProjectEngine.Create();
-
+            var projectEngine = CreateProjectEngine();
             return Lower(codeDocument, projectEngine);
         }
 
-        private static DocumentIntermediateNode LowerDesignTime(RazorCodeDocument codeDocument)
+        private DocumentIntermediateNode LowerDesignTime(RazorCodeDocument codeDocument)
         {
             var projectEngine = RazorProjectEngine.Create(b =>
             {

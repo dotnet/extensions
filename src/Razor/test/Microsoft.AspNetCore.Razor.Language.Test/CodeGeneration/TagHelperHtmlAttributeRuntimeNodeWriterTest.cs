@@ -7,8 +7,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    public class TagHelperHtmlAttributeRuntimeNodeWriterTest
+    public class TagHelperHtmlAttributeRuntimeNodeWriterTest : RazorProjectEngineTestBase
     {
+        protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
+
         [Fact]
         public void WriteHtmlAttributeValue_RendersCorrectly()
         {
@@ -96,14 +98,13 @@ AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
                 ignoreLineEndingDifferences: true);
         }
 
-        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument)
+        private DocumentIntermediateNode Lower(RazorCodeDocument codeDocument)
         {
-            var projectEngine = RazorProjectEngine.Create();
-
+            var projectEngine = CreateProjectEngine();
             return Lower(codeDocument, projectEngine);
         }
 
-        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorProjectEngine projectEngine)
+        private DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorProjectEngine projectEngine)
         {
             for (var i = 0; i < projectEngine.Phases.Count; i++)
             {

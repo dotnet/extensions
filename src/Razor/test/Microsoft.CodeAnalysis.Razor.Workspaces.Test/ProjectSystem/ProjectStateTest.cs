@@ -70,8 +70,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         protected override void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
         {
-            builder.Features.Remove(builder.Features.OfType<IImportProjectFeature>().Single());
-            builder.Features.Add(new TestImportProjectFeature());
+            builder.SetImportFeature(new TestImportProjectFeature());
         }
 
         [Fact]

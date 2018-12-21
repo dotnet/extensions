@@ -15,9 +15,9 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, "hi");
-            builder.AddContent(2, "\n");
+            builder.AddContent(2, "\r\n");
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_1(builder, 3, 4, "how are you?");
-            builder.AddContent(5, "\n");
+            builder.AddContent(5, "\r\n");
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_2(builder, 6, 7, "bye!");
         }
         #pragma warning restore 1998

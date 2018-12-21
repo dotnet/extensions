@@ -45,7 +45,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var features = engine.EngineFeatures.OrderBy(f => f.GetType().Name).ToArray();
             Assert.Collection(
                 features,
+                feature => Assert.IsType<ComponentBindLoweringPass>(feature),
+                feature => Assert.IsType<ComponentChildContentDiagnosticPass>(feature),
+                feature => Assert.IsType<ComponentComplexAttributeContentPass>(feature),
                 feature => Assert.IsType<ComponentDocumentClassifierPass>(feature),
+                feature => Assert.IsType<ComponentEventHandlerLoweringPass>(feature),
+                feature => Assert.IsType<ComponentGenericTypePass>(feature),
+                feature => Assert.IsType<ComponentHtmlBlockPass>(feature),
+                feature => Assert.IsType<ComponentInjectDirectivePass>(feature),
+                feature => Assert.IsType<ComponentLayoutDirectivePass>(feature),
+                feature => Assert.IsType<ComponentLoweringPass>(feature),
+                feature => Assert.IsType<ComponentPageDirectivePass>(feature),
+                feature => Assert.IsType<ComponentReferenceCaptureLoweringPass>(feature),
+                feature => Assert.IsType<ComponentScriptTagPass>(feature),
+                feature => Assert.IsType<ComponentTemplateDiagnosticPass>(feature),
+                feature => Assert.IsType<ComponentWhitespacePass>(feature),
                 feature => Assert.IsType<DefaultDirectiveSyntaxTreePass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPassFeature>(feature),
@@ -60,7 +74,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
                 feature => Assert.IsType<EliminateMethodBodyPass>(feature),
                 feature => Assert.IsType<FunctionsDirectivePass>(feature),
                 feature => Assert.IsType<HtmlNodeOptimizationPass>(feature),
-                feature => Assert.IsType<MetadataAttributePass>(feature),
+                feature => Assert.IsType<ImplementsDirectivePass>(feature),
+                feature => Assert.IsType<InheritsDirectivePass>(feature),
+                feature => Assert.IsType<MetadataAttributePass>(feature), 
                 feature => Assert.IsType<PreallocatedTagHelperAttributeOptimizationPass>(feature));
         }
 
@@ -70,7 +86,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             Assert.NotNull(feature);
             Assert.Collection(
                 feature.Directives,
-                directive => Assert.Same(FunctionsDirective.Directive, directive));
+                directive => Assert.Same(FunctionsDirective.Directive, directive),
+                directive => Assert.Same(ImplementsDirective.Directive, directive),
+                directive => Assert.Same(InheritsDirective.Directive, directive));
         }
 
         private static void AssertDefaultTargetExtensions(RazorProjectEngine engine)

@@ -9,15 +9,15 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                ComponentExtensionNode - (31:1,0 [43] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent<string>
-                    ComponentTypeArgumentExtensionNode - (50:1,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - TItem
+                Component - (31:1,0 [43] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentTypeArgument - (50:1,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - TItem
                         IntermediateToken - (50:1,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - string
-                    ComponentAttributeExtensionNode - (67:1,36 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item
+                    ComponentAttribute - (67:1,36 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
                             IntermediateToken - (67:1,36 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
                             IntermediateToken -  - CSharp - )
-                    ComponentAttributeExtensionNode - (67:1,36 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - ItemChanged
+                    ComponentAttribute - (67:1,36 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => Value = __value
             CSharpCode - (88:2,12 [21] x:\dir\subdir\Test\TestComponent.cshtml)

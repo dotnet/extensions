@@ -109,12 +109,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             var projectEngine = tracker.ProjectSnapshot.GetProjectEngine();
             var trackerItem = projectEngine.FileSystem.GetItem(tracker.FilePath);
-            var importFeature = projectEngine.ProjectFeatures.OfType<IImportProjectFeature>().FirstOrDefault();
+            var importFeatures = projectEngine.ProjectFeatures.OfType<IImportProjectFeature>();
 
             // There should always be an import feature unless someone has misconfigured their RazorProjectEngine.
             // In that case once we attempt to parse the Razor file we'll explode and give the a user a decent
             // error message; for now, lets just be extra protective and assume 0 imports to not give a bad error.
-            var importItems = importFeature?.GetImports(trackerItem) ?? Enumerable.Empty<RazorProjectItem>();
+            var importItems = importFeatures.SelectMany(f => f.GetImports(trackerItem));
             var physicalImports = importItems.Where(import => import.FilePath != null);
 
             return physicalImports;

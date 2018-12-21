@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.CodeAnalysis.CSharp;
@@ -81,6 +80,8 @@ namespace Test
     }
 }
 ");
+
+        internal override string FileKind => FileKinds.Component;
 
         internal override bool UseTwoPhaseCompilation => true;
 
@@ -428,7 +429,7 @@ Some Content
             Assert.Same(ComponentDiagnosticFactory.ChildContentSetByAttributeAndBody.Id, diagnostic.Id);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Render_ChildContent_AttributeAndExplicitChildContent_ProducesDiagnostic()
         {
             // Arrange
@@ -449,7 +450,7 @@ Some Content
             Assert.Same(ComponentDiagnosticFactory.ChildContentSetByAttributeAndBody.Id, diagnostic.Id);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Render_ChildContent_ExplicitChildContent_UnrecogizedContent_ProducesDiagnostic()
         {
             // Arrange
@@ -473,7 +474,7 @@ Some Content
                 diagnostic.GetMessage());
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Render_ChildContent_ExplicitChildContent_UnrecogizedElement_ProducesDiagnostic()
         {
             // Arrange
@@ -493,7 +494,7 @@ Some Content
             Assert.Same(ComponentDiagnosticFactory.ChildContentMixedWithExplicitChildContent.Id, diagnostic.Id);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Render_ChildContent_ExplicitChildContent_UnrecogizedAttribute_ProducesDiagnostic()
         {
             // Arrange
@@ -512,7 +513,7 @@ Some Content
             Assert.Same(ComponentDiagnosticFactory.ChildContentHasInvalidAttribute.Id, diagnostic.Id);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Render_ChildContent_ExplicitChildContent_InvalidParameterName_ProducesDiagnostic()
         {
             // Arrange
@@ -531,7 +532,7 @@ Some Content
             Assert.Same(ComponentDiagnosticFactory.ChildContentHasInvalidParameter.Id, diagnostic.Id);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Render_ChildContent_ExplicitChildContent_RepeatedParameterName_GeneratesDiagnostic()
         {
             // Arrange
@@ -558,7 +559,7 @@ Some Content
                 diagnostic.GetMessage());
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Render_ChildContent_ContextParameterNameOnComponent_Invalid_ProducesDiagnostic()
         {
             // Arrange

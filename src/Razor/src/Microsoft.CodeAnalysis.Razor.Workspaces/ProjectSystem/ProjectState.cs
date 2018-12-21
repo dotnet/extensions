@@ -433,9 +433,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public List<string> GetImportDocumentTargetPaths(string targetPath)
         {
             var projectEngine = ComputedState.ProjectEngine;
-            var importFeature = projectEngine.ProjectFeatures.OfType<IImportProjectFeature>().FirstOrDefault();
+            var importFeatures = projectEngine.ProjectFeatures.OfType<IImportProjectFeature>();
             var projectItem = projectEngine.FileSystem.GetItem(targetPath);
-            var importItems = importFeature?.GetImports(projectItem).Where(i => i.FilePath != null);
+            var importItems = importFeatures.SelectMany(f => f.GetImports(projectItem)).Where(i => i.FilePath != null);
 
             // Target path looks like `Foo\\Bar.cshtml`
             var targetPaths = new List<string>();

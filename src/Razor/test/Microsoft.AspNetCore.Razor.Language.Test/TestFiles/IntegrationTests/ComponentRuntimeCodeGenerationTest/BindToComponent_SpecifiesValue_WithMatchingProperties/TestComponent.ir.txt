@@ -9,13 +9,13 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                ComponentExtensionNode - (31:1,0 [40] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                    ComponentAttributeExtensionNode - (56:1,25 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Value - Value
+                Component - (31:1,0 [40] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute - (56:1,25 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Value - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
                             IntermediateToken - (56:1,25 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
                             IntermediateToken -  - CSharp - )
-                    ComponentAttributeExtensionNode - (56:1,25 [11] x:\dir\subdir\Test\TestComponent.cshtml) - ValueChanged - ValueChanged
+                    ComponentAttribute - (56:1,25 [11] x:\dir\subdir\Test\TestComponent.cshtml) - ValueChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => ParentValue = __value
             CSharpCode - (85:2,12 [50] x:\dir\subdir\Test\TestComponent.cshtml)

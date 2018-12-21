@@ -21,12 +21,12 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                ComponentExtensionNode - (31:1,0 [44] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent<int>
-                    ComponentTypeArgumentExtensionNode - (50:1,19 [3] x:\dir\subdir\Test\TestComponent.cshtml) - TItem
+                Component - (31:1,0 [44] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentTypeArgument - (50:1,19 [3] x:\dir\subdir\Test\TestComponent.cshtml) - TItem
                         IntermediateToken - (50:1,19 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - int
-                    ComponentAttributeExtensionNode - (60:1,29 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item
+                    ComponentAttribute - (60:1,29 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
                         IntermediateToken - (60:1,29 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 3
-                    RefExtensionNode - (68:1,37 [3] x:\dir\subdir\Test\TestComponent.cshtml) - _my - Test.MyComponent<int>
+                    ReferenceCapture - (68:1,37 [3] x:\dir\subdir\Test\TestComponent.cshtml) - _my
                 HtmlContent - (75:1,44 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (75:1,44 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
                 HtmlContent - (182:6,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)

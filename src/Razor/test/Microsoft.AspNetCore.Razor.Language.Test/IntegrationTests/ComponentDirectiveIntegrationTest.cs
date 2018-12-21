@@ -6,6 +6,8 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Layouts;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
@@ -13,7 +15,17 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
     // Integration tests for component directives
     public class ComponentDirectiveIntegrationTest : RazorIntegrationTestBase
     {
-        [Fact(Skip = "Not ready yet.")]
+        public ComponentDirectiveIntegrationTest()
+        {
+            // Include this assembly to use types defined in tests.
+            BaseCompilation = DefaultBaseCompilation.AddReferences(MetadataReference.CreateFromFile(GetType().Assembly.Location));
+        }
+
+        internal override CSharpCompilation BaseCompilation { get; }
+
+        internal override string FileKind => FileKinds.Component;
+
+        [Fact]
         public void ComponentsDoNotHaveLayoutAttributeByDefault()
         {
             // Arrange/Act
@@ -23,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.Null(component.GetType().GetCustomAttribute<LayoutAttribute>());
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void SupportsLayoutDeclarations()
         {
             // Arrange/Act
@@ -31,17 +43,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var component = CompileToComponent(
                 $"@layout {testComponentTypeName}\n" +
                 $"Hello");
-            var frames = GetRenderTree(component);
 
             // Assert
             var layoutAttribute = component.GetType().GetCustomAttribute<LayoutAttribute>();
             Assert.NotNull(layoutAttribute);
             Assert.Equal(typeof(TestLayout), layoutAttribute.LayoutType);
-            Assert.Collection(frames,
-                frame => AssertFrame.Text(frame, "Hello"));
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void SupportsImplementsDeclarations()
         {
             // Arrange/Act
@@ -49,15 +58,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var component = CompileToComponent(
                 $"@implements {testInterfaceTypeName}\n" +
                 $"Hello");
-            var frames = GetRenderTree(component);
 
             // Assert
             Assert.IsAssignableFrom<ITestInterface>(component);
-            Assert.Collection(frames,
-                frame => AssertFrame.Text(frame, "Hello"));
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void SupportsMultipleImplementsDeclarations()
         {
             // Arrange/Act
@@ -67,16 +73,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 $"@implements {testInterfaceTypeName}\n" +
                 $"@implements {testInterfaceTypeName2}\n" +
                 $"Hello");
-            var frames = GetRenderTree(component);
 
             // Assert
             Assert.IsAssignableFrom<ITestInterface>(component);
             Assert.IsAssignableFrom<ITestInterface2>(component);
-            Assert.Collection(frames,
-                frame => AssertFrame.Text(frame, "Hello"));
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void SupportsInheritsDirective()
         {
             // Arrange/Act
@@ -84,15 +87,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var component = CompileToComponent(
                 $"@inherits {testBaseClassTypeName}" + Environment.NewLine +
                 $"Hello");
-            var frames = GetRenderTree(component);
 
             // Assert
             Assert.IsAssignableFrom<TestBaseClass>(component);
-            Assert.Collection(frames,
-                frame => AssertFrame.Text(frame, "Hello"));
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void SupportsInjectDirective()
         {
             // Arrange/Act 1: Compilation

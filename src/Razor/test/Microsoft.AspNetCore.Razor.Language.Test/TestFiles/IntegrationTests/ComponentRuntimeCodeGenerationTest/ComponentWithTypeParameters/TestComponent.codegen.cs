@@ -14,7 +14,7 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
-            builder.AddMarkupContent(0, "<h1>Item1</h1>\n");
+            builder.AddMarkupContent(0, "<h1>Item1</h1>\r\n");
 #line 6 "x:\dir\subdir\Test\TestComponent.cshtml"
  foreach (var item2 in Items2)
 {
@@ -23,11 +23,11 @@ namespace Test
 #line hidden
             builder.AddContent(1, "    ");
             builder.OpenElement(2, "p");
-            builder.AddContent(3, "\n    ");
+            builder.AddContent(3, "\r\n    ");
             builder.AddContent(4, ChildContent(item2));
-            builder.AddContent(5, ";\n    ");
+            builder.AddContent(5, ";\r\n    ");
             builder.CloseElement();
-            builder.AddContent(6, "\n");
+            builder.AddContent(6, "\r\n");
 #line 11 "x:\dir\subdir\Test\TestComponent.cshtml"
 }
 

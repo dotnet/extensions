@@ -2136,16 +2136,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             public TestRazorParserFeatureFlags(
                 bool allowMinimizedBooleanTagHelperAttributes = false,
                 bool allowHtmlCommentsInTagHelper = false,
+                bool allowComponentFileKind = false,
                 bool experimental_AllowConditionalDataDashAttributes = false)
             {
                 AllowMinimizedBooleanTagHelperAttributes = allowMinimizedBooleanTagHelperAttributes;
                 AllowHtmlCommentsInTagHelpers = allowHtmlCommentsInTagHelper;
+                AllowComponentFileKind = allowComponentFileKind;
                 EXPERIMENTAL_AllowConditionalDataDashAttributes = experimental_AllowConditionalDataDashAttributes;
             }
 
             public override bool AllowMinimizedBooleanTagHelperAttributes { get; }
 
             public override bool AllowHtmlCommentsInTagHelpers { get; }
+
+            public override bool AllowComponentFileKind { get; }
 
             public override bool EXPERIMENTAL_AllowConditionalDataDashAttributes { get; }
         }

@@ -15,7 +15,7 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             builder.AddContent(0, "My value");
-            builder.AddContent(1, "\n\n");
+            builder.AddContent(1, "\r\n\r\n");
             builder.AddMarkupContent(2, "<h1>Hello</h1>");
         }
         #pragma warning restore 1998

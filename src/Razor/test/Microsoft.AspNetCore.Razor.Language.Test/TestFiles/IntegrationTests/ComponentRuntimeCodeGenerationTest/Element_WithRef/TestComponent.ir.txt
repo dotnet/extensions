@@ -9,13 +9,13 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                HtmlElement - (0:0,0 [79] x:\dir\subdir\Test\TestComponent.cshtml) - elem
+                MarkupElement - (0:0,0 [79] x:\dir\subdir\Test\TestComponent.cshtml) - elem
                     HtmlContent - (67:0,67 [5] x:\dir\subdir\Test\TestComponent.cshtml)
                         IntermediateToken - (67:0,67 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
                     HtmlAttribute -  - attributebefore=" - "
                         HtmlAttributeValue - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
-                    RefExtensionNode - (36:0,36 [6] x:\dir\subdir\Test\TestComponent.cshtml) - myElem - Element
+                    ReferenceCapture - (36:0,36 [6] x:\dir\subdir\Test\TestComponent.cshtml) - myElem
                     HtmlAttribute -  - attributeafter=" - "
                         HtmlAttributeValue - (60:0,60 [5] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (60:0,60 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after

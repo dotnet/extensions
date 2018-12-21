@@ -7,9 +7,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     public class ComponentTemplateIntegrationTest : RazorIntegrationTestBase
     {
+        internal override string FileKind => FileKinds.Component;
+
         // Razor doesn't parse this as a template, we don't need much special handling for
         // it because it will just be invalid in general.
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Template_ImplicitExpressionInMarkupAttribute_CreatesDiagnostic()
         {
             // Arrange
@@ -22,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.Equal("RZ1005", diagnostic.Id);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Template_ExplicitExpressionInMarkupAttribute_CreatesDiagnostic()
         {
             // Arrange
@@ -37,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         // Razor doesn't parse this as a template, we don't need much special handling for
         // it because it will just be invalid in general.
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Template_ImplicitExpressionInComponentAttribute_CreatesDiagnostic()
         {
             // Arrange
@@ -60,7 +62,7 @@ namespace Test
             Assert.Equal("RZ1005", diagnostic.Id);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Template_ExplicitExpressionInComponentAttribute_CreatesDiagnostic()
         {
             // Arrange
@@ -82,7 +84,7 @@ namespace Test
             Assert.Equal("BL9994", diagnostic.Id);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Template_ExplicitExpressionInRef_CreatesDiagnostic()
         {
             // Arrange
@@ -96,7 +98,7 @@ namespace Test
         }
 
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Template_ExplicitExpressionInBind_CreatesDiagnostic()
         {
             // Arrange
@@ -109,7 +111,7 @@ namespace Test
             Assert.Equal("BL9994", diagnostic.Id);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Template_ExplicitExpressionInEventHandler_CreatesDiagnostic()
         {
             // Arrange

@@ -8,6 +8,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     public abstract class ComponentCodeGenerationTestBase : RazorBaselineIntegrationTestBase
     {
+        internal override string FileKind => FileKinds.Component;
+
         internal override bool UseTwoPhaseCompilation => true;
 
         protected ComponentCodeGenerationTestBase()
@@ -17,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         #region Basics
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_Simple()
         {
             // Arrange
@@ -43,7 +45,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_WithParameters()
         {
             // Arrange
@@ -81,7 +83,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ComponentWithTypeParameters()
         {
             // Arrange
@@ -111,7 +113,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_WithExplicitStringParameter()
         {
             // Arrange
@@ -139,7 +141,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_WithNonPropertyAttributes()
         {
             // Arrange
@@ -165,7 +167,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ComponentParameter_TypeMismatch_ReportsDiagnostic()
         {
             // Arrange
@@ -202,7 +204,7 @@ namespace Test
 
         #region Bind
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void BindToComponent_SpecifiesValue_WithMatchingProperties()
         {
             // Arrange
@@ -236,7 +238,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void BindToComponent_TypeChecked_WithMatchingProperties()
         {
             // Arrange
@@ -276,7 +278,7 @@ namespace Test
                 d => Assert.Equal("CS1503", d.Id));
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void BindToComponent_SpecifiesValue_WithoutMatchingProperties()
         {
             // Arrange
@@ -308,7 +310,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void BindToComponent_SpecifiesValueAndChangeEvent_WithMatchingProperties()
         {
             // Arrange
@@ -341,7 +343,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void BindToComponent_SpecifiesValueAndChangeEvent_WithoutMatchingProperties()
         {
             // Arrange
@@ -372,7 +374,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void BindToElement_WritesAttributes()
         {
             // Arrange
@@ -402,7 +404,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void BindToElementWithSuffix_WritesAttributes()
         {
             // Arrange
@@ -431,7 +433,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void BuiltIn_BindToInputWithoutType_WritesAttributes()
         {
             // Arrange
@@ -450,7 +452,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void BuiltIn_BindToInputText_WithFormat_WritesAttributes()
         {
             // Arrange
@@ -469,7 +471,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void BuiltIn_BindToInputText_WithFormatFromProperty_WritesAttributes()
         {
             // Arrange
@@ -490,7 +492,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void BuiltIn_BindToInputText_WritesAttributes()
         {
             // Arrange
@@ -509,7 +511,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void BuiltIn_BindToInputCheckbox_WritesAttributes()
         {
             // Arrange
@@ -528,7 +530,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void BindToElementFallback_WritesAttributes()
         {
             // Arrange
@@ -547,7 +549,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void BindToElementFallback_WithFormat_WritesAttributes()
         {
             // Arrange
@@ -570,7 +572,7 @@ namespace Test
 
         #region Child Content
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_WithChildContent()
         {
             // Arrange
@@ -601,7 +603,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_WithGenericChildContent()
         {
             // Arrange
@@ -633,7 +635,7 @@ namespace Test
         }
 
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_WithGenericChildContent_SetsParameterName()
         {
             // Arrange
@@ -668,7 +670,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_WithGenericChildContent_SetsParameterNameOnComponent()
         {
             // Arrange
@@ -703,7 +705,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_WithElementOnlyChildContent()
         {
             // Arrange
@@ -731,7 +733,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_WithExplicitChildContent()
         {
             // Arrange
@@ -759,7 +761,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_WithExplicitGenericChildContent()
         {
             // Arrange
@@ -787,7 +789,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void MultipleExplictChildContent()
         {
             // Arrange
@@ -821,7 +823,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void BodyAndAttributeChildContent()
         {
             // Arrange
@@ -857,7 +859,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void BodyAndExplicitChildContent()
         {
             // Arrange
@@ -899,7 +901,7 @@ namespace Test
 
         #region Directives
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_WithPageDirective()
         {
             // Arrange
@@ -931,7 +933,7 @@ namespace Test
 
         #region Event Handlers
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_WithLambdaEventHandler()
         {
             // Arrange
@@ -969,7 +971,7 @@ namespace Test
 
         // Regression test for #954 - we need to allow arbitrary event handler
         // attributes with weak typing.
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_WithWeaklyTypeEventHandler()
         {
             // Arrange
@@ -1000,7 +1002,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_WithExplicitEventHandler()
         {
             // Arrange
@@ -1036,7 +1038,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void EventHandler_OnElement_WithString()
         {
             // Arrange
@@ -1051,7 +1053,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void EventHandler_OnElement_WithNoArgsLambdaDelegate()
         {
             // Arrange
@@ -1066,7 +1068,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void EventHandler_OnElement_WithEventArgsLambdaDelegate()
         {
             // Arrange
@@ -1081,7 +1083,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void EventHandler_OnElement_WithNoArgMethodGroup()
         {
             // Arrange
@@ -1100,7 +1102,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void EventHandler_OnElement_WithEventArgsMethodGroup()
         {
             // Arrange
@@ -1119,7 +1121,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void EventHandler_OnElement_ArbitraryEventName_WithEventArgsMethodGroup()
         {
             // Arrange
@@ -1138,7 +1140,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void AsyncEventHandler_OnElement_Action_MethodGroup()
         {
             // Arrange
@@ -1160,7 +1162,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void AsyncEventHandler_OnElement_ActionEventArgs_MethodGroup()
         {
             // Arrange
@@ -1182,7 +1184,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void AsyncEventHandler_OnElement_Action_Lambda()
         {
             // Arrange
@@ -1199,7 +1201,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void AsyncEventHandler_OnElement_ActionEventArgs_Lambda()
         {
             // Arrange
@@ -1216,7 +1218,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void EventHandler_OnElement_WithLambdaDelegate()
         {
             // Arrange
@@ -1231,7 +1233,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void EventHandler_OnElement_WithDelegate()
         {
             // Arrange
@@ -1254,7 +1256,7 @@ namespace Test
 
         #region Generics
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_Generic()
         {
             // Arrange
@@ -1281,7 +1283,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_Generic_TypeInference()
         {
             // Arrange
@@ -1308,7 +1310,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_Generic_TypeInference_Multiple()
         {
             // Arrange
@@ -1337,7 +1339,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_GenericWeaklyTypedAttribute()
         {
             // Arrange
@@ -1364,7 +1366,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_GenericWeaklyTypedAttribute_TypeInference()
         {
             // Arrange
@@ -1391,7 +1393,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_GenericBind()
         {
             // Arrange
@@ -1426,7 +1428,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_GenericBind_TypeInference()
         {
             // Arrange
@@ -1461,7 +1463,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_GenericBindWeaklyTyped()
         {
             // Arrange
@@ -1491,7 +1493,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_GenericBindWeaklyTyped_TypeInference()
         {
             // Arrange
@@ -1522,7 +1524,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_GenericChildContent()
         {
             // Arrange
@@ -1553,7 +1555,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_GenericChildContent_TypeInference()
         {
             // Arrange
@@ -1584,7 +1586,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_MultipleGenerics()
         {
             // Arrange
@@ -1625,7 +1627,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ChildComponent_MultipleGenerics_TypeInference()
         {
             // Arrange
@@ -1669,7 +1671,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void GenericComponent_WithComponentRef()
         {
             // Arrange
@@ -1702,7 +1704,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void GenericComponent_WithComponentRef_TypeInference()
         {
             // Arrange
@@ -1739,7 +1741,7 @@ namespace Test
 
         #region Ref
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Element_WithRef()
         {
             // Arrange/Act
@@ -1758,7 +1760,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Component_WithRef()
         {
             // Arrange
@@ -1790,7 +1792,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Component_WithRef_WithChildContent()
         {
             // Arrange
@@ -1828,7 +1830,7 @@ namespace Test
 
         #region Templates
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void RazorTemplate_InCodeBlock()
         {
             // Arrange
@@ -1851,7 +1853,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void RazorTemplate_InExplicitExpression()
         {
             // Arrange
@@ -1874,7 +1876,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void RazorTemplate_NonGeneric_InImplicitExpression()
         {
             // Arrange
@@ -1892,7 +1894,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void RazorTemplate_Generic_InImplicitExpression()
         {
             // Arrange
@@ -1915,7 +1917,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void RazorTemplate_ContainsComponent()
         {
             // Arrange
@@ -1951,7 +1953,7 @@ namespace Test
         }
 
         // Targeted at the logic that assigns 'builder' names
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void RazorTemplate_FollowedByComponent()
         {
             // Arrange
@@ -1990,7 +1992,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void RazorTemplate_NonGeneric_AsComponentParameter()
         {
             // Arrange
@@ -2019,7 +2021,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void RazorTemplate_Generic_AsComponentParameter()
         {
             // Arrange
@@ -2053,7 +2055,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void RazorTemplate_AsComponentParameter_MixedContent()
         {
             // Arrange
@@ -2092,7 +2094,7 @@ namespace Test
 
         #region Whitespace
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void LeadingWhiteSpace_WithDirective()
         {
             // Arrange/Act
@@ -2108,7 +2110,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void LeadingWhiteSpace_WithCSharpExpression()
         {
             // Arrange/Act
@@ -2124,7 +2126,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void LeadingWhiteSpace_WithComponent()
         {
             // Arrange
@@ -2153,7 +2155,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void TrailingWhiteSpace_WithDirective()
         {
             // Arrange/Act
@@ -2170,7 +2172,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void TrailingWhiteSpace_WithCSharpExpression()
         {
             // Arrange/Act
@@ -2187,7 +2189,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void TrailingWhiteSpace_WithComponent()
         {
             // Arrange
@@ -2221,7 +2223,7 @@ namespace Test
 
         #region Misc
 
-        [Fact(Skip = "Not ready yet.")] // We don't process <!DOCTYPE ...> - we just skip them
+        [Fact] // We don't process <!DOCTYPE ...> - we just skip them
         public void Component_WithDocType()
         {
             // Arrange
@@ -2238,7 +2240,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ScriptTag_WithErrorSuppressed()
         {
             // Arrange/Act
@@ -2257,7 +2259,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")] // https://github.com/aspnet/Blazor/issues/597
+        [Fact] // https://github.com/aspnet/Blazor/issues/597
         public void Regression_597()
         {
             // Arrange
@@ -2288,7 +2290,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Regression_609()
         {
             // Arrange
@@ -2325,7 +2327,7 @@ namespace Test
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")] // https://github.com/aspnet/Blazor/issues/772
+        [Fact] // https://github.com/aspnet/Blazor/issues/772
         public void Regression_772()
         {
             // Arrange
@@ -2364,7 +2366,7 @@ Welcome to your new app.
                 d => Assert.Equal("RZ1035", d.Id));
         }
 
-        [Fact(Skip = "Not ready yet.")] // https://github.com/aspnet/Blazor/issues/773
+        [Fact] // https://github.com/aspnet/Blazor/issues/773
         public void Regression_773()
         {
             // Arrange
@@ -2398,7 +2400,7 @@ Welcome to your new app.
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Regression_784()
         {
             // Arrange
@@ -2421,7 +2423,7 @@ Welcome to your new app.
             CompileToAssembly(generated);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void EventHandlerTagHelper_EscapeQuotes()
         {
             // Act

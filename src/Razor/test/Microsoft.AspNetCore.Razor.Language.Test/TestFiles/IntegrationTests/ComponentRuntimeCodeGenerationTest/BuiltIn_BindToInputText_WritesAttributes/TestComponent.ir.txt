@@ -9,7 +9,7 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                HtmlElement - (31:1,0 [41] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                MarkupElement - (31:1,0 [41] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute -  - type=" - "
                         HtmlAttributeValue - (44:1,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (44:1,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text

@@ -237,9 +237,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private IReadOnlyList<DocumentSnapshot> GetImportsCore(DefaultProjectSnapshot project)
         {
             var projectEngine = project.GetProjectEngine();
-            var importFeature = projectEngine.ProjectFeatures.OfType<IImportProjectFeature>().FirstOrDefault();
+            var importFeatures = projectEngine.ProjectFeatures.OfType<IImportProjectFeature>();
             var projectItem = projectEngine.FileSystem.GetItem(HostDocument.FilePath);
-            var importItems = importFeature?.GetImports(projectItem);
+            var importItems = importFeatures.SelectMany(f => f.GetImports(projectItem));
             if (importItems == null)
             {
                 return Array.Empty<DocumentSnapshot>();

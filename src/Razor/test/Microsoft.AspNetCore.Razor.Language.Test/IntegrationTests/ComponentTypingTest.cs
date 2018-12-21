@@ -15,9 +15,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
     {
         internal override bool DesignTime => true;
 
+        internal override string FileKind => FileKinds.Component;
+
         internal override bool UseTwoPhaseCompilation => false;
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void DoSomeTyping()
         {
             // Arrange
@@ -75,7 +77,7 @@ Exception:
             }
         }
 
-        [Fact(Skip = "Not ready yet.")] // Regression test for #1068 
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6113")] // Regression test for #1068 
         public void Regression_1068()
         {
             // Arrange

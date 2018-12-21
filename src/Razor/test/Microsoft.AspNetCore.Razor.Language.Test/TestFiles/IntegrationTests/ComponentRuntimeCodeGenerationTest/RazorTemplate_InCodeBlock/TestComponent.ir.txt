@@ -11,8 +11,8 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 CSharpCode - (2:0,2 [45] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (2:0,2 [45] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    RenderFragment<Person> p = (person) => 
-                Template - (48:1,44 [22] x:\dir\subdir\Test\TestComponent.cshtml)
-                    HtmlElement - (48:1,44 [23] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                Template - (48:1,44 [23] x:\dir\subdir\Test\TestComponent.cshtml)
+                    MarkupElement - (48:1,44 [23] x:\dir\subdir\Test\TestComponent.cshtml) - div
                         CSharpExpression - (54:1,50 [11] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (54:1,50 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
                 CSharpCode - (71:1,67 [3] x:\dir\subdir\Test\TestComponent.cshtml)

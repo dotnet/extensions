@@ -21,8 +21,8 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                ComponentExtensionNode - (31:1,0 [43] x:\dir\subdir\Test\TestComponent.cshtml) - CoolnessMeter - Test.CoolnessMeter
-                    ComponentAttributeExtensionNode - (56:1,25 [14] x:\dir\subdir\Test\TestComponent.cshtml) - Coolness - Coolness
+                Component - (31:1,0 [43] x:\dir\subdir\Test\TestComponent.cshtml) - CoolnessMeter
+                    ComponentAttribute - (56:1,25 [14] x:\dir\subdir\Test\TestComponent.cshtml) - Coolness - AttributeStructure.DoubleQuotes
                         CSharpExpression - (57:1,26 [13] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (58:1,27 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "very-cool"
                 HtmlContent - (74:1,43 [2] x:\dir\subdir\Test\TestComponent.cshtml)

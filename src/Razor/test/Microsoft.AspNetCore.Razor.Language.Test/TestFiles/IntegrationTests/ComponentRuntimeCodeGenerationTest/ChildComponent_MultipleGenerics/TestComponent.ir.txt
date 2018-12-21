@@ -9,22 +9,23 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                ComponentExtensionNode - (31:1,0 [228] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent<string, int>
-                    ComponentChildContent - (88:2,2 [58] x:\dir\subdir\Test\TestComponent.cshtml) - ChildContent
-                        HtmlElement - (102:2,16 [29] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                Component - (31:1,0 [228] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentChildContent - (88:2,2 [58] x:\dir\subdir\Test\TestComponent.cshtml) - ChildContent - context
+                        MarkupElement - (102:2,16 [29] x:\dir\subdir\Test\TestComponent.cshtml) - div
                             CSharpExpression - (108:2,22 [17] x:\dir\subdir\Test\TestComponent.cshtml)
                                 IntermediateToken - (108:2,22 [17] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.ToLower()
-                    ComponentChildContent - (148:3,0 [95] x:\dir\subdir\Test\TestComponent.cshtml) - AnotherChildContent
+                    ComponentChildContent - (148:3,0 [95] x:\dir\subdir\Test\TestComponent.cshtml) - AnotherChildContent - item
                         HtmlContent - (184:3,36 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (184:3,36 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n  
+                            IntermediateToken - (184:3,36 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                            IntermediateToken - (186:4,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html -   
                         CSharpExpression - (189:4,3 [29] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (189:4,3 [29] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - System.Math.Max(0, item.Item)
                         HtmlContent - (218:4,32 [3] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (218:4,32 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - ;\n
-                    ComponentTypeArgumentExtensionNode - (51:1,20 [6] x:\dir\subdir\Test\TestComponent.cshtml) - TItem1
+                    ComponentTypeArgument - (51:1,20 [6] x:\dir\subdir\Test\TestComponent.cshtml) - TItem1
                         IntermediateToken - (51:1,20 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - string
-                    ComponentTypeArgumentExtensionNode - (65:1,34 [3] x:\dir\subdir\Test\TestComponent.cshtml) - TItem2
+                    ComponentTypeArgument - (65:1,34 [3] x:\dir\subdir\Test\TestComponent.cshtml) - TItem2
                         IntermediateToken - (65:1,34 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - int
-                    ComponentAttributeExtensionNode - (75:1,44 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item
+                    ComponentAttribute - (75:1,44 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
                         CSharpExpression - (76:1,45 [6] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (77:1,46 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "hi"

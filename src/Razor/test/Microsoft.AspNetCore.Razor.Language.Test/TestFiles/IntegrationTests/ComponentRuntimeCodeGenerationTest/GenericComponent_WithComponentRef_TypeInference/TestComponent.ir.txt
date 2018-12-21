@@ -9,10 +9,10 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                ComponentExtensionNode - (31:1,0 [34] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - global::Test.MyComponent<TItem>
-                    ComponentAttributeExtensionNode - (50:1,19 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item
+                Component - (31:1,0 [34] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute - (50:1,19 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
                         IntermediateToken - (50:1,19 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 3
-                    RefExtensionNode - (58:1,27 [3] x:\dir\subdir\Test\TestComponent.cshtml) - _my - global::Test.MyComponent<TItem>
+                    ReferenceCapture - (58:1,27 [3] x:\dir\subdir\Test\TestComponent.cshtml) - _my
             CSharpCode - (81:3,12 [90] x:\dir\subdir\Test\TestComponent.cshtml)
                 IntermediateToken - (81:3,12 [90] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private MyComponent<int> _my;\n    public void Foo() { System.GC.KeepAlive(_my); }\n
     NamespaceDeclaration -  - __Blazor.Test.TestComponent

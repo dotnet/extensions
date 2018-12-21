@@ -11,16 +11,11 @@ using static Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeAs
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public class DocumentClassifierPassBaseTest
+    public class DocumentClassifierPassBaseTest : RazorProjectEngineTestBase
     {
-        public RazorEngine Engine
-        {
-            get
-            {
-                var projectEngine = RazorProjectEngine.Create();
-                return projectEngine.Engine;
-            }
-        }
+        protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
+
+        public RazorEngine Engine => CreateProjectEngine().Engine;
 
         [Fact]
         public void Execute_HasDocumentKind_IgnoresDocument()

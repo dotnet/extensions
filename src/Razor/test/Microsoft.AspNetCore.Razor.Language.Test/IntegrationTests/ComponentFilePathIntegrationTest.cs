@@ -9,7 +9,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
     // Integration tests focused on file path handling for class/namespace names
     public class ComponentFilePathIntegrationTest : RazorIntegrationTestBase
     {
-        [Fact(Skip = "Not ready yet.")]
+        internal override string FileKind => FileKinds.Component; 
+
+        [Fact]
         public void FileNameIsInvalidClassName_SanitizesInvalidClassName()
         {
             // Arrange
@@ -25,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.Equal("Filename_with_spaces", type.Name);
         }
 
-        [Theory(Skip = "Not ready yet.")]
+        [Theory]
         [InlineData("ItemAtRoot.cs", "Test", "ItemAtRoot")]
         [InlineData("Dir1\\MyFile.cs", "Test.Dir1", "MyFile")]
         [InlineData("Dir1\\Dir2\\MyFile.cs", "Test.Dir1.Dir2", "MyFile")]

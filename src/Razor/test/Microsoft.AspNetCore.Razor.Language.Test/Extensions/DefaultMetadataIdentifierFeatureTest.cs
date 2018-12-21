@@ -5,8 +5,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
-    public class DefaultMetadataIdentifierFeatureTest
+    public class DefaultMetadataIdentifierFeatureTest : RazorProjectEngineTestBase
     {
+        protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
+
         [Fact]
         public void GetIdentifier_ReturnsNull_ForNullRelativePath()
         {
@@ -16,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             var feature = new DefaultMetadataIdentifierFeature()
             {
-                Engine = RazorProjectEngine.Create().Engine,
+                Engine = CreateProjectEngine().Engine,
             };
 
             // Act
@@ -35,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             var feature = new DefaultMetadataIdentifierFeature()
             {
-                Engine = RazorProjectEngine.Create().Engine,
+                Engine = CreateProjectEngine().Engine,
             };
 
             // Act
@@ -59,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             var feature = new DefaultMetadataIdentifierFeature()
             {
-                Engine = RazorProjectEngine.Create().Engine,
+                Engine = CreateProjectEngine().Engine,
             };
 
             // Act

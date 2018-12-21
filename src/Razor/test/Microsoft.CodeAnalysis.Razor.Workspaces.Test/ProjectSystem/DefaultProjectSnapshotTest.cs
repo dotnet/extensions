@@ -56,12 +56,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private List<TagHelperDescriptor> SomeTagHelpers { get; }
 
-        private void Configure(RazorProjectEngineBuilder builder)
-        {
-            builder.Features.Remove(builder.Features.OfType<IImportProjectFeature>().Single());
-            builder.Features.Add(new TestImportProjectFeature());
-        }
-
         protected override void ConfigureLanguageServices(List<ILanguageService> services)
         {
             services.Add(TagHelperResolver);
@@ -69,8 +63,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         protected override void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
         {
-            builder.Features.Remove(builder.Features.OfType<IImportProjectFeature>().Single());
-            builder.Features.Add(new TestImportProjectFeature());
+            builder.SetImportFeature(new TestImportProjectFeature());
         }
 
         [Fact]

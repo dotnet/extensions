@@ -25,12 +25,12 @@ Document -
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 HtmlContent - (42:2,0 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (42:2,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                HtmlElement - (44:3,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - h1
+                MarkupElement - (44:3,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - h1
                     HtmlContent - (48:3,4 [13] x:\dir\subdir\Test\TestComponent.cshtml)
                         IntermediateToken - (48:3,4 [13] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello, world!
                 HtmlContent - (66:3,22 [32] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (66:3,22 [32] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\nWelcome to your new app.\n\n
-                ComponentExtensionNode - (98:7,0 [23] x:\dir\subdir\Test\TestComponent.cshtml) - SurveyPrompt - Test.SurveyPrompt
-                    ComponentAttributeExtensionNode - (119:7,21 [0] x:\dir\subdir\Test\TestComponent.cshtml) - Title - Title
-                        HtmlContent - (119:7,21 [0] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (119:7,21 [0] x:\dir\subdir\Test\TestComponent.cshtml) - Html - 
+                Component - (98:7,0 [23] x:\dir\subdir\Test\TestComponent.cshtml) - SurveyPrompt
+                    ComponentAttribute - (119:7,21 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Title - AttributeStructure.DoubleQuotes
+                        HtmlContent - (119:7,21 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (119:7,21 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n

@@ -20,9 +20,9 @@ namespace Test
                 builder2.CloseElement();
             }
             , 6, (item) => (builder2) => {
-                builder2.AddContent(7, "\n  ");
+                builder2.AddContent(7, "\r\n  ");
                 builder2.AddContent(8, System.Math.Max(0, item.Item));
-                builder2.AddContent(9, ";\n");
+                builder2.AddContent(9, ";\r\n");
             }
             );
         }

@@ -8,8 +8,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    public class DesignTimeNodeWriterTest
+    public class DesignTimeNodeWriterTest : RazorProjectEngineTestBase
     {
+        protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
+
         [Fact]
         public void WriteUsingDirective_NoSource_WritesContent()
         {
@@ -425,14 +427,13 @@ Render Children
                 ignoreLineEndingDifferences: true);
         }
 
-        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument)
+        private DocumentIntermediateNode Lower(RazorCodeDocument codeDocument)
         {
-            var projectEngine = RazorProjectEngine.Create();
-
+            var projectEngine = CreateProjectEngine();
             return Lower(codeDocument, projectEngine);
         }
 
-        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorProjectEngine projectEngine)
+        private DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorProjectEngine projectEngine)
         {
             for (var i = 0; i < projectEngine.Phases.Count; i++)
             {

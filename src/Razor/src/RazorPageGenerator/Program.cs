@@ -61,7 +61,6 @@ Examples:
                         @class.Modifiers.Add("internal");
                     });
 
-                InheritsDirective.Register(builder);
                 SectionDirective.Register(builder);
 
                 builder.Features.Add(new SuppressChecksumOptionsFeature());

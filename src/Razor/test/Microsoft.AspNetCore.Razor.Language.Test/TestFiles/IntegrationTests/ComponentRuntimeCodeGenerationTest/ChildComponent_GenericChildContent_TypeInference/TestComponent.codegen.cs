@@ -15,11 +15,11 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, "hi", 2, (context) => (builder2) => {
-                builder2.AddContent(3, "\n  ");
+                builder2.AddContent(3, "\r\n  ");
                 builder2.OpenElement(4, "div");
                 builder2.AddContent(5, context.ToLower());
                 builder2.CloseElement();
-                builder2.AddContent(6, "\n");
+                builder2.AddContent(6, "\r\n");
             }
             );
         }

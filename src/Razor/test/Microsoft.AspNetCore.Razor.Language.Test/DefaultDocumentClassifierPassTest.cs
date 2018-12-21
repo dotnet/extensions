@@ -10,8 +10,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     // We're purposely lean on tests here because the functionality is well covered by
     // integration tests, and is mostly implemented by the base class.
-    public class DefaultDocumentClassifierPassTest
+    public class DefaultDocumentClassifierPassTest : RazorProjectEngineTestBase
     {
+        protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
+
         [Fact]
         public void Execute_IgnoresDocumentsWithDocumentKind()
         {
@@ -23,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             };
 
             var pass = new DefaultDocumentClassifierPass();
-            pass.Engine = RazorProjectEngine.Create().Engine;
+            pass.Engine = CreateProjectEngine().Engine;
 
             // Act
             pass.Execute(TestRazorCodeDocument.CreateEmpty(), documentNode);
@@ -43,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             };
 
             var pass = new DefaultDocumentClassifierPass();
-            pass.Engine = RazorProjectEngine.Create().Engine;
+            pass.Engine = CreateProjectEngine().Engine;
 
             // Act
             pass.Execute(TestRazorCodeDocument.CreateEmpty(), documentNode);

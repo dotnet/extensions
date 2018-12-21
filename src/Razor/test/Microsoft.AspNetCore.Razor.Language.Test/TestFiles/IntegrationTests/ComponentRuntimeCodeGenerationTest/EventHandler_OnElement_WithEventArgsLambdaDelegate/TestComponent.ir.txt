@@ -9,7 +9,7 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                HtmlElement - (0:0,0 [31] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                MarkupElement - (0:0,0 [31] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute - (16:0,16 [11] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Components.UIMouseEventArgs>(

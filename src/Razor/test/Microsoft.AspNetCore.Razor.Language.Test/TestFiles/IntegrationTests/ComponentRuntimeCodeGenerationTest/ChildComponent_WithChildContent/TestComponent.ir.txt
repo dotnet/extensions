@@ -9,11 +9,11 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                ComponentExtensionNode - (31:1,0 [91] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                    ComponentChildContent -  - ChildContent
+                Component - (31:1,0 [91] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentChildContent -  - ChildContent - context
                         HtmlContent - (57:1,26 [9] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (57:1,26 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Some text
-                        HtmlBlock -  - <some-child a="1">Nested text</some-child>
-                    ComponentAttributeExtensionNode - (52:1,21 [3] x:\dir\subdir\Test\TestComponent.cshtml) - MyAttr - MyAttr
+                        MarkupBlock -  - <some-child a="1">Nested text</some-child>
+                    ComponentAttribute - (52:1,21 [3] x:\dir\subdir\Test\TestComponent.cshtml) - MyAttr - AttributeStructure.DoubleQuotes
                         HtmlContent - (52:1,21 [3] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (52:1,21 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - abc

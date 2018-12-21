@@ -32,7 +32,7 @@ namespace Test
             builder.OpenComponent<Test.MyComponent>(2);
             builder.AddAttribute(3, "Header", new Microsoft.AspNetCore.Components.RenderFragment<System.String>(header));
             builder.AddAttribute(4, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
-                builder2.AddContent(5, "\n    Some Content\n");
+                builder2.AddContent(5, "\r\n    Some Content\r\n");
             }
             ));
             builder.CloseComponent();

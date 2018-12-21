@@ -7,8 +7,10 @@ using static Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeAs
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
-    public class InheritsDirectivePassTest
+    public class InheritsDirectivePassTest : RazorProjectEngineTestBase
     {
+        protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
+
         [Fact]
         public void Execute_SkipsDocumentWithNoClassNode()
         {
@@ -65,14 +67,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             var @class = (ClassDeclarationIntermediateNode)@namespace.Children[0];
             Assert.Equal("Hello<World[]>", @class.BaseType);
-        }
-
-        private static RazorEngine CreateEngine()
-        {
-            return RazorProjectEngine.Create(b =>
-            {
-                InheritsDirective.Register(b);
-            }).Engine;
         }
 
         private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorEngine engine)

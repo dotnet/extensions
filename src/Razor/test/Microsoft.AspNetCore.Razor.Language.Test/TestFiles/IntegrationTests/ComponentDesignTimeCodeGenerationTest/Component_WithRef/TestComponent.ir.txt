@@ -21,12 +21,12 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                ComponentExtensionNode - (31:1,0 [72] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                    ComponentAttributeExtensionNode -  - ParamBefore - 
+                Component - (31:1,0 [72] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute -  - ParamBefore - AttributeStructure.DoubleQuotes
                         HtmlContent - (57:1,26 [6] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (57:1,26 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
-                    RefExtensionNode - (70:1,39 [10] x:\dir\subdir\Test\TestComponent.cshtml) - myInstance - Test.MyComponent
-                    ComponentAttributeExtensionNode -  - ParamAfter - 
+                    ReferenceCapture - (70:1,39 [10] x:\dir\subdir\Test\TestComponent.cshtml) - myInstance
+                    ComponentAttribute -  - ParamAfter - AttributeStructure.DoubleQuotes
                         HtmlContent - (94:1,63 [5] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (94:1,63 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
                 HtmlContent - (103:1,72 [4] x:\dir\subdir\Test\TestComponent.cshtml)

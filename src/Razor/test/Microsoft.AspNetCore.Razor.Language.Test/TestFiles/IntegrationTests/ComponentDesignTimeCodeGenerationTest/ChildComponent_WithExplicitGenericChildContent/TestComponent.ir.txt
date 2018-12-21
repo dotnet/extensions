@@ -21,7 +21,7 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                ComponentExtensionNode - (31:1,0 [64] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                    ComponentChildContent - (44:1,13 [37] x:\dir\subdir\Test\TestComponent.cshtml) - ChildContent
+                Component - (31:1,0 [64] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentChildContent - (44:1,13 [37] x:\dir\subdir\Test\TestComponent.cshtml) - ChildContent - context
                         CSharpExpression - (59:1,28 [7] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (59:1,28 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context

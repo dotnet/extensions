@@ -7,6 +7,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     public class ComponentDiagnosticRazorIntegrationTest : RazorIntegrationTestBase
     {
+        internal override string FileKind => FileKinds.Component;
+
         [Fact(Skip = "Not ready yet.")]
         public void RejectsEndTagWithNoStartTag()
         {
@@ -24,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         }
 
         // This used to be a sugar syntax for lambdas, but we don't support that anymore
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void OldCodeBlockAttributeSyntax_ReportsError()
         {
             // Arrange/Act
@@ -39,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.Equal("BL9979", diagnostic.Id);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void RejectsScriptTag()
         {
             // Arrange/Act

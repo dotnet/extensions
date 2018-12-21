@@ -9,10 +9,10 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                CSharpExpression - (1:0,1 [48] x:\dir\subdir\Test\TestComponent.cshtml)
+                CSharpExpression - (1:0,1 [49] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (1:0,1 [25] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - RenderPerson((person) => 
-                    Template - (27:0,27 [22] x:\dir\subdir\Test\TestComponent.cshtml)
-                        HtmlElement - (27:0,27 [23] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                    Template - (27:0,27 [23] x:\dir\subdir\Test\TestComponent.cshtml)
+                        MarkupElement - (27:0,27 [23] x:\dir\subdir\Test\TestComponent.cshtml) - div
                             CSharpExpression - (33:0,33 [11] x:\dir\subdir\Test\TestComponent.cshtml)
                                 IntermediateToken - (33:0,33 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
                     IntermediateToken - (50:0,50 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - )

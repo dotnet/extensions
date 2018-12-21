@@ -24,13 +24,13 @@ Document -
                 CSharpCode - (35:1,2 [27] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (35:1,2 [27] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderFragment template = 
                 Template - (63:1,30 [15] x:\dir\subdir\Test\TestComponent.cshtml)
-                    HtmlElement - (63:1,30 [15] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                    MarkupElement - (63:1,30 [15] x:\dir\subdir\Test\TestComponent.cshtml) - div
                         HtmlContent - (68:1,35 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (68:1,35 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Joey
                 CSharpCode - (78:1,45 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (78:1,45 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ; 
-                ComponentExtensionNode - (83:2,0 [33] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                    ComponentAttributeExtensionNode -  - Person - 
+                Component - (83:2,0 [33] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute -  - Person - AttributeStructure.DoubleQuotes
                         CSharpExpression - (104:2,21 [9] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (105:2,22 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - template
                 HtmlContent - (116:2,33 [2] x:\dir\subdir\Test\TestComponent.cshtml)

@@ -1,19 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
-using System.Text;
-using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     public class ComponentDiscoveryIntegrationTest : RazorIntegrationTestBase
     {
-        internal override bool UseTwoPhaseCompilation => true;
+        internal override string FileKind => FileKinds.Component;
 
-        [Fact(Skip = "Not ready yet.")]
+        internal override bool UseTwoPhaseCompilation => true;
+        
+        [Fact]
         public void ComponentDiscovery_CanFindComponent_DefinedinCSharp()
         {
             // Arrange
@@ -36,7 +34,7 @@ namespace Test
             Assert.Single(bindings.TagHelpers, t => t.Name == "Test.MyComponent");
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ComponentDiscovery_CanFindComponent_WithNamespace_DefinedinCSharp()
         {
             // Arrange
@@ -59,7 +57,7 @@ namespace Test.AnotherNamespace
             Assert.Single(bindings.TagHelpers, t => t.Name == "Test.AnotherNamespace.MyComponent");
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ComponentDiscovery_CanFindComponent_DefinedinCshtml()
         {
             // Arrange
@@ -70,19 +68,6 @@ namespace Test.AnotherNamespace
             // Assert
             var bindings = result.CodeDocument.GetTagHelperContext();
             Assert.Single(bindings.TagHelpers, t => t.Name == "Test.UniqueName");
-        }
-
-        [Fact(Skip = "Not ready yet.")]
-        public void ComponentDiscovery_CanFindComponent_BuiltIn()
-        {
-            // Arrange
-
-            // Act
-            var result = CompileToCSharp("@addTagHelper *, Microsoft.AspNetCore.Components");
-
-            // Assert
-            var bindings = result.CodeDocument.GetTagHelperContext();
-            Assert.Single(bindings.TagHelpers, t => t.Name == "Microsoft.AspNetCore.Components.Routing.NavLink");
         }
 
         [Fact(Skip = "Not ready yet.")]

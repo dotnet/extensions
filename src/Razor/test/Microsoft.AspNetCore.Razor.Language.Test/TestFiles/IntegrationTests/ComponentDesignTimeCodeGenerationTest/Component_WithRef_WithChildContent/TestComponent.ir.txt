@@ -21,17 +21,17 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                ComponentExtensionNode - (31:1,0 [96] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                    ComponentChildContent -  - ChildContent
+                Component - (31:1,0 [96] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentChildContent -  - ChildContent - context
                         HtmlContent - (76:1,45 [11] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (76:1,45 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    Some 
-                        HtmlElement - (87:2,9 [16] x:\dir\subdir\Test\TestComponent.cshtml) - el
+                        MarkupElement - (87:2,9 [16] x:\dir\subdir\Test\TestComponent.cshtml) - el
                             HtmlContent - (91:2,13 [7] x:\dir\subdir\Test\TestComponent.cshtml)
                                 IntermediateToken - (91:2,13 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Html - further
                         HtmlContent - (103:2,25 [10] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (103:2,25 [10] x:\dir\subdir\Test\TestComponent.cshtml) - Html -  content\n
-                    RefExtensionNode - (49:1,18 [10] x:\dir\subdir\Test\TestComponent.cshtml) - myInstance - Test.MyComponent
-                    ComponentAttributeExtensionNode -  - SomeProp - 
+                    ReferenceCapture - (49:1,18 [10] x:\dir\subdir\Test\TestComponent.cshtml) - myInstance
+                    ComponentAttribute -  - SomeProp - AttributeStructure.DoubleQuotes
                         HtmlContent - (71:1,40 [3] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (71:1,40 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - val
                 HtmlContent - (127:3,14 [4] x:\dir\subdir\Test\TestComponent.cshtml)

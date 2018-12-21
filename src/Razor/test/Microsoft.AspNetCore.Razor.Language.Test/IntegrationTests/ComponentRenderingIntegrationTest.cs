@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     public class ComponentRenderingIntegrationTest : RazorIntegrationTestBase
     {
+        internal override string FileKind => FileKinds.Component;
+
         internal override bool UseTwoPhaseCompilation => true;
 
         [Fact(Skip = "Not ready yet.")]

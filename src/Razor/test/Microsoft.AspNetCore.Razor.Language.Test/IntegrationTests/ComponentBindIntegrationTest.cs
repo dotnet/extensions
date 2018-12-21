@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     public class ComponentBindIntegrationTest : RazorIntegrationTestBase
     {
+        internal override string FileKind => FileKinds.Component;
+
         internal override bool UseTwoPhaseCompilation => true;
 
         [Fact(Skip = "Not ready yet.")]
@@ -227,7 +229,7 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "myevent", typeof(Action<UIEventArgs>), 2));
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Render_BindDuplicates_ReportsDiagnostic()
         {
             // Arrange
@@ -502,7 +504,7 @@ namespace Test
                 frame => AssertFrame.Whitespace(frame, 6));
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Render_BindFallback_InvalidSyntax_TooManyParts()
         {
             // Arrange & Act
@@ -518,7 +520,7 @@ namespace Test
             Assert.Equal("BL9991", diagnostic.Id);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Render_BindFallback_InvalidSyntax_TrailingDash()
         {
             // Arrange & Act

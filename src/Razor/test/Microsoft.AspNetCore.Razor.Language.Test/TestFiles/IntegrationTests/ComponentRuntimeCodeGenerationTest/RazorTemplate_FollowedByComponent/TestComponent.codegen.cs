@@ -34,9 +34,9 @@ namespace Test
 #line hidden
             builder.OpenComponent<Test.MyComponent>(3);
             builder.AddAttribute(4, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
-                builder2.AddContent(5, "\n");
+                builder2.AddContent(5, "\r\n");
                 builder2.AddContent(6, "hello, world!");
-                builder2.AddContent(7, "\n");
+                builder2.AddContent(7, "\r\n");
             }
             ));
             builder.CloseComponent();

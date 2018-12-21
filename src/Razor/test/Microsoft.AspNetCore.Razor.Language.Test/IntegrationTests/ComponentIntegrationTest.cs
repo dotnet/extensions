@@ -1,8 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Razor.Language.Components;
-using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
@@ -21,10 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         [Fact]
         public void BasicTest()
         {
-            var projectEngine = CreateProjectEngine(engine =>
-            {
-                engine.Features.Add(new InputDocumentKindClassifierPass());
-            });
+            var projectEngine = CreateProjectEngine();
 
             var projectItem = CreateProjectItemFromFile();
 
@@ -34,17 +29,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // Assert
             AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
             AssertCSharpDocumentMatchesBaseline(codeDocument.GetCSharpDocument());
-        }
-
-        private class InputDocumentKindClassifierPass : RazorEngineFeatureBase, IRazorDocumentClassifierPass
-        {
-            // Run before other document classifiers
-            public int Order => -1000;
-
-            public void Execute(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
-            {
-                codeDocument.SetFileKind(FileKinds.Component);
-            }
         }
     }
 }

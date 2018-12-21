@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
@@ -79,6 +78,8 @@ namespace Test
     }
 }
 ");
+
+        internal override string FileKind => FileKinds.Component;
 
         internal override bool UseTwoPhaseCompilation => true;
 
@@ -313,7 +314,7 @@ namespace Test
                 frame => AssertFrame.Text(frame, "39", 2));
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void GenericComponent_WithoutAnyTypeParameters_TriggersDiagnostic()
         {
             // Arrange
@@ -333,7 +334,7 @@ namespace Test
                 diagnostic.GetMessage());
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void GenericComponent_WithMissingTypeParameters_TriggersDiagnostic()
         {
             // Arrange

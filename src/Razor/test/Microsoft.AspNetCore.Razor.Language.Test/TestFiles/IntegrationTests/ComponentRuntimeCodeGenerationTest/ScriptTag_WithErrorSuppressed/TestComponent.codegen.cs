@@ -15,13 +15,13 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             builder.OpenElement(0, "div");
-            builder.AddContent(1, "\n    ");
+            builder.AddContent(1, "\r\n    ");
             builder.OpenElement(2, "script");
             builder.AddAttribute(3, "src", "some/url.js");
-            builder.AddAttribute(4, "anotherattribute", "");
-            builder.AddContent(5, "\n        some text\n        some more text\n    ");
+            builder.AddAttribute(4, "anotherattribute", true);
+            builder.AddContent(5, "\r\n        some text\r\n        some more text\r\n    ");
             builder.CloseElement();
-            builder.AddContent(6, "\n");
+            builder.AddContent(6, "\r\n");
             builder.CloseElement();
         }
         #pragma warning restore 1998

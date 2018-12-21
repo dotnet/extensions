@@ -10,8 +10,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public class DefaultRazorTagHelperBinderPhaseTest
+    public class DefaultRazorTagHelperBinderPhaseTest : RazorProjectEngineTestBase
     {
+        protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
+
         [Fact]
         public void Execute_CanHandleSingleLengthAddTagHelperDirective()
         {
@@ -174,7 +176,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Execute_WithTagHelperDescriptorsFromCodeDocument_RewritesTagHelpers()
         {
             // Arrange
-            var projectEngine = RazorProjectEngine.Create();
+            var projectEngine = CreateProjectEngine();
             var tagHelpers = new[]
             {
                 CreateTagHelperDescriptor(
@@ -446,7 +448,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Execute_NoopsWhenNoTagHelpersFromCodeDocumentOrFeature()
         {
             // Arrange
-            var projectEngine = RazorProjectEngine.Create();
+            var projectEngine = CreateProjectEngine();
             var phase = new DefaultRazorTagHelperBinderPhase()
             {
                 Engine = projectEngine.Engine,

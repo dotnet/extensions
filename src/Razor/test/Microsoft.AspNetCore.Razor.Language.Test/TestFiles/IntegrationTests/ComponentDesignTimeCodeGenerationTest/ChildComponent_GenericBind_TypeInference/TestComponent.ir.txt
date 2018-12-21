@@ -21,13 +21,13 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                ComponentExtensionNode - (31:1,0 [30] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - global::Test.MyComponent<TItem>
-                    ComponentAttributeExtensionNode - (54:1,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item
+                Component - (31:1,0 [30] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute - (54:1,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
                             IntermediateToken - (54:1,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
                             IntermediateToken -  - CSharp - )
-                    ComponentAttributeExtensionNode - (54:1,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - ItemChanged
+                    ComponentAttribute - (54:1,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => Value = __value
                 HtmlContent - (61:1,30 [2] x:\dir\subdir\Test\TestComponent.cshtml)

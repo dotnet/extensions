@@ -6,8 +6,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Components
 {
-    public class ComponentDocumentClassifierPassTest
+    public class ComponentDocumentClassifierPassTest : RazorProjectEngineTestBase
     {
+        protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
+
         [Fact]
         public void Execute_SetsDocumentKind()
         {
@@ -74,8 +76,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             visitor.Visit(irDocument);
 
             // Assert
-            Assert.Equal($"global::{CodeGenerationConstants.ComponentBase.FullTypeName}", visitor.Class.BaseType);
-            Assert.Equal(new[] { "public", "sealed" }, visitor.Class.Modifiers);
+            Assert.Equal($"{CodeGenerationConstants.ComponentBase.FullTypeName}", visitor.Class.BaseType);
+            Assert.Equal(new[] { "public", }, visitor.Class.Modifiers);
             Assert.Equal("Test", visitor.Class.ClassName);
         }
 
@@ -151,12 +153,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // Assert
             Assert.Equal(CodeGenerationConstants.ComponentBase.BuildRenderTree, visitor.Method.MethodName);
             Assert.Equal("void", visitor.Method.ReturnType);
-            Assert.Equal(new[] { "public", "override" }, visitor.Method.Modifiers);
+            Assert.Equal(new[] { "protected", "override" }, visitor.Method.Modifiers);
         }
 
-        private static RazorProjectEngine CreateProjectEngine() => RazorProjectEngine.Create();
-
-        private static DocumentIntermediateNode CreateIRDocument(RazorProjectEngine projectEngine, RazorCodeDocument codeDocument)
+        private DocumentIntermediateNode CreateIRDocument(RazorProjectEngine projectEngine, RazorCodeDocument codeDocument)
         {
             for (var i = 0; i < projectEngine.Phases.Count; i++)
             {

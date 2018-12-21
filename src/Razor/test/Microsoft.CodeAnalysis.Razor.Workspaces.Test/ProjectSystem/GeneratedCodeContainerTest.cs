@@ -9,8 +9,10 @@ using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
-    public class GeneratedCodeContainerTest
+    public class GeneratedCodeContainerTest : RazorProjectEngineTestBase
     {
+        protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
+
         [Fact]
         public void SetOutput_AcceptsSameVersionedDocuments()
         {
@@ -66,14 +68,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.NotNull(container.LatestDocument);
         }
 
-        private static RazorCodeDocument GetCodeDocument(string content)
+        private RazorCodeDocument GetCodeDocument(string content)
         {
             var sourceProjectItem = new TestRazorProjectItem("test.cshtml")
             {
                 Content = content,
             };
 
-            var engine = RazorProjectEngine.Create();
+            var engine = CreateProjectEngine();
             var codeDocument = engine.ProcessDesignTime(sourceProjectItem);
             return codeDocument;
         }

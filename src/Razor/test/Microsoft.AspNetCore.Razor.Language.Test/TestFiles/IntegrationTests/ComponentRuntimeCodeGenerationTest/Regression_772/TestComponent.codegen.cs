@@ -15,9 +15,9 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
-            builder.AddMarkupContent(0, "<h1>Hello, world!</h1>\n\nWelcome to your new app.\n\n");
+            builder.AddMarkupContent(0, "<h1>Hello, world!</h1>\r\n\r\nWelcome to your new app.\r\n\r\n");
             builder.OpenComponent<Test.SurveyPrompt>(1);
-            builder.AddAttribute(2, "Title", "");
+            builder.AddAttribute(2, "Title", "\r\n");
             builder.CloseComponent();
         }
         #pragma warning restore 1998

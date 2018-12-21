@@ -21,9 +21,9 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [7] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n   \n
-                ComponentExtensionNode - (36:2,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - SomeOtherComponent - Test.SomeOtherComponent
+                Component - (36:2,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - SomeOtherComponent
                 HtmlContent - (58:2,22 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (58:2,22 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                HtmlElement - (62:4,0 [14] x:\dir\subdir\Test\TestComponent.cshtml) - h1
+                MarkupElement - (62:4,0 [14] x:\dir\subdir\Test\TestComponent.cshtml) - h1
                     HtmlContent - (66:4,4 [5] x:\dir\subdir\Test\TestComponent.cshtml)
                         IntermediateToken - (66:4,4 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello

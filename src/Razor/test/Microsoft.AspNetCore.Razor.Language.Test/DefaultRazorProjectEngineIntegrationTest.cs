@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Moq;
 using Xunit;
 
@@ -77,6 +75,39 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             var import = Assert.Single(codeDocument.Imports);
             Assert.Equal("testvalue", import.FilePath);
+        }
+
+        [Fact]
+        public void Process_GetsImportsFromFeature_MultipleFeatures()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("Index.cshtml");
+
+            var testImport1 = Mock.Of<RazorProjectItem>(i => i.Read() == new MemoryStream() && i.FilePath == "testvalue1" && i.Exists == true);
+            var importFeature1 = new Mock<IImportProjectFeature>();
+            importFeature1
+                .Setup(feature => feature.GetImports(It.IsAny<RazorProjectItem>()))
+                .Returns(new[] { testImport1 });
+
+            var testImport2 = Mock.Of<RazorProjectItem>(i => i.Read() == new MemoryStream() && i.FilePath == "testvalue2" && i.Exists == true);
+            var importFeature2 = new Mock<IImportProjectFeature>();
+            importFeature2
+                .Setup(feature => feature.GetImports(It.IsAny<RazorProjectItem>()))
+                .Returns(new[] { testImport2 });
+
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty, builder =>
+            {
+                builder.Features.Add(importFeature1.Object);
+                builder.Features.Add(importFeature2.Object);
+            });
+
+            // Act
+            var codeDocument = projectEngine.Process(projectItem);
+
+            // Assert
+            Assert.Collection(codeDocument.Imports,
+                i => Assert.Equal("testvalue1", i.FilePath),
+                i => Assert.Equal("testvalue2", i.FilePath));
         }
 
         [Fact]

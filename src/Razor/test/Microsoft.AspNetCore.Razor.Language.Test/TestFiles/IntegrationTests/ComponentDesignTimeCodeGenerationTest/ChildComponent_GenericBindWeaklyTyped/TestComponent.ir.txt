@@ -21,15 +21,15 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                ComponentExtensionNode - (31:1,0 [43] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent<string>
-                    ComponentTypeArgumentExtensionNode - (50:1,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - TItem
+                Component - (31:1,0 [43] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentTypeArgument - (50:1,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - TItem
                         IntermediateToken - (50:1,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - string
-                    ComponentAttributeExtensionNode - (67:1,36 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - 
+                    ComponentAttribute - (67:1,36 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
                             IntermediateToken - (67:1,36 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
                             IntermediateToken -  - CSharp - )
-                    ComponentAttributeExtensionNode - (67:1,36 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - 
+                    ComponentAttribute - (67:1,36 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => Value = __value, Value)
                 HtmlContent - (74:1,43 [2] x:\dir\subdir\Test\TestComponent.cshtml)

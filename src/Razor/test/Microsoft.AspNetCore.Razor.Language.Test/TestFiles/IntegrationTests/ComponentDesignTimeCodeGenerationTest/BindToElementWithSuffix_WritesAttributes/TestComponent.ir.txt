@@ -21,7 +21,7 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                HtmlElement - (31:1,0 [33] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                MarkupElement - (31:1,0 [33] x:\dir\subdir\Test\TestComponent.cshtml) - div
                     HtmlAttribute - (48:1,17 [12] x:\dir\subdir\Test\TestComponent.cshtml) - myvalue=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(

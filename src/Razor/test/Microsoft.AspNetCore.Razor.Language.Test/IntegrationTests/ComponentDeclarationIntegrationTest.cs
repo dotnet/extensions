@@ -4,13 +4,28 @@
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     public class ComponentDeclarationRazorIntegrationTest : RazorIntegrationTestBase
     {
-        [Fact(Skip = "Not ready yet.")]
+        public ComponentDeclarationRazorIntegrationTest()
+        {
+            // Include this assembly to use types defined in tests.
+            BaseCompilation = DefaultBaseCompilation.AddReferences(MetadataReference.CreateFromFile(GetType().Assembly.Location));
+        }
+
+        internal override CSharpCompilation BaseCompilation { get; }
+
+        internal override string FileKind => FileKinds.Component;
+
+        internal override bool DeclarationOnly => true;
+
+        [Fact]
         public void DeclarationConfiguration_IncludesFunctions()
         {
             // Arrange & Act
@@ -25,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.Same(typeof(string), property.PropertyType);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void DeclarationConfiguration_IncludesInject()
         {
             // Arrange & Act
@@ -39,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.Same(typeof(string), property.PropertyType);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void DeclarationConfiguration_IncludesUsings()
         {
             // Arrange & Act
@@ -54,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.Same(typeof(StringBuilder), property.PropertyType);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void DeclarationConfiguration_IncludesInherits()
         {
             // Arrange & Act
@@ -66,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.Same(typeof(BaseClass), component.GetType().BaseType);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void DeclarationConfiguration_IncludesImplements()
         {
             // Arrange & Act
@@ -96,7 +111,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.Empty(frames);
         }
 
-        [Fact(Skip = "Not ready yet.")] // Regression test for https://github.com/aspnet/Blazor/issues/453
+        [Fact] // Regression test for https://github.com/aspnet/Blazor/issues/453
         public void DeclarationConfiguration_FunctionsBlockHasLineMappings_MappingsApplyToError()
         {
             // Arrange & Act 1
@@ -156,6 +171,10 @@ namespace Test
         public class BaseClass : IComponent
         {
             public void Init(RenderHandle renderHandle)
+            {
+            }
+
+            protected virtual void BuildRenderTree(RenderTreeBuilder builder)
             {
             }
 

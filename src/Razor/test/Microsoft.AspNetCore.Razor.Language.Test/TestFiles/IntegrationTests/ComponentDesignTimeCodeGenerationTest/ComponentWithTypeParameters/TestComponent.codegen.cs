@@ -17,11 +17,19 @@ using Microsoft.AspNetCore.Components;
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
 global::System.Object TItem1 = null;
+
+#line default
+#line hidden
         }
         ))();
         ((System.Action)(() => {
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
 global::System.Object TItem2 = null;
+
+#line default
+#line hidden
         }
         ))();
         }

@@ -444,6 +444,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // Arrange, Act & Assert
             RunRuntimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
         }
+
+        [Fact]
+        public void Implements_Runtime()
+        {
+            RunTimeTest();
+        }
+
         #endregion
 
         #region DesignTime
@@ -872,6 +879,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // Arrange, Act & Assert
             RunDesignTimeTagHelpersTest(TestTagHelperDescriptors.SimpleTagHelperDescriptors);
         }
+
+        [Fact]
+        public void Implements_DesignTime()
+        {
+            DesignTimeTest();
+        }
+
         #endregion
 
         private void DesignTimeTest()
@@ -883,8 +897,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
                 // Some of these tests use templates
                 builder.AddTargetExtension(new TemplateTargetExtension());
-
-                InheritsDirective.Register(builder);
+                
                 SectionDirective.Register(builder);
             });
 
@@ -909,7 +922,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 // Some of these tests use templates
                 builder.AddTargetExtension(new TemplateTargetExtension());
                 
-                InheritsDirective.Register(builder);
                 SectionDirective.Register(builder);
             });
 
@@ -933,7 +945,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 // Some of these tests use templates
                 builder.AddTargetExtension(new TemplateTargetExtension());
 
-                InheritsDirective.Register(builder);
                 SectionDirective.Register(builder);
             });
 
@@ -958,7 +969,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 // Some of these tests use templates
                 builder.AddTargetExtension(new TemplateTargetExtension());
 
-                InheritsDirective.Register(builder);
                 SectionDirective.Register(builder);
             });
 
@@ -976,8 +986,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         private static IReadOnlyList<RazorSourceDocument> GetImports(RazorProjectEngine projectEngine, RazorProjectItem projectItem)
         {
-            var importFeature = projectEngine.ProjectFeatures.OfType<IImportProjectFeature>().FirstOrDefault();
-            var importItems = importFeature.GetImports(projectItem);
+            var importFeatures = projectEngine.ProjectFeatures.OfType<IImportProjectFeature>();
+            var importItems = importFeatures.SelectMany(f => f.GetImports(projectItem));
             var importSourceDocuments = importItems.Where(i => i.Exists).Select(i => RazorSourceDocument.ReadFrom(i)).ToList();
 
             return importSourceDocuments;

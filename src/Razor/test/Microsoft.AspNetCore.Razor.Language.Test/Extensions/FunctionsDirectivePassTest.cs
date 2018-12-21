@@ -7,8 +7,10 @@ using static Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeAs
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
-    public class FunctionsDirectivePassTest
+    public class FunctionsDirectivePassTest : RazorProjectEngineTestBase
     {
+        protected override RazorLanguageVersion Version => RazorLanguageVersion.Latest;
+
         [Fact]
         public void Execute_SkipsDocumentWithNoClassNode()
         {
@@ -72,11 +74,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             Children(
                 method,
                 node => Assert.IsType<DirectiveIntermediateNode>(node));
-        }
-
-        private static RazorProjectEngine CreateProjectEngine()
-        {
-            return RazorProjectEngine.Create();
         }
 
         private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorProjectEngine projectEngine)

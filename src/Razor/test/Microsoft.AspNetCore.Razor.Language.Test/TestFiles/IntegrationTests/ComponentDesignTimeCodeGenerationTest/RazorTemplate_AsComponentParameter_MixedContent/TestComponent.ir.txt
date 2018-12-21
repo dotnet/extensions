@@ -23,8 +23,8 @@ Document -
                     IntermediateToken - (31:0,31 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 CSharpCode - (35:1,2 [54] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (35:1,2 [54] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderFragment<Test.Context> template = (context) => 
-                Template - (90:1,57 [48] x:\dir\subdir\Test\TestComponent.cshtml)
-                    HtmlElement - (90:1,57 [50] x:\dir\subdir\Test\TestComponent.cshtml) - li
+                Template - (90:1,57 [50] x:\dir\subdir\Test\TestComponent.cshtml)
+                    MarkupElement - (90:1,57 [50] x:\dir\subdir\Test\TestComponent.cshtml) - li
                         HtmlContent - (94:1,61 [1] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (94:1,61 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - #
                         CSharpExpression - (96:1,63 [13] x:\dir\subdir\Test\TestComponent.cshtml)
@@ -35,8 +35,8 @@ Document -
                             IntermediateToken - (113:1,80 [22] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.Item.ToLower()
                 CSharpCode - (140:1,107 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (140:1,107 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ; 
-                ComponentExtensionNode - (145:2,0 [35] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                    ComponentAttributeExtensionNode - (168:2,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Template - Template
+                Component - (145:2,0 [35] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute - (168:2,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Template - AttributeStructure.DoubleQuotes
                         CSharpExpression - (169:2,24 [8] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (169:2,24 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - template
                 HtmlContent - (180:2,35 [2] x:\dir\subdir\Test\TestComponent.cshtml)

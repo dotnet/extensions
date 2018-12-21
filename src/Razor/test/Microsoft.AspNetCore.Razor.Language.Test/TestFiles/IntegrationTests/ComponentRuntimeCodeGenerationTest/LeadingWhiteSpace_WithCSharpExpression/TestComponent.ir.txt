@@ -13,4 +13,4 @@ Document -
                     IntermediateToken - (2:0,2 [10] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "My value"
                 HtmlContent - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                HtmlBlock -  - <h1>Hello</h1>
+                MarkupBlock -  - <h1>Hello</h1>

@@ -9,4 +9,4 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                ComponentExtensionNode - (31:1,0 [15] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
+                Component - (31:1,0 [15] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent

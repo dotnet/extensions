@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 using static Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeAssert;
@@ -46,6 +47,35 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             var irDocument = new DocumentIntermediateNode()
             {
+                Options = RazorCodeGenerationOptions.Create(o =>
+                {
+                    o.SuppressMetadataAttributes = true;
+                }),
+            };
+
+            // Act
+            pass.Execute(codeDocument, irDocument);
+
+            // Assert
+            NoChildren(irDocument);
+        }
+
+        [Fact]
+        public void Execute_ComponentDocumentKind_Noops()
+        {
+            // Arrange
+            var engine = CreateEngine();
+            var pass = new MetadataAttributePass()
+            {
+                Engine = engine,
+            };
+
+            var sourceDocument = TestRazorSourceDocument.Create();
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+
+            var irDocument = new DocumentIntermediateNode()
+            {
+                DocumentKind = ComponentDocumentClassifierPass.ComponentDocumentKind,
                 Options = RazorCodeGenerationOptions.Create(o =>
                 {
                     o.SuppressMetadataAttributes = true;

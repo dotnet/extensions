@@ -9,10 +9,10 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - 
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
-                ComponentExtensionNode - (31:1,0 [72] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                    ComponentAttributeExtensionNode -  - some-attribute - 
+                Component - (31:1,0 [72] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute -  - some-attribute - AttributeStructure.DoubleQuotes
                         HtmlContent - (60:1,29 [3] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (60:1,29 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - foo
-                    ComponentAttributeExtensionNode -  - another-attribute - 
+                    ComponentAttribute -  - another-attribute - AttributeStructure.DoubleQuotes
                         CSharpExpression - (84:1,53 [16] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (86:1,55 [13] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 43.ToString()

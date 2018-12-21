@@ -21,4 +21,4 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                ComponentExtensionNode - (31:1,0 [15] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
+                Component - (31:1,0 [15] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent

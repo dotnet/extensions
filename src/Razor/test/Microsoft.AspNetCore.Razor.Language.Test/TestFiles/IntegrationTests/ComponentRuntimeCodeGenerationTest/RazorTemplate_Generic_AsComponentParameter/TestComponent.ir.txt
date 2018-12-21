@@ -11,13 +11,13 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 CSharpCode - (35:1,2 [47] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (35:1,2 [47] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderFragment<Person> template = (person) => 
-                Template - (83:1,50 [22] x:\dir\subdir\Test\TestComponent.cshtml)
-                    HtmlElement - (83:1,50 [23] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                Template - (83:1,50 [23] x:\dir\subdir\Test\TestComponent.cshtml)
+                    MarkupElement - (83:1,50 [23] x:\dir\subdir\Test\TestComponent.cshtml) - div
                         CSharpExpression - (89:1,56 [11] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (89:1,56 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
                 CSharpCode - (106:1,73 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (106:1,73 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ; 
-                ComponentExtensionNode - (111:2,0 [41] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                    ComponentAttributeExtensionNode - (140:2,29 [9] x:\dir\subdir\Test\TestComponent.cshtml) - PersonTemplate - PersonTemplate
+                Component - (111:2,0 [41] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute - (140:2,29 [9] x:\dir\subdir\Test\TestComponent.cshtml) - PersonTemplate - AttributeStructure.DoubleQuotes
                         CSharpExpression - (141:2,30 [8] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (141:2,30 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - template

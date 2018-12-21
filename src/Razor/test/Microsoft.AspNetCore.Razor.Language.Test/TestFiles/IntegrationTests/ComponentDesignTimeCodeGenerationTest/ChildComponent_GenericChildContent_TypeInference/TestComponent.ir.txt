@@ -21,16 +21,16 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                ComponentExtensionNode - (31:1,0 [77] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - global::Test.MyComponent<TItem>
-                    ComponentChildContent -  - ChildContent
+                Component - (31:1,0 [77] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentChildContent -  - ChildContent - context
                         HtmlContent - (59:1,28 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (59:1,28 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n  
-                        HtmlElement - (63:2,2 [29] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                        MarkupElement - (63:2,2 [29] x:\dir\subdir\Test\TestComponent.cshtml) - div
                             CSharpExpression - (69:2,8 [17] x:\dir\subdir\Test\TestComponent.cshtml)
                                 IntermediateToken - (69:2,8 [17] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.ToLower()
                         HtmlContent - (92:2,31 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (92:2,31 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                    ComponentAttributeExtensionNode - (50:1,19 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item
+                    ComponentAttribute - (50:1,19 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
                         CSharpExpression - (51:1,20 [6] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (52:1,21 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "hi"
     NamespaceDeclaration -  - __Blazor.Test.TestComponent

@@ -24,9 +24,9 @@ Document -
                 CSharpCode - (35:1,2 [45] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (35:1,2 [45] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    RenderFragment<Person> p = (person) => 
                 Template - (81:2,44 [45] x:\dir\subdir\Test\TestComponent.cshtml)
-                    HtmlElement - (81:2,44 [45] x:\dir\subdir\Test\TestComponent.cshtml) - div
-                        ComponentExtensionNode - (86:2,49 [34] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                            ComponentAttributeExtensionNode - (105:2,68 [12] x:\dir\subdir\Test\TestComponent.cshtml) - Name - Name
+                    MarkupElement - (81:2,44 [45] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                        Component - (86:2,49 [34] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                            ComponentAttribute - (105:2,68 [12] x:\dir\subdir\Test\TestComponent.cshtml) - Name - AttributeStructure.DoubleQuotes
                                 CSharpExpression - (106:2,69 [11] x:\dir\subdir\Test\TestComponent.cshtml)
                                     IntermediateToken - (106:2,69 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
                 CSharpCode - (126:2,89 [3] x:\dir\subdir\Test\TestComponent.cshtml)

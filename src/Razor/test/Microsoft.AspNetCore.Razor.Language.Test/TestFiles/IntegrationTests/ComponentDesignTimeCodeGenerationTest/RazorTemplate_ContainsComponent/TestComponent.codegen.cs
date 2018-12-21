@@ -13,7 +13,11 @@ namespace Test
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 global::System.Object __typeHelper = "*, TestAssembly";
+
+#line default
+#line hidden
         }
         ))();
         }

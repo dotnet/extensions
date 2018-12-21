@@ -21,16 +21,16 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                ComponentExtensionNode - (31:1,0 [42] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - global::Test.MyComponent<TItem>
-                    ComponentAttributeExtensionNode - (66:1,35 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Value - Value
+                Component - (31:1,0 [42] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute - (66:1,35 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Value - AttributeStructure.DoubleQuotes
                         CSharpExpression - (67:1,36 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (68:1,37 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 18
-                    ComponentAttributeExtensionNode - (54:1,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - 
+                    ComponentAttribute - (54:1,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
                             IntermediateToken - (54:1,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
                             IntermediateToken -  - CSharp - )
-                    ComponentAttributeExtensionNode - (54:1,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - 
+                    ComponentAttribute - (54:1,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => Value = __value, Value)
                 HtmlContent - (73:1,42 [2] x:\dir\subdir\Test\TestComponent.cshtml)

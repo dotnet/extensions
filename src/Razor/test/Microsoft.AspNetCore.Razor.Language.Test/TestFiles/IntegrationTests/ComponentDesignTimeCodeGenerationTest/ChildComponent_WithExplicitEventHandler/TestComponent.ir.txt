@@ -21,8 +21,8 @@ Document -
                     IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                ComponentExtensionNode - (31:1,0 [35] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
-                    ComponentAttributeExtensionNode - (53:1,22 [10] x:\dir\subdir\Test\TestComponent.cshtml) - OnClick - OnClick
+                Component - (31:1,0 [35] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute - (53:1,22 [10] x:\dir\subdir\Test\TestComponent.cshtml) - OnClick - AttributeStructure.DoubleQuotes
                         CSharpExpression - (54:1,23 [9] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (54:1,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Increment
                 HtmlContent - (66:1,35 [4] x:\dir\subdir\Test\TestComponent.cshtml)
