@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Pass.Execute(document, documentNode);
 
             // Assert
-            var block = documentNode.FindDescendantNodes<HtmlBlockIntermediateNode>().Single();
+            var block = documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>().Single();
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Pass.Execute(document, documentNode);
 
             // Assert
-            var block = documentNode.FindDescendantNodes<HtmlBlockIntermediateNode>().Single();
+            var block = documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>().Single();
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Pass.Execute(document, documentNode);
 
             // Assert
-            var block = documentNode.FindDescendantNodes<HtmlBlockIntermediateNode>().Single();
+            var block = documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>().Single();
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Pass.Execute(document, documentNode);
 
             // Assert
-            var block = documentNode.FindDescendantNodes<HtmlBlockIntermediateNode>().Single();
+            var block = documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>().Single();
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Pass.Execute(document, documentNode);
 
             // Assert
-            var block = documentNode.FindDescendantNodes<HtmlBlockIntermediateNode>().Single();
+            var block = documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>().Single();
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Pass.Execute(document, documentNode);
 
             // Assert
-            var block = documentNode.FindDescendantNodes<HtmlBlockIntermediateNode>().Single();
+            var block = documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>().Single();
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Pass.Execute(document, documentNode);
 
             // Assert
-            var block = documentNode.FindDescendantNodes<HtmlBlockIntermediateNode>().Single();
+            var block = documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>().Single();
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Pass.Execute(document, documentNode);
 
             // Assert
-            var block = documentNode.FindDescendantNodes<HtmlBlockIntermediateNode>().Single();
+            var block = documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>().Single();
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Pass.Execute(document, documentNode);
 
             // Assert
-            var block = documentNode.FindDescendantNodes<HtmlBlockIntermediateNode>().Single();
+            var block = documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>().Single();
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Pass.Execute(document, documentNode);
 
             // Assert
-            Assert.Empty(documentNode.FindDescendantNodes<HtmlBlockIntermediateNode>());
+            Assert.Empty(documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>());
         }
 
         [Fact(Skip = "Not ready yet.")]
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Pass.Execute(document, documentNode);
 
             // Assert
-            Assert.Empty(documentNode.FindDescendantNodes<HtmlBlockIntermediateNode>());
+            Assert.Empty(documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>());
         }
 
         // The unclosed tag will have errors, so we won't rewrite it or its parent.
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Pass.Execute(document, documentNode);
 
             // Assert
-            Assert.Empty(documentNode.FindDescendantNodes<HtmlBlockIntermediateNode>());
+            Assert.Empty(documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>());
         }
 
         [Fact(Skip = "Not ready yet.")]
@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Pass.Execute(document, documentNode);
 
             // Assert
-            var block = documentNode.FindDescendantNodes<HtmlBlockIntermediateNode>().Single();
+            var block = documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>().Single();
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 

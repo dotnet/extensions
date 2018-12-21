@@ -87,16 +87,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return Attribute(Assert.Single(nodes), attributeName, attributeValue);
         }
 
-        public static HtmlElementIntermediateNode Element(IntermediateNode node, string tagName)
+        public static MarkupElementIntermediateNode Element(IntermediateNode node, string tagName)
         {
             Assert.NotNull(node);
 
-            var elementNode = Assert.IsType<HtmlElementIntermediateNode>(node);
+            var elementNode = Assert.IsType<MarkupElementIntermediateNode>(node);
             Assert.Equal(tagName, elementNode.TagName);
             return elementNode;
         }
 
-        public static HtmlElementIntermediateNode Element(IntermediateNodeCollection nodes, string tagName)
+        public static MarkupElementIntermediateNode Element(IntermediateNodeCollection nodes, string tagName)
         {
             Assert.NotNull(nodes);
             return Element(Assert.Single(nodes), tagName);
