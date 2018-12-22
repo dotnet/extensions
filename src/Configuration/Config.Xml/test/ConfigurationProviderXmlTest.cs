@@ -5,11 +5,17 @@ using System;
 using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Configuration.Test;
+using Xunit;
 
 namespace Microsoft.Extensions.Configuration.Xml.Test
 {
     public class ConfigurationProviderXmlTest : ConfigurationProviderTestBase
     {
+        public override void Load_from_single_provider_with_duplicates_throws()
+        {
+            // Disabled test due to XML handling of repeated elements, this behavior is covered by other tests.
+        }
+
         public override void Combine_before_other_provider()
         {
             // Disabled test due to XML handling of empty section.
