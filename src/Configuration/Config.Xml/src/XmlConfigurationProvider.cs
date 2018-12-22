@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.Configuration.Xml
         /// <param name="stream">The stream to read.</param>
         public override void Load(Stream stream)
         {
-            var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var configurationValues = new List<IConfigurationValue>();
 
             var readerSettings = new XmlReaderSettings()
             {
@@ -42,13 +42,11 @@ namespace Microsoft.Extensions.Configuration.Xml
 
             using (var reader = Decryptor.CreateDecryptingXmlReader(stream, readerSettings))
             {
-                var prefixStack = new Stack<string>();
+                // record all elements we encounter to check for repeated elements
+                var allElements = new List<Element>();
 
-                SkipUntilRootElement(reader);
-
-                // We process the root element individually since it doesn't contribute to prefix 
-                ProcessAttributes(reader, prefixStack, data, AddNamePrefix);
-                ProcessAttributes(reader, prefixStack, data, AddAttributePair);
+                // keep track of the tree we followed to get where we are (breadcrumb style)
+                var currentPath = new Stack<Element>();
 
                 var preNodeType = reader.NodeType;
                 while (reader.Read())
@@ -56,43 +54,55 @@ namespace Microsoft.Extensions.Configuration.Xml
                     switch (reader.NodeType)
                     {
                         case XmlNodeType.Element:
-                            prefixStack.Push(reader.LocalName);
-                            ProcessAttributes(reader, prefixStack, data, AddNamePrefix);
-                            ProcessAttributes(reader, prefixStack, data, AddAttributePair);
+                            var parent = currentPath.Any() ? currentPath.Peek() : null;
+                            var element = new Element(parent, reader.LocalName, GetName(reader), GetLineInfo(reader));
+
+                            // check if this element has appeared before
+                            var siblingKeyToken = allElements
+                              .Where(e => e.Parent != null
+                                          && e.Parent == parent
+                                          && string.Equals(e.ElementName, element.ElementName)
+                                          && string.Equals(e.Name, element.Name))
+                              .OrderByDescending(e => e.Index)
+                              .FirstOrDefault();
+                            if (siblingKeyToken != null)
+                            {
+                                siblingKeyToken.Multiple = element.Multiple = true;
+                                element.Index = siblingKeyToken.Index + 1;
+                            }
+
+                            currentPath.Push(element);
+                            allElements.Add(element);
+
+                            ProcessAttributes(reader, currentPath, configurationValues);
 
                             // If current element is self-closing
                             if (reader.IsEmptyElement)
                             {
-                                prefixStack.Pop();
+                                currentPath.Pop();
                             }
                             break;
 
                         case XmlNodeType.EndElement:
-                            if (prefixStack.Any())
+                            if (currentPath.Any())
                             {
                                 // If this EndElement node comes right after an Element node,
                                 // it means there is no text/CDATA node in current element
                                 if (preNodeType == XmlNodeType.Element)
                                 {
-                                    var key = ConfigurationPath.Combine(prefixStack.Reverse());
-                                    data[key] = string.Empty;
+                                    var configurationValue = new ElementContent(currentPath, string.Empty, GetLineInfo(reader));
+                                    configurationValues.Add(configurationValue);
                                 }
 
-                                prefixStack.Pop();
+                                currentPath.Pop();
                             }
                             break;
 
                         case XmlNodeType.CDATA:
                         case XmlNodeType.Text:
                             {
-                                var key = ConfigurationPath.Combine(prefixStack.Reverse());
-                                if (data.ContainsKey(key))
-                                {
-                                    throw new FormatException(Resources.FormatError_KeyIsDuplicated(key,
-                                        GetLineInfo(reader)));
-                                }
-
-                                data[key] = reader.Value;
+                                var configurationValue = new ElementContent(currentPath, reader.Value, GetLineInfo(reader));
+                                configurationValues.Add(configurationValue);
                                 break;
                             }
                         case XmlNodeType.XmlDeclaration:
@@ -118,30 +128,27 @@ namespace Microsoft.Extensions.Configuration.Xml
                 }
             }
 
-            Data = data;
-        }
-
-        private void SkipUntilRootElement(XmlReader reader)
-        {
-            while (reader.Read())
+            var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var configurationValue in configurationValues)
             {
-                if (reader.NodeType != XmlNodeType.XmlDeclaration &&
-                    reader.NodeType != XmlNodeType.ProcessingInstruction)
+                var key = configurationValue.Key;
+                if (data.ContainsKey(key))
                 {
-                    break;
+                    throw new FormatException(Resources.FormatError_KeyIsDuplicated(key, configurationValue.LineInfo));
                 }
+                data[key] = configurationValue.Value;
             }
+            Data = data;
         }
 
         private static string GetLineInfo(XmlReader reader)
         {
             var lineInfo = reader as IXmlLineInfo;
-            return lineInfo == null ?  string.Empty :
+            return lineInfo == null ? string.Empty :
                 Resources.FormatMsg_LineInfo(lineInfo.LineNumber, lineInfo.LinePosition);
         }
 
-        private void ProcessAttributes(XmlReader reader, Stack<string> prefixStack, IDictionary<string, string> data,
-            Action<XmlReader, Stack<string>, IDictionary<string, string>, XmlWriter> act, XmlWriter writer = null)
+        private void ProcessAttributes(XmlReader reader, Stack<Element> elementPath, IList<IConfigurationValue> data)
         {
             for (int i = 0; i < reader.AttributeCount; i++)
             {
@@ -153,7 +160,7 @@ namespace Microsoft.Extensions.Configuration.Xml
                     throw new FormatException(Resources.FormatError_NamespaceIsNotSupported(GetLineInfo(reader)));
                 }
 
-                act(reader, prefixStack, data, writer);
+                data.Add(new ElementAttributeValue(elementPath, reader.LocalName, reader.Value, GetLineInfo(reader)));
             }
 
             // Go back to the element containing the attributes we just processed
@@ -161,41 +168,111 @@ namespace Microsoft.Extensions.Configuration.Xml
         }
 
         // The special attribute "Name" only contributes to prefix
-        // This method adds a prefix if current node in reader represents a "Name" attribute
-        private static void AddNamePrefix(XmlReader reader, Stack<string> prefixStack,
-            IDictionary<string, string> data, XmlWriter writer)
+        // This method retrieves the Name of the element, if the attribute is present
+        // Unfortunately XmlReader.GetAttribute cannot be used, as it does not support looking for attributes in a case insensitive manner
+        private static string GetName(XmlReader reader)
         {
-            if (!string.Equals(reader.LocalName, NameAttributeKey, StringComparison.OrdinalIgnoreCase))
+            string name = null;
+
+            while (reader.MoveToNextAttribute())
             {
-                return;
+                if (string.Equals(reader.LocalName, NameAttributeKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    // If there is a namespace attached to current attribute
+                    if (!string.IsNullOrEmpty(reader.NamespaceURI))
+                    {
+                        throw new FormatException(Resources.FormatError_NamespaceIsNotSupported(GetLineInfo(reader)));
+                    }
+                    name = reader.Value;
+                    break;
+                }
             }
 
-            // If current element is not root element
-            if (prefixStack.Any())
-            {
-                var lastPrefix = prefixStack.Pop();
-                prefixStack.Push(ConfigurationPath.Combine(lastPrefix, reader.Value));
-            }
-            else
-            {
-                prefixStack.Push(reader.Value);
-            }
+            // Go back to the element containing the name we just processed
+            reader.MoveToElement();
+
+            return name;
+        }
+    }
+
+    class Element
+    {
+        // the name of the XML element
+        public string ElementName { get; }
+
+        // the content of the 'Name' attribute, if present
+        public string Name { get; }
+
+        public string LineInfo { get; }
+
+        public bool Multiple { get; set; }
+        public int Index { get; set; }
+        public Element Parent { get; }
+
+        public Element(Element parent, string elementName, string name, string lineInfo)
+        {
+            Parent = parent;
+            ElementName = elementName ?? throw new ArgumentNullException(nameof(elementName));
+            Name = name;
+            LineInfo = lineInfo;
         }
 
-        // Common attributes contribute to key-value pairs
-        // This method adds a key-value pair if current node in reader represents a common attribute
-        private static void AddAttributePair(XmlReader reader, Stack<string> prefixStack,
-            IDictionary<string, string> data, XmlWriter writer)
+        public string GetKey()
         {
-            prefixStack.Push(reader.LocalName);
-            var key = ConfigurationPath.Combine(prefixStack.Reverse());
-            if (data.ContainsKey(key))
-            {
-                throw new FormatException(Resources.FormatError_KeyIsDuplicated(key, GetLineInfo(reader)));
-            }
+            var tokens = new List<string>(3);
+            // root element does not contribute to prefix
+            if (Parent != null) tokens.Add(ElementName);
 
-            data[key] = reader.Value;
-            prefixStack.Pop();
+            // name attribute contributes to prefix
+            if (Name != null) tokens.Add(Name);
+
+            // index, if multiple elements exist, contributes to prefix
+            if (Multiple) tokens.Add(Index.ToString());
+
+            // the root element without a name attribute does not contribute to prefix at all
+            if (!tokens.Any()) return null;
+            return string.Join(ConfigurationPath.KeyDelimiter, tokens);
         }
+    }
+
+    interface IConfigurationValue
+    {
+        string Key { get; }
+        string Value { get; }
+        string LineInfo { get; }
+    }
+
+    class ElementContent : IConfigurationValue
+    {
+        private readonly Element[] _elementPath;
+
+        public ElementContent(Stack<Element> elementPath, string content, string lineInfo)
+        {
+            Value = content ?? throw new ArgumentNullException(nameof(content));
+            LineInfo = lineInfo ?? throw new ArgumentNullException(nameof(lineInfo));
+            _elementPath = elementPath?.Reverse().ToArray() ?? throw new ArgumentNullException(nameof(elementPath));
+        }
+
+        public string Key => ConfigurationPath.Combine(_elementPath.Select(e => e.GetKey()).Where(key => key != null));
+        public string Value { get; }
+        public string LineInfo { get; }
+    }
+
+    class ElementAttributeValue : IConfigurationValue
+    {
+        private readonly Element[] _elementPath;
+        private readonly string _attribute;
+
+        public ElementAttributeValue(Stack<Element> elementPath, string attribute, string value, string lineInfo)
+        {
+            _elementPath = elementPath?.Reverse()?.ToArray() ?? throw new ArgumentNullException(nameof(elementPath));
+            _attribute = attribute ?? throw new ArgumentNullException(nameof(attribute));
+            Value = value ?? throw new ArgumentNullException(nameof(value));
+            LineInfo = lineInfo;
+        }
+
+        public string Key => ConfigurationPath.Combine(_elementPath.Select(e => e.GetKey()).Concat(new[] { _attribute }).Where(key => key != null));
+        public string Value { get; }
+        public string LineInfo { get; }
     }
 }
