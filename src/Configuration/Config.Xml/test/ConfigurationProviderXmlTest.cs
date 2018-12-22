@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Configuration.Test;
-using Xunit;
 
 namespace Microsoft.Extensions.Configuration.Xml.Test
 {
