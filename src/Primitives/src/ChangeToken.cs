@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.Primitives
                 throw new ArgumentNullException(nameof(changeTokenConsumer));
             }
 
-            return new ChangeTokenRegistration<object>(changeTokenProducer, state => ((Action)state)(), changeTokenConsumer);
+            return new ChangeTokenRegistration<Action>(changeTokenProducer, callback => callback(), changeTokenConsumer);
         }
 
         /// <summary>
