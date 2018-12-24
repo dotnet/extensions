@@ -14,10 +14,6 @@ namespace Microsoft.Extensions.Primitives
         {
             private Action _callback;
 
-            public TestChangeToken()
-            {
-            }
-
             public bool ActiveChangeCallbacks { get; set; }
             public bool HasChanged { get; set; }
 
