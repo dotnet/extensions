@@ -108,6 +108,14 @@ namespace Microsoft.Extensions.Primitives
                 // fires.
                 var current = Volatile.Read(ref _disposable);
 
+                // If Dispose was called, then immediately dispose the disposable
+                if (current == _disposedSentinel)
+                {
+                    disposable.Dispose();
+                    return;
+                }
+
+                // Otherwise, try to update the disposable
                 var previous = Interlocked.CompareExchange(ref _disposable, disposable, current);
 
                 if (previous == _disposedSentinel)
@@ -121,7 +129,7 @@ namespace Microsoft.Extensions.Primitives
                 }
                 else
                 {
-                    // Sets can never overlap with other sets so we should never get into this situation
+                    // Sets can never overlap with other SetDisposable calls so we should never get into this situation
                     Debug.Fail("Somebody else set the _disposable");
                 }
             }
