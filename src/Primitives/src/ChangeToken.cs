@@ -124,9 +124,7 @@ namespace Microsoft.Extensions.Primitives
                 }
                 else if (previous == current)
                 {
-                    // We successfuly assigned the _disposable field to disposable (previous can be null if this is the first call to SetDisposable)
-                    // Dispose the previous registration
-                    previous?.Dispose();
+                    // We successfuly assigned the _disposable field to disposable
                 }
                 else
                 {
