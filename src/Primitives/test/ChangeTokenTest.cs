@@ -234,6 +234,33 @@ namespace Microsoft.Extensions.Primitives
             Assert.Equal(2, provider.DisposeCalls);
         }
 
+        [Fact]
+        public void ChangingTokenDisposesPreviousRegistration()
+        {
+            var provider = new TrackableChangeTokenProvider();
+            var count = 0;
+
+            IDisposable reg = null;
+
+            reg = ChangeToken.OnChange<object>(provider.GetChangeToken, state =>
+            {
+                count++;
+            },
+            null);
+
+            provider.Changed();
+
+            Assert.Equal(1, count);
+            Assert.Equal(1, provider.RegistrationCalls);
+            Assert.Equal(1, provider.DisposeCalls);
+            
+            provider.Changed();
+
+            Assert.Equal(2, count);
+            Assert.Equal(2, provider.RegistrationCalls);
+            Assert.Equal(2, provider.DisposeCalls);
+        }
+
         public class TrackableChangeTokenProvider
         {
             private TrackableChangeToken _cts = new TrackableChangeToken();

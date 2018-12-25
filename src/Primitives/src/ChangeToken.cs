@@ -58,9 +58,9 @@ namespace Microsoft.Extensions.Primitives
             private readonly Func<IChangeToken> _changeTokenProducer;
             private readonly Action<TState> _changeTokenConsumer;
             private readonly TState _state;
-            private object _disposable;
+            private IDisposable _disposable;
 
-            private static readonly object _disposedSentinel = new object();
+            private static readonly NoopDisposable _disposedSentinel = new NoopDisposable();
 
             public ChangeTokenRegistration(Func<IChangeToken> changeTokenProducer, Action<TState> changeTokenConsumer, TState state)
             {
@@ -104,8 +104,7 @@ namespace Microsoft.Extensions.Primitives
             {
                 // We don't want to transition from _disposedSentinel => anything since it's terminal
                 // but we want to allow going from previously assigned disposable, to another
-                // disposable. The assumption here is that we don't have to dispose the registration if an IChangeToken
-                // fires.
+                // disposable.
                 var current = Volatile.Read(ref _disposable);
 
                 // If Dispose was called, then immediately dispose the disposable
@@ -125,12 +124,14 @@ namespace Microsoft.Extensions.Primitives
                 }
                 else if (previous == current)
                 {
-                    // We successfuly assigned the _disposable field to disposable
+                    // We successfuly assigned the _disposable field to disposable (previous can be null if this is the first call to SetDisposable)
+                    // Dispose the previous registration
+                    previous?.Dispose();
                 }
                 else
                 {
                     // Sets can never overlap with other SetDisposable calls so we should never get into this situation
-                    Debug.Fail("Somebody else set the _disposable");
+                    throw new InvalidOperationException("Somebody else set the _disposable field");
                 }
             }
 
@@ -138,9 +139,13 @@ namespace Microsoft.Extensions.Primitives
             {
                 // If the previous value is disposable then dispose it, otherwise,
                 // now we've set the disposed sentinel
-                if (Interlocked.Exchange(ref _disposable, _disposedSentinel) is IDisposable disposable)
+                Interlocked.Exchange(ref _disposable, _disposedSentinel).Dispose();
+            }
+
+            private class NoopDisposable : IDisposable
+            {
+                public void Dispose()
                 {
-                    disposable.Dispose();
                 }
             }
         }
