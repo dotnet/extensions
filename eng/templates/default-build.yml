@@ -124,6 +124,8 @@ jobs:
         artifactType: Container
         parallel: true
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.publishToBar, 'true')) }}:
+    - script: dotnet msbuild eng/repo.targets /t:PublishToBAR /p:AzureAccountKey=$(dotnetfeed-storage-access-key-1) /p:AzureFeedUrl=https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json /p:DotNetPublishToBlobFeed=true
+      displayName: Publish packages to dotnet-core feed
     - task: AzureKeyVault@1
       inputs:
         azureSubscription: 'DotNet-Engineering-Services_KeyVault'
