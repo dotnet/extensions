@@ -128,7 +128,8 @@ namespace Microsoft.Extensions.Logging.EventSource
                 return new ActivityScope(_eventSource, CategoryName, id, _factoryID, true);
             }
 
-            if (_eventSource.IsEnabled(EventLevel.Critical, LoggingEventSource.Keywords.Message))
+            if (_eventSource.IsEnabled(EventLevel.Critical, LoggingEventSource.Keywords.Message) ||
+                _eventSource.IsEnabled(EventLevel.Critical, LoggingEventSource.Keywords.FormattedMessage))
             {
                 IEnumerable<KeyValuePair<string, string>> arguments = GetProperties(state);
                 _eventSource.ActivityStart(id, _factoryID, CategoryName, arguments);
