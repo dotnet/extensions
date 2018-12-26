@@ -1,86 +1,40 @@
-variables:
-- name: Build.Repository.Clean
-  value: true
+#
+# See https://docs.microsoft.com/en-us/vsts/pipelines/yaml-schema for details
+#
 
-resources:
-  containers:
-  - container: LinuxContainer
-    image: microsoft/dotnet-buildtools-prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
-
-# CI and PR triggers
+# Only run CI builds for these branches
 trigger:
-- master
-
+  branches:
+    include:
+    - 'master'
+    - 'release/*'
+    - 'internal/release/*'
+# Run PR validation on all branches
 pr:
-- master
+  branches:
+    include:
+    - '*'
+
+name: $(Date:yyyyMMdd).$(Rev:rr)
 
 jobs:
-- template: /eng/common/templates/jobs/jobs.yml
+- template: eng/templates/default-build.yml
   parameters:
-    enableMicroBuild: true
-    enablePublishBuildArtifacts: true
-    enablePublishBuildAssets: true
-    enablePublishTestResults: true
-    enableTelemetry: true
-    helixRepo: aspnet/Extensions
-    jobs:
-    - job: Windows_NT
-      pool:
-        ${{ if ne(variables['System.TeamProject'], 'internal') }}:
-          name: Hosted VS2017
-          vmImage: vs2017-win2016
-        ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-          name: dotnet-internal-temp
-      strategy:
-        matrix:
-          debug_configuration:
-            _BuildConfig: Debug
-          release_configuration:
-            _BuildConfig: Release
-      steps:
-      - script: eng\common\cibuild.cmd
-          -configuration $(_BuildConfig)
-          -prepareMachine
-          -warnaserror $False
-        name: Build
-        displayName: Build
-        condition: succeeded()
+    agentOs: Windows
+    configuration: Release
+    codeSign: true
+    publishToBar: true
+    artifacts:
+      publish: true
+      name: packages
+      path: artifacts/Release/packages
 
-    - job: OSX
-      pool:
-        name: Hosted macOS
-        vmImage: macOS-10.13
-      strategy:
-        matrix:
-          debug_configuration:
-            _BuildConfig: Debug
-          release_configuration:
-            _BuildConfig: Release
-      steps:
-      - script: eng/common/cibuild.sh
-          --warnAsError false
-          --configuration $(_BuildConfig)
-          --prepareMachine
-        name: Build
-        displayName: Build
-        condition: succeeded()
+- template: eng/templates/default-build.yml
+  parameters:
+    agentOs: macOS
+    configuration: Release
 
-    - job: Linux
-      pool:
-        name: Hosted Ubuntu 1604
-        vmImage: ubuntu-16.04
-      container: LinuxContainer
-      strategy:
-        matrix:
-          debug_configuration:
-            _BuildConfig: Debug
-          release_configuration:
-            _BuildConfig: Release
-      steps:
-      - script: eng/common/cibuild.sh
-          --warnAsError false
-          --configuration $(_BuildConfig)
-          --prepareMachine
-        name: Build
-        displayName: Build
-        condition: succeeded()
+- template: eng/templates/default-build.yml
+  parameters:
+    agentOs: Linux
+    configuration: Release
