@@ -62,7 +62,8 @@ namespace Microsoft.Extensions.Logging.EventSource
                     logLevel,
                     _factoryID,
                     CategoryName,
-                    eventId.ToString(),
+                    eventId.Id,
+                    eventId.Name,
                     message);
             }
 
@@ -76,7 +77,8 @@ namespace Microsoft.Extensions.Logging.EventSource
                     logLevel,
                     _factoryID,
                     CategoryName,
-                    eventId.ToString(),
+                    eventId.Id,
+                    eventId.Name,
                     exceptionInfo,
                     arguments);
             }
@@ -102,7 +104,8 @@ namespace Microsoft.Extensions.Logging.EventSource
                     logLevel,
                     _factoryID,
                     CategoryName,
-                    eventId.ToString(),
+                    eventId.Id,
+                    eventId.Name,
                     exceptionJson,
                     ToJson(arguments));
             }
@@ -124,12 +127,15 @@ namespace Microsoft.Extensions.Logging.EventSource
                 _eventSource.ActivityJsonStart(id, _factoryID, CategoryName, ToJson(arguments));
                 return new ActivityScope(_eventSource, CategoryName, id, _factoryID, true);
             }
-            else
+
+            if (_eventSource.IsEnabled(EventLevel.Critical, LoggingEventSource.Keywords.Message))
             {
                 IEnumerable<KeyValuePair<string, string>> arguments = GetProperties(state);
                 _eventSource.ActivityStart(id, _factoryID, CategoryName, arguments);
                 return new ActivityScope(_eventSource, CategoryName, id, _factoryID, false);
             }
+
+            return NullScope.Instance;
         }
 
         /// <summary>
@@ -190,19 +196,20 @@ namespace Microsoft.Extensions.Logging.EventSource
         /// </summary>
         private IEnumerable<KeyValuePair<string, string>> GetProperties(object state)
         {
-            var arguments = new List<KeyValuePair<string, string>>();
-            var asKeyValues = state as IEnumerable<KeyValuePair<string, object>>;
-            if (asKeyValues != null)
+            if (state is IEnumerable<KeyValuePair<string, object>> keyValuePairs)
             {
-                foreach (var keyValue in asKeyValues)
+                var arguments = new List<KeyValuePair<string, string>>();
+                foreach (var keyValue in keyValuePairs)
                 {
                     if (keyValue.Key != null)
                     {
                         arguments.Add(new KeyValuePair<string, string>(keyValue.Key, keyValue.Value?.ToString()));
                     }
                 }
+                return arguments;
             }
-            return arguments;
+
+            return Array.Empty<KeyValuePair<string, string>>();
         }
 
         private string ToJson(IEnumerable<KeyValuePair<string, string>> keyValues)
