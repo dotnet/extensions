@@ -97,6 +97,7 @@ jobs:
         -configuration $(BuildConfiguration)
         -prepareMachine
         -warnaserror $False
+        /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
       displayName: Run cibuild.cmd
   - ${{ if ne(parameters.agentOs, 'Windows') }}:
     - script: eng/common/cibuild.sh
