@@ -1,12 +1,18 @@
 ﻿<Project>
   <PropertyGroup Label="Package Versions">
     <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20181108.5</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreBlazorExtensionsPackageVersion>0.6.0</MicrosoftAspNetCoreBlazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-alpha1-10643</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>3.0.0-alpha1-10643</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
+    <MicrosoftAspNetCoreBlazorExtensionsPackageVersion>0.7.0</MicrosoftAspNetCoreBlazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-preview-18606-0098</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>3.0.0-preview-18606-0098</MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>3.0.0-preview-18606-0098</MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10643</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftBuildPackageVersion>15.8.166</MicrosoftBuildPackageVersion>
-    <MicrosoftCodeAnalysisRazorWorkspacesPackageVersion>3.0.0-alpha1-10643</MicrosoftCodeAnalysisRazorWorkspacesPackageVersion>
+    <MicrosoftBuildPackageVersion>15.9.20</MicrosoftBuildPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>2.11.0-beta3-63519-01</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.11.0-beta3-63519-01</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>2.11.0-beta3-63519-01</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
+    <MicrosoftCodeAnalysisRazorWorkspacesPackageVersion>3.0.0-preview-18606-0098</MicrosoftCodeAnalysisRazorWorkspacesPackageVersion>
+    <MicrosoftCodeAnalysisVisualBasicFeaturesPackageVersion>2.11.0-beta3-63519-01</MicrosoftCodeAnalysisVisualBasicFeaturesPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>2.11.0-beta3-63519-01</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.1.1</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
@@ -15,6 +21,9 @@
     <MoqPackageVersion>4.9.0</MoqPackageVersion>
     <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
     <OmniSharpExtensionsLanguageServerPackageVersion>0.10.0</OmniSharpExtensionsLanguageServerPackageVersion>
+    <SystemRuntimeHandlesPackageVersion>4.3.0</SystemRuntimeHandlesPackageVersion>
+    <SystemIOFileSystemPrimitivesPackageVersion>4.3.0</SystemIOFileSystemPrimitivesPackageVersion>
+    <SystemTextEncodingExtensionsPackageVersion>4.3.0</SystemTextEncodingExtensionsPackageVersion>
     <XunitAnalyzersPackageVersion>0.10.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0</XunitRunnerVisualStudioPackageVersion>

@@ -163,7 +163,8 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         {
             // Arrange
             var router = new TestRouter();
-            var document = TestDocumentSnapshot.Create("C:/path/file.cshtml", VersionStamp.Default.GetNewerVersion());
+            var documentVersion = VersionStamp.Default.GetNewerVersion();
+            var document = TestDocumentSnapshot.Create("C:/path/file.cshtml", documentVersion);
             var cache = new TestDocumentVersionCache(new Dictionary<DocumentSnapshot, long>()
             {
                 [document] = 1337,
@@ -171,7 +172,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var csharpDocument = RazorCSharpDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
 
             // Force the state to already be up-to-date
-            document.State.HostDocument.GeneratedCodeContainer.SetOutput(csharpDocument, document);
+            document.State.HostDocument.GeneratedCodeContainer.SetOutput(document, csharpDocument, documentVersion.GetNewerVersion(), VersionStamp.Default);
 
             var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, router, LoggerFactory);
             var work = new[] { new KeyValuePair<string, DocumentSnapshot>(document.FilePath, document) };
@@ -199,7 +200,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var csharpDocument = RazorCSharpDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
 
             // Force the state to already be up-to-date
-            oldDocument.State.HostDocument.GeneratedCodeContainer.SetOutput(csharpDocument, lastDocument);
+            oldDocument.State.HostDocument.GeneratedCodeContainer.SetOutput(lastDocument, csharpDocument, lastVersion, VersionStamp.Default);
 
             var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, router, LoggerFactory);
             var work = new[] { new KeyValuePair<string, DocumentSnapshot>(oldDocument.FilePath, oldDocument) };
@@ -227,7 +228,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var csharpDocument = RazorCSharpDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
 
             // Force the state to already be up-to-date
-            document.State.HostDocument.GeneratedCodeContainer.SetOutput(csharpDocument, lastDocument);
+            document.State.HostDocument.GeneratedCodeContainer.SetOutput(lastDocument, csharpDocument, lastVersion, VersionStamp.Default);
 
             var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, router, LoggerFactory);
             var work = new[] { new KeyValuePair<string, DocumentSnapshot>(document.FilePath, document) };
@@ -255,7 +256,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var csharpDocument = RazorCSharpDocument.Create("Anything", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
 
             // Force the state to already be up-to-date
-            document.State.HostDocument.GeneratedCodeContainer.SetOutput(csharpDocument, lastDocument);
+            document.State.HostDocument.GeneratedCodeContainer.SetOutput(lastDocument, csharpDocument, lastVersion, VersionStamp.Default);
 
             var backgroundGenerator = new BackgroundDocumentGenerator(Dispatcher, cache, router, LoggerFactory);
             var work = new[] { new KeyValuePair<string, DocumentSnapshot>(document.FilePath, document) };

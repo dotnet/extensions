@@ -108,8 +108,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
 
             _logger.LogInformation($"Adding document '{textDocumentPath}' to project '{projectSnapshot.FilePath}'.");
             _projectSnapshotManagerAccessor.Instance.DocumentAdded(defaultProject.HostProject, hostDocument, textLoader);
-
-            TryUpdateViewImportDependencies(filePath, defaultProject);
         }
 
         public override void OpenDocument(string filePath, SourceText sourceText, long version)
@@ -172,8 +170,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             var defaultProject = (DefaultProjectSnapshot)projectSnapshot;
             _logger.LogInformation($"Removing document '{textDocumentPath}' from project '{projectSnapshot.FilePath}'.");
             _projectSnapshotManagerAccessor.Instance.DocumentRemoved(defaultProject.HostProject, document.State.HostDocument);
-
-            TryUpdateViewImportDependencies(filePath, defaultProject);
         }
 
         public override void UpdateDocument(string filePath, SourceText sourceText, long version)
@@ -191,8 +187,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
             _projectSnapshotManagerAccessor.Instance.DocumentChanged(defaultProject.HostProject.FilePath, textDocumentPath, sourceText);
 
             TrackDocumentVersion(textDocumentPath, version);
-
-            TryUpdateViewImportDependencies(filePath, projectSnapshot);
         }
 
         public override void AddProject(string filePath)
@@ -311,42 +305,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem
                 var defaultProject = (DefaultProjectSnapshot)projectSnapshot;
                 _logger.LogInformation($"Migrating '{documentFilePath}' from the '{miscellaneousProject.FilePath}' project to '{projectSnapshot.FilePath}' project.");
                 _projectSnapshotManagerAccessor.Instance.DocumentAdded(defaultProject.HostProject, documentSnapshot.State.HostDocument, textLoader);
-            }
-        }
-
-        // Internal for testing
-        internal void TryUpdateViewImportDependencies(string documentFilePath, ProjectSnapshot project)
-        {
-            // Upon the completion of https://github.com/aspnet/Razor/issues/2633 this will no longer be necessary.
-
-            if (!documentFilePath.EndsWith("_ViewImports.cshtml", StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            // Adding a _ViewImports, need to refresh all open documents.
-            var importAddedFilePath = documentFilePath;
-            var documentsToBeRefreshed = new List<DefaultDocumentSnapshot>();
-            foreach (var filePath in project.DocumentFilePaths)
-            {
-                if (string.Equals(filePath, importAddedFilePath, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                if (_projectSnapshotManagerAccessor.Instance.IsDocumentOpen(filePath))
-                {
-                    var document = (DefaultDocumentSnapshot)project.GetDocument(filePath);
-
-                    // This document cares about the import
-                    documentsToBeRefreshed.Add(document);
-                }
-            }
-
-            foreach (var document in documentsToBeRefreshed)
-            {
-                var delegatingTextLoader = new DelegatingTextLoader(document);
-                _projectSnapshotManagerAccessor.Instance.DocumentChanged(project.FilePath, document.FilePath, delegatingTextLoader);
             }
         }
 

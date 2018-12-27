@@ -37,13 +37,13 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
         }
 
         public override RazorProjectEngine Create(
-            ProjectSnapshot project,
-            RazorProjectFileSystem fileSystem,
+            RazorConfiguration configuration, 
+            RazorProjectFileSystem fileSystem, 
             Action<RazorProjectEngineBuilder> configure)
         {
             var remoteFileSystem = new RemoteRazorProjectFileSystem(_filePathNormalizer);
 
-            return base.Create(project, remoteFileSystem, configure);
+            return base.Create(configuration, remoteFileSystem, configure);
         }
     }
 }

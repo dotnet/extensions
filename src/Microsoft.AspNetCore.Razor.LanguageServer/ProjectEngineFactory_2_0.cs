@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 {
     internal class ProjectEngineFactory_2_0 : IProjectEngineFactory
     {
-        private const string AssemblyName = "Microsoft.AspNetCore.Mvc.Razor.Extensions";
+        private const string AssemblyName = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X";
 
         public RazorProjectEngine Create(RazorConfiguration configuration, RazorProjectFileSystem fileSystem, Action<RazorProjectEngineBuilder> configure)
         {

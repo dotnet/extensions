@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -179,9 +180,6 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 _foregroundDispatcher.AssertBackgroundThread();
 
-                // Timer is stopped.
-                _timer.Change(Timeout.Infinite, Timeout.Infinite);
-
                 OnStartingBackgroundWork();
 
                 KeyValuePair<string, DocumentSnapshot>[] work;
@@ -233,7 +231,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             catch (Exception ex)
             {
                 // This is something totally unexpected, let's just send it over to the workspace.
+                _logger.LogError("Unexpected error processing document: " + ex.Message);
                 ReportError(ex);
+
+                _timer?.Dispose();
+                _timer = null;
             }
         }
 
@@ -245,7 +247,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             {
                 case ProjectChangeKind.ProjectAdded:
                     {
-                        var projectSnapshot = _projectManager.GetLoadedProject(args.ProjectFilePath);
+                        var projectSnapshot = args.Newer;
                         foreach (var documentFilePath in projectSnapshot.DocumentFilePaths)
                         {
                             if (_projectManager.IsDocumentOpen(documentFilePath))
@@ -259,7 +261,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                     }
                 case ProjectChangeKind.ProjectChanged:
                     {
-                        var projectSnapshot = _projectManager.GetLoadedProject(args.ProjectFilePath);
+                        var projectSnapshot = args.Newer;
                         foreach (var documentFilePath in projectSnapshot.DocumentFilePaths)
                         {
                             if (_projectManager.IsDocumentOpen(documentFilePath))
@@ -274,11 +276,19 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                 case ProjectChangeKind.DocumentAdded:
                     {
-                        var project = _projectManager.GetLoadedProject(args.ProjectFilePath);
+                        var projectSnapshot = args.Newer;
+                        var document = projectSnapshot.GetDocument(args.DocumentFilePath);
                         if (_projectManager.IsDocumentOpen(args.DocumentFilePath))
                         {
-                            var document = project.GetDocument(args.DocumentFilePath);
                             Enqueue(document);
+                        }
+
+                        foreach (var relatedDocument in projectSnapshot.GetRelatedDocuments(document))
+                        {
+                            if (_projectManager.IsDocumentOpen(relatedDocument.FilePath))
+                            {
+                                Enqueue(relatedDocument);
+                            }
                         }
 
                         break;
@@ -286,18 +296,40 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
                 case ProjectChangeKind.DocumentChanged:
                     {
-                        var project = _projectManager.GetLoadedProject(args.ProjectFilePath);
+                        var projectSnapshot = args.Newer;
+                        var document = projectSnapshot.GetDocument(args.DocumentFilePath);
                         if (_projectManager.IsDocumentOpen(args.DocumentFilePath))
                         {
-                            var document = project.GetDocument(args.DocumentFilePath);
                             Enqueue(document);
+                        }
+
+                        foreach (var relatedDocument in projectSnapshot.GetRelatedDocuments(document))
+                        {
+                            if (_projectManager.IsDocumentOpen(relatedDocument.FilePath))
+                            {
+                                Enqueue(relatedDocument);
+                            }
                         }
 
                         break;
                     }
 
-                case ProjectChangeKind.ProjectRemoved:
                 case ProjectChangeKind.DocumentRemoved:
+                    {
+                        var olderProject = args.Older;
+                        var document = olderProject.GetDocument(args.DocumentFilePath);
+
+                        foreach (var relatedDocument in olderProject.GetRelatedDocuments(document))
+                        {
+                            var newerRelatedDocument = args.Newer.GetDocument(relatedDocument.FilePath);
+                            if (_projectManager.IsDocumentOpen(newerRelatedDocument.FilePath))
+                            {
+                                Enqueue(newerRelatedDocument);
+                            }
+                        }
+                        break;
+                    }
+                case ProjectChangeKind.ProjectRemoved:
                     {
                         // ignore
                         break;
@@ -335,7 +367,7 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                 }
 
                 var latestSynchronizedDocument = defaultDocument.State.HostDocument.GeneratedCodeContainer.LatestDocument;
-                if (latestSynchronizedDocument == null || 
+                if (latestSynchronizedDocument == null ||
                     latestSynchronizedDocument == document)
                 {
                     // Already up-to-date

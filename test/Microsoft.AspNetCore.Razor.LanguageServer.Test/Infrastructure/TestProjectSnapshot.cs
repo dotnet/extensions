@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 
@@ -17,7 +18,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer.Test.Infrastructure
 
         public static TestProjectSnapshot Create(string filePath, string[] documentFilePaths)
         {
-            var workspace = TestWorkspace.Create();
+            var workspaceServices = new List<IWorkspaceService>()
+            {
+                new TestProjectSnapshotProjectEngineFactory(),
+            };
+            var languageServices = new List<ILanguageService>();
+
+            var hostServices = TestServices.Create(workspaceServices, languageServices);
+            var workspace = TestWorkspace.Create(hostServices);
             var hostProject = new HostProject(filePath, RazorConfiguration.Default);
             var state = ProjectState.Create(workspace.Services, hostProject);
             foreach (var documentFilePath in documentFilePaths)

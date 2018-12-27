@@ -47,7 +47,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
 
         public override HostDocument Create(string documentFilePath)
         {
-            var hostDocument = new HostDocument(documentFilePath, documentFilePath);
+            // Representing all of our host documents with a re-normalized target path to workaround GetRelatedDocument limitations.
+            var targetPath = documentFilePath.Replace('/', '\\').TrimStart('\\');
+            var hostDocument = new HostDocument(documentFilePath, targetPath);
             hostDocument.GeneratedCodeContainer.GeneratedCodeChanged += (sender, args) =>
             {
                 var generatedCodeContainer = (GeneratedCodeContainer)sender;

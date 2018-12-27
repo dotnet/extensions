@@ -14,18 +14,25 @@
   <ItemGroup>
     <PackageReference Include="OmniSharp.Extensions.LanguageServer" Version="$(OmniSharpExtensionsLanguageServerPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsVersion1_XPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsVersion2_XPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.Razor.Workspaces" Version="$(MicrosoftCodeAnalysisRazorWorkspacesPackageVersion)" />
+
+    <!-- Needed to make use of the adhoc workspace -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(MicrosoftCodeAnalysisCSharpFeaturesPackageVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Features" Version="$(MicrosoftCodeAnalysisVisualBasicFeaturesPackageVersion)" />
+
+    <!-- Blazor dependencies. We have to lift a few runtime packages to make things work with our other dependnecies -->
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Razor.Extensions" Version="$(MicrosoftAspNetCoreBlazorExtensionsPackageVersion)" />
+    <PackageReference Include="System.Runtime.Handles" Version="$(SystemRuntimeHandlesPackageVersion)" />
+    <PackageReference Include="System.IO.FileSystem.Primitives" Version="$(SystemIOFileSystemPrimitivesPackageVersion)" />
+    <PackageReference Include="System.Text.Encoding.Extensions" Version="$(SystemTextEncodingExtensionsPackageVersion)" />
   </ItemGroup>
 
   <Target Name="PublishLanguageServerNativeExecutables" AfterTargets="Pack" DependsOnTargets="PublishAllRids" />
 
   <Target Name="IncludeOmniSharpPlugin" AfterTargets="Publish" Condition="Exists('$(PublishDir)')">
-    <MSBuild
-      Projects="..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\Microsoft.AspNetCore.Razor.OmniSharpPlugin.csproj"
-      Properties="PublishDir=$(MSBuildProjectDirectory)\..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\bin\$(Configuration)\net461\publish;RuntimeIdentifier="
-      Targets="Publish" />
+    <MSBuild Projects="..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\Microsoft.AspNetCore.Razor.OmniSharpPlugin.csproj" Properties="PublishDir=$(MSBuildProjectDirectory)\..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\bin\$(Configuration)\net461\publish;RuntimeIdentifier=" Targets="Publish" />
 
     <PropertyGroup>
       <PluginReferenceOutputPath>$(MSBuildProjectDirectory)\..\Microsoft.AspNetCore.Razor.OmniSharpPlugin\bin\$(Configuration)\net461\publish</PluginReferenceOutputPath>
@@ -33,13 +40,13 @@
     </PropertyGroup>
 
     <RemoveDir Directories="$(TargetPluginOutputPath)" />
-    <MakeDir Directories="$(TargetPluginOutputPath)" /> 
+    <MakeDir Directories="$(TargetPluginOutputPath)" />
 
     <ItemGroup>
       <PluginAssets Include="$(PluginReferenceOutputPath)\**\*.*" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(PluginAssets)" DestinationFiles="@(PluginAssets->'$(TargetPluginOutputPath)\%(RecursiveDir)%(Filename)%(Extension)')" /> 
+    <Copy SourceFiles="@(PluginAssets)" DestinationFiles="@(PluginAssets->'$(TargetPluginOutputPath)\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
 </Project>

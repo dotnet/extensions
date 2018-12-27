@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.LanguageServer.ProjectSystem;
 
@@ -33,6 +35,11 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
             var physicalFilePath = _filePathNormalizer.Normalize(path);
 
             return new RemoteProjectItem(path, physicalFilePath);
+        }
+
+        protected override string NormalizeAndEnsureValidPath(string path)
+        {
+            return _filePathNormalizer.Normalize(path);
         }
     }
 }

@@ -39,7 +39,7 @@ export async function activate(context: ExtensionContext, languageServerDir: str
         const logger = new RazorLogger(vscode, eventEmitterFactory, languageServerTrace);
         const languageServerOptions = resolveRazorLanguageServerOptions(vscode, languageServerDir, languageServerTrace, logger);
         const languageServerClient = new RazorLanguageServerClient(languageServerOptions, telemetryReporter, logger);
-        const languageServiceClient = new RazorLanguageServiceClient(languageServerClient);
+        const languageServiceClient = new RazorLanguageServiceClient(languageServerClient, logger);
         const documentManager = new RazorDocumentManager(languageServerClient, logger);
         reportTelemetryForDocuments(documentManager, telemetryReporter);
         const projectManager = new RazorProjectManager(logger);
