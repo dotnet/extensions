@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BasicRazorApp2_1
+namespace BasicRazorApp3_0
 {
     public class Program
     {

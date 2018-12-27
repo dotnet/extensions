@@ -6,6 +6,7 @@
   <ItemGroup>
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp30PackageVersion)" />
   </ItemGroup>
 
   <Target Name="CodeSign" AfterTargets="Package" DependsOnTargets="GetToolsets" Condition=" '$(OS)' == 'Windows_NT' ">

@@ -67,6 +67,9 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer
                             () => new ProjectEngineFactory_2_1(),
                             new ExportCustomProjectEngineFactoryAttribute("MVC-2.1") { SupportsSerialization = true }),
                         new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
+                            () => new ProjectEngineFactory_3_0(),
+                            new ExportCustomProjectEngineFactoryAttribute("MVC-3.0") { SupportsSerialization = true }),
+                        new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
                             () => new ProjectEngineFactory_Unsupported(),
                             new ExportCustomProjectEngineFactoryAttribute(UnsupportedRazorConfiguration.Instance.ConfigurationName) { SupportsSerialization = true }),
                         new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
