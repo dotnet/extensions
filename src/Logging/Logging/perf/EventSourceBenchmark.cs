@@ -13,24 +13,25 @@ namespace Microsoft.Extensions.Logging.Performance
     public class EventSourceBenchmark: LoggingBenchmarkBase
     {
         private ILogger _logger;
+        private ILogger _noopLogger;
 
         private TestEventListener _listener;
 
         [Params(true, false)]
-        public bool HasSubscribers { get; set; } = false;
+        public bool HasSubscribers { get; set; } = true;
 
         [Params(true, false)]
         public bool Json { get; set; } = false;
 
         [Benchmark]
-        public void FilteredByLevel_InsideScope()
+        public void EventSourceLogger()
         {
             using (_logger.BeginScope("String scope"))
             {
                 using (_logger.BeginScope(new SampleScope()))
                 {
-                    TwoArgumentErrorMessage(_logger, 1, "string", Exception);
-                    TwoArgumentTraceMessage(_logger, 2, "string", Exception);
+                    TwoArgumentErrorMessage(_logger, 1, "string", null);
+                    TwoArgumentTraceMessage(_logger, 2, "string", null);
                 }
             }
         }
@@ -38,15 +39,21 @@ namespace Microsoft.Extensions.Logging.Performance
         [GlobalSetup]
         public void Setup()
         {
+            if (HasSubscribers)
+            {
+                _listener = new TestEventListener(Json ? LoggingEventSource.Keywords.JsonMessage : LoggingEventSource.Keywords.FormattedMessage);
+            }
+
             var services = new ServiceCollection();
             services.AddLogging(builder => builder.AddEventSourceLogger());
 
             _logger = services.BuildServiceProvider().GetService<ILoggerFactory>().CreateLogger("Logger");
 
-            if (HasSubscribers)
-            {
-                _listener = new TestEventListener(Json ? LoggingEventSource.Keywords.JsonMessage : LoggingEventSource.Keywords.FormattedMessage);
-            }
+            services = new ServiceCollection();
+            services.AddLogging();
+            services.AddSingleton<ILoggerProvider, LoggerProvider<NoopLogger>>();
+
+            _noopLogger = services.BuildServiceProvider().GetService<ILoggerFactory>().CreateLogger("Logger");
         }
 
         [GlobalCleanup]
@@ -68,6 +75,7 @@ namespace Microsoft.Extensions.Logging.Performance
             {
                 if (eventSource.Name == "Microsoft-Extensions-Logging")
                 {
+                    DisableEvents(eventSource);
                     EnableEvents(eventSource, EventLevel.Verbose, _keywords);
                 }
             }
