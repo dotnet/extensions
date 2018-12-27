@@ -457,7 +457,8 @@ namespace Microsoft.Extensions.Logging.EventSource
                 }
 #endif
 
-                if (pinnedString != null) {
+                if (pinnedString != null)
+                {
                     eventData.DataPointer = (IntPtr)pinnedString;
                     eventData.Size = checked((str.Length + 1) * sizeof(char)); // size is specified in bytes, including null wide char
                 }
