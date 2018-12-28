@@ -16,7 +16,7 @@ Microsoft.Extensions.Logging.Abstractions.NullLogger</Description>
 
   <ItemGroup>
     <Compile Include="../../shared/*.cs" />
-    <Compile Include="../../../shared/src/TypeNameHelper/TypeNameHelper.cs" />
+    <Compile Include="../../../Shared/src/TypeNameHelper/TypeNameHelper.cs" />
   </ItemGroup>
 
 </Project>
