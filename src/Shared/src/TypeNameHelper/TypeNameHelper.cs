@@ -9,6 +9,8 @@ namespace Microsoft.Extensions.Internal
 {
     internal class TypeNameHelper
     {
+        private const char DefaultNestedTypeDelimiter = '+';
+
         private static readonly Dictionary<Type, string> _builtInTypeNames = new Dictionary<Type, string>
         {
             { typeof(void), "void" },
@@ -43,7 +45,7 @@ namespace Microsoft.Extensions.Internal
         /// <param name="includeGenericParameters"><c>true</c> to include generic parameters.</param>
         /// <param name="nestedTypeDelimiter">Character to use as a delimiter in nested type names</param>
         /// <returns>The pretty printed type name.</returns>
-        public static string GetTypeDisplayName(Type type, bool fullName = true, bool includeGenericParameterNames = false, bool includeGenericParameters = true, char nestedTypeDelimiter = '+')
+        public static string GetTypeDisplayName(Type type, bool fullName = true, bool includeGenericParameterNames = false, bool includeGenericParameters = true, char nestedTypeDelimiter = DefaultNestedTypeDelimiter)
         {
             var builder = new StringBuilder();
             ProcessType(builder, type, new DisplayNameOptions(fullName, includeGenericParameterNames, includeGenericParameters, nestedTypeDelimiter));
@@ -74,7 +76,13 @@ namespace Microsoft.Extensions.Internal
             }
             else
             {
-                builder.Append(options.FullName ? type.FullName : type.Name);
+                var name = options.FullName ? type.FullName : type.Name;
+                builder.Append(name);
+
+                if (options.NestedTypeDelimiter != DefaultNestedTypeDelimiter)
+                {
+                    builder.Replace(DefaultNestedTypeDelimiter, options.NestedTypeDelimiter, builder.Length - name.Length, name.Length);
+                }
             }
         }
 
