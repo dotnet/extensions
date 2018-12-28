@@ -41,15 +41,16 @@ namespace Microsoft.Extensions.Internal
         /// <param name="fullName"><c>true</c> to print a fully qualified name.</param>
         /// <param name="includeGenericParameterNames"><c>true</c> to include generic parameter names.</param>
         /// <param name="includeGenericParameters"><c>true</c> to include generic parameters.</param>
+        /// <param name="nestedTypeDelimiter">Character to use as a delimiter in nested type names</param>
         /// <returns>The pretty printed type name.</returns>
-        public static string GetTypeDisplayName(Type type, bool fullName = true, bool includeGenericParameterNames = false, bool includeGenericParameters = true)
+        public static string GetTypeDisplayName(Type type, bool fullName = true, bool includeGenericParameterNames = false, bool includeGenericParameters = true, char nestedTypeDelimiter = '+')
         {
             var builder = new StringBuilder();
-            ProcessType(builder, type, new DisplayNameOptions(fullName, includeGenericParameterNames, includeGenericParameters));
+            ProcessType(builder, type, new DisplayNameOptions(fullName, includeGenericParameterNames, includeGenericParameters, nestedTypeDelimiter));
             return builder.ToString();
         }
 
-        private static void ProcessType(StringBuilder builder, Type type, DisplayNameOptions options)
+        private static void ProcessType(StringBuilder builder, Type type, in DisplayNameOptions options)
         {
             if (type.IsGenericType)
             {
@@ -77,7 +78,7 @@ namespace Microsoft.Extensions.Internal
             }
         }
 
-        private static void ProcessArrayType(StringBuilder builder, Type type, DisplayNameOptions options)
+        private static void ProcessArrayType(StringBuilder builder, Type type, in DisplayNameOptions options)
         {
             var innerType = type;
             while (innerType.IsArray)
@@ -96,7 +97,7 @@ namespace Microsoft.Extensions.Internal
             }
         }
 
-        private static void ProcessGenericType(StringBuilder builder, Type type, Type[] genericArguments, int length, DisplayNameOptions options)
+        private static void ProcessGenericType(StringBuilder builder, Type type, Type[] genericArguments, int length, in DisplayNameOptions options)
         {
             var offset = 0;
             if (type.IsNested)
@@ -109,7 +110,7 @@ namespace Microsoft.Extensions.Internal
                 if (type.IsNested)
                 {
                     ProcessGenericType(builder, type.DeclaringType, genericArguments, offset, options);
-                    builder.Append('+');
+                    builder.Append(options.NestedTypeDelimiter);
                 }
                 else if (!string.IsNullOrEmpty(type.Namespace))
                 {
@@ -148,13 +149,14 @@ namespace Microsoft.Extensions.Internal
             }
         }
 
-        private struct DisplayNameOptions
+        private readonly struct DisplayNameOptions
         {
-            public DisplayNameOptions(bool fullName, bool includeGenericParameters, bool includeGenericParameterNames)
+            public DisplayNameOptions(bool fullName, bool includeGenericParameterNames, bool includeGenericParameters, char nestedTypeDelimiter)
             {
                 FullName = fullName;
                 IncludeGenericParameters = includeGenericParameters;
                 IncludeGenericParameterNames = includeGenericParameterNames;
+                NestedTypeDelimiter = nestedTypeDelimiter;
             }
 
             public bool FullName { get; }
@@ -162,6 +164,8 @@ namespace Microsoft.Extensions.Internal
             public bool IncludeGenericParameters { get; }
 
             public bool IncludeGenericParameterNames { get; }
+
+            public char NestedTypeDelimiter { get; }
         }
     }
 }

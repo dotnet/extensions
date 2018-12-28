@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.Logging
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            _logger = factory.CreateLogger(TypeNameHelper.GetTypeDisplayName(typeof(T), fullName: true, includeGenericParameters: false));
+            _logger = factory.CreateLogger(TypeNameHelper.GetTypeDisplayName(typeof(T), includeGenericParameters: false, nestedTypeDelimiter: '.'));
         }
 
         IDisposable ILogger.BeginScope<TState>(TState state)

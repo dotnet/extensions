@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.Logging
                 throw new ArgumentNullException(nameof(type));
             }
 
-            return factory.CreateLogger(TypeNameHelper.GetTypeDisplayName(type, fullName: true, includeGenericParameters: false));
+            return factory.CreateLogger(TypeNameHelper.GetTypeDisplayName(type, includeGenericParameters: false, nestedTypeDelimiter: '.'));
         }
     }
 }
