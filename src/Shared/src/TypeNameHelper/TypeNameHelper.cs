@@ -40,11 +40,12 @@ namespace Microsoft.Extensions.Internal
         /// <param name="type">The <see cref="Type"/>.</param>
         /// <param name="fullName"><c>true</c> to print a fully qualified name.</param>
         /// <param name="includeGenericParameterNames"><c>true</c> to include generic parameter names.</param>
+        /// <param name="includeGenericParameters"><c>true</c> to include generic parameters.</param>
         /// <returns>The pretty printed type name.</returns>
-        public static string GetTypeDisplayName(Type type, bool fullName = true, bool includeGenericParameterNames = false)
+        public static string GetTypeDisplayName(Type type, bool fullName = true, bool includeGenericParameterNames = false, bool includeGenericParameters = true)
         {
             var builder = new StringBuilder();
-            ProcessType(builder, type, new DisplayNameOptions(fullName, includeGenericParameterNames));
+            ProcessType(builder, type, new DisplayNameOptions(fullName, includeGenericParameterNames, includeGenericParameters));
             return builder.ToString();
         }
 
@@ -126,33 +127,39 @@ namespace Microsoft.Extensions.Internal
 
             builder.Append(type.Name, 0, genericPartIndex);
 
-            builder.Append('<');
-            for (var i = offset; i < length; i++)
+            if (options.IncludeGenericParameters)
             {
-                ProcessType(builder, genericArguments[i], options);
-                if (i + 1 == length)
+                builder.Append('<');
+                for (var i = offset; i < length; i++)
                 {
-                    continue;
-                }
+                    ProcessType(builder, genericArguments[i], options);
+                    if (i + 1 == length)
+                    {
+                        continue;
+                    }
 
-                builder.Append(',');
-                if (options.IncludeGenericParameterNames || !genericArguments[i + 1].IsGenericParameter)
-                {
-                    builder.Append(' ');
+                    builder.Append(',');
+                    if (options.IncludeGenericParameterNames || !genericArguments[i + 1].IsGenericParameter)
+                    {
+                        builder.Append(' ');
+                    }
                 }
+                builder.Append('>');
             }
-            builder.Append('>');
         }
 
         private struct DisplayNameOptions
         {
-            public DisplayNameOptions(bool fullName, bool includeGenericParameterNames)
+            public DisplayNameOptions(bool fullName, bool includeGenericParameters, bool includeGenericParameterNames)
             {
                 FullName = fullName;
+                IncludeGenericParameters = includeGenericParameters;
                 IncludeGenericParameterNames = includeGenericParameterNames;
             }
 
             public bool FullName { get; }
+
+            public bool IncludeGenericParameters { get; }
 
             public bool IncludeGenericParameterNames { get; }
         }
