@@ -254,7 +254,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 _filePath = filePath;
                 _relativeFilePath = GetNormalizedRelativeFilePath(filePath, projectDirectory);
                 _projectDirectory = projectDirectory;
-                _backgroundThread = new Thread(WorkerLoop);
+                _backgroundThread = new Thread(WorkerLoop)
+                {
+                    Name = "Razor Background Document Parser"
+                };
                 SetThreadId(_backgroundThread.ManagedThreadId);
             }
 
