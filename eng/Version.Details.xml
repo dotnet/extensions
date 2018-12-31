@@ -1,9 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="2.2.0-beta.18621.6">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="2.2.0-beta.18630.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>565dad7c7b14378d2fd084c324e5db28b311fd60</Sha>
+      <Sha>96c87ddd97d9c562ef77f1e4606a0dbb000ab644</Sha>
+    </Dependency>
+    <Dependency Name="System.ComponentModel.Annotations" Version="4.6.0-preview.18631.1">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>af9bfe1826c49878e4aa7d5abf33b2c2c25b7b6b</Sha>
+    </Dependency>
+    <Dependency Name="System.Data.SqlClient" Version="4.7.0-preview.18631.1">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>af9bfe1826c49878e4aa7d5abf33b2c2c25b7b6b</Sha>
+    </Dependency>
+    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview.18631.1">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>af9bfe1826c49878e4aa7d5abf33b2c2c25b7b6b</Sha>
+    </Dependency>
+    <Dependency Name="System.Diagnostics.EventLog" Version="4.6.0-preview.18631.1">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>af9bfe1826c49878e4aa7d5abf33b2c2c25b7b6b</Sha>
+    </Dependency>
+    <Dependency Name="System.IO.Pipelines" Version="4.6.0-preview.18631.1">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>af9bfe1826c49878e4aa7d5abf33b2c2c25b7b6b</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
