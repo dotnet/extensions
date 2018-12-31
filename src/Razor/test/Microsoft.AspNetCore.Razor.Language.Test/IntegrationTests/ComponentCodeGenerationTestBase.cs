@@ -200,6 +200,42 @@ namespace Test
                 d => Assert.Equal("CS1503", d.Id));
         }
 
+        [Fact]
+        public void DataDashAttribute_ImplicitExpression()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@{ 
+  var myValue = ""Expression value"";
+}
+<elem data-abc=""Literal value"" data-def=""@myValue"" />");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void DataDashAttribute_ExplicitExpression()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@{ 
+  var myValue = ""Expression value"";
+}
+<elem data-abc=""Literal value"" data-def=""@(myValue)"" />");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         #endregion
 
         #region Bind
