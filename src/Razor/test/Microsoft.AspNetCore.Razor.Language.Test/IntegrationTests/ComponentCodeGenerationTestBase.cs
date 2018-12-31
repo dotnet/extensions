@@ -2219,6 +2219,25 @@ namespace Test
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void Whitespace_BetweenElementAndFunctions()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+    <elem attr=@Foo />
+    @functions {
+        int Foo = 18;
+    }
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         #endregion
 
         #region Misc
