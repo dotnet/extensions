@@ -7,6 +7,6 @@
   },
   "msbuild-sdks": {
     "Internal.AspNetCore.Sdk": "3.0.0-build-20181211.1",
-    "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.18612.12"
+    "Microsoft.DotNet.Arcade.Sdk": "1.0.0-beta.18630.2"
   }
 }
