@@ -24,6 +24,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             _version = VersionStamp.Default;
         }
 
+        public override string FileKind => null;
+
         public override string FilePath => null;
 
         public override string TargetPath => null;

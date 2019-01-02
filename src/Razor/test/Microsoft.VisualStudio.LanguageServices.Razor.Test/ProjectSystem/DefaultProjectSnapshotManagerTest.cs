@@ -30,6 +30,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                 // linked file
                 TestProjectData.AnotherProjectNestedFile3,
+
+                TestProjectData.SomeProjectComponentFile1,
+                TestProjectData.SomeProjectComponentFile2,
             };
 
             HostProject = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_2_0);
@@ -124,6 +127,54 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Assert
             var snapshot = ProjectManager.GetSnapshot(HostProject);
             Assert.Collection(snapshot.DocumentFilePaths.OrderBy(f => f), d => Assert.Equal(Documents[0].FilePath, d));
+
+            Assert.Equal(ProjectChangeKind.DocumentAdded, ProjectManager.ListenersNotifiedOf);
+        }
+
+        [ForegroundFact]
+        public void DocumentAdded_AddsDocument_Legacy()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.Reset();
+
+            // Act
+            ProjectManager.DocumentAdded(HostProject, Documents[0], null);
+
+            // Assert
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            Assert.Collection(
+                snapshot.DocumentFilePaths.OrderBy(f => f), 
+                d =>
+                {
+                    Assert.Equal(Documents[0].FilePath, d);
+                    Assert.Equal(FileKinds.Legacy, snapshot.GetDocument(d).FileKind);
+                });
+
+            Assert.Equal(ProjectChangeKind.DocumentAdded, ProjectManager.ListenersNotifiedOf);
+        }
+
+        [ForegroundFact]
+        public void DocumentAdded_AddsDocument_Component()
+        {
+            // Arrange
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+            ProjectManager.Reset();
+
+            // Act
+            ProjectManager.DocumentAdded(HostProject, Documents[3], null);
+
+            // Assert
+            var snapshot = ProjectManager.GetSnapshot(HostProject);
+            Assert.Collection(
+                snapshot.DocumentFilePaths.OrderBy(f => f),
+                d =>
+                {
+                    Assert.Equal(Documents[3].FilePath, d);
+                    Assert.Equal(FileKinds.Component, snapshot.GetDocument(d).FileKind);
+                });
 
             Assert.Equal(ProjectChangeKind.DocumentAdded, ProjectManager.ListenersNotifiedOf);
         }

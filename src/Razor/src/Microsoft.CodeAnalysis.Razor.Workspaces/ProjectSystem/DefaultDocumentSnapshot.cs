@@ -31,6 +31,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public DocumentState State { get; }
 
+        public override string FileKind => State.HostDocument.FileKind;
+
         public override string FilePath => State.HostDocument.FilePath;
 
         public override string TargetPath => State.HostDocument.TargetPath;

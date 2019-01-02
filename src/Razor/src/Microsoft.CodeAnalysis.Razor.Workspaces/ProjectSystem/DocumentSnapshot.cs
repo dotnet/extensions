@@ -10,6 +10,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     internal abstract class DocumentSnapshot
     {
+        public abstract string FileKind { get; }
+
         public abstract string FilePath { get; }
 
         public abstract string TargetPath { get; }
