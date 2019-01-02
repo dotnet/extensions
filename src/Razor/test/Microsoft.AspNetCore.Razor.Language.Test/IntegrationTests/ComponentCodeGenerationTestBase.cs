@@ -236,6 +236,24 @@ namespace Test
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void MarkupComment_IsNotIncluded()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@{ 
+  var myValue = ""Expression value"";
+}
+<div>@myValue <!-- @myValue --> </div>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         #endregion
 
         #region Bind
