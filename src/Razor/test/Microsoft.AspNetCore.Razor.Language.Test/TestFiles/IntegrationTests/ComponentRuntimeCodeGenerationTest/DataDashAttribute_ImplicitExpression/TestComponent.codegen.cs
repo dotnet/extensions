@@ -21,9 +21,8 @@ namespace Test
 #line default
 #line hidden
             builder.OpenElement(0, "elem");
-            builder.AddContent(1, "Literal value");
-            builder.AddAttribute(2, "data-abc", true);
-            builder.AddAttribute(3, "data-def", myValue);
+            builder.AddAttribute(1, "data-abc", "Literal value");
+            builder.AddAttribute(2, "data-def", myValue);
             builder.CloseElement();
         }
         #pragma warning restore 1998
