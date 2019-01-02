@@ -1,10 +1,9 @@
 RazorDocument - [0..23)::23 - [<div class="btn"></div>]
     MarkupBlock - [0..23)::23
         MarkupElement - [0..23)::23
-            MarkupStartTag - [0..17)::17 - [<div class="btn">]
-                MarkupTextLiteral - [0..4)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[div];
+            MarkupStartTag - [0..17)::17 - [<div class="btn">] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[div];
                 MarkupAttributeBlock - [4..16)::12 - [ class="btn"]
                     MarkupTextLiteral - [4..5)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -19,11 +18,9 @@ RazorDocument - [0..23)::23 - [<div class="btn"></div>]
                                 Text;[btn];
                     MarkupTextLiteral - [15..16)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [16..17)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
-            MarkupEndTag - [17..23)::6 - [</div>]
-                MarkupTextLiteral - [17..23)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[div];
-                    CloseAngle;[>];
+                CloseAngle;[>];
+            MarkupEndTag - [17..23)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[div];
+                CloseAngle;[>];

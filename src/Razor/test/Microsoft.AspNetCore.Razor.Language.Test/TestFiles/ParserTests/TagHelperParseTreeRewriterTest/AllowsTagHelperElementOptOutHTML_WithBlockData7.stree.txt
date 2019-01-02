@@ -8,24 +8,17 @@ RazorDocument - [0..16)::16 - [<p><!p></!p></p>]
                 MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupElement - [3..12)::9
-                MarkupStartTag - [3..7)::4 - [<!p>]
-                    MarkupTextLiteral - [3..4)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                    RazorMetaCode - [4..5)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                        Bang;[!];
-                    MarkupTextLiteral - [5..6)::1 - [p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        Text;[p];
-                    MarkupTextLiteral - [6..7)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        CloseAngle;[>];
-                MarkupEndTag - [7..12)::5 - [</!p>]
-                    MarkupTextLiteral - [7..9)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        ForwardSlash;[/];
-                    RazorMetaCode - [9..10)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                        Bang;[!];
-                    MarkupTextLiteral - [10..12)::2 - [p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        Text;[p];
-                        CloseAngle;[>];
+                MarkupStartTag - [3..7)::4 - [<!p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Bang;[!];
+                    Text;[p];
+                    CloseAngle;[>];
+                MarkupEndTag - [7..12)::5 - [</!p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Bang;[!];
+                    Text;[p];
+                    CloseAngle;[>];
             MarkupTagHelperEndTag - [12..16)::4
                 MarkupTextLiteral - [12..16)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];

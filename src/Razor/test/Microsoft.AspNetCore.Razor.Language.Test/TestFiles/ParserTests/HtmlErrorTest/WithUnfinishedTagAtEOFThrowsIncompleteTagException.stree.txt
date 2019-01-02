@@ -1,9 +1,8 @@
 MarkupBlock - [0..12)::12 - [<foo bar=baz]
     MarkupElement - [0..12)::12
-        MarkupStartTag - [0..12)::12 - [<foo bar=baz]
-            MarkupTextLiteral - [0..4)::4 - [<foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                OpenAngle;[<];
-                Text;[foo];
+        MarkupStartTag - [0..12)::12 - [<foo bar=baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[foo];
             MarkupAttributeBlock - [4..12)::8 - [ bar=baz]
                 MarkupTextLiteral - [4..5)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     Whitespace;[ ];
@@ -14,3 +13,4 @@ MarkupBlock - [0..12)::12 - [<foo bar=baz]
                     MarkupLiteralAttributeValue - [9..12)::3 - [baz]
                         MarkupTextLiteral - [9..12)::3 - [baz] - Gen<None> - SpanEditHandler;Accepts:Any
                             Text;[baz];
+            CloseAngle;[<Missing>];

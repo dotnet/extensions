@@ -14,20 +14,17 @@ RazorDocument - [0..584)::584 - [@{LF<area> </area>var x = true;LF}LF@{LF<base> 
                             NewLine;[LF];
                         MarkupBlock - [4..18)::14
                             MarkupElement - [4..18)::14
-                                MarkupStartTag - [4..10)::6 - [<area>]
-                                    MarkupTextLiteral - [4..9)::5 - [<area] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        Text;[area];
-                                    MarkupTextLiteral - [9..10)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                MarkupStartTag - [4..10)::6 - [<area>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[area];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [10..11)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                                MarkupEndTag - [11..18)::7 - [</area>]
-                                    MarkupTextLiteral - [11..18)::7 - [</area>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[area];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [11..18)::7 - [</area>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[area];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [18..33)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
                             Whitespace;[ ];
@@ -54,20 +51,17 @@ RazorDocument - [0..584)::584 - [@{LF<area> </area>var x = true;LF}LF@{LF<base> 
                             NewLine;[LF];
                         MarkupBlock - [40..54)::14
                             MarkupElement - [40..54)::14
-                                MarkupStartTag - [40..46)::6 - [<base>]
-                                    MarkupTextLiteral - [40..45)::5 - [<base] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        Text;[base];
-                                    MarkupTextLiteral - [45..46)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                MarkupStartTag - [40..46)::6 - [<base>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[base];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [46..47)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                                MarkupEndTag - [47..54)::7 - [</base>]
-                                    MarkupTextLiteral - [47..54)::7 - [</base>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[base];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [47..54)::7 - [</base>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[base];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [54..69)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
                             Whitespace;[ ];
@@ -94,20 +88,17 @@ RazorDocument - [0..584)::584 - [@{LF<area> </area>var x = true;LF}LF@{LF<base> 
                             NewLine;[LF];
                         MarkupBlock - [76..86)::10
                             MarkupElement - [76..86)::10
-                                MarkupStartTag - [76..80)::4 - [<br>]
-                                    MarkupTextLiteral - [76..79)::3 - [<br] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        Text;[br];
-                                    MarkupTextLiteral - [79..80)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                MarkupStartTag - [76..80)::4 - [<br>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[br];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [80..81)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                                MarkupEndTag - [81..86)::5 - [</br>]
-                                    MarkupTextLiteral - [81..86)::5 - [</br>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[br];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [81..86)::5 - [</br>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[br];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [86..101)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
                             Whitespace;[ ];
@@ -134,20 +125,17 @@ RazorDocument - [0..584)::584 - [@{LF<area> </area>var x = true;LF}LF@{LF<base> 
                             NewLine;[LF];
                         MarkupBlock - [108..120)::12
                             MarkupElement - [108..120)::12
-                                MarkupStartTag - [108..113)::5 - [<col>]
-                                    MarkupTextLiteral - [108..112)::4 - [<col] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        Text;[col];
-                                    MarkupTextLiteral - [112..113)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                MarkupStartTag - [108..113)::5 - [<col>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[col];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [113..114)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                                MarkupEndTag - [114..120)::6 - [</col>]
-                                    MarkupTextLiteral - [114..120)::6 - [</col>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[col];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [114..120)::6 - [</col>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[col];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [120..135)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
                             Whitespace;[ ];
@@ -174,20 +162,17 @@ RazorDocument - [0..584)::584 - [@{LF<area> </area>var x = true;LF}LF@{LF<base> 
                             NewLine;[LF];
                         MarkupBlock - [142..162)::20
                             MarkupElement - [142..162)::20
-                                MarkupStartTag - [142..151)::9 - [<command>]
-                                    MarkupTextLiteral - [142..150)::8 - [<command] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        Text;[command];
-                                    MarkupTextLiteral - [150..151)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                MarkupStartTag - [142..151)::9 - [<command>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[command];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [151..152)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                                MarkupEndTag - [152..162)::10 - [</command>]
-                                    MarkupTextLiteral - [152..162)::10 - [</command>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[command];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [152..162)::10 - [</command>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[command];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [162..177)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
                             Whitespace;[ ];
@@ -214,20 +199,17 @@ RazorDocument - [0..584)::584 - [@{LF<area> </area>var x = true;LF}LF@{LF<base> 
                             NewLine;[LF];
                         MarkupBlock - [184..200)::16
                             MarkupElement - [184..200)::16
-                                MarkupStartTag - [184..191)::7 - [<embed>]
-                                    MarkupTextLiteral - [184..190)::6 - [<embed] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        Text;[embed];
-                                    MarkupTextLiteral - [190..191)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                MarkupStartTag - [184..191)::7 - [<embed>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[embed];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [191..192)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                                MarkupEndTag - [192..200)::8 - [</embed>]
-                                    MarkupTextLiteral - [192..200)::8 - [</embed>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[embed];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [192..200)::8 - [</embed>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[embed];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [200..215)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
                             Whitespace;[ ];
@@ -254,20 +236,17 @@ RazorDocument - [0..584)::584 - [@{LF<area> </area>var x = true;LF}LF@{LF<base> 
                             NewLine;[LF];
                         MarkupBlock - [222..232)::10
                             MarkupElement - [222..232)::10
-                                MarkupStartTag - [222..226)::4 - [<hr>]
-                                    MarkupTextLiteral - [222..225)::3 - [<hr] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        Text;[hr];
-                                    MarkupTextLiteral - [225..226)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                MarkupStartTag - [222..226)::4 - [<hr>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[hr];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [226..227)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                                MarkupEndTag - [227..232)::5 - [</hr>]
-                                    MarkupTextLiteral - [227..232)::5 - [</hr>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[hr];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [227..232)::5 - [</hr>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[hr];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [232..247)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
                             Whitespace;[ ];
@@ -294,20 +273,17 @@ RazorDocument - [0..584)::584 - [@{LF<area> </area>var x = true;LF}LF@{LF<base> 
                             NewLine;[LF];
                         MarkupBlock - [254..266)::12
                             MarkupElement - [254..266)::12
-                                MarkupStartTag - [254..259)::5 - [<img>]
-                                    MarkupTextLiteral - [254..258)::4 - [<img] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        Text;[img];
-                                    MarkupTextLiteral - [258..259)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                MarkupStartTag - [254..259)::5 - [<img>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[img];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [259..260)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                                MarkupEndTag - [260..266)::6 - [</img>]
-                                    MarkupTextLiteral - [260..266)::6 - [</img>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[img];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [260..266)::6 - [</img>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[img];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [266..281)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
                             Whitespace;[ ];
@@ -334,20 +310,17 @@ RazorDocument - [0..584)::584 - [@{LF<area> </area>var x = true;LF}LF@{LF<base> 
                             NewLine;[LF];
                         MarkupBlock - [288..304)::16
                             MarkupElement - [288..304)::16
-                                MarkupStartTag - [288..295)::7 - [<input>]
-                                    MarkupTextLiteral - [288..294)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        Text;[input];
-                                    MarkupTextLiteral - [294..295)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                MarkupStartTag - [288..295)::7 - [<input>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[input];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [295..296)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                                MarkupEndTag - [296..304)::8 - [</input>]
-                                    MarkupTextLiteral - [296..304)::8 - [</input>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[input];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [296..304)::8 - [</input>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[input];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [304..319)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
                             Whitespace;[ ];
@@ -374,20 +347,17 @@ RazorDocument - [0..584)::584 - [@{LF<area> </area>var x = true;LF}LF@{LF<base> 
                             NewLine;[LF];
                         MarkupBlock - [326..344)::18
                             MarkupElement - [326..344)::18
-                                MarkupStartTag - [326..334)::8 - [<keygen>]
-                                    MarkupTextLiteral - [326..333)::7 - [<keygen] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        Text;[keygen];
-                                    MarkupTextLiteral - [333..334)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                MarkupStartTag - [326..334)::8 - [<keygen>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[keygen];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [334..335)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                                MarkupEndTag - [335..344)::9 - [</keygen>]
-                                    MarkupTextLiteral - [335..344)::9 - [</keygen>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[keygen];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [335..344)::9 - [</keygen>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[keygen];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [344..359)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
                             Whitespace;[ ];
@@ -414,20 +384,17 @@ RazorDocument - [0..584)::584 - [@{LF<area> </area>var x = true;LF}LF@{LF<base> 
                             NewLine;[LF];
                         MarkupBlock - [366..380)::14
                             MarkupElement - [366..380)::14
-                                MarkupStartTag - [366..372)::6 - [<link>]
-                                    MarkupTextLiteral - [366..371)::5 - [<link] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        Text;[link];
-                                    MarkupTextLiteral - [371..372)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                MarkupStartTag - [366..372)::6 - [<link>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[link];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [372..373)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                                MarkupEndTag - [373..380)::7 - [</link>]
-                                    MarkupTextLiteral - [373..380)::7 - [</link>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[link];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [373..380)::7 - [</link>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[link];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [380..395)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
                             Whitespace;[ ];
@@ -454,20 +421,17 @@ RazorDocument - [0..584)::584 - [@{LF<area> </area>var x = true;LF}LF@{LF<base> 
                             NewLine;[LF];
                         MarkupBlock - [402..416)::14
                             MarkupElement - [402..416)::14
-                                MarkupStartTag - [402..408)::6 - [<meta>]
-                                    MarkupTextLiteral - [402..407)::5 - [<meta] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        Text;[meta];
-                                    MarkupTextLiteral - [407..408)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                MarkupStartTag - [402..408)::6 - [<meta>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[meta];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [408..409)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                                MarkupEndTag - [409..416)::7 - [</meta>]
-                                    MarkupTextLiteral - [409..416)::7 - [</meta>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[meta];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [409..416)::7 - [</meta>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[meta];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [416..431)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
                             Whitespace;[ ];
@@ -494,20 +458,17 @@ RazorDocument - [0..584)::584 - [@{LF<area> </area>var x = true;LF}LF@{LF<base> 
                             NewLine;[LF];
                         MarkupBlock - [438..454)::16
                             MarkupElement - [438..454)::16
-                                MarkupStartTag - [438..445)::7 - [<param>]
-                                    MarkupTextLiteral - [438..444)::6 - [<param] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        Text;[param];
-                                    MarkupTextLiteral - [444..445)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                MarkupStartTag - [438..445)::7 - [<param>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[param];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [445..446)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                                MarkupEndTag - [446..454)::8 - [</param>]
-                                    MarkupTextLiteral - [446..454)::8 - [</param>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[param];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [446..454)::8 - [</param>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[param];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [454..469)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
                             Whitespace;[ ];
@@ -534,20 +495,17 @@ RazorDocument - [0..584)::584 - [@{LF<area> </area>var x = true;LF}LF@{LF<base> 
                             NewLine;[LF];
                         MarkupBlock - [476..494)::18
                             MarkupElement - [476..494)::18
-                                MarkupStartTag - [476..484)::8 - [<source>]
-                                    MarkupTextLiteral - [476..483)::7 - [<source] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        Text;[source];
-                                    MarkupTextLiteral - [483..484)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                MarkupStartTag - [476..484)::8 - [<source>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[source];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [484..485)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                                MarkupEndTag - [485..494)::9 - [</source>]
-                                    MarkupTextLiteral - [485..494)::9 - [</source>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[source];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [485..494)::9 - [</source>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[source];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [494..509)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
                             Whitespace;[ ];
@@ -574,20 +532,17 @@ RazorDocument - [0..584)::584 - [@{LF<area> </area>var x = true;LF}LF@{LF<base> 
                             NewLine;[LF];
                         MarkupBlock - [516..532)::16
                             MarkupElement - [516..532)::16
-                                MarkupStartTag - [516..523)::7 - [<track>]
-                                    MarkupTextLiteral - [516..522)::6 - [<track] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        Text;[track];
-                                    MarkupTextLiteral - [522..523)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                MarkupStartTag - [516..523)::7 - [<track>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[track];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [523..524)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                                MarkupEndTag - [524..532)::8 - [</track>]
-                                    MarkupTextLiteral - [524..532)::8 - [</track>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[track];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [524..532)::8 - [</track>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[track];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [532..547)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
                             Whitespace;[ ];
@@ -614,20 +569,17 @@ RazorDocument - [0..584)::584 - [@{LF<area> </area>var x = true;LF}LF@{LF<base> 
                             NewLine;[LF];
                         MarkupBlock - [554..566)::12
                             MarkupElement - [554..566)::12
-                                MarkupStartTag - [554..559)::5 - [<wbr>]
-                                    MarkupTextLiteral - [554..558)::4 - [<wbr] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        Text;[wbr];
-                                    MarkupTextLiteral - [558..559)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                MarkupStartTag - [554..559)::5 - [<wbr>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[wbr];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [559..560)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                                MarkupEndTag - [560..566)::6 - [</wbr>]
-                                    MarkupTextLiteral - [560..566)::6 - [</wbr>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[wbr];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [560..566)::6 - [</wbr>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[wbr];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [566..581)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
                             Whitespace;[ ];

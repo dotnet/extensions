@@ -1,9 +1,8 @@
 MarkupBlock - [0..17)::17 - [<p / class=foo />]
     MarkupElement - [0..17)::17
-        MarkupStartTag - [0..17)::17 - [<p / class=foo />]
-            MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                OpenAngle;[<];
-                Text;[p];
+        MarkupStartTag - [0..17)::17 - [<p / class=foo />] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[p];
             MarkupMiscAttributeContent - [2..3)::1
                 MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     Whitespace;[ ];
@@ -23,6 +22,5 @@ MarkupBlock - [0..17)::17 - [<p / class=foo />]
             MarkupMiscAttributeContent - [14..15)::1
                 MarkupTextLiteral - [14..15)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     Whitespace;[ ];
-            MarkupTextLiteral - [15..17)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                ForwardSlash;[/];
-                CloseAngle;[>];
+            ForwardSlash;[/];
+            CloseAngle;[>];

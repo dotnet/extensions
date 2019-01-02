@@ -9,15 +9,12 @@ RazorDocument - [0..24)::24 - [<input><strong></strong>]
                     MarkupTextLiteral - [6..7)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         CloseAngle;[>];
             MarkupElement - [7..24)::17
-                MarkupStartTag - [7..15)::8 - [<strong>]
-                    MarkupTextLiteral - [7..14)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        Text;[strong];
-                    MarkupTextLiteral - [14..15)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        CloseAngle;[>];
-                MarkupEndTag - [15..24)::9 - [</strong>]
-                    MarkupTextLiteral - [15..24)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        ForwardSlash;[/];
-                        Text;[strong];
-                        CloseAngle;[>];
+                MarkupStartTag - [7..15)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[strong];
+                    CloseAngle;[>];
+                MarkupEndTag - [15..24)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[strong];
+                    CloseAngle;[>];

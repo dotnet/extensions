@@ -63,12 +63,10 @@ RazorDocument - [0..167)::167 - [<p>Hello @do { var foo = bar; <p>Foo</p> foo++;
                     RightParenthesis;[)];
                     Semicolon;[;];
             MarkupElement - [67..163)::96
-                MarkupStartTag - [67..75)::8 - [<strong>]
-                    MarkupTextLiteral - [67..74)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        Text;[strong];
-                    MarkupTextLiteral - [74..75)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        CloseAngle;[>];
+                MarkupStartTag - [67..75)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[strong];
+                    CloseAngle;[>];
                 MarkupTextLiteral - [75..85)::10 - [inside of ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     Text;[inside];
                     Whitespace;[ ];
@@ -131,12 +129,11 @@ RazorDocument - [0..167)::167 - [<p>Hello @do { var foo = bar; <p>Foo</p> foo++;
                     Text;[strong];
                     Whitespace;[ ];
                     Text;[tag];
-                MarkupEndTag - [154..163)::9 - [</strong>]
-                    MarkupTextLiteral - [154..163)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        ForwardSlash;[/];
-                        Text;[strong];
-                        CloseAngle;[>];
+                MarkupEndTag - [154..163)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[strong];
+                    CloseAngle;[>];
             MarkupTagHelperEndTag - [163..167)::4
                 MarkupTextLiteral - [163..167)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];

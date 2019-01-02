@@ -1,13 +1,10 @@
 RazorDocument - [0..38)::38 - [<!p class='btn1 btn2' class2=btn></!p>]
     MarkupBlock - [0..38)::38
         MarkupElement - [0..38)::38
-            MarkupStartTag - [0..33)::33 - [<!p class='btn1 btn2' class2=btn>]
-                MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                    Bang;[!];
-                MarkupTextLiteral - [2..3)::1 - [p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Text;[p];
+            MarkupStartTag - [0..33)::33 - [<!p class='btn1 btn2' class2=btn>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Bang;[!];
+                Text;[p];
                 MarkupAttributeBlock - [3..21)::18 - [ class='btn1 btn2']
                     MarkupTextLiteral - [3..4)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -37,14 +34,10 @@ RazorDocument - [0..38)::38 - [<!p class='btn1 btn2' class2=btn></!p>]
                         MarkupLiteralAttributeValue - [29..32)::3 - [btn]
                             MarkupTextLiteral - [29..32)::3 - [btn] - Gen<None> - SpanEditHandler;Accepts:Any
                                 Text;[btn];
-                MarkupTextLiteral - [32..33)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
-            MarkupEndTag - [33..38)::5 - [</!p>]
-                MarkupTextLiteral - [33..35)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                RazorMetaCode - [35..36)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                    Bang;[!];
-                MarkupTextLiteral - [36..38)::2 - [p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Text;[p];
-                    CloseAngle;[>];
+                CloseAngle;[>];
+            MarkupEndTag - [33..38)::5 - [</!p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Bang;[!];
+                Text;[p];
+                CloseAngle;[>];

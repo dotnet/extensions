@@ -3,10 +3,9 @@ RazorDocument - [0..117)::117 - [{<span foo="/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@@[
         MarkupTextLiteral - [0..1)::1 - [{] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[{];
         MarkupElement - [1..116)::115
-            MarkupStartTag - [1..116)::115 - [<span foo="/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@@[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i" />]
-                MarkupTextLiteral - [1..6)::5 - [<span] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[span];
+            MarkupStartTag - [1..116)::115 - [<span foo="/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@@[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i" />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[span];
                 MarkupAttributeBlock - [6..113)::107 - [ foo="/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@@[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i"]
                     MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -74,8 +73,7 @@ RazorDocument - [0..117)::117 - [{<span foo="/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@@[
                 MarkupMiscAttributeContent - [113..114)::1
                     MarkupTextLiteral - [113..114)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [114..116)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];
         MarkupTextLiteral - [116..117)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[}];

@@ -8,10 +8,9 @@ CSharpCodeBlock - [0..27)::27 - [{<span foo='abc @@ def' />}]
             CSharpCodeBlock - [1..26)::25
                 MarkupBlock - [1..26)::25
                     MarkupElement - [1..26)::25
-                        MarkupStartTag - [1..26)::25 - [<span foo='abc @@ def' />]
-                            MarkupTextLiteral - [1..6)::5 - [<span] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                OpenAngle;[<];
-                                Text;[span];
+                        MarkupStartTag - [1..26)::25 - [<span foo='abc @@ def' />] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            Text;[span];
                             MarkupAttributeBlock - [6..23)::17 - [ foo='abc @@ def']
                                 MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
@@ -40,9 +39,8 @@ CSharpCodeBlock - [0..27)::27 - [{<span foo='abc @@ def' />}]
                             MarkupMiscAttributeContent - [23..24)::1
                                 MarkupTextLiteral - [23..24)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                            MarkupTextLiteral - [24..26)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                ForwardSlash;[/];
-                                CloseAngle;[>];
+                            ForwardSlash;[/];
+                            CloseAngle;[>];
                 CSharpStatementLiteral - [26..26)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                     Marker;[];
             RazorMetaCode - [26..27)::1 - Gen<None> - SpanEditHandler;Accepts:None

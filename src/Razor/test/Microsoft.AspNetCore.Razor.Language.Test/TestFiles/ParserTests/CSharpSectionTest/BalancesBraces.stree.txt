@@ -22,12 +22,10 @@ RazorDocument - [0..67)::67 - [@section foo { <script>(function foo() { return 1
                             MarkupTextLiteral - [14..15)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Whitespace;[ ];
                             MarkupElement - [15..65)::50
-                                MarkupStartTag - [15..23)::8 - [<script>]
-                                    MarkupTextLiteral - [15..22)::7 - [<script] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        OpenAngle;[<];
-                                        Text;[script];
-                                    MarkupTextLiteral - [22..23)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        CloseAngle;[>];
+                                MarkupStartTag - [15..23)::8 - [<script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    Text;[script];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [23..56)::33 - [(function foo() { return 1; })();] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Text;[(function];
                                     Whitespace;[ ];
@@ -40,12 +38,11 @@ RazorDocument - [0..67)::67 - [@section foo { <script>(function foo() { return 1
                                     Text;[1;];
                                     Whitespace;[ ];
                                     Text;[})();];
-                                MarkupEndTag - [56..65)::9 - [</script>]
-                                    MarkupTextLiteral - [56..65)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[script];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [56..65)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[script];
+                                    CloseAngle;[>];
                             MarkupTextLiteral - [65..66)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Whitespace;[ ];
                         RazorMetaCode - [66..67)::1 - Gen<None> - SpanEditHandler;Accepts:None

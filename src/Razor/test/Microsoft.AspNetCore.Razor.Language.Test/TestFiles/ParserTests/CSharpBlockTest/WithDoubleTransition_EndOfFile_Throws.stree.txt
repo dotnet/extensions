@@ -8,10 +8,9 @@ CSharpCodeBlock - [0..14)::14 - [{<span foo='@@]
             CSharpCodeBlock - [1..14)::13
                 MarkupBlock - [1..14)::13
                     MarkupElement - [1..14)::13
-                        MarkupStartTag - [1..14)::13 - [<span foo='@@]
-                            MarkupTextLiteral - [1..6)::5 - [<span] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                OpenAngle;[<];
-                                Text;[span];
+                        MarkupStartTag - [1..14)::13 - [<span foo='@@] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            OpenAngle;[<];
+                            Text;[span];
                             MarkupAttributeBlock - [6..14)::8 - [ foo='@@]
                                 MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
@@ -26,7 +25,6 @@ CSharpCodeBlock - [0..14)::14 - [{<span foo='@@]
                                             Transition;[@];
                                         MarkupEphemeralTextLiteral - [13..14)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:None
                                             Transition;[@];
-                    MarkupTextLiteral - [14..14)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        Marker;[];
+                            CloseAngle;[<Missing>];
             RazorMetaCode - [14..14)::0 - Gen<None> - SpanEditHandler;Accepts:Any
                 RightBrace;[<Missing>];

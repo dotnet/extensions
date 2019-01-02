@@ -4,11 +4,10 @@ RazorDocument - [0..13)::13 - [LFFoo</div>LF]
             NewLine;[LF];
             Text;[Foo];
         MarkupElement - [5..11)::6
-            MarkupEndTag - [5..11)::6 - [</div>]
-                MarkupTextLiteral - [5..11)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[div];
-                    CloseAngle;[>];
+            MarkupEndTag - [5..11)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[div];
+                CloseAngle;[>];
         MarkupTextLiteral - [11..13)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
             NewLine;[LF];

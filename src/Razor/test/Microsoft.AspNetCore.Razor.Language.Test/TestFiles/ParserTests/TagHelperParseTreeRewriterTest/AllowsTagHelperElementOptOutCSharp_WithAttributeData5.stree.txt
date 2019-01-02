@@ -12,13 +12,10 @@ RazorDocument - [0..44)::44 - [@{<!p class='btn1 @DateTime.Now btn2'></!p>}]
                     CSharpCodeBlock - [2..43)::41
                         MarkupBlock - [2..43)::41
                             MarkupElement - [2..43)::41
-                                MarkupStartTag - [2..38)::36 - [<!p class='btn1 @DateTime.Now btn2'>]
-                                    MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        OpenAngle;[<];
-                                    RazorMetaCode - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                                        Bang;[!];
-                                    MarkupTextLiteral - [4..5)::1 - [p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        Text;[p];
+                                MarkupStartTag - [2..38)::36 - [<!p class='btn1 @DateTime.Now btn2'>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Bang;[!];
+                                    Text;[p];
                                     MarkupAttributeBlock - [5..37)::32 - [ class='btn1 @DateTime.Now btn2']
                                         MarkupTextLiteral - [5..6)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Whitespace;[ ];
@@ -52,17 +49,13 @@ RazorDocument - [0..44)::44 - [@{<!p class='btn1 @DateTime.Now btn2'></!p>}]
                                                     Text;[btn2];
                                         MarkupTextLiteral - [36..37)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
-                                    MarkupTextLiteral - [37..38)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
-                                MarkupEndTag - [38..43)::5 - [</!p>]
-                                    MarkupTextLiteral - [38..40)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                    RazorMetaCode - [40..41)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                                        Bang;[!];
-                                    MarkupTextLiteral - [41..43)::2 - [p>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        Text;[p];
-                                        CloseAngle;[>];
+                                    CloseAngle;[>];
+                                MarkupEndTag - [38..43)::5 - [</!p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Bang;[!];
+                                    Text;[p];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [43..43)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Marker;[];
                     RazorMetaCode - [43..44)::1 - Gen<None> - SpanEditHandler;Accepts:None

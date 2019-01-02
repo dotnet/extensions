@@ -1,12 +1,10 @@
 RazorDocument - [0..14)::14 - [<div>@{</div>}]
     MarkupBlock - [0..14)::14
         MarkupElement - [0..14)::14
-            MarkupStartTag - [0..5)::5 - [<div>]
-                MarkupTextLiteral - [0..4)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[div];
-                MarkupTextLiteral - [4..5)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+            MarkupStartTag - [0..5)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[div];
+                CloseAngle;[>];
             CSharpCodeBlock - [5..14)::9
                 CSharpStatement - [5..14)::9
                     CSharpTransition - [5..6)::1 - Gen<None> - SpanEditHandler;Accepts:None
@@ -17,12 +15,11 @@ RazorDocument - [0..14)::14 - [<div>@{</div>}]
                         CSharpCodeBlock - [7..13)::6
                             MarkupBlock - [7..13)::6
                                 MarkupElement - [7..13)::6
-                                    MarkupEndTag - [7..13)::6 - [</div>]
-                                        MarkupTextLiteral - [7..13)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                            OpenAngle;[<];
-                                            ForwardSlash;[/];
-                                            Text;[div];
-                                            CloseAngle;[>];
+                                    MarkupEndTag - [7..13)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                        OpenAngle;[<];
+                                        ForwardSlash;[/];
+                                        Text;[div];
+                                        CloseAngle;[>];
                             CSharpStatementLiteral - [13..13)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                                 Marker;[];
                         RazorMetaCode - [13..14)::1 - Gen<None> - SpanEditHandler;Accepts:None

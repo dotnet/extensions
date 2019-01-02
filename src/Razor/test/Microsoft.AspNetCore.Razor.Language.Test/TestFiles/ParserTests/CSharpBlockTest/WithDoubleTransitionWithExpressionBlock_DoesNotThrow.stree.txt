@@ -8,10 +8,9 @@ CSharpCodeBlock - [0..120)::120 - [{<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.
             CSharpCodeBlock - [1..119)::118
                 MarkupBlock - [1..119)::118
                     MarkupElement - [1..119)::118
-                        MarkupStartTag - [1..119)::118 - [<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.Now' baz='@DateTime.Now@@' bat='@DateTime.Now @@' zoo='@@@DateTime.Now' />]
-                            MarkupTextLiteral - [1..6)::5 - [<span] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                OpenAngle;[<];
-                                Text;[span];
+                        MarkupStartTag - [1..119)::118 - [<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.Now' baz='@DateTime.Now@@' bat='@DateTime.Now @@' zoo='@@@DateTime.Now' />] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            Text;[span];
                             MarkupAttributeBlock - [6..21)::15 - [ foo='@@@(2+3)']
                                 MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
@@ -182,9 +181,8 @@ CSharpCodeBlock - [0..120)::120 - [{<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.
                             MarkupMiscAttributeContent - [116..117)::1
                                 MarkupTextLiteral - [116..117)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Whitespace;[ ];
-                            MarkupTextLiteral - [117..119)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                ForwardSlash;[/];
-                                CloseAngle;[>];
+                            ForwardSlash;[/];
+                            CloseAngle;[>];
                 CSharpStatementLiteral - [119..119)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                     Marker;[];
             RazorMetaCode - [119..120)::1 - Gen<None> - SpanEditHandler;Accepts:None

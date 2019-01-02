@@ -1,9 +1,9 @@
 RazorDocument - [0..6)::6 - [< p />]
     MarkupBlock - [0..6)::6
         MarkupElement - [0..6)::6
-            MarkupStartTag - [0..6)::6 - [< p />]
-                MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
+            MarkupStartTag - [0..6)::6 - [< p />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[<Missing>];
                 MarkupMinimizedAttributeBlock - [1..3)::2 - [ p]
                     MarkupTextLiteral - [1..2)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -12,6 +12,5 @@ RazorDocument - [0..6)::6 - [< p />]
                 MarkupMiscAttributeContent - [3..4)::1
                     MarkupTextLiteral - [3..4)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [4..6)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

@@ -1,9 +1,8 @@
 MarkupBlock - [0..48)::48 - [<foo bar="baz"><biz><boz zoop=zork/></biz></foo>]
     MarkupElement - [0..48)::48
-        MarkupStartTag - [0..15)::15 - [<foo bar="baz">]
-            MarkupTextLiteral - [0..4)::4 - [<foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                OpenAngle;[<];
-                Text;[foo];
+        MarkupStartTag - [0..15)::15 - [<foo bar="baz">] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[foo];
             MarkupAttributeBlock - [4..14)::10 - [ bar="baz"]
                 MarkupTextLiteral - [4..5)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     Whitespace;[ ];
@@ -18,20 +17,16 @@ MarkupBlock - [0..48)::48 - [<foo bar="baz"><biz><boz zoop=zork/></biz></foo>]
                             Text;[baz];
                 MarkupTextLiteral - [13..14)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                     DoubleQuote;["];
-            MarkupTextLiteral - [14..15)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                CloseAngle;[>];
+            CloseAngle;[>];
         MarkupElement - [15..42)::27
-            MarkupStartTag - [15..20)::5 - [<biz>]
-                MarkupTextLiteral - [15..19)::4 - [<biz] - Gen<Markup> - SpanEditHandler;Accepts:None
-                    OpenAngle;[<];
-                    Text;[biz];
-                MarkupTextLiteral - [19..20)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                    CloseAngle;[>];
+            MarkupStartTag - [15..20)::5 - [<biz>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                Text;[biz];
+                CloseAngle;[>];
             MarkupElement - [20..36)::16
-                MarkupStartTag - [20..36)::16 - [<boz zoop=zork/>]
-                    MarkupTextLiteral - [20..24)::4 - [<boz] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        Text;[boz];
+                MarkupStartTag - [20..36)::16 - [<boz zoop=zork/>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    OpenAngle;[<];
+                    Text;[boz];
                     MarkupAttributeBlock - [24..34)::10 - [ zoop=zork]
                         MarkupTextLiteral - [24..25)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             Whitespace;[ ];
@@ -42,18 +37,15 @@ MarkupBlock - [0..48)::48 - [<foo bar="baz"><biz><boz zoop=zork/></biz></foo>]
                             MarkupLiteralAttributeValue - [30..34)::4 - [zork]
                                 MarkupTextLiteral - [30..34)::4 - [zork] - Gen<None> - SpanEditHandler;Accepts:Any
                                     Text;[zork];
-                    MarkupTextLiteral - [34..36)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                        ForwardSlash;[/];
-                        CloseAngle;[>];
-            MarkupEndTag - [36..42)::6 - [</biz>]
-                MarkupTextLiteral - [36..42)::6 - [</biz>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                    OpenAngle;[<];
                     ForwardSlash;[/];
-                    Text;[biz];
                     CloseAngle;[>];
-        MarkupEndTag - [42..48)::6 - [</foo>]
-            MarkupTextLiteral - [42..48)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            MarkupEndTag - [36..42)::6 - [</biz>] - Gen<Markup> - SpanEditHandler;Accepts:None
                 OpenAngle;[<];
                 ForwardSlash;[/];
-                Text;[foo];
+                Text;[biz];
                 CloseAngle;[>];
+        MarkupEndTag - [42..48)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[foo];
+            CloseAngle;[>];

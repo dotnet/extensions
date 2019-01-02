@@ -59,10 +59,9 @@ RazorDocument - [0..122)::122 - [<p class="@DateTime.Now" style='@DateTime.Now'>
                 Text;[World];
                 Whitespace;[ ];
             MarkupElement - [59..118)::59
-                MarkupStartTag - [59..89)::30 - [<strong class="@DateTime.Now">]
-                    MarkupTextLiteral - [59..66)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        Text;[strong];
+                MarkupStartTag - [59..89)::30 - [<strong class="@DateTime.Now">] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[strong];
                     MarkupAttributeBlock - [66..88)::22 - [ class="@DateTime.Now"]
                         MarkupTextLiteral - [66..67)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             Whitespace;[ ];
@@ -86,8 +85,7 @@ RazorDocument - [0..122)::122 - [<p class="@DateTime.Now" style='@DateTime.Now'>
                                                         Identifier;[Now];
                         MarkupTextLiteral - [87..88)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                             DoubleQuote;["];
-                    MarkupTextLiteral - [88..89)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        CloseAngle;[>];
+                    CloseAngle;[>];
                 MarkupTextLiteral - [89..109)::20 - [inside of strong tag] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     Text;[inside];
                     Whitespace;[ ];
@@ -96,12 +94,11 @@ RazorDocument - [0..122)::122 - [<p class="@DateTime.Now" style='@DateTime.Now'>
                     Text;[strong];
                     Whitespace;[ ];
                     Text;[tag];
-                MarkupEndTag - [109..118)::9 - [</strong>]
-                    MarkupTextLiteral - [109..118)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        ForwardSlash;[/];
-                        Text;[strong];
-                        CloseAngle;[>];
+                MarkupEndTag - [109..118)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[strong];
+                    CloseAngle;[>];
             MarkupTagHelperEndTag - [118..122)::4
                 MarkupTextLiteral - [118..122)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];

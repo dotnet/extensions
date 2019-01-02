@@ -1,10 +1,9 @@
 RazorDocument - [0..18)::18 - [<span foo='@ @' />]
     MarkupBlock - [0..18)::18
         MarkupElement - [0..18)::18
-            MarkupStartTag - [0..18)::18 - [<span foo='@ @' />]
-                MarkupTextLiteral - [0..5)::5 - [<span] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[span];
+            MarkupStartTag - [0..18)::18 - [<span foo='@ @' />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[span];
                 MarkupAttributeBlock - [5..15)::10 - [ foo='@ @']
                     MarkupTextLiteral - [5..6)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -41,6 +40,5 @@ RazorDocument - [0..18)::18 - [<span foo='@ @' />]
                 MarkupMiscAttributeContent - [15..16)::1
                     MarkupTextLiteral - [15..16)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [16..18)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];

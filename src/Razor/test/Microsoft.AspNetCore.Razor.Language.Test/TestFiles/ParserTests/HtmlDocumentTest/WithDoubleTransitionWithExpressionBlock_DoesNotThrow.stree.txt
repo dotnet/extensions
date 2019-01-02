@@ -3,10 +3,9 @@ RazorDocument - [0..120)::120 - [{<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.No
         MarkupTextLiteral - [0..1)::1 - [{] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[{];
         MarkupElement - [1..119)::118
-            MarkupStartTag - [1..119)::118 - [<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.Now' baz='@DateTime.Now@@' bat='@DateTime.Now @@' zoo='@@@DateTime.Now' />]
-                MarkupTextLiteral - [1..6)::5 - [<span] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[span];
+            MarkupStartTag - [1..119)::118 - [<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.Now' baz='@DateTime.Now@@' bat='@DateTime.Now @@' zoo='@@@DateTime.Now' />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[span];
                 MarkupAttributeBlock - [6..21)::15 - [ foo='@@@(2+3)']
                     MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -177,8 +176,7 @@ RazorDocument - [0..120)::120 - [{<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.No
                 MarkupMiscAttributeContent - [116..117)::1
                     MarkupTextLiteral - [116..117)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [117..119)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];
         MarkupTextLiteral - [119..120)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[}];

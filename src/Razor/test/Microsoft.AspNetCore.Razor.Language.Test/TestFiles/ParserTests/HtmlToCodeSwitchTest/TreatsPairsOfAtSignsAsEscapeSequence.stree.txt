@@ -1,11 +1,9 @@
 MarkupBlock - [0..19)::19 - [<foo>@@@@@bar</foo>]
     MarkupElement - [0..19)::19
-        MarkupStartTag - [0..5)::5 - [<foo>]
-            MarkupTextLiteral - [0..4)::4 - [<foo] - Gen<Markup> - SpanEditHandler;Accepts:None
-                OpenAngle;[<];
-                Text;[foo];
-            MarkupTextLiteral - [4..5)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                CloseAngle;[>];
+        MarkupStartTag - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[foo];
+            CloseAngle;[>];
         MarkupEphemeralTextLiteral - [5..6)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:Any
             Transition;[@];
         MarkupTextLiteral - [6..7)::1 - [@] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -22,9 +20,8 @@ MarkupBlock - [0..19)::19 - [<foo>@@@@@bar</foo>]
                     CSharpCodeBlock - [10..13)::3
                         CSharpExpressionLiteral - [10..13)::3 - [bar] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
                             Identifier;[bar];
-        MarkupEndTag - [13..19)::6 - [</foo>]
-            MarkupTextLiteral - [13..19)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                OpenAngle;[<];
-                ForwardSlash;[/];
-                Text;[foo];
-                CloseAngle;[>];
+        MarkupEndTag - [13..19)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[foo];
+            CloseAngle;[>];

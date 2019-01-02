@@ -1,11 +1,9 @@
 MarkupBlock - [0..31)::31 - [<foo><?xml foo bar> baz?></foo>]
     MarkupElement - [0..31)::31
-        MarkupStartTag - [0..5)::5 - [<foo>]
-            MarkupTextLiteral - [0..4)::4 - [<foo] - Gen<Markup> - SpanEditHandler;Accepts:None
-                OpenAngle;[<];
-                Text;[foo];
-            MarkupTextLiteral - [4..5)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                CloseAngle;[>];
+        MarkupStartTag - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[foo];
+            CloseAngle;[>];
         MarkupTextLiteral - [5..25)::20 - [<?xml foo bar> baz?>] - Gen<Markup> - SpanEditHandler;Accepts:None
             OpenAngle;[<];
             QuestionMark;[?];
@@ -19,9 +17,8 @@ MarkupBlock - [0..31)::31 - [<foo><?xml foo bar> baz?></foo>]
             Text;[baz];
             QuestionMark;[?];
             CloseAngle;[>];
-        MarkupEndTag - [25..31)::6 - [</foo>]
-            MarkupTextLiteral - [25..31)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                OpenAngle;[<];
-                ForwardSlash;[/];
-                Text;[foo];
-                CloseAngle;[>];
+        MarkupEndTag - [25..31)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[foo];
+            CloseAngle;[>];

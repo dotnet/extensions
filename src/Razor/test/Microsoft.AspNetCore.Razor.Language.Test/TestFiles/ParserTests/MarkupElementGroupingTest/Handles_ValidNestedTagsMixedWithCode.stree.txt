@@ -3,12 +3,10 @@ RazorDocument - [0..66)::66 - [LF<div>LF    FooLF    <p>@Bar</p>LF    @{ var x =
         MarkupTextLiteral - [0..2)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
             NewLine;[LF];
         MarkupElement - [2..64)::62
-            MarkupStartTag - [2..7)::5 - [<div>]
-                MarkupTextLiteral - [2..6)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[div];
-                MarkupTextLiteral - [6..7)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+            MarkupStartTag - [2..7)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[div];
+                CloseAngle;[>];
             MarkupTextLiteral - [7..22)::15 - [LF    FooLF    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 NewLine;[LF];
                 Whitespace;[    ];
@@ -16,12 +14,10 @@ RazorDocument - [0..66)::66 - [LF<div>LF    FooLF    <p>@Bar</p>LF    @{ var x =
                 NewLine;[LF];
                 Whitespace;[    ];
             MarkupElement - [22..33)::11
-                MarkupStartTag - [22..25)::3 - [<p>]
-                    MarkupTextLiteral - [22..24)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        Text;[p];
-                    MarkupTextLiteral - [24..25)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        CloseAngle;[>];
+                MarkupStartTag - [22..25)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    CloseAngle;[>];
                 CSharpCodeBlock - [25..29)::4
                     CSharpImplicitExpression - [25..29)::4
                         CSharpTransition - [25..26)::1 - Gen<None> - SpanEditHandler;Accepts:None
@@ -30,12 +26,11 @@ RazorDocument - [0..66)::66 - [LF<div>LF    FooLF    <p>@Bar</p>LF    @{ var x =
                             CSharpCodeBlock - [26..29)::3
                                 CSharpExpressionLiteral - [26..29)::3 - [Bar] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
                                     Identifier;[Bar];
-                MarkupEndTag - [29..33)::4 - [</p>]
-                    MarkupTextLiteral - [29..33)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        ForwardSlash;[/];
-                        Text;[p];
-                        CloseAngle;[>];
+                MarkupEndTag - [29..33)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];
             MarkupTextLiteral - [33..35)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 NewLine;[LF];
             CSharpCodeBlock - [35..56)::21
@@ -63,11 +58,10 @@ RazorDocument - [0..66)::66 - [LF<div>LF    FooLF    <p>@Bar</p>LF    @{ var x =
                             RightBrace;[}];
             MarkupEphemeralTextLiteral - [56..58)::2 - [LF] - Gen<None> - SpanEditHandler;Accepts:Any
                 NewLine;[LF];
-            MarkupEndTag - [58..64)::6 - [</div>]
-                MarkupTextLiteral - [58..64)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[div];
-                    CloseAngle;[>];
+            MarkupEndTag - [58..64)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[div];
+                CloseAngle;[>];
         MarkupTextLiteral - [64..66)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
             NewLine;[LF];

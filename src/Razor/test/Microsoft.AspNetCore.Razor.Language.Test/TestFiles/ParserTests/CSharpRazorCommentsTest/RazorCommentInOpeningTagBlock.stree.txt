@@ -1,10 +1,9 @@
 RazorDocument - [0..33)::33 - [<text @* razor comment *@></text>]
     MarkupBlock - [0..33)::33
         MarkupElement - [0..33)::33
-            MarkupStartTag - [0..26)::26 - [<text @* razor comment *@>]
-                MarkupTextLiteral - [0..5)::5 - [<text] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[text];
+            MarkupStartTag - [0..26)::26 - [<text @* razor comment *@>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[text];
                 MarkupMiscAttributeContent - [5..25)::20
                     MarkupTextLiteral - [5..6)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -14,11 +13,9 @@ RazorDocument - [0..33)::33 - [<text @* razor comment *@></text>]
                         RazorCommentLiteral;[ razor comment ];
                         RazorCommentStar;[*];
                         RazorCommentTransition;[@];
-                MarkupTextLiteral - [25..26)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
-            MarkupEndTag - [26..33)::7 - [</text>]
-                MarkupTextLiteral - [26..33)::7 - [</text>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[text];
-                    CloseAngle;[>];
+                CloseAngle;[>];
+            MarkupEndTag - [26..33)::7 - [</text>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[text];
+                CloseAngle;[>];

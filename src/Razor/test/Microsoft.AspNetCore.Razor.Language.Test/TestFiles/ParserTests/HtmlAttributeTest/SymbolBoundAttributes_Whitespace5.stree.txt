@@ -1,9 +1,8 @@
 MarkupBlock - [0..45)::45 - [<a LF  *something='Foo'	LF*something='Bar' />]
     MarkupElement - [0..45)::45
-        MarkupStartTag - [0..45)::45 - [<a LF  *something='Foo'	LF*something='Bar' />]
-            MarkupTextLiteral - [0..2)::2 - [<a] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                OpenAngle;[<];
-                Text;[a];
+        MarkupStartTag - [0..45)::45 - [<a LF  *something='Foo'	LF*something='Bar' />] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[a];
             MarkupAttributeBlock - [2..23)::21 - [ LF  *something='Foo']
                 MarkupTextLiteral - [2..7)::5 - [ LF  ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     Whitespace;[ ];
@@ -38,6 +37,5 @@ MarkupBlock - [0..45)::45 - [<a LF  *something='Foo'	LF*something='Bar' />]
             MarkupMiscAttributeContent - [42..43)::1
                 MarkupTextLiteral - [42..43)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     Whitespace;[ ];
-            MarkupTextLiteral - [43..45)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                ForwardSlash;[/];
-                CloseAngle;[>];
+            ForwardSlash;[/];
+            CloseAngle;[>];

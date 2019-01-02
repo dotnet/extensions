@@ -1,12 +1,10 @@
 RazorDocument - [0..39)::39 - [<script>var four = 4; /* </ */</script>]
     MarkupBlock - [0..39)::39
         MarkupElement - [0..39)::39
-            MarkupStartTag - [0..8)::8 - [<script>]
-                MarkupTextLiteral - [0..7)::7 - [<script] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[script];
-                MarkupTextLiteral - [7..8)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+            MarkupStartTag - [0..8)::8 - [<script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[script];
+                CloseAngle;[>];
             MarkupTextLiteral - [8..30)::22 - [var four = 4; /* </ */] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[var];
                 Whitespace;[ ];
@@ -24,9 +22,8 @@ RazorDocument - [0..39)::39 - [<script>var four = 4; /* </ */</script>]
                 Whitespace;[ ];
                 Text;[*];
                 ForwardSlash;[/];
-            MarkupEndTag - [30..39)::9 - [</script>]
-                MarkupTextLiteral - [30..39)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[script];
-                    CloseAngle;[>];
+            MarkupEndTag - [30..39)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[script];
+                CloseAngle;[>];

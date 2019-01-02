@@ -8,9 +8,9 @@ RazorDocument - [0..42)::42 - [<p>< @DateTime.Now ></ @DateTime.Now ></p>]
                 MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupElement - [3..20)::17
-                MarkupStartTag - [3..20)::17 - [< @DateTime.Now >]
-                    MarkupTextLiteral - [3..4)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
+                MarkupStartTag - [3..20)::17 - [< @DateTime.Now >] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[<Missing>];
                     MarkupMiscAttributeContent - [4..19)::15
                         MarkupTextLiteral - [4..5)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             Whitespace;[ ];
@@ -26,14 +26,16 @@ RazorDocument - [0..42)::42 - [<p>< @DateTime.Now ></ @DateTime.Now ></p>]
                                             Identifier;[Now];
                         MarkupTextLiteral - [18..19)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             Whitespace;[ ];
-                    MarkupTextLiteral - [19..20)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        CloseAngle;[>];
+                    CloseAngle;[>];
             MarkupElement - [20..23)::3
-                MarkupEndTag - [20..23)::3 - [</ ]
-                    MarkupTextLiteral - [20..23)::3 - [</ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        ForwardSlash;[/];
-                        Whitespace;[ ];
+                MarkupEndTag - [20..23)::3 - [</ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[<Missing>];
+                    MarkupMiscAttributeContent - [22..23)::1
+                        MarkupTextLiteral - [22..23)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Whitespace;[ ];
+                    CloseAngle;[<Missing>];
             CSharpCodeBlock - [23..36)::13
                 CSharpImplicitExpression - [23..36)::13
                     CSharpTransition - [23..24)::1 - Gen<None> - SpanEditHandler;Accepts:None

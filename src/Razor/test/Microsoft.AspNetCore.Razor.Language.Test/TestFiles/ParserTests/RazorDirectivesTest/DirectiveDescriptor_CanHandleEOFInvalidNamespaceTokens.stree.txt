@@ -15,6 +15,7 @@ RazorDocument - [0..15)::15 - [@custom System<]
         MarkupTextLiteral - [8..14)::6 - [System] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[System];
         MarkupElement - [14..15)::1
-            MarkupStartTag - [14..15)::1 - [<]
-                MarkupTextLiteral - [14..15)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
+            MarkupStartTag - [14..15)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[<Missing>];
+                CloseAngle;[<Missing>];

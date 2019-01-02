@@ -1,17 +1,17 @@
 MarkupBlock - [0..21)::21 - [<text></text foo bar>]
     MarkupElement - [0..21)::21
-        MarkupStartTag - [0..6)::6 - [<text>]
-            MarkupTransition - [0..6)::6 - Gen<None> - SpanEditHandler;Accepts:None
-                OpenAngle;[<];
-                Text;[text];
-                CloseAngle;[>];
-        MarkupEndTag - [6..21)::15 - [</text foo bar>]
-            MarkupTransition - [6..21)::15 - Gen<None> - SpanEditHandler;Accepts:Any
-                OpenAngle;[<];
-                ForwardSlash;[/];
-                Text;[text];
-                Whitespace;[ ];
-                Text;[foo];
-                Whitespace;[ ];
-                Text;[bar];
-                CloseAngle;[>];
+        MarkupStartTag - [0..6)::6 - MarkupTransition - [<text>] - Gen<None> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[text];
+            CloseAngle;[>];
+        MarkupEndTag - [6..21)::15 - MarkupTransition - [</text foo bar>] - Gen<None> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[text];
+            MarkupMiscAttributeContent - [12..20)::8
+                MarkupTextLiteral - [12..20)::8 - [ foo bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    Text;[foo];
+                    Whitespace;[ ];
+                    Text;[bar];
+            CloseAngle;[>];

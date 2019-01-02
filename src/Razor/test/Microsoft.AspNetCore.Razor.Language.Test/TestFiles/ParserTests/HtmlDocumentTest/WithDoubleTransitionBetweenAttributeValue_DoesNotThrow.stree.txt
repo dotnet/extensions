@@ -3,10 +3,9 @@ RazorDocument - [0..27)::27 - [{<span foo='abc @@ def' />}]
         MarkupTextLiteral - [0..1)::1 - [{] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[{];
         MarkupElement - [1..26)::25
-            MarkupStartTag - [1..26)::25 - [<span foo='abc @@ def' />]
-                MarkupTextLiteral - [1..6)::5 - [<span] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[span];
+            MarkupStartTag - [1..26)::25 - [<span foo='abc @@ def' />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[span];
                 MarkupAttributeBlock - [6..23)::17 - [ foo='abc @@ def']
                     MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -35,8 +34,7 @@ RazorDocument - [0..27)::27 - [{<span foo='abc @@ def' />}]
                 MarkupMiscAttributeContent - [23..24)::1
                     MarkupTextLiteral - [23..24)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [24..26)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
+                ForwardSlash;[/];
+                CloseAngle;[>];
         MarkupTextLiteral - [26..27)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[}];

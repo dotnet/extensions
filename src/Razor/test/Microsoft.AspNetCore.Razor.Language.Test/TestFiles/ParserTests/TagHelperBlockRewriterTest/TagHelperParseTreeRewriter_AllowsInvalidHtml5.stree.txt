@@ -1,9 +1,9 @@
 RazorDocument - [0..19)::19 - [< class="foo" <p />]
     MarkupBlock - [0..19)::19
         MarkupElement - [0..14)::14
-            MarkupStartTag - [0..14)::14 - [< class="foo" ]
-                MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
+            MarkupStartTag - [0..14)::14 - [< class="foo" ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[<Missing>];
                 MarkupAttributeBlock - [1..13)::12 - [ class="foo"]
                     MarkupTextLiteral - [1..2)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -21,6 +21,7 @@ RazorDocument - [0..19)::19 - [< class="foo" <p />]
                 MarkupMiscAttributeContent - [13..14)::1
                     MarkupTextLiteral - [13..14)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
+                CloseAngle;[<Missing>];
         MarkupTagHelperElement - [14..19)::5 - p[SelfClosing] - ptaghelper
             MarkupTagHelperStartTag - [14..19)::5
                 MarkupTextLiteral - [14..16)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any

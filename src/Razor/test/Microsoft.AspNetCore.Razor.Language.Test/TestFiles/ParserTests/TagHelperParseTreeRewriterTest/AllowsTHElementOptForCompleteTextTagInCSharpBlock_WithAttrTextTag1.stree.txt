@@ -12,13 +12,10 @@ RazorDocument - [0..22)::22 - [@{<!text class="btn">}]
                     CSharpCodeBlock - [2..22)::20
                         MarkupBlock - [2..22)::20
                             MarkupElement - [2..22)::20
-                                MarkupStartTag - [2..21)::19 - [<!text class="btn">]
-                                    MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        OpenAngle;[<];
-                                    RazorMetaCode - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                                        Bang;[!];
-                                    MarkupTextLiteral - [4..8)::4 - [text] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        Text;[text];
+                                MarkupStartTag - [2..21)::19 - [<!text class="btn">] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Bang;[!];
+                                    Text;[text];
                                     MarkupAttributeBlock - [8..20)::12 - [ class="btn"]
                                         MarkupTextLiteral - [8..9)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Whitespace;[ ];
@@ -33,8 +30,7 @@ RazorDocument - [0..22)::22 - [@{<!text class="btn">}]
                                                     Text;[btn];
                                         MarkupTextLiteral - [19..20)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                                             DoubleQuote;["];
-                                    MarkupTextLiteral - [20..21)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [21..22)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Text;[}];
                     RazorMetaCode - [22..22)::0 - Gen<None> - SpanEditHandler;Accepts:Any

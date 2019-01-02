@@ -8,10 +8,11 @@ RazorDocument - [0..9)::9 - [<p></</p>]
                 MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupElement - [3..5)::2
-                MarkupEndTag - [3..5)::2 - [</]
-                    MarkupTextLiteral - [3..5)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        OpenAngle;[<];
-                        ForwardSlash;[/];
+                MarkupEndTag - [3..5)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[<Missing>];
+                    CloseAngle;[<Missing>];
             MarkupTagHelperEndTag - [5..9)::4
                 MarkupTextLiteral - [5..9)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];

@@ -1,10 +1,9 @@
 RazorDocument - [0..51)::51 - [<script type='text/html invalid'><input /></script>]
     MarkupBlock - [0..51)::51
         MarkupElement - [0..51)::51
-            MarkupStartTag - [0..33)::33 - [<script type='text/html invalid'>]
-                MarkupTextLiteral - [0..7)::7 - [<script] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[script];
+            MarkupStartTag - [0..33)::33 - [<script type='text/html invalid'>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[script];
                 MarkupAttributeBlock - [7..32)::25 - [ type='text/html invalid']
                     MarkupTextLiteral - [7..8)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -26,17 +25,15 @@ RazorDocument - [0..51)::51 - [<script type='text/html invalid'><input /></scrip
                                 Text;[invalid];
                     MarkupTextLiteral - [31..32)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
-                MarkupTextLiteral - [32..33)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+                CloseAngle;[>];
             MarkupTextLiteral - [33..42)::9 - [<input />] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[input];
                 Whitespace;[ ];
                 ForwardSlash;[/];
                 CloseAngle;[>];
-            MarkupEndTag - [42..51)::9 - [</script>]
-                MarkupTextLiteral - [42..51)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[script];
-                    CloseAngle;[>];
+            MarkupEndTag - [42..51)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[script];
+                CloseAngle;[>];

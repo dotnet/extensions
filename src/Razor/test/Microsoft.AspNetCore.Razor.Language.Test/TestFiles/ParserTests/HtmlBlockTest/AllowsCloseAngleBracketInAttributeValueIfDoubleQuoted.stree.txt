@@ -1,16 +1,13 @@
 MarkupBlock - [0..26)::26 - [<foo><bar baz=">" /></foo>]
     MarkupElement - [0..26)::26
-        MarkupStartTag - [0..5)::5 - [<foo>]
-            MarkupTextLiteral - [0..4)::4 - [<foo] - Gen<Markup> - SpanEditHandler;Accepts:None
-                OpenAngle;[<];
-                Text;[foo];
-            MarkupTextLiteral - [4..5)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                CloseAngle;[>];
+        MarkupStartTag - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[foo];
+            CloseAngle;[>];
         MarkupElement - [5..20)::15
-            MarkupStartTag - [5..20)::15 - [<bar baz=">" />]
-                MarkupTextLiteral - [5..9)::4 - [<bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[bar];
+            MarkupStartTag - [5..20)::15 - [<bar baz=">" />] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                Text;[bar];
                 MarkupAttributeBlock - [9..17)::8 - [ baz=">"]
                     MarkupTextLiteral - [9..10)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -28,12 +25,10 @@ MarkupBlock - [0..26)::26 - [<foo><bar baz=">" /></foo>]
                 MarkupMiscAttributeContent - [17..18)::1
                     MarkupTextLiteral - [17..18)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
-                MarkupTextLiteral - [18..20)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                    ForwardSlash;[/];
-                    CloseAngle;[>];
-        MarkupEndTag - [20..26)::6 - [</foo>]
-            MarkupTextLiteral - [20..26)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                OpenAngle;[<];
                 ForwardSlash;[/];
-                Text;[foo];
                 CloseAngle;[>];
+        MarkupEndTag - [20..26)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[foo];
+            CloseAngle;[>];

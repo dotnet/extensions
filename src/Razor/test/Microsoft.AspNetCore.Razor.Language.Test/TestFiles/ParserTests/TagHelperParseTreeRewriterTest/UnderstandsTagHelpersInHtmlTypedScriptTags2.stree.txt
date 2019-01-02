@@ -1,10 +1,9 @@
 RazorDocument - [0..76)::76 - [<script id='scriptTag' type='text/html' class='something'><input /></script>]
     MarkupBlock - [0..76)::76
         MarkupElement - [0..76)::76
-            MarkupStartTag - [0..58)::58 - [<script id='scriptTag' type='text/html' class='something'>]
-                MarkupTextLiteral - [0..7)::7 - [<script] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[script];
+            MarkupStartTag - [0..58)::58 - [<script id='scriptTag' type='text/html' class='something'>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[script];
                 MarkupAttributeBlock - [7..22)::15 - [ id='scriptTag']
                     MarkupTextLiteral - [7..8)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
@@ -49,8 +48,7 @@ RazorDocument - [0..76)::76 - [<script id='scriptTag' type='text/html' class='so
                                 Text;[something];
                     MarkupTextLiteral - [56..57)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
-                MarkupTextLiteral - [57..58)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+                CloseAngle;[>];
             MarkupTagHelperElement - [58..67)::9 - input[SelfClosing] - inputtaghelper
                 MarkupTagHelperStartTag - [58..67)::9
                     MarkupTextLiteral - [58..64)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -62,9 +60,8 @@ RazorDocument - [0..76)::76 - [<script id='scriptTag' type='text/html' class='so
                     MarkupTextLiteral - [65..67)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         ForwardSlash;[/];
                         CloseAngle;[>];
-            MarkupEndTag - [67..76)::9 - [</script>]
-                MarkupTextLiteral - [67..76)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[script];
-                    CloseAngle;[>];
+            MarkupEndTag - [67..76)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[script];
+                CloseAngle;[>];

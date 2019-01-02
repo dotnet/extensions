@@ -22,11 +22,10 @@ RazorDocument - [0..33)::33 - [<p @do { someattribute="btn"></p>]
                             GreaterThan;[>];
                         MarkupBlock - [29..33)::4
                             MarkupElement - [29..33)::4
-                                MarkupEndTag - [29..33)::4 - [</p>]
-                                    MarkupTextLiteral - [29..33)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                        Text;[p];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [29..33)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[p];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [33..33)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Marker;[];

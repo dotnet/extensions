@@ -12,13 +12,10 @@ RazorDocument - [0..8)::8 - [@{<!p /}]
                     CSharpCodeBlock - [2..8)::6
                         MarkupBlock - [2..8)::6
                             MarkupElement - [2..8)::6
-                                MarkupStartTag - [2..8)::6 - [<!p /}]
-                                    MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        OpenAngle;[<];
-                                    RazorMetaCode - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                                        Bang;[!];
-                                    MarkupTextLiteral - [4..5)::1 - [p] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        Text;[p];
+                                MarkupStartTag - [2..8)::6 - [<!p /}] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    Bang;[!];
+                                    Text;[p];
                                     MarkupMiscAttributeContent - [5..6)::1
                                         MarkupTextLiteral - [5..6)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Whitespace;[ ];
@@ -28,5 +25,6 @@ RazorDocument - [0..8)::8 - [@{<!p /}]
                                     MarkupMinimizedAttributeBlock - [7..8)::1 - [}]
                                         MarkupTextLiteral - [7..8)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[}];
+                                    CloseAngle;[<Missing>];
                     RazorMetaCode - [8..8)::0 - Gen<None> - SpanEditHandler;Accepts:Any
                         RightBrace;[<Missing>];

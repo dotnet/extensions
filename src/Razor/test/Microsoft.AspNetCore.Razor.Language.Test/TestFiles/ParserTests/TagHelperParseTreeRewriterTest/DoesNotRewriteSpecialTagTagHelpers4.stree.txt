@@ -1,12 +1,10 @@
 RazorDocument - [0..24)::24 - [<foo><?xml @foo ?></foo>]
     MarkupBlock - [0..24)::24
         MarkupElement - [0..24)::24
-            MarkupStartTag - [0..5)::5 - [<foo>]
-                MarkupTextLiteral - [0..4)::4 - [<foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[foo];
-                MarkupTextLiteral - [4..5)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+            MarkupStartTag - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[foo];
+                CloseAngle;[>];
             MarkupTextLiteral - [5..11)::6 - [<?xml ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 QuestionMark;[?];
@@ -24,9 +22,8 @@ RazorDocument - [0..24)::24 - [<foo><?xml @foo ?></foo>]
                 Whitespace;[ ];
                 QuestionMark;[?];
                 CloseAngle;[>];
-            MarkupEndTag - [18..24)::6 - [</foo>]
-                MarkupTextLiteral - [18..24)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[foo];
-                    CloseAngle;[>];
+            MarkupEndTag - [18..24)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[foo];
+                CloseAngle;[>];

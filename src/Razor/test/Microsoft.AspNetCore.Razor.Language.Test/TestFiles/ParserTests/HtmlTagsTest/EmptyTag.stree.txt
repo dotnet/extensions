@@ -1,7 +1,6 @@
 MarkupBlock - [0..2)::2 - [<>]
     MarkupElement - [0..2)::2
-        MarkupStartTag - [0..2)::2 - [<>]
-            MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:None
-                OpenAngle;[<];
-            MarkupTextLiteral - [1..2)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                CloseAngle;[>];
+        MarkupStartTag - [0..2)::2 - [<>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[<Missing>];
+            CloseAngle;[>];

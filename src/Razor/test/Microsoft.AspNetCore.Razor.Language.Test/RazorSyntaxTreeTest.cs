@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             Assert.NotNull(syntaxTree);
             Assert.Equal(61, root.EndPosition);
             Assert.Single(root.DescendantNodes().Where(n => n is RazorDirectiveBodySyntax body && body.Keyword.GetContent() == "tagHelperPrefix"));
-            Assert.Empty(root.DescendantNodes().Where(n => n is MarkupTagBlockSyntax));
+            Assert.Empty(root.DescendantNodes().Where(n => n is MarkupElementSyntax));
             Assert.Empty(syntaxTree.Diagnostics);
         }
     }

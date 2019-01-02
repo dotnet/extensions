@@ -1,12 +1,10 @@
 RazorDocument - [0..68)::68 - [<script>foo < bar && quantity.toString() !== orderQty.val()</script>]
     MarkupBlock - [0..68)::68
         MarkupElement - [0..68)::68
-            MarkupStartTag - [0..8)::8 - [<script>]
-                MarkupTextLiteral - [0..7)::7 - [<script] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    Text;[script];
-                MarkupTextLiteral - [7..8)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    CloseAngle;[>];
+            MarkupStartTag - [0..8)::8 - [<script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[script];
+                CloseAngle;[>];
             MarkupTextLiteral - [8..59)::51 - [foo < bar && quantity.toString() !== orderQty.val()] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[foo];
                 Whitespace;[ ];
@@ -23,9 +21,8 @@ RazorDocument - [0..68)::68 - [<script>foo < bar && quantity.toString() !== orde
                 Equals;[=];
                 Whitespace;[ ];
                 Text;[orderQty.val()];
-            MarkupEndTag - [59..68)::9 - [</script>]
-                MarkupTextLiteral - [59..68)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[script];
-                    CloseAngle;[>];
+            MarkupEndTag - [59..68)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[script];
+                CloseAngle;[>];

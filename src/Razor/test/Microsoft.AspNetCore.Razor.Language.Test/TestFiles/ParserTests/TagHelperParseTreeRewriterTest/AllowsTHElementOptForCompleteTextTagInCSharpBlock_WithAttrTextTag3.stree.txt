@@ -12,13 +12,10 @@ RazorDocument - [0..47)::47 - [@{<!text class="btn">words with spaces</!text>}]
                     CSharpCodeBlock - [2..46)::44
                         MarkupBlock - [2..46)::44
                             MarkupElement - [2..46)::44
-                                MarkupStartTag - [2..21)::19 - [<!text class="btn">]
-                                    MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        OpenAngle;[<];
-                                    RazorMetaCode - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                                        Bang;[!];
-                                    MarkupTextLiteral - [4..8)::4 - [text] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        Text;[text];
+                                MarkupStartTag - [2..21)::19 - [<!text class="btn">] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Bang;[!];
+                                    Text;[text];
                                     MarkupAttributeBlock - [8..20)::12 - [ class="btn"]
                                         MarkupTextLiteral - [8..9)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Whitespace;[ ];
@@ -33,23 +30,19 @@ RazorDocument - [0..47)::47 - [@{<!text class="btn">words with spaces</!text>}]
                                                     Text;[btn];
                                         MarkupTextLiteral - [19..20)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                                             DoubleQuote;["];
-                                    MarkupTextLiteral - [20..21)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        CloseAngle;[>];
+                                    CloseAngle;[>];
                                 MarkupTextLiteral - [21..38)::17 - [words with spaces] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Text;[words];
                                     Whitespace;[ ];
                                     Text;[with];
                                     Whitespace;[ ];
                                     Text;[spaces];
-                                MarkupEndTag - [38..46)::8 - [</!text>]
-                                    MarkupTextLiteral - [38..40)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                        OpenAngle;[<];
-                                        ForwardSlash;[/];
-                                    RazorMetaCode - [40..41)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                                        Bang;[!];
-                                    MarkupTextLiteral - [41..46)::5 - [text>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        Text;[text];
-                                        CloseAngle;[>];
+                                MarkupEndTag - [38..46)::8 - [</!text>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Bang;[!];
+                                    Text;[text];
+                                    CloseAngle;[>];
                         CSharpStatementLiteral - [46..46)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Marker;[];
                     RazorMetaCode - [46..47)::1 - Gen<None> - SpanEditHandler;Accepts:None

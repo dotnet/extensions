@@ -1,9 +1,8 @@
 MarkupBlock - [0..27)::27 - [<a href='@foo ~/Foo/Bar' />]
     MarkupElement - [0..27)::27
-        MarkupStartTag - [0..27)::27 - [<a href='@foo ~/Foo/Bar' />]
-            MarkupTextLiteral - [0..2)::2 - [<a] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                OpenAngle;[<];
-                Text;[a];
+        MarkupStartTag - [0..27)::27 - [<a href='@foo ~/Foo/Bar' />] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[a];
             MarkupAttributeBlock - [2..24)::22 - [ href='@foo ~/Foo/Bar']
                 MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     Whitespace;[ ];
@@ -37,6 +36,5 @@ MarkupBlock - [0..27)::27 - [<a href='@foo ~/Foo/Bar' />]
             MarkupMiscAttributeContent - [24..25)::1
                 MarkupTextLiteral - [24..25)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     Whitespace;[ ];
-            MarkupTextLiteral - [25..27)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
-                ForwardSlash;[/];
-                CloseAngle;[>];
+            ForwardSlash;[/];
+            CloseAngle;[>];
