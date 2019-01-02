@@ -364,11 +364,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 phase.Execute(codeDocument);
             }
 
-            if (codeDocument.GetFileKind() != FileKinds.Component)
-            {
-                throw new InvalidOperationException("Not a componenot.");
-            }
-
             var document = codeDocument.GetDocumentIntermediateNode();
             Engine.Features.OfType<ComponentDocumentClassifierPass>().Single().Execute(codeDocument, document);
             return document;
