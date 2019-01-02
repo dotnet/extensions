@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         public ComponentHtmlBlockPassTest()
         {
             Pass = new ComponentHtmlBlockPass();
-            Engine = RazorProjectEngine.Create(
+            ProjectEngine = (DefaultRazorProjectEngine)RazorProjectEngine.Create(
                 RazorConfiguration.Default,
                 RazorProjectFileSystem.Create(Environment.CurrentDirectory),
                 b =>
@@ -23,16 +23,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     {
                         b.Features.Remove(b.Features.OfType<ComponentHtmlBlockPass>().Single());
                     }
-                }).Engine;
+                });
+            Engine = ProjectEngine.Engine;
 
             Pass.Engine = Engine;
         }
+        
+        private DefaultRazorProjectEngine ProjectEngine { get; }
 
         private RazorEngine Engine { get; }
 
         private ComponentHtmlBlockPass Pass { get; }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Execute_RewritesHtml_Basic()
         {
             // Arrange
@@ -60,7 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Execute_RewritesHtml_WithComment()
         {
             // Arrange
@@ -78,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Execute_RewritesHtml_MergesSiblings()
         {
             // Arrange
@@ -104,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Execute_RewritesHtml_MergesSiblings_LeftEdge()
         {
             // Arrange
@@ -130,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         }
 
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Execute_RewritesHtml_CSharpInAttributes()
         {
             // Arrange
@@ -153,7 +156,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Execute_RewritesHtml_CSharpInBody()
         {
             // Arrange
@@ -178,7 +181,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Execute_RewritesHtml_EncodesHtmlEntities()
         {
             // Arrange
@@ -202,7 +205,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Execute_RewritesHtml_EmptyNonvoid()
         {
             // Arrange
@@ -220,7 +223,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Execute_RewritesHtml_Void()
         {
             // Arrange
@@ -238,7 +241,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Execute_CannotRewriteHtml_CSharpInCode()
         {
             // Arrange
@@ -261,7 +264,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Assert.Empty(documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>());
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void Execute_CannotRewriteHtml_Script()
         {
             // Arrange
@@ -285,7 +288,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         }
 
         // The unclosed tag will have errors, so we won't rewrite it or its parent.
-        [Fact(Skip = "Not ready yet.")]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6217")]
         public void Execute_CannotRewriteHtml_Errors()
         {
             // Arrange
@@ -303,7 +306,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Assert.Empty(documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>());
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6217")]
         public void Execute_RewritesHtml_MismatchedClosingTag()
         {
             // Arrange
@@ -345,7 +348,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             content = content.Replace("\n", "\r\n");
 
             var source = RazorSourceDocument.Create(content, "test.cshtml");
-            return RazorCodeDocument.Create(source);
+            return ProjectEngine.CreateCodeDocumentCore(source, FileKinds.Component);
         }
 
         private DocumentIntermediateNode Lower(RazorCodeDocument codeDocument)
@@ -359,6 +362,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 }
 
                 phase.Execute(codeDocument);
+            }
+
+            if (codeDocument.GetFileKind() != FileKinds.Component)
+            {
+                throw new InvalidOperationException("Not a componenot.");
             }
 
             var document = codeDocument.GetDocumentIntermediateNode();

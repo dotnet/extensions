@@ -70,7 +70,7 @@ namespace Test.AnotherNamespace
             Assert.Single(bindings.TagHelpers, t => t.Name == "Test.UniqueName");
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ComponentDiscovery_CanFindComponent_WithTypeParameter()
         {
             // Arrange
@@ -88,7 +88,7 @@ namespace Test.AnotherNamespace
             Assert.Single(bindings.TagHelpers, t => t.Name == "Test.UniqueName<TItem>");
         }
 
-        [Fact(Skip = "Not ready yet.")]
+        [Fact]
         public void ComponentDiscovery_CanFindComponent_WithMultipleTypeParameters()
         {
             // Arrange

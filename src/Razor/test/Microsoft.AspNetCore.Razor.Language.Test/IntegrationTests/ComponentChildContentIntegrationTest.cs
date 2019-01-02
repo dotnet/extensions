@@ -85,333 +85,8 @@ namespace Test
 
         internal override bool UseTwoPhaseCompilation => true;
 
-        [Fact(Skip = "Not ready yet.")]
-        public void Render_BodyChildContent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(RenderChildContentComponent);
-
-            var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<RenderChildContent>
-  <div></div>
-</RenderChildContent>");
-
-            // Act
-            var frames = GetRenderTree(component);
-
-            // Assert
-            Assert.Collection(
-                frames,
-                frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 0),
-                frame => AssertFrame.Attribute(frame, "ChildContent", 1),
-                frame => AssertFrame.Markup(frame, "\n  <div></div>\n", 2));
-        }
-
-        [Fact(Skip = "Not ready yet.")]
-        public void Render_BodyChildContent_Generic()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(RenderChildContentStringComponent);
-
-            var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<RenderChildContentString Value=""HI"">
-  <div>@context.ToLowerInvariant()</div>
-</RenderChildContentString>");
-
-            // Act
-            var frames = GetRenderTree(component);
-
-            // Assert
-            Assert.Collection(
-                frames,
-                frame => AssertFrame.Component(frame, "Test.RenderChildContentString", 3, 0),
-                frame => AssertFrame.Attribute(frame, "Value", "HI", 1),
-                frame => AssertFrame.Attribute(frame, "ChildContent", 2),
-                frame => AssertFrame.Whitespace(frame, 3),
-                frame => AssertFrame.Element(frame, "div", 2, 4),
-                frame => AssertFrame.Text(frame, "hi", 5),
-                frame => AssertFrame.Whitespace(frame, 6));
-        }
-
-        [Fact(Skip = "Not ready yet.")]
-        public void Render_ExplicitChildContent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(RenderChildContentComponent);
-
-            var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<RenderChildContent>
-  <ChildContent>
-    <div></div>
-  </ChildContent>
-</RenderChildContent>");
-
-            // Act
-            var frames = GetRenderTree(component);
-
-            // Assert
-            Assert.Collection(
-                frames,
-                frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 0),
-                frame => AssertFrame.Attribute(frame, "ChildContent", 1),
-                frame => AssertFrame.Markup(frame, "\n    <div></div>\n  ", 2));
-        }
-
-        [Fact(Skip = "Not ready yet.")]
-        public void Render_BodyChildContent_Recursive()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(RenderChildContentComponent);
-
-            var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<RenderChildContent>
-  <RenderChildContent>
-    <div></div>
-  </RenderChildContent>
-</RenderChildContent>");
-
-            // Act
-            var frames = GetRenderTree(component);
-
-            // Assert
-            Assert.Collection(
-                frames,
-                frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 0),
-                frame => AssertFrame.Attribute(frame, "ChildContent", 1),
-                frame => AssertFrame.Whitespace(frame, 2),
-                frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 3),
-                frame => AssertFrame.Attribute(frame, "ChildContent", 4),
-                frame => AssertFrame.Whitespace(frame, 6),
-                frame => AssertFrame.Markup(frame, "\n    <div></div>\n  ", 5));
-        }
-
-        [Fact(Skip = "Not ready yet.")]
-        public void Render_AttributeChildContent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(RenderChildContentComponent);
-
-            var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-@{ RenderFragment<string> template = (context) => @<div>@context.ToLowerInvariant()</div>; }
-<RenderChildContent ChildContent=""@template(""HI"")"" />");
-
-            // Act
-            var frames = GetRenderTree(component);
-
-            // Assert
-            Assert.Collection(
-                frames,
-                frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 2),
-                frame => AssertFrame.Attribute(frame, "ChildContent", 3),
-                frame => AssertFrame.Element(frame, "div", 2, 0),
-                frame => AssertFrame.Text(frame, "hi", 1));
-        }
-
-        [Fact(Skip = "Not ready yet.")]
-        public void Render_AttributeChildContent_RenderFragmentOfString()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(RenderChildContentStringComponent);
-
-            var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-@{ RenderFragment<string> template = (context) => @<div>@context.ToLowerInvariant()</div>; }
-<RenderChildContentString ChildContent=""@template"" Value=""HI"" />");
-
-            // Act
-            var frames = GetRenderTree(component);
-
-            // Assert
-            Assert.Collection(
-                frames,
-                frame => AssertFrame.Component(frame, "Test.RenderChildContentString", 3, 2),
-                frame => AssertFrame.Attribute(frame, "ChildContent", 3),
-                frame => AssertFrame.Attribute(frame, "Value", "HI", 4),
-                frame => AssertFrame.Element(frame, "div", 2, 0),
-                frame => AssertFrame.Text(frame, "hi", 1));
-        }
-
-        [Fact(Skip = "Not ready yet.")]
-        public void Render_AttributeChildContent_NoArgTemplate()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(RenderChildContentComponent);
-
-            var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-@{ RenderFragment template = @<div>@(""HI"".ToLowerInvariant())</div>; }
-<RenderChildContent ChildContent=""@template"" />");
-
-            // Act
-            var frames = GetRenderTree(component);
-
-            // Assert
-            Assert.Collection(
-                frames,
-                frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 2),
-                frame => AssertFrame.Attribute(frame, "ChildContent", 3),
-                frame => AssertFrame.Element(frame, "div", 2, 0),
-                frame => AssertFrame.Text(frame, "hi", 1));
-        }
-
-        [Fact(Skip = "Not ready yet.")]
-        public void Render_AttributeChildContent_IgnoresEmptyBody()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(RenderChildContentComponent);
-
-            var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-@{ RenderFragment<string> template = (context) => @<div>@context.ToLowerInvariant()</div>; }
-<RenderChildContent ChildContent=""@template(""HI"")""></RenderChildContent>");
-
-            // Act
-            var frames = GetRenderTree(component);
-
-            // Assert
-            Assert.Collection(
-                frames,
-                frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 2),
-                frame => AssertFrame.Attribute(frame, "ChildContent", 3),
-                frame => AssertFrame.Element(frame, "div", 2, 0),
-                frame => AssertFrame.Text(frame, "hi", 1));
-        }
-
-        [Fact(Skip = "Not ready yet.")]
-        public void Render_AttributeChildContent_IgnoresWhitespaceBody()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(RenderChildContentComponent);
-
-            var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-@{ RenderFragment<string> template = (context) => @<div>@context.ToLowerInvariant()</div>; }
-<RenderChildContent ChildContent=""@template(""HI"")"">
-       
-</RenderChildContent>");
-
-            // Act
-            var frames = GetRenderTree(component);
-
-            // Assert
-            Assert.Collection(
-                frames,
-                frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 2),
-                frame => AssertFrame.Attribute(frame, "ChildContent", 3),
-                frame => AssertFrame.Element(frame, "div", 2, 0),
-                frame => AssertFrame.Text(frame, "hi", 1));
-        }
-
-        [Fact(Skip = "Not ready yet.")]
-        public void Render_MultipleChildContent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(RenderMultipleChildContent);
-
-            var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-@{ RenderFragment<string> header = context => @<div>@context.ToLowerInvariant()</div>; }
-<RenderMultipleChildContent Name=""billg"" Header=@header Value=""HI"">
-  <ChildContent>Some @context.ToLowerInvariant() Content</ChildContent>
-  <Footer>Bye!</Footer>
-</RenderMultipleChildContent>");
-
-            // Act
-            var frames = GetRenderTree(component);
-
-            // Assert
-            Assert.Collection(
-                frames,
-                frame => AssertFrame.Component(frame, "Test.RenderMultipleChildContent", 6, 2),
-                frame => AssertFrame.Attribute(frame, "Name", "billg", 3),
-                frame => AssertFrame.Attribute(frame, "Header", typeof(RenderFragment<string>), 4),
-                frame => AssertFrame.Attribute(frame, "Value", "HI", 5),
-                frame => AssertFrame.Attribute(frame, "ChildContent", typeof(RenderFragment<string>), 6),
-                frame => AssertFrame.Attribute(frame, "Footer", typeof(RenderFragment), 10),
-                frame => AssertFrame.Element(frame, "div", 2, 0),
-                frame => AssertFrame.Text(frame, "billg", 1),
-                frame => AssertFrame.Text(frame, "Some ", 7),
-                frame => AssertFrame.Text(frame, "hi", 8),
-                frame => AssertFrame.Text(frame, " Content", 9),
-                frame => AssertFrame.Text(frame, "Bye!", 11));
-        }
-
-        [Fact(Skip = "Not ready yet.")]
-        public void Render_MultipleChildContent_ContextParameterOnComponent()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(RenderMultipleChildContent);
-
-            var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<RenderMultipleChildContent Name=""billg"" Value=""HI"" Context=""item"">
-  <Header><div>@item.ToLowerInvariant()</div></Header>
-  <ChildContent Context=""Context"">Some @Context.ToLowerInvariant() Content</ChildContent>
-  <Footer>Bye!</Footer>
-</RenderMultipleChildContent>");
-
-            // Act
-            var frames = GetRenderTree(component);
-
-            // Assert
-            Assert.Collection(
-                frames,
-                frame => AssertFrame.Component(frame, "Test.RenderMultipleChildContent", 6, 0),
-                frame => AssertFrame.Attribute(frame, "Name", "billg", 1),
-                frame => AssertFrame.Attribute(frame, "Value", "HI", 2),
-                frame => AssertFrame.Attribute(frame, "Header", typeof(RenderFragment<string>), 3),
-                frame => AssertFrame.Attribute(frame, "ChildContent", typeof(RenderFragment<string>), 6),
-                frame => AssertFrame.Attribute(frame, "Footer", typeof(RenderFragment), 10),
-                frame => AssertFrame.Element(frame, "div", 2, 4),
-                frame => AssertFrame.Text(frame, "billg", 5),
-                frame => AssertFrame.Text(frame, "Some ", 7),
-                frame => AssertFrame.Text(frame, "hi", 8),
-                frame => AssertFrame.Text(frame, " Content", 9),
-                frame => AssertFrame.Text(frame, "Bye!", 11));
-        }
-
-        // Verifies that our check for reuse of parameter names isn't too aggressive.
-        [Fact(Skip = "Not ready yet.")]
-        public void Render_MultipleChildContent_ContextParameterOnComponent_SetsSameName()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(RenderMultipleChildContent);
-
-            var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<RenderMultipleChildContent Name=""billg"" Value=""HI"" Context=""item"">
-  <Header><div>@item.ToLowerInvariant()</div></Header>
-  <ChildContent Context=""item"">Some @item.ToLowerInvariant() Content</ChildContent>
-  <Footer>Bye!</Footer>
-</RenderMultipleChildContent>");
-
-            // Act
-            var frames = GetRenderTree(component);
-
-            // Assert
-            Assert.Collection(
-                frames,
-                frame => AssertFrame.Component(frame, "Test.RenderMultipleChildContent", 6, 0),
-                frame => AssertFrame.Attribute(frame, "Name", "billg", 1),
-                frame => AssertFrame.Attribute(frame, "Value", "HI", 2),
-                frame => AssertFrame.Attribute(frame, "Header", typeof(RenderFragment<string>), 3),
-                frame => AssertFrame.Attribute(frame, "ChildContent", typeof(RenderFragment<string>), 6),
-                frame => AssertFrame.Attribute(frame, "Footer", typeof(RenderFragment), 10),
-                frame => AssertFrame.Element(frame, "div", 2, 4),
-                frame => AssertFrame.Text(frame, "billg", 5),
-                frame => AssertFrame.Text(frame, "Some ", 7),
-                frame => AssertFrame.Text(frame, "hi", 8),
-                frame => AssertFrame.Text(frame, " Content", 9),
-                frame => AssertFrame.Text(frame, "Bye!", 11));
-        }
-
-        [Fact(Skip = "Not ready yet.")]
-        public void Render_ChildContent_AttributeAndBody_ProducesDiagnostic()
+        [Fact]
+        public void ChildContent_AttributeAndBody_ProducesDiagnostic()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(RenderChildContentComponent);
@@ -430,7 +105,7 @@ Some Content
         }
 
         [Fact]
-        public void Render_ChildContent_AttributeAndExplicitChildContent_ProducesDiagnostic()
+        public void ChildContent_AttributeAndExplicitChildContent_ProducesDiagnostic()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(RenderChildContentComponent);
@@ -451,7 +126,7 @@ Some Content
         }
 
         [Fact]
-        public void Render_ChildContent_ExplicitChildContent_UnrecogizedContent_ProducesDiagnostic()
+        public void ChildContent_ExplicitChildContent_UnrecogizedContent_ProducesDiagnostic()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(RenderChildContentComponent);
@@ -475,7 +150,7 @@ Some Content
         }
 
         [Fact]
-        public void Render_ChildContent_ExplicitChildContent_UnrecogizedElement_ProducesDiagnostic()
+        public void ChildContent_ExplicitChildContent_UnrecogizedElement_ProducesDiagnostic()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(RenderChildContentComponent);
@@ -495,7 +170,7 @@ Some Content
         }
 
         [Fact]
-        public void Render_ChildContent_ExplicitChildContent_UnrecogizedAttribute_ProducesDiagnostic()
+        public void ChildContent_ExplicitChildContent_UnrecogizedAttribute_ProducesDiagnostic()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(RenderChildContentComponent);
@@ -514,7 +189,7 @@ Some Content
         }
 
         [Fact]
-        public void Render_ChildContent_ExplicitChildContent_InvalidParameterName_ProducesDiagnostic()
+        public void ChildContent_ExplicitChildContent_InvalidParameterName_ProducesDiagnostic()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(RenderChildContentStringComponent);
@@ -533,7 +208,7 @@ Some Content
         }
 
         [Fact]
-        public void Render_ChildContent_ExplicitChildContent_RepeatedParameterName_GeneratesDiagnostic()
+        public void ChildContent_ExplicitChildContent_RepeatedParameterName_GeneratesDiagnostic()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(RenderChildContentStringComponent);
@@ -560,7 +235,7 @@ Some Content
         }
 
         [Fact]
-        public void Render_ChildContent_ContextParameterNameOnComponent_Invalid_ProducesDiagnostic()
+        public void ChildContent_ContextParameterNameOnComponent_Invalid_ProducesDiagnostic()
         {
             // Arrange
             AdditionalSyntaxTrees.Add(RenderChildContentStringComponent);

@@ -94,23 +94,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.Contains(typeof(IDoCoolThings), component.GetType().GetInterfaces());
         }
 
-        [Fact(Skip = "Not ready yet.")]
-        public void DeclarationConfiguration_RenderMethodIsEmpty()
-        {
-            // Arrange & Act
-            var component = CompileToComponent(@"
-<html>
-@{ var message = ""hi""; }
-<span class=""@(5 + 7)"">@message</span>
-</html>
-");
-
-            var frames = GetRenderTree(component);
-
-            // Assert
-            Assert.Empty(frames);
-        }
-
         [Fact] // Regression test for https://github.com/aspnet/Blazor/issues/453
         public void DeclarationConfiguration_FunctionsBlockHasLineMappings_MappingsApplyToError()
         {
