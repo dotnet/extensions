@@ -47,7 +47,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             Assert.Equal(snapshot.FilePath, obj.FilePath);
             Assert.Equal(snapshot.Configuration.ConfigurationName, obj.Configuration.ConfigurationName);
             Assert.Collection(
-                snapshot.Configuration.Extensions, 
+                snapshot.Configuration.Extensions.OrderBy(e => e.ExtensionName), 
                 e => Assert.Equal("Test-Extension1", e.ExtensionName),
                 e => Assert.Equal("Test-Extension2", e.ExtensionName));
             Assert.Equal(snapshot.Configuration.LanguageVersion, obj.Configuration.LanguageVersion);

@@ -601,9 +601,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.Equal(expectedLanguageVersion, configuration.LanguageVersion);
             Assert.Equal(expectedConfigurationName, configuration.ConfigurationName);
             Assert.Collection(
-                configuration.Extensions,
-                extension => Assert.Equal(expectedExtension2Name, extension.ExtensionName),
-                extension => Assert.Equal(expectedExtension1Name, extension.ExtensionName));
+                configuration.Extensions.OrderBy(e => e.ExtensionName),
+                extension => Assert.Equal(expectedExtension1Name, extension.ExtensionName),
+                extension => Assert.Equal(expectedExtension2Name, extension.ExtensionName));
         }
 
         [ForegroundFact]
@@ -696,9 +696,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.Equal(RazorLanguageVersion.Version_2_1, snapshot.Configuration.LanguageVersion);
             Assert.Equal("MVC-2.1", snapshot.Configuration.ConfigurationName);
             Assert.Collection(
-                snapshot.Configuration.Extensions,
-                e => Assert.Equal("MVC-2.1", e.ExtensionName),
-                e => Assert.Equal("Another-Thing", e.ExtensionName));
+                snapshot.Configuration.Extensions.OrderBy(e => e.ExtensionName),
+                e => Assert.Equal("Another-Thing", e.ExtensionName),
+                e => Assert.Equal("MVC-2.1", e.ExtensionName));
 
             Assert.Collection(
                 snapshot.DocumentFilePaths.OrderBy(d => d),
@@ -792,9 +792,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.Equal(RazorLanguageVersion.Version_2_1, snapshot.Configuration.LanguageVersion);
             Assert.Equal("MVC-2.1", snapshot.Configuration.ConfigurationName);
             Assert.Collection(
-                snapshot.Configuration.Extensions,
-                e => Assert.Equal("MVC-2.1", e.ExtensionName),
-                e => Assert.Equal("Another-Thing", e.ExtensionName));
+                snapshot.Configuration.Extensions.OrderBy(e => e.ExtensionName),
+                e => Assert.Equal("Another-Thing", e.ExtensionName),
+                e => Assert.Equal("MVC-2.1", e.ExtensionName));
 
             Assert.Collection(
                 snapshot.DocumentFilePaths.OrderBy(d => d),
@@ -833,7 +833,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.Equal(RazorLanguageVersion.Version_2_0, snapshot.Configuration.LanguageVersion);
             Assert.Equal("MVC-2.0", snapshot.Configuration.ConfigurationName);
             Assert.Collection(
-                snapshot.Configuration.Extensions,
+                snapshot.Configuration.Extensions.OrderBy(e => e.ExtensionName),
                 e => Assert.Equal("Another-Thing", e.ExtensionName),
                 e => Assert.Equal("MVC-2.0", e.ExtensionName));
 
@@ -897,9 +897,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.Equal(RazorLanguageVersion.Version_2_1, snapshot.Configuration.LanguageVersion);
             Assert.Equal("MVC-2.1", snapshot.Configuration.ConfigurationName);
             Assert.Collection(
-                snapshot.Configuration.Extensions,
-                e => Assert.Equal("MVC-2.1", e.ExtensionName),
-                e => Assert.Equal("Another-Thing", e.ExtensionName));
+                snapshot.Configuration.Extensions.OrderBy(e => e.ExtensionName),
+                e => Assert.Equal("Another-Thing", e.ExtensionName),
+                e => Assert.Equal("MVC-2.1", e.ExtensionName));
 
             // Act - 2
             RazorGeneralProperties.Property(Rules.RazorGeneral.RazorLangVersionProperty, "");
@@ -963,9 +963,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.Equal(RazorLanguageVersion.Version_2_1, snapshot.Configuration.LanguageVersion);
             Assert.Equal("MVC-2.1", snapshot.Configuration.ConfigurationName);
             Assert.Collection(
-                snapshot.Configuration.Extensions,
-                e => Assert.Equal("MVC-2.1", e.ExtensionName),
-                e => Assert.Equal("Another-Thing", e.ExtensionName));
+                snapshot.Configuration.Extensions.OrderBy(e => e.ExtensionName),
+                e => Assert.Equal("Another-Thing", e.ExtensionName),
+                e => Assert.Equal("MVC-2.1", e.ExtensionName));
 
             // Act - 2
             await Task.Run(async () => await host.DisposeAsync());

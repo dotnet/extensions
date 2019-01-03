@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,52 +11,20 @@ using Xunit.Sdk;
 
 namespace Xunit
 {
-    internal class ForegroundFactTestCase : LongLivedMarshalByRefObject, IXunitTestCase
+    internal class ForegroundTestCase : XunitTestCase
     {
-        private IXunitTestCase _inner;
-
         [EditorBrowsable(EditorBrowsableState.Never)]
         [Obsolete("Called by the de-serializer", error: true)]
-        public ForegroundFactTestCase()
+        public ForegroundTestCase()
         {
         }
 
-        public ForegroundFactTestCase(IXunitTestCase testCase)
+        public ForegroundTestCase(IMessageSink diagnosticMessageSink, TestMethodDisplay defaultMethodDisplay, TestMethodDisplayOptions defaultMethodDisplayOptions, ITestMethod testMethod, object[] testMethodArguments = null)
+            : base(diagnosticMessageSink, defaultMethodDisplay, defaultMethodDisplayOptions, testMethod, testMethodArguments)
         {
-            _inner = testCase;
         }
 
-        public string DisplayName => _inner.DisplayName;
-
-        public IMethodInfo Method => _inner.Method;
-
-        public string SkipReason => _inner.SkipReason;
-
-        public ISourceInformation SourceInformation
-        {
-            get => _inner.SourceInformation;
-            set => _inner.SourceInformation = value;
-        }
-
-        public ITestMethod TestMethod => _inner.TestMethod;
-
-        public object[] TestMethodArguments => _inner.TestMethodArguments;
-
-        public Dictionary<string, List<string>> Traits => _inner.Traits;
-
-        public string UniqueID => _inner.UniqueID;
-
-        public void Deserialize(IXunitSerializationInfo info)
-        {
-            _inner = info.GetValue<IXunitTestCase>("InnerTestCase");
-        }
-
-        public void Serialize(IXunitSerializationInfo info)
-        {
-            info.AddValue("InnerTestCase", _inner);
-        }
-
-        public Task<RunSummary> RunAsync(
+        public override Task<RunSummary> RunAsync(
             IMessageSink diagnosticMessageSink,
             IMessageBus messageBus,
             object[] constructorArguments,
@@ -71,7 +38,7 @@ namespace Xunit
                 {
                     SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext());
                     
-                    var worker = _inner.RunAsync(diagnosticMessageSink, messageBus, constructorArguments, aggregator, cancellationTokenSource);
+                    var worker = base.RunAsync(diagnosticMessageSink, messageBus, constructorArguments, aggregator, cancellationTokenSource);
 
                     Exception caught = null;
                     var frame = new DispatcherFrame();
