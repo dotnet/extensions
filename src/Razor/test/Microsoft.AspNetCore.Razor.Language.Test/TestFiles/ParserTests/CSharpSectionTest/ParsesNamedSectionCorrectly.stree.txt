@@ -14,7 +14,7 @@ RazorDocument - [0..27)::27 - [@section foo { <p>Foo</p> }]
                             Whitespace;[ ];
                         CSharpStatementLiteral - [9..12)::3 - [foo] - Gen<DirectiveToken {SectionName;Member;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
                             Identifier;[foo];
-                        MarkupTextLiteral - [12..13)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
+                        UnclassifiedTextLiteral - [12..13)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
                             Whitespace;[ ];
                         RazorMetaCode - [13..14)::1 - Gen<None> - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd
                             LeftBrace;[{];

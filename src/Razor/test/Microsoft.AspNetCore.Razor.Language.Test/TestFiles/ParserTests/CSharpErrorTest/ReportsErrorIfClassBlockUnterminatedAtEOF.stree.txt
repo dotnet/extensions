@@ -6,7 +6,7 @@ CSharpCodeBlock - [0..54)::54 - [functions { var foo = bar; if(foo != null) { ba
             RazorMetaCode - [0..9)::9 - Gen<None> - SpanEditHandler;Accepts:None
                 Identifier;[functions];
             CSharpCodeBlock - [9..54)::45
-                MarkupTextLiteral - [9..10)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
+                UnclassifiedTextLiteral - [9..10)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
                     Whitespace;[ ];
                 RazorMetaCode - [10..11)::1 - Gen<None> - AutoCompleteEditHandler;Accepts:None,AutoComplete:[}];AtEnd
                     LeftBrace;[{];

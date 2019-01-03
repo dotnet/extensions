@@ -10,7 +10,7 @@ RazorDocument - [0..14)::14 - [@functions { }]
                     RazorMetaCode - [1..10)::9 - Gen<None> - SpanEditHandler;Accepts:None
                         Identifier;[functions];
                     CSharpCodeBlock - [10..14)::4
-                        MarkupTextLiteral - [10..11)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
+                        UnclassifiedTextLiteral - [10..11)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
                             Whitespace;[ ];
                         RazorMetaCode - [11..12)::1 - Gen<None> - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd
                             LeftBrace;[{];

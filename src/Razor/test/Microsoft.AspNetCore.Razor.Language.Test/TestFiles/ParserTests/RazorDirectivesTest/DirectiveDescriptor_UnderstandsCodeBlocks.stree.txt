@@ -14,7 +14,7 @@ RazorDocument - [0..32)::32 - [@custom "Name" { foo(); bar(); }]
                             Whitespace;[ ];
                         CSharpStatementLiteral - [8..14)::6 - ["Name"] - Gen<DirectiveToken {;String;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
                             StringLiteral;["Name"];
-                        MarkupTextLiteral - [14..15)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
+                        UnclassifiedTextLiteral - [14..15)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
                             Whitespace;[ ];
                         RazorMetaCode - [15..16)::1 - Gen<None> - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd
                             LeftBrace;[{];

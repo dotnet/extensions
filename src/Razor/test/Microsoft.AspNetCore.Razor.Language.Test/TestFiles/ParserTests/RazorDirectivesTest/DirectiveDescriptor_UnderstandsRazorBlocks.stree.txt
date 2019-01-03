@@ -14,7 +14,7 @@ RazorDocument - [0..33)::33 - [@custom "Header" { <p>F{o}o</p> }]
                             Whitespace;[ ];
                         CSharpStatementLiteral - [8..16)::8 - ["Header"] - Gen<DirectiveToken {;String;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
                             StringLiteral;["Header"];
-                        MarkupTextLiteral - [16..17)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
+                        UnclassifiedTextLiteral - [16..17)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
                             Whitespace;[ ];
                         RazorMetaCode - [17..18)::1 - Gen<None> - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd
                             LeftBrace;[{];
