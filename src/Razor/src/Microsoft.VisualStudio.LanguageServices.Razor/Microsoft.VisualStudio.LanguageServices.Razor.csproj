@@ -77,6 +77,9 @@
     <None Include="$(RulesDirectory)RazorGenerateWithTargetPath.xaml">
       <Link>ProjectSystem\Rules\RazorGenerateWithTargetPath.xaml</Link>
     </None>
+    <None Include="$(RulesDirectory)RazorComponentWithTargetPath.xaml">
+      <Link>ProjectSystem\Rules\RazorComponentWithTargetPath.xaml</Link>
+    </None>
     <EmbeddedResource Include="$(RulesDirectory)RazorConfiguration.xaml">
       <LogicalName>XamlRuleToCode:RazorConfiguration.xaml</LogicalName>
     </EmbeddedResource>
@@ -88,6 +91,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="$(RulesDirectory)RazorGenerateWithTargetPath.xaml">
       <LogicalName>XamlRuleToCode:RazorGenerateWithTargetPath.xaml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(RulesDirectory)RazorComponentWithTargetPath.xaml">
+      <LogicalName>XamlRuleToCode:RazorComponentWithTargetPath.xaml</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup Condition="'$(MSBuildRuntimeType)'!='Core'">
@@ -120,6 +126,13 @@
       <RuleInjectionClassName>RazorProjectProperties</RuleInjectionClassName>
       <OutputPath>ProjectSystem\Rules\</OutputPath>
     </XamlPropertyRule>
+    <XamlPropertyRule Include="$(RulesDirectory)RazorComponentWithTargetPath.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:GenerateRuleSourceFromXaml</Generator>
+      <Namespace>Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules</Namespace>
+      <RuleInjectionClassName>RazorProjectProperties</RuleInjectionClassName>
+      <OutputPath>ProjectSystem\Rules\</OutputPath>
+    </XamlPropertyRule>
   </ItemGroup>
   <ItemGroup>
     <Compile Update="ProjectSystem\Rules\RazorConfiguration.cs">
@@ -133,6 +146,9 @@
     </Compile>
     <Compile Update="ProjectSystem\Rules\RazorGenerateWithTargetPath.cs">
       <DependentUpon>ProjectSystem\Rules\RazorGenerateWithTargetPath.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="ProjectSystem\Rules\RazorComponentWithTargetPath.cs">
+      <DependentUpon>ProjectSystem\Rules\RazorComponentWithTargetPath.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
 
