@@ -108,12 +108,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private IEnumerable<RazorProjectItem> GetImportItems(VisualStudioDocumentTracker tracker)
         {
             var projectEngine = tracker.ProjectSnapshot.GetProjectEngine();
+
+            // It's not correct to use the file system to examine items in tooling, but it's a safe assumption
+            // for right now that imports are a .cshtml file.
             var trackerItem = projectEngine.FileSystem.GetItem(tracker.FilePath);
             var importFeatures = projectEngine.ProjectFeatures.OfType<IImportProjectFeature>();
-
-            // There should always be an import feature unless someone has misconfigured their RazorProjectEngine.
-            // In that case once we attempt to parse the Razor file we'll explode and give the a user a decent
-            // error message; for now, lets just be extra protective and assume 0 imports to not give a bad error.
             var importItems = importFeatures.SelectMany(f => f.GetImports(trackerItem));
             var physicalImports = importItems.Where(import => import.FilePath != null);
 

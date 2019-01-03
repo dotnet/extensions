@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.VisualStudio.Editor.Razor
@@ -23,8 +25,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             return RazorProjectEngine.Create(configuration, fileSystem, b =>
             {
+                CompilerFeatures.Register(b);
+
                 initializer.Initialize(b);
                 configure?.Invoke(b);
+
+                // See comments on MangleClassNames
+                var componentDocumentClassifier = b.Features.OfType<ComponentDocumentClassifierPass>().Single().MangleClassNames = true;
             });
         }
     }

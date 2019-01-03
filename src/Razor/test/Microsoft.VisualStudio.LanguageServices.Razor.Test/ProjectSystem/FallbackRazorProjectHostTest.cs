@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.VisualStudio.ProjectSystem;
 using Moq;
 using Xunit;
+using ItemCollection = Microsoft.VisualStudio.ProjectSystem.ItemCollection;
 using ItemReference = Microsoft.CodeAnalysis.Razor.ProjectSystem.ManagedProjectSystemSchema.ItemReference;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
@@ -115,6 +117,37 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 });
         }
 
+        // This is for the legacy SDK case, we don't support components.
+        [Fact]
+        public void GetCurrentDocuments_IgnoresDotRazorFiles()
+        {
+            // Arrange
+            ContentItems.Item("Index.razor", new Dictionary<string, string>()
+            {
+                [ItemReference.LinkPropertyName] = "NewIndex.razor",
+                [ItemReference.FullPathPropertyName] = "C:\\From\\Index.razor",
+            });
+            NoneItems.Item("About.razor", new Dictionary<string, string>()
+            {
+                [ItemReference.LinkPropertyName] = "NewAbout.razor",
+                [ItemReference.FullPathPropertyName] = "C:\\From\\About.razor",
+            });
+            var services = new TestProjectSystemServices("C:\\To\\Test.csproj");
+            var host = new TestFallbackRazorProjectHost(services, Workspace, ProjectManager);
+            var changes = new TestProjectChangeDescription[]
+            {
+                ContentItems.ToChange(),
+                NoneItems.ToChange(),
+            };
+            var update = services.CreateUpdate(changes).Value;
+
+            // Act
+            var result = host.GetCurrentDocuments(update);
+
+            // Assert
+            Assert.Empty(result);
+        }
+
         [Fact]
         public void TryGetRazorDocument_NoFilePath_ReturnsFalse()
         {
@@ -215,6 +248,30 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.True(result);
             Assert.Equal(expectedFullPath, document.FilePath);
             Assert.Equal(expectedTargetPath, document.TargetPath);
+        }
+
+        [Fact]
+        public void TryGetRazorDocument_SetsLegacyFileKind()
+        {
+            // Arrange
+            var expectedFullPath = "C:\\Path\\From\\Index.cshtml";
+            var expectedTargetPath = "C:\\Path\\To\\Index.cshtml";
+            var services = new TestProjectSystemServices("C:\\Path\\To\\Test.csproj");
+            var host = new TestFallbackRazorProjectHost(services, Workspace, ProjectManager);
+            var itemState = new Dictionary<string, string>()
+            {
+                [ItemReference.LinkPropertyName] = "Index.cshtml",
+                [ItemReference.FullPathPropertyName] = expectedFullPath,
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = host.TryGetRazorDocument(itemState, out var document);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(expectedFullPath, document.FilePath);
+            Assert.Equal(expectedTargetPath, document.TargetPath);
+            Assert.Equal(FileKinds.Legacy, document.FileKind);
         }
 
         [ForegroundFact]

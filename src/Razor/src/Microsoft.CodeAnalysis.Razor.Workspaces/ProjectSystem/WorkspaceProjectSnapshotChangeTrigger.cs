@@ -1,9 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Composition;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
@@ -69,6 +71,25 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                         Debug.Assert(project != null);
 
                         _projectManager.WorkspaceProjectRemoved(project);
+                        break;
+                    }
+
+                case WorkspaceChangeKind.DocumentChanged:
+                case WorkspaceChangeKind.DocumentReloaded:
+                    {
+                        // This is the case when a component declaration file changes on disk. We have an MSBuild
+                        // generator configured by the SDK that will poke these files on disk when a component
+                        // is saved, or loses focus in the editor.
+                        project = e.OldSolution.GetProject(e.ProjectId);
+                        var document = project.GetDocument(e.DocumentId);
+                        
+                        // Using EndsWith because Path.GetExtension will ignore everything before .cs
+                        // Using Ordinal because the SDK generates these filenames.
+                        if (document.FilePath != null && document.FilePath.EndsWith(".cshtml.g.cs", StringComparison.Ordinal))
+                        {
+                            EnqueueUpdate(e.ProjectId);
+                        }
+
                         break;
                     }
 

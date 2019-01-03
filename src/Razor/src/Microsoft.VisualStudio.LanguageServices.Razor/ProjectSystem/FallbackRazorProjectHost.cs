@@ -12,6 +12,7 @@ using System.Reflection.PortableExecutable;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.ProjectSystem;
 using ContentItem = Microsoft.CodeAnalysis.Razor.ProjectSystem.ManagedProjectSystemSchema.ContentItem;
@@ -242,7 +243,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 if (targetPath.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
                 {
                     targetPath = CommonServices.UnconfiguredProject.MakeRooted(targetPath);
-                    razorDocument = new HostDocument(filePath, targetPath);
+                    razorDocument = new HostDocument(filePath, targetPath, FileKinds.Legacy);
                     return true;
                 }
             }

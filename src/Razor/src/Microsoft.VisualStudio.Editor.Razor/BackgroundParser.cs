@@ -19,10 +19,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private MainThreadState _main;
         private BackgroundThread _bg;
 
-        public BackgroundParser(RazorProjectEngine projectEngine, string filePath, string projectDirectory)
+        public BackgroundParser(RazorProjectEngine projectEngine, string filePath, string projectDirectory, string fileKind)
         {
             _main = new MainThreadState(filePath);
-            _bg = new BackgroundThread(_main, projectEngine, filePath, projectDirectory);
+            _bg = new BackgroundThread(_main, projectEngine, filePath, projectDirectory, fileKind);
 
             _main.ResultsReady += (sender, args) => OnResultsReady(args);
         }
@@ -238,6 +238,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             private readonly string _filePath;
             private readonly string _relativeFilePath;
             private readonly string _projectDirectory;
+            private readonly string _fileKind;
             private MainThreadState _main;
             private Thread _backgroundThread;
             private CancellationToken _shutdownToken;
@@ -245,7 +246,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             private RazorSyntaxTree _currentSyntaxTree;
             private IList<ChangeReference> _previouslyDiscarded = new List<ChangeReference>();
 
-            public BackgroundThread(MainThreadState main, RazorProjectEngine projectEngine, string filePath, string projectDirectory)
+            public BackgroundThread(MainThreadState main, RazorProjectEngine projectEngine, string filePath, string projectDirectory, string fileKind)
             {
                 // Run on MAIN thread!
                 _main = main;
@@ -254,6 +255,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 _filePath = filePath;
                 _relativeFilePath = GetNormalizedRelativeFilePath(filePath, projectDirectory);
                 _projectDirectory = projectDirectory;
+                _fileKind = fileKind;
+
                 _backgroundThread = new Thread(WorkerLoop)
                 {
                     Name = "Razor Background Document Parser"
@@ -350,7 +353,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 EnsureOnThread();
 
-                var projectItem = new TextSnapshotProjectItem(snapshot, _projectDirectory, _relativeFilePath, _filePath);
+                var projectItem = new TextSnapshotProjectItem(snapshot, _projectDirectory, _relativeFilePath, _filePath, _fileKind);
                 var codeDocument = _projectEngine.ProcessDesignTime(projectItem);
 
                 return codeDocument;

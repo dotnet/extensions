@@ -13,7 +13,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
     {
         private readonly ITextSnapshot _snapshot;
 
-        public TextSnapshotProjectItem(ITextSnapshot snapshot, string projectDirectory, string relativeFilePath, string filePath)
+        public TextSnapshotProjectItem(ITextSnapshot snapshot, string projectDirectory, string relativeFilePath, string filePath, string fileKind)
         {
             if (snapshot == null)
             {
@@ -35,14 +35,21 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(filePath));
             }
 
+            if (fileKind == null)
+            {
+                throw new ArgumentNullException(nameof(fileKind));
+            }
+
             _snapshot = snapshot;
             BasePath = projectDirectory;
             FilePath = relativeFilePath;
             PhysicalPath = filePath;
+            FileKind = fileKind;
         }
 
         public override string BasePath { get; }
 
+        public override string FileKind { get; }
         public override string FilePath { get; }
 
         public override string PhysicalPath { get; }

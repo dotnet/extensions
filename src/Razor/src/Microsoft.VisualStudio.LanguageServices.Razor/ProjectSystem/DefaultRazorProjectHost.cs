@@ -70,6 +70,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     Rules.RazorGeneral.SchemaName,
                     Rules.RazorConfiguration.SchemaName,
                     Rules.RazorExtension.SchemaName,
+                    Rules.RazorComponentWithTargetPath.SchemaName,
                     Rules.RazorGenerateWithTargetPath.SchemaName,
                 });
         }
@@ -307,20 +308,34 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         
         private HostDocument[] GetCurrentDocuments(IProjectSubscriptionUpdate update)
         {
-            if (!update.CurrentState.TryGetValue(Rules.RazorGenerateWithTargetPath.SchemaName, out var rule))
-            {
-                return Array.Empty<HostDocument>();
-            }
+            IProjectRuleSnapshot rule = null;
 
             var documents = new List<HostDocument>();
-            foreach (var kvp in rule.Items)
+            if (update.CurrentState.TryGetValue(Rules.RazorComponentWithTargetPath.SchemaName, out rule))
             {
-                if (kvp.Value.TryGetValue(Rules.RazorGenerateWithTargetPath.TargetPathProperty, out var targetPath) &&
-                    !string.IsNullOrWhiteSpace(kvp.Key) &&
-                    !string.IsNullOrWhiteSpace(targetPath))
+                foreach (var kvp in rule.Items)
                 {
-                    var filePath = CommonServices.UnconfiguredProject.MakeRooted(kvp.Key);
-                    documents.Add(new HostDocument(filePath, targetPath));
+                    if (kvp.Value.TryGetValue(Rules.RazorComponentWithTargetPath.TargetPathProperty, out var targetPath) &&
+                        !string.IsNullOrWhiteSpace(kvp.Key) &&
+                        !string.IsNullOrWhiteSpace(targetPath))
+                    {
+                        var filePath = CommonServices.UnconfiguredProject.MakeRooted(kvp.Key);
+                        documents.Add(new HostDocument(filePath, targetPath, FileKinds.Component));
+                    }
+                }
+            }
+
+            if (update.CurrentState.TryGetValue(Rules.RazorGenerateWithTargetPath.SchemaName, out rule))
+            {
+                foreach (var kvp in rule.Items)
+                {
+                    if (kvp.Value.TryGetValue(Rules.RazorGenerateWithTargetPath.TargetPathProperty, out var targetPath) &&
+                        !string.IsNullOrWhiteSpace(kvp.Key) &&
+                        !string.IsNullOrWhiteSpace(targetPath))
+                    {
+                        var filePath = CommonServices.UnconfiguredProject.MakeRooted(kvp.Key);
+                        documents.Add(new HostDocument(filePath, targetPath, FileKinds.Legacy));
+                    }
                 }
             }
 
@@ -329,22 +344,39 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private HostDocument[] GetChangedAndRemovedDocuments(IProjectSubscriptionUpdate update)
         {
-            if (!update.ProjectChanges.TryGetValue(Rules.RazorGenerateWithTargetPath.SchemaName, out var rule))
-            {
-                return Array.Empty<HostDocument>();
-            }
+            IProjectChangeDescription rule = null;
 
             var documents = new List<HostDocument>();
-            foreach (var key in rule.Difference.RemovedItems.Concat(rule.Difference.ChangedItems))
+            if (update.ProjectChanges.TryGetValue(Rules.RazorComponentWithTargetPath.SchemaName, out rule))
             {
-                if (rule.Before.Items.TryGetValue(key, out var value))
+                foreach (var key in rule.Difference.RemovedItems.Concat(rule.Difference.ChangedItems))
                 {
-                    if (value.TryGetValue(Rules.RazorGenerateWithTargetPath.TargetPathProperty, out var targetPath) &&
-                        !string.IsNullOrWhiteSpace(key) &&
-                        !string.IsNullOrWhiteSpace(targetPath))
+                    if (rule.Before.Items.TryGetValue(key, out var value))
                     {
-                        var filePath = CommonServices.UnconfiguredProject.MakeRooted(key);
-                        documents.Add(new HostDocument(filePath, targetPath));
+                        if (value.TryGetValue(Rules.RazorComponentWithTargetPath.TargetPathProperty, out var targetPath) &&
+                            !string.IsNullOrWhiteSpace(key) &&
+                            !string.IsNullOrWhiteSpace(targetPath))
+                        {
+                            var filePath = CommonServices.UnconfiguredProject.MakeRooted(key);
+                            documents.Add(new HostDocument(filePath, targetPath, FileKinds.Component));
+                        }
+                    }
+                }
+            }
+
+            if (update.ProjectChanges.TryGetValue(Rules.RazorGenerateWithTargetPath.SchemaName, out rule))
+            {
+                foreach (var key in rule.Difference.RemovedItems.Concat(rule.Difference.ChangedItems))
+                {
+                    if (rule.Before.Items.TryGetValue(key, out var value))
+                    {
+                        if (value.TryGetValue(Rules.RazorGenerateWithTargetPath.TargetPathProperty, out var targetPath) &&
+                            !string.IsNullOrWhiteSpace(key) &&
+                            !string.IsNullOrWhiteSpace(targetPath))
+                        {
+                            var filePath = CommonServices.UnconfiguredProject.MakeRooted(key);
+                            documents.Add(new HostDocument(filePath, targetPath, FileKinds.Legacy));
+                        }
                     }
                 }
             }

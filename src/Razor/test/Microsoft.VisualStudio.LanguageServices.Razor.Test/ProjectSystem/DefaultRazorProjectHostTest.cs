@@ -24,7 +24,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             ConfigurationItems = new ItemCollection(Rules.RazorConfiguration.SchemaName);
             ExtensionItems = new ItemCollection(Rules.RazorExtension.SchemaName);
-            DocumentItems = new ItemCollection(Rules.RazorGenerateWithTargetPath.SchemaName);
+            RazorComponentWithTargetPathItems = new ItemCollection(Rules.RazorComponentWithTargetPath.SchemaName);
+            RazorGenerateWithTargetPathItems = new ItemCollection(Rules.RazorGenerateWithTargetPath.SchemaName);
             RazorGeneralProperties = new PropertyCollection(Rules.RazorGeneral.SchemaName);
         }
 
@@ -32,7 +33,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private ItemCollection ExtensionItems { get; }
 
-        private ItemCollection DocumentItems { get; }
+        private ItemCollection RazorComponentWithTargetPathItems { get; }
+
+        private ItemCollection RazorGenerateWithTargetPathItems { get; }
 
         private PropertyCollection RazorGeneralProperties { get; }
 
@@ -668,15 +671,19 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ExtensionItems.Item("MVC-2.1");
             ExtensionItems.Item("Another-Thing");
 
-            DocumentItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
-            DocumentItems.Property(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectFile1.TargetPath);
+            RazorComponentWithTargetPathItems.Item(Path.GetFileName(TestProjectData.SomeProjectComponentFile1.FilePath));
+            RazorComponentWithTargetPathItems.Property(Path.GetFileName(TestProjectData.SomeProjectComponentFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectComponentFile1.TargetPath);
 
+            RazorGenerateWithTargetPathItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
+            RazorGenerateWithTargetPathItems.Property(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectFile1.TargetPath);
+            
             var changes = new TestProjectChangeDescription[]
             {
                 RazorGeneralProperties.ToChange(),
                 ConfigurationItems.ToChange(),
                 ExtensionItems.ToChange(),
-                DocumentItems.ToChange(),
+                RazorComponentWithTargetPathItems.ToChange(),
+                RazorGenerateWithTargetPathItems.ToChange(),
             };
 
             var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
@@ -707,6 +714,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     var document = snapshot.GetDocument(d);
                     Assert.Equal(TestProjectData.SomeProjectFile1.FilePath, document.FilePath);
                     Assert.Equal(TestProjectData.SomeProjectFile1.TargetPath, document.TargetPath);
+                    Assert.Equal(FileKinds.Legacy, document.FileKind);
+                },
+                d =>
+                {
+                    var document = snapshot.GetDocument(d);
+                    Assert.Equal(TestProjectData.SomeProjectComponentFile1.FilePath, document.FilePath);
+                    Assert.Equal(TestProjectData.SomeProjectComponentFile1.TargetPath, document.TargetPath);
+                    Assert.Equal(FileKinds.Component, document.FileKind);
                 });
 
             await Task.Run(async () => await host.DisposeAsync());
@@ -724,14 +739,15 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             ExtensionItems.Item("TestExtension");
 
-            DocumentItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
+            RazorGenerateWithTargetPathItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
 
             var changes = new TestProjectChangeDescription[]
             {
                 RazorGeneralProperties.ToChange(),
                 ConfigurationItems.ToChange(),
                 ExtensionItems.ToChange(),
-                DocumentItems.ToChange(),
+                RazorComponentWithTargetPathItems.ToChange(),
+                RazorGenerateWithTargetPathItems.ToChange(),
             };
 
             var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
@@ -764,15 +780,19 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ExtensionItems.Item("MVC-2.1");
             ExtensionItems.Item("Another-Thing");
 
-            DocumentItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
-            DocumentItems.Property(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectFile1.TargetPath);
+            RazorComponentWithTargetPathItems.Item(Path.GetFileName(TestProjectData.SomeProjectComponentFile1.FilePath));
+            RazorComponentWithTargetPathItems.Property(Path.GetFileName(TestProjectData.SomeProjectComponentFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectComponentFile1.TargetPath);
+
+            RazorGenerateWithTargetPathItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
+            RazorGenerateWithTargetPathItems.Property(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectFile1.TargetPath);
 
             var changes = new TestProjectChangeDescription[]
             {
                 RazorGeneralProperties.ToChange(),
                 ConfigurationItems.ToChange(),
                 ExtensionItems.ToChange(),
-                DocumentItems.ToChange(),
+                RazorComponentWithTargetPathItems.ToChange(),
+                RazorGenerateWithTargetPathItems.ToChange(),
             };
 
             var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
@@ -803,6 +823,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     var document = snapshot.GetDocument(d);
                     Assert.Equal(TestProjectData.SomeProjectFile1.FilePath, document.FilePath);
                     Assert.Equal(TestProjectData.SomeProjectFile1.TargetPath, document.TargetPath);
+                },
+                d =>
+                {
+                    var document = snapshot.GetDocument(d);
+                    Assert.Equal(TestProjectData.SomeProjectComponentFile1.FilePath, document.FilePath);
+                    Assert.Equal(TestProjectData.SomeProjectComponentFile1.TargetPath, document.TargetPath);
+                    Assert.Equal(FileKinds.Component, document.FileKind);
                 });
 
             // Act - 2
@@ -811,7 +838,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ConfigurationItems.RemoveItem("MVC-2.1");
             ConfigurationItems.Item("MVC-2.0", new Dictionary<string, string>() { { "Extensions", "MVC-2.0;Another-Thing" }, });
             ExtensionItems.Item("MVC-2.0");
-            DocumentItems.Item(TestProjectData.AnotherProjectNestedFile3.FilePath, new Dictionary<string, string>()
+            RazorComponentWithTargetPathItems.Item(TestProjectData.AnotherProjectNestedComponentFile3.FilePath, new Dictionary<string, string>()
+            {
+                { Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.AnotherProjectNestedComponentFile3.TargetPath },
+            });
+            RazorGenerateWithTargetPathItems.Item(TestProjectData.AnotherProjectNestedFile3.FilePath, new Dictionary<string, string>()
             {
                 { Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.AnotherProjectNestedFile3.TargetPath },
             });
@@ -821,7 +852,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 RazorGeneralProperties.ToChange(changes[0].After),
                 ConfigurationItems.ToChange(changes[1].After),
                 ExtensionItems.ToChange(changes[2].After),
-                DocumentItems.ToChange(changes[3].After),
+                RazorComponentWithTargetPathItems.ToChange(changes[3].After),
+                RazorGenerateWithTargetPathItems.ToChange(changes[4].After),
             };
 
             await Task.Run(async () => await host.OnProjectChanged(services.CreateUpdate(changes)));
@@ -844,12 +876,28 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     var document = snapshot.GetDocument(d);
                     Assert.Equal(TestProjectData.AnotherProjectNestedFile3.FilePath, document.FilePath);
                     Assert.Equal(TestProjectData.AnotherProjectNestedFile3.TargetPath, document.TargetPath);
+                    Assert.Equal(FileKinds.Legacy, document.FileKind);
+                },
+                d =>
+                {
+                    var document = snapshot.GetDocument(d);
+                    Assert.Equal(TestProjectData.AnotherProjectNestedComponentFile3.FilePath, document.FilePath);
+                    Assert.Equal(TestProjectData.AnotherProjectNestedComponentFile3.TargetPath, document.TargetPath);
+                    Assert.Equal(FileKinds.Component, document.FileKind);
                 },
                 d =>
                 {
                     var document = snapshot.GetDocument(d);
                     Assert.Equal(TestProjectData.SomeProjectFile1.FilePath, document.FilePath);
                     Assert.Equal(TestProjectData.SomeProjectFile1.TargetPath, document.TargetPath);
+                    Assert.Equal(FileKinds.Legacy, document.FileKind);
+                },
+                d =>
+                {
+                    var document = snapshot.GetDocument(d);
+                    Assert.Equal(TestProjectData.SomeProjectComponentFile1.FilePath, document.FilePath);
+                    Assert.Equal(TestProjectData.SomeProjectComponentFile1.TargetPath, document.TargetPath);
+                    Assert.Equal(FileKinds.Component, document.FileKind);
                 });
 
             await Task.Run(async () => await host.DisposeAsync());
@@ -869,15 +917,19 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ExtensionItems.Item("MVC-2.1");
             ExtensionItems.Item("Another-Thing");
 
-            DocumentItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
-            DocumentItems.Property(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectFile1.TargetPath);
+            RazorComponentWithTargetPathItems.Item(Path.GetFileName(TestProjectData.SomeProjectComponentFile1.FilePath));
+            RazorComponentWithTargetPathItems.Property(Path.GetFileName(TestProjectData.SomeProjectComponentFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectComponentFile1.TargetPath);
+
+            RazorGenerateWithTargetPathItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
+            RazorGenerateWithTargetPathItems.Property(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectFile1.TargetPath);
 
             var changes = new TestProjectChangeDescription[]
             {
                 RazorGeneralProperties.ToChange(),
                 ConfigurationItems.ToChange(),
                 ExtensionItems.ToChange(),
-                DocumentItems.ToChange(),
+                RazorComponentWithTargetPathItems.ToChange(),
+                RazorGenerateWithTargetPathItems.ToChange(),
             };
 
             var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
@@ -910,7 +962,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 RazorGeneralProperties.ToChange(changes[0].After),
                 ConfigurationItems.ToChange(changes[1].After),
                 ExtensionItems.ToChange(changes[2].After),
-                DocumentItems.ToChange(changes[3].After),
+                RazorComponentWithTargetPathItems.ToChange(changes[3].After),
+                RazorGenerateWithTargetPathItems.ToChange(changes[4].After),
             };
 
             await Task.Run(async () => await host.OnProjectChanged(services.CreateUpdate(changes)));
@@ -935,15 +988,19 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ExtensionItems.Item("MVC-2.1");
             ExtensionItems.Item("Another-Thing");
 
-            DocumentItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
-            DocumentItems.Property(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectFile1.TargetPath);
+            RazorComponentWithTargetPathItems.Item(Path.GetFileName(TestProjectData.SomeProjectComponentFile1.FilePath));
+            RazorComponentWithTargetPathItems.Property(Path.GetFileName(TestProjectData.SomeProjectComponentFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectComponentFile1.TargetPath);
+
+            RazorGenerateWithTargetPathItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
+            RazorGenerateWithTargetPathItems.Property(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectFile1.TargetPath);
 
             var changes = new TestProjectChangeDescription[]
             {
                 RazorGeneralProperties.ToChange(),
                 ConfigurationItems.ToChange(),
                 ExtensionItems.ToChange(),
-                DocumentItems.ToChange(),
+                RazorComponentWithTargetPathItems.ToChange(),
+                RazorGenerateWithTargetPathItems.ToChange(),
             };
 
             var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
@@ -983,7 +1040,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 RazorGeneralProperties.ToChange(changes[0].After),
                 ConfigurationItems.ToChange(changes[1].After),
                 ExtensionItems.ToChange(changes[2].After),
-                DocumentItems.ToChange(changes[3].After),
+                RazorComponentWithTargetPathItems.ToChange(changes[3].After),
+                RazorGenerateWithTargetPathItems.ToChange(changes[4].After),
             };
 
             await Task.Run(async () => await host.OnProjectChanged(services.CreateUpdate(changes)));
@@ -1005,15 +1063,19 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ExtensionItems.Item("MVC-2.1");
             ExtensionItems.Item("Another-Thing");
 
-            DocumentItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
-            DocumentItems.Property(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectFile1.TargetPath);
+            RazorComponentWithTargetPathItems.Item(Path.GetFileName(TestProjectData.SomeProjectComponentFile1.FilePath));
+            RazorComponentWithTargetPathItems.Property(Path.GetFileName(TestProjectData.SomeProjectComponentFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectComponentFile1.TargetPath);
+
+            RazorGenerateWithTargetPathItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
+            RazorGenerateWithTargetPathItems.Property(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectFile1.TargetPath);
 
             var changes = new TestProjectChangeDescription[]
             {
                 RazorGeneralProperties.ToChange(),
                 ConfigurationItems.ToChange(),
                 ExtensionItems.ToChange(),
-                DocumentItems.ToChange(),
+                RazorComponentWithTargetPathItems.ToChange(),
+                RazorGenerateWithTargetPathItems.ToChange(),
             };
 
             var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
