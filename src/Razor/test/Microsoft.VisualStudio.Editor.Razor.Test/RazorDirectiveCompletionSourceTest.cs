@@ -33,8 +33,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var text = "@validCompletion";
-            var parser = Mock.Of<VisualStudioRazorParser>(); // CodeDocument will be null faking a parser without a parse.
-            var completionSource = new RazorDirectiveCompletionSource(Dispatcher, parser, CompletionFactsService);
+            var parser = new Mock<VisualStudioRazorParser>();
+            parser.Setup(p => p.GetLatestCodeDocumentAsync())
+                .Returns(Task.FromResult<RazorCodeDocument>(null)); // CodeDocument will be null faking a parser without a parse.
+            var completionSource = new RazorDirectiveCompletionSource(Dispatcher, parser.Object, CompletionFactsService);
             var documentSnapshot = new StringTextSnapshot(text);
             var triggerLocation = new SnapshotPoint(documentSnapshot, 4);
             var applicableSpan = new SnapshotSpan(documentSnapshot, new Span(1, text.Length - 1 /* validCompletion */));
@@ -153,9 +155,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var syntaxTree = CreateSyntaxTree(text, directives);
             var codeDocument = TestRazorCodeDocument.Create(text);
             codeDocument.SetSyntaxTree(syntaxTree);
-            var parser = Mock.Of<VisualStudioRazorParser>(p => p.CodeDocument == codeDocument);
+            var parser = new Mock<VisualStudioRazorParser>();
+            parser.Setup(p => p.GetLatestCodeDocumentAsync())
+                .Returns(Task.FromResult(codeDocument));
 
-            return parser;
+            return parser.Object;
         }
 
         private static RazorSyntaxTree CreateSyntaxTree(string text, params DirectiveDescriptor[] directives)
