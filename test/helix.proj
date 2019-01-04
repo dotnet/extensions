@@ -28,6 +28,8 @@
     <HelixType>ci</HelixType>
     <HelixBuild>private-$(USERNAME)</HelixBuild>
     <HelixBuild Condition=" '$(CI)' == 'true' ">$(BUILD_BUILDNUMBER)</HelixBuild>
+    <IsExternal>true</IsExternal>
+    <Creator>aspnet-extensions</Creator>
     <WaitForWorkItemCompletion Condition=" '$(CI)' == 'true' ">true</WaitForWorkItemCompletion>
 
     <HelixTargetQueues>Windows.10.Amd64.Open;OSX.1012.Amd64.Open;Ubuntu.1604.Amd64.Open</HelixTargetQueues>
