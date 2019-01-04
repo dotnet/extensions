@@ -211,7 +211,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules
                         if (System.StringComparer.OrdinalIgnoreCase.Equals(t.Name, SchemaName))
                         {
                             unboundRule = t;
-                            unboundRule.Name = "afc049b55685346f1feb0214edab55c673619e1738da3fd683d5ddabd635876e";
+                            unboundRule.Name = "7bce92b9d442fe435263d738937cc0845b32e8219c968e23697081db5a869f4a";
                             RazorComponentWithTargetPath.deserializedFallbackRule = unboundRule;
                         }
                     }
