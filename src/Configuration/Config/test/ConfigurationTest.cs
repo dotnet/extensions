@@ -456,7 +456,7 @@ namespace Microsoft.Extensions.Configuration.Test
         }
 
         [Fact]
-        public void CanGetDefaultConnection()
+        public void CanGetDefaultConnectionString()
         {
             // Arrange
             const string defaultConnection = "DefaultConnection";
