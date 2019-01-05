@@ -456,6 +456,30 @@ namespace Microsoft.Extensions.Configuration.Test
         }
 
         [Fact]
+        public void CanGetDefaultConnection()
+        {
+            // Arrange
+            const string defaultConnection = "DefaultConnection";
+
+            var dic1 = new Dictionary<string, string>()
+            {
+                {$"ConnectionStrings:{defaultConnection}", "MemVal1"},
+            };
+            var memConfigSrc1 = new MemoryConfigurationSource { InitialData = dic1 };
+
+            var configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.Add(memConfigSrc1);
+
+            var config = configurationBuilder.Build();
+
+            // Act
+            var memVal1 = config.GetDefaultConnectionString();
+
+            // Assert
+            Assert.Equal("MemVal1", memVal1);
+        }
+
+        [Fact]
         public void CanGetConfigurationChildren()
         {
             // Arrange

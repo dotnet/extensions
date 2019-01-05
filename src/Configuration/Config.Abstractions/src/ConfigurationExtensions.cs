@@ -37,6 +37,16 @@ namespace Microsoft.Extensions.Configuration
         }
 
         /// <summary>
+        /// Shorthand for GetSection("ConnectionStrings")["DefaultConnection"].
+        /// </summary>
+        /// <param name="configuration">The configuration.</param>
+        /// <returns></returns>
+        public static string GetDefaultConnectionString(this IConfiguration configuration)
+        {
+            return configuration.GetConnectionString("DefaultConnection");
+        }
+
+        /// <summary>
         /// Get the enumeration of key value pairs within the <see cref="IConfiguration" />
         /// </summary>
         /// <param name="configuration">The <see cref="IConfiguration"/> to enumerate.</param>
