@@ -76,7 +76,7 @@
 
   <Target Name="_CreateTestPayloadInner" 
     DependsOnTargets="Publish;CollectXunitConsoleRunner" 
-    Condition="'$(IsTestProject)' == 'true' AND ($(HelixTargetQueue).StartsWith('Windows') OR '$(TargetFrameworkIdentifier)' != '.NETFramework')" 
+    Condition="'$(IsTestProject)' == 'true' AND ($(HelixTargetQueue.StartsWith('Windows')) OR '$(TargetFrameworkIdentifier)' != '.NETFramework')" 
     Returns="@(TestPayload)">
 
     <ConvertToAbsolutePath Paths="$(PublishDir)">
