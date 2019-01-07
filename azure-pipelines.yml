@@ -47,6 +47,6 @@ jobs:
   steps:
   - checkout: self
     clean: true
-  - script: .\build.cmd -ci /t:Helix /p:Configuration=Debug
+  - script: .\build.cmd -ci /t:Helix
     displayName: Run build.cmd helix target
 
