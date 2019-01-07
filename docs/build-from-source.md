@@ -73,6 +73,20 @@ Configuration            | `Debug` or `Release`. Default = `Debug`.
 SkipTests                | `true` or `false`. When true, builds without running tests.
 NoBuild                  | `true` or `false`. Runs tests without rebuilding.
 
+## Running helix tests
+
+Triggering a helix test run is via the Helix target
+```
+.\build.cmd /t:Helix
+
+// In the output will be something like this
+Results will be available from https://mc.dot.net/#/user/aspnet-extensions/pr~2Faspnet~2Fextensions/ci/20190107.18
+```
+
+This will send a helix job which will run all of the test projects on various OS configurations (Windows, OSX, Linux, etc). The output should print out something like this which you can use to look at the test results:
+
+For more information on helix see: https://github.com/dotnet/arcade/blob/master/Documentation/AzureDevOps/SendingJobsToHelix.md  
+
 ## Use the result of your build
 
 After building Extensions from source, you can use these in a project by pointing NuGet to the folder containing the .nupkg files.
