@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Logging.Testing
 {
@@ -15,19 +14,7 @@ namespace Microsoft.Extensions.Logging.Testing
             {
                 Windows.Collect(process, fileName);
             }
-        }
-
-        public static Task CollectAsync(Process process, string fileName)
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return Windows.CollectAsync(process, fileName);
-            }
-            else
-            {
-                // No implementations yet for macOS and Linux
-                return Task.CompletedTask;
-            }
+            // No implementations yet for macOS and Linux
         }
     }
 }

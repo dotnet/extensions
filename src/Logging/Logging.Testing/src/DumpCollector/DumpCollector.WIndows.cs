@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.Extensions.Logging.Testing
@@ -14,17 +13,6 @@ namespace Microsoft.Extensions.Logging.Testing
     {
         private static class Windows
         {
-
-            // TODO: Why is there an async version?
-            internal static Task CollectAsync(Process process, string outputFile)
-            {
-                // We can't do this "asynchronously" so just Task.Run it. It shouldn't be "long-running" so this is fairly safe.
-                return Task.Run(() =>
-                {
-                    Collect(process, outputFile);
-                });
-            }
-
             internal static void Collect(Process process, string outputFile)
             {
                 // Open the file for writing
