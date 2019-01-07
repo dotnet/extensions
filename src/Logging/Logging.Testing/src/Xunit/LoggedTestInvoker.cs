@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.Logging.Testing
             }
             catch
             {
-                if (testClassInstance is LoggedTestBase loggedTestBase)
+                if (_collectDumpOnFailure && testClassInstance is LoggedTestBase loggedTestBase)
                 {
                     CollectDumpAndThreadPoolStacks(loggedTestBase);
                 }
