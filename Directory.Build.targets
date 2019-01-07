@@ -104,7 +104,6 @@
       <TestPayload Include="$(PublishAbsoluteDir.TrimEnd('\').TrimEnd('\'))">
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <TestName>$(MSBuildProjectName)-$(TargetFramework)</TestName>
-        <!-- Look into how to be able to use $(NETCoreSdkVersion) -->
         <Command Condition="$(HelixTargetQueue.StartsWith('Windows'))">runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(RuntimeFrameworkVersion)</Command>
         <Command Condition="!$(HelixTargetQueue.StartsWith('Windows'))">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(RuntimeFrameworkVersion)</Command>
         <TestTimeout>$(DistributedTestTimeout)</TestTimeout>
