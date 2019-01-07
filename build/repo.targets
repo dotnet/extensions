@@ -47,10 +47,6 @@
   </Target>
 
 <!-- will move into korebuild -->
-  <PropertyGroup>
-    <DefaultHelixTestTimeout>00:30:00</DefaultHelixTestTimeout>
-  </PropertyGroup>
-
   <Target Name="Helix" DependsOnTargets="ResolveProjects;Restore">
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\test\helix.proj"
              Targets="Test"
