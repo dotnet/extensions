@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Localization
     public class ResourceManagerStringLocalizerTest
     {
         [Fact]
-        //[OSSkipCondition(OperatingSystems.MacOSX)] // https://github.com/aspnet/Extensions/issues/627
+        [OSSkipCondition(OperatingSystems.MacOSX)] // https://github.com/aspnet/Extensions/issues/627
         public void EnumeratorCachesCultureWalkForSameAssembly()
         {
             // Arrange
