@@ -21,10 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)"
-      Feed="$(DotNetAssetRootUrl)"
-      FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
-
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppPackageVersion)"
       Feed="$(DotNetAssetRootUrl)"
       FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
