@@ -61,7 +61,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _completionFactsService = completionFactsService;
         }
 
-        public Task<CompletionContext> GetCompletionContextAsync(
+        public async Task<CompletionContext> GetCompletionContextAsync(
             IAsyncCompletionSession session,
             CompletionTrigger trigger,
             SnapshotPoint triggerLocation,
@@ -70,7 +70,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             _foregroundDispatcher.AssertBackgroundThread();
 
-            var syntaxTree = _parser.CodeDocument?.GetSyntaxTree();
+            var codeDocument = await _parser.GetLatestCodeDocumentAsync();
+            var syntaxTree = codeDocument?.GetSyntaxTree();
             var location = new SourceSpan(applicableSpan.Start.Position, applicableSpan.Length);
             var razorCompletionItems = _completionFactsService.GetCompletionItems(syntaxTree, location);
 
@@ -97,7 +98,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 completionItems.Add(completionItem);
             }
             var context = new CompletionContext(completionItems.ToImmutableArray());
-            return Task.FromResult(context);
+            return context;
         }
 
         public Task<object> GetDescriptionAsync(IAsyncCompletionSession session, CompletionItem item, CancellationToken token)
