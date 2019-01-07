@@ -83,7 +83,7 @@ Triggering a helix test run is via the Helix target
 Results will be available from https://mc.dot.net/#/user/aspnet-extensions/pr~2Faspnet~2Fextensions/ci/20190107.18
 ```
 
-This will send a helix job which will run all of the test projects on various OS configurations (Windows, OSX, Linux, etc). The output should print out something like this which you can use to look at the test results:
+This will send a helix job which will run all of the test projects on various OS configurations (Windows, OSX, Linux, etc). 
 
 For more information on helix see: https://github.com/dotnet/arcade/blob/master/Documentation/AzureDevOps/SendingJobsToHelix.md  
 
