@@ -79,19 +79,14 @@ namespace Microsoft.Extensions.Logging.Testing
             {
                 if (_collectDumpOnFailure && testClassInstance is LoggedTestBase loggedTestBase)
                 {
-                    CollectDumpAndThreadPoolStacks(loggedTestBase);
+                    var path = Path.Combine(loggedTestBase.ResolvedLogOutputDirectory, loggedTestBase.ResolvedTestMethodName + ".dmp");
+                    var process = Process.GetCurrentProcess();
+
+                    DumpCollector.Collect(process, path);
                 }
 
                 throw;
             }
-        }
-
-        private void CollectDumpAndThreadPoolStacks(LoggedTestBase loggedTestBase)
-        {
-            var path = Path.Combine(loggedTestBase.ResolvedLogOutputDirectory, loggedTestBase.ResolvedTestMethodName + ".dmp");
-            var process = Process.GetCurrentProcess();
-
-            DumpCollector.Collect(process, path);
         }
     }
 }
