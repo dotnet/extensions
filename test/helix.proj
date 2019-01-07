@@ -27,6 +27,7 @@
     <HelixSource>pr/aspnet/extensions</HelixSource>
     <HelixType>ci</HelixType>
     <HelixBuild>private-$(USERNAME)</HelixBuild>
+    <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
     <HelixBuild Condition=" '$(CI)' == 'true' ">$(BUILD_BUILDNUMBER)</HelixBuild>
     <IsExternal>true</IsExternal>
     <Creator>aspnet-extensions</Creator>
