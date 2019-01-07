@@ -101,7 +101,7 @@
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(PublishAbsoluteDir)" />
 
     <ItemGroup>
-      <TestPayload Include="$(PublishAbsoluteDir.TrimEnd('\').TrimEnd('\'))">
+      <TestPayload Include="$(PublishAbsoluteDir)">
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <TestName>$(MSBuildProjectName)-$(TargetFramework)</TestName>
         <Command Condition="$(HelixTargetQueue.StartsWith('Windows'))">runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(RuntimeFrameworkVersion)</Command>
