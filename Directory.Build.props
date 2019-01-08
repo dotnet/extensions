@@ -49,6 +49,7 @@
     <Reference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 
+  <Import Project="eng\Versions.props" />
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\PatchConfig.props" />
   <Import Project="eng\ProjectReferences.props" />

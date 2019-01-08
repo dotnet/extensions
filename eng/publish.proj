@@ -2,7 +2,6 @@
 <Project DefaultTargets="Publish">
 
   <Import Project="..\Directory.Build.props" />
-  <Import Project="Versions.props" />
 
   <PropertyGroup>
     <AssetManifestFilePath>$(ArtifactsDir)AssetManifest\$(OS)-$(Configuration).xml</AssetManifestFilePath>
