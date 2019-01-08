@@ -33,10 +33,6 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>000000</Sha>
     </Dependency>
-    <Dependency Name="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>000000</Sha>
-    </Dependency>
     <Dependency Name="System.Security.Cryptography.Cng" Version="4.6.0-preview.18604.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>000000</Sha>
