@@ -16,11 +16,6 @@
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
-  <PropertyGroup Condition="'$(IsUnitTestProject)' == 'false'">
-    <IsPackable>true</IsPackable>
-    <IsShipping>true</IsShipping>
-  </PropertyGroup>
-
   <PropertyGroup>
     <IncludeSymbols>true</IncludeSymbols>
     <PackageLicenseUrl>https://raw.githubusercontent.com/aspnet/AspNetCore/2.0.0/LICENSE.txt</PackageLicenseUrl>

@@ -9,6 +9,7 @@
 
     <!-- Temporary workaround for API Check crash that is part of aspnet/BuildTools#201. -->
     <EnableApiCheck>false</EnableApiCheck>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

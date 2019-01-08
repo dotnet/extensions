@@ -8,6 +8,7 @@
     <PackageTags>hosting</PackageTags>
     <EnableApiCheck>false</EnableApiCheck>
     <RootNamespace>Microsoft.Extensions.Hosting</RootNamespace>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
