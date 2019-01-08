@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 namespace Microsoft.Extensions.Primitives
 {
     [DebuggerDisplay("Value = {_value}")]
-    [Obsolete("This type is obsolete and will be removed in a future version. The recommended alternative is string.Create.")]
+    [Obsolete("This type is obsolete and will be removed in a future version.")]
     public struct InplaceStringBuilder
     {
         private int _offset;
