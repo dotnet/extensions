@@ -109,7 +109,7 @@ namespace Microsoft.Extensions.Caching.Memory
             Assert.Equal(4, cache.Size);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Extensions/issues/913")]
         public async Task DoNotAddIfSizeOverflows()
         {
             var cache = new MemoryCache(new MemoryCacheOptions
@@ -237,7 +237,7 @@ namespace Microsoft.Extensions.Caching.Memory
             Assert.Equal(0, cache.Size);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Extensions/issues/913")]
         public async Task AddingReplacementWhenTotalSizeExceedsCapacityDoesNotUpdateRemovesOldEntryAndTriggersCompaction()
         {
             var cache = new MemoryCache(new MemoryCacheOptions
