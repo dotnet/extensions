@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
@@ -45,6 +46,113 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 tracker.IsSupportedProject == isSupportedProject);
 
             return documentTracker;
+        }
+
+        [ForegroundFact]
+        public async Task GetLatestCodeDocumentAsync_WaitsForParse()
+        {
+            // Arrange
+            var documentTracker = CreateDocumentTracker();
+            using (var parser = new DefaultVisualStudioRazorParser(
+                Dispatcher,
+                documentTracker,
+                ProjectEngineFactory,
+                new DefaultErrorReporter(),
+                Mock.Of<VisualStudioCompletionBroker>()))
+            {
+                var latestChange = new SourceChange(0, 0, string.Empty);
+                var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
+                parser._latestChangeReference = new BackgroundParser.ChangeReference(latestChange, latestSnapshot);
+                var codeDocument = TestRazorCodeDocument.CreateEmpty();
+                codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(TestRazorSourceDocument.Create()));
+                var args = new BackgroundParserResultsReadyEventArgs(
+                    parser._latestChangeReference,
+                    codeDocument);
+
+                // Act - 1
+                var getLatestCodeDocumentTask = parser.GetLatestCodeDocumentAsync();
+
+                // Assert - 1
+                Assert.False(getLatestCodeDocumentTask.IsCompleted);
+
+                // Act - 2
+                parser.OnDocumentStructureChanged(args);
+
+                // Assert - 2
+                Assert.True(getLatestCodeDocumentTask.IsCompleted);
+
+                // Act - 3
+                var latestCodeDocument = await getLatestCodeDocumentTask;
+
+                // Assert - 3
+                Assert.Same(latestCodeDocument, codeDocument);
+            }
+        }
+
+        [ForegroundFact]
+        public async Task GetLatestCodeDocumentAsync_NoPendingChangesReturnsImmediately()
+        {
+            // Arrange
+            var documentTracker = CreateDocumentTracker();
+            using (var parser = new DefaultVisualStudioRazorParser(
+                Dispatcher,
+                documentTracker,
+                ProjectEngineFactory,
+                new DefaultErrorReporter(),
+                Mock.Of<VisualStudioCompletionBroker>()))
+            {
+                var latestChange = new SourceChange(0, 0, string.Empty);
+                var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
+                parser._latestChangeReference = new BackgroundParser.ChangeReference(latestChange, latestSnapshot);
+                var codeDocument = TestRazorCodeDocument.CreateEmpty();
+                codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(TestRazorSourceDocument.Create()));
+                var args = new BackgroundParserResultsReadyEventArgs(
+                    parser._latestChangeReference,
+                    codeDocument);
+                parser.OnDocumentStructureChanged(args);
+
+                // Act - 1
+                var getLatestCodeDocumentTask = parser.GetLatestCodeDocumentAsync();
+
+                // Assert - 1
+                Assert.True(getLatestCodeDocumentTask.IsCompleted);
+
+                // Act - 2
+                var latestCodeDocument = await getLatestCodeDocumentTask;
+
+                // Assert - 2
+                Assert.Same(latestCodeDocument, codeDocument);
+            }
+        }
+
+        [ForegroundFact]
+        public void GetLatestCodeDocumentAsync_MultipleCallsWithPendingChangesMemoizesReturnedTasks()
+        {
+            // Arrange
+            var documentTracker = CreateDocumentTracker();
+            using (var parser = new DefaultVisualStudioRazorParser(
+                Dispatcher,
+                documentTracker,
+                ProjectEngineFactory,
+                new DefaultErrorReporter(),
+                Mock.Of<VisualStudioCompletionBroker>()))
+            {
+                var latestChange = new SourceChange(0, 0, string.Empty);
+                var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
+                parser._latestChangeReference = new BackgroundParser.ChangeReference(latestChange, latestSnapshot);
+                var codeDocument = TestRazorCodeDocument.CreateEmpty();
+                codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(TestRazorSourceDocument.Create()));
+                var args = new BackgroundParserResultsReadyEventArgs(
+                    parser._latestChangeReference,
+                    codeDocument);
+
+                // Act
+                var getLatestCodeDocumentTask1 = parser.GetLatestCodeDocumentAsync();
+                var getLatestCodeDocumentTask2 = parser.GetLatestCodeDocumentAsync();
+
+                // Assert
+                Assert.Same(getLatestCodeDocumentTask1, getLatestCodeDocumentTask2);
+            }
         }
 
         [ForegroundFact]

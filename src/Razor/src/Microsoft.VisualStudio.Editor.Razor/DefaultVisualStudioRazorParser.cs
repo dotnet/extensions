@@ -31,11 +31,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
         internal RazorSyntaxTreePartialParser _partialParser;
 
         private readonly object IdleLock = new object();
+        private readonly object GetCodeDocumentLock = new object();
         private readonly VisualStudioCompletionBroker _completionBroker;
         private readonly VisualStudioDocumentTracker _documentTracker;
         private readonly ForegroundDispatcher _dispatcher;
         private readonly ProjectSnapshotProjectEngineFactory _projectEngineFactory;
         private readonly ErrorReporter _errorReporter;
+        private TaskCompletionSource<RazorCodeDocument> _codeDocumentTaskCompletionSource;
         private RazorProjectEngine _projectEngine;
         private RazorCodeDocument _codeDocument;
         private ITextSnapshot _snapshot;
@@ -104,6 +106,27 @@ namespace Microsoft.VisualStudio.Editor.Razor
         // Used in unit tests to ensure we can block background idle work.
         internal ManualResetEventSlim BlockBackgroundIdleWork { get; set; }
 
+        public override Task<RazorCodeDocument> GetLatestCodeDocumentAsync()
+        {
+            lock (GetCodeDocumentLock)
+            {
+                if (_disposed || !HasPendingChanges)
+                {
+                    // No pending changes, code document is already latest.
+                    return Task.FromResult(CodeDocument);
+                }
+
+                // In the process of parsing changes.
+
+                if (_codeDocumentTaskCompletionSource == null)
+                {
+                    _codeDocumentTaskCompletionSource = new TaskCompletionSource<RazorCodeDocument>(TaskCreationOptions.RunContinuationsAsynchronously);
+                }
+
+                return _codeDocumentTaskCompletionSource.Task;
+            }
+        }
+
         public override void QueueReparse()
         {
             // Can be called from any thread
@@ -128,7 +151,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             StopIdleTimer();
 
-            _disposed = true;
+            lock (GetCodeDocumentLock)
+            {
+                _disposed = true;
+                _codeDocumentTaskCompletionSource?.SetResult(CodeDocument);
+            }
         }
 
         // Internal for testing
@@ -177,7 +204,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             _projectEngine = _projectEngineFactory.Create(_documentTracker.ProjectSnapshot, ConfigureProjectEngine);
 
-            Debug.Assert(_projectEngine != null); 
+            Debug.Assert(_projectEngine != null);
             Debug.Assert(_projectEngine.Engine != null);
             Debug.Assert(_projectEngine.FileSystem != null);
 
@@ -394,14 +421,19 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 return;
             }
 
-            _latestChangeReference = null;
-            _codeDocument = backgroundParserArgs.CodeDocument;
-            _snapshot = backgroundParserArgs.ChangeReference.Snapshot;
-            _partialParser = new RazorSyntaxTreePartialParser(CodeDocument.GetSyntaxTree());
+            lock (GetCodeDocumentLock)
+            {
+                _latestChangeReference = null;
+                _codeDocument = backgroundParserArgs.CodeDocument;
+                _snapshot = backgroundParserArgs.ChangeReference.Snapshot;
+                _partialParser = new RazorSyntaxTreePartialParser(_codeDocument.GetSyntaxTree());
+                _codeDocumentTaskCompletionSource?.SetResult(_codeDocument);
+                _codeDocumentTaskCompletionSource = null;
+            }
 
             var documentStructureChangedArgs = new DocumentStructureChangedEventArgs(
-                backgroundParserArgs.ChangeReference.Change, 
-                backgroundParserArgs.ChangeReference.Snapshot, 
+                backgroundParserArgs.ChangeReference.Change,
+                backgroundParserArgs.ChangeReference.Snapshot,
                 backgroundParserArgs.CodeDocument);
             DocumentStructureChanged?.Invoke(this, documentStructureChangedArgs);
         }
