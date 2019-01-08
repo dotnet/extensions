@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version $2 --install-dir $HELIX_CORRELATION_PAYLOAD/sdk
-if [ $retVal -ne 0 ]; then 
+if [ $? -ne 0 ]; then 
     curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version $2 --install-dir $HELIX_CORRELATION_PAYLOAD/sdk
 fi
 curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --runtime dotnet --version $3 --install-dir $HELIX_CORRELATION_PAYLOAD/sdk
-if [ $retVal -ne 0 ]; then 
+if [ $? -ne 0 ]; then 
     curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --runtime dotnet --version $3 --install-dir $HELIX_CORRELATION_PAYLOAD/sdk
 fi
 
