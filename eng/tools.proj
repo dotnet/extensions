@@ -1,8 +1,6 @@
 <!-- Temporary: copying this file from Arcade here to unblock dependency flow. Once we convert to Arcade, this can be removed. -->
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="Versions.props" />
-
   <PropertyGroup>
     <TargetFramework>net462</TargetFramework>
   </PropertyGroup>

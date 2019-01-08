@@ -1,6 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
-  <ProductDependencies></ProductDependencies>
+  <ProductDependencies>
+    <Dependency Name="Microsoft.Win32.Registry" Version="4.6.0-preview.18604.2">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>000000</Sha>
+    </Dependency>
+    <Dependency Name="System.ComponentModel.Annotations" Version="4.6.0-preview.18604.2">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>000000</Sha>
+    </Dependency>
+    <Dependency Name="System.Data.SqlClient" Version="4.7.0-preview.18604.2">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>000000</Sha>
+    </Dependency>
+    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview.18604.2">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>000000</Sha>
+    </Dependency>
+    <Dependency Name="System.Diagnostics.EventLog" Version="4.6.0-preview.18604.2">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>000000</Sha>
+    </Dependency>
+    <Dependency Name="System.IO.Pipelines" Version="4.6.0-preview.18604.2">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>000000</Sha>
+    </Dependency>
+    <Dependency Name="System.Reflection.Metadata" Version="1.7.0-preview.18604.2">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>000000</Sha>
+    </Dependency>
+    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="4.6.0-preview.18604.2">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>000000</Sha>
+    </Dependency>
+    <Dependency Name="System.Security.Cryptography.Cng" Version="4.6.0-preview.18604.2">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>000000</Sha>
+    </Dependency>
+    <Dependency Name="System.Security.Cryptography.Xml" Version="4.6.0-preview.18604.2">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>000000</Sha>
+    </Dependency>
+    <Dependency Name="System.Text.Encodings.Web" Version="4.6.0-preview.18604.2">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>000000</Sha>
+    </Dependency>
+    <Dependency Name="System.Threading.Tasks.Extensions" Version="4.6.0-preview.18604.2">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>000000</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview-27204-02">
+      <Uri>https://github.com/dotnet/core-setup</Uri>
+      <Sha>00000</Sha>
+    </Dependency>
+  </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="1.0.0-beta.18630.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
