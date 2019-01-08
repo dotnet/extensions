@@ -2292,6 +2292,20 @@ namespace Test
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void WhiteSpace_InsideAttribute_InMarkupBlock()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"<div class=""first second"">Hello</div>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         #endregion
 
         #region Misc

@@ -9,19 +9,19 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Components
 {
-    public class ComponentHtmlBlockPassTest
+    public class ComponentMarkupBlockPassTest
     {
-        public ComponentHtmlBlockPassTest()
+        public ComponentMarkupBlockPassTest()
         {
-            Pass = new ComponentHtmlBlockPass();
+            Pass = new ComponentMarkupBlockPass();
             ProjectEngine = (DefaultRazorProjectEngine)RazorProjectEngine.Create(
                 RazorConfiguration.Default,
                 RazorProjectFileSystem.Create(Environment.CurrentDirectory),
                 b =>
                 {
-                    if (b.Features.OfType<ComponentHtmlBlockPass>().Any())
+                    if (b.Features.OfType<ComponentMarkupBlockPass>().Any())
                     {
-                        b.Features.Remove(b.Features.OfType<ComponentHtmlBlockPass>().Single());
+                        b.Features.Remove(b.Features.OfType<ComponentMarkupBlockPass>().Single());
                     }
                 });
             Engine = ProjectEngine.Engine;
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         private RazorEngine Engine { get; }
 
-        private ComponentHtmlBlockPass Pass { get; }
+        private ComponentMarkupBlockPass Pass { get; }
 
         [Fact]
         public void Execute_RewritesHtml_Basic()
@@ -70,6 +70,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             var document = CreateDocument(@"Start<!-- -->End");
 
             var expected = NormalizeContent(@"StartEnd");
+
+            var documentNode = Lower(document);
+
+            // Act
+            Pass.Execute(document, documentNode);
+
+            // Assert
+            var block = documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>().Single();
+            Assert.Equal(expected, block.Content, ignoreLineEndingDifferences: true);
+        }
+
+        // See: https://github.com/aspnet/AspNetCore/issues/6480
+        [Fact]
+        public void Execute_RewritesHtml_HtmlAttributePrefix()
+        {
+            // Arrange
+            var document = CreateDocument(@"<div class=""one two"">Hi</div>");
+
+            var expected = NormalizeContent(@"<div class=""one two"">Hi</div>");
 
             var documentNode = Lower(document);
 
