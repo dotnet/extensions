@@ -55,7 +55,7 @@ namespace Microsoft.Extensions.Caching.Memory
             Assert.Null(result);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Extensions/issues/913")]
         public void AbsoluteExpirationExpiresInBackground()
         {
             var clock = new TestClock();
