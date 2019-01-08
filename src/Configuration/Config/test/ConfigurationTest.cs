@@ -471,12 +471,15 @@ namespace Microsoft.Extensions.Configuration.Test
             configurationBuilder.Add(memConfigSrc1);
 
             var config = configurationBuilder.Build();
+            var nullConfig = default(IConfiguration);
 
             // Act
             var memVal1 = config.GetDefaultConnectionString();
+            var memVal2 = nullConfig.GetDefaultConnectionString();
 
             // Assert
             Assert.Equal("MemVal1", memVal1);
+            Assert.Equal(null, memVal2);
         }
 
         [Fact]
