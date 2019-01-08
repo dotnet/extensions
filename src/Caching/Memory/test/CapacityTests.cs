@@ -341,7 +341,7 @@ namespace Microsoft.Extensions.Caching.Memory
             Assert.Equal(0, cache.Size);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Extensions/issues/913")]
         public async Task CompactsToLessThanLowWatermarkUsingLRUWhenHighWatermarkExceeded()
         {
             var testClock = new TestClock();
